@@ -43,7 +43,10 @@ extension PeerDiscoveryView {
             qrCode
             
             VStack {
-                vaultDetail
+                if selectedTab == .secure {
+                    networkPrompts
+                }
+                
                 list
             }
             .padding(40)
@@ -55,23 +58,25 @@ extension PeerDiscoveryView {
             qrCodeImage?
                 .resizable()
                 .background(Color.blue600)
-                .frame(maxHeight: .infinity)
+                .aspectRatio(contentMode: .fill)
                 .padding(3)
                 .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding()
+                .cornerRadius(12)
+                .padding(32)
                 .background(Color.blue600)
+                .cornerRadius(40)
                 .cornerRadius(15)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 15)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
-                )
-                .padding(1)
-                .aspectRatio(contentMode: .fit)
+            
+            outline
         }
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding(40)
+    }
+    
+    var outline: some View {
+        Image("QRScannerOutline")
+            .resizable()
     }
     
     var scrollList: some View {

@@ -25,9 +25,6 @@ extension PeerDiscoveryView {
         .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
-        .onChange(of: viewModel.selections) {
-            setNumberOfPairedDevices()
-        }
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
@@ -62,7 +59,10 @@ extension PeerDiscoveryView {
             VStack {
                 list
                     .padding(20)
-                vaultDetail
+                
+                if selectedTab == .secure {
+                    networkPrompts
+                }
             }
         }
     }
@@ -72,44 +72,45 @@ extension PeerDiscoveryView {
             qrCodeImage?
                 .resizable()
                 .background(Color.blue600)
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
-                .aspectRatio(
-                    contentMode:
-                        participantDiscovery.peersFound.count == 0 && idiom == .phone ?
-                        .fill :
-                            .fit
-                )
+                .frame(maxWidth: 500, maxHeight: 500)
+                .aspectRatio(contentMode: .fill)
                 .padding(2)
-                .frame(maxHeight: .infinity)
                 .background(Color.neutral0)
                 .cornerRadius(10)
                 .padding()
                 .background(Color.blue600)
                 .cornerRadius(15)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 15)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
-                )
-                .padding(1)
+            
+            outline
         }
-        .cornerRadius(10)
+        .cornerRadius(22)
         .shadow(radius: 5)
         .padding(isPhoneSE ? 8 : 20)
     }
     
+    var outline: some View {
+        Image("QRScannerOutline")
+            .resizable()
+            .frame(maxWidth: 540, maxHeight: 540)
+    }
+    
     var scrollList: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 18) {
-                devices
+        VStack {
+            listTitle
+            
+            ScrollView(.horizontal) {
+                HStack(spacing: 18) {
+                    devices
+                }
+                .padding(.horizontal, 30)
             }
-            .padding(.horizontal, 30)
         }
         .padding(idiom == .phone ? 0 : 20)
     }
     
     var gridList: some View {
         ScrollView {
+            listTitle
             LazyVGrid(columns: columns, spacing: 8) {
                 devices
             }

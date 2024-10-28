@@ -47,7 +47,7 @@ struct BackupVaultNowView: View {
             Spacer()
             backupButton
         }
-        .font(.body14MontserratMedium)
+        .font(.body12Montserrat)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
     }
@@ -116,5 +116,4 @@ struct BackupVaultNowView: View {
 
 #Preview {
     BackupVaultNowView(vault: Vault.example)
-        .frame(height: 600)
 }
