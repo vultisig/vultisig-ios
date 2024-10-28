@@ -38,27 +38,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws {
-        
-        switch tx.coin.chain.chainType {
-        case .EVM:
-            let blowfishResponse = try await blowfishEVMTransactionScan(tx: tx)
-            blowfishShow = true
-            blowfishWarningsShow = !(blowfishResponse.warnings?.isEmpty ?? true)
-            blowfishWarnings = blowfishResponse.warnings?.compactMap { $0.message } ?? []
-            
-        case .Solana:
-            let blowfishResponse = try await blowfishSolanaTransactionScan(tx: tx, vault: vault)
-            blowfishShow = true
-            blowfishWarningsShow = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
-            blowfishWarnings = blowfishResponse.aggregated?.warnings?.compactMap { $0.message } ?? []
-            
-        default:
-            blowfishShow = false
-            blowfishWarningsShow = false
-            blowfishWarnings = []
-            
-        }
-        
+        blowfishShow = false
+        blowfishWarningsShow = false
+        blowfishWarnings = []
     }
     
     func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse {
@@ -114,7 +96,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-
+            
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
@@ -123,7 +105,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 chainSpecific: chainSpecific,
                 vault: vault
             )
-
+            
         } catch {
             self.errorMessage = error.localizedDescription
             showAlert = true
