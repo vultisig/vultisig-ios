@@ -102,6 +102,20 @@ final class Vault: ObservableObject, Codable {
         return coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
     }
 
+    var isFastVault: Bool {
+        if localPartyID.lowercased().starts(with: "server-") {
+            return false
+        }
+
+        for signer in signers {
+            if signer.lowercased().starts(with: "server-") {
+                return true
+            }
+        }
+
+        return false
+    }
+
     static func predicate(searchName: String) -> Predicate<Vault> {
         #Predicate<Vault> { vault in
             searchName.isEmpty || vault.name == searchName
