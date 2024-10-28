@@ -59,7 +59,10 @@ extension PeerDiscoveryView {
             VStack {
                 list
                     .padding(20)
-                networkPrompts
+                
+                if selectedTab != .fast {
+                    networkPrompts
+                }
             }
         }
     }

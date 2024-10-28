@@ -110,7 +110,10 @@ struct PeerDiscoveryView: View {
     
     var portraitContent: some View {
         VStack(spacing: 0) {
-            networkPrompts
+            if selectedTab != .fast {
+                networkPrompts
+            }
+            
             qrCode
             list
         }

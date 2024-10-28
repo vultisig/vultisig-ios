@@ -43,7 +43,10 @@ extension PeerDiscoveryView {
             qrCode
             
             VStack {
-                networkPrompts
+                if selectedTab != .fast {
+                    networkPrompts
+                }
+                
                 list
             }
             .padding(40)
