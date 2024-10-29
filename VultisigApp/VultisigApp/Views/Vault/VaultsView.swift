@@ -12,47 +12,53 @@ struct VaultsView: View {
     @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
+    @Binding var showFolderDetails: Bool
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
         
     @Environment(\.modelContext) var modelContext
     
-    @State var showFolderDetails: Bool = false
     @State var selectedFolder: Folder = .example
 
     var body: some View {
-        VStack {
-            ZStack {
-                Background()
-                view
+        ZStack {
+            VStack {
+                ZStack {
+                    Background()
+                    view
+                }
+                .frame(maxHeight: showVaultsList ? .none : 0)
+                .clipped()
+                
+                Spacer()
             }
-            .frame(maxHeight: showVaultsList ? .none : 0)
-            .clipped()
-            
-            Spacer()
-        }
-        .allowsHitTesting(showVaultsList)
-        .onChange(of: isEditingVaults, { oldValue, newValue in
-            filterVaults()
-        })
-        .onAppear {
-            setData()
-        }
-        .onDisappear {
-            isEditingVaults = false
+            .allowsHitTesting(showVaultsList)
+            .onChange(of: isEditingVaults, { oldValue, newValue in
+                filterVaults()
+            })
+            .onAppear {
+                setData()
+            }
+            .onDisappear {
+                isEditingVaults = false
+            }
         }
     }
     
     var view: some View {
-        content
-            .navigationDestination(isPresented: $showFolderDetails) {
+        ZStack{
+            content
+            
+            if showFolderDetails {
                 FolderDetailView(
                     vaultFolder: $selectedFolder,
-                    showVaultsList: $showVaultsList,
+                    showVaultsList: $showVaultsList, 
+                    showFolderDetails: $showFolderDetails,
                     viewModel: viewModel
                 )
             }
+        }
     }
     
     var content: some View {
@@ -240,7 +246,7 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(false))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(false), showFolderDetails: .constant(false))
             .environmentObject(DeeplinkViewModel())
             .environmentObject(HomeViewModel())
     }

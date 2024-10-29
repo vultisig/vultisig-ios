@@ -11,6 +11,7 @@ import SwiftData
 struct FolderDetailView: View {
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
+    @Binding var showFolderDetails: Bool
     @ObservedObject var viewModel: HomeViewModel
     
     @Query var folders: [Folder]
@@ -224,7 +225,8 @@ struct FolderDetailView: View {
 #Preview {
     FolderDetailView(
         vaultFolder: .constant(Folder.example),
-        showVaultsList: .constant(false),
+        showVaultsList: .constant(false), 
+        showFolderDetails: .constant(true),
         viewModel: HomeViewModel()
     )
 }

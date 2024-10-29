@@ -50,7 +50,7 @@ extension HomeView {
                     VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
                 }
                 
-                VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
+                VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults, showFolderDetails: $showFolderDetails)
             }
         }
         .navigationBarBackButtonHidden(true)
