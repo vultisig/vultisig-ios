@@ -50,8 +50,6 @@ extension KeysignDiscoveryView {
             } else {
                 deviceList
             }
-            
-            instructions
         }
     }
     
