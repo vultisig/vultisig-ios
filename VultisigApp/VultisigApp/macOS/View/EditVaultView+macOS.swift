@@ -32,6 +32,9 @@ extension EditVaultView {
                 backupVault
                 editVault
                 reshareVault
+                if vault.isFastVault {
+                    biometrySelectionCell
+                }
                 deleteVault
             }
             .padding(.horizontal, 25)

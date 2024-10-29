@@ -27,7 +27,7 @@ struct SettingsBiometryView: View {
         .navigationTitle(NSLocalizedString("enableBiometrics", comment: ""))
     }
 
-    var main: some View {
+    var view: some View {
         ScrollView {
             VStack(spacing: 16) {
                 enableCell

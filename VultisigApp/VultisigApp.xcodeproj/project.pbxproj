@@ -99,6 +99,8 @@
 		A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34A2C32FA760086D16B /* ProtoMappable.swift */; };
 		A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34C2C32FB800086D16B /* KeysignMessage.swift */; };
 		A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */; };
+		A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */; };
+		A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
@@ -835,6 +837,8 @@
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
 		A58CC34C2C32FB800086D16B /* KeysignMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessage.swift; sourceTree = "<group>"; };
 		A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainSpecific.swift; sourceTree = "<group>"; };
+		A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+iOS.swift"; sourceTree = "<group>"; };
+		A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
@@ -2526,6 +2530,8 @@
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
 				A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */,
+				A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */,
+				A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */,
 				A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
@@ -3372,6 +3378,7 @@
 				A6182F352C922CD70059BFDD /* ChainHeaderCell+macOS.swift in Sources */,
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
+				A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */,
 				A6505AD02CA668AF0002FBF4 /* InformationNote+iOS.swift in Sources */,
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
@@ -3778,6 +3785,7 @@
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
+				A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */,
 				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
