@@ -110,9 +110,9 @@
 "fastModeDescription" = "• Single Device Setup\n• Transaction Alerts & Policies\n• Vault Backup Emailed\n\nUse as a “hot vault”";
 "activeModeDescription" = "• Fast Signing On The Move\n• Transaction Alerts & Policies\n• Fully self-custodial\n\nUse as a “main vault”";
 "secureModeDescription" = "• Only Your Devices\n• No Alerts or Policies\n• Fully self-custodial\n\nUse as a “cold vault”";
-"fastLoaderTitle" = "Looking for FastVaultServer";
-"activeLoaderTitle" = "Looking for FastVaultServer and 1  more device...";
-"secureLoaderTitle" = "Looking for devices...";
+"fastLoaderTitle" = "Looking for Vultiserver to connect...";
+"activeLoaderTitle" = "Looking for Vultiserver and 1 more device...";
+"secureLoaderTitle" = "Join with multiple devices,\nproceed if all are added";
 "sign" = "Sign";
 "amount" = "Amount";
 "amount(inFiat)" = "Amount (in Fiat)";
@@ -200,7 +200,7 @@
 "Croatian" = "Croatian";
 "Portuguese" = "Portuguese";
 "youAreCreatingA" = "You are creating a";
-"withTheseDevices" = "With these devices";
+"withTheseDevices" = "With these Vault Shares";
 "pairDeviceDisclaimersFirst" = "You can only send transactions with";
 "pairDeviceDisclaimersSecond" = "of these devices present.";
 "backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
@@ -247,8 +247,7 @@
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "function" = "Function";
 "enterPassword" = "Enter Password";
-"fastVaultEnterDisclaimer" = "This Password decrypt your FastSign Share";
-"fastVaultSetDisclaimer" = "This password encrypts your FastSign Share";
+"fastVaultEnterDisclaimer" = "This Password decrypt your FastVault Share";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";
@@ -291,12 +290,12 @@
 "OnboardingView1Description" = "Vultisig is a secure, multi-device crypto vault, compatible with all major blockchains and 10,000+ tokens. Vultisig is fully self-custodial.";
 "OnboardingView2Description" = "Vultisig does not track your activities or require any registrations. Vultisig is fully open-source, ensuring transparency and trust.";
 "OnboardingView3Description" = "Vultisig is audited and secure. Join thousands of users who trust Vultisig with their digital assets.";
-"OnboardingView4Description" = "Vultisig is a wallet without seed phrases.\nIt uses easy-to-manage vault shares instead.";
+"OnboardingView4Description" = "Vultisig is a wallet without seed phrases.\nIt uses easy-to-manage vault shares instead.\n\nEvery device has it unique vault share that needs a separate backup.";
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Enter Memo";
 "enterVaultName" = "Enter vault name";
-"pleaseBackupVault" = "Each device has its own unique share.";
-"pleaseBackupVaultNote" = "Please Backup all of your Vault Shares now.";
+"pleaseBackupVault" = "Backups need to be done on every device in Vultisig";
+"pleaseBackupVaultNote" = "Each device has its own unique vault share, which are needed for recovery ";
 "addressBook" = "Address Book";
 "addAddress" = "Add Address";
 "address" = "Address";
@@ -413,4 +412,8 @@
 "devices" = "Devices";
 "signers" = "Signers";
 "vaultPart" = "Vault Part";
+"name" = "Name";
+"fastVaultSetDisclaimer" = "This Password encrypts your Vault Share received via email";
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
+"selectPairingDevices" = "Select the pairing devices";
+"backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";

@@ -19,7 +19,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
-        
+    
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _):
@@ -38,7 +38,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return referenceGasPrice
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
-        case .Ton(let sequenceNumber, let expireAt, let bounceable):
+        case .Ton(_,_,_):
             return BigInt(0.001 * 10e9)
         }
     }
@@ -51,7 +51,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas
         }
     }
-
+    
     var baseFee: BigInt? {
         switch self {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
@@ -60,7 +60,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return nil
         }
     }
-
+    
     var gasLimit: BigInt? {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):

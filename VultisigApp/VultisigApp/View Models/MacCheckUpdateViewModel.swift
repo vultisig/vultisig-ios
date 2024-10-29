@@ -39,7 +39,9 @@ class MacCheckUpdateViewModel: ObservableObject {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         
-        guard let latestRelease = releases.first?.tagName, let currentRelease = version, let currentBuild = build else {
+        guard let latestRelease = releases.first(where: { !$0.prerelease })?.tagName,
+              let currentRelease = version,
+              let currentBuild = build else {
             showErrorMessage()
             return
         }

@@ -26,7 +26,9 @@ extension EditVaultView {
                 backupVault
                 editVault
                 reshareVault
-                biometrySelectionCell
+                if vault.isFastVault {
+                    biometrySelectionCell
+                }
                 deleteVault
             }
         }
