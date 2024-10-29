@@ -131,7 +131,6 @@ struct VaultsView: View {
     var actionButtons: some View {
         VStack(spacing: 14) {
             addVaultButton
-            importVaultButton
         }
         .padding(16)
         .offset(y: isEditingVaults ? 200 : 0)
@@ -140,7 +139,7 @@ struct VaultsView: View {
     
     var addVaultButton: some View {
         NavigationLink {
-            SetupQRCodeView(tssType: .Keygen, vault: nil)
+            CreateVaultView(showBackButton: true)
         } label: {
             FilledButton(title: "addNewVault", icon: "plus")
         }
@@ -149,16 +148,6 @@ struct VaultsView: View {
         .buttonStyle(BorderlessButtonStyle())
     }
     
-    var importVaultButton: some View {
-        NavigationLink {
-            ImportWalletView()
-        } label: {
-            OutlineButton(title: "importExistingVault")
-        }
-        .scaleEffect(showVaultsList ? 1 : 0)
-        .opacity(showVaultsList ? 1 : 0)
-        .buttonStyle(BorderlessButtonStyle())
-    }
     
     private func getButton(for vault: Vault) -> some View {
         Button {
