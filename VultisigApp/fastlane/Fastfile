@@ -18,7 +18,7 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    increment_build_number(build_number:"2",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"3",xcodeproj: "VultisigApp.xcodeproj")
     build_app(scheme: "VultisigApp",xcargs: "-allowProvisioningUpdates")
     upload_to_testflight
   end
@@ -40,7 +40,7 @@ platform :mac do
     # remove the dSYM file
     sh "rm -f ../pkgroot/Applications/VultisigApp.app.dSYM.zip"
 
-    sh "pkgbuild --root ../pkgroot --scripts ../scripts --identifier 'com.vultisig.wallet' --version '1.5.2' --install-location / '../VultisigApp.pkg'"
+    sh "pkgbuild --root ../pkgroot --scripts ../scripts --identifier 'com.vultisig.wallet' --version '1.5.3' --install-location / '../VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
