@@ -43,6 +43,10 @@ extension ChainDetailView {
                 if viewModel.hasTokens(chain: group.chain) {
                     addButton
                 }
+                
+                if ChainType.Solana == group.chain.chainType {
+                    addCustomTokenButton
+                }
             }
             .buttonStyle(BorderlessButtonStyle())
             .background(Color.backgroundBlue)
@@ -57,6 +61,14 @@ extension ChainDetailView {
             sheetType = .tokenSelection
         } label: {
             chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        }
+    }
+    
+    var addCustomTokenButton: some View {
+        Button {
+            sheetType = .customToken
+        } label: {
+            chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Tokens"))
         }
     }
     
