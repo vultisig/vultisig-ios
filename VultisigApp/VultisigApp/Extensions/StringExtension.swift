@@ -65,7 +65,6 @@ extension String {
 
 
 extension String {
-    
     func toDecimal() -> Decimal {
         let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleaned = trimmed.replacingOccurrences(of: ",", with: "")

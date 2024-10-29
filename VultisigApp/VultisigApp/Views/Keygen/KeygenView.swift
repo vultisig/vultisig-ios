@@ -27,8 +27,6 @@ struct KeygenView: View {
     @StateObject var viewModel = KeygenViewModel()
     
     let progressTotalCount: Double = 4
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true

@@ -14,8 +14,16 @@ struct LookingForDevicesLoader: View {
 
     var body: some View {
         VStack {
+            Spacer()
             title
             loader
+            
+            if selectedTab == .fast {
+                pleaseWait
+            }
+            
+            Spacer()
+            InstructionPrompt(networkType: .Internet)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -57,11 +65,20 @@ struct LookingForDevicesLoader: View {
         .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: didSwitch)
         .frame(height: 20)
     }
+    
+    var pleaseWait: some View {
+        Text(NSLocalizedString("pleaseWait", comment: ""))
+            .font(.body14Montserrat)
+            .foregroundColor(.neutral0)
+            .bold()
+            .multilineTextAlignment(.center)
+            .padding(.top, 50)
+    }
 }
 
 #Preview {
     ZStack {
         Background()
-        LookingForDevicesLoader(selectedTab: .fast)
+        LookingForDevicesLoader(selectedTab: .secure)
     }
 }

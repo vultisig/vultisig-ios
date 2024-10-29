@@ -14,7 +14,7 @@ extension NewWalletNameView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
+        .navigationTitle(NSLocalizedString(header, comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
