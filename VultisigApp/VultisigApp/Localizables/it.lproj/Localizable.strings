@@ -385,3 +385,4 @@
 "signers" = "Firmatari";
 "vaultPart" = "Parte della cassaforte";
 "fastVaultEmailDisclaimer" = "Questa email viene utilizzata solo per inviare il backup";
+"backupYourVaultNow" = "Esegui ora il backup della parte di cassaforte di questo dispositivo!";
