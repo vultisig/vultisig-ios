@@ -18,7 +18,9 @@ enum KeysignStatus {
     case KeysignFailed
     case KeysignVaultMismatch
 }
-
+enum TssKeysignError: Error {
+    case keysignFail
+}
 @MainActor
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
@@ -170,6 +172,9 @@ class KeysignViewModel: ObservableObject {
             }
             if let service = self.tssService {
                 let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                if resp.r.isEmpty || resp.s.isEmpty {
+                    throw TssKeysignError.keysignFail
+                }
                 self.signatures[msg] = resp
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
             }

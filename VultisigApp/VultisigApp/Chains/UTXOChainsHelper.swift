@@ -47,7 +47,7 @@ class UTXOChainsHelper {
         if !preSignOutputs.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSignOutputs.errorMessage)
         }
-        return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }
+        return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }.sorted()
     }
     
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {
