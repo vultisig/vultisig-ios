@@ -22,5 +22,34 @@ extension FolderDetailView {
             }
         }
     }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            backButton.opacity(0)
+        }
+        .padding(.horizontal, 16)
+        .foregroundColor(.neutral0)
+        .font(.body)
+        .fontWeight(.bold)
+        .padding(.top, 24)
+    }
+    
+    var backButton: some View {
+        Button {
+            showFolderDetails = false
+        } label: {
+            Image(systemName: "chevron.backward")
+                .foregroundColor(.neutral0)
+                .font(.body)
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString(vaultFolder.folderName, comment: ""))
+    }
 }
 #endif

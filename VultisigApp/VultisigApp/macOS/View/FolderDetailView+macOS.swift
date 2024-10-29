@@ -11,16 +11,39 @@ import SwiftUI
 extension FolderDetailView {
     var view: some View {
         VStack(spacing: 0) {
-            headerMac
-            Separator()
+            header
             content.padding(.top, 30)
             button
         }
     }
     
-    var headerMac: some View {
-        FolderDetailHeader(title: vaultFolder.folderName, isEditing: $folderViewModel.isEditing)
-            .padding(.bottom, 8)
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            backButton.opacity(0)
+        }
+        .padding(.horizontal, 40)
+        .foregroundColor(.neutral0)
+        .font(.title3)
+        .fontWeight(.bold)
+        .padding(.top, 24)
+    }
+    
+    var backButton: some View {
+        Button {
+            showFolderDetails = false
+        } label: {
+            Image(systemName: "chevron.backward")
+                .foregroundColor(.neutral0)
+                .font(.body)
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString(vaultFolder.folderName, comment: ""))
     }
 }
 #endif
