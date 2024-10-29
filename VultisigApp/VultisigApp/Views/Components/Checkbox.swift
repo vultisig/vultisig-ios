@@ -10,8 +10,8 @@ import SwiftUI
 struct Checkbox: View {
     @Binding var isChecked: Bool
     let text: String
-    var font: Font = .body14MontserratMedium
-    var alignment: TextAlignment = .center
+    var font: Font = .body14MenloBold
+    var alignment: TextAlignment = .leading
     var isExtended: Bool = true
     
     var body: some View {
