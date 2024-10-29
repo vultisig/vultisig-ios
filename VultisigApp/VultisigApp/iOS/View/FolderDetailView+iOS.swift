@@ -11,6 +11,7 @@ import SwiftUI
 extension FolderDetailView {
     var view: some View {
         VStack {
+            header
             content
             button
         }

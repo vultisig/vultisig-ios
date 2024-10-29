@@ -25,6 +25,7 @@ struct HomeView: View {
     @State var showMenu = false
     @State var didUpdate = true
     @State var shouldJoinKeygen = false
+    @State var showFolderDetails = false
     @State var shouldImportBackup = false
     @State var shouldKeysignTransaction = false
     
@@ -75,11 +76,17 @@ struct HomeView: View {
     }
     
     var editButton: some View {
-        NavigationHomeEditButton(
-            vault: viewModel.selectedVault,
-            showVaultsList: showVaultsList,
-            isEditingVaults: $isEditingVaults
-        )
+        ZStack {
+            if showFolderDetails {
+                
+            } else {
+                NavigationHomeEditButton(
+                    vault: viewModel.selectedVault,
+                    showVaultsList: showVaultsList,
+                    isEditingVaults: $isEditingVaults
+                )
+            }
+        }
     }
     
     func presetValuesForDeeplink() {

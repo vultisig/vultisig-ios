@@ -11,6 +11,7 @@ import SwiftData
 struct FolderDetailView: View {
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
+    @Binding var showFolderDetails: Bool
     @ObservedObject var viewModel: HomeViewModel
     
     @Query var folders: [Folder]
@@ -35,6 +36,35 @@ struct FolderDetailView: View {
         .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
+    }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            backButton.opacity(0)
+        }
+        .padding(.horizontal, 16)
+        .foregroundColor(.neutral0)
+        .font(.body)
+        .fontWeight(.bold)
+        .padding(.top, 24)
+    }
+    
+    var backButton: some View {
+        Button {
+            showFolderDetails = false
+        } label: {
+            Image(systemName: "chevron.backward")
+                .foregroundColor(.neutral0)
+                .font(.body)
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString(vaultFolder.folderName, comment: ""))
     }
     
     var content: some View {
@@ -224,7 +254,8 @@ struct FolderDetailView: View {
 #Preview {
     FolderDetailView(
         vaultFolder: .constant(Folder.example),
-        showVaultsList: .constant(false),
+        showVaultsList: .constant(false), 
+        showFolderDetails: .constant(true),
         viewModel: HomeViewModel()
     )
 }
