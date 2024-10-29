@@ -33,7 +33,7 @@ struct BackupNowDisclaimer: View {
             title
             components
         }
-        .frame(height: 56)
+        .frame(height: 76)
         .padding(.horizontal, 12)
         .background(Color.alertRed.opacity(0.3))
         .cornerRadius(12)
@@ -58,9 +58,11 @@ struct BackupNowDisclaimer: View {
     }
     
     var title: some View {
-        Text("Backup your vault now!")
-            .font(.body16MontserratMedium)
+        Text(NSLocalizedString("backupYourVaultNow", comment: ""))
+            .font(.body16MontserratSemiBold)
             .foregroundColor(.neutral0)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 24)
     }
     
     var chevron: some View {

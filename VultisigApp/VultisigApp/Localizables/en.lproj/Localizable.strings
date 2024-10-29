@@ -417,3 +417,4 @@
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
 "selectPairingDevices" = "Select the pairing devices";
 "backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";
+"backupYourVaultNow" = "Back up your vault share of this device now!";
