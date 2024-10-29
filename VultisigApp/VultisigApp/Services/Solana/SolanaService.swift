@@ -214,6 +214,48 @@ class SolanaService {
             throw error
         }
     }
+        
+    func fetchTokensInfos(for contractAddresses: [String]) async throws -> [CoinMeta] {
+        do {
+            // Fetch token info from the first provider
+            let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: contractAddresses)
+            
+            var coinMetaList = [CoinMeta]()
+            
+            for contractAddress in contractAddresses {
+                if let tokenInfo = tokenInfos[contractAddress] {
+                    let coinMeta = CoinMeta(
+                        chain: .solana,
+                        ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
+                        logo: tokenInfo.tokenList.image.description,
+                        decimals: tokenInfo.decimals,
+                        priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? .empty,
+                        contractAddress: contractAddress,
+                        isNativeToken: false
+                    )
+                    coinMetaList.append(coinMeta)
+                } else {
+                    // Fetch from second provider if not found
+                    let jupiterTokenInfo: SolanaJupiterToken = try await fetchSolanaJupiterTokenInfoList(contractAddress: contractAddress)
+                    let coinMeta = CoinMeta(
+                        chain: .solana,
+                        ticker: jupiterTokenInfo.symbol,
+                        logo: jupiterTokenInfo.logoURI.description,
+                        decimals: jupiterTokenInfo.decimals,
+                        priceProviderId: jupiterTokenInfo.extensions.coingeckoId,
+                        contractAddress: contractAddress,
+                        isNativeToken: false
+                    )
+                    coinMetaList.append(coinMeta)
+                }
+            }
+            
+            return coinMetaList
+        } catch {
+            print("Error in fetchTokens: \(error)")
+            throw error
+        }
+    }
     
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {
         do {
