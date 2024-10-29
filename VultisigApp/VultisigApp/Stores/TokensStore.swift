@@ -41,6 +41,35 @@ class TokensStore {
             CoinMeta(chain: Chain.solana, ticker: "SOL", logo: "solana", decimals: 9, priceProviderId: "solana", contractAddress: "", isNativeToken: true)
         }
         
+        static var solanaJupiter: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "JUP", logo: "jupiter", decimals: 6, priceProviderId: "jupiter-exchange-solana", contractAddress: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", isNativeToken: false)
+        }
+        
+        static var solanaWif: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "WIF", logo: "dogwifhat-wif-logo", decimals: 6, priceProviderId: "dogwifcoin", contractAddress: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm", isNativeToken: false)
+        }
+        
+        static var solanaPyth: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "PYTH", logo: "pyth-network-pyth-logo", decimals: 6, priceProviderId: "pyth-network", contractAddress: "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3", isNativeToken: false)
+        }
+        
+        static var solanaUsdc: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", isNativeToken: false)
+        }
+        
+        static var solanaUsdt: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "tether", contractAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", isNativeToken: false)
+        }
+        
+        static var solanaRaydium: CoinMeta {
+            CoinMeta(chain: Chain.solana, ticker: "RAY", logo: "raydium-ray-seeklogo-2", decimals: 6, priceProviderId: "raydium", contractAddress: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R", isNativeToken: false)
+        }
+        
+        
+        
+        
+        
+        
         // EVMS
         
         // ETH
@@ -529,7 +558,16 @@ class TokensStore {
         TokensStore.Token.thorChain,
         TokensStore.Token.mayaChainCacao,
         TokensStore.Token.mayaChainMaya,
+        
+        
         TokensStore.Token.solana,
+        TokensStore.Token.solanaJupiter,
+        TokensStore.Token.solanaWif,
+        TokensStore.Token.solanaPyth,
+        TokensStore.Token.solanaUsdc,
+        TokensStore.Token.solanaUsdt,
+        TokensStore.Token.solanaRaydium,
+        
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
         TokensStore.Token.dydx,
