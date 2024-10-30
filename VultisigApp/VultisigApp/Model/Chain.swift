@@ -31,6 +31,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case zksync
     case dydx
     case ton
+    case osmosis
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -62,6 +63,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zksync: return "Zksync"
         case .dydx: return "Dydx"
         case .ton: return "Ton"
+        case .osmosis: return "Osmosis"
         }
     }
     var feeUnit: String{
@@ -81,6 +83,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polkadot: return "DOT"
         case .dydx: return "adydx"
         case .ton: return "TON"
+        case .osmosis: return "uosmo"
         }
     }
     
@@ -110,6 +113,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zksync: return "ZK"
         case .dydx: return "ADYDX"
         case .ton: return "TON"
+        case .osmosis: return "UOSMO"
         }
     }
     
@@ -139,6 +143,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zksync: return "ZK"
         case .dydx: return "DYDX"
         case .ton: return "TON"
+        case .osmosis: return "OSMO"
         }
     }
     
@@ -163,7 +168,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Sui
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain, .kujira, .dydx:
+        case .gaiaChain, .kujira, .dydx, .osmosis:
             return .Cosmos
         case .polkadot:
             return .Polkadot
@@ -222,6 +227,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "dydx"
         case .ton:
             return "ton"
+        case .osmosis:
+            return "osmo"
             
         }
     }
@@ -248,7 +255,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 25
         case .zksync:
             return 324
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis:
             return nil
         }
     }
@@ -303,6 +310,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.dydx
         case .ton:
             return CoinType.ton
+        case .osmosis:
+            return CoinType.osmosis
         }
     }
     

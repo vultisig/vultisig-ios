@@ -46,6 +46,7 @@ final class BlockChainService {
     private let kuji = KujiraService.shared
     private let dydx = DydxService.shared
     private let ton = TonService.shared
+    private let osmo = OsmosisService.shared
 
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         guard !tx.coin.isNativeToken, tx.coin.chainType == .EVM else {
@@ -194,6 +195,17 @@ private extension BlockChainService {
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
         case .kujira:
             let account = try await kuji.fetchAccountNumber(coin.address)
+
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+        case .osmosis:
+            let account = try await osmo.fetchAccountNumber(coin.address)
 
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber
