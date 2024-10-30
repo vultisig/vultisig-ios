@@ -536,6 +536,10 @@ class TokensStore {
             CoinMeta(chain: Chain.gaiaChain, ticker: "ATOM", logo: "atom", decimals: 6, priceProviderId: "cosmos", contractAddress: "", isNativeToken: true)
         }
         
+        static var osmosis: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
+        }
+        
         static var kujira: CoinMeta {
             CoinMeta(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "", isNativeToken: true)
         }
@@ -568,6 +572,7 @@ class TokensStore {
         TokensStore.Token.solanaUsdt,
         TokensStore.Token.solanaRaydium,
         
+        TokensStore.Token.osmosis,
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
         TokensStore.Token.dydx,

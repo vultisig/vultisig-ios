@@ -71,7 +71,7 @@ extension Coin {
             return [.thorchain]
         case .blast:
             return [.lifi]
-        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync, .ton:
+        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync, .ton, .osmosis:
             return []
         }
     }

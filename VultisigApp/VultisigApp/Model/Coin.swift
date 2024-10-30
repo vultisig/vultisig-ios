@@ -107,7 +107,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
             return .UTXO
-        case .gaiaChain,.kujira, .dydx:
+        case .gaiaChain,.kujira, .dydx, .osmosis:
             return .Cosmos
         case .sui:
             return .Sui
@@ -148,7 +148,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "1000"
         case .dogecoin:
             return "1000000"
-        case .gaiaChain,.kujira:
+        case .gaiaChain,.kujira, .osmosis:
             return "200000"
         case .dydx:
             return DydxHelper.DydxGasLimit.description

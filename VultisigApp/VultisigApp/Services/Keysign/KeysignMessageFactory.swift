@@ -65,6 +65,8 @@ struct KeysignMessageFactory {
             return try ATOMHelper().getPreSignedImageHash(keysignPayload: payload)
         case .kujira:
             return try KujiraHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .osmosis:
+            return try OsmoHelper().getPreSignedImageHash(keysignPayload: payload)
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .dydx:
