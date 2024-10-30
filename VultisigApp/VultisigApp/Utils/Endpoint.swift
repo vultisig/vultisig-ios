@@ -200,6 +200,15 @@ class Endpoint {
         "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
     }
     
+    static func fetchOsmosisAccountBalance(address: String) -> String{
+        "https://osmosis-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchOsmosisAccountNumber(_ address: String) -> String {
+        "https://osmosis-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -285,6 +294,8 @@ class Endpoint {
             return "https://explorer.zksync.io/tx/\(txid)"
         case "TON":
             return "https://tonviewer.com/transaction/\(txid)"
+        case "UOSMO":
+            return "https://www.mintscan.io/osmosis/tx/\(txid)"
         default:
             return ""
         }
@@ -340,6 +351,8 @@ class Endpoint {
             return "https://explorer.zksync.io/address/\(address)"
         case "TON":
             return "https://tonviewer.com/\(address)"
+        case "UOSMO":
+            return "https://www.mintscan.io/osmosis/address/\(address)"
         default:
             return nil
         }
@@ -395,6 +408,8 @@ class Endpoint {
             return "https://explorer.zksync.io/address/\(address)"
         case .ton:
             return "https://tonviewer.com/\(address)"
+        case .osmosis:
+            return "https://www.mintscan.io/osmosis/address/\(address)"
         case .none:
             return nil
         }

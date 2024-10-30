@@ -22,7 +22,7 @@ class BalanceService {
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
     private let ton = TonService.shared
-
+    private let osmo = OsmosisService.shared
     
     private let cryptoPriceService = CryptoPriceService.shared
 
@@ -96,6 +96,10 @@ private extension BalanceService {
         case .kujira:
             let kujiBalance = try await kuji.fetchBalances(address: coin.address)
             return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased())
+            
+        case .osmosis:
+            let osmoBalance = try await osmo.fetchBalances(address: coin.address)
+            return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased())
 
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)

@@ -59,6 +59,8 @@ extension Chain {
             actions = [.send, .swap]
         case .dydx:
             actions = [.send, .memo]
+        case .osmosis:
+            actions = [.send]
         }
         return actions.filtered
     }

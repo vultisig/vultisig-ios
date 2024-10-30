@@ -296,6 +296,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .dydx {
                 let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            } else if keysignPayload.coin.chain == .osmosis {
+                let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
             }
             
         case .Ton:
@@ -362,6 +365,14 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .kujira:
                     let broadcastResult = await KujiraService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
+                case .osmosis:
+                    let broadcastResult = await OsmosisService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash
