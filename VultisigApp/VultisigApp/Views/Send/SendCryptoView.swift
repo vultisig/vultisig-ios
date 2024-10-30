@@ -58,7 +58,7 @@ struct SendCryptoView: View {
                     coin: tx.coin,
                     vault: vault,
                     gasLimit: tx.gasLimit, 
-                    byteFee: tx.byteFee,
+                    customByteFee: tx.customByteFee,
                     selectedMode: tx.feeMode
                 ),
                 output: self

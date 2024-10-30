@@ -32,11 +32,11 @@ final class SendGasSettingsViewModel: ObservableObject {
         self.selectedMode = selectedMode
     }
 
-    init(coin: Coin, vault: Vault, gasLimit: BigInt, byteFee: BigInt, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: BigInt, customByteFee: BigInt?, selectedMode: FeeMode) {
         self.coin = coin
         self.vault = vault
         self.gasLimit = gasLimit.description
-        self.byteFee = byteFee.description
+        self.byteFee = customByteFee?.description ?? .empty
         self.baseFee = baseFee.description
         self.selectedMode = selectedMode
     }
