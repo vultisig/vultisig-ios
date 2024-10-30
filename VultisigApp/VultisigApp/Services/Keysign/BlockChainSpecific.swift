@@ -60,7 +60,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return nil
         }
     }
-    
+
     var gasLimit: BigInt? {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):

@@ -21,20 +21,22 @@ final class SendGasSettingsViewModel: ObservableObject {
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
     
     // UTXO
-    @Published var networkRate: String = .empty
+    @Published var byteFee: String = .empty
 
-    init(coin: Coin, vault: Vault, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: String, byteFee: String, baseFee: String, selectedMode: FeeMode) {
         self.coin = coin
         self.vault = vault
         self.gasLimit = gasLimit
+        self.byteFee = byteFee
         self.baseFee = baseFee
         self.selectedMode = selectedMode
     }
 
-    init(coin: Coin, vault: Vault, gasLimit: BigInt, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: BigInt, byteFee: BigInt, selectedMode: FeeMode) {
         self.coin = coin
         self.vault = vault
         self.gasLimit = gasLimit.description
+        self.byteFee = byteFee.description
         self.baseFee = baseFee.description
         self.selectedMode = selectedMode
     }
@@ -94,6 +96,6 @@ private extension SendGasSettingsViewModel {
             feeMode: selectedMode
         )
 
-        networkRate = fee.description
+        byteFee = fee.description
     }
 }
