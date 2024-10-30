@@ -13,10 +13,15 @@ final class SendGasSettingsViewModel: ObservableObject {
     private let coin: Coin
     private let vault: Vault
 
+    @Published var selectedMode: FeeMode = .normal
+
+    // EVM
     @Published var gasLimit: String = .empty
     @Published var baseFee: String = .empty
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
-    @Published var selectedMode: FeeMode = .normal
+    
+    // UTXO
+    @Published var networkRate: String = .empty
 
     init(coin: Coin, vault: Vault, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
         self.coin = coin
@@ -58,12 +63,37 @@ final class SendGasSettingsViewModel: ObservableObject {
         return RateProvider.shared.fiatBalanceString(value: totalFee, coin: nativeCoin)
     }
 
-    @MainActor func fetch(chain: Chain) async throws {
+    func fetch(chain: Chain) async throws {
+        switch chain.chainType {
+        case .UTXO:
+            try await fetchUTXO()
+        case .EVM:
+            try await fetchEVM()
+        default:
+            break
+        }
+    }
+}
+
+private extension SendGasSettingsViewModel {
+
+    @MainActor func fetchEVM() async throws {
         let service = try EvmServiceFactory.getService(forChain: chain)
         let baseFeeWei = try await service.getBaseFee()
         let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
 
         baseFee = baseFeeGwei.description
         priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
+    }
+
+    @MainActor func fetchUTXO() async throws {
+        let service = BlockChainService.shared
+        let fee =  try await service.fetchUTXOFee(
+            coin: coin,
+            action: .transfer,
+            feeMode: selectedMode
+        )
+
+        networkRate = fee.description
     }
 }

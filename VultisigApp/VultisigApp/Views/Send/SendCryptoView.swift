@@ -166,7 +166,7 @@ struct SendCryptoView: View {
     }
 
     var showFeeSettings: Bool {
-        return sendCryptoViewModel.currentIndex == 1 && tx.coin.chainType == .EVM
+        return sendCryptoViewModel.currentIndex == 1 && tx.coin.supportsFeeSettings
     }
 
     var errorView: some View {

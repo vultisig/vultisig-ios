@@ -13,6 +13,7 @@ protocol SendGasSettingsOutput {
 }
 
 struct SendGasSettingsView: View {
+
     @Environment(\.presentationMode) var presentationMode
 
     @StateObject var viewModel: SendGasSettingsViewModel
@@ -22,20 +23,38 @@ struct SendGasSettingsView: View {
     var body: some View {
         content
             .task {
-                try? await viewModel.fetch(chain: viewModel.chain)
+                fetch()
+            }
+            .onChange(of: viewModel.selectedMode) { _, _ in
+                fetch()
             }
     }
 
     var view: some View {
         VStack(spacing: 16) {
             feeModeRow
-            baseFeeRow
-            gasLimitRow
-            totalFeeRow
+
+            switch viewModel.chain.chainType {
+            case .UTXO:
+                networkRateRow
+            case .EVM:
+                baseFeeRow
+                gasLimitRow
+                totalFeeRow
+            default:
+                EmptyView()
+            }
 
             Spacer()
         }
         .padding(.top, 16)
+    }
+
+    var networkRateRow: some View {
+        VStack {
+            title(text: "Network rate (sats/vbyte)")
+            textField(title: "Network rate", text: $viewModel.networkRate)
+        }
     }
 
     var baseFeeRow: some View {
@@ -143,6 +162,12 @@ struct SendGasSettingsView: View {
             save()
             presentationMode.wrappedValue.dismiss()
         })
+    }
+
+    func fetch() {
+        Task {
+            try await viewModel.fetch(chain: viewModel.chain)
+        }
     }
 
     func save() {
