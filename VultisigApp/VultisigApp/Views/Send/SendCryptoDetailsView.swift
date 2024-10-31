@@ -243,7 +243,9 @@ struct SendCryptoDetailsView: View {
         } label: {
             FilledButton(title: "continue")
         }
-        .padding(40)
+        .padding(.horizontal, 40)
+        .padding(.top, 20)
+        .padding(.bottom, 40)
     }
     
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
