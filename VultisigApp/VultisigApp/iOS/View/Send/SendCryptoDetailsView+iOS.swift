@@ -25,9 +25,13 @@ extension SendCryptoDetailsView {
     }
     
     var view: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             fields
+            
             button
+                .background(getButtonBackground())
+                .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
+                .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
         }
     }
     
@@ -79,6 +83,14 @@ extension SendCryptoDetailsView {
     private func scrollToField(_ value: ScrollViewProxy) {
         withAnimation {
             value.scrollTo(focusedField, anchor: .top)
+        }
+    }
+    
+    private func getButtonBackground() -> Color {
+        if keyboardObserver.keyboardHeight == 0 {
+            return Color.clear
+        } else {
+            return Color.backgroundBlue
         }
     }
 }
