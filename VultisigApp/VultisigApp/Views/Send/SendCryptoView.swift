@@ -57,7 +57,8 @@ struct SendCryptoView: View {
                 viewModel: SendGasSettingsViewModel(
                     coin: tx.coin,
                     vault: vault,
-                    gasLimit: tx.gasLimit,
+                    gasLimit: tx.gasLimit, 
+                    customByteFee: tx.customByteFee,
                     selectedMode: tx.feeMode
                 ),
                 output: self
@@ -166,7 +167,7 @@ struct SendCryptoView: View {
     }
 
     var showFeeSettings: Bool {
-        return sendCryptoViewModel.currentIndex == 1 && tx.coin.chainType == .EVM
+        return sendCryptoViewModel.currentIndex == 1 && tx.coin.supportsFeeSettings
     }
 
     var errorView: some View {
@@ -222,8 +223,16 @@ struct SendCryptoView: View {
 
 extension SendCryptoView: SendGasSettingsOutput {
 
-    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) {
-        tx.customGasLimit = gasLimit
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt) {
+        switch chain.chainType {
+        case .EVM:
+            tx.customGasLimit = gasLimit
+        case .UTXO:
+            tx.customByteFee = byteFee
+        default:
+            return
+        }
+
         tx.feeMode = mode
 
         Task {

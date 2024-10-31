@@ -9,10 +9,11 @@ import SwiftUI
 import BigInt
 
 protocol SendGasSettingsOutput {
-    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode)
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt)
 }
 
 struct SendGasSettingsView: View {
+
     @Environment(\.presentationMode) var presentationMode
 
     @StateObject var viewModel: SendGasSettingsViewModel
@@ -22,20 +23,38 @@ struct SendGasSettingsView: View {
     var body: some View {
         content
             .task {
-                try? await viewModel.fetch(chain: viewModel.chain)
+                fetch()
+            }
+            .onChange(of: viewModel.selectedMode) { _, _ in
+                fetch()
             }
     }
 
     var view: some View {
         VStack(spacing: 16) {
             feeModeRow
-            baseFeeRow
-            gasLimitRow
-            totalFeeRow
+
+            switch viewModel.chain.chainType {
+            case .UTXO:
+                networkRateRow
+            case .EVM:
+                baseFeeRow
+                gasLimitRow
+                totalFeeRow
+            default:
+                EmptyView()
+            }
 
             Spacer()
         }
         .padding(.top, 16)
+    }
+
+    var networkRateRow: some View {
+        VStack {
+            title(text: "Network rate (sats/vbyte)")
+            textField(title: "Network rate", text: $viewModel.byteFee)
+        }
     }
 
     var baseFeeRow: some View {
@@ -145,18 +164,29 @@ struct SendGasSettingsView: View {
         })
     }
 
+    func fetch() {
+        Task {
+            try await viewModel.fetch(chain: viewModel.chain)
+        }
+    }
+
     func save() {
         guard let gasLimit = BigInt(viewModel.gasLimit, radix: 10) else {
             return
         }
-        output.didSetFeeSettings(gasLimit: gasLimit, mode: viewModel.selectedMode)
+
+        guard let byteFee = BigInt(viewModel.byteFee, radix: 10) else {
+            return
+        }
+
+        output.didSetFeeSettings(chain: viewModel.chain, mode: viewModel.selectedMode, gasLimit: gasLimit, byteFee: byteFee)
     }
 }
 
 #Preview {
     struct Output: SendGasSettingsOutput {
-        func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) { }
+        func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt) { }
     }
-    let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", baseFee: "6.559000", selectedMode: .normal)
+    let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .normal)
     return SendGasSettingsView(viewModel: viewModel, output: Output())
 }
