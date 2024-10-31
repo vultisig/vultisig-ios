@@ -13,23 +13,30 @@ final class SendGasSettingsViewModel: ObservableObject {
     private let coin: Coin
     private let vault: Vault
 
+    @Published var selectedMode: FeeMode = .normal
+
+    // EVM
     @Published var gasLimit: String = .empty
     @Published var baseFee: String = .empty
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
-    @Published var selectedMode: FeeMode = .normal
+    
+    // UTXO
+    @Published var byteFee: String = .empty
 
-    init(coin: Coin, vault: Vault, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: String, byteFee: String, baseFee: String, selectedMode: FeeMode) {
         self.coin = coin
         self.vault = vault
         self.gasLimit = gasLimit
+        self.byteFee = byteFee
         self.baseFee = baseFee
         self.selectedMode = selectedMode
     }
 
-    init(coin: Coin, vault: Vault, gasLimit: BigInt, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: BigInt, customByteFee: BigInt?, selectedMode: FeeMode) {
         self.coin = coin
         self.vault = vault
         self.gasLimit = gasLimit.description
+        self.byteFee = customByteFee?.description ?? .empty
         self.baseFee = baseFee.description
         self.selectedMode = selectedMode
     }
@@ -58,12 +65,37 @@ final class SendGasSettingsViewModel: ObservableObject {
         return RateProvider.shared.fiatBalanceString(value: totalFee, coin: nativeCoin)
     }
 
-    @MainActor func fetch(chain: Chain) async throws {
+    func fetch(chain: Chain) async throws {
+        switch chain.chainType {
+        case .UTXO:
+            try await fetchUTXO()
+        case .EVM:
+            try await fetchEVM()
+        default:
+            break
+        }
+    }
+}
+
+private extension SendGasSettingsViewModel {
+
+    @MainActor func fetchEVM() async throws {
         let service = try EvmServiceFactory.getService(forChain: chain)
         let baseFeeWei = try await service.getBaseFee()
         let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
 
         baseFee = baseFeeGwei.description
         priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
+    }
+
+    @MainActor func fetchUTXO() async throws {
+        let service = BlockChainService.shared
+        let fee =  try await service.fetchUTXOFee(
+            coin: coin,
+            action: .transfer,
+            feeMode: selectedMode
+        )
+
+        byteFee = fee.description
     }
 }

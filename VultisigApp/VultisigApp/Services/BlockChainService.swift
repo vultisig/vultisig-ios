@@ -56,7 +56,8 @@ final class BlockChainService {
                 sendMaxAmount: tx.sendMaxAmount,
                 isDeposit: tx.isDeposit,
                 transactionType: tx.transactionType, 
-                gasLimit: tx.gasLimit,
+                gasLimit: tx.gasLimit, 
+                byteFee: tx.byteFee,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 feeMode: tx.feeMode
@@ -77,6 +78,7 @@ final class BlockChainService {
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
             gasLimit: max(gasLimit, tx.gasLimit), 
+            byteFee: tx.gasLimit,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
@@ -92,7 +94,8 @@ final class BlockChainService {
             sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: .unspecified, 
-            gasLimit: nil,
+            gasLimit: nil, 
+            byteFee: nil,
             fromAddress: nil,
             toAddress: nil,
             feeMode: .fast
@@ -100,17 +103,27 @@ final class BlockChainService {
 
         return specific
     }
+
+    func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
+        let sats = try await utxo.fetchSatsPrice(coin: coin)
+        let normalized = Self.normalizeUTXOFee(sats, action: action)
+        let prioritized = Float(normalized) * feeMode.utxoMultiplier
+        return BigInt(prioritized)
+    }
 }
 
 private extension BlockChainService {
 
-    func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, byteFee: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            let sats = try await utxo.fetchSatsPrice(coin: coin)
-            let normalized = Self.normalizeUTXOFee(sats, action: action)
-            return .UTXO(byteFee: normalized, sendMaxAmount: sendMaxAmount)
-
+            let byteFeeValue: BigInt
+            if let byteFee, !byteFee.isZero {
+                byteFeeValue = byteFee
+            } else {
+                byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
+            }
+            return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .thorChain:
             _ = try await thor.getTHORChainChainID()
             let account = try await thor.fetchAccountNumber(coin.address)
