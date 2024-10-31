@@ -34,12 +34,21 @@ final class DefaultKeychainService: KeychainService {
     func setFastPassword(_ fastPassword: String?, pubKeyECDSA: String) {
         keychain.setString(fastPassword, for: Keys.fastPassword(pubKeyECDSA: pubKeyECDSA))
     }
+
+    func getFastHint(pubKeyECDSA: String) -> String? {
+        return keychain.getString(for: Keys.fastHint(pubKeyECDSA: pubKeyECDSA))
+    }
+
+    func setFastHint(_ fastHint: String?, pubKeyECDSA: String) {
+        keychain.setString(fastHint, for: Keys.fastHint(pubKeyECDSA: pubKeyECDSA))
+    }
 }
 
 private extension DefaultKeychainService {
 
     enum Keys: KeychainIdentifier {
         case fastPassword(pubKeyECDSA: String)
+        case fastHint(pubKeyECDSA: String)
 
         var identifier: String {
             return "\(DefaultKeychainService.serviceName).\(key)"
@@ -49,6 +58,8 @@ private extension DefaultKeychainService {
             switch self {
             case .fastPassword(let pubKeyECDSA):
                 return "fastPassword-\(pubKeyECDSA)"
+            case .fastHint(let pubKeyECDSA):
+                return "fastHint-\(pubKeyECDSA)"
             }
         }
     }
