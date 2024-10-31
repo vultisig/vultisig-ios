@@ -34,6 +34,7 @@ struct SettingsBiometryView: View {
 
                 if viewModel.isBiometryEnabled {
                     passwordCell
+                    hintCell
                 }
             }
             .padding(.horizontal, 16)
@@ -80,6 +81,18 @@ struct SettingsBiometryView: View {
             HiddenTextField(placeholder: "typeHere", password: $viewModel.password)
                 .padding(.top, 8)
         }
+    }
+
+    var hintCell: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Optional: Password hint")
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+
+            HiddenTextField(placeholder: "typeHere", password: $viewModel.hint)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 16)
     }
 
     var button: some View {

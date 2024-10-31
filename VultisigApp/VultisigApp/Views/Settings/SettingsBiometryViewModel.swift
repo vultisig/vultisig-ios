@@ -13,6 +13,7 @@ final class SettingsBiometryViewModel: ObservableObject {
     @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
 
     @Published var password: String = .empty
+    @Published var hint: String = .empty
     @Published var isLoading: Bool = false
     @Published var isWrongPassword: Bool = false
 
@@ -25,6 +26,9 @@ final class SettingsBiometryViewModel: ObservableObject {
         if let password = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) {
             self.password = password
             self.initialPassword = password
+        }
+        if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
+            self.hint = hint
         }
     }
 
