@@ -97,7 +97,7 @@ struct SettingsBiometryView: View {
     var button: some View {
         return Button {
             Task {
-                if await viewModel.validatePassword(vault: vault) {
+                if await viewModel.validateForm(vault: vault) {
                     dismiss()
                 }
             }

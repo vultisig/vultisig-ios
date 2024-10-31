@@ -18,6 +18,7 @@ final class SettingsBiometryViewModel: ObservableObject {
     @Published var isWrongPassword: Bool = false
 
     private var initialPassword: String = .empty
+    private var initialHint: String = .empty
 
     private let keychain = DefaultKeychainService.shared
     private let fastVaultService = FastVaultService.shared
@@ -29,6 +30,7 @@ final class SettingsBiometryViewModel: ObservableObject {
         }
         if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
             self.hint = hint
+            self.initialHint = hint
         }
     }
 
@@ -42,27 +44,35 @@ final class SettingsBiometryViewModel: ObservableObject {
     }
 
     var isSaveEnabled: Bool {
-        return password != initialPassword && !password.isEmpty
+        return (password != initialPassword && !password.isEmpty) || hint != initialHint
     }
 
-    @MainActor func validatePassword(vault: Vault) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
+    @MainActor func validateForm(vault: Vault) async -> Bool {
+        if initialPassword != password {
+            isLoading = true
+            let isValid = await fastVaultService.get(
+                pubKeyECDSA:  vault.pubKeyECDSA,
+                password: password
+            )
+            isLoading = false
 
-        let isValid = await fastVaultService.get(
-            pubKeyECDSA:  vault.pubKeyECDSA,
-            password: password
-        )
+            guard isValid else {
+                isWrongPassword = true
+                return false
+            }
 
-        guard isValid else {
-            isWrongPassword = true
-            return false
+            keychain.setFastPassword(
+                password.isEmpty ? nil : password,
+                pubKeyECDSA: vault.pubKeyECDSA
+            )
         }
 
-        keychain.setFastPassword(
-            password.isEmpty ? nil : password,
-            pubKeyECDSA: vault.pubKeyECDSA
-        )
+        if initialHint != hint {
+            keychain.setFastHint(
+                hint.isEmpty ? nil : hint,
+                pubKeyECDSA: vault.pubKeyECDSA
+            )
+        }
 
         return true
     }
