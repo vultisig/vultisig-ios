@@ -189,21 +189,10 @@ class SendTransaction: ObservableObject, Hashable {
             return
         }
         
-        // Use the path for the address if the host is nil, which can be the case for some URIs.
-        toAddress = url.host ?? url.path
+        let (address, amount, message) = Utils.parseCryptoURI(uri)
         
-        url.queryItems?.forEach { item in
-            switch item.name {
-            case "amount":
-                amount = item.value ?? ""
-            case "label", "message":
-                // For simplicity, appending label and message to memo, separated by spaces
-                if let value = item.value, !value.isEmpty {
-                    memo += (memo.isEmpty ? "" : " ") + value
-                }
-            default:
-                print("Unknown query item: \(item.name)")
-            }
-        }
+        self.toAddress = address
+        self.amount = amount
+        self.memo = message
     }
 }
