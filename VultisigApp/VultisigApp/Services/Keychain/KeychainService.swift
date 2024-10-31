@@ -10,6 +10,8 @@ import Foundation
 protocol KeychainService: AnyObject {
     func getFastPassword(pubKeyECDSA: String) -> String?
     func setFastPassword(_ fastPassword: String?, pubKeyECDSA: String)
+    func getFastHint(pubKeyECDSA: String) -> String?
+    func setFastHint(_ fastHint: String?, pubKeyECDSA: String)
 }
 
 final class DefaultKeychainService: KeychainService {

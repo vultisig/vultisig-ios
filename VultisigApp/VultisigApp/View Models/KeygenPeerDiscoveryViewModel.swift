@@ -28,7 +28,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
-    @Published var fastVaultPassword = ""
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
@@ -61,9 +60,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         tssType: TssType,
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
-        fastVaultPassword: String?,
-        fastVaultEmail: String?,
-        fastVaultExist: Bool
+        fastSignConfig: FastSignConfig?
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -103,19 +100,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             break
         }
         
-        if let fastVaultPassword, let fastVaultEmail {
+        if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
-                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
+                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: config.password, email: config.email)
             case .Reshare:
-                let pubKeyECDSA = fastVaultExist ? vault.pubKeyECDSA : .empty
+                let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
                                          publicKeyECDSA: pubKeyECDSA,
                                          sessionID: sessionID,
                                          hexEncryptionKey: encryptionKeyHex!,
                                          hexChainCode: vault.hexChainCode,
-                                         encryptionPassword: fastVaultPassword,
-                                         email: fastVaultEmail,
+                                         encryptionPassword: config.password,
+                                         email: config.email,
                                          oldParties: vault.signers,
                                          oldResharePrefix: vault.resharePrefix ?? "")
             }

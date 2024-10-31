@@ -214,8 +214,9 @@ class KeygenViewModel: ObservableObject {
         
     }
 
-    func saveFastVaultPassword(_ fastVaultPassword: String, vault: Vault) {
-        keychain.setFastPassword(fastVaultPassword, pubKeyECDSA: vault.pubKeyECDSA)
+    func saveFastSignConfig(_ config: FastSignConfig, vault: Vault) {
+        keychain.setFastPassword(config.password, pubKeyECDSA: vault.pubKeyECDSA)
+        keychain.setFastHint(config.hint, pubKeyECDSA: vault.pubKeyECDSA)
     }
 
     private func createTssInstance(messenger: TssMessengerProtocol,
