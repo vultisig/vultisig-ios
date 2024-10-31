@@ -233,7 +233,7 @@ enum Utils {
         
         if uri.hasPrefix("ton://") {
             guard let url = URLComponents(string: uri) else {
-                print("URI inválido")
+                print("invalid URI")
                 return (.empty, .empty, .empty)
             }
             
@@ -253,7 +253,7 @@ enum Utils {
                 case "amount":
                     amount = item.value ?? ""
                 default:
-                    print("Item de query desconhecido: \(item.name)")
+                    print("Unknown query item: \(item.name)")
                 }
             }
         } else {
