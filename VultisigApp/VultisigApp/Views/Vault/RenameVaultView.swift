@@ -17,6 +17,8 @@ struct RenameVaultView: View {
     @State var showAlert: Bool = false
     @State var errorMessage: String = ""
     
+    @Query var folders: [Folder]
+    
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
@@ -66,16 +68,28 @@ struct RenameVaultView: View {
     private func rename() {
         // make sure the same vault name has not been occupied
         if vaults.contains(where: { $0.name == name && $0.pubKeyECDSA != vault.pubKeyECDSA && $0.pubKeyEdDSA != vault.pubKeyEdDSA}) {
-            errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
             name = vault.name
+            errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
             showAlert = true
             return
         }
         
+        let oldName = vault.name
+        
         vault.name = name
         homeViewModel.selectedVault = vault
         homeViewModel.vaultName = name
+        
+        checkForFolder(oldName: oldName, newName: name)
         dismiss()
+    }
+    
+    private func checkForFolder(oldName: String, newName: String) {
+        for folder in folders {
+            if folder.containedVaultNames.contains(oldName) {
+                folder.containedVaultNames.append(newName)
+            }
+        }
     }
 }
 
