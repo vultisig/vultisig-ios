@@ -98,7 +98,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var chainType: ChainType {
-        switch self.chain {
+        switch chain {
         case .thorChain,.mayaChain:
             return .THORChain
         case .solana:
@@ -117,7 +117,16 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Ton
         }
     }
-    
+
+    var supportsFeeSettings: Bool {
+        switch chainType {
+        case .EVM, .UTXO:
+            return true
+        default:
+            return false
+        }
+    }
+
     var feeDefault: String{
         switch self.chain {
         case .thorChain:

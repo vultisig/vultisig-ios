@@ -22,4 +22,15 @@ enum FeeMode: CaseIterable, Hashable {
             return "Fast"
         }
     }
+
+    var utxoMultiplier: Float {
+        switch self {
+        case .safeLow:
+            return 0.75
+        case .normal:
+            return 1
+        case .fast:
+            return 2.5
+        }
+    }
 }
