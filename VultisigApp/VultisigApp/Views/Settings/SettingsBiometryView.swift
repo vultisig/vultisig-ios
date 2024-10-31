@@ -89,10 +89,9 @@ struct SettingsBiometryView: View {
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
-            HiddenTextField(placeholder: "typeHere", password: $viewModel.hint)
+            HiddenTextField(placeholder: "typeHere", password: $viewModel.hint, isPasswordVisible: true)
                 .padding(.top, 8)
         }
-        .padding(.horizontal, 16)
     }
 
     var button: some View {

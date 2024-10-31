@@ -11,7 +11,7 @@ struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
     
-    @State private var isPasswordVisible: Bool = false
+    @State var isPasswordVisible: Bool = false
     
     var body: some View {
         field

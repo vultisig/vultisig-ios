@@ -83,8 +83,7 @@ struct FastVaultSetPasswordView: View {
     }
 
     var hintTextfield: some View {
-        // TODO: Do not hide symbols
-        HiddenTextField(placeholder: "Enter a hint", password: $hint)
+        HiddenTextField(placeholder: "Enter a hint", password: $hint, isPasswordVisible: true)
     }
 
     var disclaimer: some View {
