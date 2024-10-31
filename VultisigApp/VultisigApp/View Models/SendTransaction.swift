@@ -17,6 +17,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: BigInt = .zero
     @Published var estematedGasLimit: BigInt?
     @Published var customGasLimit: BigInt?
+    @Published var customByteFee: BigInt?
     @Published var fee: BigInt = .zero
     @Published var feeMode: FeeMode = .normal
     @Published var sendMaxAmount: Bool = false
@@ -29,6 +30,10 @@ class SendTransaction: ObservableObject, Hashable {
 
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+    }
+
+    var byteFee: BigInt {
+        return customByteFee ?? gas
     }
 
     var isAmountExceeded: Bool {
@@ -177,6 +182,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = .zero
         self.estematedGasLimit = nil
         self.customGasLimit = nil
+        self.customByteFee = nil
         self.feeMode = .normal
         self.coin = coin
         self.sendMaxAmount = false

@@ -89,7 +89,7 @@ class SolanaService {
             return tokenInfo
         } catch {
             print("Error in fetchSolanaTokenInfoList:")
-            throw error
+            return [:]
         }
     }
     
@@ -184,7 +184,7 @@ class SolanaService {
                         ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
                         logo: tokenInfo.tokenList.image.description,
                         decimals: tokenInfo.decimals,
-                        priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? .empty,
+                        priceProviderId: tokenInfo.tokenList.extensions?.coingeckoId ?? .empty,
                         contractAddress: tokenAddress,
                         isNativeToken: false
                     )
@@ -229,7 +229,7 @@ class SolanaService {
                         ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
                         logo: tokenInfo.tokenList.image.description,
                         decimals: tokenInfo.decimals,
-                        priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? .empty,
+                        priceProviderId: tokenInfo.tokenList.extensions?.coingeckoId ?? .empty,
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )

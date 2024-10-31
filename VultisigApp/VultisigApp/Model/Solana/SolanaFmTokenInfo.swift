@@ -12,7 +12,7 @@ public struct SolanaFmTokenInfo: Codable {
         let name: String
         let symbol: String
         let image: String
-        let extensions: Extensions
+        let extensions: Extensions?
         let chainId: Int
     }
     
