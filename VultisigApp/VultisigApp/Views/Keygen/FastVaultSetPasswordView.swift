@@ -60,6 +60,17 @@ struct FastVaultSetPasswordView: View {
         .padding(.top, 30)
     }
 
+    var hintField: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Optional: Password hint")
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+
+            hintTextfield
+        }
+        .padding(.horizontal, 16)
+    }
+
     var textfield: some View {
         HiddenTextField(placeholder: "enterPassword", password: $password)
             .padding(.top, 8)
@@ -68,6 +79,10 @@ struct FastVaultSetPasswordView: View {
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
             .opacity(fastVaultExist ? 0 : 1)
+    }
+
+    var hintTextfield: some View {
+        HiddenTextField(placeholder: "Enter a hint", password: $verifyPassword)
     }
 
     var disclaimer: some View {

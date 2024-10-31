@@ -37,6 +37,7 @@ extension FastVaultSetPasswordView {
     var view: some View {
         VStack {
             passwordField
+            hintField
             Spacer()
             disclaimer
             buttons
