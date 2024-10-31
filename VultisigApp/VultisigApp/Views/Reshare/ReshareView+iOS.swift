@@ -20,6 +20,11 @@ extension ReshareView {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
         .sheet(isPresented: $showJoinReshare, content: {
             GeneralCodeScannerView(
                 showSheet: $showJoinReshare,
@@ -41,6 +46,7 @@ extension ReshareView {
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: vault)
         }
+        .padding(.bottom, 16)
     }
 }
 #endif
