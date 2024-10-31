@@ -18,8 +18,8 @@ class VaultDetailQRCodeViewModel: ObservableObject {
         let eddsaKey = vault.pubKeyEdDSA
         let hexCode = vault.hexChainCode
         let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
-        
-        return "VultisigQR-\(vault.name)-\(id.suffix(3)).png"
+        let cleanVaultName = vault.name.replacingOccurrences(of: "/", with: "-")
+        return "VultisigQR-\(cleanVaultName)-\(id.suffix(3)).png"
     }
     
     func getVaultPublicKeyExport(vault: Vault) -> VaultPublicKeyExport {

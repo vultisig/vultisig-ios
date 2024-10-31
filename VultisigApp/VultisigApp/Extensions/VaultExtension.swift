@@ -40,7 +40,7 @@ extension Vault {
                 continue
             }
         }
-        
-        return "\(vaultName)-\(lastFourOfPubKey)-part\(signersOrder)of\(signersCount)" + ".vult"
+        let cleanVaultName = vaultName.replacingOccurrences(of: "/", with: "-")
+        return "\(cleanVaultName)-\(lastFourOfPubKey)-part\(signersOrder)of\(signersCount)" + ".vult"
     }
 }
