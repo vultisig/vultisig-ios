@@ -118,7 +118,7 @@ private extension BlockChainService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let byteFeeValue: BigInt
-            if let byteFee {
+            if let byteFee, !byteFee.isZero {
                 byteFeeValue = byteFee
             } else {
                 byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
