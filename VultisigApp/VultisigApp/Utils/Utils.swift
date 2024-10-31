@@ -232,22 +232,18 @@ enum Utils {
         var message: String = .empty
         
         if uri.hasPrefix("ton://") {
-            // Manipulação especial para URIs que começam com "ton://"
             guard let url = URLComponents(string: uri) else {
                 print("URI inválido")
                 return (.empty, .empty, .empty)
             }
             
             if url.host == "transfer" {
-                // Extrai o endereço após "ton://transfer/"
                 let path = url.path
                 address = path.hasPrefix("/") ? String(path.dropFirst()) : path
             } else {
-                // Caso contrário, o endereço está no host
                 address = url.host ?? ""
             }
             
-            // Processa os itens da query
             url.queryItems?.forEach { item in
                 switch item.name {
                 case "text":
