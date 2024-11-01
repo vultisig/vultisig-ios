@@ -220,21 +220,27 @@ class KeysignDiscoveryViewModel: ObservableObject {
             payload: keysignPayload,
             encryptionKeyHex: encryptionKeyHex,
             useVultisigRelay: VultisigRelay.IsRelayEnabled,
-            payload_id: nil
+            payloadID: ""
         )
         do {
             let protoKeysignMsg = try ProtoSerializer.serialize(message)
             let payloadService = PayloadService(serverURL: serverAddr)
-            var data = ""
+            var jsonData = ""
             if payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
                 let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
                 let hash = try await payloadService.uploadPayload(payload: keysignPayload)
-                message.payload_id = hash
+                let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
+                                                           serviceName: serviceName,
+                                                           payload: nil,
+                                                           encryptionKeyHex: encryptionKeyHex,
+                                                           useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                                                           payloadID: hash)
+                jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
                 
-                data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&payloadID=\(hash)"
             } else {
-                data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(protoKeysignMsg)"
+                jsonData = protoKeysignMsg
             }
+            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
             return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")

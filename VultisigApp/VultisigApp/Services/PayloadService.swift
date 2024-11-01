@@ -17,10 +17,10 @@ final class PayloadService {
         self.serverURL = serverURL
     }
     func getUrl(hash: String) -> String{
-        return "\(serverURL)/\(hash)"
+        return "\(serverURL)/payload/\(hash)"
     }
     func shouldUploadToRelay(payload: String)-> Bool {
-        if payload.lengthOfBytes(using: .utf8) > 2048 {
+        if payload.lengthOfBytes(using: .utf8) > 10 {
             return true
         }
         return false

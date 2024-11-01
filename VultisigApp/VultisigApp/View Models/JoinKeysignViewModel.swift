@@ -43,6 +43,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blowfishWarnings: [String] = []
     
     var encryptionKeyHex: String = ""
+    var payloadID: String = ""
     
     init() {
         self.vault = Vault(name: "Main Vault")
@@ -182,7 +183,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func handleQrCodeSuccessResult(data: String?) {
+    func handleQrCodeSuccessResult(data: String?) async {
         guard let data else {
             return
         }
@@ -194,8 +195,16 @@ class JoinKeysignViewModel: ObservableObject {
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-            self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
+            if keysignMsg.payload == nil && keysignMsg.payloadID.isEmpty {
+                throw HelperError.runtimeError("keysign payload is empty")
+            }
+            // payload is present in the keysign Message
+            if let payload = keysignMsg.payload {
+                self.prepareKeysignMessages(keysignPayload: payload)
+            }
+            self.payloadID = keysignMsg.payloadID
             useVultisigRelay = keysignMsg.useVultisigRelay
+            await ensureKeysignPayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
             self.status = .FailedToStart
@@ -221,6 +230,26 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
+    func ensureKeysignPayload() async  {
+        if self.payloadID.isEmpty || self.keysignPayload != nil {
+            return
+        }
+        guard let serverAddress else{
+            return
+        }
+        
+        let payloadService = PayloadService(serverURL: serverAddress)
+        do{
+            let payload = try await payloadService.getPayload(hash: self.payloadID)
+            let kp: KeysignPayload = try ProtoSerializer.deserialize(base64EncodedString: payload)
+            self.keysignPayload = kp
+            self.prepareKeysignMessages(keysignPayload: kp)
+        }catch{
+            self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+            self.status = .FailedToStart
+        }
+    }
+    
     func handleDeeplinkScan(_ url: URL?) {
         guard let url else {
             return
@@ -229,8 +258,13 @@ class JoinKeysignViewModel: ObservableObject {
         guard let data = DeeplinkViewModel.getJsonData(url) else {
             return
         }
-        handleQrCodeSuccessResult(data: data)
-        manageQrCodeStates()
+        Task{
+            await handleQrCodeSuccessResult(data: data)
+            DispatchQueue.main.async {
+                self.manageQrCodeStates()
+            }
+        }
+        
     }
     
     func blowfishTransactionScan() async throws {
