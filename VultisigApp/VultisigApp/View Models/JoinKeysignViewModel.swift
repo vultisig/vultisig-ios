@@ -204,6 +204,9 @@ class JoinKeysignViewModel: ObservableObject {
             }
             self.payloadID = keysignMsg.payloadID
             useVultisigRelay = keysignMsg.useVultisigRelay
+            if useVultisigRelay {
+                self.serverAddress = Endpoint.vultisigRelay
+            }
             await ensureKeysignPayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
