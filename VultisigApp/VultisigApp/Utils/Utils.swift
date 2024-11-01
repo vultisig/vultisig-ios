@@ -225,29 +225,57 @@ enum Utils {
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
     
-    public static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String){
+    public static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String) {
         
         var address: String = .empty
         var amount: String = .empty
         var message: String = .empty
         
-        guard let url = URLComponents(string: uri) else {
-            print("Invalid URI")
-            return (.empty, .empty, .empty)
-        }
-        
-        address = url.host ?? url.path
-        
-        url.queryItems?.forEach { item in
-            switch item.name {
-            case "amount":
-                amount = item.value ?? ""
-            case "label", "message":
-                if let value = item.value, !value.isEmpty {
-                    message += (message.isEmpty ? "" : " ") + value
+        if uri.hasPrefix("ton://") {
+            guard let url = URLComponents(string: uri) else {
+                print("invalid URI")
+                return (.empty, .empty, .empty)
+            }
+            
+            if url.host == "transfer" {
+                let path = url.path
+                address = path.hasPrefix("/") ? String(path.dropFirst()) : path
+            } else {
+                address = url.host ?? ""
+            }
+            
+            url.queryItems?.forEach { item in
+                switch item.name {
+                case "text":
+                    if let value = item.value, !value.isEmpty {
+                        message = value
+                    }
+                case "amount":
+                    amount = item.value ?? ""
+                default:
+                    print("Unknown query item: \(item.name)")
                 }
-            default:
-                print("Unknown query item: \(item.name)")
+            }
+        } else {
+            
+            guard let url = URLComponents(string: uri) else {
+                print("Invalid URI")
+                return (.empty, .empty, .empty)
+            }
+            
+            address = url.host ?? url.path
+            
+            url.queryItems?.forEach { item in
+                switch item.name {
+                case "amount":
+                    amount = item.value ?? ""
+                case "label", "message":
+                    if let value = item.value, !value.isEmpty {
+                        message += (message.isEmpty ? "" : " ") + value
+                    }
+                default:
+                    print("Unknown query item: \(item.name)")
+                }
             }
         }
         return (address, amount, message)

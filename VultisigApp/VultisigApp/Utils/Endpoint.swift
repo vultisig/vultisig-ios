@@ -99,7 +99,7 @@ class Endpoint {
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
     
-    static let baseServiceRpcService = "https://base-rpc.publicnode.com"
+    static let baseServiceRpcService = "https://api.vultisig.com/base/"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
     

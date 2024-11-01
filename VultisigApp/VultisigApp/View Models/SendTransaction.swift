@@ -17,6 +17,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: BigInt = .zero
     @Published var estematedGasLimit: BigInt?
     @Published var customGasLimit: BigInt?
+    @Published var customByteFee: BigInt?
     @Published var fee: BigInt = .zero
     @Published var feeMode: FeeMode = .normal
     @Published var sendMaxAmount: Bool = false
@@ -29,6 +30,10 @@ class SendTransaction: ObservableObject, Hashable {
 
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+    }
+
+    var byteFee: BigInt {
+        return customByteFee ?? gas
     }
 
     var isAmountExceeded: Bool {
@@ -177,6 +182,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = .zero
         self.estematedGasLimit = nil
         self.customGasLimit = nil
+        self.customByteFee = nil
         self.feeMode = .normal
         self.coin = coin
         self.sendMaxAmount = false
@@ -189,21 +195,10 @@ class SendTransaction: ObservableObject, Hashable {
             return
         }
         
-        // Use the path for the address if the host is nil, which can be the case for some URIs.
-        toAddress = url.host ?? url.path
+        let (address, amount, message) = Utils.parseCryptoURI(uri)
         
-        url.queryItems?.forEach { item in
-            switch item.name {
-            case "amount":
-                amount = item.value ?? ""
-            case "label", "message":
-                // For simplicity, appending label and message to memo, separated by spaces
-                if let value = item.value, !value.isEmpty {
-                    memo += (memo.isEmpty ? "" : " ") + value
-                }
-            default:
-                print("Unknown query item: \(item.name)")
-            }
-        }
+        self.toAddress = address
+        self.amount = amount
+        self.memo = message
     }
 }
