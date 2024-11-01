@@ -9,7 +9,6 @@ import SwiftUI
 
 #if os(macOS)
 extension ReshareView {
-
     var content: some View {
         ZStack {
             Background()

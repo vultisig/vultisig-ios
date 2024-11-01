@@ -19,13 +19,6 @@ struct ReshareView: View {
 
     var body: some View {
         content
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Image("LogoWithTitle")
-                        .resizable()
-                        .frame(width: 140, height: 32)
-                }
-            }
             .task {
                 await viewModel.load(vault: vault)
             }

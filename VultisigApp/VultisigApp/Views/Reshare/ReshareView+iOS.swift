@@ -9,7 +9,6 @@ import SwiftUI
 
 #if os(iOS)
 extension ReshareView {
-
     var content: some View {
         ZStack {
             Background()
@@ -21,6 +20,12 @@ extension ReshareView {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Image("LogoWithTitle")
+                    .resizable()
+                    .frame(width: 140, height: 32)
+            }
+            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
