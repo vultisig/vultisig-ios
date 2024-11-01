@@ -57,7 +57,16 @@ class DeeplinkViewModel: ObservableObject {
         }
         
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
-        return queryItems?.first(where: { $0.name == "jsonData" })?.value
+        let rawJsonData =  queryItems?.first(where: { $0.name == "jsonData" })?.value
+        if rawJsonData != nil {
+            return rawJsonData
+        }
+        let payloadID = queryItems?.first(where: { $0.name == "payloadID" })?.value
+        if let payloadID {
+            
+        }
+        
+        return nil
     }
 
     static func getTssType(_ url: URL?) -> String? {

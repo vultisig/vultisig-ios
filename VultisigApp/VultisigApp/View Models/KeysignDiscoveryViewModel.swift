@@ -209,7 +209,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func getQrImage(size: CGFloat) -> Image {
+    func getQrImage(size: CGFloat) async -> Image {
         guard let encryptionKeyHex = self.encryptionKeyHex else {
             logger.error("encryption key is nil")
             return Image(systemName: "xmark")
@@ -219,11 +219,22 @@ class KeysignDiscoveryViewModel: ObservableObject {
             serviceName: serviceName,
             payload: keysignPayload,
             encryptionKeyHex: encryptionKeyHex,
-            useVultisigRelay: VultisigRelay.IsRelayEnabled
+            useVultisigRelay: VultisigRelay.IsRelayEnabled,
+            payload_id: nil
         )
         do {
-            let payload = try ProtoSerializer.serialize(message)
-            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(payload)"
+            let protoKeysignMsg = try ProtoSerializer.serialize(message)
+            let payloadService = PayloadService(serverURL: serverAddr)
+            var data = ""
+            if payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
+                let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
+                let hash = try await payloadService.uploadPayload(payload: keysignPayload)
+                message.payload_id = hash
+                
+                data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&payloadID=\(hash)"
+            } else {
+                data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(protoKeysignMsg)"
+            }
             return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")

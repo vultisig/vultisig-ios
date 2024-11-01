@@ -686,6 +686,7 @@
 		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
 		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
 		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
+		DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8B69982CD4602500F53E14 /* PayloadService.swift */; };
 		DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */; };
 		DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */; };
 		DE9773A62CAF97B00071C08C /* FeatureFlagService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */; };
@@ -1427,6 +1428,7 @@
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
 		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
+		DE8B69982CD4602500F53E14 /* PayloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayloadService.swift; sourceTree = "<group>"; };
 		DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
 		DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPublicKeyExport.swift; sourceTree = "<group>"; };
 		DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagService.swift; sourceTree = "<group>"; };
@@ -1564,6 +1566,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				DE8B69982CD4602500F53E14 /* PayloadService.swift */,
 				B571384E2CC57135000E925B /* Ton */,
 				A58760522CBD3CD90070956A /* Keychain */,
 				A587604F2CBD2D580070956A /* Biometry */,
@@ -4020,6 +4023,7 @@
 				A6C671272CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift in Sources */,
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
+				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,
 				A6C671392CA3C7EE00F59B6A /* VaultDeletionDetails+macOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

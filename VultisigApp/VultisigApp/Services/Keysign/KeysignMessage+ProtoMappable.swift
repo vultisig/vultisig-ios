@@ -14,16 +14,27 @@ extension KeysignMessage: ProtoMappable {
     init(proto: VSKeysignMessage) throws {
         self.sessionID = proto.sessionID
         self.serviceName = proto.serviceName
-        self.payload = try KeysignPayload(proto: proto.keysignPayload)
+        if proto.hasKeysignPayload {
+            self.payload = try KeysignPayload(proto: proto.keysignPayload)
+        } else {
+            self.payload = nil
+        }
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
+        
+        self.payload_id = nil
     }
     
     func mapToProtobuff() -> VSKeysignMessage {
         return .with {
             $0.sessionID = sessionID
             $0.serviceName = serviceName
-            $0.keysignPayload = payload.mapToProtobuff()
+            if let payload {
+                $0.keysignPayload = payload.mapToProtobuff()
+            }
+            if let payload_id {
+                
+            }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
         }
