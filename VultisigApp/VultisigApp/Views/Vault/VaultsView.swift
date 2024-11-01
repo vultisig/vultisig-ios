@@ -87,15 +87,7 @@ struct VaultsView: View {
     
     var foldersList: some View {
         ForEach(folders, id: \.self) { folder in
-            Button(action: {
-                handleFolderSelection(for: folder)
-            }, label: {
-                FolderCell(folder: folder, isEditing: isEditingVaults)
-            })
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .padding(.vertical, 8)
-            .background(Color.backgroundBlue)
+            getFolderButton(for: folder)
         }
         .onMove(perform: isEditingVaults ? moveFolder : nil)
     }
@@ -154,6 +146,18 @@ struct VaultsView: View {
         .buttonStyle(BorderlessButtonStyle())
     }
     
+    private func getFolderButton(for folder: Folder) -> some View {
+        Button(action: {
+            handleFolderSelection(for: folder)
+        }, label: {
+            FolderCell(folder: folder, isEditing: isEditingVaults)
+        })
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
+        .background(Color.backgroundBlue)
+        .disabled(isEditingVaults ? true : false)
+    }
     
     private func getButton(for vault: Vault) -> some View {
         Button {
