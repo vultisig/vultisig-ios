@@ -9,6 +9,7 @@ import SwiftUI
 
 struct KeyGenSummaryView: View {
     let state: SetupVaultState
+    let tssType: TssType
 
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
 
@@ -20,7 +21,7 @@ struct KeyGenSummaryView: View {
             Background()
             view
         }
-        .navigationTitle(NSLocalizedString("keygen", comment: "Keygen"))
+        .navigationTitle(NSLocalizedString(getTitle(), comment: ""))
         .onAppear {
             setData()
         }
@@ -47,14 +48,21 @@ struct KeyGenSummaryView: View {
     }
     
     var header: some View {
-        VStack(spacing: 12) {
-            numberOfDevicesTitle
+        ZStack {
+            if tssType == .Reshare {
+                numberOfDevicesForReshareTitle
+            } else {
+                numberOfDevicesTitle
+            }
         }
     }
     
     var devicesList: some View {
         VStack(spacing: 16) {
-            devicesListTitle
+            if tssType == .Keygen {
+                devicesListTitle
+            }
+            
             list
         }
     }
@@ -67,6 +75,24 @@ struct KeyGenSummaryView: View {
             Text(NSLocalizedString("vault", comment: "vault"))
         }
         .font(.body20MontserratSemiBold)
+    }
+    
+    var numberOfDevicesForReshareTitle: some View {
+        VStack(spacing: 16) {
+            Text(NSLocalizedString("newVaultSetup", comment: ""))
+                .font(.body14MenloBold)
+            
+            Group {
+                Text("\(numberOfMainDevices) ") +
+                Text(NSLocalizedString("of", comment: "of")) +
+                Text(" \(numberOfMainDevices) ")
+            }
+            .font(.body14MontserratSemiBold)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 16)
+            .background(Color.blue400)
+            .cornerRadius(4)
+        }
     }
     
     var devicesListTitle: some View {
@@ -108,9 +134,18 @@ struct KeyGenSummaryView: View {
         getOutlinedCell(NSLocalizedString("shouldBackupVaultsSeparateLocations", comment: ""))
     }
     
+    var reshareDisclaimer: some View {
+        getOutlinedCell(NSLocalizedString("yourConfigurationChangedMakeBackup", comment: ""))
+    }
+    
     var buttons: some View {
         VStack(spacing: 16) {
-            disclaimers
+            if tssType == .Keygen {
+                disclaimers
+            } else {
+                reshareDisclaimer
+            }
+            
             button
         }
         .padding(.vertical, 40)
@@ -121,7 +156,7 @@ struct KeyGenSummaryView: View {
         Button {
             viewModel.startKeygen()
         } label: {
-            FilledButton(title: "continue")
+            FilledButton(title: tssType == .Keygen ? "continue" : "start")
         }
         .disabled(!isButtonEnabled)
         .opacity(isButtonEnabled ? 1.0 : 0.5)
@@ -132,19 +167,21 @@ struct KeyGenSummaryView: View {
     }
 
     private func getCell(index: Int, title: String, isPairDevice: Bool) -> some View {
-        Group {
+        let deviceState = getDeviceState(deviceId: title, isPairDevice: isPairDevice)
+        
+        return Group {
             Text(String(describing: index)) +
             Text(". ") +
             Text(title) +
             Text(" (") +
-            Text(getDeviceState(deviceId: title, isPairDevice: isPairDevice)) +
+            Text(deviceState) +
             Text(")")
         }
         .font(.body12Menlo)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.vertical, 24)
-        .background(Color.blue600)
+        .background(getCellBackground(deviceState))
         .cornerRadius(10)
     }
     
@@ -177,8 +214,28 @@ struct KeyGenSummaryView: View {
         }
         return NSLocalizedString(deviceState, comment: "")
     }
+    
+    private func getTitle() -> String {
+        if tssType == .Reshare {
+            return "changesInSetup"
+        } else {
+            return "keygen"
+        }
+    }
+    
+    private func getCellBackground(_ deviceState: String) -> Color {
+        guard tssType == .Reshare else {
+            return Color.blue600
+        }
+        
+        if deviceState == "Backup Device" {
+            return Color.reshareCellRed.opacity(0.5)
+        } else {
+            return Color.reshareCellGreen.opacity(0.35)
+        }
+    }
 }
 
 #Preview {
-    KeyGenSummaryView(state: .fast, viewModel: KeygenPeerDiscoveryViewModel())
+    KeyGenSummaryView(state: .fast, tssType: .Reshare, viewModel: KeygenPeerDiscoveryViewModel())
 }

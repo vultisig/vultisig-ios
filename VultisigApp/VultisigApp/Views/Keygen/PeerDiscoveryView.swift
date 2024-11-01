@@ -95,7 +95,11 @@ struct PeerDiscoveryView: View {
     }
     
     var summary: some View {
-        KeyGenSummaryView(state: selectedTab, viewModel: viewModel)
+        KeyGenSummaryView(
+            state: selectedTab,
+            tssType: tssType,
+            viewModel: viewModel
+        )
     }
     
     var views: some View {
@@ -140,7 +144,10 @@ struct PeerDiscoveryView: View {
     }
     
     var lookingForDevices: some View {
-        LookingForDevicesLoader(selectedTab: selectedTab)
+        LookingForDevicesLoader(
+            tssType: tssType,
+            selectedTab: selectedTab
+        )
     }
     
     var deviceList: some View {
@@ -196,7 +203,11 @@ struct PeerDiscoveryView: View {
     }
     
     func getTitle() -> String {
-        NSLocalizedString("keygenFor", comment: "") +
+        guard tssType == .Keygen else {
+            return NSLocalizedString("resharingTheVault", comment: "")
+        }
+        
+        return NSLocalizedString("keygenFor", comment: "") +
         " " +
         selectedTab.title +
         " " +

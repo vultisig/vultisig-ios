@@ -418,3 +418,8 @@
 "selectPairingDevices" = "Select the pairing devices";
 "backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";
 "backupYourVaultNow" = "Back up your vault share of this device now!";
+"resharingTheVault" = "Resharing the Vault";
+"resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
+"changesInSetup" = "Changes in Setup";
+"yourConfigurationChangedMakeBackup" = "Your configuration changed, make a new backup.";
+"newVaultSetup" = "New Vault Setup";
