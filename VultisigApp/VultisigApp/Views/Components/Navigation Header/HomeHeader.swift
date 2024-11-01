@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct HomeHeader: View {
+    let showFolderDetails: Bool
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
@@ -21,7 +22,11 @@ struct HomeHeader: View {
             Spacer()
             navigationTitle
             Spacer()
-            editButton
+            
+            if !showFolderDetails {
+                editButton
+            }
+            
             refreshButton
         }
         .padding(.vertical, 16)
@@ -99,6 +104,7 @@ struct HomeHeader: View {
 
 #Preview {
     HomeHeader(
+        showFolderDetails: false, 
         showVaultsList: .constant(false),
         isEditingVaults: .constant(false)
     )

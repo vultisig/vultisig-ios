@@ -23,7 +23,7 @@ extension FolderDetailView {
             Spacer()
             title
             Spacer()
-            backButton.opacity(0)
+            navigationEditButton
         }
         .padding(.horizontal, 40)
         .foregroundColor(.neutral0)

@@ -38,6 +38,7 @@ extension HomeView {
     
     var headerMac: some View {
         HomeHeader(
+            showFolderDetails: showFolderDetails,
             showVaultsList: $showVaultsList,
             isEditingVaults: $isEditingVaults
         )
@@ -50,7 +51,12 @@ extension HomeView {
                     VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
                 }
                 
-                VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults, showFolderDetails: $showFolderDetails)
+                VaultsView(
+                    viewModel: viewModel,
+                    showVaultsList: $showVaultsList,
+                    isEditingVaults: $isEditingVaults,
+                    showFolderDetails: $showFolderDetails
+                )
             }
         }
         .navigationBarBackButtonHidden(true)

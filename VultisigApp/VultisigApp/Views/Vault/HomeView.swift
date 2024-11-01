@@ -77,9 +77,7 @@ struct HomeView: View {
     
     var editButton: some View {
         ZStack {
-            if showFolderDetails {
-                
-            } else {
+            if !showFolderDetails {
                 NavigationHomeEditButton(
                     vault: viewModel.selectedVault,
                     showVaultsList: showVaultsList,
