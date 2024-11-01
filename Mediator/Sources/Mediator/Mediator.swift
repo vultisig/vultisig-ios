@@ -332,6 +332,7 @@ public final class Mediator {
                     return HttpResponse.badRequest(.text("invalid hash"))
                 }
                 setObject(body, forKey: hash)
+                return HttpResponse.created
             case "GET":
                 if !self.cache.objectExists(forKey: hash) {
                     return HttpResponse.notFound
@@ -352,7 +353,6 @@ public final class Mediator {
             logger.error("fail to process request to payload,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
-        return HttpResponse.notAcceptable
     }
     
     func setObject(_ obj: Any, forKey key: String){
