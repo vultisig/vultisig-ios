@@ -215,16 +215,17 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func manageQrCodeStates() {
-        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
-            self.status = .VaultMismatch
-            return
+        if let keysignPayload {
+            if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
+                self.status = .VaultMismatch
+                return
+            }
+            
+            if vault.localPartyID == keysignPayload.vaultLocalPartyID {
+                self.status = .KeysignSameDeviceShare
+                return
+            }
         }
-        
-        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
-            self.status = .KeysignSameDeviceShare
-            return
-        }
-        
         if useVultisigRelay {
             self.serverAddress = Endpoint.vultisigRelay
             self.status = .JoinKeysign
