@@ -20,7 +20,8 @@ final class PayloadService {
         return "\(serverURL)/payload/\(hash)"
     }
     func shouldUploadToRelay(payload: String)-> Bool {
-        if payload.lengthOfBytes(using: .utf8) > 10 {
+        // when the payload is m
+        if payload.lengthOfBytes(using: .utf8) > 2048 {
             return true
         }
         return false

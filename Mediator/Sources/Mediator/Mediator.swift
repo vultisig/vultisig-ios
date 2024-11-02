@@ -331,6 +331,7 @@ public final class Mediator {
                 if hash != hashBody {
                     return HttpResponse.badRequest(.text("invalid hash"))
                 }
+                print("accept payload: \(hash)")
                 setObject(body, forKey: hash)
                 return HttpResponse.created
             case "GET":
@@ -343,6 +344,7 @@ public final class Mediator {
                     if bodyHash != hash {
                         return HttpResponse.badRequest(.text("invalid hash"))
                     }
+                    print("return payload: \(hash)")
                     return HttpResponse.ok(.text(body))
                 }
                 return HttpResponse.notAcceptable

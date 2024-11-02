@@ -70,6 +70,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
         self.selections.insert(self.localPartyID)
+        // mediator server need to be
+        self.mediator.start(name: self.serviceName)
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
@@ -117,7 +119,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     }
     
     func startDiscovery() async {
-        self.mediator.start(name: self.serviceName)
+        
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
