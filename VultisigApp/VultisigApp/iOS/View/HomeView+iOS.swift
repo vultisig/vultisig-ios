@@ -42,15 +42,17 @@ extension HomeView {
                 VaultsView(
                     viewModel: viewModel,
                     showVaultsList: $showVaultsList,
-                    isEditingVaults: $isEditingVaults,
-                    showFolderDetails: $showFolderDetails
+                    isEditingVaults: $isEditingVaults, 
+                    isEditingFolders: $isEditingFolders,
+                    showFolderDetails: $showFolderDetails,
+                    selectedFolder: $selectedFolder
                 )
             }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                menuButton
+                leadingButton
             }
             ToolbarItem(placement: Placement.principal.getPlacement()) {
                 navigationTitle
@@ -69,6 +71,26 @@ extension HomeView {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
             }
+        }
+    }
+    
+    var leadingButton: some View {
+        ZStack {
+            if showFolderDetails && showVaultsList {
+                backButtonForFolder
+            } else {
+                menuButton
+            }
+        }
+    }
+    
+    var backButtonForFolder: some View {
+        Button {
+            showFolderDetails = false
+        } label: {
+            Image(systemName: "chevron.backward")
+                .font(.body18MenloBold)
+                .foregroundColor(.neutral0)
         }
     }
     

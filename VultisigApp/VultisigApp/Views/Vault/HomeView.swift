@@ -20,14 +20,17 @@ struct HomeView: View {
     
     @State var vaults: [Vault] = []
     
-    @State var showVaultsList = false
-    @State var isEditingVaults = false
     @State var showMenu = false
     @State var didUpdate = true
+    @State var showVaultsList = false
+    @State var isEditingVaults = false
+    @State var isEditingFolders = false
     @State var shouldJoinKeygen = false
     @State var showFolderDetails = false
     @State var shouldImportBackup = false
     @State var shouldKeysignTransaction = false
+    
+    @State var selectedFolder: Folder = Folder.example
     
     @Environment(\.modelContext) private var modelContext
     
@@ -56,7 +59,7 @@ struct HomeView: View {
     
     var title: some View {
         VStack(spacing: 0) {
-            Text(NSLocalizedString("vaults", comment: "Vaults"))
+            Text(NSLocalizedString(showFolderDetails ? selectedFolder.folderName : "vaults", comment: "Vaults"))
             Text(viewModel.selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
         }
         .offset(y: showVaultsList ? 9 : -10)
@@ -76,17 +79,13 @@ struct HomeView: View {
     }
     
     var editButton: some View {
-        ZStack {
-            if showFolderDetails {
-                
-            } else {
-                NavigationHomeEditButton(
-                    vault: viewModel.selectedVault,
-                    showVaultsList: showVaultsList,
-                    isEditingVaults: $isEditingVaults
-                )
-            }
-        }
+        NavigationHomeEditButton(
+            vault: viewModel.selectedVault,
+            showVaultsList: showVaultsList,
+            isEditingVaults: $isEditingVaults,
+            isEditingFolders: $isEditingFolders,
+            showFolderDetails: $showFolderDetails
+        )
     }
     
     func presetValuesForDeeplink() {
