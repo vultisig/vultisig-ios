@@ -20,14 +20,17 @@ struct HomeView: View {
     
     @State var vaults: [Vault] = []
     
-    @State var showVaultsList = false
-    @State var isEditingVaults = false
     @State var showMenu = false
     @State var didUpdate = true
+    @State var showVaultsList = false
+    @State var isEditingVaults = false
+    @State var isEditingFolders = false
     @State var shouldJoinKeygen = false
     @State var showFolderDetails = false
     @State var shouldImportBackup = false
     @State var shouldKeysignTransaction = false
+    
+    @State var selectedFolder: Folder = Folder.example
     
     @Environment(\.modelContext) private var modelContext
     
@@ -81,7 +84,9 @@ struct HomeView: View {
                 NavigationHomeEditButton(
                     vault: viewModel.selectedVault,
                     showVaultsList: showVaultsList,
-                    isEditingVaults: $isEditingVaults
+                    isEditingVaults: $isEditingVaults,
+                    isEditingFolders: $isEditingFolders,
+                    showFolderDetails: $showFolderDetails
                 )
             }
         }

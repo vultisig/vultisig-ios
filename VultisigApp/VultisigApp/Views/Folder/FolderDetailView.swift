@@ -12,6 +12,7 @@ struct FolderDetailView: View {
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
     @Binding var showFolderDetails: Bool
+    @Binding var isEditingFolders: Bool
     @ObservedObject var viewModel: HomeViewModel
     
     @Query var folders: [Folder]
@@ -38,11 +39,19 @@ struct FolderDetailView: View {
         }
     }
     
+    var view: some View {
+        ZStack(alignment: .bottom) {
+            content
+            deleteButton
+        }
+    }
+    
     var content: some View {
         List {
+            spacer
             selectedVaultsList
             
-            if folderViewModel.isEditing {
+            if isEditingFolders {
                 vaultsTitle
                 vaultsList
             }
@@ -52,15 +61,21 @@ struct FolderDetailView: View {
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
         .background(Color.backgroundBlue)
+        .padding(.bottom, isEditingFolders ? 80 : 0)
+    }
+    
+    var spacer: some View {
+        Color.clear
+            .frame(height: 30)
     }
     
     var navigationEditButton: some View {
         Button {
             withAnimation {
-                folderViewModel.isEditing.toggle()
+                isEditingFolders.toggle()
             }
         } label: {
-            if folderViewModel.isEditing {
+            if isEditingFolders {
                 doneLabel
             } else {
                 editIcon
@@ -72,7 +87,7 @@ struct FolderDetailView: View {
         ForEach(folderViewModel.selectedVaults.sorted(by: {
             $0.order < $1.order
         }), id: \.self) { vault in
-            FolderDetailSelectedVaultCell(vault: vault, isEditing: folderViewModel.isEditing)
+            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditingFolders)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
@@ -81,7 +96,7 @@ struct FolderDetailView: View {
                     handleVaultSelection(for: vault)
                 }
         }
-        .onMove(perform: folderViewModel.isEditing ? move : nil)
+        .onMove(perform: isEditingFolders ? move : nil)
         .padding(.horizontal, 16)
         .background(Color.backgroundBlue)
     }
@@ -113,7 +128,7 @@ struct FolderDetailView: View {
         .background(Color.backgroundBlue)
     }
     
-    var button: some View {
+    var deleteButton: some View {
         Button {
             deleteFolder()
         } label: {
@@ -125,7 +140,7 @@ struct FolderDetailView: View {
         FilledButton(title: "deleteFolder", background: Color.miamiMarmalade)
             .padding(16)
             .edgesIgnoringSafeArea(.bottom)
-            .frame(maxHeight: folderViewModel.isEditing ? nil : 0)
+            .frame(maxHeight: isEditingFolders ? nil : 0)
             .clipped()
             .background(Color.backgroundBlue)
     }
@@ -159,7 +174,7 @@ struct FolderDetailView: View {
     }
     
     private func handleVaultSelection(for vault: Vault) {
-        if folderViewModel.isEditing {
+        if isEditingFolders {
             removeVault(vault)
         } else {
             handleSelection(for: vault)
@@ -226,7 +241,8 @@ struct FolderDetailView: View {
     FolderDetailView(
         vaultFolder: .constant(Folder.example),
         showVaultsList: .constant(false), 
-        showFolderDetails: .constant(true),
+        showFolderDetails: .constant(true), 
+        isEditingFolders: .constant(true),
         viewModel: HomeViewModel()
     )
 }

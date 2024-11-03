@@ -12,14 +12,14 @@ struct VaultsView: View {
     @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
+    @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
+    @Binding var selectedFolder: Folder
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
         
     @Environment(\.modelContext) var modelContext
-    
-    @State var selectedFolder: Folder = .example
 
     var body: some View {
         ZStack {
@@ -54,7 +54,8 @@ struct VaultsView: View {
                 FolderDetailView(
                     vaultFolder: $selectedFolder,
                     showVaultsList: $showVaultsList, 
-                    showFolderDetails: $showFolderDetails,
+                    showFolderDetails: $showFolderDetails, 
+                    isEditingFolders: $isEditingFolders,
                     viewModel: viewModel
                 )
             }
@@ -250,8 +251,15 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(false), showFolderDetails: .constant(false))
-            .environmentObject(DeeplinkViewModel())
-            .environmentObject(HomeViewModel())
+        VaultsView(
+            viewModel: HomeViewModel(),
+            showVaultsList: .constant(true),
+            isEditingVaults: .constant(false), 
+            isEditingFolders: .constant(false),
+            showFolderDetails: .constant(false),
+            selectedFolder: .constant(.example)
+        )
+        .environmentObject(DeeplinkViewModel())
+        .environmentObject(HomeViewModel())
     }
 }

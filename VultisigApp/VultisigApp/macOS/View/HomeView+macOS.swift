@@ -38,9 +38,11 @@ extension HomeView {
     
     var headerMac: some View {
         HomeHeader(
-            showFolderDetails: showFolderDetails,
+            showFolderDetails: $showFolderDetails,
             showVaultsList: $showVaultsList,
-            isEditingVaults: $isEditingVaults
+            isEditingVaults: $isEditingVaults, 
+            isEditingFolders: $isEditingFolders,
+            selectedFolder: $selectedFolder
         )
     }
     
@@ -54,8 +56,10 @@ extension HomeView {
                 VaultsView(
                     viewModel: viewModel,
                     showVaultsList: $showVaultsList,
-                    isEditingVaults: $isEditingVaults,
-                    showFolderDetails: $showFolderDetails
+                    isEditingVaults: $isEditingVaults, 
+                    isEditingFolders: $isEditingFolders,
+                    showFolderDetails: $showFolderDetails,
+                    selectedFolder: $selectedFolder
                 )
             }
         }

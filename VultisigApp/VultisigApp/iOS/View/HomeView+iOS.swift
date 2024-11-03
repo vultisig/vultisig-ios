@@ -42,8 +42,10 @@ extension HomeView {
                 VaultsView(
                     viewModel: viewModel,
                     showVaultsList: $showVaultsList,
-                    isEditingVaults: $isEditingVaults,
-                    showFolderDetails: $showFolderDetails
+                    isEditingVaults: $isEditingVaults, 
+                    isEditingFolders: $isEditingFolders,
+                    showFolderDetails: $showFolderDetails,
+                    selectedFolder: $selectedFolder
                 )
             }
         }
