@@ -79,17 +79,13 @@ struct HomeView: View {
     }
     
     var editButton: some View {
-        ZStack {
-            if !showFolderDetails {
-                NavigationHomeEditButton(
-                    vault: viewModel.selectedVault,
-                    showVaultsList: showVaultsList,
-                    isEditingVaults: $isEditingVaults,
-                    isEditingFolders: $isEditingFolders,
-                    showFolderDetails: $showFolderDetails
-                )
-            }
-        }
+        NavigationHomeEditButton(
+            vault: viewModel.selectedVault,
+            showVaultsList: showVaultsList,
+            isEditingVaults: $isEditingVaults,
+            isEditingFolders: $isEditingFolders,
+            showFolderDetails: $showFolderDetails
+        )
     }
     
     func presetValuesForDeeplink() {

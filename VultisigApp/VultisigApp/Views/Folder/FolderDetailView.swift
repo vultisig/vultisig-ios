@@ -60,13 +60,17 @@ struct FolderDetailView: View {
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
-        .background(Color.backgroundBlue)
         .padding(.bottom, isEditingFolders ? 80 : 0)
+        .background(Color.backgroundBlue)
     }
     
     var spacer: some View {
-        Color.clear
+        Background()
             .frame(height: 30)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .background(Color.backgroundBlue)
     }
     
     var navigationEditButton: some View {
