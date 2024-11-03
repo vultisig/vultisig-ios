@@ -234,7 +234,8 @@ struct FolderDetailView: View {
                 } catch {
                     print("Error: \(error)")
                 }
-                dismiss()
+                isEditingFolders = false
+                showFolderDetails = false
                 return
             }
         }
