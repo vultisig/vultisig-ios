@@ -20,7 +20,7 @@ extension VaultDeletionConfirmView {
         VStack {
             headerMac
             view
-            button
+            deleteButton
         }
     }
     
@@ -70,7 +70,7 @@ extension VaultDeletionConfirmView {
         .padding(.bottom, 50)
     }
     
-    var button: some View {
+    var deleteButton: some View {
         Button {
             delete()
         } label: {

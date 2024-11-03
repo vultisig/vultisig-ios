@@ -11,16 +11,40 @@ struct NavigationHomeEditButton: View {
     let vault: Vault?
     let showVaultsList: Bool
     @Binding var isEditingVaults: Bool
+    @Binding var isEditingFolders: Bool
+    @Binding var showFolderDetails: Bool
     
     var tint: Color = Color.neutral0
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
-        if showVaultsList {
-            vaultsListEditButton
-        } else {
-            vaultDetailQRCodeButton
+        ZStack {
+            if showFolderDetails {
+                folderHomeEditButton
+            } else {
+                vaultHomeEditButton
+            }
+        }
+    }
+    
+    var folderHomeEditButton: some View {
+        ZStack {
+            if showVaultsList {
+                foldersListEditButton
+            } else {
+                vaultDetailQRCodeButton
+            }
+        }
+    }
+    
+    var vaultHomeEditButton: some View {
+        ZStack {
+            if showVaultsList {
+                vaultsListEditButton
+            } else {
+                vaultDetailQRCodeButton
+            }
         }
     }
     
@@ -31,6 +55,20 @@ struct NavigationHomeEditButton: View {
             }
         } label: {
             if isEditingVaults {
+                doneButton
+            } else {
+                editButton
+            }
+        }
+    }
+    
+    var foldersListEditButton: some View {
+        Button {
+            withAnimation(.easeInOut) {
+                isEditingFolders.toggle()
+            }
+        } label: {
+            if isEditingFolders {
                 doneButton
             } else {
                 editButton
@@ -63,8 +101,21 @@ struct NavigationHomeEditButton: View {
     ZStack {
         Background()
         VStack {
-            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true))
-            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false))
+            NavigationHomeEditButton(
+                vault: Vault.example,
+                showVaultsList: true,
+                isEditingVaults: .constant(true), 
+                isEditingFolders: .constant(true),
+                showFolderDetails: .constant(true)
+            )
+            
+            NavigationHomeEditButton(
+                vault: Vault.example,
+                showVaultsList: true,
+                isEditingVaults: .constant(false),
+                isEditingFolders: .constant(true),
+                showFolderDetails: .constant(true)
+            )
         }
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())

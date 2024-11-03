@@ -29,5 +29,5 @@ class Folder: Hashable, Equatable {
         hasher.combine(id)
     }
     
-    static let example = Folder(folderName: "Main Folder", containedVaultNames: ["12345"], order: 0)
+    static let example = Folder(folderName: "Folder", containedVaultNames: ["12345"], order: 0)
 }

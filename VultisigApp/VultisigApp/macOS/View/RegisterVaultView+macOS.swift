@@ -28,7 +28,7 @@ extension RegisterVaultView {
             text3
             text4
             Spacer()
-            button
+            deleteButton
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body16MenloBold)
@@ -36,7 +36,7 @@ extension RegisterVaultView {
         .padding(.horizontal, 40)
     }
     
-    var button: some View {
+    var deleteButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
                 Button {

@@ -8,7 +8,6 @@
 import SwiftUI
 
 class FolderDetailViewModel: ObservableObject {
-    @Published var isEditing = false
     @Published var selectedVaults: [Vault] = []
     @Published var remaningVaults: [Vault] = []
     
