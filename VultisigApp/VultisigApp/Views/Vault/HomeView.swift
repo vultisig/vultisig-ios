@@ -59,7 +59,7 @@ struct HomeView: View {
     
     var title: some View {
         VStack(spacing: 0) {
-            Text(NSLocalizedString("vaults", comment: "Vaults"))
+            Text(NSLocalizedString(showFolderDetails ? selectedFolder.folderName : "vaults", comment: "Vaults"))
             Text(viewModel.selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
         }
         .offset(y: showVaultsList ? 9 : -10)
