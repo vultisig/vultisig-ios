@@ -10,7 +10,8 @@ import Foundation
 struct KeysignMessage: Codable, Hashable {
     var sessionID: String
     let serviceName: String
-    let payload: KeysignPayload
+    let payload: KeysignPayload?
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
+    let payloadID: String
 }

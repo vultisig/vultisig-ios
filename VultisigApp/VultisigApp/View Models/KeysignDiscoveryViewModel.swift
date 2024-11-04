@@ -70,6 +70,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
         self.selections.insert(self.localPartyID)
+        // mediator server need to be
+        self.mediator.start(name: self.serviceName)
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
@@ -117,7 +119,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     }
     
     func startDiscovery() async {
-        self.mediator.start(name: self.serviceName)
+        
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
@@ -209,7 +211,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func getQrImage(size: CGFloat) -> Image {
+    func getQrImage(size: CGFloat) async -> Image {
         guard let encryptionKeyHex = self.encryptionKeyHex else {
             logger.error("encryption key is nil")
             return Image(systemName: "xmark")
@@ -219,11 +221,28 @@ class KeysignDiscoveryViewModel: ObservableObject {
             serviceName: serviceName,
             payload: keysignPayload,
             encryptionKeyHex: encryptionKeyHex,
-            useVultisigRelay: VultisigRelay.IsRelayEnabled
+            useVultisigRelay: VultisigRelay.IsRelayEnabled,
+            payloadID: ""
         )
         do {
-            let payload = try ProtoSerializer.serialize(message)
-            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(payload)"
+            let protoKeysignMsg = try ProtoSerializer.serialize(message)
+            let payloadService = PayloadService(serverURL: serverAddr)
+            var jsonData = ""
+            if payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
+                let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
+                let hash = try await payloadService.uploadPayload(payload: keysignPayload)
+                let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
+                                                           serviceName: serviceName,
+                                                           payload: nil,
+                                                           encryptionKeyHex: encryptionKeyHex,
+                                                           useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                                                           payloadID: hash)
+                jsonData = try ProtoSerializer.serialize(messageWithoutPayload)
+                
+            } else {
+                jsonData = protoKeysignMsg
+            }
+            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
             return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")

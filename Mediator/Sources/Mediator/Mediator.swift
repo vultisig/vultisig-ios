@@ -4,6 +4,7 @@ import Foundation
 import Network
 import OSLog
 import Swifter
+import CryptoSwift
 
 public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
@@ -42,6 +43,9 @@ public final class Mediator {
         
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
+        
+        // Payload
+        self.server["/payload/:hash"] = self.processPayload
         
         
     }
@@ -311,6 +315,44 @@ public final class Mediator {
             }
         }catch{
             logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
+            return HttpResponse.internalServerError
+        }
+    }
+    
+    func processPayload(req: HttpRequest) -> HttpResponse {
+        guard let hash = req.params[":hash"] else {
+            return HttpResponse.badRequest(.text("hash is empty"))
+        }
+        do{
+            switch req.method {
+            case "POST":
+                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                let hashBody = body.sha256()
+                if hash != hashBody {
+                    return HttpResponse.badRequest(.text("invalid hash"))
+                }
+                print("accept payload: \(hash)")
+                setObject(body, forKey: hash)
+                return HttpResponse.created
+            case "GET":
+                if !self.cache.objectExists(forKey: hash) {
+                    return HttpResponse.notFound
+                }
+                let body = try self.cache.object(forKey: hash) as? String
+                if let body {
+                    let bodyHash = body.sha256()
+                    if bodyHash != hash {
+                        return HttpResponse.badRequest(.text("invalid hash"))
+                    }
+                    print("return payload: \(hash)")
+                    return HttpResponse.ok(.text(body))
+                }
+                return HttpResponse.notAcceptable
+            default:
+                return HttpResponse.notFound
+            }
+        } catch{
+            logger.error("fail to process request to payload,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }

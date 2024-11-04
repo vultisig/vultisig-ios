@@ -53,10 +53,8 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
-        .onAppear {
-            setData()
-        }
         .task {
+            await setData()
             await viewModel.startDiscovery()
         }
         .onDisappear {
@@ -126,11 +124,13 @@ struct KeysignDiscoveryView: View {
             .onChange(of: selectedNetwork) {
                 print("selected network changed: \(selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
-                setData()
+                Task{
+                    await setData()
+                }
             }
     }
     
-    private func setData() {
+    private func setData() async {
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         } else {
@@ -145,7 +145,7 @@ struct KeysignDiscoveryView: View {
             onFastKeysign: { startKeysign() }
         )
 
-        qrCodeImage = viewModel.getQrImage(size: 100)
+        qrCodeImage = await viewModel.getQrImage(size: 100)
         
         guard let qrCodeImage else {
             return
