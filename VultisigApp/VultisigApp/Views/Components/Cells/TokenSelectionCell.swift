@@ -6,8 +6,12 @@ struct TokenSelectionCell: View {
     let asset: TokenSelectionViewModel.Token
     let tokenSelectionViewModel: TokenSelectionViewModel
     
-    @State var isSelected = false
-    
+    @State var isSelected = false {
+        didSet {
+            handleSelection(isSelected)
+        }
+    }
+
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
     var body: some View {
@@ -23,9 +27,6 @@ struct TokenSelectionCell: View {
         .cornerRadius(10)
         .onAppear {
             setData()
-        }
-        .onChange(of: isSelected) { _, newValue in
-            handleSelection(newValue)
         }
         .onTapGesture {
             isSelected.toggle()
