@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct FolderDetailView: View {
+    let selectedFolder: Folder
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
     @Binding var showFolderDetails: Bool
@@ -18,6 +19,7 @@ struct FolderDetailView: View {
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
     
+    @State var folderName: String = ""
     @StateObject var folderViewModel = FolderDetailViewModel()
     
     @Environment(\.dismiss) var dismiss
@@ -49,6 +51,11 @@ struct FolderDetailView: View {
     var content: some View {
         List {
             spacer
+            
+            if isEditingFolders {
+                folderRename
+            }
+            
             selectedVaultsList
             
             if isEditingFolders {
@@ -71,6 +78,46 @@ struct FolderDetailView: View {
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .background(Color.backgroundBlue)
+    }
+    
+    var folderRename: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            folderNameTitle
+            folderNameTextField
+        }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .background(Color.backgroundBlue)
+        .onAppear {
+            setupFolderName()
+        }
+        .onDisappear {
+            saveFolderName()
+        }
+    }
+    
+    var folderNameTitle: some View {
+        Text(NSLocalizedString("folderName", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratSemiBold)
+    }
+    
+    var folderNameTextField: some View {
+        TextField(
+            NSLocalizedString("typeHere", comment: ""),
+            text: $folderName
+        )
+        .font(.body14Menlo)
+        .foregroundColor(.neutral0)
+        .submitLabel(.done)
+        .padding(12)
+        .padding(.vertical, 3)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .colorScheme(.dark)
+        .borderlessTextFieldStyle()
     }
     
     var navigationEditButton: some View {
@@ -177,6 +224,19 @@ struct FolderDetailView: View {
         )
     }
     
+    private func setupFolderName() {
+        folderName = selectedFolder.folderName
+    }
+    
+    private func saveFolderName() {
+        for folder in folders {
+            if folder.id == selectedFolder.id {
+                folder.folderName = folderName
+                return
+            }
+        }
+    }
+    
     private func handleVaultSelection(for vault: Vault) {
         if isEditingFolders {
             removeVault(vault)
@@ -244,8 +304,9 @@ struct FolderDetailView: View {
 
 #Preview {
     FolderDetailView(
+        selectedFolder: Folder.example, 
         vaultFolder: .constant(Folder.example),
-        showVaultsList: .constant(false), 
+        showVaultsList: .constant(false),
         showFolderDetails: .constant(true), 
         isEditingFolders: .constant(true),
         viewModel: HomeViewModel()
