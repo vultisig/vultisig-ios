@@ -39,6 +39,13 @@ struct FolderDetailView: View {
         .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
+        .onChange(of: isEditingFolders) { oldValue, newValue in
+            if isEditingFolders {
+                setupFolderName()
+            } else {
+                saveFolderName()
+            }
+        }
     }
     
     var view: some View {
@@ -109,15 +116,15 @@ struct FolderDetailView: View {
             NSLocalizedString("typeHere", comment: ""),
             text: $folderName
         )
-        .font(.body14Menlo)
+        .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .submitLabel(.done)
         .padding(12)
-        .padding(.vertical, 3)
         .background(Color.blue600)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
+        .autocorrectionDisabled()
     }
     
     var navigationEditButton: some View {
