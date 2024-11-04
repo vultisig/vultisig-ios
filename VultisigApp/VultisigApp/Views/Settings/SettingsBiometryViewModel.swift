@@ -39,7 +39,9 @@ final class SettingsBiometryViewModel: ObservableObject {
 
         if !isOn {
             keychain.setFastPassword(nil, pubKeyECDSA: vault.pubKeyECDSA)
+            keychain.setFastHint(nil, pubKeyECDSA: vault.pubKeyECDSA)
             password = .empty
+            hint = .empty
         }
     }
 
