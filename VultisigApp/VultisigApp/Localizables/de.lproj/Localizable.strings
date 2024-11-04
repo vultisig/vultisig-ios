@@ -1,3 +1,5 @@
+"passwordHintTitle" = "Optional: Passwort-Hinweis";
+"enterHint" = "Hinweis eingeben";
 "backupNowTitle" = "Backups müssen auf jedem Gerät in Vultisig durchgeführt werden";
 "backupNowWarning" = "Sichern Sie Ihren Tresor auf jedem Gerät einzeln!";
 "backupNowSubtitle" = "Jedes Gerät hat seinen eigenen einzigartigen Tresoranteil, der für die Wiederherstellung benötigt wird";
