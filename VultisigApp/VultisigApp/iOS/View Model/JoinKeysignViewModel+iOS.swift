@@ -25,13 +25,18 @@ extension JoinKeysignViewModel {
             guard let data = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
                 return
             }
-            handleQrCodeSuccessResult(data: data)
+            Task{
+                await handleQrCodeSuccessResult(data: data)
+                DispatchQueue.main.async {
+                    self.manageQrCodeStates()
+                }
+            }
         case .failure(let err):
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
         
-        manageQrCodeStates()
+        
     }
 }
 #endif

@@ -38,6 +38,8 @@ struct KeysignDiscoverServiceView: View {
                 Image(systemName: "checkmark")
                     .onAppear {
                         viewModel.serverAddress = self.serviceDelegate.serverURL
+                    }.task {
+                        await viewModel.ensureKeysignPayload()
                         viewModel.setStatus(status: .JoinKeysign)
                     }
             }
