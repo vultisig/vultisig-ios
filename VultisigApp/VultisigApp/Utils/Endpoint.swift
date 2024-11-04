@@ -173,6 +173,11 @@ class Endpoint {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
     
+    static func fetchLifiTokenPrice(network: String, address: String) -> URL {
+        let url = "https://li.quest/v1/token?chain=\(network.lowercased())&token=\(address)"
+        return url.asUrl
+    }
+    
     static func fetchTokenPrice(network: String, addresses: [String], currencies: String) -> URL {
         let addresses = addresses.joined(separator: ",")
         let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(currencies)"
