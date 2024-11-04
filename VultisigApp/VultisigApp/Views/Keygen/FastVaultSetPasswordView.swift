@@ -15,6 +15,7 @@ struct FastVaultSetPasswordView: View {
     let fastVaultExist: Bool
 
     @State var password: String = ""
+    @State var hint: String = ""
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
     @State var isLoading: Bool = false
@@ -60,6 +61,17 @@ struct FastVaultSetPasswordView: View {
         .padding(.top, 30)
     }
 
+    var hintField: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString("passwordHintTitle", comment: ""))
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+
+            hintTextfield
+        }
+        .padding(.horizontal, 16)
+    }
+
     var textfield: some View {
         HiddenTextField(placeholder: "enterPassword", password: $password)
             .padding(.top, 8)
@@ -68,6 +80,10 @@ struct FastVaultSetPasswordView: View {
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
             .opacity(fastVaultExist ? 0 : 1)
+    }
+
+    var hintTextfield: some View {
+        HiddenTextField(placeholder: "enterHint", password: $hint, isPasswordVisible: true)
     }
 
     var disclaimer: some View {
@@ -105,6 +121,15 @@ struct FastVaultSetPasswordView: View {
         case true:
             return password.isEmpty
         }
+    }
+
+    var fastSignConfig: FastSignConfig {
+        return FastSignConfig(
+            email: fastVaultEmail,
+            password: password,
+            hint: hint,
+            isExist: fastVaultExist
+        )
     }
 
     @MainActor func checkPassword() async {

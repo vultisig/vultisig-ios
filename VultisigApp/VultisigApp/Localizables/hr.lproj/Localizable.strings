@@ -1,3 +1,5 @@
+"passwordHintTitle" = "Opcionalno: Savjet za lozinku";
+"enterHint" = "Unesite savjet";
 "backupNowTitle" = "Potrebno je napraviti sigurnosnu kopiju na svakom uređaju u Vultisigu";
 "backupNowWarning" = "Sigurnosno kopirajte svoj trezor na svakom uređaju pojedinačno!";
 "backupNowSubtitle" = "Svaki uređaj ima svoj jedinstveni dio trezora, potreban za oporavak";

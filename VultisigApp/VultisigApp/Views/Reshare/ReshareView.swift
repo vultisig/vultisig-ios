@@ -69,9 +69,7 @@ struct ReshareView: View {
                     tssType: .Reshare,
                     vault: vault,
                     selectedTab: .secure,
-                    fastVaultEmail: nil,
-                    fastVaultPassword: nil, 
-                    fastVaultExist: false
+                    fastSignConfig: nil
                 )
             } label: {
                 FilledButton(title: "startReshare")
