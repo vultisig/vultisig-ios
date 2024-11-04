@@ -52,8 +52,9 @@ struct VaultsView: View {
             
             if showFolderDetails {
                 FolderDetailView(
+                    selectedFolder: selectedFolder, 
                     vaultFolder: $selectedFolder,
-                    showVaultsList: $showVaultsList, 
+                    showVaultsList: $showVaultsList,
                     showFolderDetails: $showFolderDetails, 
                     isEditingFolders: $isEditingFolders,
                     viewModel: viewModel
