@@ -63,7 +63,7 @@ struct FastVaultSetPasswordView: View {
 
     var hintField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Optional: Password hint")
+            Text(NSLocalizedString("passwordHintTitle", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
@@ -83,7 +83,7 @@ struct FastVaultSetPasswordView: View {
     }
 
     var hintTextfield: some View {
-        HiddenTextField(placeholder: "Enter a hint", password: $hint, isPasswordVisible: true)
+        HiddenTextField(placeholder: "enterHint", password: $hint, isPasswordVisible: true)
     }
 
     var disclaimer: some View {

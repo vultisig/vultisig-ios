@@ -85,7 +85,7 @@ struct SettingsBiometryView: View {
 
     var hintCell: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Optional: Password hint")
+            Text(NSLocalizedString("passwordHintTitle", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
