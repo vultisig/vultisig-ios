@@ -95,10 +95,12 @@ struct VaultsView: View {
     }
     
     var vaultsList: some View {
-        ForEach(isEditingVaults ? vaults : viewModel.filteredVaults, id: \.self) { vault in
+        ForEach(viewModel.filteredVaults.sorted {
+            $0.order < $1.order
+        }, id: \.self) { vault in
             getButton(for: vault)
         }
-        .onMove(perform: isEditingVaults ? move : nil)
+        .onMove(perform: isEditingVaults ? moveVaults : nil)
         .background(Color.backgroundBlue)
     }
     
@@ -206,27 +208,11 @@ struct VaultsView: View {
             .background(Color.backgroundBlue)
     }
     
-    func move(from: IndexSet, to: Int) {
-        let fromIndex = from.first ?? 0
-        
-        if fromIndex<to {
-            moveDown(fromIndex: fromIndex, toIndex: to-1)
-        } else {
-            moveUp(fromIndex: fromIndex, toIndex: to)
-        }
-    }
-    
-    private func moveDown(fromIndex: Int, toIndex: Int) {
-        for index in fromIndex...toIndex {
-            vaults[index].order = vaults[index].order-1
-        }
-        vaults[fromIndex].order = toIndex
-    }
-    
-    private func moveUp(fromIndex: Int, toIndex: Int) {
-        vaults[fromIndex].order = toIndex
-        for index in toIndex...fromIndex {
-            vaults[index].order = vaults[index].order+1
+    func moveVaults(from: IndexSet, to: Int) {
+        var filteredVaults = viewModel.filteredVaults.sorted(by: { $0.order < $1.order })
+        filteredVaults.move(fromOffsets: from, toOffset: to)
+        for (index, item) in filteredVaults.enumerated() {
+            item.order = index
         }
     }
     
@@ -234,7 +220,7 @@ struct VaultsView: View {
         var s = folders.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)
         for (index, item) in s.enumerated() {
-                item.order = index
+            item.order = index
         }
         try? self.modelContext.save()
     }
