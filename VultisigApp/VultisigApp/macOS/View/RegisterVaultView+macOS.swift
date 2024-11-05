@@ -12,7 +12,6 @@ extension RegisterVaultView {
     var view: some View {
         VStack {
             header
-            image
             content
         }
     }
@@ -22,7 +21,9 @@ extension RegisterVaultView {
     }
     
     var content: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .center, spacing: 16) {
+            Spacer()
+            image
             text1
             text2
             text3
