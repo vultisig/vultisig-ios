@@ -74,14 +74,6 @@ extension TokenSelectionView {
             .listStyle(.grouped)
     }
 
-    func isTokenSelected(asset: CoinMeta) -> Binding<Bool> {
-        return Binding(get: { 
-            return coinViewModel.isSelected(asset: asset)
-        }) { newValue in
-            coinViewModel.handleSelection(isSelected: newValue, asset: asset)
-        }
-    }
-
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
             .font(.body16Menlo)

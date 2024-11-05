@@ -124,7 +124,15 @@ struct TokenSelectionView: View {
     var address: String {
         return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
     }
-    
+
+    func isTokenSelected(asset: CoinMeta) -> Binding<Bool> {
+        return Binding(get: {
+            return coinViewModel.isSelected(asset: asset)
+        }) { newValue in
+            coinViewModel.handleSelection(isSelected: newValue, asset: asset)
+        }
+    }
+
     private func saveAssets() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
