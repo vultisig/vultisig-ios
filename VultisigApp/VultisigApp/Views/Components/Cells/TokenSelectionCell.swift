@@ -12,7 +12,7 @@ struct TokenSelectionCell: View {
             Color.blue600
                 .cornerRadius(10)
                 .onTapGesture {
-//                    isSelected.toggle()
+                    isSelected.toggle()
                 }
 
             HStack(spacing: 16) {
