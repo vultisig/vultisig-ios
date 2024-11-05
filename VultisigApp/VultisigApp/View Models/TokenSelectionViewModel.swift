@@ -30,10 +30,19 @@ class TokenSelectionViewModel: ObservableObject {
                 return token.logoUrl?.description ?? .empty
             }
         }
+
+        func asset(chain: Chain) -> CoinMeta {
+            switch self {
+            case .coin(let asset):
+                return asset
+            case .oneInch(let token):
+                return token.toCoinMeta(chain: chain)
+            }
+        }
     }
     
     @Published var searchText: String = .empty
-    @Published var tokens: [Token] = []
+    @Published var tokens: [CoinMeta] = []
     @Published var selectedTokens: [Token] = []
     @Published var preExistTokens: [Token] = []
     @Published var searchedTokens: [Token] = []

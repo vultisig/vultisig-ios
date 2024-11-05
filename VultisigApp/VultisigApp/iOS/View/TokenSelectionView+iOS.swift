@@ -74,7 +74,8 @@ extension TokenSelectionView {
                 if !selected.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
                         ForEach(selected, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                            let asset = token.asset(chain: group.chain)
+                            TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
@@ -84,7 +85,8 @@ extension TokenSelectionView {
                 if tokenViewModel.searchText.isEmpty {
                     Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
                         ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                            let asset = token.asset(chain: group.chain)
+                            TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
@@ -94,7 +96,8 @@ extension TokenSelectionView {
                         let filtered = tokenViewModel.searchedTokens
                         if !filtered.isEmpty {
                             ForEach(filtered, id: \.self) { token in
-                                TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                                let asset = token.asset(chain: group.chain)
+                                TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
                             }
@@ -107,7 +110,15 @@ extension TokenSelectionView {
             .listStyle(.grouped)
         }
     }
-    
+
+    func isTokenSelected(asset: CoinMeta) -> Binding<Bool> {
+        return Binding(get: { 
+            return coinViewModel.isSelected(asset: asset)
+        }) { newValue in
+            coinViewModel.handleSelection(isSelected: newValue, asset: asset)
+        }
+    }
+
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
             .font(.body16Menlo)
