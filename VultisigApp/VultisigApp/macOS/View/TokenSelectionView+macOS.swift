@@ -55,45 +55,11 @@ extension TokenSelectionView {
     }
     
     var scrollView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                let selected = tokenViewModel.selectedTokens
-                if !selected.isEmpty {
-                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
-                        ForEach(selected, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                }
-                
-                if tokenViewModel.searchText.isEmpty {
-                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                        ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                } else {
-                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
-                        let filtered = tokenViewModel.searchedTokens
-                        if !filtered.isEmpty {
-                            ForEach(filtered, id: \.self) { token in
-                                TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
-                        }
-                    }
-                }
-            }
+        list
             .scrollContentBackground(.hidden)
             .padding(.horizontal, 40)
             .padding(.bottom, 50)
             .colorScheme(.dark)
-        }
     }
     
     var textField: some View {

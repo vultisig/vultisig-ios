@@ -84,7 +84,43 @@ struct TokenSelectionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
+    var list: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                if !tokenViewModel.selectedTokens.isEmpty {
+                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
+                        ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
+                            TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                        }
+                    }
+                }
+                
+                if tokenViewModel.searchText.isEmpty {
+                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                        ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
+                            TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                        }
+                    }
+                } else {
+                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                        if !tokenViewModel.searchedTokens.isEmpty {
+                            ForEach(tokenViewModel.searchedTokens, id: \.self) { asset in
+                                TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     var address: String {
         return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
     }
