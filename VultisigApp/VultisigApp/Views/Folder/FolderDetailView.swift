@@ -231,6 +231,10 @@ struct FolderDetailView: View {
         )
     }
     
+    private func filterVaults() {
+        viewModel.filterVaults(vaults: vaults, folders: folders)
+    }
+    
     private func setupFolderName() {
         folderName = selectedFolder.folderName
     }
@@ -250,6 +254,7 @@ struct FolderDetailView: View {
         } else {
             handleSelection(for: vault)
         }
+        filterVaults()
     }
     
     private func move(from: IndexSet, to: Int) {
