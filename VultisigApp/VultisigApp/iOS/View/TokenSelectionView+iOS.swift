@@ -69,12 +69,10 @@ extension TokenSelectionView {
     
     var scrollView: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                let selected = tokenViewModel.selectedTokens
-                if !selected.isEmpty {
+            VStack(alignment: .leading, spacing: 24) {
+                if !tokenViewModel.selectedTokens.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
-                        ForEach(selected, id: \.self) { token in
-                            let asset = token.asset(chain: group.chain)
+                        ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
                             TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
@@ -84,8 +82,7 @@ extension TokenSelectionView {
                 
                 if tokenViewModel.searchText.isEmpty {
                     Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                        ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
-                            let asset = token.asset(chain: group.chain)
+                        ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
                             TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
@@ -93,10 +90,8 @@ extension TokenSelectionView {
                     }
                 } else {
                     Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
-                        let filtered = tokenViewModel.searchedTokens
-                        if !filtered.isEmpty {
-                            ForEach(filtered, id: \.self) { token in
-                                let asset = token.asset(chain: group.chain)
+                        if !tokenViewModel.searchedTokens.isEmpty {
+                            ForEach(tokenViewModel.searchedTokens, id: \.self) { asset in
                                 TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
