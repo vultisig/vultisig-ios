@@ -393,3 +393,5 @@
 "changesInSetup" = "Promjene u postavkama";
 "yourConfigurationChangedMakeBackup" = "Vaša konfiguracija se promijenila, napravite novu sigurnosnu kopiju.";
 "newVaultSetup" = "Novo postavljanje trezora";
+"saveChanges" = "Spremi promjene";
+"currentVaults" = "Trenutni trezori";

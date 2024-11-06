@@ -425,3 +425,5 @@
 "changesInSetup" = "Changes in Setup";
 "yourConfigurationChangedMakeBackup" = "Your configuration changed, make a new backup.";
 "newVaultSetup" = "New Vault Setup";
+"saveChanges" = "Save Changes";
+"currentVaults" = "Current Vaults";
