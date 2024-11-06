@@ -85,8 +85,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
             if let fastVaultPassword {
                 // when fast sign , always using relay server
                 serverAddr = Endpoint.vultisigRelay
-                self.status = .WaitingForFast
                 
+                if vault.signers.count <= 3 {
+                    // skip device lookup if possible
+                    self.status = .WaitingForFast
+                }
+
                 self.fastVaultService.sign(
                     publicKeyEcdsa: vault.pubKeyECDSA,
                     keysignMessages: self.keysignMessages,
