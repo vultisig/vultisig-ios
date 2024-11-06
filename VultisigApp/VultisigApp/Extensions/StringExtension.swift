@@ -72,7 +72,7 @@ extension String {
     
     func formatCurrencyWithSeparators(_ currency: SettingsCurrency) -> String {
         guard let number = parseInput(currency) else {
-            return ""
+            return self
         }
         
         let outputFormatter = NumberFormatter()
@@ -82,7 +82,7 @@ extension String {
         outputFormatter.decimalSeparator = "."
         outputFormatter.groupingSeparator = ","
         
-        return outputFormatter.string(for: number) ?? ""
+        return outputFormatter.string(for: number) ?? self
     }
     
     private func parseInput(_ currency: SettingsCurrency) -> Decimal? {
