@@ -114,9 +114,6 @@ struct KeyGenSummaryView: View {
             ForEach(viewModel.selections.map{ $0 }, id: \.self) { selection in
                 index += 1
                 pairDevices -= selection==viewModel.localPartyID ? 0 : 1
-                print("SELECTIONS")
-                print(selection)
-                print(index)
                 return getCell(
                     index: index,
                     title: selection,
