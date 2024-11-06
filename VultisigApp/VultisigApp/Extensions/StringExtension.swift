@@ -75,30 +75,17 @@ extension String {
             return ""
         }
         
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
+        let outputFormatter = NumberFormatter()
+        outputFormatter.numberStyle = .decimal
+        outputFormatter.minimumFractionDigits = 0
+        outputFormatter.maximumFractionDigits = 8
+        outputFormatter.decimalSeparator = "."
+        outputFormatter.groupingSeparator = ","
         
-        if currency.usesEuropeanFormat {
-            formatter.decimalSeparator = ","
-            formatter.groupingSeparator = "."
-        } else {
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ","
-        }
-        
-        let decimalPart = number.truncatingRemainder(dividingBy: 1)
-        if decimalPart == 0 {
-            formatter.maximumFractionDigits = 0
-        } else {
-            formatter.maximumFractionDigits = 2
-        }
-        
-        return formatter.string(from: NSNumber(value: number)) ?? ""
+        return outputFormatter.string(for: number) ?? ""
     }
     
-    private func parseInput(_ currency: SettingsCurrency) -> Double? {
+    private func parseInput(_ currency: SettingsCurrency) -> Decimal? {
         var cleanInput = self.trimmingCharacters(in: .whitespaces)
         
         if currency.usesEuropeanFormat {
@@ -108,7 +95,7 @@ extension String {
             cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
         }
         
-        return Double(cleanInput)
+        return Decimal(string: cleanInput)
     }
 }
 
