@@ -31,6 +31,7 @@ extension PeerDiscoveryView {
     
     var headerMac: some View {
         PeerDiscoveryHeader(
+            title: getTitle(),
             vault: vault,
             selectedTab: selectedTab,
             viewModel: viewModel,

@@ -405,3 +405,8 @@
 "vaultPart" = "Tresorteil";
 "fastVaultEmailDisclaimer" = "Diese E-Mail wird nur verwendet, um das Backup zu senden";
 "backupYourVaultNow" = "Sichern Sie jetzt den Tresorteil dieses Geräts!";
+"resharingTheVault" = "Tresor erneut freigeben";
+"resharingLoaderTitle" = "Geräte hinzufügen, um sie einzuschließen, oder Geräte weglassen, um sie aus dem Tresor zu entfernen";
+"changesInSetup" = "Änderungen in der Konfiguration";
+"yourConfigurationChangedMakeBackup" = "Ihre Konfiguration hat sich geändert, erstellen Sie ein neues Backup.";
+"newVaultSetup" = "Neues Tresor-Setup";

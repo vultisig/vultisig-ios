@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LookingForDevicesLoader: View {
+    var tssType: TssType? = nil
     var selectedTab: SetupVaultState? = nil
     
     @State var didSwitch = false
@@ -37,17 +38,11 @@ struct LookingForDevicesLoader: View {
     }
     
     var title: some View {
-        ZStack {
-            if let selectedTab {
-                Text(selectedTab.loaderTitle)
-            } else {
-                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-            }
-        }
-        .font(.body14Montserrat)
-        .foregroundColor(.neutral0)
-        .bold()
-        .multilineTextAlignment(.center)
+        Text(getTitle())
+            .font(.body14Montserrat)
+            .foregroundColor(.neutral0)
+            .bold()
+            .multilineTextAlignment(.center)
     }
     
     var loader: some View {
@@ -74,11 +69,21 @@ struct LookingForDevicesLoader: View {
             .multilineTextAlignment(.center)
             .padding(.top, 50)
     }
+    
+    private func getTitle() -> String {
+        if let tssType, tssType == .Reshare {
+            return NSLocalizedString("resharingLoaderTitle", comment: "")
+        } else if let selectedTab {
+            return selectedTab.loaderTitle
+        } else {
+            return NSLocalizedString("lookingForDevices", comment: "Looking for devices")
+        }
+    }
 }
 
 #Preview {
     ZStack {
         Background()
-        LookingForDevicesLoader(selectedTab: .secure)
+        LookingForDevicesLoader(tssType: .Reshare, selectedTab: .secure)
     }
 }

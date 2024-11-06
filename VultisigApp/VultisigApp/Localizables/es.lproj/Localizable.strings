@@ -388,3 +388,8 @@
 "vaultPart" = "Parte del cofre";
 "fastVaultEmailDisclaimer" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad";
 "backupYourVaultNow" = "¡Realiza ahora una copia de seguridad de la parte del cofre de este dispositivo!";
+"resharingTheVault" = "Recompartiendo el Cofre";
+"resharingLoaderTitle" = "Agregue dispositivos para incluir o deje dispositivos fuera para eliminar del Cofre";
+"changesInSetup" = "Cambios en la Configuración";
+"yourConfigurationChangedMakeBackup" = "Su configuración ha cambiado, haga un nuevo respaldo.";
+"newVaultSetup" = "Nueva Configuración del Cofre";

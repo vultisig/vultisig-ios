@@ -388,3 +388,8 @@
 "vaultPart" = "Parte della cassaforte";
 "fastVaultEmailDisclaimer" = "Questa email viene utilizzata solo per inviare il backup";
 "backupYourVaultNow" = "Esegui ora il backup della parte di cassaforte di questo dispositivo!";
+"resharingTheVault" = "Ricondivisione della Cassaforte";
+"resharingLoaderTitle" = "Aggiungi dispositivi per includerli o escludili per rimuoverli dalla Cassaforte";
+"changesInSetup" = "Modifiche nella Configurazione";
+"yourConfigurationChangedMakeBackup" = "La tua configurazione è cambiata, crea un nuovo backup.";
+"newVaultSetup" = "Nuova Configurazione della Cassaforte";
