@@ -393,3 +393,5 @@
 "changesInSetup" = "Cambios en la Configuración";
 "yourConfigurationChangedMakeBackup" = "Su configuración ha cambiado, haga un nuevo respaldo.";
 "newVaultSetup" = "Nueva Configuración del Cofre";
+"saveChanges" = "Guardar cambios";
+"currentVaults" = "Cofres actuales";
