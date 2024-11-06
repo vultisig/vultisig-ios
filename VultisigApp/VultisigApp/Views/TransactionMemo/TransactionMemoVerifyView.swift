@@ -16,12 +16,12 @@ struct TransactionMemoVerifyView: View {
     let vault: Vault
     
     @State var fastPasswordPresented = false
-
+    
     
     var body: some View {
         ZStack {
             Background()
-            view
+            content
         }
         .gesture(DragGesture())
         .alert(isPresented: $depositVerifyViewModel.showAlert) {
@@ -32,17 +32,19 @@ struct TransactionMemoVerifyView: View {
         }
     }
     
-    var view: some View {
-        container
-    }
-    
     var content: some View {
-        VStack {
-            fields
-            if tx.isFastVault {
-                fastVaultButton
+        VStack(spacing: 0) {
+            ScrollView {
+                fields
             }
-            button
+            Spacer()
+            VStack(spacing: 16) {
+                if tx.isFastVault {
+                    fastVaultButton
+                }
+                button
+            }
+            .padding(.bottom, 40)
         }
         .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
     }
@@ -53,7 +55,7 @@ struct TransactionMemoVerifyView: View {
         } label: {
             FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
