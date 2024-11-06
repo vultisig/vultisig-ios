@@ -15,6 +15,7 @@ struct SwapCryptoAmountTextField: View {
     var onChange: (String) async -> Void
     
     @Environment(\.isEnabled) private var isEnabled
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         content
@@ -63,7 +64,7 @@ struct SwapCryptoAmountTextField: View {
         let customBiding = Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency()
+                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
                 
                 guard amount != newValue else { return }
                 amount = newValue
@@ -103,4 +104,5 @@ struct SwapCryptoAmountTextField: View {
         amount: .constant(.empty),
         onChange: { _ in }
     )
+    .environmentObject(SettingsViewModel())
 }
