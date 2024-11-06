@@ -81,7 +81,8 @@ struct HomeView: View {
     var editButton: some View {
         NavigationHomeEditButton(
             vault: viewModel.selectedVault,
-            showVaultsList: showVaultsList,
+            showVaultsList: showVaultsList, 
+            selectedFolder: selectedFolder,
             isEditingVaults: $isEditingVaults,
             isEditingFolders: $isEditingFolders,
             showFolderDetails: $showFolderDetails

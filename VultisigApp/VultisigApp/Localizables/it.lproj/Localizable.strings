@@ -393,3 +393,5 @@
 "changesInSetup" = "Modifiche nella Configurazione";
 "yourConfigurationChangedMakeBackup" = "La tua configurazione è cambiata, crea un nuovo backup.";
 "newVaultSetup" = "Nuova Configurazione della Cassaforte";
+"saveChanges" = "Salva modifiche";
+"currentVaults" = "Cassaforti attuali";
