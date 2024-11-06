@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ReshareView: View {
-
     let vault: Vault
 
     @State var showJoinReshare = false
@@ -20,13 +19,6 @@ struct ReshareView: View {
 
     var body: some View {
         content
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Image("LogoWithTitle")
-                        .resizable()
-                        .frame(width: 140, height: 32)
-                }
-            }
             .task {
                 await viewModel.load(vault: vault)
             }
@@ -41,16 +33,17 @@ struct ReshareView: View {
             disclaimer
             buttons
         }
+        .padding(.horizontal, 16)
     }
 
     var title: some View {
         VStack(spacing: 16) {
             Text(NSLocalizedString("reshareLabelTitle", comment: ""))
-                .font(.body24MontserratMedium)
+                .font(.body24MontserratBold)
                 .foregroundColor(.neutral0)
 
             Text(NSLocalizedString("reshareLabelSubtitle", comment: ""))
-                .font(.body14Montserrat)
+                .font(.body14MontserratMedium)
                 .foregroundColor(.neutral300)
                 .multilineTextAlignment(.center)
         }
@@ -59,35 +52,44 @@ struct ReshareView: View {
 
     var disclaimer: some View {
         OutlinedDisclaimer(text: NSLocalizedString("reshareLabelDisclaimer", comment: ""), alignment: .center)
-            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
     }
 
     var buttons: some View {
         VStack(spacing: 12) {
-            NavigationLink {
-                PeerDiscoveryView(
-                    tssType: .Reshare,
-                    vault: vault,
-                    selectedTab: .secure,
-                    fastSignConfig: nil
-                )
-            } label: {
-                FilledButton(title: "startReshare")
-            }
-
-            NavigationLink {
-                FastVaultEmailView(
-                    tssType: .Reshare,
-                    vault: vault,
-                    selectedTab: .secure,
-                    fastVaultExist: viewModel.isFastVault
-                )
-            } label: {
-                OutlineButton(title: "startFastVaultReshare")
-            }
-
+            startReshareButton
+            startReshareVultisignerButton
             joinReshareButton
         }
-        .padding(.horizontal, 40)
     }
+    
+    var startReshareButton: some View {
+        NavigationLink {
+            PeerDiscoveryView(
+                tssType: .Reshare,
+                vault: vault,
+                selectedTab: .secure,
+                fastSignConfig: nil
+            )
+        } label: {
+            FilledButton(title: "startReshare")
+        }
+    }
+    
+    var startReshareVultisignerButton: some View {
+        NavigationLink {
+            FastVaultEmailView(
+                tssType: .Reshare,
+                vault: vault,
+                selectedTab: .secure,
+                fastVaultExist: viewModel.isFastVault
+            )
+        } label: {
+            OutlineButton(title: "startFastVaultReshare")
+        }
+    }
+}
+
+#Preview {
+    ReshareView(vault: Vault.example)
 }

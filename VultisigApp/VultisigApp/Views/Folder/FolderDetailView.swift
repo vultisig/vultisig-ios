@@ -290,7 +290,6 @@ struct FolderDetailView: View {
     
     private func handleSelection(for vault: Vault) {
         viewModel.setSelectedVault(vault)
-        dismiss()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
             showVaultsList = false

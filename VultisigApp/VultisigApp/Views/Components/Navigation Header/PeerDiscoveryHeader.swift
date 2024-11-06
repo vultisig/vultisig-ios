@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct PeerDiscoveryHeader: View {
+    let title: String
     let vault: Vault
     let selectedTab: SetupVaultState
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
@@ -31,7 +32,7 @@ struct PeerDiscoveryHeader: View {
     }
     
     var text: some View {
-        Text(getTitle())
+        Text(title)
             .foregroundColor(.neutral0)
             .font(.title3)
     }
@@ -47,18 +48,11 @@ struct PeerDiscoveryHeader: View {
             }
         }
     }
-    
-    private func getTitle() -> String {
-        NSLocalizedString("keygenFor", comment: "") +
-        " " +
-        selectedTab.title +
-        " " +
-        NSLocalizedString("vault", comment: "")
-    }
 }
 
 #Preview {
     PeerDiscoveryHeader(
+        title: "Keygen",
         vault: Vault.example,
         selectedTab: .fast,
         viewModel: KeygenPeerDiscoveryViewModel(),

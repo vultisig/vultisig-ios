@@ -388,3 +388,8 @@
 "vaultPart" = "Dio trezora";
 "fastVaultEmailDisclaimer" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije";
 "backupYourVaultNow" = "Izradite sigurnosnu kopiju dijela trezora ovog uređaja sada!";
+"resharingTheVault" = "Ponovno dijeljenje trezora";
+"resharingLoaderTitle" = "Dodajte uređaje za uključivanje ili izostavite uređaje za uklanjanje iz trezora";
+"changesInSetup" = "Promjene u postavkama";
+"yourConfigurationChangedMakeBackup" = "Vaša konfiguracija se promijenila, napravite novu sigurnosnu kopiju.";
+"newVaultSetup" = "Novo postavljanje trezora";
