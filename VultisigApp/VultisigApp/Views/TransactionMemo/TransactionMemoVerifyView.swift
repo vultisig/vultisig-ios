@@ -15,6 +15,9 @@ struct TransactionMemoVerifyView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
+    @State var fastPasswordPresented = false
+
+    
     var body: some View {
         ZStack {
             Background()
@@ -36,9 +39,42 @@ struct TransactionMemoVerifyView: View {
     var content: some View {
         VStack {
             fields
+            if tx.isFastVault {
+                fastVaultButton
+            }
             button
         }
         .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
+    }
+    
+    var fastVaultButton: some View {
+        Button {
+            fastPasswordPresented = true
+        } label: {
+            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
+        }
+        .padding(.horizontal, 16)
+        .sheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $tx.fastVaultPassword,
+                vault: vault,
+                onSubmit: {
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        Task {
+                            
+                            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
+                            
+                            if keysignPayload != nil {
+                                depositViewModel.moveToNextView()
+                            }
+                            
+                        }
+                    }
+                    
+                }
+            )
+        }
     }
     
     var alert: Alert {
