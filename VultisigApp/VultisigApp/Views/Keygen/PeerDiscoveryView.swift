@@ -10,9 +10,7 @@ struct PeerDiscoveryView: View {
     let tssType: TssType
     let vault: Vault
     let selectedTab: SetupVaultState
-    let fastVaultEmail: String?
-    let fastVaultPassword: String?
-    let fastVaultExist: Bool
+    let fastSignConfig: FastSignConfig?
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
@@ -52,9 +50,7 @@ struct PeerDiscoveryView: View {
                     tssType: tssType, 
                     state: selectedTab,
                     participantDiscovery: participantDiscovery,
-                    fastVaultPassword: fastVaultPassword, 
-                    fastVaultEmail: fastVaultEmail,
-                    fastVaultExist: fastVaultExist
+                    fastSignConfig: fastSignConfig
                 )
                 setData()
             }
@@ -182,7 +178,7 @@ struct PeerDiscoveryView: View {
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
-            fastVaultPassword: fastVaultPassword
+            fastSignConfig: fastSignConfig
         )
     }
     
@@ -224,5 +220,5 @@ struct PeerDiscoveryView: View {
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastVaultEmail: nil, fastVaultPassword: nil, fastVaultExist: false)
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastSignConfig: nil)
 }

@@ -19,7 +19,7 @@ extension NavigationQRShareButton {
         }
     }
     
-    var button: some View {
+    var deleteButton: some View {
         Button {
             shareImage()
         } label: {

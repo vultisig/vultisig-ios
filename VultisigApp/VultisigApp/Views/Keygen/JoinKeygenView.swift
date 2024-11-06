@@ -85,7 +85,7 @@ struct JoinKeygenView: View {
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             oldResharePrefix: viewModel.oldResharePrefix, 
-            fastVaultPassword: nil
+            fastSignConfig: nil
         )
     }
     

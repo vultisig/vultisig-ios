@@ -22,7 +22,7 @@ struct KeygenView: View {
     let sessionID: String
     let encryptionKeyHex: String
     let oldResharePrefix: String
-    let fastVaultPassword: String?
+    let fastSignConfig: FastSignConfig?
 
     @StateObject var viewModel = KeygenViewModel()
     
@@ -185,8 +185,8 @@ struct KeygenView: View {
             vault.isBackedUp = false
         }
 
-        if let fastVaultPassword {
-            viewModel.saveFastVaultPassword(fastVaultPassword, vault: vault)
+        if let fastSignConfig {
+            viewModel.saveFastSignConfig(fastSignConfig, vault: vault)
         }
 
         progressCounter = 4
@@ -206,7 +206,7 @@ struct KeygenView: View {
             sessionID: "",
             encryptionKeyHex: "",
             oldResharePrefix: "",
-            fastVaultPassword: nil
+            fastSignConfig: nil
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }

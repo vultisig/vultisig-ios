@@ -26,7 +26,7 @@ extension FastVaultSetPasswordView {
             view
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
+            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
         }
     }
 
@@ -37,6 +37,7 @@ extension FastVaultSetPasswordView {
     var view: some View {
         VStack {
             passwordField
+            hintField
             Spacer()
             disclaimer
             buttons

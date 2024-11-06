@@ -1,3 +1,5 @@
+"passwordHintTitle" = "Opcional: Pista de contraseña";
+"enterHint" = "Introduce una pista";
 "backupNowTitle" = "Es necesario realizar copias de seguridad en cada dispositivo en Vultisig";
 "backupNowWarning" = "Haz una copia de seguridad de tu bóveda en cada dispositivo individualmente!";
 "backupNowSubtitle" = "Cada dispositivo tiene su propia parte única de la bóveda, necesaria para la recuperación";

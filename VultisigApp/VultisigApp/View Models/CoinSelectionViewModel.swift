@@ -48,16 +48,16 @@ class CoinSelectionViewModel: ObservableObject {
             return false
         })) { $0.chain.name }
     }
-    
+
+    func isSelected(asset: CoinMeta) -> Bool {
+        return selection.contains(asset)
+    }
+
     func handleSelection(isSelected: Bool, asset: CoinMeta) {
         if isSelected {
-            if !selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
-                selection.insert(asset)
-            }
+            selection.insert(asset)
         } else {
-            if let remove = selection.first(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
-                selection.remove(remove)
-            }
+            selection.remove(asset)
         }
     }
 

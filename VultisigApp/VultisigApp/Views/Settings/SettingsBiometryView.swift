@@ -34,6 +34,7 @@ struct SettingsBiometryView: View {
 
                 if viewModel.isBiometryEnabled {
                     passwordCell
+                    hintCell
                 }
             }
             .padding(.horizontal, 16)
@@ -82,10 +83,21 @@ struct SettingsBiometryView: View {
         }
     }
 
+    var hintCell: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString("passwordHintTitle", comment: ""))
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+
+            HiddenTextField(placeholder: "typeHere", password: $viewModel.hint, isPasswordVisible: true)
+                .padding(.top, 8)
+        }
+    }
+
     var button: some View {
         return Button {
             Task {
-                if await viewModel.validatePassword(vault: vault) {
+                if await viewModel.validateForm(vault: vault) {
                     dismiss()
                 }
             }

@@ -12,14 +12,14 @@ struct VaultsView: View {
     @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
+    @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
+    @Binding var selectedFolder: Folder
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
         
     @Environment(\.modelContext) var modelContext
-    
-    @State var selectedFolder: Folder = .example
 
     var body: some View {
         ZStack {
@@ -52,9 +52,11 @@ struct VaultsView: View {
             
             if showFolderDetails {
                 FolderDetailView(
+                    selectedFolder: selectedFolder, 
                     vaultFolder: $selectedFolder,
-                    showVaultsList: $showVaultsList, 
-                    showFolderDetails: $showFolderDetails,
+                    showVaultsList: $showVaultsList,
+                    showFolderDetails: $showFolderDetails, 
+                    isEditingFolders: $isEditingFolders,
                     viewModel: viewModel
                 )
             }
@@ -87,24 +89,18 @@ struct VaultsView: View {
     
     var foldersList: some View {
         ForEach(folders, id: \.self) { folder in
-            Button(action: {
-                handleFolderSelection(for: folder)
-            }, label: {
-                FolderCell(folder: folder, isEditing: isEditingVaults)
-            })
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .padding(.vertical, 8)
-            .background(Color.backgroundBlue)
+            getFolderButton(for: folder)
         }
         .onMove(perform: isEditingVaults ? moveFolder : nil)
     }
     
     var vaultsList: some View {
-        ForEach(isEditingVaults ? vaults : viewModel.filteredVaults, id: \.self) { vault in
+        ForEach(viewModel.filteredVaults.sorted {
+            $0.order < $1.order
+        }, id: \.self) { vault in
             getButton(for: vault)
         }
-        .onMove(perform: isEditingVaults ? move : nil)
+        .onMove(perform: isEditingVaults ? moveVaults : nil)
         .background(Color.backgroundBlue)
     }
     
@@ -154,6 +150,18 @@ struct VaultsView: View {
         .buttonStyle(BorderlessButtonStyle())
     }
     
+    private func getFolderButton(for folder: Folder) -> some View {
+        Button(action: {
+            handleFolderSelection(for: folder)
+        }, label: {
+            FolderCell(folder: folder, isEditing: isEditingVaults)
+        })
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
+        .background(Color.backgroundBlue)
+        .disabled(isEditingVaults ? true : false)
+    }
     
     private func getButton(for vault: Vault) -> some View {
         Button {
@@ -200,27 +208,11 @@ struct VaultsView: View {
             .background(Color.backgroundBlue)
     }
     
-    func move(from: IndexSet, to: Int) {
-        let fromIndex = from.first ?? 0
-        
-        if fromIndex<to {
-            moveDown(fromIndex: fromIndex, toIndex: to-1)
-        } else {
-            moveUp(fromIndex: fromIndex, toIndex: to)
-        }
-    }
-    
-    private func moveDown(fromIndex: Int, toIndex: Int) {
-        for index in fromIndex...toIndex {
-            vaults[index].order = vaults[index].order-1
-        }
-        vaults[fromIndex].order = toIndex
-    }
-    
-    private func moveUp(fromIndex: Int, toIndex: Int) {
-        vaults[fromIndex].order = toIndex
-        for index in toIndex...fromIndex {
-            vaults[index].order = vaults[index].order+1
+    func moveVaults(from: IndexSet, to: Int) {
+        var filteredVaults = viewModel.filteredVaults.sorted(by: { $0.order < $1.order })
+        filteredVaults.move(fromOffsets: from, toOffset: to)
+        for (index, item) in filteredVaults.enumerated() {
+            item.order = index
         }
     }
     
@@ -228,7 +220,7 @@ struct VaultsView: View {
         var s = folders.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)
         for (index, item) in s.enumerated() {
-                item.order = index
+            item.order = index
         }
         try? self.modelContext.save()
     }
@@ -246,8 +238,15 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(false), showFolderDetails: .constant(false))
-            .environmentObject(DeeplinkViewModel())
-            .environmentObject(HomeViewModel())
+        VaultsView(
+            viewModel: HomeViewModel(),
+            showVaultsList: .constant(true),
+            isEditingVaults: .constant(false), 
+            isEditingFolders: .constant(false),
+            showFolderDetails: .constant(false),
+            selectedFolder: .constant(.example)
+        )
+        .environmentObject(DeeplinkViewModel())
+        .environmentObject(HomeViewModel())
     }
 }

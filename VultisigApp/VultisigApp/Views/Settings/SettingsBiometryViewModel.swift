@@ -13,10 +13,12 @@ final class SettingsBiometryViewModel: ObservableObject {
     @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
 
     @Published var password: String = .empty
+    @Published var hint: String = .empty
     @Published var isLoading: Bool = false
     @Published var isWrongPassword: Bool = false
 
     private var initialPassword: String = .empty
+    private var initialHint: String = .empty
 
     private let keychain = DefaultKeychainService.shared
     private let fastVaultService = FastVaultService.shared
@@ -26,6 +28,10 @@ final class SettingsBiometryViewModel: ObservableObject {
             self.password = password
             self.initialPassword = password
         }
+        if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
+            self.hint = hint
+            self.initialHint = hint
+        }
     }
 
     func onBiometryEnabledChanged(_ isOn: Bool, vault: Vault) {
@@ -33,32 +39,42 @@ final class SettingsBiometryViewModel: ObservableObject {
 
         if !isOn {
             keychain.setFastPassword(nil, pubKeyECDSA: vault.pubKeyECDSA)
+            keychain.setFastHint(nil, pubKeyECDSA: vault.pubKeyECDSA)
             password = .empty
+            hint = .empty
         }
     }
 
     var isSaveEnabled: Bool {
-        return password != initialPassword && !password.isEmpty
+        return (password != initialPassword && !password.isEmpty) || hint != initialHint
     }
 
-    @MainActor func validatePassword(vault: Vault) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
+    @MainActor func validateForm(vault: Vault) async -> Bool {
+        if initialPassword != password {
+            isLoading = true
+            let isValid = await fastVaultService.get(
+                pubKeyECDSA:  vault.pubKeyECDSA,
+                password: password
+            )
+            isLoading = false
 
-        let isValid = await fastVaultService.get(
-            pubKeyECDSA:  vault.pubKeyECDSA,
-            password: password
-        )
+            guard isValid else {
+                isWrongPassword = true
+                return false
+            }
 
-        guard isValid else {
-            isWrongPassword = true
-            return false
+            keychain.setFastPassword(
+                password.isEmpty ? nil : password,
+                pubKeyECDSA: vault.pubKeyECDSA
+            )
         }
 
-        keychain.setFastPassword(
-            password.isEmpty ? nil : password,
-            pubKeyECDSA: vault.pubKeyECDSA
-        )
+        if initialHint != hint {
+            keychain.setFastHint(
+                hint.isEmpty ? nil : hint,
+                pubKeyECDSA: vault.pubKeyECDSA
+            )
+        }
 
         return true
     }

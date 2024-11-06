@@ -9,14 +9,17 @@ import SwiftUI
 import SwiftData
 
 struct FolderDetailView: View {
+    let selectedFolder: Folder
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
     @Binding var showFolderDetails: Bool
+    @Binding var isEditingFolders: Bool
     @ObservedObject var viewModel: HomeViewModel
     
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
     
+    @State var folderName: String = ""
     @StateObject var folderViewModel = FolderDetailViewModel()
     
     @Environment(\.dismiss) var dismiss
@@ -36,13 +39,33 @@ struct FolderDetailView: View {
         .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
+        .onChange(of: isEditingFolders) { oldValue, newValue in
+            if isEditingFolders {
+                setupFolderName()
+            } else {
+                saveFolderName()
+            }
+        }
+    }
+    
+    var view: some View {
+        ZStack(alignment: .bottom) {
+            content
+            deleteButton
+        }
     }
     
     var content: some View {
         List {
+            spacer
+            
+            if isEditingFolders {
+                folderRename
+            }
+            
             selectedVaultsList
             
-            if folderViewModel.isEditing {
+            if isEditingFolders {
                 vaultsTitle
                 vaultsList
             }
@@ -51,16 +74,66 @@ struct FolderDetailView: View {
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
+        .padding(.bottom, isEditingFolders ? 80 : 0)
         .background(Color.backgroundBlue)
+    }
+    
+    var spacer: some View {
+        Background()
+            .frame(height: 30)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .background(Color.backgroundBlue)
+    }
+    
+    var folderRename: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            folderNameTitle
+            folderNameTextField
+        }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .background(Color.backgroundBlue)
+        .onAppear {
+            setupFolderName()
+        }
+        .onDisappear {
+            saveFolderName()
+        }
+    }
+    
+    var folderNameTitle: some View {
+        Text(NSLocalizedString("folderName", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratSemiBold)
+    }
+    
+    var folderNameTextField: some View {
+        TextField(
+            NSLocalizedString("typeHere", comment: ""),
+            text: $folderName
+        )
+        .font(.body16Menlo)
+        .foregroundColor(.neutral0)
+        .submitLabel(.done)
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .colorScheme(.dark)
+        .borderlessTextFieldStyle()
+        .autocorrectionDisabled()
     }
     
     var navigationEditButton: some View {
         Button {
             withAnimation {
-                folderViewModel.isEditing.toggle()
+                isEditingFolders.toggle()
             }
         } label: {
-            if folderViewModel.isEditing {
+            if isEditingFolders {
                 doneLabel
             } else {
                 editIcon
@@ -72,7 +145,7 @@ struct FolderDetailView: View {
         ForEach(folderViewModel.selectedVaults.sorted(by: {
             $0.order < $1.order
         }), id: \.self) { vault in
-            FolderDetailSelectedVaultCell(vault: vault, isEditing: folderViewModel.isEditing)
+            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditingFolders)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
@@ -81,7 +154,7 @@ struct FolderDetailView: View {
                     handleVaultSelection(for: vault)
                 }
         }
-        .onMove(perform: folderViewModel.isEditing ? move : nil)
+        .onMove(perform: isEditingFolders ? move : nil)
         .padding(.horizontal, 16)
         .background(Color.backgroundBlue)
     }
@@ -113,7 +186,7 @@ struct FolderDetailView: View {
         .background(Color.backgroundBlue)
     }
     
-    var button: some View {
+    var deleteButton: some View {
         Button {
             deleteFolder()
         } label: {
@@ -125,7 +198,7 @@ struct FolderDetailView: View {
         FilledButton(title: "deleteFolder", background: Color.miamiMarmalade)
             .padding(16)
             .edgesIgnoringSafeArea(.bottom)
-            .frame(maxHeight: folderViewModel.isEditing ? nil : 0)
+            .frame(maxHeight: isEditingFolders ? nil : 0)
             .clipped()
             .background(Color.backgroundBlue)
     }
@@ -158,12 +231,30 @@ struct FolderDetailView: View {
         )
     }
     
+    private func filterVaults() {
+        viewModel.filterVaults(vaults: vaults, folders: folders)
+    }
+    
+    private func setupFolderName() {
+        folderName = selectedFolder.folderName
+    }
+    
+    private func saveFolderName() {
+        for folder in folders {
+            if folder.id == selectedFolder.id {
+                folder.folderName = folderName
+                return
+            }
+        }
+    }
+    
     private func handleVaultSelection(for vault: Vault) {
-        if folderViewModel.isEditing {
+        if isEditingFolders {
             removeVault(vault)
         } else {
             handleSelection(for: vault)
         }
+        filterVaults()
     }
     
     private func move(from: IndexSet, to: Int) {
@@ -199,7 +290,6 @@ struct FolderDetailView: View {
     
     private func handleSelection(for vault: Vault) {
         viewModel.setSelectedVault(vault)
-        dismiss()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
             showVaultsList = false
@@ -215,7 +305,8 @@ struct FolderDetailView: View {
                 } catch {
                     print("Error: \(error)")
                 }
-                dismiss()
+                isEditingFolders = false
+                showFolderDetails = false
                 return
             }
         }
@@ -224,9 +315,11 @@ struct FolderDetailView: View {
 
 #Preview {
     FolderDetailView(
+        selectedFolder: Folder.example, 
         vaultFolder: .constant(Folder.example),
-        showVaultsList: .constant(false), 
-        showFolderDetails: .constant(true),
+        showVaultsList: .constant(false),
+        showFolderDetails: .constant(true), 
+        isEditingFolders: .constant(true),
         viewModel: HomeViewModel()
     )
 }

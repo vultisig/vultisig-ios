@@ -20,8 +20,8 @@ struct OneInchToken: Codable, Hashable {
 }
 
 extension OneInchToken {
-    func toCoinMeta(nativeToken: Coin) -> CoinMeta {
-        return CoinMeta(chain: nativeToken.chain,
+    func toCoinMeta(chain: Chain) -> CoinMeta {
+        return CoinMeta(chain: chain,
                         ticker: self.symbol,
                         logo: self.logoURI ?? "",
                         decimals: self.decimals,

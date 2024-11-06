@@ -1,3 +1,5 @@
+"passwordHintTitle" = "Optional: Password hint";
+"enterHint" = "Enter a hint";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
 "backupNowWarning" = "Back up your vault on every device individually!";
 "backupNowSubtitle" = "Each device has its own unique vault share, which are needed for recovery";
