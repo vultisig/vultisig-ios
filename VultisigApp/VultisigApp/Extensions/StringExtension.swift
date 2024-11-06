@@ -29,10 +29,6 @@ extension String {
         return self
     }
     
-    func formatCurrency() -> String {
-        return self.replacingOccurrences(of: ",", with: ".")
-    }
-    
     var isZero: Bool {
         return self == .zero
     }
@@ -63,6 +59,58 @@ extension String {
     }
 }
 
+// MARK: - Amount Formatter
+
+extension String {
+    func formatCurrency(_ currency: SettingsCurrency) -> String {
+        if currency.usesEuropeanFormat {
+            return self.replacingOccurrences(of: ",", with: ".")
+        } else {
+            return self.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ",", with: ".")
+        }
+    }
+    
+    func formatCurrencyWithSeparators(_ currency: SettingsCurrency) -> String {
+        guard let number = parseInput(currency) else {
+            return ""
+        }
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        
+        if currency.usesEuropeanFormat {
+            formatter.decimalSeparator = ","
+            formatter.groupingSeparator = "."
+        } else {
+            formatter.decimalSeparator = "."
+            formatter.groupingSeparator = ","
+        }
+        
+        let decimalPart = number.truncatingRemainder(dividingBy: 1)
+        if decimalPart == 0 {
+            formatter.maximumFractionDigits = 0
+        } else {
+            formatter.maximumFractionDigits = 2
+        }
+        
+        return formatter.string(from: NSNumber(value: number)) ?? ""
+    }
+    
+    private func parseInput(_ currency: SettingsCurrency) -> Double? {
+        var cleanInput = self.trimmingCharacters(in: .whitespaces)
+        
+        if currency.usesEuropeanFormat {
+            cleanInput = cleanInput.replacingOccurrences(of: ".", with: "")
+            cleanInput = cleanInput.replacingOccurrences(of: ",", with: ".")
+        } else {
+            cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
+        }
+        
+        return Double(cleanInput)
+    }
+}
 
 extension String {
     func toDecimal() -> Decimal {
