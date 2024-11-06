@@ -16,6 +16,8 @@ struct KeyGenSummaryView: View {
     @State var numberOfMainDevices = 0
     @State var numberOfBackupDevices = 0
     
+    @State var devicesToBeRemoved: [String] = []
+    
     var body: some View {
         ZStack {
             Background()
@@ -85,7 +87,7 @@ struct KeyGenSummaryView: View {
             Group {
                 Text("\(numberOfMainDevices) ") +
                 Text(NSLocalizedString("of", comment: "of")) +
-                Text(" \(numberOfMainDevices) ")
+                Text(" \(numberOfMainDevices+numberOfBackupDevices) ")
             }
             .font(.body14MontserratSemiBold)
             .padding(.vertical, 4)
@@ -103,13 +105,36 @@ struct KeyGenSummaryView: View {
     
     var list: some View {
         var index = 0
+        var removalIndex = 0
         var pairDevices = numberOfMainDevices
+        
+        let selectionsCount = viewModel.selections.count
         
         return VStack(spacing: 16) {
             ForEach(viewModel.selections.map{ $0 }, id: \.self) { selection in
                 index += 1
                 pairDevices -= selection==viewModel.localPartyID ? 0 : 1
-                return getCell(index: index, title: selection, isPairDevice: pairDevices>0)
+                print("SELECTIONS")
+                print(selection)
+                print(index)
+                return getCell(
+                    index: index,
+                    title: selection,
+                    isPairDevice: pairDevices>0
+                )
+            }
+            
+            if tssType == .Reshare {
+                ForEach(devicesToBeRemoved.map{ $0 }, id: \.self) { selection in
+                    removalIndex += 1
+                    
+                    return getCell(
+                        index: selectionsCount+removalIndex-1,
+                        title: selection,
+                        isPairDevice: false,
+                        isRemoved: true
+                    )
+                }
             }
         }
     }
@@ -166,7 +191,7 @@ struct KeyGenSummaryView: View {
         return viewModel.isValidPeers(state: state)
     }
 
-    private func getCell(index: Int, title: String, isPairDevice: Bool) -> some View {
+    private func getCell(index: Int, title: String, isPairDevice: Bool, isRemoved: Bool = false) -> some View {
         let deviceState = getDeviceState(deviceId: title, isPairDevice: isPairDevice)
         
         return Group {
@@ -181,7 +206,7 @@ struct KeyGenSummaryView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.vertical, 24)
-        .background(getCellBackground(deviceState))
+        .background(getCellBackground(deviceState, isRemoved: isRemoved))
         .cornerRadius(10)
     }
     
@@ -194,6 +219,12 @@ struct KeyGenSummaryView: View {
         let doubleValue = (2*Double(numberOfDevices))/3
         numberOfMainDevices = Int(ceil(doubleValue))
         numberOfBackupDevices = numberOfDevices-numberOfMainDevices
+        
+        if tssType == .Reshare {
+            devicesToBeRemoved = viewModel.vault.signers.filter({ signer in
+                !viewModel.selections.contains(signer)
+            })
+        }
     }
     
     private func getCountInWords() -> String {
@@ -223,12 +254,12 @@ struct KeyGenSummaryView: View {
         }
     }
     
-    private func getCellBackground(_ deviceState: String) -> Color {
+    private func getCellBackground(_ deviceState: String, isRemoved: Bool) -> Color {
         guard tssType == .Reshare else {
             return Color.blue600
         }
         
-        if deviceState == "Backup Device" {
+        if isRemoved {
             return Color.reshareCellRed.opacity(0.5)
         } else {
             return Color.reshareCellGreen.opacity(0.35)
