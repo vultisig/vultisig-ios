@@ -1,5 +1,5 @@
 //
-//  DepositVerifyView.swift
+//  TransactionMemoVerifyView.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 14/05/24.
@@ -36,7 +36,11 @@ struct TransactionMemoVerifyView: View {
         VStack(spacing: 0) {
             ScrollView {
                 fields
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20) 
             }
+            .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
+            
             Spacer()
             VStack(spacing: 16) {
                 if tx.isFastVault {
@@ -45,8 +49,9 @@ struct TransactionMemoVerifyView: View {
                 button
             }
             .padding(.bottom, 40)
+            .padding(.horizontal, 16)
         }
-        .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
     
     var fastVaultButton: some View {
@@ -55,25 +60,19 @@ struct TransactionMemoVerifyView: View {
         } label: {
             FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
-        .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
                 vault: vault,
                 onSubmit: {
-                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         Task {
-                            
                             keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
-                            
                             if keysignPayload != nil {
                                 depositViewModel.moveToNextView()
                             }
-                            
                         }
                     }
-                    
                 }
             )
         }
@@ -88,12 +87,8 @@ struct TransactionMemoVerifyView: View {
     }
     
     var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                summary
-                //checkboxes
-            }
-            .padding(.horizontal, 16)
+        VStack(spacing: 30) {
+            summary
         }
     }
     
@@ -142,9 +137,12 @@ struct TransactionMemoVerifyView: View {
             }
             
         } label: {
-            FilledButton(title: "sign")
+            if tx.isFastVault {
+                OutlineButton(title: "Paired sign")
+            } else {
+                FilledButton(title: "sign")
+            }
         }
-        .padding(40)
     }
     
     private func getAddressCell(for title: String, with address: String) -> some View {
