@@ -15,6 +15,7 @@ extension SetupQRCodeView {
             main
         }
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()

@@ -15,6 +15,7 @@ extension AddAddressBookView {
             main
         }
         .navigationTitle(NSLocalizedString("addAddress", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

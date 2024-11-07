@@ -15,6 +15,7 @@ extension NewWalletNameView {
             main
         }
         .navigationTitle(NSLocalizedString(header, comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()

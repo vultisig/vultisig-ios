@@ -15,6 +15,7 @@ extension FastVaultEmailView {
             main
         }
         .navigationTitle(NSLocalizedString("email", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

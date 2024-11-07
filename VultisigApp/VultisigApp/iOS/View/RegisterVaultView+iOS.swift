@@ -15,6 +15,7 @@ extension RegisterVaultView {
             content
         }
         .navigationTitle(NSLocalizedString("registerVault", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var content: some View {

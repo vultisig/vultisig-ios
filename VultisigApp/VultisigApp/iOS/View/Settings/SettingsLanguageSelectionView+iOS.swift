@@ -15,6 +15,7 @@ extension SettingsLanguageSelectionView {
             main
         }
         .navigationTitle(NSLocalizedString("language", comment: "Language"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

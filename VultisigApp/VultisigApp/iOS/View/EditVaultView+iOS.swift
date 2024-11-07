@@ -16,6 +16,7 @@ extension EditVaultView {
     var navigation: some View {
         base
             .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
+            .navigationBarTitleDisplayMode(.inline)
     }
     
     var view: some View {

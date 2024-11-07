@@ -15,6 +15,7 @@ extension CreateFolderView {
             button
         }
         .navigationTitle(NSLocalizedString("createFolder", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 #endif

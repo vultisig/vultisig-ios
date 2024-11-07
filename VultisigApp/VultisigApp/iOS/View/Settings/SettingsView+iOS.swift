@@ -15,6 +15,7 @@ extension SettingsView {
             main
         }
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

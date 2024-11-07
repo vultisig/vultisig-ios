@@ -12,6 +12,7 @@ extension SettingsDefaultChainView {
     var container: some View {
         content
             .navigationTitle(NSLocalizedString("defaultChains", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {
