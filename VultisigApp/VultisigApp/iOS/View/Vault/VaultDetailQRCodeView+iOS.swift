@@ -17,6 +17,7 @@ extension VaultDetailQRCodeView {
             main
         }
         .navigationTitle(NSLocalizedString("shareVaultQR", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

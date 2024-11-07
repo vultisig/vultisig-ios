@@ -17,8 +17,8 @@ extension AddressQRCodeView {
             main
         }
         .navigationBarBackButtonHidden(true)
-        .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showSheet)

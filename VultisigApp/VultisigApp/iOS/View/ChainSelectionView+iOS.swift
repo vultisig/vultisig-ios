@@ -18,6 +18,7 @@ extension ChainSelectionView {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showChainSelectionSheet)

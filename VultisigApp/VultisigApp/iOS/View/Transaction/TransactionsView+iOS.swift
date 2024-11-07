@@ -15,6 +15,7 @@ extension TransactionsView {
             main
         }
         .navigationTitle(NSLocalizedString("transactions", comment: "Transactions"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

@@ -21,6 +21,7 @@ extension ChainDetailView {
             PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {

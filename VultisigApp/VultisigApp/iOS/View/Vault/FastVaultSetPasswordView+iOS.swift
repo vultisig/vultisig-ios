@@ -20,6 +20,7 @@ extension FastVaultSetPasswordView {
             }
         }
         .navigationTitle(NSLocalizedString("password", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

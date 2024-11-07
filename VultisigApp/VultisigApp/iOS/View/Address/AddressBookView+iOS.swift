@@ -15,6 +15,7 @@ extension AddressBookView {
             main
         }
         .navigationTitle(NSLocalizedString("addressBook", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if savedAddresses.count != 0 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {

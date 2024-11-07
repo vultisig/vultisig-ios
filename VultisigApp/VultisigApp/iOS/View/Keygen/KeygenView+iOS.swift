@@ -17,6 +17,7 @@ extension KeygenView {
             instructions
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
             BackupVaultNowView(vault: vault)
         }

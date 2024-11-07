@@ -15,6 +15,7 @@ extension BackupPasswordSetupView {
             main
         }
         .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {
