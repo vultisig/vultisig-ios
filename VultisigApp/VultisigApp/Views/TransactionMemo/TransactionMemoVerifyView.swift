@@ -15,6 +15,8 @@ struct TransactionMemoVerifyView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
+    
     @State var fastPasswordPresented = false
     
     
@@ -174,7 +176,7 @@ struct TransactionMemoVerifyView: View {
     
     
     private func getAmount() -> String {
-        tx.amount + " " + tx.coin.ticker
+        tx.amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency) + " " + tx.coin.ticker
     }
 }
 
@@ -186,4 +188,5 @@ struct TransactionMemoVerifyView: View {
         tx: SendTransaction(),
         vault: Vault.example
     )
+    .environmentObject(SettingsViewModel())
 }

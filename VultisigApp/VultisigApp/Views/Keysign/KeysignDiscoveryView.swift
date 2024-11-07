@@ -29,6 +29,7 @@ struct KeysignDiscoveryView: View {
 #endif
     
     @Environment(\.displayScale) var displayScale
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let columns = [GridItem(.adaptive(minimum: 160))]
     
@@ -167,9 +168,9 @@ struct KeysignDiscoveryView: View {
         let tx = swapTransaction
         
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
@@ -177,9 +178,9 @@ struct KeysignDiscoveryView: View {
         let tx = swapTransaction
         
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
     
@@ -220,4 +221,5 @@ struct KeysignDiscoveryView: View {
 
 #Preview {
     KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+        .environmentObject(SettingsViewModel())
 }

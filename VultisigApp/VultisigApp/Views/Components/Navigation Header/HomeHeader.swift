@@ -53,7 +53,8 @@ struct HomeHeader: View {
         NavigationHomeEditButton(
             vault: viewModel.selectedVault,
             showVaultsList: showVaultsList,
-            isEditingVaults: $isEditingVaults, 
+            selectedFolder: selectedFolder,
+            isEditingVaults: $isEditingVaults,
             isEditingFolders: $isEditingFolders,
             showFolderDetails: $showFolderDetails
         )

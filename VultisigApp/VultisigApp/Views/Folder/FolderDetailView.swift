@@ -22,7 +22,6 @@ struct FolderDetailView: View {
     @State var folderName: String = ""
     @StateObject var folderViewModel = FolderDetailViewModel()
     
-    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
@@ -39,19 +38,12 @@ struct FolderDetailView: View {
         .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
-        .onChange(of: isEditingFolders) { oldValue, newValue in
-            if isEditingFolders {
-                setupFolderName()
-            } else {
-                saveFolderName()
-            }
-        }
     }
     
     var view: some View {
         ZStack(alignment: .bottom) {
             content
-            deleteButton
+            saveButton
         }
     }
     
@@ -61,6 +53,7 @@ struct FolderDetailView: View {
             
             if isEditingFolders {
                 folderRename
+                listTitle
             }
             
             selectedVaultsList
@@ -93,15 +86,13 @@ struct FolderDetailView: View {
             folderNameTextField
         }
         .padding(.horizontal, 16)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .background(Color.backgroundBlue)
         .onAppear {
-            setupFolderName()
-        }
-        .onDisappear {
-            saveFolderName()
+            setupFolder()
         }
     }
     
@@ -159,6 +150,18 @@ struct FolderDetailView: View {
         .background(Color.backgroundBlue)
     }
     
+    var listTitle: some View {
+        Text(NSLocalizedString("currentVaults", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratSemiBold)
+            .padding(.top, 22)
+            .padding(.horizontal, 16)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(Color.backgroundBlue)
+    }
+    
     var vaultsTitle: some View {
         Text(NSLocalizedString("addVaultsToFolder", comment: ""))
             .foregroundColor(.neutral0)
@@ -186,16 +189,16 @@ struct FolderDetailView: View {
         .background(Color.backgroundBlue)
     }
     
-    var deleteButton: some View {
+    var saveButton: some View {
         Button {
-            deleteFolder()
+            saveFolder()
         } label: {
             label
         }
     }
     
     var label: some View {
-        FilledButton(title: "deleteFolder", background: Color.miamiMarmalade)
+        FilledButton(title: "saveChanges")
             .padding(16)
             .edgesIgnoringSafeArea(.bottom)
             .frame(maxHeight: isEditingFolders ? nil : 0)
@@ -233,19 +236,6 @@ struct FolderDetailView: View {
     
     private func filterVaults() {
         viewModel.filterVaults(vaults: vaults, folders: folders)
-    }
-    
-    private func setupFolderName() {
-        folderName = selectedFolder.folderName
-    }
-    
-    private func saveFolderName() {
-        for folder in folders {
-            if folder.id == selectedFolder.id {
-                folder.folderName = folderName
-                return
-            }
-        }
     }
     
     private func handleVaultSelection(for vault: Vault) {
@@ -296,17 +286,18 @@ struct FolderDetailView: View {
         }
     }
     
-    private func deleteFolder() {
+    private func setupFolder() {
+        folderName = selectedFolder.folderName
+    }
+    
+    private func saveFolder() {
+        withAnimation(.easeInOut) {
+            isEditingFolders = false
+        }
+        
         for folder in folders {
-            if folder == vaultFolder {
-                modelContext.delete(folder)
-                do {
-                    try modelContext.save()
-                } catch {
-                    print("Error: \(error)")
-                }
-                isEditingFolders = false
-                showFolderDetails = false
+            if folder.id == selectedFolder.id {
+                folder.folderName = folderName
                 return
             }
         }
