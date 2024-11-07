@@ -36,13 +36,6 @@ extension TokenSelectionView {
                         .foregroundColor(Color.neutral0)
                 }
             }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                saveButton
-            }
-            
-            ToolbarItem(placement: Placement.principal.getPlacement()) {
-                searchBar
-            }
         }
     }
     
@@ -58,14 +51,18 @@ extension TokenSelectionView {
         }
         .background(Color.clear)
         .padding(.horizontal, 25)
+        .padding(.top, 25)
     }
     
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
+            searchBar
+                .padding(.horizontal, 25)
+            
             addCustomTokenButton
             scrollView
+            saveButton
         }
-        .padding(.bottom, 50)
     }
     
     var scrollView: some View {
@@ -95,9 +92,10 @@ extension TokenSelectionView {
             self.chainDetailView.sheetType = nil
             dismiss()
         }) {
-            Text("Save")
-                .foregroundColor(.blue)
+            FilledButton(title: "save")
         }
+        .padding(.horizontal, 25)
+        .padding(.vertical, 12)
     }
 }
 #endif

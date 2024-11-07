@@ -139,3 +139,12 @@ struct TokenSelectionView: View {
         }
     }
 }
+
+#Preview {
+    TokenSelectionView(
+        chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example),
+        vault: Vault.example,
+        group: GroupedChain.example
+    )
+    .environmentObject(CoinSelectionViewModel())
+}
