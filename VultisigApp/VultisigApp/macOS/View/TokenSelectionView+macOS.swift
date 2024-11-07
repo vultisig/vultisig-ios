@@ -50,16 +50,20 @@ extension TokenSelectionView {
         VStack(alignment: .leading, spacing: 0) {
             search
             addCustomTokenButton
+            Separator()
             scrollView
         }
     }
     
     var scrollView: some View {
-        list
-            .scrollContentBackground(.hidden)
-            .padding(.horizontal, 40)
-            .padding(.bottom, 50)
-            .colorScheme(.dark)
+        ScrollView {
+            list
+                .scrollContentBackground(.hidden)
+                .padding(.top, 24)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 50)
+                .colorScheme(.dark)
+        }
     }
     
     var textField: some View {
@@ -81,7 +85,7 @@ extension TokenSelectionView {
             dismiss()
         }) {
             Text("Save")
-                .foregroundColor(.blue)
+                .foregroundColor(Color.neutral0)
         }
         .padding(.horizontal, 32)
         .frame(height: 44)

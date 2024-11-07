@@ -66,10 +66,12 @@ extension TokenSelectionView {
     }
     
     var scrollView: some View {
-        list
-            .scrollContentBackground(.hidden)
-            .padding(.horizontal, 25)
-            .listStyle(.grouped)
+        ScrollView {
+            list
+                .scrollContentBackground(.hidden)
+                .padding(.horizontal, 25)
+                .listStyle(.grouped)
+        }
     }
 
     var textField: some View {
