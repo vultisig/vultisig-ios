@@ -115,7 +115,7 @@ struct QRShareSheetImage: View {
     var amountText: some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString("amount", comment: "") + ":")
-            Text(amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency))
+            Text(amount)
         }
     }
     
