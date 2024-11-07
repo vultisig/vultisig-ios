@@ -410,3 +410,5 @@
 "changesInSetup" = "Änderungen in der Konfiguration";
 "yourConfigurationChangedMakeBackup" = "Ihre Konfiguration hat sich geändert, erstellen Sie ein neues Backup.";
 "newVaultSetup" = "Neues Tresor-Setup";
+"saveChanges" = "Änderungen speichern";
+"currentVaults" = "Aktuelle Tresore";

@@ -29,6 +29,7 @@ struct KeysignDiscoveryView: View {
 #endif
     
     @Environment(\.displayScale) var displayScale
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let columns = [GridItem(.adaptive(minimum: 160))]
     
@@ -220,4 +221,5 @@ struct KeysignDiscoveryView: View {
 
 #Preview {
     KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+        .environmentObject(SettingsViewModel())
 }

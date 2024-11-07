@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
-
     @Binding var keysignPayload: KeysignPayload?
-
+    
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
     @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
     
-    @State var isButtonDisabled = false
-    
     let vault: Vault
     
+    @State var isButtonDisabled = false
     @State var fastPasswordPresented = false
+    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         ZStack {
@@ -210,11 +210,11 @@ struct SendCryptoVerifyView: View {
     }
     
     private func getAmount() -> String {
-        tx.amount + " " + tx.coin.ticker
+        tx.amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency) + " " + tx.coin.ticker
     }
     
     private func getFiatAmount() -> String {
-        tx.amountInFiat.formatToFiat()
+        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)
     }
 }
 
@@ -226,4 +226,5 @@ struct SendCryptoVerifyView: View {
         tx: SendTransaction(),
         vault: Vault.example
     )
+    .environmentObject(SettingsViewModel())
 }

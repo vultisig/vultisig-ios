@@ -16,6 +16,8 @@ struct SwapVerifyView: View {
     let vault: Vault
 
     @State var fastPasswordPresented = false
+    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         ZStack {
@@ -133,17 +135,17 @@ struct SwapVerifyView: View {
 
     func getFromAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
 
@@ -180,4 +182,5 @@ struct SwapVerifyView: View {
         swapViewModel: SwapCryptoViewModel(),
         vault: Vault.example
     )
+    .environmentObject(SettingsViewModel())
 }

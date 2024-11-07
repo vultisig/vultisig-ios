@@ -95,6 +95,15 @@ enum SettingsCurrency: String, CaseIterable {
             UserDefaults.standard.set(newValue.rawValue, forKey: "currency")
         }
     }
+    
+    var usesEuropeanFormat: Bool {
+        switch self {
+        case .EUR, .CHF:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 class SettingsOptionsStore {
