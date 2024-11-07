@@ -133,5 +133,6 @@ struct TransactionMemoView: View {
     
     private func setData() async {
         await transactionMemoViewModel.loadGasInfoForSending(tx: tx)
+        await transactionMemoViewModel.loadFastVault(tx: tx, vault: vault)
     }
 }

@@ -27,6 +27,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var approveHash: String? = nil
 
     let blockchainService = BlockChainService.shared
+    private let fastVaultService = FastVaultService.shared
         
     private let mediator = Mediator.shared
     
@@ -42,6 +43,12 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
+    }
+    
+    func loadFastVault(tx: SendTransaction, vault: Vault) async {
+        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        tx.isFastVault = isExist && !isLocalBackup
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
