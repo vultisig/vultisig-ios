@@ -24,6 +24,9 @@ class BalanceService {
     private let ton = TonService.shared
     private let osmo = OsmosisService.shared
     
+    private let terra = TerraService.shared
+    private let terraClassic = TerraClassicService.shared
+    
     private let cryptoPriceService = CryptoPriceService.shared
 
     func updateBalances(vault: Vault) async {
@@ -100,6 +103,14 @@ private extension BalanceService {
         case .osmosis:
             let osmoBalance = try await osmo.fetchBalances(address: coin.address)
             return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased())
+
+        case .terra:
+            let terraBalance = try await terra.fetchBalances(address: coin.address)
+            return terraBalance.balance(denom: "uluna")
+
+        case .terraClassic:
+            let terraClassicBalance = try await terraClassic.fetchBalances(address: coin.address)
+            return terraClassicBalance.balance(denom: "uluna")
 
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)

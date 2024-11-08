@@ -48,6 +48,11 @@ final class BlockChainService {
     private let ton = TonService.shared
     private let osmo = OsmosisService.shared
 
+    private let terra = TerraService.shared
+    private let terraClassic = TerraClassicService.shared
+
+    
+    
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         guard !tx.coin.isNativeToken, tx.coin.chainType == .EVM else {
             let specific = try await fetchSpecific(
@@ -248,6 +253,32 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            
+        case .terra:
+            let account = try await terra.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            
+            
+        case .terraClassic:
+            let account = try await terraClassic.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            
         case .dydx:
             let account = try await dydx.fetchAccountNumber(coin.address)
             

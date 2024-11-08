@@ -540,6 +540,14 @@ class TokensStore {
             CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
         }
         
+        static var terra: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "terra-luna-2", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var terraClassic: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "", isNativeToken: true)
+        }
+        
         static var kujira: CoinMeta {
             CoinMeta(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "", isNativeToken: true)
         }
@@ -576,6 +584,10 @@ class TokensStore {
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
         TokensStore.Token.dydx,
+        TokensStore.Token.terra,
+        TokensStore.Token.terraClassic,
+
+        
         TokensStore.Token.suiSUI,
         TokensStore.Token.dotDOT,
         TokensStore.Token.ton,

@@ -142,7 +142,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .dydx, .osmosis:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .dydx, .osmosis, .terra, .terraClassic:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
