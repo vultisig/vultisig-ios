@@ -218,6 +218,29 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    
+    static func fetchTerraAccountBalance(address: String) -> String{
+        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchTerraAccountNumber(_ address: String) -> String {
+        "https://terra-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastTerraTransaction = "https://terra-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
+    
+    
+    
+    static func fetchTerraClassicAccountBalance(address: String) -> String{
+        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchTerraClassicAccountNumber(_ address: String) -> String {
+        "https://terra-classic-lcd.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
+       
+    
+    
     static func fetchDydxAccountBalance(address: String) -> String{
         "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -296,6 +319,10 @@ class Endpoint {
             return "https://tonviewer.com/transaction/\(txid)"
         case "UOSMO":
             return "https://www.mintscan.io/osmosis/tx/\(txid)"
+        case "ULUNA":
+            return "https://www.mintscan.io/terra/tx/\(txid)"
+        case "ULUNC":
+            return "https://finder.terra.money/classic/tx/\(txid)"
         default:
             return ""
         }
@@ -353,6 +380,10 @@ class Endpoint {
             return "https://tonviewer.com/\(address)"
         case "UOSMO":
             return "https://www.mintscan.io/osmosis/address/\(address)"
+        case "ULUNA":
+            return "https://www.mintscan.io/terra/address/\(address)"
+        case "ULUNC":
+            return "https://finder.terra.money/classic/address/\(address)"
         default:
             return nil
         }
@@ -410,6 +441,10 @@ class Endpoint {
             return "https://tonviewer.com/\(address)"
         case .osmosis:
             return "https://www.mintscan.io/osmosis/address/\(address)"
+        case .terra:
+            return "https://www.mintscan.io/terra/address/\(address)"
+        case .terraClassic:
+            return "https://finder.terra.money/classic/address/\(address)"
         case .none:
             return nil
         }

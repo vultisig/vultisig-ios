@@ -67,6 +67,10 @@ struct KeysignMessageFactory {
             return try KujiraHelper().getPreSignedImageHash(keysignPayload: payload)
         case .osmosis:
             return try OsmoHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .terra:
+            return try TerraHelper(coinType: .terraV2, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
+        case .terraClassic:
+            return try TerraHelper(coinType: .terra, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .dydx:
