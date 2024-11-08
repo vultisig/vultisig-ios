@@ -90,7 +90,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .ton: return "TON"
         case .osmosis: return "uosmo"
         case .terra: return "uluna"
-        case .terraClassic: return "ulunc"
+        case .terraClassic: return "uluna"
         }
     }
     

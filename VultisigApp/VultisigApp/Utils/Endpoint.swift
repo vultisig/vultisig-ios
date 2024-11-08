@@ -322,7 +322,7 @@ class Endpoint {
         case "ULUNA":
             return "https://www.mintscan.io/terra/tx/\(txid)"
         case "ULUNC":
-            return "https://www.mintscan.io/terra-classic/tx/\(txid)"
+            return "https://finder.terra.money/classic/tx/\(txid)"
         default:
             return ""
         }
@@ -383,7 +383,7 @@ class Endpoint {
         case "ULUNA":
             return "https://www.mintscan.io/terra/address/\(address)"
         case "ULUNC":
-            return "https://www.mintscan.io/terra-classic/address/\(address)"
+            return "https://finder.terra.money/classic/address/\(address)"
         default:
             return nil
         }
@@ -444,7 +444,7 @@ class Endpoint {
         case .terra:
             return "https://www.mintscan.io/terra/address/\(address)"
         case .terraClassic:
-            return "https://www.mintscan.io/terra-classic/address/\(address)"
+            return "https://finder.terra.money/classic/address/\(address)"
         case .none:
             return nil
         }

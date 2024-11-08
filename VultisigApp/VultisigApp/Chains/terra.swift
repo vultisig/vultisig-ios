@@ -19,7 +19,7 @@ class TerraHelper {
         self.denom = denom
     }
     
-    static let GasLimit:UInt64 = 200000
+    static let GasLimit:UInt64 = 300000
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
         
