@@ -395,3 +395,5 @@
 "newVaultSetup" = "Nuova Configurazione della Cassaforte";
 "saveChanges" = "Salva modifiche";
 "currentVaults" = "Cassaforti attuali";
+"useSkipInstead" = "Usa \"Salta\" invece";
+"useSkipWithoutPasswordMessage" = "Per favore usa \"Salta\" per salvare senza password";

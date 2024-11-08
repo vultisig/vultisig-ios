@@ -396,3 +396,5 @@
 "newVaultSetup" = "Nova Configuração do Cofre";
 "saveChanges" = "Salvar alterações";
 "currentVaults" = "Cofres atuais";
+"useSkipInstead" = "Use \"Pular\" em vez disso";
+"useSkipWithoutPasswordMessage" = "Por favor, use \"Pular\" para salvar sem senha";

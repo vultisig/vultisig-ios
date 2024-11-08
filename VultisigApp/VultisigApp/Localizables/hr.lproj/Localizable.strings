@@ -395,3 +395,5 @@
 "newVaultSetup" = "Novo postavljanje trezora";
 "saveChanges" = "Spremi promjene";
 "currentVaults" = "Trenutni trezori";
+"useSkipInstead" = "Koristite \"Preskoči\" umjesto toga";
+"useSkipWithoutPasswordMessage" = "Molimo koristite \"Preskoči\" za spremanje bez lozinke";
