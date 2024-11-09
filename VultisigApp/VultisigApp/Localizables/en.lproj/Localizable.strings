@@ -427,3 +427,5 @@
 "newVaultSetup" = "New Vault Setup";
 "saveChanges" = "Save Changes";
 "currentVaults" = "Current Vaults";
+"useSkipInstead" = "Use Skip instead";
+"useSkipWithoutPasswordMessage" = "Please use \"Skip\" to save without password";
