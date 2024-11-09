@@ -27,9 +27,6 @@ struct ImportWalletView: View {
             ) { result in
                 backupViewModel.handleFileImporter(result)
             }
-            .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-                backupViewModel.handleOnDrop(providers: providers)
-            }
             .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
                 HomeView(selectedVault: backupViewModel.selectedVault)
             }
