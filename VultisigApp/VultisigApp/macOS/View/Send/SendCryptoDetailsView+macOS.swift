@@ -17,8 +17,9 @@ extension SendCryptoDetailsView {
         VStack {
             fields
             button
+                .padding(.horizontal, 8)
+                .padding(.vertical, -12)
         }
-        .padding(26)
     }
     
     var fields: some View {
@@ -40,14 +41,14 @@ extension SendCryptoDetailsView {
                         balanceNativeTokenField
                     }
                     
-                    getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
-                    getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
+                    getSummaryCell(leadingText: NSLocalizedString("networkFee", comment: ""), trailingText: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
                     
                     if tx.canBeReaped {
                         existentialDepositTextMessage
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(26)
             }
         }
     }

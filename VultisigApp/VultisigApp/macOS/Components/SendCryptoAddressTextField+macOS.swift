@@ -47,6 +47,7 @@ extension SendCryptoAddressTextField {
                 }
             ))
             .foregroundColor(.neutral0)
+            .font(.body12MenloBold)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
