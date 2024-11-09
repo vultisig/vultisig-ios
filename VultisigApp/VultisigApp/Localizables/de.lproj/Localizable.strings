@@ -412,3 +412,5 @@
 "newVaultSetup" = "Neues Tresor-Setup";
 "saveChanges" = "Änderungen speichern";
 "currentVaults" = "Aktuelle Tresore";
+"useSkipInstead" = "Verwenden Sie stattdessen „Überspringen“";
+"useSkipWithoutPasswordMessage" = "Bitte verwenden Sie „Überspringen“, um ohne Passwort zu speichern";

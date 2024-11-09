@@ -95,6 +95,13 @@ struct BackupPasswordSetupView: View {
     }
     
     func handleProxyTap() {
+        guard !backupViewModel.encryptionPassword.isEmpty else {
+            backupViewModel.alertTitle = "useSkipInstead"
+            backupViewModel.alertMessage = "useSkipWithoutPasswordMessage"
+            backupViewModel.showAlert = true
+            return
+        }
+        
         guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
             backupViewModel.alertTitle = "emptyField"
             backupViewModel.alertMessage = "checkEmptyField"
