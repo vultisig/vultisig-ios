@@ -395,3 +395,5 @@
 "newVaultSetup" = "Nueva Configuración del Cofre";
 "saveChanges" = "Guardar cambios";
 "currentVaults" = "Cofres actuales";
+"useSkipInstead" = "Usa \"Omitir\" en su lugar";
+"useSkipWithoutPasswordMessage" = "Por favor, usa \"Omitir\" para guardar sin contraseña";
