@@ -161,7 +161,7 @@ struct SendCryptoView: View {
         Button {
             settingsPresented = true
         } label: {
-            Image(systemName: "gearshape")
+            Image(systemName: "fuelpump")
         }
         .foregroundColor(.neutral0)
     }

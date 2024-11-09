@@ -84,7 +84,7 @@ struct SendCryptoDetailsView: View {
     
     var fromTextField: some View {
         Text(tx.fromAddress)
-            .font(.body12Menlo)
+            .font(.body12MenloBold)
             .foregroundColor(.neutral0)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -231,7 +231,7 @@ struct SendCryptoDetailsView: View {
             Spacer()
             Text(trailingText)
         }
-        .font(.body16Menlo)
+        .font(.body14MenloBold)
         .foregroundColor(.neutral0)
     }
 
@@ -260,7 +260,7 @@ struct SendCryptoDetailsView: View {
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
-            .font(.body12Menlo)
+            .font(.body12MenloBold)
             .foregroundColor(.neutral0)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)

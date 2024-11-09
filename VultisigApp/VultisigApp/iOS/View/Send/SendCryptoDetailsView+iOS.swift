@@ -38,7 +38,7 @@ extension SendCryptoDetailsView {
     var fields: some View {
         ScrollViewReader { value in
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 18) {
                     coinSelector
                     fromField
                     toField
@@ -54,8 +54,7 @@ extension SendCryptoDetailsView {
                         balanceNativeTokenField
                     }
                     
-                    getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
-                    getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
+                    getSummaryCell(leadingText: NSLocalizedString("networkFee", comment: ""), trailingText: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
                     
                     if tx.canBeReaped {
                         existentialDepositTextMessage

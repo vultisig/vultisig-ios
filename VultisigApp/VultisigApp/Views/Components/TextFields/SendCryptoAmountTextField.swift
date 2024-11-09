@@ -48,6 +48,7 @@ struct SendCryptoAmountTextField: View {
             }
         ))
         .borderlessTextFieldStyle()
+        .font(.body12MenloBold)
         .submitLabel(.next)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
@@ -70,7 +71,7 @@ struct SendCryptoAmountTextField: View {
     var maxButton: some View {
         Button { onMaxPressed?() } label: {
             Text(NSLocalizedString("max", comment: "").uppercased())
-                .font(.body16Menlo)
+                .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
