@@ -9,4 +9,6 @@ import SwiftUI
 
 class VultExtensionViewModel: ObservableObject {
     @Published var documentData: FileDocumentConfiguration<VULTFileDocument>? = nil
+    @Published var documentUrl: URL? = nil
+    @Published var showImportView: Bool = false
 }

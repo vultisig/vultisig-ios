@@ -113,6 +113,10 @@ struct ImportWalletView: View {
         if let data = vultExtensionViewModel.documentData, let url = data.fileURL {
             backupViewModel.handleFileDocument(url)
         }
+        
+        if let url = vultExtensionViewModel.documentUrl {
+            backupViewModel.handleFileDocument(url)
+        }
     }
     
     private func resetData() {
