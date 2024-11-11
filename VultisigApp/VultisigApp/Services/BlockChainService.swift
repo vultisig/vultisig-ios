@@ -277,7 +277,7 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 10000000, transactionType: transactionType.rawValue)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 100000000, transactionType: transactionType.rawValue)
             
         case .dydx:
             let account = try await dydx.fetchAccountNumber(coin.address)
