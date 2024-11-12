@@ -257,7 +257,7 @@
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
 "customToken" = "Benutzerdefinierten Token";
 "details" = "Details";
-"vaultType" = "Tresortyp";
+"vaultType" = "Tresorteil";
 "ECDSAKey" = "ECDSA-Schlüssel";
 "EdDSAKey" = "EdDSA-Schlüssel";
 "Selected" = "Ausgewählt";

@@ -91,7 +91,7 @@ struct VaultDeletionDetails: View {
     }
     
     private func getVaultType() -> String {
-        return "\(vault.getThreshold() + 1) of \(vault.signers.count) Vaults"
+        return "Part \(vault.getThreshold() + 1) of \(vault.signers.count)"
     }
 }
 

@@ -240,7 +240,7 @@
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "customToken" = "Token Personalizado";
 "details" = "Detalhes";
-"vaultType" = "Tipo de cofre";
+"vaultType" = "Parte do Cofre";
 "ECDSAKey" = "Chave ECDSA";
 "EdDSAKey" = "Chave EdDSA";
 "Selected" = "Selecionado";
