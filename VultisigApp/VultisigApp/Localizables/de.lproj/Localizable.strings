@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "Das erneute Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer der Schwellenwert der Geräte erforderlich.";
 "startReshare" = "Erneutes Teilen starten";
-"startFastVaultReshare" = "Erneutes Teilen mit Vultisigner starten";
+"startFastVaultReshare" = "Erneutes Teilen mit Vultiserver starten";
 "joinReshare" = "Erneutem Teilen beitreten";
 "fastVaultSetPasswordTitle" = "Schütze deinen Tresor und das schnelle Signieren.";
 "fastVaultEnterPasswordTitle" = "FastVault-Passwort";
