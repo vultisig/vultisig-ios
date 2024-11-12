@@ -59,7 +59,7 @@ final class FastVaultService {
         let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to vultisigner successfully")
+            print("Send create request to Vultiserver successfully")
         }
     }
 
@@ -87,7 +87,7 @@ final class FastVaultService {
                                  old_reshare_prefix: oldResharePrefix)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
-            print("Send reshare request to vultisigner successfully")
+            print("Send reshare request to Vultiserver successfully")
         }
     }
 
