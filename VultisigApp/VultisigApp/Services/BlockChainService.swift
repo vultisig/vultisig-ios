@@ -51,37 +51,14 @@ final class BlockChainService {
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
 
-    
-    
+
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
-        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        
-        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
-            fromAddress: tx.coin.address,
-            mode: tx.feeMode
-        )
-
-        let estimateGasLimit = tx.coin.isNativeToken ?
-            try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
-            try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
-
-        let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        let gasLimit = max(defaultGasLimit, estimateGasLimit)
-        
-        let specific = try await fetchSpecific(
-            for: tx.coin,
-            action: .transfer,
-            sendMaxAmount: tx.sendMaxAmount,
-            isDeposit: tx.isDeposit,
-            transactionType: tx.transactionType,
-            gasLimit: max(gasLimit, tx.gasLimit),
-            byteFee: tx.gasLimit,
-            fromAddress: tx.fromAddress,
-            toAddress: tx.toAddress,
-            feeMode: tx.feeMode
-        )
-        
-        return specific
+        switch tx.coin.chainType {
+        case .EVM:
+            return try await fetchSpecificForEVM(tx: tx)
+        default:
+            return try await fetchSpecificForNonEVM(tx: tx)
+        }
     }
     
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
@@ -110,6 +87,52 @@ final class BlockChainService {
 }
 
 private extension BlockChainService {
+
+    func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        return try await fetchSpecific(
+            for: tx.coin,
+            action: .transfer,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: tx.gasLimit,
+            byteFee: tx.byteFee,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            feeMode: tx.feeMode
+        )
+    }
+
+    func fetchSpecificForEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+
+        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
+            fromAddress: tx.coin.address,
+            mode: tx.feeMode
+        )
+
+        let estimateGasLimit = tx.coin.isNativeToken ?
+            try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
+            try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+
+        let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let gasLimit = max(defaultGasLimit, estimateGasLimit)
+
+        let specific = try await fetchSpecific(
+            for: tx.coin,
+            action: .transfer,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: max(gasLimit, tx.gasLimit),
+            byteFee: tx.gasLimit,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            feeMode: tx.feeMode
+        )
+
+        return specific
+    }
 
     func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, byteFee: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
