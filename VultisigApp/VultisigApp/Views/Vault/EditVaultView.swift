@@ -13,9 +13,14 @@ struct EditVaultView: View {
 
     @Query var vaults: [Vault]
     @Environment(\.dismiss) var dismiss
+    
+    @State var devicesInfo: [DeviceInfo] = []
 
     var body: some View {
         exporter
+            .onAppear {
+                setData()
+            }
     }
     
     var base: some View {
@@ -42,7 +47,7 @@ struct EditVaultView: View {
     
     var vaultDetails: some View {
         NavigationLink {
-            VaultPairDetailView(vault: vault)
+            VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
         } label: {
             EditVaultCell(title: "vaultDetailsTitle", description: "vaultDetailsDescription", icon: "info")
         }
@@ -66,7 +71,7 @@ struct EditVaultView: View {
     
     var deleteVault: some View {
         NavigationLink {
-            VaultDeletionConfirmView(vault: vault, vaults: vaults)
+            VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo, vaults: vaults)
         } label: {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash", isDestructive: true)
         }
@@ -86,6 +91,12 @@ struct EditVaultView: View {
             SettingsBiometryView(vault: vault)
         } label: {
             EditVaultCell(title: "settingsBiometricsTitle", description: "settingsBiometricsSubtitle", icon: "person.badge.key")
+        }
+    }
+    
+    private func setData() {
+        devicesInfo = vault.signers.enumerated().map { index, signer in
+            DeviceInfo(Index: index, Signer: signer)
         }
     }
 }

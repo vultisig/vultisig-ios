@@ -9,17 +9,12 @@ import SwiftUI
 
 struct VaultPairDetailView: View {
     let vault: Vault    
-    @State var devicesInfo: [DeviceInfo] = []
+    let devicesInfo: [DeviceInfo]
     
     @State var deviceIndex: Int = 0
     
     var body: some View {
         content
-            .onAppear {
-                self.devicesInfo = vault.signers.enumerated().map { index, signer in
-                    DeviceInfo(Index: index, Signer: signer)
-                }
-            }
     }
     
     var cells: some View {
@@ -96,5 +91,5 @@ struct VaultPairDetailView: View {
 }
 
 #Preview {
-    VaultPairDetailView(vault: Vault.example)
+    VaultPairDetailView(vault: Vault.example, devicesInfo: [])
 }

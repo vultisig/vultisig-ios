@@ -240,7 +240,7 @@
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "customToken" = "Prilagođeni Token";
 "details" = "Detalji";
-"vaultType" = "Tip spremišta";
+"vaultType" = "Dio trezora";
 "ECDSAKey" = "ECDSA ključ";
 "EdDSAKey" = "EdDSA ključ";
 "Selected" = "Odabrano";
