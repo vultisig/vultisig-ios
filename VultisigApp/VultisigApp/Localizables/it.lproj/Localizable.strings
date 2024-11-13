@@ -240,7 +240,7 @@
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
 "customToken" = "Token Personalizzato";
 "details" = "Dettagli";
-"vaultType" = "Tipo di caveau";
+"vaultType" = "Parte della Cassaforte";
 "ECDSAKey" = "Chiave ECDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "Selected" = "Selezionato";

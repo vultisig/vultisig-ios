@@ -261,7 +261,7 @@
 "findCustomTokens" = "Find Your Custom Token";
 "customToken" = "Custom Token";
 "details" = "Details";
-"vaultType" = "Vault Type";
+"vaultType" = "Vault Part";
 "ECDSAKey" = "ECDSA Key";
 "EdDSAKey" = "EdDSA Key";
 "Selected" = "Selected";

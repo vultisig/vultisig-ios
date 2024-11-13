@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VaultDeletionDetails: View {
     let vault: Vault
+    let devicesInfo: [DeviceInfo]
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -56,7 +57,7 @@ struct VaultDeletionDetails: View {
     var typeCell: some View {
         HStack(spacing: 0) {
             getTitleText("vaultType")
-            getDescriptionText(getVaultType())
+            getDescriptionText(titlePartText())
         }
     }
     
@@ -91,14 +92,34 @@ struct VaultDeletionDetails: View {
     }
     
     private func getVaultType() -> String {
-        return "\(vault.getThreshold() + 1) of \(vault.signers.count) Vaults"
+        return "Part \(vault.getThreshold() + 1) of \(vault.signers.count)"
+    }
+    
+    private func titlePartText() -> String {
+        let part = NSLocalizedString("part", comment: "")
+        let of = NSLocalizedString("of", comment: "")
+        let space = " "
+        let vaultIndex = getDeviceIndex()
+        let totalCount = "\(vault.signers.count)"
+        
+        return part + space + vaultIndex + space + of + space + totalCount
+    }
+    
+    private func getDeviceIndex() -> String {
+        for device in devicesInfo {
+            if device.Signer == vault.localPartyID {
+                return "\(device.Index + 1)"
+            }
+        }
+        
+        return "0"
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        VaultDeletionDetails(vault: Vault.example)
+        VaultDeletionDetails(vault: Vault.example, devicesInfo: [])
             .environmentObject(HomeViewModel())
     }
 }
