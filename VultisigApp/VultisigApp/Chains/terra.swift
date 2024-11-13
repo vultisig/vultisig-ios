@@ -57,37 +57,75 @@ class TerraHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = self.coinType.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
-            }
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
-                    $0.fromAddress = keysignPayload.coin.address
+        if keysignPayload.coin.isNativeToken {
+            
+            let input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = self.coinType.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with {
+                    $0.sendCoinsMessage = CosmosMessage.Send.with{
+                        $0.fromAddress = keysignPayload.coin.address
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = self.denom
+                            $0.amount = String(keysignPayload.toAmount)
+                        }]
+                        $0.toAddress = keysignPayload.toAddress
+                    }
+                }]
+                
+                $0.fee = CosmosFee.with {
+                    $0.gas = TerraHelper.GasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = self.denom
-                        $0.amount = String(keysignPayload.toAmount)
+                        $0.amount = String(gas)
                     }]
-                    $0.toAddress = keysignPayload.toAddress
                 }
-            }]
+            }
             
-            $0.fee = CosmosFee.with {
+            return try input.serializedData()
+        } else {
+            
+            let wasmTransferMessage = CosmosMessage.WasmTerraExecuteContractTransfer.with {
+                $0.senderAddress = keysignPayload.coin.address.description
+                $0.contractAddress = keysignPayload.coin.contractAddress.description
+                $0.amount = keysignPayload.toAmount.serialize()
+                $0.recipientAddress = keysignPayload.toAddress
+            }
+            
+            let message = CosmosMessage.with {
+                $0.wasmTerraExecuteContractTransferMessage = wasmTransferMessage
+            }
+            
+            let fee = CosmosFee.with {
                 $0.gas = TerraHelper.GasLimit
                 $0.amounts = [CosmosAmount.with {
-                    $0.denom = self.denom
                     $0.amount = String(gas)
+                    $0.denom = self.denom
                 }]
             }
+            
+            let input = CosmosSigningInput.with {
+                $0.signingMode = .protobuf;
+                $0.accountNumber = accountNumber
+                $0.chainID = self.coinType.chainId
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.sequence = sequence
+                $0.messages = [message]
+                $0.fee = fee
+                $0.publicKey = pubKeyData
+            }
+            
+            return try input.serializedData()
         }
-        
-        return try input.serializedData()
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

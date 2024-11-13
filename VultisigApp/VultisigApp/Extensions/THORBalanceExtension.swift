@@ -16,4 +16,15 @@ extension [CosmosBalance] {
         }
         return .zero
     }
+    
+    func balance(denom: String, coin: Coin) -> String {
+        for balance in self {
+            if coin.isNativeToken && balance.denom.lowercased() == denom {
+                return balance.amount
+            } else if !coin.isNativeToken && balance.denom == coin.contractAddress {
+                return balance.amount
+            }
+        }
+        return .zero
+    }
 }

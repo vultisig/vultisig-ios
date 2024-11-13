@@ -28,11 +28,11 @@ class BalanceService {
     private let terraClassic = TerraClassicService.shared
     
     private let cryptoPriceService = CryptoPriceService.shared
-
+    
     func updateBalances(vault: Vault) async {
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
-
+            
             await withTaskGroup(of: Void.self) { group in
                 for coin in vault.coins {
                     group.addTask { [unowned self]  in
@@ -47,7 +47,7 @@ class BalanceService {
                     }
                 }
             }
-
+            
             try await Storage.shared.save()
         } catch {
             print("Fetch Rates error: \(error.localizedDescription)")
@@ -67,35 +67,35 @@ class BalanceService {
 }
 
 private extension BalanceService {
-
+    
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             return blockChairData.address?.balance?.description ?? "0"
-
+            
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
             return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
-
+            
         case .solana:
             return try await sol.getSolanaBalance(coin: coin)
-
+            
         case .sui:
             return try await sui.getBalance(coin: coin)
-
+            
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
-
+            
         case .gaiaChain:
             let atomBalance = try await gaia.fetchBalances(address: coin.address)
             return atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased())
-
+            
         case .dydx:
             let dydxBalance = try await dydx.fetchBalances(address: coin.address)
             return dydxBalance.balance(denom: Chain.dydx.ticker.lowercased())
-
+            
         case .kujira:
             let kujiBalance = try await kuji.fetchBalances(address: coin.address)
             return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased())
@@ -103,19 +103,19 @@ private extension BalanceService {
         case .osmosis:
             let osmoBalance = try await osmo.fetchBalances(address: coin.address)
             return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased())
-
+            
         case .terra:
             let terraBalance = try await terra.fetchBalances(address: coin.address)
-            return terraBalance.balance(denom: "uluna")
-
-        case .terraClassic:
+            return terraBalance.balance(denom: "uluna", coin: coin)
+            
+        case .terraClassic:            
             let terraClassicBalance = try await terraClassic.fetchBalances(address: coin.address)
-            return terraClassicBalance.balance(denom: "uluna")
-
+            return terraClassicBalance.balance(denom: "uluna", coin: coin)
+            
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)
             return mayaBalance.balance(denom: coin.ticker.lowercased())
-
+            
         case .polkadot:
             return try await dot.getBalance(coin: coin)
             
@@ -123,7 +123,7 @@ private extension BalanceService {
             return try await ton.getBalance(coin)
         }
     }
-
+    
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {
         guard coin.rawBalance != rawBalance else {
             return

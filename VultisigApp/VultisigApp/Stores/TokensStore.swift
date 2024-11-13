@@ -544,8 +544,24 @@ class TokensStore {
             CoinMeta(chain: Chain.terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "terra-luna-2", contractAddress: "", isNativeToken: true)
         }
         
+        static var terraAstroIBC: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "ASTRO-IBC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995", isNativeToken: false)
+        }
+        
+        static var terraAstro: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "ASTRO", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26", isNativeToken: false)
+        }
+        
         static var terraClassic: CoinMeta {
             CoinMeta(chain: Chain.terraClassic, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var terraClassicAstroIBC: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "ASTRO-IBC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995", isNativeToken: false)
+        }
+        
+        static var terraClassicAstro: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "ASTRO", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26", isNativeToken: false)
         }
         
         static var kujira: CoinMeta {
@@ -584,10 +600,16 @@ class TokensStore {
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
         TokensStore.Token.dydx,
-        TokensStore.Token.terra,
-        TokensStore.Token.terraClassic,
-
         
+        TokensStore.Token.terra,
+        TokensStore.Token.terraAstro,
+        TokensStore.Token.terraAstroIBC,
+        
+        
+        TokensStore.Token.terraClassic,
+        TokensStore.Token.terraClassicAstro,
+        TokensStore.Token.terraClassicAstroIBC,
+
         TokensStore.Token.suiSUI,
         TokensStore.Token.dotDOT,
         TokensStore.Token.ton,
