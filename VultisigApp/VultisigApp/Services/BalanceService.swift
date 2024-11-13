@@ -9,9 +9,9 @@ import Foundation
 import SwiftData
 
 class BalanceService {
-
+    
     static let shared = BalanceService()
-
+    
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
@@ -88,29 +88,32 @@ private extension BalanceService {
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
             
+            // COSMOS
         case .gaiaChain:
             let atomBalance = try await gaia.fetchBalances(address: coin.address)
-            return atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased())
+            return atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased(), coin: coin)
             
         case .dydx:
             let dydxBalance = try await dydx.fetchBalances(address: coin.address)
-            return dydxBalance.balance(denom: Chain.dydx.ticker.lowercased())
+            return dydxBalance.balance(denom: Chain.dydx.ticker.lowercased(), coin: coin)
             
         case .kujira:
             let kujiBalance = try await kuji.fetchBalances(address: coin.address)
-            return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased())
+            return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased(), coin: coin)
             
         case .osmosis:
             let osmoBalance = try await osmo.fetchBalances(address: coin.address)
-            return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased())
+            return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased(), coin: coin)
             
         case .terra:
             let terraBalance = try await terra.fetchBalances(address: coin.address)
             return terraBalance.balance(denom: "uluna", coin: coin)
             
-        case .terraClassic:            
+        case .terraClassic:
             let terraClassicBalance = try await terraClassic.fetchBalances(address: coin.address)
             return terraClassicBalance.balance(denom: "uluna", coin: coin)
+            
+            //
             
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)
