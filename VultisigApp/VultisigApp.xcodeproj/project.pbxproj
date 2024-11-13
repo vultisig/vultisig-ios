@@ -409,6 +409,7 @@
 		A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */; };
 		A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */; };
 		A6B7F49E2C496EA8006D83D1 /* VaultDetailMacQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */; };
+		A6B84B0C2CE56D79006929A0 /* ServerBackupVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
@@ -1154,6 +1155,7 @@
 		A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCode.swift; sourceTree = "<group>"; };
 		A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCodeViewModel.swift; sourceTree = "<group>"; };
 		A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailMacQRCode.swift; sourceTree = "<group>"; };
+		A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerBackupVerificationView.swift; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
@@ -1761,6 +1763,7 @@
 				A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
+				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -3924,6 +3927,7 @@
 				B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */,
 				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
+				A6B84B0C2CE56D79006929A0 /* ServerBackupVerificationView.swift in Sources */,
 				A69FBBCE2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift in Sources */,
 				A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
