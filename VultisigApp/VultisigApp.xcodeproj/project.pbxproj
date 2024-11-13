@@ -103,6 +103,7 @@
 		A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
+		A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* EtherfaceService.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -845,6 +846,7 @@
 		A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
+		A598FD792CE2098800F26516 /* EtherfaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherfaceService.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1596,6 +1598,7 @@
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
+				A598FD792CE2098800F26516 /* EtherfaceService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
@@ -3467,6 +3470,7 @@
 				A6C670B72C9D139A00F59B6A /* CoinDetailView+macOS.swift in Sources */,
 				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				A6505ADB2CA66CC20002FBF4 /* Placement+macOS.swift in Sources */,
+				A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */,
 				A6505AF52CA678530002FBF4 /* ImageFileDocument+iOS.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,

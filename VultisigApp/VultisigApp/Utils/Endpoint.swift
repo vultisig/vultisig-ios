@@ -137,6 +137,10 @@ class Endpoint {
         return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
     }
     
+    static func fetchMemoInfo(hash: String) -> URL {
+        return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
+    }
+
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }
