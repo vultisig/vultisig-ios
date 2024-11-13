@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "Reshare can be used to refresh, expand or reduce the amount of devices in a Vault.";
 "reshareLabelDisclaimer" = "For all Reshare actions the threshold of devices is always required.";
 "startReshare" = "Start Reshare";
-"startFastVaultReshare" = "Start Reshare with Vultisigner";
+"startFastVaultReshare" = "Start Reshare with Vultiserver";
 "joinReshare" = "Join Reshare";
 "fastVaultSetPasswordTitle" = "Protect your vault and fast sign.";
 "fastVaultEnterPasswordTitle" = "FastVault password";

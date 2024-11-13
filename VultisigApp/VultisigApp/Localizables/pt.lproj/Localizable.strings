@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
 "startReshare" = "Iniciar compartilhamento novamente";
-"startFastVaultReshare" = "Iniciar compartilhamento com Vultisigner";
+"startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "joinReshare" = "Juntar-se ao compartilhamento";
 "fastVaultSetPasswordTitle" = "Proteja o seu cofre e assine rapidamente";
 "fastVaultEnterPasswordTitle" = "Senha do FastVault";

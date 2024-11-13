@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
 "startReshare" = "Započni ponovno dijeljenje";
-"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultisignerom";
+"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "fastVaultSetPasswordTitle" = "Zaštitite svoj trezor i brzo potpišite.";
 "fastVaultEnterPasswordTitle" = "Lozinka za FastVault";

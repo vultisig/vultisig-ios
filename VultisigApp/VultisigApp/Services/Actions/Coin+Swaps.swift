@@ -34,10 +34,12 @@ extension Coin {
 
             var providers: [SwapProvider] = []
 
+            if thorEthTokens.contains(ticker) {
+                providers.append(.thorchain)
+            }
+
             if mayaEthTokens.contains(ticker) {
                 providers.append(.mayachain)
-            } else if thorEthTokens.contains(ticker) {
-                providers.append(.thorchain)
             }
 
             return providers + defaultProviders
