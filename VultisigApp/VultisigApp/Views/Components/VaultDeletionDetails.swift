@@ -12,6 +12,11 @@ struct VaultDeletionDetails: View {
     let devicesInfo: [DeviceInfo]
     
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @State var totalValue: String = ""
+    
+    func setData(){
+        totalValue = homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0"
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -27,6 +32,9 @@ struct VaultDeletionDetails: View {
         .padding(12)
         .background(Color.blue600)
         .cornerRadius(10)
+        .onAppear() {
+            setData()
+        }
     }
     
     var title: some View {
@@ -50,7 +58,7 @@ struct VaultDeletionDetails: View {
     var valueCell: some View {
         HStack(spacing: 0) {
             getTitleText("vaultValue")
-            getDescriptionText(homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0")
+            getDescriptionText(totalValue)
         }
     }
     
