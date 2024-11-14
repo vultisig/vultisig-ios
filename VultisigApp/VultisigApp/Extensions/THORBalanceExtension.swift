@@ -21,7 +21,7 @@ extension [CosmosBalance] {
         for balance in self {
             if coin.isNativeToken && balance.denom.lowercased() == denom {
                 return balance.amount
-            } else if !coin.isNativeToken && balance.denom == coin.contractAddress {
+            } else if !coin.isNativeToken && balance.denom.lowercased() == coin.contractAddress.lowercased() {
                 return balance.amount
             }
         }

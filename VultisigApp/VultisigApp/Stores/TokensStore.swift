@@ -555,6 +555,10 @@ class TokensStore {
         static var terraClassic: CoinMeta {
             CoinMeta(chain: Chain.terraClassic, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "", isNativeToken: true)
         }
+        
+        static var terraClassicUSD: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "USTC", logo: "ustc", decimals: 6, priceProviderId: "terrausd", contractAddress: "uusd", isNativeToken: false)
+        }
                 
         static var terraClassicAstro: CoinMeta {
             CoinMeta(chain: Chain.terraClassic, ticker: "ASTROC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport", contractAddress: "terra1xj49zyqrwpv5k928jwfpfy2ha668nwdgkwlrg3", isNativeToken: false)
@@ -604,6 +608,7 @@ class TokensStore {
         
         TokensStore.Token.terraClassic,
         TokensStore.Token.terraClassicAstro,
+        TokensStore.Token.terraClassicUSD,
 
         TokensStore.Token.suiSUI,
         TokensStore.Token.dotDOT,
