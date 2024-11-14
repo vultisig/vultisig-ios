@@ -13,7 +13,7 @@ struct ServerBackupVerificationView: View {
     var body: some View {
         ZStack {
             Background()
-            content
+            container
         }
     }
     
