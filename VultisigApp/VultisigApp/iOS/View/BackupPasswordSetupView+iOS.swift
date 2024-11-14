@@ -40,13 +40,16 @@ extension BackupPasswordSetupView {
         }) {
             FilledButton(title: "save")
         }
-        .sheet(isPresented: $showSaveShareSheet, onDismiss: {
-            dismissView()
-        }) {
+        .sheet(isPresented: $showSaveShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                ShareSheetViewController(activityItems: [fileURL])
-                    .presentationDetents([.medium])
-                    .ignoresSafeArea(.all)
+                ShareSheetViewController(activityItems: [fileURL]) { didSave in
+                    if didSave {
+                        fileSaved()
+                        dismissView()
+                    }
+                }
+                .presentationDetents([.medium])
+                .ignoresSafeArea(.all)
             }
         }
     }
@@ -54,17 +57,19 @@ extension BackupPasswordSetupView {
     var skipButton: some View {
         Button(action: {
             showSkipShareSheet = true
-            fileSaved()
         }) {
             OutlineButton(title: "skip")
         }
-        .sheet(isPresented: $showSkipShareSheet, onDismiss: {
-            dismissView()
-        }) {
+        .sheet(isPresented: $showSkipShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                ShareSheetViewController(activityItems: [fileURL])
-                    .presentationDetents([.medium])
-                    .ignoresSafeArea(.all)
+                ShareSheetViewController(activityItems: [fileURL]) { didSave in
+                    if didSave {
+                        fileSaved()
+                        dismissView()
+                    }
+                }
+                .presentationDetents([.medium])
+                .ignoresSafeArea(.all)
             }
         }
     }
