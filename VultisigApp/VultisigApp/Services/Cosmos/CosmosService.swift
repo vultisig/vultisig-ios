@@ -2,14 +2,47 @@ import Foundation
 
 class CosmosService {
     
-    func fetchBalances(address: String) async throws -> [CosmosBalance] {
-        guard let url = balanceURL(forAddress: address) else {
-            return [CosmosBalance]()
+    func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
+        
+        if coin.isNativeToken || coin.contractAddress.contains("ibc/") {
+                        
+            guard let url = balanceURL(forAddress: coin.address) else {
+                return [CosmosBalance]()
+            }
+            
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
+            return balanceResponse.balances
+            
+        } else {
+            
+            let balance = try await fetchWasmTokenBalances(coin: coin)
+            return [CosmosBalance(denom: coin.contractAddress, amount: balance)]
+            
+        }
+        
+    }
+    
+    func fetchWasmTokenBalances(coin: Coin) async throws -> String {
+        
+        let payload = "{\"balance\":{\"address\":\"\(coin.address)\"}}"
+        let base64Payload = payload.data(using: .utf8)?.base64EncodedString()
+        
+        guard let base64Payload else {
+            return "0"
+        }
+        
+        guard let url = wasmTokenBalanceURL(contractAddress: coin.contractAddress, base64Payload: base64Payload) else {
+            return "0"
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        return balanceResponse.balances
+        
+        if let balance = Utils.extractResultFromJson(fromData: data, path: "data.balance") as? String {
+            return balance
+        }
+        
+        return "0"
     }
     
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
@@ -66,4 +99,9 @@ class CosmosService {
     func transactionURL() -> URL? {
         fatalError("Must override in subclass")
     }
+    
+    func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        fatalError("Must override in subclass")
+    }
+    
 }

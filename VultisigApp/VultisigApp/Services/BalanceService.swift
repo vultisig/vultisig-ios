@@ -90,27 +90,27 @@ private extension BalanceService {
             
             // COSMOS
         case .gaiaChain:
-            let atomBalance = try await gaia.fetchBalances(address: coin.address)
+            let atomBalance = try await gaia.fetchBalances(coin: coin)
             return atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased(), coin: coin)
             
         case .dydx:
-            let dydxBalance = try await dydx.fetchBalances(address: coin.address)
+            let dydxBalance = try await dydx.fetchBalances(coin: coin)
             return dydxBalance.balance(denom: Chain.dydx.ticker.lowercased(), coin: coin)
             
         case .kujira:
-            let kujiBalance = try await kuji.fetchBalances(address: coin.address)
+            let kujiBalance = try await kuji.fetchBalances(coin: coin)
             return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased(), coin: coin)
             
         case .osmosis:
-            let osmoBalance = try await osmo.fetchBalances(address: coin.address)
+            let osmoBalance = try await osmo.fetchBalances(coin: coin)
             return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased(), coin: coin)
             
         case .terra:
-            let terraBalance = try await terra.fetchBalances(address: coin.address)
+            let terraBalance = try await terra.fetchBalances(coin: coin)
             return terraBalance.balance(denom: "uluna", coin: coin)
             
         case .terraClassic:
-            let terraClassicBalance = try await terraClassic.fetchBalances(address: coin.address)
+            let terraClassicBalance = try await terraClassic.fetchBalances(coin: coin)
             return terraClassicBalance.balance(denom: "uluna", coin: coin)
             
             //

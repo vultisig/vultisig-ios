@@ -22,6 +22,10 @@ class TerraService: CosmosService {
     override func transactionURL() -> URL? {
         return URL(string: Endpoint.broadcastTerraTransaction)
     }
+    
+    override func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        return URL(string: Endpoint.fetchTerraWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload))
+    }
 }
 
 class TerraClassicService: CosmosService {
@@ -38,4 +42,10 @@ class TerraClassicService: CosmosService {
     override func transactionURL() -> URL? {
         return URL(string: Endpoint.broadcastTerraClassicTransaction)
     }
+    
+    override func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        return URL(string: Endpoint.fetchTerraClassicWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload))
+    }
+    
+    
 }

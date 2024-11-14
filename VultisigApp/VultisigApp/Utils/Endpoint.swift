@@ -232,7 +232,9 @@ class Endpoint {
     
     static let broadcastTerraTransaction = "https://terra-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    
+    static func fetchTerraWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://terra-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
     
     static func fetchTerraClassicAccountBalance(address: String) -> String{
         "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
@@ -242,8 +244,10 @@ class Endpoint {
     }
     
     static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
-       
     
+    static func fetchTerraClassicWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://terra-classic-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
     
     static func fetchDydxAccountBalance(address: String) -> String{
         "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
