@@ -55,6 +55,7 @@ extension BackupPasswordSetupView {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
+                fileSaved()
                 dismissView()
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
@@ -62,14 +63,12 @@ extension BackupPasswordSetupView {
                 backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
-            
         }
     }
     
     var skipButton: some View {
         Button(action: {
             showSkipShareSheet = true
-            fileSaved()
         }) {
             OutlineButton(title: "skip")
         }
@@ -82,6 +81,7 @@ extension BackupPasswordSetupView {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
+                fileSaved()
                 dismissView()
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")

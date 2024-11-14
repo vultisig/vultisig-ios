@@ -8,10 +8,18 @@
 import SwiftUI
     struct ShareSheetViewController: UIViewControllerRepresentable {
         var activityItems: [Any]
+        var completion: ((Bool) -> Void)?
         var applicationActivities: [UIActivity]? = nil
 
         func makeUIViewController(context: UIViewControllerRepresentableContext<ShareSheetViewController>) -> UIActivityViewController {
             let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+            controller.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+                if completed {
+                    completion?(true)
+                } else {
+                    completion?(false)
+                }
+            }
             return controller
         }
 

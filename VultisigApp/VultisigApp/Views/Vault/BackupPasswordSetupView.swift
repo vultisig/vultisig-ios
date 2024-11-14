@@ -117,7 +117,6 @@ struct BackupPasswordSetupView: View {
         }
         
         showSaveShareSheet = true
-        fileSaved()
     }
     
     private func export() {
