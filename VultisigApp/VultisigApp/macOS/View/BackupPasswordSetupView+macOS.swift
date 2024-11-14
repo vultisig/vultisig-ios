@@ -62,7 +62,6 @@ extension BackupPasswordSetupView {
                 backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
-            
         }
     }
     
