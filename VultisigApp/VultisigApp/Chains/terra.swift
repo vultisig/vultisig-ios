@@ -92,7 +92,43 @@ class TerraHelper {
             return try input.serializedData()
         } else {
             
-            if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
+            if !keysignPayload.coin.contractAddress.contains("terra1") && !keysignPayload.coin.contractAddress.contains("ibc/") {
+                
+                
+                let input = CosmosSigningInput.with {
+                    $0.publicKey = pubKeyData
+                    $0.signingMode = .protobuf
+                    $0.chainID = self.coinType.chainId
+                    $0.accountNumber = accountNumber
+                    $0.sequence = sequence
+                    $0.mode = .sync
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                    $0.messages = [CosmosMessage.with {
+                        $0.sendCoinsMessage = CosmosMessage.Send.with{
+                            $0.fromAddress = keysignPayload.coin.address
+                            $0.amounts = [CosmosAmount.with {
+                                $0.denom = keysignPayload.coin.contractAddress
+                                $0.amount = String(keysignPayload.toAmount)
+                            }]
+                            $0.toAddress = keysignPayload.toAddress
+                        }
+                    }]
+                    
+                    $0.fee = CosmosFee.with {
+                        $0.gas = TerraHelper.GasLimit
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = self.denom
+                            $0.amount = String(gas)
+                        }]
+                    }
+                }
+                
+                return try input.serializedData()
+                
+                
+            } else if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
                 
                 let transferMessage = CosmosMessage.Transfer.with {
                     $0.sourcePort = "transfer"
