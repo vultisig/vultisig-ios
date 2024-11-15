@@ -143,14 +143,28 @@ class TerraHelper {
                 
             } else if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
                 
+                guard let splittedPath = ibc?.path.split(separator: "/") else {
+                    throw HelperError.runtimeError("It must have a valid IBC path")
+                }
+                guard let sourcePort = splittedPath.first?.description else {
+                    throw HelperError.runtimeError("It must have a valid source port")
+                }
+                guard let sourceChannel = splittedPath.last?.description else {
+                    throw HelperError.runtimeError("It must have a valid source channel")
+                }
+                
+                guard let ibcDenom = ibc?.baseDenom else {
+                    throw HelperError.runtimeError("It must have a valid IBC base denom")
+                }
+                
                 let transferMessage = CosmosMessage.Transfer.with {
-                    $0.sourcePort = "transfer"
-                    $0.sourceChannel = "channel-141"
+                    $0.sourcePort = sourcePort
+                    $0.sourceChannel = sourceChannel
                     $0.sender = keysignPayload.coin.address.description
                     $0.receiver = keysignPayload.toAddress
                     $0.token = CosmosAmount.with {
                         $0.amount = String(keysignPayload.toAmount)
-                        $0.denom = keysignPayload.coin.contractAddress
+                        $0.denom = ibcDenom
                     }
                     $0.timeoutHeight = CosmosHeight.with {
                         $0.revisionNumber = 1

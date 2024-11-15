@@ -23,7 +23,7 @@ class CosmosService {
         
     }
     
-    func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTrace? {
+    func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTraceDenomTrace? {
         guard let url = ibcDenomTraceURL(coin: coin) else {
             return nil
         }
@@ -38,6 +38,7 @@ class CosmosService {
                 // Handle successful response
                 print("Path: \(denomTrace.path)")
                 print("Base Denom: \(denomTrace.baseDenom)")
+                return denomTrace
             } else if let error = response.error {
                 // Handle "not implemented" error
                 print("Error Code: \(error.code)")
@@ -54,7 +55,7 @@ class CosmosService {
                 print("Unexpected response format.")
             }
             
-            return response
+            return nil
         } catch {
             print("An error occurred: \(error)")
             // Return nil in case of any error

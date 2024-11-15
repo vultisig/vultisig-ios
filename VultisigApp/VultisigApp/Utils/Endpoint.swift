@@ -249,6 +249,10 @@ class Endpoint {
     
     static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchTerraClassicIbcDenomTraces(hash: String) -> String{
+        "https://terra-classic-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
     static func fetchTerraClassicWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
         "https://terra-classic-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
