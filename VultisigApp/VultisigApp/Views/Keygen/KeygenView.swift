@@ -30,11 +30,15 @@ struct KeygenView: View {
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
+    @State var showVerificationView = false
     
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
+            .navigationDestination(isPresented: $viewModel.isLinkActive) {
+                navigationDestination
+            }
     }
     
     var fields: some View {
@@ -167,6 +171,16 @@ struct KeygenView: View {
         }
     }
     
+    var navigationDestination: some View {
+        ZStack {
+            if showVerificationView {
+                ServerBackupVerificationView(vault: vault)
+            } else {
+                BackupVaultNowView(vault: vault)
+            }
+        }
+    }
+    
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -181,6 +195,8 @@ struct KeygenView: View {
     }
     
     private func setDoneData() {
+        checkVaultType()
+        
         if tssType == .Reshare {
             vault.isBackedUp = false
         }
@@ -191,6 +207,15 @@ struct KeygenView: View {
 
         progressCounter = 4
         viewModel.delaySwitchToMain()
+    }
+    
+    private func checkVaultType() {
+        for signer in keygenCommittee {
+            if signer.contains("Server-") {
+                showVerificationView = true
+                return
+            }
+        }
     }
 }
 

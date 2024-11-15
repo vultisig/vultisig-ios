@@ -397,3 +397,9 @@
 "currentVaults" = "Cofres actuales";
 "useSkipInstead" = "Usa \"Omitir\" en su lugar";
 "useSkipWithoutPasswordMessage" = "Por favor, usa \"Omitir\" para guardar sin contraseña";
+"serverBackupVerification" = "Verificación de copia de seguridad del servidor";
+"enterBackupVerificationCode" = "Introduce el código recibido con tu copia de seguridad por correo electrónico:";
+"enterCode" = "Introducir código";
+"serverBackupVerificationDisclaimer" = "Este código verifica la recepción de la copia de seguridad del servidor por correo electrónico.";
+"incorrectCode" = "Código incorrecto";
+"verificationCodeTryAgain" = "Por favor, revisa tu correo para obtener el código de verificación e inténtalo de nuevo.";
