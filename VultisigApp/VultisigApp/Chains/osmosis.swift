@@ -21,7 +21,7 @@ class OsmoHelper {
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
         
-        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas, _, let ibc) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         
@@ -47,7 +47,7 @@ class OsmoHelper {
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let ibc) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         

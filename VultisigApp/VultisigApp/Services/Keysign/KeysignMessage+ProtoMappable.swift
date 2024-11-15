@@ -235,7 +235,8 @@ extension BlockChainSpecific {
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
                 gas: value.gas,
-                transactionType: value.transactionType.rawValue
+                transactionType: value.transactionType.rawValue,
+                ibcDenomTrace: value.hasIbcDenomTraces ? CosmosIbcDenomTraceDenomTrace(path: value.ibcDenomTraces.path, baseDenom: value.ibcDenomTraces.path) : nil
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -301,12 +302,16 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType):
+        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType, let ibc):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.gas = gas
                 $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
+                $0.ibcDenomTraces = VSCosmosIbcDenomTrace.with{
+                    $0.baseDenom = ibc?.baseDenom ?? ""
+                    $0.path = ibc?.path ?? ""
+                }
             })
         case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
             return .solanaSpecific(.with {
