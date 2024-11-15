@@ -14,5 +14,16 @@ extension ServerBackupVerificationView {
             .navigationTitle(NSLocalizedString("serverBackupVerification", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
     }
+    
+    var content: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            title
+            textField
+            Spacer()
+            disclaimer
+            button
+        }
+        .padding(.horizontal, 16)
+    }
 }
 #endif

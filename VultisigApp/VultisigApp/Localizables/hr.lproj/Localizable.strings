@@ -397,3 +397,9 @@
 "currentVaults" = "Trenutni trezori";
 "useSkipInstead" = "Koristite \"Preskoči\" umjesto toga";
 "useSkipWithoutPasswordMessage" = "Molimo koristite \"Preskoči\" za spremanje bez lozinke";
+"serverBackupVerification" = "Provjera sigurnosne kopije poslužitelja";
+"enterBackupVerificationCode" = "Unesite kod primljen s vašom sigurnosnom kopijom putem e-pošte:";
+"enterCode" = "Unesite kod";
+"serverBackupVerificationDisclaimer" = "Ovaj kod potvrđuje primitak sigurnosne kopije poslužitelja putem e-pošte.";
+"incorrectCode" = "Netočan kod";
+"verificationCodeTryAgain" = "Provjerite svoju e-poštu za kod za provjeru i pokušajte ponovno.";

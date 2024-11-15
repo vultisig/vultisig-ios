@@ -19,5 +19,16 @@ extension ServerBackupVerificationView {
     var header: some View {
         GeneralMacHeader(title: "serverBackupVerification")
     }
+    
+    var content: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            title
+            textField
+            Spacer()
+            disclaimer
+            button
+        }
+        .padding(.horizontal, 40)
+    }
 }
 #endif

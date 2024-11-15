@@ -8,24 +8,32 @@
 import SwiftUI
 
 struct ServerBackupVerificationView: View {
+    let vault: Vault
+    
     @State var verificationCode = ""
+    
+    @State var isLoading: Bool = false
+    @State var isNavigationActive: Bool = false
+    
+    @State var alertTitle = "incorrectCode"
+    @State var alertDescription = "verificationCodeTryAgain"
+    @State var showAlert: Bool = false
     
     var body: some View {
         ZStack {
             Background()
             container
+            
+            if isLoading {
+                loader
+            }
         }
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            title
-            textField
-            Spacer()
-            disclaimer
-            button
+        .navigationDestination(isPresented: $isNavigationActive) {
+            BackupVaultNowView(vault: vault)
         }
-        .padding(.horizontal, 16)
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var title: some View {
@@ -56,10 +64,49 @@ struct ServerBackupVerificationView: View {
     }
     
     var button: some View {
-        FilledButton(title: "continue")
+        Button {
+            verifyCode()
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(.bottom, 30)
+    }
+    
+    var loader: some View {
+        Loader()
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString(alertTitle, comment: "")),
+            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    private func verifyCode() {
+        guard !verificationCode.isEmpty else {
+            alertTitle = "emptyField"
+            alertDescription = "checkEmptyField"
+            showAlert = true
+            return
+        }
+        
+        Task {
+            alertTitle = "incorrectCode"
+            alertDescription = "verificationCodeTryAgain"
+            isLoading = true
+            
+            (isNavigationActive, showAlert) = await FastVaultService.shared.verifyBackupOTP(
+                ecdsaKey: vault.pubKeyECDSA,
+                OTPCode: verificationCode
+            )
+            
+            isLoading = false
+        }
     }
 }
 
 #Preview {
-    ServerBackupVerificationView()
+    ServerBackupVerificationView(vault: Vault.example)
 }

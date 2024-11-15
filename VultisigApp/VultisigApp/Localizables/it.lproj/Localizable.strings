@@ -397,3 +397,9 @@
 "currentVaults" = "Cassaforti attuali";
 "useSkipInstead" = "Usa \"Salta\" invece";
 "useSkipWithoutPasswordMessage" = "Per favore usa \"Salta\" per salvare senza password";
+"serverBackupVerification" = "Verifica del backup del server";
+"enterBackupVerificationCode" = "Inserisci il codice ricevuto con il backup tramite email:";
+"enterCode" = "Inserisci codice";
+"serverBackupVerificationDisclaimer" = "Questo codice verifica la ricezione del backup del server tramite email.";
+"incorrectCode" = "Codice errato";
+"verificationCodeTryAgain" = "Controlla la tua email per il codice di verifica e riprova.";
