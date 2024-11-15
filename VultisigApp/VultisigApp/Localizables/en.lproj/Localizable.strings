@@ -429,3 +429,9 @@
 "currentVaults" = "Current Vaults";
 "useSkipInstead" = "Use Skip instead";
 "useSkipWithoutPasswordMessage" = "Please use \"Skip\" to save without password";
+"serverBackupVerification" = "Server backup verification";
+"enterBackupVerificationCode" = "Enter the code received with your backup via email:";
+"enterCode" = "Enter code";
+"serverBackupVerificationDisclaimer" = "This code verifies receiving the server backup via email.";
+"incorrectCode" = "Incorrect Code";
+"verificationCodeTryAgain" = "Please check your mail for the verification code and try again.";

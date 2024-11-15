@@ -414,3 +414,9 @@
 "currentVaults" = "Aktuelle Tresore";
 "useSkipInstead" = "Verwenden Sie stattdessen „Überspringen“";
 "useSkipWithoutPasswordMessage" = "Bitte verwenden Sie „Überspringen“, um ohne Passwort zu speichern";
+"serverBackupVerification" = "Server-Backup-Verifizierung";
+"enterBackupVerificationCode" = "Geben Sie den Code ein, den Sie mit Ihrem Backup per E-Mail erhalten haben:";
+"enterCode" = "Code eingeben";
+"serverBackupVerificationDisclaimer" = "Dieser Code bestätigt den Empfang des Server-Backups per E-Mail.";
+"incorrectCode" = "Falscher Code";
+"verificationCodeTryAgain" = "Bitte überprüfen Sie Ihre E-Mails auf den Verifizierungscode und versuchen Sie es erneut.";
