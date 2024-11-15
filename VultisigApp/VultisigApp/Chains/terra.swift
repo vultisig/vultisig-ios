@@ -119,12 +119,25 @@ class TerraHelper {
                     $0.fee = CosmosFee.with {
                         $0.gas = TerraHelper.GasLimit
                         $0.amounts = [CosmosAmount.with {
-                            $0.denom = self.denom
+                            $0.denom = "uluna"
                             $0.amount = String(gas)
                         }]
                     }
                 }
                 
+                
+                
+                print("Sender Address: \(keysignPayload.coin.address)")
+                print("Contract Address: \(keysignPayload.coin.contractAddress.description)")
+                print("Recipient Address: \(keysignPayload.toAddress)")
+                print("Amount: \(keysignPayload.toAmount)")
+                print("Account Number: \(accountNumber)")
+                print("Sequence: \(sequence)")
+                print("Chain ID: \(self.coinType.chainId)")
+                
+                print("DENOM: \(input.messages[0].sendCoinsMessage.amounts[0].denom)")
+                print(input.debugDescription)
+  
                 return try input.serializedData()
                 
                 

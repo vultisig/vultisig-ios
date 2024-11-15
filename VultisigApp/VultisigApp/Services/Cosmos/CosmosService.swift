@@ -5,7 +5,7 @@ class CosmosService {
     func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
         
         if coin.isNativeToken || (!coin.isNativeToken && coin.contractAddress.contains("ibc/")) || (!coin.isNativeToken && !coin.contractAddress.contains("terra")) {
-                        
+            
             guard let url = balanceURL(forAddress: coin.address) else {
                 return [CosmosBalance]()
             }
@@ -21,6 +21,45 @@ class CosmosService {
             
         }
         
+    }
+    
+    func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTrace? {
+        guard let url = ibcDenomTraceURL(coin: coin) else {
+            return nil
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(CosmosIbcDenomTrace.self, from: data)
+            
+            if let denomTrace = response.denomTrace {
+                // Handle successful response
+                print("Path: \(denomTrace.path)")
+                print("Base Denom: \(denomTrace.baseDenom)")
+            } else if let error = response.error {
+                // Handle "not implemented" error
+                print("Error Code: \(error.code)")
+                print("Error Message: \(error.message)")
+            } else if let code = response.code, let message = response.message {
+                // Handle general error
+                print("Error Code: \(code)")
+                print("Error Message: \(message)")
+                if let details = response.details {
+                    print("Details: \(details)")
+                }
+            } else {
+                // Handle unexpected response
+                print("Unexpected response format.")
+            }
+            
+            return response
+        } catch {
+            print("An error occurred: \(error)")
+            // Return nil in case of any error
+            return nil
+        }
     }
     
     func fetchWasmTokenBalances(coin: Coin) async throws -> String {
@@ -104,4 +143,7 @@ class CosmosService {
         fatalError("Must override in subclass")
     }
     
+    func ibcDenomTraceURL(coin: Coin)-> URL? {
+        fatalError("Must override in subclass")
+    }
 }
