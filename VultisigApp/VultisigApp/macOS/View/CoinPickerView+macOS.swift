@@ -66,40 +66,5 @@ extension CoinPickerView {
             }
         }
     }
-    
-    var searchBar: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $searchText)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .textContentType(.oneTimeCode)
-                .padding(.horizontal, 8)
-                .borderlessTextFieldStyle()
-                .maxLength($searchText)
-                .colorScheme(.dark)
-
-            if isSearching {
-                Button("Cancel") {
-                    searchText = ""
-                    isSearchFieldFocused = false
-                    isSearching = false
-                }
-                .foregroundColor(.blue)
-                .font(.body12Menlo)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .padding(.horizontal, 12)
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
-        .onChange(of: searchText) { oldValue, newValue in
-            isSearching = !newValue.isEmpty
-        }
-        .background(Color.blue600)
-        .cornerRadius(12)
-    }
 }
 #endif

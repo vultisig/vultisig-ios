@@ -42,6 +42,48 @@ struct CoinPickerView: View {
         }
         .frame(height: 44)
     }
+    
+    var searchBar: some View {
+        HStack(spacing: 0) {
+            Image(systemName: "magnifyingglass")
+                .font(.body24MontserratMedium)
+                .foregroundColor(.neutral500)
+            
+            TextField(NSLocalizedString("search", comment: "Search").toFormattedTitleCase(), text: $searchText)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral500)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
+                .padding(.horizontal, 8)
+                .borderlessTextFieldStyle()
+                .maxLength($searchText)
+                .colorScheme(.dark)
+
+            if isSearching {
+                Button {
+                    searchText = ""
+                    isSearchFieldFocused = false
+                    isSearching = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.neutral0)
+                }
+                .foregroundColor(.blue)
+                .font(.body12Menlo)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+        .padding(.horizontal, 12)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .onChange(of: searchText) { oldValue, newValue in
+            isSearching = !newValue.isEmpty
+        }
+        .background(Color.blue600)
+        .cornerRadius(12)
+    }
 
     func row(for coin: Coin) -> some View {
         Button {
