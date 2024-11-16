@@ -34,6 +34,7 @@ extension PeerDiscoveryView {
             title: getTitle(),
             vault: vault,
             selectedTab: selectedTab,
+            hideBackButton: hideBackButton,
             viewModel: viewModel,
             shareSheetViewModel: shareSheetViewModel
         )

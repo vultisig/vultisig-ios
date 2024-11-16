@@ -23,6 +23,7 @@ struct PeerDiscoveryView: View {
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
     
+    @State var hideBackButton: Bool = false
     @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
@@ -178,7 +179,8 @@ struct PeerDiscoveryView: View {
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
-            fastSignConfig: fastSignConfig
+            fastSignConfig: fastSignConfig,
+            hideBackButton: $hideBackButton
         )
     }
     
