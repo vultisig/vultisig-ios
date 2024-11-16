@@ -34,8 +34,9 @@ struct SettingsBiometryView: View {
 
                 if viewModel.isBiometryEnabled {
                     passwordCell
-                    hintCell
                 }
+
+                hintCell
             }
             .padding(.horizontal, 16)
         }
@@ -43,9 +44,7 @@ struct SettingsBiometryView: View {
             viewModel.setData(vault: vault)
         }
         .safeAreaInset(edge: .bottom) {
-            if viewModel.isBiometryEnabled {
-                button
-            }
+            button
         }
         .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $viewModel.isWrongPassword) {
             Button("OK", role: .cancel) { }
@@ -89,8 +88,12 @@ struct SettingsBiometryView: View {
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
-            HiddenTextField(placeholder: "typeHere", password: $viewModel.hint, isPasswordVisible: true)
-                .padding(.top, 8)
+            HiddenTextField(
+                placeholder: "typeHere",
+                password: $viewModel.hint,
+                showHideOption: false
+            )
+            .padding(.top, 8)
         }
     }
 

@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
 "reshareLabelDisclaimer" = "Para todas las acciones de compartir nuevamente, siempre se requiere el umbral de dispositivos.";
 "startReshare" = "Iniciar compartir nuevamente";
-"startFastVaultReshare" = "Iniciar compartir con Vultisigner";
+"startFastVaultReshare" = "Iniciar compartir con Vultiserver";
 "joinReshare" = "Unirse al compartir";
 "fastVaultSetPasswordTitle" = "Protege tu bóveda y firma rápidamente.";
 "fastVaultEnterPasswordTitle" = "Contraseña de FastVault";
@@ -240,7 +240,7 @@
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
 "customToken" = "Token Personalizado";
 "details" = "Detalles";
-"vaultType" = "Tipo de almacén";
+"vaultType" = "Parte del Cofre";
 "ECDSAKey" = "Clave ECDSA";
 "EdDSAKey" = "Clave EdDSA";
 "Selected" = "Seleccionado";
@@ -395,3 +395,11 @@
 "newVaultSetup" = "Nueva Configuración del Cofre";
 "saveChanges" = "Guardar cambios";
 "currentVaults" = "Cofres actuales";
+"useSkipInstead" = "Usa \"Omitir\" en su lugar";
+"useSkipWithoutPasswordMessage" = "Por favor, usa \"Omitir\" para guardar sin contraseña";
+"serverBackupVerification" = "Verificación de copia de seguridad del servidor";
+"enterBackupVerificationCode" = "Introduce el código recibido con tu copia de seguridad por correo electrónico:";
+"enterCode" = "Introducir código";
+"serverBackupVerificationDisclaimer" = "Este código verifica la recepción de la copia de seguridad del servidor por correo electrónico.";
+"incorrectCode" = "Código incorrecto";
+"verificationCodeTryAgain" = "Por favor, revisa tu correo para obtener el código de verificación e inténtalo de nuevo.";

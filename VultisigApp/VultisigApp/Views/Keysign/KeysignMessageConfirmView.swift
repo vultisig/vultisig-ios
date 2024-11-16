@@ -20,21 +20,12 @@ struct KeysignMessageConfirmView: View {
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                Task {
-                    do {
-                        try await viewModel.blowfishTransactionScan()
-                        blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
-                    } catch {
-                        print("fail to scan the transaction on Blowfish, \(error.localizedDescription)")
-                    }
-                }
+                viewModel.blowfishTransactionScan()
+                blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
             }
             .task {
-                do{
-                    _ = try await ThorchainService.shared.getTHORChainChainID()
-                } catch {
-                    print("fail to get thorchain network id, \(error.localizedDescription)")
-                }
+                await viewModel.loadThorchainID()
+                await viewModel.loadFunctionName()
             }
         }
     }
@@ -64,10 +55,13 @@ struct KeysignMessageConfirmView: View {
                     Separator()
                     getSummaryCell(title: "memo", value: memo)
                 }
-                
+
+                if let decodedMemo = viewModel.decodedMemo {
+                    Separator()
+                    functionField(decodedMemo: decodedMemo)
+                }
+
                 Separator()
-                
-                //gasField
             }
             .padding(16)
             .background(Color.blue600)
@@ -87,15 +81,15 @@ struct KeysignMessageConfirmView: View {
     var toField: some View {
         getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "")
     }
-    
+
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-    
-    var gasField: some View {
-        getSummaryCell(title: "gas", value: "$4.00")
+
+    func functionField(decodedMemo: String) -> some View {
+        getSummaryCell(title: "function", value: decodedMemo)
     }
-    
+
     var button: some View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()

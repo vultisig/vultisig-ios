@@ -72,6 +72,9 @@ extension HomeView {
                 JoinKeysignView(vault: vault)
             }
         }
+        .navigationDestination(isPresented: $vultExtensionViewModel.showImportView) {
+            ImportWalletView()
+        }
     }
     
     var leadingButton: some View {

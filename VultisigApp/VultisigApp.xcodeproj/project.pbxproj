@@ -103,6 +103,7 @@
 		A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
+		A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* EtherfaceService.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -408,6 +409,9 @@
 		A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */; };
 		A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */; };
 		A6B7F49E2C496EA8006D83D1 /* VaultDetailMacQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */; };
+		A6B84B0C2CE56D79006929A0 /* ServerBackupVerificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */; };
+		A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B84B0D2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift */; };
+		A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
@@ -418,6 +422,8 @@
 		A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */; };
 		A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */; };
 		A6C3ABCA2C3E5A8700F13ED0 /* NavigationAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */; };
+		A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */; };
+		A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */; };
 		A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */; };
 		A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */; };
 		A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */; };
@@ -845,6 +851,7 @@
 		A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
+		A598FD792CE2098800F26516 /* EtherfaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherfaceService.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1152,6 +1159,9 @@
 		A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCode.swift; sourceTree = "<group>"; };
 		A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCodeViewModel.swift; sourceTree = "<group>"; };
 		A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailMacQRCode.swift; sourceTree = "<group>"; };
+		A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerBackupVerificationView.swift; sourceTree = "<group>"; };
+		A6B84B0D2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ServerBackupVerificationView+iOS.swift"; sourceTree = "<group>"; };
+		A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ServerBackupVerificationView+macOS.swift"; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
@@ -1162,6 +1172,8 @@
 		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
 		A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookView.swift; sourceTree = "<group>"; };
 		A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationAddButton.swift; sourceTree = "<group>"; };
+		A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+macOS.swift"; sourceTree = "<group>"; };
+		A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationButton.swift; sourceTree = "<group>"; };
 		A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellViewModel.swift; sourceTree = "<group>"; };
 		A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignView+iOS.swift"; sourceTree = "<group>"; };
@@ -1596,6 +1608,7 @@
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
+				A598FD792CE2098800F26516 /* EtherfaceService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
@@ -1758,6 +1771,7 @@
 				A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
+				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -2048,6 +2062,7 @@
 		A6386D9F2C90234400DDD58E /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */,
 				A6386DA92C9024F500DDD58E /* SettingFAQCell+iOS.swift */,
 				A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */,
 				A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */,
@@ -2131,6 +2146,7 @@
 				A6505AD12CA668C20002FBF4 /* InformationNote+macOS.swift */,
 				A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */,
 				A6A8163F2CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift */,
+				A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2575,6 +2591,7 @@
 				A6C670D02C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift */,
 				A698222D2CB3A8B500966D19 /* CreateFolderView+iOS.swift */,
 				A6381D7F2CB71B4E003F628B /* RegisterVaultView+iOS.swift */,
+				A6B84B0D2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* Transaction */,
@@ -2630,6 +2647,7 @@
 				A6505B092CA67C0D0002FBF4 /* Onboarding */,
 				A698222F2CB3A8D700966D19 /* CreateFolderView+macOS.swift */,
 				A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */,
+				A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3397,6 +3415,7 @@
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
+				A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
 				A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */,
@@ -3467,6 +3486,7 @@
 				A6C670B72C9D139A00F59B6A /* CoinDetailView+macOS.swift in Sources */,
 				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				A6505ADB2CA66CC20002FBF4 /* Placement+macOS.swift in Sources */,
+				A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */,
 				A6505AF52CA678530002FBF4 /* ImageFileDocument+iOS.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
@@ -3529,6 +3549,7 @@
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */,
 				A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */,
+				A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
 				A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
@@ -3600,9 +3621,11 @@
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
 				A6386DB02C9025BC00DDD58E /* ChainNavigationCell+macOS.swift in Sources */,
+				A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */,
+				A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */,
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
 				A6ECA19A2C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
@@ -3920,6 +3943,7 @@
 				B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */,
 				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
+				A6B84B0C2CE56D79006929A0 /* ServerBackupVerificationView.swift in Sources */,
 				A69FBBCE2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift in Sources */,
 				A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
@@ -4249,7 +4273,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -4305,7 +4329,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

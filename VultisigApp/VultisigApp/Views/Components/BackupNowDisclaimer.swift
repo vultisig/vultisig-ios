@@ -11,13 +11,10 @@ struct BackupNowDisclaimer: View {
     let vault: Vault
     
     var body: some View {
-        ZStack {
-            content
-            navigationCell.opacity(0)
-        }
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
-        .padding(1)
+        container
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .padding(1)
     }
     
     var navigationCell: some View {

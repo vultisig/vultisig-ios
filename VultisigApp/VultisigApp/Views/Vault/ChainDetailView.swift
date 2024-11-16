@@ -91,6 +91,7 @@ struct ChainDetailView: View {
             }
             .onAppear {
                 Task {
+                    await updateBalances()
                     await setData()
                 }
             }
@@ -180,14 +181,19 @@ struct ChainDetailView: View {
             sendTx.reset(coin: coin)
         }
     }
-    
+
+    private func updateBalances() async {
+        for coin in group.coins {
+            await viewModel.loadData(coin: coin)
+        }
+    }
+
     func refreshAction(){
         Task {
             isLoading = true
-            for coin in group.coins {
-                await viewModel.loadData(coin: coin)
-            }
-            
+
+            await updateBalances()
+
             for coin in group.coins where coin.isNativeToken {
                 await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
             }

@@ -10,6 +10,7 @@ import SwiftData
 
 struct VaultDeletionConfirmView: View {
     let vault: Vault
+    let devicesInfo: [DeviceInfo]
     
     @State var permanentDeletionCheck = false
     @State var canLoseFundCheck = false
@@ -28,7 +29,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var details: some View {
-        VaultDeletionDetails(vault: vault)
+        VaultDeletionDetails(vault: vault, devicesInfo: devicesInfo)
     }
     
     func delete() {
@@ -61,6 +62,6 @@ struct VaultDeletionConfirmView: View {
 }
 
 #Preview {
-    VaultDeletionConfirmView(vault: Vault.example, vaults: [])
+    VaultDeletionConfirmView(vault: Vault.example, devicesInfo: [], vaults: [])
         .environmentObject(HomeViewModel())
 }

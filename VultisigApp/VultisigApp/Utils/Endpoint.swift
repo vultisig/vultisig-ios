@@ -32,6 +32,8 @@ class Endpoint {
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     
+    static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
+    
     static func fetchBlowfishTransactions(chain: String, network: String) -> String {
         "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
     }
@@ -137,6 +139,10 @@ class Endpoint {
         return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
     }
     
+    static func fetchMemoInfo(hash: String) -> URL {
+        return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
+    }
+
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }

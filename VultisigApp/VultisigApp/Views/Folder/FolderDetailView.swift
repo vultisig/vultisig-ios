@@ -291,6 +291,8 @@ struct FolderDetailView: View {
     }
     
     private func saveFolder() {
+        filterVaults()
+        
         withAnimation(.easeInOut) {
             isEditingFolders = false
         }

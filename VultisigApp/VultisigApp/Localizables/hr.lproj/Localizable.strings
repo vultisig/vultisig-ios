@@ -15,7 +15,7 @@
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
 "startReshare" = "Započni ponovno dijeljenje";
-"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultisignerom";
+"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultiserverom";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
 "fastVaultSetPasswordTitle" = "Zaštitite svoj trezor i brzo potpišite.";
 "fastVaultEnterPasswordTitle" = "Lozinka za FastVault";
@@ -240,7 +240,7 @@
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "customToken" = "Prilagođeni Token";
 "details" = "Detalji";
-"vaultType" = "Tip spremišta";
+"vaultType" = "Dio trezora";
 "ECDSAKey" = "ECDSA ključ";
 "EdDSAKey" = "EdDSA ključ";
 "Selected" = "Odabrano";
@@ -395,3 +395,11 @@
 "newVaultSetup" = "Novo postavljanje trezora";
 "saveChanges" = "Spremi promjene";
 "currentVaults" = "Trenutni trezori";
+"useSkipInstead" = "Koristite \"Preskoči\" umjesto toga";
+"useSkipWithoutPasswordMessage" = "Molimo koristite \"Preskoči\" za spremanje bez lozinke";
+"serverBackupVerification" = "Provjera sigurnosne kopije poslužitelja";
+"enterBackupVerificationCode" = "Unesite kod primljen s vašom sigurnosnom kopijom putem e-pošte:";
+"enterCode" = "Unesite kod";
+"serverBackupVerificationDisclaimer" = "Ovaj kod potvrđuje primitak sigurnosne kopije poslužitelja putem e-pošte.";
+"incorrectCode" = "Netočan kod";
+"verificationCodeTryAgain" = "Provjerite svoju e-poštu za kod za provjeru i pokušajte ponovno.";
