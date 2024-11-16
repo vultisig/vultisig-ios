@@ -44,46 +44,5 @@ extension CoinPickerView {
         }
         .padding(.bottom, 50)
     }
-    
-    var scrollView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                if searchText.isEmpty {
-                    list
-                } else {
-                    if filtered.count == 0 {
-                        errorMessage
-                    } else {
-                        filteredList
-                    }
-                }
-
-            }
-            .padding(.horizontal, 12)
-            .scrollContentBackground(.hidden)
-            .listStyle(.grouped)
-        }
-    }
-    
-    var list: some View {
-        ForEach(coins, id: \.self) { coin in
-            row(for: coin)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-        }
-    }
-    
-    var filteredList: some View {
-        ForEach(filtered, id: \.self) { coin in
-            row(for: coin)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-        }
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "noResultFound")
-            .frame(maxWidth: .infinity)
-    }
 }
 #endif

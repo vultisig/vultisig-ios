@@ -32,38 +32,15 @@ extension CoinPickerView {
         VStack(alignment: .leading, spacing: 0) {
             searchBar
                 .padding(.vertical, 18)
-                .padding(.horizontal, 40)
+                .padding(.horizontal, 46)
 
             Separator()
             
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                    if searchText.isEmpty {
-                        Section(header: header(label: "tokens")) {
-                            ForEach(coins, id: \.self) { coin in
-                                row(for: coin)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
-                        }
-                    } else {
-                        Section(header: header(label: "searchResult")) {
-                            ForEach(filtered, id: \.self) { coin in
-                                row(for: coin)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
-                        }
-                    }
-
-                }
-                .padding(.horizontal, 12)
-                .scrollContentBackground(.hidden)
+            scrollView
                 .padding(.horizontal, 40)
                 .padding(.top, 20)
                 .padding(.bottom, 50)
                 .colorScheme(.dark)
-            }
         }
     }
 }
