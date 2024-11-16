@@ -17,6 +17,7 @@ struct JoinKeygenView: View {
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
     @State var showInformationNote = false
+    @State var hideBackButton: Bool = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -85,7 +86,8 @@ struct JoinKeygenView: View {
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
             oldResharePrefix: viewModel.oldResharePrefix, 
-            fastSignConfig: nil
+            fastSignConfig: nil,
+            hideBackButton: $hideBackButton
         )
     }
     

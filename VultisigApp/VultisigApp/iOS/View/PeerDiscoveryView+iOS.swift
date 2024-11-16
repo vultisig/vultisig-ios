@@ -24,6 +24,7 @@ extension PeerDiscoveryView {
         }
         .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
         .onChange(of: orientation) { oldValue, newValue in
             setData()
