@@ -22,6 +22,19 @@ extension SendCryptoDetailsView {
         }
     }
     
+    var button: some View {
+        Button {
+            Task{
+                await validateForm()
+            }
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(.horizontal, 40)
+        .padding(.top, 20)
+        .padding(.bottom, 40)
+    }
+    
     var fields: some View {
         ScrollViewReader { value in
             ScrollView {

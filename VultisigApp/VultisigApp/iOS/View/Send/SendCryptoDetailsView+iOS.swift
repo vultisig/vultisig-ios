@@ -9,6 +9,8 @@
 import SwiftUI
 
 extension SendCryptoDetailsView {
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var container: some View {
         content
             .toolbar {
@@ -33,6 +35,19 @@ extension SendCryptoDetailsView {
                 .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
                 .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
         }
+    }
+    
+    var button: some View {
+        Button {
+            Task{
+                await validateForm()
+            }
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 20)
+        .padding(.bottom, idiom == .pad ? 30 : 0)
     }
     
     var fields: some View {

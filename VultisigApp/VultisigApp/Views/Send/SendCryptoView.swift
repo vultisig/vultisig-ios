@@ -67,9 +67,9 @@ struct SendCryptoView: View {
     }
 
     var view: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 18) {
             ProgressBar(progress: sendCryptoViewModel.getProgress())
-                .padding(.top, 30)
+                .padding(.top, 12)
             
             tabView
         }

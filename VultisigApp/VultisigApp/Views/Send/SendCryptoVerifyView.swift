@@ -132,21 +132,6 @@ struct SendCryptoVerifyView: View {
             )
         }
     }
-
-    var pairedSignButton: some View {
-        Button {
-            signPressed()
-        } label: {
-            if tx.isFastVault {
-                OutlineButton(title: "Paired sign")
-            } else {
-                FilledButton(title: "sign")
-            }
-        }
-        .disabled(!sendCryptoVerifyViewModel.isValidForm)
-        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
-        .padding(.horizontal, 16)
-    }
     
     private func setData() {
         isButtonDisabled = false
@@ -161,7 +146,7 @@ struct SendCryptoVerifyView: View {
         }
     }
 
-    private func signPressed() {
+    func signPressed() {
         guard !isButtonDisabled else {
             return
         }

@@ -100,15 +100,19 @@ struct KeysignView: View {
 }
 
 #Preview {
-    KeysignView(
-        vault: Vault.example,
-        keysignCommittee: [],
-        mediatorURL: "",
-        sessionID: "session",
-        keysignType: .ECDSA,
-        messsageToSign: ["message"],
-        keysignPayload: nil,
-        transferViewModel: nil,
-        encryptionKeyHex: ""
-    )
+    ZStack {
+        Background()
+        
+        KeysignView(
+            vault: Vault.example,
+            keysignCommittee: [],
+            mediatorURL: "",
+            sessionID: "session",
+            keysignType: .ECDSA,
+            messsageToSign: ["message"],
+            keysignPayload: nil,
+            transferViewModel: nil,
+            encryptionKeyHex: ""
+        )
+    }
 }
