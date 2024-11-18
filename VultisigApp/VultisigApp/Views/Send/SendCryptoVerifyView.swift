@@ -99,7 +99,6 @@ struct SendCryptoVerifyView: View {
             getDetailsCell(for: "amount", with: getAmount())
             Separator()
             getDetailsCell(for: "value", with: getFiatAmount())
-            
             Separator()
             getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
         }

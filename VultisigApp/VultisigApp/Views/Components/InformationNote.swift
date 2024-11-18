@@ -16,11 +16,13 @@ struct InformationNote: View {
             text
         }
         .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.warningYellow.opacity(0.35))
         .cornerRadius(12)
         .overlay(
             overlay
         )
+        .padding(1)
     }
     
     var icon: some View {
@@ -30,7 +32,7 @@ struct InformationNote: View {
     
     var text: some View {
         if message == nil {
-            Text(NSLocalizedString("informationNote", comment: ""))
+            Text(NSLocalizedString("joinKeygenConnectionDisclaimer", comment: ""))
                 .foregroundColor(.neutral0)
                 .font(.body12MontserratSemiBold)
                 .lineSpacing(8)
