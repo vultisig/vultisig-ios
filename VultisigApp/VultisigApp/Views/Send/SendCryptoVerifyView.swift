@@ -89,10 +89,6 @@ struct SendCryptoVerifyView: View {
             getAddressCell(for: "from", with: tx.fromAddress)
             Separator()
             getAddressCell(for: "to", with: tx.toAddress)
-            Separator()
-            getDetailsCell(for: "amount", with: getAmount())
-            Separator()
-            getDetailsCell(for: "amount(inFiat)", with: getFiatAmount())
             
             if !tx.memo.isEmpty {
                 Separator()
@@ -100,7 +96,12 @@ struct SendCryptoVerifyView: View {
             }
             
             Separator()
-            getDetailsCell(for: "gas", with: tx.gasInReadable)
+            getDetailsCell(for: "amount", with: getAmount())
+            Separator()
+            getDetailsCell(for: "value", with: getFiatAmount())
+            
+            Separator()
+            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
         }
         .padding(16)
         .background(Color.blue600)
@@ -190,8 +191,10 @@ struct SendCryptoVerifyView: View {
                 .foregroundColor(.neutral0)
             
             Text(address)
-                .font(.body12Menlo)
+                .font(.body13MenloBold)
                 .foregroundColor(.turquoise600)
+                .truncationMode(.middle)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
