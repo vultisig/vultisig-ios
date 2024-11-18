@@ -63,7 +63,7 @@ extension SendCryptoAddressTextField {
     }
     
     var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+        QRCodeScannerView(showScanner: $showScanner, address: $tx.toAddress, handleScan: handleScan)
     }
     
     func processImage() {

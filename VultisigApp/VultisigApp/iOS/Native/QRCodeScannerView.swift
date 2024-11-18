@@ -12,14 +12,32 @@ import AVFoundation
 
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
+    @Binding var address: String
     let handleScan: (Result<ScanResult, ScanError>) -> Void
     
     @State var isGalleryPresented = false
+    @State var isFilePresented = false
     
     var body: some View {
         VStack(spacing: 0) {
             topBar
             view
+        }
+        .ignoresSafeArea()
+        .fileImporter(
+            isPresented: $isFilePresented,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            do {
+                let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                let result = String(data: qrCode, encoding: .utf8)
+                
+                address = result ?? ""
+                showScanner = false
+            } catch {
+                print(error)
+            }
         }
     }
     
@@ -66,8 +84,27 @@ struct QRCodeScannerView: View {
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
-            galleryButton
+            buttonsStack
         }
+    }
+    
+    var buttonsStack: some View {
+        VStack {
+            Spacer()
+            buttons
+        }
+    }
+    
+    var buttons: some View {
+        HStack(spacing: 0) {
+            galleryButton
+                .frame(maxWidth: .infinity)
+
+            fileButton
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 50)
     }
     
     var galleryButton: some View {
@@ -76,7 +113,16 @@ struct QRCodeScannerView: View {
         } label: {
             OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
         }
-        .padding(.bottom, 50)
+        .padding(.bottom, 20)
+    }
+    
+    var fileButton: some View {
+        Button {
+            isFilePresented.toggle()
+        } label: {
+            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
+        }
+        .padding(.bottom, 20)
     }
 }
 #endif
