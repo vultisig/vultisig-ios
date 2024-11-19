@@ -37,6 +37,7 @@ extension SendCryptoAddressTextField {
                     }
                 }
             ))
+            .font(.body12MenloBold)
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)
@@ -62,7 +63,7 @@ extension SendCryptoAddressTextField {
     }
     
     var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+        QRCodeScannerView(showScanner: $showScanner, address: $tx.toAddress, handleScan: handleScan)
     }
     
     func processImage() {

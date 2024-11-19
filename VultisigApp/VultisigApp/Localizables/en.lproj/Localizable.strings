@@ -427,6 +427,7 @@
 "newVaultSetup" = "New Vault Setup";
 "saveChanges" = "Save Changes";
 "currentVaults" = "Current Vaults";
+"networkFee" = "Network Fee";
 "useSkipInstead" = "Use Skip instead";
 "useSkipWithoutPasswordMessage" = "Please use \"Skip\" to save without password";
 "serverBackupVerification" = "Server backup verification";
@@ -435,3 +436,8 @@
 "serverBackupVerificationDisclaimer" = "This code verifies receiving the server backup via email.";
 "incorrectCode" = "Incorrect Code";
 "verificationCodeTryAgain" = "Please check your mail for the verification code and try again.";
+"chains" = "Chains";
+"noResultFound" = "No result found.";
+"value" = "Value";
+"joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
+"swapTrackingLink" = "Swap tracking link";

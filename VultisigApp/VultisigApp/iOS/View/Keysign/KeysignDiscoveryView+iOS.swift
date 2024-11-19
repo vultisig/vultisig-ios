@@ -42,11 +42,8 @@ extension KeysignDiscoveryView {
     
     var list: some View {
         VStack(spacing: 4) {
-            networkPrompts
-            
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
-                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
             } else {
                 deviceList
             }
@@ -55,14 +52,19 @@ extension KeysignDiscoveryView {
     
     var paringQRCode: some View {
         VStack {
-            Text(NSLocalizedString("scanWithPairedDevice", comment: ""))
-                .font(.body14MontserratMedium)
-                .multilineTextAlignment(.center)
-            
+            networkPrompts
+            qrCode
+        }
+        .foregroundColor(.neutral0)
+        .cornerRadius(10)
+    }
+    
+    var qrCode: some View {
+        ZStack {
             qrCodeImage?
                 .resizable()
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
+                .frame(width: getQRSize())
+                .frame(height: getQRSize())
                 .scaledToFit()
                 .padding(2)
                 .background(Color.neutral0)
@@ -70,17 +72,13 @@ extension KeysignDiscoveryView {
                 .padding(4)
                 .padding(12)
                 .background(Color.blue600)
-                .cornerRadius(20)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 20)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
-                )
+                .cornerRadius(30)
                 .padding(1)
+            
+            Image("QRScannerOutline")
+                .resizable()
+                .frame(width: getQROutline(), height: getQROutline())
         }
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding(20)
     }
     
     var bottomButtons: some View {
@@ -95,9 +93,10 @@ extension KeysignDiscoveryView {
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.8 : 1)
         .grayscale(isDisabled ? 1 : 0)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 16)
         .background(Color.backgroundBlue.opacity(0.95))
         .edgesIgnoringSafeArea(.bottom)
+        .padding(.bottom, idiom == .pad ? 30 : 0)
     }
     
     var deviceList: some View {
@@ -119,6 +118,30 @@ extension KeysignDiscoveryView {
             .padding(.horizontal, 24)
             .frame(maxHeight: .infinity)
         }
+    }
+    
+    private func getQRSize() -> CGFloat {
+        guard !isPhoneSE else {
+            return 250
+        }
+        
+        guard idiom == .phone else {
+            return screenWidth-335
+        }
+        
+        return screenWidth-80
+    }
+    
+    private func getQROutline() -> CGFloat {
+        guard !isPhoneSE else {
+            return 280
+        }
+        
+        guard idiom == .phone else {
+            return screenWidth-300
+        }
+        
+        return screenWidth-45
     }
 }
 #endif

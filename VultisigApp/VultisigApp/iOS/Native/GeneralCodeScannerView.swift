@@ -52,7 +52,7 @@ struct GeneralCodeScannerView: View {
         ) { result in
             do {
                 let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                let result = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
+                let result = String(data: qrCode, encoding: .utf8)
                 guard let url = URL(string: result ?? .empty) else {
                     return
                 }
