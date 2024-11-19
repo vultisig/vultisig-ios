@@ -49,7 +49,7 @@ class TerraHelper {
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let ibc) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         
@@ -57,7 +57,7 @@ class TerraHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        if keysignPayload.coin.isNativeToken {
+        if keysignPayload.coin.isNativeToken || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
             
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
@@ -73,7 +73,7 @@ class TerraHelper {
                     $0.sendCoinsMessage = CosmosMessage.Send.with{
                         $0.fromAddress = keysignPayload.coin.address
                         $0.amounts = [CosmosAmount.with {
-                            $0.denom = self.denom
+                            $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
                             $0.amount = String(keysignPayload.toAmount)
                         }]
                         $0.toAddress = keysignPayload.toAddress
@@ -90,6 +90,7 @@ class TerraHelper {
             }
             
             return try input.serializedData()
+            
         } else {
             
             if !keysignPayload.coin.contractAddress.contains("terra1") && !keysignPayload.coin.contractAddress.contains("ibc/") {
@@ -126,79 +127,9 @@ class TerraHelper {
                   
                 return try input.serializedData()
                 
-            } else if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
-                
-                guard let splittedPath = ibc?.path.split(separator: "/") else {
-                    throw HelperError.runtimeError("It must have a valid IBC path")
-                }
-                guard let sourcePort = splittedPath.first?.description else {
-                    throw HelperError.runtimeError("It must have a valid source port")
-                }
-                guard let sourceChannel = splittedPath.last?.description else {
-                    throw HelperError.runtimeError("It must have a valid source channel")
-                }
-                
-                guard (ibc?.baseDenom) != nil else {
-                    throw HelperError.runtimeError("It must have a valid IBC base denom")
-                }
-                
-                let timeoutAndBlockHeight = ibc?.height?.split(separator: "_")
-                                
-                guard let blockHeight = timeoutAndBlockHeight?.first, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
-                    throw HelperError.runtimeError("It must have a valid blockHeight")
-                }
-                
-                guard let timeoutInNanoSeconds = timeoutAndBlockHeight?.last, let timeoutInNanoSeconds = UInt64(timeoutInNanoSeconds), blockHeight > 0 else {
-                    throw HelperError.runtimeError("It must have a valid blockHeight")
-                }
-                
-                let transferMessage = CosmosMessage.Transfer.with {
-                    $0.sourcePort = sourcePort
-                    $0.sourceChannel = sourceChannel
-                    $0.sender = keysignPayload.coin.address.description
-                    $0.receiver = keysignPayload.toAddress
-                    $0.token = CosmosAmount.with {
-                        $0.amount = String(keysignPayload.toAmount)
-                        $0.denom = keysignPayload.coin.contractAddress // We must send to the IBC/{hash}
-                    }
-                    
-                    $0.timeoutHeight = CosmosHeight.with {
-                        $0.revisionNumber = 1
-                        $0.revisionHeight = blockHeight + 1000
-                    }
-                    
-                    $0.timeoutTimestamp = timeoutInNanoSeconds
-                }
-                
-                let message = CosmosMessage.with {
-                    $0.transferTokensMessage = transferMessage
-                }
-                
-                let fee = CosmosFee.with {
-                    $0.gas = TerraHelper.GasLimit
-                    $0.amounts = [CosmosAmount.with {
-                        $0.amount = String(gas)
-                        $0.denom = self.denom
-                    }]
-                }
-                
-                let input = CosmosSigningInput.with {
-                    $0.signingMode = .protobuf;
-                    $0.accountNumber = accountNumber
-                    $0.chainID = self.coinType.chainId
-                    if let memo = keysignPayload.memo {
-                        $0.memo = memo
-                    }
-                    $0.sequence = sequence
-                    $0.messages = [message]
-                    $0.fee = fee
-                    $0.publicKey = pubKeyData
-                    $0.mode = .sync
-                }
-
-                return try input.serializedData()
-                
             } else {
+                
+                // This is for WASM tokens
                 
                 guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: coinType) else {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
