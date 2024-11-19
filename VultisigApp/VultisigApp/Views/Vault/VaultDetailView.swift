@@ -82,7 +82,7 @@ struct VaultDetailView: View {
         })
         .sheet(isPresented: $isMonthlyBackupLinkActive) {
             MonthlyBackupView(isPresented: $isMonthlyBackupLinkActive)
-                .presentationDetents([.height(273)])
+                .presentationDetents([.height(224)])
         }
     }
 
