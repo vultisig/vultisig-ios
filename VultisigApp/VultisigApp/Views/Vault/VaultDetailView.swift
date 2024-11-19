@@ -28,6 +28,7 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isMonthlyBackupLinkActive = true
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -76,6 +77,10 @@ struct VaultDetailView: View {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
+        .sheet(isPresented: $isMonthlyBackupLinkActive) {
+            MonthlyBackupView(isPresented: $isMonthlyBackupLinkActive)
+                .presentationDetents([.height(273)])
+        }
     }
     
     var emptyList: some View {
