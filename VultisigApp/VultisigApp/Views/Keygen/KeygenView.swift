@@ -12,8 +12,6 @@ import SwiftUI
 import Tss
 
 struct KeygenView: View {
-    @Environment(\.modelContext) var context
-
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -23,6 +21,7 @@ struct KeygenView: View {
     let encryptionKeyHex: String
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
+    @Binding var hideBackButton: Bool
 
     @StateObject var viewModel = KeygenViewModel()
     
@@ -30,11 +29,19 @@ struct KeygenView: View {
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
+    @State var showVerificationView = false
     
+    @Environment(\.modelContext) var context
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
+            .navigationDestination(isPresented: $viewModel.isLinkActive) {
+                navigationDestination
+            }
+            .onAppear {
+                hideBackButton = true
+            }
     }
     
     var fields: some View {
@@ -137,6 +144,7 @@ struct KeygenView: View {
             }
         }
         .onAppear {
+            hideBackButton = false
             showProgressRing = false
         }
     }
@@ -167,6 +175,16 @@ struct KeygenView: View {
         }
     }
     
+    var navigationDestination: some View {
+        ZStack {
+            if showVerificationView {
+                ServerBackupVerificationView(vault: vault)
+            } else {
+                BackupVaultNowView(vault: vault)
+            }
+        }
+    }
+    
     func setData() async {
         await viewModel.setData(
             vault: vault,
@@ -181,6 +199,8 @@ struct KeygenView: View {
     }
     
     private func setDoneData() {
+        checkVaultType()
+        
         if tssType == .Reshare {
             vault.isBackedUp = false
         }
@@ -191,6 +211,15 @@ struct KeygenView: View {
 
         progressCounter = 4
         viewModel.delaySwitchToMain()
+    }
+    
+    private func checkVaultType() {
+        for signer in keygenCommittee {
+            if signer.contains("Server-") {
+                showVerificationView = true
+                return
+            }
+        }
     }
 }
 
@@ -206,7 +235,8 @@ struct KeygenView: View {
             sessionID: "",
             encryptionKeyHex: "",
             oldResharePrefix: "",
-            fastSignConfig: nil
+            fastSignConfig: nil,
+            hideBackButton: .constant(false)
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }

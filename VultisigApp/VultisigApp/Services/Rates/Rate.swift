@@ -38,5 +38,6 @@ struct Rate: DatabaseMappable, Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(value)
     }
 }

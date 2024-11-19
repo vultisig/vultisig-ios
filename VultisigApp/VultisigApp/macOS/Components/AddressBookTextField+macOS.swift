@@ -49,10 +49,10 @@ extension AddressBookTextField {
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $text)
-            .foregroundColor(.neutral0)
-            .submitLabel(.next)
-            .disableAutocorrection(true)
-            .borderlessTextFieldStyle()
+                .foregroundColor(.neutral0)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .borderlessTextFieldStyle()
         }
     }
     

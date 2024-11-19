@@ -26,7 +26,7 @@ extension JoinKeygenView {
     }
     
     var headerMac: some View {
-        JoinKeygenHeader(title: "joinKeygen")
+        JoinKeygenHeader(title: "joinKeygen", hideBackButton: hideBackButton)
     }
 }
 #endif

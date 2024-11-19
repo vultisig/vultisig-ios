@@ -15,9 +15,19 @@ class Blockchair: Codable {
 	var address: BlockchairAddress?
 	var utxo: [BlockchairUtxo]?
 	
-	func selectUTXOsForPayment() -> [BlockchairUtxo] {
+    func selectUTXOsForPayment(amountNeeded: Int64) -> [BlockchairUtxo] {
 		let txrefs = self.utxo ?? []
-		return txrefs.sorted { $0.value ?? 0 < $1.value  ?? 0 }
+		let sortedTxRefs = txrefs.sorted { $0.value ?? 0 < $1.value  ?? 0 }
+        var selectedTxRefs:[BlockchairUtxo] = []
+        var total = 0
+        for txref in sortedTxRefs {
+            selectedTxRefs.append(txref)
+            total += Int(txref.value  ?? 0)
+            if total >= amountNeeded {
+                break
+            }
+        }
+        return selectedTxRefs
 	}
 	
 	class BlockchairAddress: Codable {
