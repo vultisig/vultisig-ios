@@ -10,11 +10,17 @@ import SwiftUI
 struct MonthlyBackupView: View {
 
     @Binding var isPresented: Bool
+    @Binding var isBackupPresented: Bool
+
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
 
     var body: some View {
         ZStack {
             Background()
             view
+        }
+        .onAppear {
+            monthlyReminderDate = Date()
         }
     }
 
@@ -66,6 +72,7 @@ struct MonthlyBackupView: View {
 
     var backupButton: some View {
         Button {
+            isBackupPresented = true
             isPresented = false
         } label: {
             FilledButton(title: "Backup")
@@ -76,6 +83,7 @@ struct MonthlyBackupView: View {
 
     var dontRemindButton: some View {
         Button {
+            monthlyReminderDate = .distantFuture
             isPresented = false
         } label: {
             OutlineButton(title: "Don’t remind me again")
