@@ -18,7 +18,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
-    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
 
     @State var showSheet = false
     @State var isLoading = true
@@ -30,7 +30,8 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-    @State var isMonthlyBackupLinkActive = true // TODO: Toggle!!!
+    @State var isMonthlyBackupWarningLinkActive = false
+    @State var isBackupLinkActive = false
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -75,21 +76,25 @@ struct VaultDetailView: View {
                 vault: vault
             )
         }
+        .navigationDestination(isPresented: $isBackupLinkActive) {
+            BackupPasswordSetupView(vault: vault)
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
-        .sheet(isPresented: $isMonthlyBackupLinkActive) {
-            MonthlyBackupView(isPresented: $isMonthlyBackupLinkActive)
+        .sheet(isPresented: $isMonthlyBackupWarningLinkActive) {
+            MonthlyBackupView(isPresented: $isMonthlyBackupWarningLinkActive, isBackupPresented: $isBackupLinkActive)
                 .presentationDetents([.height(224)])
         }
+
     }
 
     var shadowView: some View {
         Background()
-            .opacity(isMonthlyBackupLinkActive ? 0.5 : 0)
-            .animation(.default, value: isMonthlyBackupLinkActive)
+            .opacity(isMonthlyBackupWarningLinkActive ? 0.5 : 0)
+            .animation(.default, value: isMonthlyBackupWarningLinkActive)
     }
 
     var emptyList: some View {
@@ -202,10 +207,10 @@ struct VaultDetailView: View {
     private func showMonthlyReminderIfNeeded() {
         guard !vault.isBackedUp else { return }
 
-        let diff = Calendar.current.dateComponents([.day], from: Date(), to: monthlyReminderDate)
+        let diff = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
 
         if let days = diff.day, days >= 30 {
-            isMonthlyBackupLinkActive = true
+            isMonthlyBackupWarningLinkActive = true
         }
     }
 }
