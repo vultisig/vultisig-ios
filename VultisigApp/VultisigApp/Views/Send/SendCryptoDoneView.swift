@@ -23,8 +23,6 @@ struct SendCryptoDoneView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
     var showProgress: Bool {
         return progressLink != nil
     }
@@ -56,6 +54,8 @@ struct SendCryptoDoneView: View {
             
             if showProgress, hash == self.hash {
                 Separator()
+                    .padding(.horizontal, 16)
+                
                 HStack {
                     Spacer()
                     progressbutton
@@ -91,56 +91,10 @@ struct SendCryptoDoneView: View {
     }
     
     var summaryCard: some View {
-        ZStack {
-            if let tx = sendTransaction {
-                getSendCard(tx)
-            } else if let tx = swapTransaction {
-                getSwapCard(tx)
-            }
-        }
-        .padding(.horizontal, 16)
-    }
-    
-    func getSendCard(_ tx: SendTransaction) -> some View {
-        VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(title: "from", description: tx.fromAddress, isVerticalStacked: true)
-            Separator()
-            getGeneralCell(title: "to", description: tx.toAddress, isVerticalStacked: true)
-            Separator()
-            getGeneralCell(title: "networkFee", description: tx.gasInReadable)
-        }
-    }
-    
-    func getSwapCard(_ tx: SwapTransaction) -> some View {
-        VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(title: "from", description: getFromAmount(tx))
-            Separator()
-            getGeneralCell(title: "to", description: getToAmount(tx))
-            Separator()
-            getGeneralCell(title: "networkFee", description: swapFeeString(tx))
-        }
-    }
-    
-    func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
-        ZStack {
-            if isVerticalStacked {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString(title, comment: ""))
-                    Text(description)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                HStack {
-                    Text(NSLocalizedString(title, comment: ""))
-                    Spacer()
-                    Text(description)
-                }
-            }
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
+        SendCryptoDoneSummary(
+            sendTransaction: sendTransaction,
+            swapTransaction: swapTransaction
+        )
     }
     
     func card(title: String, hash: String) -> some View {
@@ -192,41 +146,6 @@ struct SendCryptoDoneView: View {
 
     func explorerLink(hash: String) -> String {
         return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
-    }
-    
-    func getFromAmount(_ tx: SwapTransaction) -> String {
-        if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker)"
-        } else {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
-        }
-    }
-
-    func getToAmount(_ tx: SwapTransaction) -> String {
-        if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker)"
-        } else {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
-        }
-    }
-    
-    func swapFeeString(_ tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
-        
-        let fromCoin = feeCoin(tx: tx)
-        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
-        return fee.formatToFiat(includeCurrencySymbol: true)
-    }
-    
-    func feeCoin(tx: SwapTransaction) -> Coin {
-        switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton:
-            return tx.fromCoin
-        case .EVM:
-            guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
-        }
     }
     
     private func shareLink(hash: String) {

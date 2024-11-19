@@ -25,7 +25,7 @@ extension CoinPickerView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "chooseTokens")
+        GeneralMacHeader(title: "chains")
     }
     
     var view: some View {
@@ -38,9 +38,6 @@ extension CoinPickerView {
             
             scrollView
                 .padding(.horizontal, 40)
-                .padding(.top, 20)
-                .padding(.bottom, 50)
-                .colorScheme(.dark)
         }
     }
 }
