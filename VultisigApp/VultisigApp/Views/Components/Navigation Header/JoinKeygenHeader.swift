@@ -9,6 +9,7 @@ import SwiftUI
 
 struct JoinKeygenHeader: View {
     let title: String
+    var hideBackButton: Bool = false
     
     var body: some View {
         HStack {
@@ -25,6 +26,7 @@ struct JoinKeygenHeader: View {
     
     var leadingAction: some View {
         NavigationBackButton()
+            .opacity(hideBackButton ? 0 : 1)
     }
     
     var text: some View {
@@ -39,5 +41,5 @@ struct JoinKeygenHeader: View {
 }
 
 #Preview {
-    JoinKeygenHeader(title: "joinKeygen")
+    JoinKeygenHeader(title: "joinKeygen", hideBackButton: false)
 }

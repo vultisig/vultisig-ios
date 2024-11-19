@@ -12,8 +12,6 @@ import SwiftUI
 import Tss
 
 struct KeygenView: View {
-    @Environment(\.modelContext) var context
-
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -23,6 +21,7 @@ struct KeygenView: View {
     let encryptionKeyHex: String
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
+    @Binding var hideBackButton: Bool
 
     @StateObject var viewModel = KeygenViewModel()
     
@@ -32,12 +31,16 @@ struct KeygenView: View {
     @State var showProgressRing = true
     @State var showVerificationView = false
     
+    @Environment(\.modelContext) var context
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 navigationDestination
+            }
+            .onAppear {
+                hideBackButton = true
             }
     }
     
@@ -141,6 +144,7 @@ struct KeygenView: View {
             }
         }
         .onAppear {
+            hideBackButton = false
             showProgressRing = false
         }
     }
@@ -231,7 +235,8 @@ struct KeygenView: View {
             sessionID: "",
             encryptionKeyHex: "",
             oldResharePrefix: "",
-            fastSignConfig: nil
+            fastSignConfig: nil,
+            hideBackButton: .constant(false)
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }
