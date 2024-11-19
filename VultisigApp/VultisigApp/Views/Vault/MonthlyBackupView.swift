@@ -44,7 +44,7 @@ struct MonthlyBackupView: View {
             Spacer()
 
             VStack {
-                Text("Don't forget to backup your\nvault shares and verify the completeness.")
+                Text(NSLocalizedString("monthlyBackupTitle", comment: ""))
                     .foregroundColor(.neutral0)
                     .font(.body16MontserratSemiBold)
                     .multilineTextAlignment(.center)
@@ -75,7 +75,7 @@ struct MonthlyBackupView: View {
             isBackupPresented = true
             isPresented = false
         } label: {
-            FilledButton(title: "Backup")
+            FilledButton(title: "backup")
         }
         .padding(.horizontal, 16)
         .buttonStyle(.plain)
@@ -86,7 +86,7 @@ struct MonthlyBackupView: View {
             monthlyReminderDate = .distantFuture
             isPresented = false
         } label: {
-            OutlineButton(title: "Don’t remind me again")
+            OutlineButton(title: "dontRemind")
         }
         .padding(.horizontal, 16)
         .buttonStyle(.plain)
