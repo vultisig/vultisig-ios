@@ -14,11 +14,18 @@ struct SendCryptoDoneView: View {
     let chain: Chain
 
     var progressLink: String? = nil
+    
+    let sendTransaction: SendTransaction?
+    let swapTransaction: SwapTransaction?
 
     @State var showAlert = false
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
+    
+    var showProgress: Bool {
+        return progressLink != nil
+    }
     
     var body: some View {
         ZStack {
@@ -34,8 +41,60 @@ struct SendCryptoDoneView: View {
                 card(title: NSLocalizedString("Approve", comment: ""), hash: approveHash)
             }
 
-            card(title: NSLocalizedString("transaction", comment: "Transaction"), hash: hash)
+            transactionCard
         }
+    }
+    
+    var transactionCard: some View {
+        VStack(spacing: 0) {
+            card(title: NSLocalizedString("transaction", comment: "Transaction"), hash: hash)
+                .padding(.horizontal, -16)
+            
+            summaryCard
+            
+            if showProgress, hash == self.hash {
+                Separator()
+                    .padding(.horizontal, 16)
+                
+                HStack {
+                    Spacer()
+                    progressbutton
+                }
+                .padding(16)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.blue600)
+        .cornerRadius(10)
+        .padding(.horizontal, 16)
+    }
+    
+    var progressbutton: some View {
+        Button {
+            checkProgressLink()
+        } label: {
+            Text(NSLocalizedString("swapTrackingLink", comment: ""))
+                .font(.body14MontserratBold)
+                .foregroundColor(.turquoise600)
+                .underline()
+        }
+    }
+
+    var continueButton: some View {
+        NavigationLink(destination: {
+            HomeView(selectedVault: vault)
+        }, label: {
+            FilledButton(title: "complete")
+        })
+        .id(UUID())
+        .padding(40)
+    }
+    
+    var summaryCard: some View {
+        SendCryptoDoneSummary(
+            sendTransaction: sendTransaction,
+            swapTransaction: swapTransaction
+        )
     }
     
     func card(title: String, hash: String) -> some View {
@@ -45,13 +104,6 @@ struct SendCryptoDoneView: View {
             Text(hash)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
-
-            if showProgress, hash == self.hash {
-                HStack {
-                    Spacer()
-                    progressbutton
-                }
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -92,30 +144,6 @@ struct SendCryptoDoneView: View {
         }
     }
 
-    var progressbutton: some View {
-        Button {
-            checkProgressLink()
-        } label: {
-            Text(NSLocalizedString("swapProgress", comment: ""))
-                .font(.body14Menlo)
-                .foregroundColor(.turquoise600)
-        }
-    }
-
-    var continueButton: some View {
-        NavigationLink(destination: {
-            HomeView(selectedVault: vault)
-        }, label: {
-            FilledButton(title: "complete")
-        })
-        .id(UUID())
-        .padding(40)
-    }
-
-    var showProgress: Bool {
-        return progressLink != nil
-    }
-
     func explorerLink(hash: String) -> String {
         return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
     }
@@ -140,6 +168,9 @@ struct SendCryptoDoneView: View {
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
-        progressLink: "https://blockstream.info/tx/"
+        progressLink: "https://blockstream.info/tx/",
+        sendTransaction: SendTransaction(),
+        swapTransaction: SwapTransaction()
     )
+    .environmentObject(SettingsViewModel())
 }

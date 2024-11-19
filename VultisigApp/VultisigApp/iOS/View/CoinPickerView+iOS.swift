@@ -15,7 +15,7 @@ extension CoinPickerView {
             main
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        .navigationTitle(NSLocalizedString("chains", comment: "Chains"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -28,7 +28,6 @@ extension CoinPickerView {
                 }
             }
         }
-        .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
     }
     
     var main: some View {
@@ -37,70 +36,12 @@ extension CoinPickerView {
     
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                    if searchText.isEmpty {
-                        Section(header: header(label: "tokens")) {
-                            ForEach(coins, id: \.self) { coin in
-                                row(for: coin)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
-                        }
-                    } else {
-                        Section(header: header(label: "searchResult")) {
-                            ForEach(filtered, id: \.self) { coin in
-                                row(for: coin)
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
-                        }
-                    }
-
-                }
+            searchBar
                 .padding(.horizontal, 12)
-                .scrollContentBackground(.hidden)
-                .listStyle(.grouped)
-            }
+                .padding(.vertical, 24)
+            
+            scrollView
         }
-        .padding(.bottom, 50)
-    }
-    
-    var searchBar: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $searchText)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .textContentType(.oneTimeCode)
-                .padding(.horizontal, 8)
-                .borderlessTextFieldStyle()
-                .maxLength($searchText)
-                .focused($isSearchFieldFocused)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.default)
-
-            if isSearching {
-                Button("Cancel") {
-                    searchText = ""
-                    isSearchFieldFocused = false
-                    isSearching = false
-                }
-                .foregroundColor(.blue)
-                .font(.body12Menlo)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .padding(.horizontal, 12)
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
-        .onChange(of: searchText) { oldValue, newValue in
-            isSearching = !newValue.isEmpty
-        }
-        .background(Color.blue600)
-        .cornerRadius(12)
     }
 }
 #endif

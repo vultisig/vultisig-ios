@@ -84,7 +84,7 @@ struct SendCryptoDetailsView: View {
     
     var fromTextField: some View {
         Text(tx.fromAddress)
-            .font(.body12Menlo)
+            .font(.body12MenloBold)
             .foregroundColor(.neutral0)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -231,21 +231,8 @@ struct SendCryptoDetailsView: View {
             Spacer()
             Text(trailingText)
         }
-        .font(.body16Menlo)
+        .font(.body14MenloBold)
         .foregroundColor(.neutral0)
-    }
-
-    var button: some View {
-        Button {
-            Task{
-                await validateForm()
-            }
-        } label: {
-            FilledButton(title: "continue")
-        }
-        .padding(.horizontal, 40)
-        .padding(.top, 20)
-        .padding(.bottom, 40)
     }
     
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
@@ -260,7 +247,7 @@ struct SendCryptoDetailsView: View {
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
-            .font(.body12Menlo)
+            .font(.body12MenloBold)
             .foregroundColor(.neutral0)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
@@ -268,7 +255,7 @@ struct SendCryptoDetailsView: View {
             .cornerRadius(6)
     }
     
-    private func validateForm() async {
+    func validateForm() async {
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()

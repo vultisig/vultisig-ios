@@ -9,6 +9,8 @@
 import SwiftUI
 
 extension SendCryptoDetailsView {
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var container: some View {
         content
             .toolbar {
@@ -35,10 +37,23 @@ extension SendCryptoDetailsView {
         }
     }
     
+    var button: some View {
+        Button {
+            Task{
+                await validateForm()
+            }
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 20)
+        .padding(.bottom, idiom == .pad ? 30 : 0)
+    }
+    
     var fields: some View {
         ScrollViewReader { value in
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 18) {
                     coinSelector
                     fromField
                     toField
@@ -54,8 +69,7 @@ extension SendCryptoDetailsView {
                         balanceNativeTokenField
                     }
                     
-                    getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
-                    getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
+                    getSummaryCell(leadingText: NSLocalizedString("networkFee", comment: ""), trailingText: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
                     
                     if tx.canBeReaped {
                         existentialDepositTextMessage
