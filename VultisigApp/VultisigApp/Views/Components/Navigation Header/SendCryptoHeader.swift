@@ -53,7 +53,7 @@ struct SendCryptoHeader: View {
                 Button {
                     settingsPresented = true
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "fuelpump")
                 }
                 .foregroundColor(.neutral0)
                 .opacity(sendCryptoViewModel.currentIndex == 1 ? 1 : 0)
@@ -85,11 +85,14 @@ struct SendCryptoHeader: View {
 }
 
 #Preview {
-    SendCryptoHeader(
-        vault: Vault.example, 
-        showFeeSettings: true, 
-        settingsPresented: .constant(false),
-        sendCryptoViewModel: SendCryptoViewModel(),
-        shareSheetViewModel: ShareSheetViewModel()
-    )
+    ZStack {
+        Background()
+        SendCryptoHeader(
+            vault: Vault.example, 
+            showFeeSettings: true, 
+            settingsPresented: .constant(false),
+            sendCryptoViewModel: SendCryptoViewModel(),
+            shareSheetViewModel: ShareSheetViewModel()
+        )
+    }
 }

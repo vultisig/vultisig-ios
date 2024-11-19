@@ -42,6 +42,48 @@ struct CoinPickerView: View {
         }
         .frame(height: 44)
     }
+    
+    var searchBar: some View {
+        HStack(spacing: 0) {
+            Image(systemName: "magnifyingglass")
+                .font(.body24MontserratMedium)
+                .foregroundColor(.neutral500)
+            
+            TextField(NSLocalizedString("search", comment: "Search").toFormattedTitleCase(), text: $searchText)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral500)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
+                .padding(.horizontal, 8)
+                .borderlessTextFieldStyle()
+                .maxLength($searchText)
+                .colorScheme(.dark)
+
+            if isSearching {
+                Button {
+                    searchText = ""
+                    isSearchFieldFocused = false
+                    isSearching = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.neutral0)
+                }
+                .foregroundColor(.blue)
+                .font(.body12Menlo)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+        .padding(.horizontal, 12)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .onChange(of: searchText) { oldValue, newValue in
+            isSearching = !newValue.isEmpty
+        }
+        .background(Color.blue600)
+        .cornerRadius(12)
+    }
 
     func row(for coin: Coin) -> some View {
         Button {
@@ -71,6 +113,48 @@ struct CoinPickerView: View {
             .background(Color.blue600)
             .cornerRadius(10)
         }
+    }
+    
+    var scrollView: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
+                if searchText.isEmpty {
+                    list
+                } else {
+                    if filtered.count == 0 {
+                        errorMessage
+                    } else {
+                        filteredList
+                    }
+                }
+
+            }
+            .padding(.horizontal, 12)
+            .scrollContentBackground(.hidden)
+            .padding(.top, 20)
+            .padding(.bottom, 50)
+        }
+    }
+    
+    var list: some View {
+        ForEach(coins, id: \.self) { coin in
+            row(for: coin)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+        }
+    }
+    
+    var filteredList: some View {
+        ForEach(filtered, id: \.self) { coin in
+            row(for: coin)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+        }
+    }
+    
+    var errorMessage: some View {
+        ErrorMessage(text: "noResultFound")
+            .frame(maxWidth: .infinity)
     }
 }
 
