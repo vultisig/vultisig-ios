@@ -70,6 +70,7 @@
 		A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D082CA621B500507966 /* ReshareView+macOS.swift */; };
 		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */; };
+		A5340A672CEC9503002ADD35 /* DateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5340A662CEC9503002ADD35 /* DateExtension.swift */; };
 		A542AE5B2C5B5F220061FEAF /* FilledLabelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
 		A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54676512C179A93004DD782 /* Coin+Swaps.swift */; };
@@ -820,6 +821,7 @@
 		A52B0D082CA621B500507966 /* ReshareView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareView+macOS.swift"; sourceTree = "<group>"; };
 		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBackupView.swift; sourceTree = "<group>"; };
+		A5340A662CEC9503002ADD35 /* DateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtension.swift; sourceTree = "<group>"; };
 		A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledLabelButton.swift; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
 		A54676512C179A93004DD782 /* Coin+Swaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+Swaps.swift"; sourceTree = "<group>"; };
@@ -2452,6 +2454,7 @@
 				A65649D82B96602700E4B329 /* BigUIntExtension.swift */,
 				A65649D92B96602700E4B329 /* Int64Extension.swift */,
 				A65649DA2B96602700E4B329 /* DataExtension.swift */,
+				A5340A662CEC9503002ADD35 /* DateExtension.swift */,
 				A65649DB2B96602700E4B329 /* BitcoinTransactionExtension.swift */,
 				A65649DC2B96602700E4B329 /* StringExtension.swift */,
 				A65649DD2B96602700E4B329 /* VaultExtension.swift */,
@@ -3482,6 +3485,7 @@
 				A6386DB22C90263400DDD58E /* ToggleSelectionCell+iOS.swift in Sources */,
 				A6833D7E2C659283002029E1 /* TokenSelectionHeader.swift in Sources */,
 				A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */,
+				A5340A672CEC9503002ADD35 /* DateExtension.swift in Sources */,
 				A6505AE92CA6710A0002FBF4 /* StringExtension+macOS.swift in Sources */,
 				A6182F5B2C9299DC0059BFDD /* MemoTextField+iOS.swift in Sources */,
 				A6505AD22CA668C20002FBF4 /* InformationNote+macOS.swift in Sources */,
