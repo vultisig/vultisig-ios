@@ -14,16 +14,6 @@ struct MonthlyBackupView: View {
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
 
-    var body: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .onAppear {
-            monthlyReminderDate = Date()
-        }
-    }
-
     var view: some View {
         VStack(spacing: 0) {
             header
@@ -33,6 +23,9 @@ struct MonthlyBackupView: View {
                 backupButton
                 dontRemindButton
             }
+        }
+        .onAppear {
+            monthlyReminderDate = Date()
         }
     }
 
