@@ -66,7 +66,7 @@ struct KeysignMessageFactory {
         case .kujira:
             return try KujiraHelper(coinType: .kujira, denom: "ukuji").getPreSignedImageHash(keysignPayload: payload)
         case .osmosis:
-            return try OsmoHelper().getPreSignedImageHash(keysignPayload: payload)
+            return try OsmoHelper(coinType: .osmosis, denom: "uosmo").getPreSignedImageHash(keysignPayload: payload)
         case .terra:
             return try TerraHelper(coinType: .terraV2, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
         case .terraClassic:

@@ -243,8 +243,12 @@ private extension BlockChainService {
                 ibcDenomTrace = denomTrace
             }
             
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                        
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
-            ibcDenomTrace?.height = latestBlock
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .osmosis:
@@ -274,6 +278,13 @@ private extension BlockChainService {
             if coin.contractAddress.contains("ibc/"), let denomTrace = await terra.fetchIbcDenomTraces(coin: coin) {
                 ibcDenomTrace = denomTrace
             }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                        
+            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
             

@@ -576,6 +576,10 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "ibc/119334C55720942481F458C9C462F5C0CD1F1E7EEAC4679D674AA67221916AEA", isNativeToken: false)
         }
         
+        static var kujiraUsdc: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/FE98AAD68F02F03565E9FA39A5E627946699B2B07115889ED812D8BA639576A9", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
@@ -609,6 +613,7 @@ class TokensStore {
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
         TokensStore.Token.kujiraLunc,
+        TokensStore.Token.kujiraUsdc,
         
         TokensStore.Token.dydx,
         

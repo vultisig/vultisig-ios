@@ -94,7 +94,6 @@ class TerraHelper {
             
             if !keysignPayload.coin.contractAddress.contains("terra1") && !keysignPayload.coin.contractAddress.contains("ibc/") {
                 
-                
                 let input = CosmosSigningInput.with {
                     $0.publicKey = pubKeyData
                     $0.signingMode = .protobuf
@@ -124,22 +123,8 @@ class TerraHelper {
                         }]
                     }
                 }
-                
-                
-                
-                print("Sender Address: \(keysignPayload.coin.address)")
-                print("Contract Address: \(keysignPayload.coin.contractAddress.description)")
-                print("Recipient Address: \(keysignPayload.toAddress)")
-                print("Amount: \(keysignPayload.toAmount)")
-                print("Account Number: \(accountNumber)")
-                print("Sequence: \(sequence)")
-                print("Chain ID: \(self.coinType.chainId)")
-                
-                print("DENOM: \(input.messages[0].sendCoinsMessage.amounts[0].denom)")
-                print(input.debugDescription)
-  
+                  
                 return try input.serializedData()
-                
                 
             } else if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
                 
@@ -153,9 +138,17 @@ class TerraHelper {
                     throw HelperError.runtimeError("It must have a valid source channel")
                 }
                 
-                guard let ibcDenom = ibc?.baseDenom else {
+                guard (ibc?.baseDenom) != nil else {
                     throw HelperError.runtimeError("It must have a valid IBC base denom")
                 }
+                
+                guard let blockHeight = ibc?.height, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
+                    throw HelperError.runtimeError("It must have a valid blockHeight")
+                }
+                
+                let now = Date()
+                let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+                let nanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
                 
                 let transferMessage = CosmosMessage.Transfer.with {
                     $0.sourcePort = sourcePort
@@ -164,12 +157,15 @@ class TerraHelper {
                     $0.receiver = keysignPayload.toAddress
                     $0.token = CosmosAmount.with {
                         $0.amount = String(keysignPayload.toAmount)
-                        $0.denom = keysignPayload.coin.contractAddress
+                        $0.denom = keysignPayload.coin.contractAddress // We must send to the IBC/{hash}
                     }
+                    
                     $0.timeoutHeight = CosmosHeight.with {
                         $0.revisionNumber = 1
-                        $0.revisionHeight = 8800000
+                        $0.revisionHeight = blockHeight + 1000
                     }
+                    
+                    $0.timeoutTimestamp = nanoseconds
                 }
                 
                 let message = CosmosMessage.with {
@@ -197,9 +193,8 @@ class TerraHelper {
                     $0.publicKey = pubKeyData
                     $0.mode = .sync
                 }
-                
+
                 return try input.serializedData()
-                
                 
             } else {
                 
@@ -207,20 +202,6 @@ class TerraHelper {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
                 }
                 
-                
-//                let wasmTransferMessage = CosmosMessage.WasmTerraExecuteContractTransfer.with {
-//                    $0.senderAddress = fromAddr.description
-//                    $0.contractAddress = keysignPayload.coin.contractAddress.description
-//                    $0.amount = keysignPayload.toAmount.serialize()
-//                    $0.recipientAddress = keysignPayload.toAddress
-//                }
-//                
-//                let message = CosmosMessage.with {
-//                    $0.wasmTerraExecuteContractTransferMessage = wasmTransferMessage
-//                }
-                
-                // Create MsgExecuteContract message
-                // WasmTerraExecuteContractGeneric was not working it seems the normal one works.
                 let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
                     $0.contractAddress = keysignPayload.coin.contractAddress.description
@@ -232,8 +213,7 @@ class TerraHelper {
                 let message = CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = wasmGenericMessage
                 }
-               
-                
+                               
                 let fee = CosmosFee.with {
                     $0.gas = TerraHelper.GasLimit
                     $0.amounts = [CosmosAmount.with {
@@ -256,23 +236,9 @@ class TerraHelper {
                     $0.mode = .sync
                 }
                 
-                
-                print("Sender Address: \(fromAddr.description)")
-                print("Contract Address: \(keysignPayload.coin.contractAddress.description)")
-                print("Recipient Address: \(keysignPayload.toAddress)")
-                print("Amount: \(keysignPayload.toAmount.serialize())")
-                print("Account Number: \(accountNumber)")
-                print("Sequence: \(sequence)")
-                print("Chain ID: \(self.coinType.chainId)")
-                print("Fee Amount: \(fee.amounts[0].amount)")
-                print("Fee Denom: \(fee.amounts[0].denom)")
-                print("Gas Limit: \(fee.gas)")
-
-                
                 return try input.serializedData()
                 
             }
-            
             
         }
     }

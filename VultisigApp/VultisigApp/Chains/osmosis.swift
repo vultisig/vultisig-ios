@@ -12,9 +12,11 @@ import CryptoSwift
 
 class OsmoHelper {
     let coinType: CoinType
+    let denom: String
     
-    init(){
-        self.coinType = CoinType.osmosis
+    init(coinType:CoinType, denom: String){
+        self.coinType = coinType
+        self.denom = denom
     }
     
     static let OsmoGasLimit:UInt64 = 200000
@@ -55,37 +57,117 @@ class OsmoHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = self.coinType.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
-            }
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
-                    $0.fromAddress = keysignPayload.coin.address
+        if keysignPayload.coin.isNativeToken {
+            
+            let input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = self.coinType.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with {
+                    $0.sendCoinsMessage = CosmosMessage.Send.with{
+                        $0.fromAddress = keysignPayload.coin.address
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = "uosmo"
+                            $0.amount = String(keysignPayload.toAmount)
+                        }]
+                        $0.toAddress = keysignPayload.toAddress
+                    }
+                }]
+                
+                $0.fee = CosmosFee.with {
+                    $0.gas = OsmoHelper.OsmoGasLimit
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "uosmo"
-                        $0.amount = String(keysignPayload.toAmount)
+                        $0.amount = String(gas)
                     }]
-                    $0.toAddress = keysignPayload.toAddress
                 }
-            }]
-            
-            $0.fee = CosmosFee.with {
-                $0.gas = OsmoHelper.OsmoGasLimit
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "uosmo"
-                    $0.amount = String(gas)
-                }]
             }
+            
+            return try input.serializedData()
+            
+        } else {
+            
+            if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
+                
+                guard let splittedPath = ibc?.path.split(separator: "/") else {
+                    throw HelperError.runtimeError("It must have a valid IBC path")
+                }
+                guard let sourcePort = splittedPath.first?.description else {
+                    throw HelperError.runtimeError("It must have a valid source port")
+                }
+                guard let sourceChannel = splittedPath.last?.description else {
+                    throw HelperError.runtimeError("It must have a valid source channel")
+                }
+                
+                guard (ibc?.baseDenom) != nil else {
+                    throw HelperError.runtimeError("It must have a valid IBC base denom")
+                }
+                
+                guard let blockHeight = ibc?.height, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
+                    throw HelperError.runtimeError("It must have a valid blockHeight")
+                }
+                
+                let now = Date()
+                let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+                let nanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                
+                let transferMessage = CosmosMessage.Transfer.with {
+                    $0.sourcePort = sourcePort
+                    $0.sourceChannel = sourceChannel
+                    $0.sender = keysignPayload.coin.address.description
+                    $0.receiver = keysignPayload.toAddress
+                    $0.token = CosmosAmount.with {
+                        $0.amount = String(keysignPayload.toAmount)
+                        $0.denom = keysignPayload.coin.contractAddress // We must send to the IBC/{hash}
+                    }
+                    
+                    $0.timeoutHeight = CosmosHeight.with {
+                        $0.revisionNumber = 1
+                        $0.revisionHeight = blockHeight + 1000
+                    }
+                    
+                    $0.timeoutTimestamp = nanoseconds
+                }
+                
+                let message = CosmosMessage.with {
+                    $0.transferTokensMessage = transferMessage
+                }
+                
+                let fee = CosmosFee.with {
+                    $0.gas = TerraHelper.GasLimit
+                    $0.amounts = [CosmosAmount.with {
+                        $0.amount = String(gas)
+                        $0.denom = self.denom
+                    }]
+                }
+                
+                let input = CosmosSigningInput.with {
+                    $0.signingMode = .protobuf;
+                    $0.accountNumber = accountNumber
+                    $0.chainID = self.coinType.chainId
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                    $0.sequence = sequence
+                    $0.messages = [message]
+                    $0.fee = fee
+                    $0.publicKey = pubKeyData
+                    $0.mode = .sync
+                }
+
+                return try input.serializedData()
+                
+            }
+            
         }
         
-        return try input.serializedData()
+        throw HelperError.runtimeError("It must be a native token or a valid IBC token")
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

@@ -297,7 +297,7 @@ class KeysignViewModel: ObservableObject {
                 let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             } else if keysignPayload.coin.chain == .osmosis {
-                let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try OsmoHelper(coinType: .osmosis, denom: "uosmo").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             } else if keysignPayload.coin.chain == .terra {
                 let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
