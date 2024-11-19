@@ -109,13 +109,15 @@ class OsmoHelper {
                     throw HelperError.runtimeError("It must have a valid IBC base denom")
                 }
                 
-                guard let blockHeight = ibc?.height, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
+                let timeoutAndBlockHeight = ibc?.height?.split(separator: "_")
+                                
+                guard let blockHeight = timeoutAndBlockHeight?.first, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
                     throw HelperError.runtimeError("It must have a valid blockHeight")
                 }
                 
-                let now = Date()
-                let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
-                let nanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                guard let timeoutInNanoSeconds = timeoutAndBlockHeight?.last, let timeoutInNanoSeconds = UInt64(timeoutInNanoSeconds), blockHeight > 0 else {
+                    throw HelperError.runtimeError("It must have a valid blockHeight")
+                }
                 
                 let transferMessage = CosmosMessage.Transfer.with {
                     $0.sourcePort = sourcePort
@@ -132,7 +134,7 @@ class OsmoHelper {
                         $0.revisionHeight = blockHeight + 1000
                     }
                     
-                    $0.timeoutTimestamp = nanoseconds
+                    $0.timeoutTimestamp = timeoutInNanoSeconds
                 }
                 
                 let message = CosmosMessage.with {
