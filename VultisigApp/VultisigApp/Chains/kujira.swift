@@ -82,9 +82,18 @@ class KujiraHelper {
                     throw HelperError.runtimeError("It must have a valid IBC base denom")
                 }
                 
-                guard let blockHeight = ibc?.height, blockHeight != "0", let blockHeight = UInt64(blockHeight) else {
+                guard let blockHeight = ibc?.height, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
                     throw HelperError.runtimeError("It must have a valid blockHeight")
                 }
+                
+                
+
+                let now = Date()
+                let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+
+                // Convert to nanoseconds
+                let nanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                
                 
                 let transferMessage = CosmosMessage.Transfer.with {
                     $0.sourcePort = sourcePort
@@ -100,6 +109,8 @@ class KujiraHelper {
                         $0.revisionNumber = 1
                         $0.revisionHeight = blockHeight + 1000
                     }
+                    
+                    $0.timeoutTimestamp = nanoseconds
                 }
                 
                 let message = CosmosMessage.with {
