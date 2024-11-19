@@ -84,6 +84,21 @@ class CosmosService {
         
         return "0"
     }
+        
+    func fetchLatestBlock(coin: Coin) async throws -> String {
+        
+        guard let url = latestBlockURL(coin: coin) else {
+            return "0"
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        if let block = Utils.extractResultFromJson(fromData: data, path: "block.header.height") as? String {
+            return block
+        }
+        
+        return "0"
+    }
     
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
         guard let url = accountNumberURL(forAddress: address) else {
@@ -145,6 +160,10 @@ class CosmosService {
     }
     
     func ibcDenomTraceURL(coin: Coin)-> URL? {
+        fatalError("Must override in subclass")
+    }
+    
+    func latestBlockURL(coin: Coin)-> URL? {
         fatalError("Must override in subclass")
     }
 }

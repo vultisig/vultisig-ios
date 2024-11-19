@@ -240,6 +240,10 @@ class Endpoint {
         "https://terra-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
     
+    static func fetchTerraLatestBlock() -> String{
+        "https://terra-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
+    
     static func fetchTerraClassicAccountBalance(address: String) -> String{
         "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
@@ -255,6 +259,10 @@ class Endpoint {
     
     static func fetchTerraClassicWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
         "https://terra-classic-lcd.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchTerraClassicLatestBlock() -> String{
+        "https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
     static func fetchDydxAccountBalance(address: String) -> String{
@@ -274,6 +282,18 @@ class Endpoint {
     }
     
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
+    static func fetchKujiraWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://kujira-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchKujiraIbcDenomTraces(hash: String) -> String{
+        "https://kujira-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
+    static func fetchKujiraLatestBlock() -> String{
+        "https://kujira-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
     
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"

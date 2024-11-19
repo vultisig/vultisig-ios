@@ -568,6 +568,14 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "", isNativeToken: true)
         }
         
+        static var kujiraAstro: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "ASTRO", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/640E1C3E28FD45F611971DF891AE3DC90C825DF759DF8FAA8F33F7F72B35AD56", isNativeToken: false)
+        }
+        
+        static var kujiraLunc: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "ibc/119334C55720942481F458C9C462F5C0CD1F1E7EEAC4679D674AA67221916AEA", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
@@ -599,6 +607,9 @@ class TokensStore {
         TokensStore.Token.osmosis,
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
+        TokensStore.Token.kujiraAstro,
+        TokensStore.Token.kujiraLunc,
+        
         TokensStore.Token.dydx,
         
         TokensStore.Token.terra,

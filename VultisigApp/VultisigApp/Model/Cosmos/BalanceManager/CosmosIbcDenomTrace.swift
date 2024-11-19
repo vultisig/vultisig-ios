@@ -28,15 +28,18 @@ class CosmosIbcDenomTrace: Codable {
 struct CosmosIbcDenomTraceDenomTrace: Codable, Hashable {
     let path: String
     let baseDenom: String
+    var height: String?
     
     enum CodingKeys: String, CodingKey {
         case path
         case baseDenom = "base_denom"
+        case height
     }
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(path)
         hasher.combine(baseDenom)
+        hasher.combine(height)
     }
 }
 

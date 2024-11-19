@@ -164,7 +164,7 @@ class TerraHelper {
                     $0.receiver = keysignPayload.toAddress
                     $0.token = CosmosAmount.with {
                         $0.amount = String(keysignPayload.toAmount)
-                        $0.denom = ibcDenom
+                        $0.denom = keysignPayload.coin.contractAddress
                     }
                     $0.timeoutHeight = CosmosHeight.with {
                         $0.revisionNumber = 1

@@ -30,6 +30,10 @@ class TerraService: CosmosService {
     override func ibcDenomTraceURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchTerraIbcDenomTraces(hash: coin.contractAddress.replacingOccurrences(of: "ibc/", with: "")))
     }
+    
+    override func latestBlockURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchTerraLatestBlock())
+    }
 }
 
 class TerraClassicService: CosmosService {
@@ -53,5 +57,9 @@ class TerraClassicService: CosmosService {
     
     override func ibcDenomTraceURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchTerraClassicIbcDenomTraces(hash: coin.contractAddress.replacingOccurrences(of: "ibc/", with: "")))
+    }
+    
+    override func latestBlockURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchTerraClassicLatestBlock())
     }
 }

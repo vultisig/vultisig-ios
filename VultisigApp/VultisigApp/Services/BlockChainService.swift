@@ -237,7 +237,16 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await kuji.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = latestBlock
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .osmosis:
             let account = try await osmo.fetchAccountNumber(coin.address)
             
