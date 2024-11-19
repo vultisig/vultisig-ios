@@ -145,7 +145,14 @@ struct SendCryptoView: View {
     var doneView: some View {
         ZStack {
             if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
-                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain)
+                SendCryptoDoneView(
+                    vault: vault,
+                    hash: hash,
+                    approveHash: nil,
+                    chain: chain,
+                    sendTransaction: tx,
+                    swapTransaction: nil
+                )
             } else {
                 SendCryptoSigningErrorView()
             }
