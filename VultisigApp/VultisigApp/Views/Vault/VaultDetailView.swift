@@ -166,8 +166,12 @@ struct VaultDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isLoading = false
         }
+        
         setData()
-        showMonthlyReminderIfNeeded()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showMonthlyReminderIfNeeded()
+        }
     }
     
     private func setData() {
