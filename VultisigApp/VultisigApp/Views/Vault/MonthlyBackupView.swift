@@ -23,6 +23,7 @@ struct MonthlyBackupView: View {
             header
             Spacer()
             backupButton
+            dontRemindButton
         }
     }
 
@@ -69,4 +70,17 @@ struct MonthlyBackupView: View {
         .padding(16)
         .buttonStyle(.plain)
     }
+
+    var dontRemindButton: some View {
+        Button {
+            isPresented = false
+        } label: {
+            OutlineButton(title: "Don’t remind me again")
+        }
+        .padding(16)
+        .buttonStyle(.plain)
+    }
+
+    OutlineButton(title: "createFolder")
+
 }

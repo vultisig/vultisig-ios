@@ -17,7 +17,9 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
-    
+
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
+
     @State var showSheet = false
     @State var isLoading = true
     @State var showScanner = false
@@ -28,7 +30,7 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-    @State var isMonthlyBackupLinkActive = true
+    @State var isMonthlyBackupLinkActive = true // TODO: Toggle!!!
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -39,6 +41,7 @@ struct VaultDetailView: View {
             view
             scanButton
             popup
+            shadowView
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -82,7 +85,13 @@ struct VaultDetailView: View {
                 .presentationDetents([.height(273)])
         }
     }
-    
+
+    var shadowView: some View {
+        Background()
+            .opacity(isMonthlyBackupLinkActive ? 0.5 : 0)
+            .animation(.default, value: isMonthlyBackupLinkActive)
+    }
+
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
@@ -158,6 +167,7 @@ struct VaultDetailView: View {
             isLoading = false
         }
         setData()
+        showMonthlyReminderIfNeeded()
     }
     
     private func setData() {
@@ -183,6 +193,16 @@ struct VaultDetailView: View {
             .background(Color.backgroundBlue)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
+    }
+
+    private func showMonthlyReminderIfNeeded() {
+        guard !vault.isBackedUp else { return }
+
+        let diff = Calendar.current.dateComponents([.day], from: Date(), to: monthlyReminderDate)
+
+        if let days = diff.day, days >= 30 {
+            isMonthlyBackupLinkActive = true
+        }
     }
 }
 
