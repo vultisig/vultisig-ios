@@ -19,11 +19,14 @@ struct MonthlyBackupView: View {
     }
 
     var view: some View {
-        VStack {
+        VStack(spacing: 0) {
             header
             Spacer()
-            backupButton
-            dontRemindButton
+
+            VStack(spacing: 16) {
+                backupButton
+                dontRemindButton
+            }
         }
     }
 
@@ -67,7 +70,7 @@ struct MonthlyBackupView: View {
         } label: {
             FilledButton(title: "Backup")
         }
-        .padding(16)
+        .padding(.horizontal, 16)
         .buttonStyle(.plain)
     }
 
@@ -77,7 +80,7 @@ struct MonthlyBackupView: View {
         } label: {
             OutlineButton(title: "Don’t remind me again")
         }
-        .padding(16)
+        .padding(.horizontal, 16)
         .buttonStyle(.plain)
     }
 }
