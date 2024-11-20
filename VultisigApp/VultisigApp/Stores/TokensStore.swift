@@ -535,9 +535,17 @@ class TokensStore {
         static var gaiaChainAtom: CoinMeta {
             CoinMeta(chain: Chain.gaiaChain, ticker: "ATOM", logo: "atom", decimals: 6, priceProviderId: "cosmos", contractAddress: "", isNativeToken: true)
         }
+                
+        static var gaiaChainUsdc: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/F663521BF1836B00F5F177680F74BFB9A8B5654A694D0D2BC249E03CF2509013", isNativeToken: false)
+        }
         
         static var osmosis: CoinMeta {
             CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var osmosisUsdc: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4", isNativeToken: false)
         }
         
         static var terra: CoinMeta {
@@ -613,7 +621,11 @@ class TokensStore {
         TokensStore.Token.solanaRaydium,
         
         TokensStore.Token.osmosis,
+        TokensStore.Token.osmosisUsdc,
+        
         TokensStore.Token.gaiaChainAtom,
+        TokensStore.Token.gaiaChainUsdc,
+        
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
         TokensStore.Token.kujiraLunc,
