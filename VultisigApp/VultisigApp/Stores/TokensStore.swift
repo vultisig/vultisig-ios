@@ -65,11 +65,6 @@ class TokensStore {
             CoinMeta(chain: Chain.solana, ticker: "RAY", logo: "raydium-ray-seeklogo-2", decimals: 6, priceProviderId: "raydium", contractAddress: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R", isNativeToken: false)
         }
         
-        
-        
-        
-        
-        
         // EVMS
         
         // ETH
@@ -552,6 +547,10 @@ class TokensStore {
             CoinMeta(chain: Chain.terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "terra-luna-2", contractAddress: "", isNativeToken: true)
         }
         
+        static var terraTPT: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "TPT", logo: "terra-poker-token", decimals: 6, priceProviderId: "tpt", contractAddress: "terra13j2k5rfkg0qhk58vz63cze0uze4hwswlrfnm0fa4rnyggjyfrcnqcrs5z2", isNativeToken: false)
+        }
+        
         static var terraAstroIBC: CoinMeta {
             CoinMeta(chain: Chain.terra, ticker: "ASTRO-IBC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995", isNativeToken: false)
         }
@@ -637,6 +636,7 @@ class TokensStore {
         TokensStore.Token.terra,
         TokensStore.Token.terraAstro,
         TokensStore.Token.terraAstroIBC,
+        TokensStore.Token.terraTPT,
         
         
         TokensStore.Token.terraClassic,
