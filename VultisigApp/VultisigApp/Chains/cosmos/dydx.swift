@@ -1,87 +1,91 @@
 //
-//  Osmosis.swift
+//  dydx.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza 07/11/2024
+//  Created by Enrique Souza Soares on 12/06/24.
 //
 
 import Foundation
 import WalletCore
 import Tss
 import CryptoSwift
+import VultisigCommonData
 
-class TerraHelper {
+class DydxHelper {
     let coinType: CoinType
-    let denom: String
     
-    init(coinType:CoinType, denom: String){
-        self.coinType = coinType
-        self.denom = denom
+    init(){
+        self.coinType = CoinType.dydx
     }
     
-    static let GasLimit:UInt64 = 300000
-    
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        
-        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get account number and sequence")
-        }
-        
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("invalid hex public key")
-        }
-        
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = TerraHelper.GasLimit
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = self.denom
-                $0.amount = String(gas)
-            }]
-        }
-        return try input.serializedData()
-    }
+    static let DydxGasLimit:UInt64 = 2500000000000000
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, let ibc) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
-        
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
+        let coin = self.coinType
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = self.coinType.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
+        var message = [CosmosMessage()]
+        
+        var transactionType: VSTransactionType = .unspecified
+        if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
+            transactionType = vsTransactionType
+        }
+        
+        if transactionType == .vote {
+            let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
+            let components = selectedOption.split(separator: ":")
+            
+            guard components.count == 2,
+                  let proposalID = Int(components[1]),
+                  let voteOption = TW_Cosmos_Proto_Message.VoteOption.allCases.first(where: { $0.description == String(components[0]) }) else {
+                throw HelperError.runtimeError("The vote option is invalid")
             }
-            $0.messages = [CosmosMessage.with {
+            
+            message = [CosmosMessage.with {
+                $0.msgVote = CosmosMessage.MsgVote.with {
+                    $0.proposalID = UInt64(proposalID)
+                    $0.voter = keysignPayload.coin.address
+                    $0.option = voteOption
+                }
+            }]
+        } else {
+            guard AnyAddress(string: keysignPayload.toAddress, coin: coin) != nil else {
+                throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
+            }
+            
+            message = [CosmosMessage.with {
                 $0.sendCoinsMessage = CosmosMessage.Send.with{
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = self.denom
+                        $0.denom = "adydx"
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = keysignPayload.toAddress
                 }
             }]
+        }
+        
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.signingMode = .protobuf
+            $0.chainID = coin.chainId
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            if let memo = keysignPayload.memo, transactionType != .vote {
+                $0.memo = memo
+            }
+            $0.messages = message
             
             $0.fee = CosmosFee.with {
-                $0.gas = TerraHelper.GasLimit
+                $0.gas = 200000 // gas limit
                 $0.amounts = [CosmosAmount.with {
-                    $0.denom = self.denom
+                    $0.denom = "adydx"
                     $0.amount = String(gas)
                 }]
             }
@@ -149,3 +153,4 @@ class TerraHelper {
         }
     }
 }
+

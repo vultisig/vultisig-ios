@@ -594,6 +594,7 @@
 		B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CD2CDDA7740031FB71 /* TerraService.swift */; };
 		B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CF2CDDAFE50031FB71 /* terra.swift */; };
 		B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */; };
+		B537CE092CE7068D002085CB /* CosmosIbcDenomTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = B537CE082CE7068A002085CB /* CosmosIbcDenomTrace.swift */; };
 		B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */; };
 		B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */; };
@@ -632,6 +633,7 @@
 		B5A97CFC2BF4365E007574D7 /* TransactionMemoInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* TransactionMemoInstance.swift */; };
 		B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */; };
 		B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */; };
+		B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5BC37552CECEFF8005A1C76 /* cosmos.swift */; };
 		B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
@@ -1344,6 +1346,7 @@
 		B52FD1CD2CDDA7740031FB71 /* TerraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerraService.swift; sourceTree = "<group>"; };
 		B52FD1CF2CDDAFE50031FB71 /* terra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = terra.swift; sourceTree = "<group>"; };
 		B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmServiceEnsServiceExtension.swift; sourceTree = "<group>"; };
+		B537CE082CE7068A002085CB /* CosmosIbcDenomTrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosIbcDenomTrace.swift; sourceTree = "<group>"; };
 		B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoBond.swift; sourceTree = "<group>"; };
 		B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoLeave.swift; sourceTree = "<group>"; };
@@ -1382,6 +1385,7 @@
 		B5A97CFB2BF4365E007574D7 /* TransactionMemoInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoInstance.swift; sourceTree = "<group>"; };
 		B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoStake.swift; sourceTree = "<group>"; };
 		B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnstake.swift; sourceTree = "<group>"; };
+		B5BC37552CECEFF8005A1C76 /* cosmos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cosmos.swift; sourceTree = "<group>"; };
 		B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressService.swift; sourceTree = "<group>"; };
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
@@ -1718,6 +1722,7 @@
 		469ED3972B98E885008D4951 /* BalanceManager */ = {
 			isa = PBXGroup;
 			children = (
+				B537CE082CE7068A002085CB /* CosmosIbcDenomTrace.swift */,
 				469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */,
 				469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */,
 				469ED39C2B98E8C0008D4951 /* CosmosBalancePagination.swift */,
@@ -2855,6 +2860,19 @@
 			path = TransactionMemo;
 			sourceTree = "<group>";
 		};
+		B5BC37572CECF21D005A1C76 /* cosmos */ = {
+			isa = PBXGroup;
+			children = (
+				DE63AE522BBA627B001BBE5C /* atom.swift */,
+				B58BE8E72CD1C36E00FFD98F /* osmosis.swift */,
+				B5E476AA2C1A13D7005DB485 /* dydx.swift */,
+				B5BC37552CECEFF8005A1C76 /* cosmos.swift */,
+				B52FD1CF2CDDAFE50031FB71 /* terra.swift */,
+				46DE088B2BD087D800AE8BDE /* kujira.swift */,
+			);
+			path = cosmos;
+			sourceTree = "<group>";
+		};
 		B5F7581B2BD8FD970097B5B9 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -3048,6 +3066,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				B5BC37572CECF21D005A1C76 /* cosmos */,
 				B571384C2CC560F0000E925B /* Ton.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
@@ -3060,14 +3079,9 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				A5D0C9362BEE778F0022D421 /* OneInchSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
-				DE63AE522BBA627B001BBE5C /* atom.swift */,
-				B58BE8E72CD1C36E00FFD98F /* osmosis.swift */,
-				B52FD1CF2CDDAFE50031FB71 /* terra.swift */,
-				46DE088B2BD087D800AE8BDE /* kujira.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
 				B54B01962BDCEB8E00FDA472 /* Polkadot.swift */,
-				B5E476AA2C1A13D7005DB485 /* dydx.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -3506,10 +3520,12 @@
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A65618032CB6500A00E9CF19 /* RegisterVaultView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
+				B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */,
 				A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
 				46DE088C2BD087D800AE8BDE /* kujira.swift in Sources */,
 				B5A97CF72BF42BE1007574D7 /* TransactionMemoVerifyView.swift in Sources */,
+				B537CE092CE7068D002085CB /* CosmosIbcDenomTrace.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */,
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
