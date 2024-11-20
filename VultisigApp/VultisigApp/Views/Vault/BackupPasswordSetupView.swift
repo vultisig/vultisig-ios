@@ -22,6 +22,13 @@ struct BackupPasswordSetupView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        ZStack {
+            mainContent
+            popup
+        }
+    }
+    
+    var mainContent: some View {
         content
             .alert(isPresented: $backupViewModel.showAlert) {
                 alert
@@ -85,6 +92,13 @@ struct BackupPasswordSetupView: View {
         )
     }
     
+    var popup: some View {
+        PopupCapsule(
+            text: "useSkipInstead",
+            showPopup: $backupViewModel.showPopup
+        )
+    }
+    
     private func handleSaveTap() {
         export()
     }
@@ -96,9 +110,7 @@ struct BackupPasswordSetupView: View {
     
     func handleProxyTap() {
         guard !backupViewModel.encryptionPassword.isEmpty else {
-            backupViewModel.alertTitle = "useSkipInstead"
-            backupViewModel.alertMessage = "useSkipWithoutPasswordMessage"
-            backupViewModel.showAlert = true
+            backupViewModel.showPopup = true
             return
         }
         

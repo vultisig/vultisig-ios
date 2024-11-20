@@ -80,7 +80,6 @@ struct ContentView: View {
     
     private func setData() {
         authenticateUser()
-        appViewModel.checkCameraPermission()
     }
     
     private func authenticateUser() {
