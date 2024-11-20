@@ -105,11 +105,13 @@ class TerraHelper {
                     $0.accountNumber = accountNumber
                     $0.sequence = sequence
                     $0.mode = .sync
+
                     if let memo = keysignPayload.memo {
                         $0.memo = memo
                     }
+
                     $0.messages = [CosmosMessage.with {
-                        $0.sendCoinsMessage = CosmosMessage.Send.with{
+                        $0.sendCoinsMessage = CosmosMessage.Send.with {
                             $0.fromAddress = keysignPayload.coin.address
                             $0.amounts = [CosmosAmount.with {
                                 $0.denom = keysignPayload.coin.contractAddress
@@ -118,16 +120,23 @@ class TerraHelper {
                             $0.toAddress = keysignPayload.toAddress
                         }
                     }]
-                    
+
                     $0.fee = CosmosFee.with {
-                        $0.gas = TerraHelper.GasLimit
-                        $0.amounts = [CosmosAmount.with {
-                            $0.denom = "uluna"
-                            $0.amount = String(gas)
-                        }]
+                        $0.gas = 1000000
+                        $0.amounts = [
+                            CosmosAmount.with {
+                                $0.denom = "uluna"
+                                $0.amount = String(gas) // Base fee in uluna
+                            },
+                            CosmosAmount.with { // Additional tax in uusd
+                                $0.denom = "uusd"
+                                $0.amount = String(1000000) // Replace `taxAmount` with your specific tax value
+                            }
+                        ]
                     }
+                    
                 }
-                  
+
                 return try input.serializedData()
                 
             } else {
