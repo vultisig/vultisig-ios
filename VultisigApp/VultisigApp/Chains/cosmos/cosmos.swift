@@ -22,7 +22,7 @@ class CosmosHelper {
     }
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-            guard case .Cosmos(let accountNumber, let sequence,let gas, _, let ibc) = keysignPayload.chainSpecific else {
+            guard case .Cosmos(let accountNumber, let sequence,let gas, _, let _) = keysignPayload.chainSpecific else {
                 throw HelperError.runtimeError("fail to get account number and sequence")
             }
             guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -48,7 +48,7 @@ class CosmosHelper {
         
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let ibc) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -94,85 +94,7 @@ class CosmosHelper {
             return try input.serializedData()
             
         }
-        
-        // IT seems this is only used when literally I want to move the coin from one blockchain to another
-        // IBCs are working as coins so we can simply use the send.
-//        else {
-//                        
-//            if keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
-//                
-//                guard let splittedPath = ibc?.path.split(separator: "/") else {
-//                    throw HelperError.runtimeError("It must have a valid IBC path")
-//                }
-//                guard let sourcePort = splittedPath.first?.description else {
-//                    throw HelperError.runtimeError("It must have a valid source port")
-//                }
-//                guard let sourceChannel = splittedPath.last?.description else {
-//                    throw HelperError.runtimeError("It must have a valid source channel")
-//                }
-//                
-//                guard (ibc?.baseDenom) != nil else {
-//                    throw HelperError.runtimeError("It must have a valid IBC base denom")
-//                }
-//                
-//                let timeoutAndBlockHeight = ibc?.height?.split(separator: "_")
-//                                
-//                guard let blockHeight = timeoutAndBlockHeight?.first, blockHeight != "0", let blockHeight = UInt64(blockHeight), blockHeight > 0 else {
-//                    throw HelperError.runtimeError("It must have a valid blockHeight")
-//                }
-//                
-//                guard let timeoutInNanoSeconds = timeoutAndBlockHeight?.last, let timeoutInNanoSeconds = UInt64(timeoutInNanoSeconds), blockHeight > 0 else {
-//                    throw HelperError.runtimeError("It must have a valid blockHeight")
-//                }
-//                
-//                let transferMessage = CosmosMessage.Transfer.with {
-//                    $0.sourcePort = sourcePort
-//                    $0.sourceChannel = sourceChannel
-//                    $0.sender = keysignPayload.coin.address.description
-//                    $0.receiver = keysignPayload.toAddress
-//                    $0.token = CosmosAmount.with {
-//                        $0.amount = String(keysignPayload.toAmount)
-//                        $0.denom = keysignPayload.coin.contractAddress // We must send to the IBC/{hash}
-//                    }
-//                    
-//                    $0.timeoutHeight = CosmosHeight.with {
-//                        $0.revisionNumber = 1
-//                        $0.revisionHeight = blockHeight + 1000
-//                    }
-//                    
-//                    $0.timeoutTimestamp = timeoutInNanoSeconds
-//                }
-//                
-//                let message = CosmosMessage.with {
-//                    $0.transferTokensMessage = transferMessage
-//                }
-//                
-//                let fee = CosmosFee.with {
-//                    $0.gas = TerraHelper.GasLimit
-//                    $0.amounts = [CosmosAmount.with {
-//                        $0.amount = String(gas)
-//                        $0.denom = self.denom
-//                    }]
-//                }
-//                
-//                let input = CosmosSigningInput.with {
-//                    $0.signingMode = .protobuf;
-//                    $0.accountNumber = accountNumber
-//                    $0.chainID = self.coinType.chainId
-//                    if let memo = keysignPayload.memo {
-//                        $0.memo = memo
-//                    }
-//                    $0.sequence = sequence
-//                    $0.messages = [message]
-//                    $0.fee = fee
-//                    $0.publicKey = pubKeyData
-//                    $0.mode = .sync
-//                }
-//
-//                return try input.serializedData()
-//                
-//            }
-//        }
+        // https://github.com/vultisig/vultisig-ios/issues/1570 to implement the send from one chain to another.
         
         throw HelperError.runtimeError("It must be a native token or a valid IBC token")
     }
