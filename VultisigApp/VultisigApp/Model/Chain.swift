@@ -336,4 +336,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var isECDSA: Bool {
         return signingKeyType == .ECDSA
     }
+
+    var index: Int {
+        return Chain.allCases.firstIndex(of: self) ?? 0
+    }
 }

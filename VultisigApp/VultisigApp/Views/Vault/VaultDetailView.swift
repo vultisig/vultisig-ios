@@ -160,7 +160,6 @@ struct VaultDetailView: View {
             return
         }
         
-        viewModel.fetchCoins(for: vault)
         viewModel.updateBalance(vault: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         
