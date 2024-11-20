@@ -56,7 +56,10 @@ class CosmosHelper {
         }
         let coin = self.coinType
         
-        if keysignPayload.coin.isNativeToken || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
+        if keysignPayload.coin.isNativeToken
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
+        {
             
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData

@@ -3,8 +3,11 @@ import Foundation
 class CosmosService {
     
     func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
-        
-        if coin.isNativeToken || (!coin.isNativeToken && coin.contractAddress.contains("ibc/")) || (!coin.isNativeToken && !coin.contractAddress.contains("terra")) {
+        if coin.isNativeToken
+            || (!coin.isNativeToken && coin.contractAddress.contains("ibc/"))
+            || (!coin.isNativeToken && coin.contractAddress.contains("factory/"))
+            || (!coin.isNativeToken && !coin.contractAddress.contains("terra"))
+        {
             
             guard let url = balanceURL(forAddress: coin.address) else {
                 return [CosmosBalance]()

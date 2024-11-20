@@ -57,7 +57,10 @@ class TerraHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        if keysignPayload.coin.isNativeToken || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/") {
+        if keysignPayload.coin.isNativeToken
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
+        {
             
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
