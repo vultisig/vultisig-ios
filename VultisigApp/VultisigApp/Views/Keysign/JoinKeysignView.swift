@@ -125,6 +125,8 @@ struct JoinKeysignView: View {
     }
     
     private func setData() {
+        appViewModel.checkCameraPermission()
+        
         viewModel.setData(
             vault: vault,
             serviceDelegate: serviceDelegate, 
