@@ -49,7 +49,7 @@ class JoinKeygenViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate,vaults: [Vault], isCameraPermissionGranted: Bool) {
+    func setData(vault: Vault, serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
         self.vault = vault
         self.vaults = vaults
         self.serviceDelegate = serviceDelegate
