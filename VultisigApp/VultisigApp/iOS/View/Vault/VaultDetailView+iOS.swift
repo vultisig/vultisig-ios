@@ -88,7 +88,9 @@ extension VaultDetailView {
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
         .refreshable {
-            viewModel.updateBalance(vault: vault)
+            if let vault = homeViewModel.selectedVault {
+                viewModel.updateBalance(vault: vault)
+            }
         }
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
