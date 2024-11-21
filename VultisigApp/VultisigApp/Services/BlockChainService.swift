@@ -16,7 +16,8 @@ final class BlockChainService {
     }
 
     static func normalizeEVMFee(_ value: BigInt, action: Action) -> BigInt {
-        return value + value / 2 // x1.5 fee
+        let normalized = value + value / 2 // x1.5 fee
+        return max(normalized, 1) // To avoid 0 miner tips
     }
 
     enum Action {
