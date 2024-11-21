@@ -152,6 +152,7 @@ class JoinKeysignViewModel: ObservableObject {
                         let decoder = JSONDecoder()
                         let peers = try decoder.decode([String].self, from: data)
                         if peers.contains(self.localPartyID) {
+                            self.keysignCommittee.removeAll()
                             self.keysignCommittee.append(contentsOf: peers)
                             self.status = .KeysignStarted
                             self.logger.info("Keysign process has started successfully.")
