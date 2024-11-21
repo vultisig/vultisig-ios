@@ -17,7 +17,9 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
-    
+
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
+
     @State var showSheet = false
     @State var isLoading = true
     @State var showScanner = false
@@ -28,6 +30,8 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isMonthlyBackupWarningLinkActive = false
+    @State var isBackupLinkActive = false
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -38,6 +42,7 @@ struct VaultDetailView: View {
             view
             scanButton
             popup
+            shadowView
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -71,13 +76,27 @@ struct VaultDetailView: View {
                 vault: vault
             )
         }
+        .navigationDestination(isPresented: $isBackupLinkActive) {
+            BackupPasswordSetupView(vault: vault)
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
+        .sheet(isPresented: $isMonthlyBackupWarningLinkActive) {
+            MonthlyBackupView(isPresented: $isMonthlyBackupWarningLinkActive, isBackupPresented: $isBackupLinkActive)
+                .presentationDetents([.height(224)])
+        }
+
     }
-    
+
+    var shadowView: some View {
+        Background()
+            .opacity(isMonthlyBackupWarningLinkActive ? 0.5 : 0)
+            .animation(.default, value: isMonthlyBackupWarningLinkActive)
+    }
+
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
@@ -152,7 +171,12 @@ struct VaultDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isLoading = false
         }
+        
         setData()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showMonthlyReminderIfNeeded()
+        }
     }
     
     private func setData() {
@@ -178,6 +202,14 @@ struct VaultDetailView: View {
             .background(Color.backgroundBlue)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
+    }
+
+    private func showMonthlyReminderIfNeeded() {
+        let diff = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
+
+        if let days = diff.day, days >= 30 {
+            isMonthlyBackupWarningLinkActive = true
+        }
     }
 }
 

@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
+"dontRemind" = "Don’t remind me again";
 "passwordHintTitle" = "Optional: Password hint";
 "enterHint" = "Enter a hint";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
