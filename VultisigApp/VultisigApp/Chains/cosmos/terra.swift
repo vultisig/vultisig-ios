@@ -130,7 +130,7 @@ class TerraHelper {
                             },
                             CosmosAmount.with { // Additional tax in uusd
                                 $0.denom = "uusd"
-                                $0.amount = String(1000000) // Replace `taxAmount` with your specific tax value
+                                $0.amount = String(5000000) // Replace `taxAmount` with your specific tax value
                             }
                         ]
                     }

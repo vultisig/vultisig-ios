@@ -57,11 +57,7 @@ extension SendCryptoDetailsView {
                     coinSelector
                     fromField
                     toField
-                    
-                    if tx.coin.isNativeToken {
-                        memoField
-                    }
-                    
+                    memoField                    
                     amountField
                     amountFiatField
                     
