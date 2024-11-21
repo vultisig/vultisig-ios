@@ -205,8 +205,6 @@ struct VaultDetailView: View {
     }
 
     private func showMonthlyReminderIfNeeded() {
-        guard !vault.isBackedUp else { return }
-
         let diff = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
 
         if let days = diff.day, days >= 30 {
