@@ -402,9 +402,9 @@
 "enterCode" = "Unesite kod";
 "serverBackupVerificationDisclaimer" = "Ovaj kod potvrđuje primitak sigurnosne kopije poslužitelja putem e-pošte.";
 "incorrectCode" = "Netočan kod";
-"verificationCodeTryAgain" = "Provjerite svoju e-poštu za kod za provjeru i pokušajte ponovno.";
 "chains" = "Lanci";
 "noResultFound" = "Nije pronađen nijedan rezultat.";
 "value" = "Vrijednost";
 "joinKeygenConnectionDisclaimer" = "Imate problema s povezivanjem?\nKoristite osobnu hotspot vezu.\nIli pokušajte s drugom mrežom.";
 "swapTrackingLink" = "Link za praćenje zamjene";
+"verificationCodeTryAgain" = "Pogrešan verifikacijski kod, molimo unesite ispravan.";

@@ -70,6 +70,8 @@ struct ServerBackupVerificationView: View {
             FilledButton(title: "continue")
         }
         .padding(.bottom, 30)
+        .grayscale(verificationCode.isEmpty ? 1 : 0)
+        .disabled(verificationCode.isEmpty)
     }
     
     var loader: some View {
