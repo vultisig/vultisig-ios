@@ -46,7 +46,7 @@ struct ServerBackupVerificationView: View {
     
     var textField: some View {
         TextField(NSLocalizedString("enterCode", comment: "").capitalized, text: $verificationCode)
-            .foregroundColor(.neutral500)
+            .foregroundColor(.neutral0)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
             .font(.body12MenloBold)
