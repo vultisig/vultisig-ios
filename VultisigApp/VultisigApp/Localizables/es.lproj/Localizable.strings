@@ -410,3 +410,4 @@
 "value" = "Valor";
 "joinKeygenConnectionDisclaimer" = "¿Tienes problemas para conectar?\nUsa una conexión de punto de acceso personal.\nO prueba con otra red.";
 "swapTrackingLink" = "Enlace de seguimiento del Swap";
+"thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
