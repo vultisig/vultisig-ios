@@ -180,7 +180,8 @@ struct PeerDiscoveryView: View {
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
             oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
             fastSignConfig: fastSignConfig,
-            hideBackButton: $hideBackButton
+            hideBackButton: $hideBackButton,
+            selectedTab: selectedTab
         )
     }
     

@@ -22,6 +22,8 @@ struct KeygenView: View {
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
     @Binding var hideBackButton: Bool
+    
+    var selectedTab: SetupVaultState? = nil
 
     @StateObject var viewModel = KeygenViewModel()
     
@@ -214,11 +216,8 @@ struct KeygenView: View {
     }
     
     private func checkVaultType() {
-        for signer in keygenCommittee {
-            if signer.contains("Server-") {
-                showVerificationView = true
-                return
-            }
+        if let selectedTab, selectedTab == .fast {
+            showVerificationView = true
         }
     }
 }
@@ -236,7 +235,8 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: "",
             fastSignConfig: nil,
-            hideBackButton: .constant(false)
+            hideBackButton: .constant(false),
+            selectedTab: SetupVaultState.active
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }
