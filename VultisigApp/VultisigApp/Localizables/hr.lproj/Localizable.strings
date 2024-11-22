@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
+"dontRemind" = "Ne podsjećaj me ponovno";
 "passwordHintTitle" = "Opcionalno: Savjet za lozinku";
 "enterHint" = "Unesite savjet";
 "backupNowTitle" = "Potrebno je napraviti sigurnosnu kopiju na svakom uređaju u Vultisigu";
@@ -408,3 +410,4 @@
 "joinKeygenConnectionDisclaimer" = "Imate problema s povezivanjem?\nKoristite osobnu hotspot vezu.\nIli pokušajte s drugom mrežom.";
 "swapTrackingLink" = "Link za praćenje zamjene";
 "verificationCodeTryAgain" = "Pogrešan verifikacijski kod, molimo unesite ispravan.";
+"thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";

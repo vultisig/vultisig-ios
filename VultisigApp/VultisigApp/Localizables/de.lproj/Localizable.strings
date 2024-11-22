@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
+"dontRemind" = "Nicht erneut erinnern";
 "passwordHintTitle" = "Optional: Passwort-Hinweis";
 "enterHint" = "Hinweis eingeben";
 "backupNowTitle" = "Backups müssen auf jedem Gerät in Vultisig durchgeführt werden";
@@ -425,3 +427,4 @@
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
 "swapTrackingLink" = "Swap-Verfolgungslink";
 "verificationCodeTryAgain" = "Falscher Verifizierungscode, bitte geben Sie den richtigen ein.";
+"thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";

@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
+"dontRemind" = "Don’t remind me again";
 "passwordHintTitle" = "Optional: Password hint";
 "enterHint" = "Enter a hint";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
@@ -441,3 +443,4 @@
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
 "swapTrackingLink" = "Swap tracking link";
 "verificationCodeTryAgain" = "Wrong verification code, please enter the correct one.";
+"thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";

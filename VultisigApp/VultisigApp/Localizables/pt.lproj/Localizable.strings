@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
+"dontRemind" = "Não me lembre novamente";
 "passwordHintTitle" = "Opcional: Dica de senha";
 "enterHint" = "Insira uma dica";
 "backupNowTitle" = "É necessário fazer backup em cada dispositivo no Vultisig";
@@ -409,3 +411,4 @@
 "joinKeygenConnectionDisclaimer" = "Problemas de conexão?\nUse uma conexão de hotspot pessoal.\nOu tente uma rede diferente.";
 "swapTrackingLink" = "Link de rastreamento do Swap";
 "verificationCodeTryAgain" = "Código de verificação incorreto, por favor insira o correto.";
+"thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";

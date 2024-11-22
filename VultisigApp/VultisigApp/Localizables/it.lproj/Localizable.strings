@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
+"dontRemind" = "Non ricordarmelo più";
 "passwordHintTitle" = "Opzionale: Suggerimento per la password";
 "enterHint" = "Inserisci un suggerimento";
 "backupNowTitle" = "È necessario eseguire il backup su ogni dispositivo in Vultisig";
@@ -408,3 +410,4 @@
 "joinKeygenConnectionDisclaimer" = "Problemi di connessione?\nUtilizza invece una connessione hotspot personale.\nOppure prova una rete diversa.";
 "swapTrackingLink" = "Link di monitoraggio dello Swap";
 "verificationCodeTryAgain" = "Codice di verifica errato, si prega di inserire quello corretto.";
+"thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
