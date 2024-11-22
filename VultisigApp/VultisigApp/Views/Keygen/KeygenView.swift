@@ -33,6 +33,7 @@ struct KeygenView: View {
     @State var showProgressRing = true
     @State var showVerificationView = false
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
@@ -43,6 +44,7 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
+                dismissView()
             }
     }
     
@@ -180,7 +182,10 @@ struct KeygenView: View {
     var navigationDestination: some View {
         ZStack {
             if showVerificationView {
-                ServerBackupVerificationView(vault: vault)
+                ServerBackupVerificationView(
+                    vault: vault,
+                    viewModel: viewModel
+                )
             } else {
                 BackupVaultNowView(vault: vault)
             }
@@ -218,6 +223,25 @@ struct KeygenView: View {
     private func checkVaultType() {
         if let selectedTab, selectedTab == .fast {
             showVerificationView = true
+        }
+    }
+    
+    private func dismissView() {
+        guard viewModel.setupLinkActive else {
+            return
+        }
+        
+        deleteVault()
+    }
+    
+    func deleteVault() {
+        context.delete(vault)
+        
+        do {
+            try context.save()
+            dismiss()
+        } catch {
+            print("Error: \(error)")
         }
     }
 }

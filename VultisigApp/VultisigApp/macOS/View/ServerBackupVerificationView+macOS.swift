@@ -17,7 +17,10 @@ extension ServerBackupVerificationView {
     }
     
     var header: some View {
-        GeneralMacHeader(title: "serverBackupVerification")
+        ServerBackupVerificationHeader(
+            isLinkActive: $viewModel.isLinkActive,
+            setupLinkActive: $viewModel.setupLinkActive
+        )
     }
     
     var content: some View {

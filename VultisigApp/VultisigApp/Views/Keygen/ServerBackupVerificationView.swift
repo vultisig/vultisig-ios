@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ServerBackupVerificationView: View {
     let vault: Vault
+    @ObservedObject var viewModel: KeygenViewModel
     
     @State var verificationCode = ""
     
@@ -110,5 +111,5 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example)
+    ServerBackupVerificationView(vault: Vault.example, viewModel: KeygenViewModel())
 }
