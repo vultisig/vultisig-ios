@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 enum TransactionMemoType: String, CaseIterable, Identifiable {
-    case bond, unbond, leave, custom, vote, addPool, withdrawPool, stake, unstake
+    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, addPool, withdrawPool, stake, unstake
     
     var id: String { self.rawValue }
     var display: String {
@@ -18,6 +18,10 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
         case .bond:
             return "Bond"
         case .unbond:
+            return "Unbond"
+        case .bondMaya:
+            return "Bond"
+        case .unbondMaya:
             return "Unbond"
         case .leave:
             return "Leave"
@@ -41,7 +45,7 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
         case .thorChain:
             return [.bond, .unbond, .leave, .custom, .addPool, .withdrawPool]
         case .mayaChain:
-            return [.bond, .unbond, .leave, .custom]
+            return [.bondMaya, .unbondMaya, .leave, .custom]
         case .dydx:
             return [.vote]
         case .ton:
@@ -53,8 +57,10 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
     
     static func getDefault(for coin: Coin) -> TransactionMemoType {
         switch coin.chain {
-        case .thorChain, .mayaChain:
+        case .thorChain:
             return .bond
+        case .mayaChain:
+            return .bondMaya
         case .dydx:
             return .vote
         case .ton:

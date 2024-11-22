@@ -1,0 +1,126 @@
+//
+//  TransactionMemoBond.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza Soares on 17/05/24.
+//
+
+import SwiftUI
+import Foundation
+import Combine
+
+struct IdentifiableString: Identifiable, Equatable {
+    let id = UUID()
+    let value: String
+}
+
+class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject {
+    @Published var amount: Double = 1
+    @Published var nodeAddress: String = ""
+    @Published var fee: Int64 = .zero
+    
+    // Internal
+    @Published var amountValid: Bool = false
+    @Published var nodeAddressValid: Bool = false
+    @Published var feeValid: Bool = true
+    
+    @Published var selectedAsset: IdentifiableString = .init(value: "Asset")
+    
+    @Published var assets: [IdentifiableString] = []
+    
+    @Published var isTheFormValid: Bool = false
+    
+    var addressFields: [String: String] {
+        get {
+            var fields = ["nodeAddress": nodeAddress]
+            return fields
+        }
+        set {
+            if let value = newValue["nodeAddress"] {
+                nodeAddress = value
+            }
+        }
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    required init(assets: [String]) {
+        setupValidation()
+        self.assets = assets.map { IdentifiableString(value: $0) }
+    }
+    
+    private func setupValidation() {
+        Publishers.CombineLatest3($amountValid, $nodeAddressValid, $feeValid)
+            .map { $0 && $1 && $2 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    var description: String {
+        return toString()
+    }
+    
+    func toString() -> String {
+        var memo = "BOND:\(self.selectedAsset.value):\(self.nodeAddress)"
+        if self.fee != .zero {
+            memo += ":\(self.fee)"
+        }
+        return memo
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("asset", self.selectedAsset.value)
+        dict.set("nodeAddress", self.nodeAddress)
+        dict.set("fee", "\(self.fee)")
+        dict.set("memo", self.toString())
+        return dict
+    }
+    
+    func getView() -> AnyView {
+        AnyView(VStack {
+            
+            GenericSelectorDropDown(
+                items: .constant(assets),
+                selected: Binding(
+                    get: { self.selectedAsset },
+                    set: { self.selectedAsset = $0 }
+                ),
+                descriptionProvider: { $0.value },
+                onSelect: { asset in
+                    self.selectedAsset = asset
+                }
+            )
+            
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "nodeAddress",
+                isAddressValid: Binding(
+                    get: { self.nodeAddressValid },
+                    set: { self.nodeAddressValid = $0 }
+                )
+            )
+            
+            StyledIntegerField(
+                placeholder: "Operator's Fee",
+                value: Binding(
+                    get: { self.fee },
+                    set: { self.fee = $0 }
+                ),
+                format: .number,
+                isValid: Binding(
+                    get: { self.feeValid },
+                    set: { self.feeValid = $0 }
+                )
+            )
+            
+            StyledFloatingPointField(placeholder: "Amount", value: Binding(
+                get: { self.amount },
+                set: { self.amount = $0 }
+            ), format: .number, isValid: Binding(
+                get: { self.amountValid },
+                set: { self.amountValid = $0 }
+            ))
+        })
+    }
+}
