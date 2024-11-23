@@ -61,18 +61,15 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
     }
     
     func toString() -> String {
-        var memo = "BOND:\(self.selectedAsset.value):\(self.nodeAddress)"
-        if self.fee != .zero {
-            memo += ":\(self.fee)"
-        }
+        var memo = "BOND:\(self.selectedAsset.value):\(self.fee):\(self.nodeAddress)"
         return memo
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("asset", self.selectedAsset.value)
+        dict.set("LPUNITS", "\(self.fee)")
         dict.set("nodeAddress", self.nodeAddress)
-        dict.set("fee", "\(self.fee)")
         dict.set("memo", self.toString())
         return dict
     }
@@ -92,17 +89,8 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
                 }
             )
             
-            TransactionMemoAddressTextField(
-                memo: self,
-                addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
-                )
-            )
-            
             StyledIntegerField(
-                placeholder: "Operator's Fee",
+                placeholder: "LPUNITS",
                 value: Binding(
                     get: { self.fee },
                     set: { self.fee = $0 }
@@ -111,6 +99,15 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
                 isValid: Binding(
                     get: { self.feeValid },
                     set: { self.feeValid = $0 }
+                )
+            )
+            
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "nodeAddress",
+                isAddressValid: Binding(
+                    get: { self.nodeAddressValid },
+                    set: { self.nodeAddressValid = $0 }
                 )
             )
             

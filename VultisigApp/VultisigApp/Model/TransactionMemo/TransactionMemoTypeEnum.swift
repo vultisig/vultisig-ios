@@ -20,9 +20,9 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
         case .unbond:
             return "Unbond"
         case .bondMaya:
-            return "Bond"
+            return "Bond Maya"
         case .unbondMaya:
-            return "Unbond"
+            return "Unbond Maya"
         case .leave:
             return "Leave"
         case .custom:
@@ -45,7 +45,7 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
         case .thorChain:
             return [.bond, .unbond, .leave, .custom, .addPool, .withdrawPool]
         case .mayaChain:
-            return [.bondMaya, .unbondMaya, .leave, .custom]
+            return [.bond, .unbond, .bondMaya, .unbondMaya, .leave, .custom]
         case .dydx:
             return [.vote]
         case .ton:
