@@ -34,6 +34,10 @@ struct TransactionMemoDetailsView: View {
                     txMemoInstance = .bond(TransactionMemoBond())
                 case .unbond:
                     txMemoInstance = .unbond(TransactionMemoUnbond())
+                case .bondMaya:
+                    txMemoInstance = .bondMaya(TransactionMemoBondMayaChain(assets: MayachainService.depositAssets))
+                case .unbondMaya:
+                    txMemoInstance = .unbondMaya(TransactionMemoUnbondMayaChain(assets: MayachainService.depositAssets))
                 case .leave:
                     txMemoInstance = .leave(TransactionMemoLeave())
                 case .custom:

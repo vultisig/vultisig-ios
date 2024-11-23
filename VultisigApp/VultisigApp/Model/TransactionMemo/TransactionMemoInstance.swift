@@ -13,6 +13,8 @@ import VultisigCommonData
 enum TransactionMemoInstance {
     case bond(TransactionMemoBond)
     case unbond(TransactionMemoUnbond)
+    case bondMaya(TransactionMemoBondMayaChain)
+    case unbondMaya(TransactionMemoUnbondMayaChain)
     case leave(TransactionMemoLeave)
     case custom(TransactionMemoCustom)
     case vote(TransactionMemoVote)
@@ -26,6 +28,10 @@ enum TransactionMemoInstance {
         case .bond(let memo):
             return memo.getView()
         case .unbond(let memo):
+            return memo.getView()
+        case .bondMaya(let memo):
+            return memo.getView()
+        case .unbondMaya(let memo):
             return memo.getView()
         case .leave(let memo):
             return memo.getView()
@@ -50,6 +56,10 @@ enum TransactionMemoInstance {
             return memo.description
         case .unbond(let memo):
             return memo.description
+        case .bondMaya(let memo):
+            return memo.description
+        case .unbondMaya(let memo):
+            return memo.description
         case .leave(let memo):
             return memo.description
         case .custom(let memo):
@@ -72,6 +82,10 @@ enum TransactionMemoInstance {
         case .bond(let memo):
             return memo.amount
         case .unbond:
+            return 1 / pow(10, 8)
+        case .bondMaya(let memo):
+            return memo.amount
+        case .unbondMaya:
             return 1 / pow(10, 8)
         case .leave:
             return 1 / pow(10, 8)
@@ -107,6 +121,10 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         case .unbond(let memo):
             return memo.toDictionary()
+        case .bondMaya(let memo):
+            return memo.toDictionary()
+        case .unbondMaya(let memo):
+            return memo.toDictionary()
         case .leave(let memo):
             return memo.toDictionary()
         case .custom(let memo):
@@ -139,6 +157,10 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         case .unbond(let memo):
             return memo.isTheFormValid
+        case .bondMaya(let memo):
+            return memo.isTheFormValid
+        case .unbondMaya(let memo):
+            return memo.isTheFormValid
         case .leave(let memo):
             return memo.isTheFormValid
         case .custom(let memo):
@@ -158,8 +180,10 @@ enum TransactionMemoInstance {
     
     static func getDefault(for coin: Coin) -> TransactionMemoInstance {
         switch coin.chain {
-        case .thorChain, .mayaChain:
+        case .thorChain:
             return .bond(TransactionMemoBond())
+        case .mayaChain:
+            return .bondMaya(TransactionMemoBondMayaChain(assets: MayachainService.depositAssets))
         case .dydx:
             return .vote(TransactionMemoVote())
         case .ton:
@@ -169,3 +193,7 @@ enum TransactionMemoInstance {
         }
     }
 }
+
+
+
+
