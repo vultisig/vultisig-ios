@@ -14,6 +14,7 @@ struct SendCryptoAmountTextField: View {
     var onMaxPressed: (() -> Void)?
     
     @Environment(\.isEnabled) private var isEnabled
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         HStack(spacing: 0) {
@@ -36,7 +37,7 @@ struct SendCryptoAmountTextField: View {
         TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency()
+                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
                 
                 guard amount != newValue else { return }
                 amount = newValue
@@ -47,6 +48,7 @@ struct SendCryptoAmountTextField: View {
             }
         ))
         .borderlessTextFieldStyle()
+        .font(.body16MenloBold)
         .submitLabel(.next)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
@@ -54,7 +56,7 @@ struct SendCryptoAmountTextField: View {
         .maxLength(Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency()
+                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
                 
                 guard amount != newValue else { return }
                 amount = newValue
@@ -69,7 +71,7 @@ struct SendCryptoAmountTextField: View {
     var maxButton: some View {
         Button { onMaxPressed?() } label: {
             Text(NSLocalizedString("max", comment: "").uppercased())
-                .font(.body16Menlo)
+                .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -86,4 +88,5 @@ struct SendCryptoAmountTextField: View {
         onChange: { _ in },
         onMaxPressed: { }
     )
+    .environmentObject(SettingsViewModel())
 }

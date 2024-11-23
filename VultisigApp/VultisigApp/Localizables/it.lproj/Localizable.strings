@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
+"dontRemind" = "Non ricordarmelo più";
 "passwordHintTitle" = "Opzionale: Suggerimento per la password";
 "enterHint" = "Inserisci un suggerimento";
 "backupNowTitle" = "È necessario eseguire il backup su ogni dispositivo in Vultisig";
@@ -15,7 +17,7 @@
 "reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
 "reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
 "startReshare" = "Inizia la ricondivisione";
-"startFastVaultReshare" = "Inizia la ricondivisione con Vultisigner";
+"startFastVaultReshare" = "Inizia la ricondivisione con Vultiserver";
 "joinReshare" = "Unisciti alla ricondivisione";
 "fastVaultSetPasswordTitle" = "Proteggi il tuo caveau e firma subito.";
 "fastVaultEnterPasswordTitle" = "Password di FastVault";
@@ -240,7 +242,7 @@
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
 "customToken" = "Token Personalizzato";
 "details" = "Dettagli";
-"vaultType" = "Tipo di caveau";
+"vaultType" = "Parte della Cassaforte";
 "ECDSAKey" = "Chiave ECDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "Selected" = "Selezionato";
@@ -393,3 +395,19 @@
 "changesInSetup" = "Modifiche nella Configurazione";
 "yourConfigurationChangedMakeBackup" = "La tua configurazione è cambiata, crea un nuovo backup.";
 "newVaultSetup" = "Nuova Configurazione della Cassaforte";
+"saveChanges" = "Salva modifiche";
+"currentVaults" = "Cassaforti attuali";
+"useSkipInstead" = "Usa \"Salta\" invece";
+"useSkipWithoutPasswordMessage" = "Per favore usa \"Salta\" per salvare senza password";
+"serverBackupVerification" = "Verifica del backup del server";
+"enterBackupVerificationCode" = "Inserisci il codice ricevuto con il backup tramite email:";
+"enterCode" = "Inserisci codice";
+"serverBackupVerificationDisclaimer" = "Questo codice verifica la ricezione del backup del server tramite email.";
+"incorrectCode" = "Codice errato";
+"verificationCodeTryAgain" = "Controlla la tua email per il codice di verifica e riprova.";
+"chains" = "Catene";
+"noResultFound" = "Nessun risultato trovato.";
+"value" = "Valore";
+"joinKeygenConnectionDisclaimer" = "Problemi di connessione?\nUtilizza invece una connessione hotspot personale.\nOppure prova una rete diversa.";
+"swapTrackingLink" = "Link di monitoraggio dello Swap";
+"thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";

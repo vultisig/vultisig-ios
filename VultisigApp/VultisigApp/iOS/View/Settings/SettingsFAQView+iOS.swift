@@ -15,6 +15,7 @@ extension SettingsFAQView {
             main
         }
         .navigationTitle(NSLocalizedString("faq", comment: "FAQ"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

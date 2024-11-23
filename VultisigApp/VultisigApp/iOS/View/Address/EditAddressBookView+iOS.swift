@@ -15,6 +15,7 @@ extension EditAddressBookView {
             main
         }
         .navigationTitle(NSLocalizedString("editAddress", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

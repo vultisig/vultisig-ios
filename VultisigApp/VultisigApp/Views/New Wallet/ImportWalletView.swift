@@ -27,9 +27,6 @@ struct ImportWalletView: View {
             ) { result in
                 backupViewModel.handleFileImporter(result)
             }
-            .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-                backupViewModel.handleOnDrop(providers: providers)
-            }
             .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
                 HomeView(selectedVault: backupViewModel.selectedVault)
             }
@@ -114,6 +111,10 @@ struct ImportWalletView: View {
         resetData()
         
         if let data = vultExtensionViewModel.documentData, let url = data.fileURL {
+            backupViewModel.handleFileDocument(url)
+        }
+        
+        if let url = vultExtensionViewModel.documentUrl {
             backupViewModel.handleFileDocument(url)
         }
     }

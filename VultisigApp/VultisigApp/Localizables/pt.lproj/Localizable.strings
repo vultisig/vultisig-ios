@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
+"dontRemind" = "Não me lembre novamente";
 "passwordHintTitle" = "Opcional: Dica de senha";
 "enterHint" = "Insira uma dica";
 "backupNowTitle" = "É necessário fazer backup em cada dispositivo no Vultisig";
@@ -15,7 +17,7 @@
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
 "startReshare" = "Iniciar compartilhamento novamente";
-"startFastVaultReshare" = "Iniciar compartilhamento com Vultisigner";
+"startFastVaultReshare" = "Iniciar compartilhamento com Vultiserver";
 "joinReshare" = "Juntar-se ao compartilhamento";
 "fastVaultSetPasswordTitle" = "Proteja o seu cofre e assine rapidamente";
 "fastVaultEnterPasswordTitle" = "Senha do FastVault";
@@ -240,7 +242,7 @@
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "customToken" = "Token Personalizado";
 "details" = "Detalhes";
-"vaultType" = "Tipo de cofre";
+"vaultType" = "Parte do Cofre";
 "ECDSAKey" = "Chave ECDSA";
 "EdDSAKey" = "Chave EdDSA";
 "Selected" = "Selecionado";
@@ -394,3 +396,19 @@
 "changesInSetup" = "Alterações na Configuração";
 "yourConfigurationChangedMakeBackup" = "Sua configuração mudou, faça um novo backup.";
 "newVaultSetup" = "Nova Configuração do Cofre";
+"saveChanges" = "Salvar alterações";
+"currentVaults" = "Cofres atuais";
+"useSkipInstead" = "Use \"Pular\" em vez disso";
+"useSkipWithoutPasswordMessage" = "Por favor, use \"Pular\" para salvar sem senha";
+"serverBackupVerification" = "Verificação de backup do servidor";
+"enterBackupVerificationCode" = "Insira o código recebido com o backup via e-mail:";
+"enterCode" = "Insira o código";
+"serverBackupVerificationDisclaimer" = "Este código verifica o recebimento do backup do servidor por e-mail.";
+"incorrectCode" = "Código incorreto";
+"verificationCodeTryAgain" = "Por favor, verifique seu e-mail para o código de verificação e tente novamente.";
+"chains" = "Cadeias";
+"noResultFound" = "Nenhum resultado encontrado.";
+"value" = "Valor";
+"joinKeygenConnectionDisclaimer" = "Problemas de conexão?\nUse uma conexão de hotspot pessoal.\nOu tente uma rede diferente.";
+"swapTrackingLink" = "Link de rastreamento do Swap";
+"thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";

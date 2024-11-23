@@ -9,18 +9,18 @@ import Foundation
 import BigInt
 
 struct KeysignPayloadFactory {
-
+    
     enum Errors: String, Error, LocalizedError {
         case notEnoughBalanceError
         case failToGetAccountNumber
         case failToGetSequenceNo
         case failToGetRecentBlockHash
-
+        
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
         }
     }
-
+    
     enum TransferPayload {
         case utxo(amountInSats: Int64, feeInSats: Int64, sendMaxAmount: Bool)
         case evmTransfer(amountInWei: BigInt, gas: String, priorityFeeWei: Int64, nonce: Int64)
@@ -30,29 +30,34 @@ struct KeysignPayloadFactory {
         case solana(amountInLamports: Int64, memo: String)
         case ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
     }
-
+    
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let gaia = GaiaService.shared
     private let sol = SolanaService.shared
-
+    
     func buildTransfer(coin: Coin, toAddress: String, amount: BigInt, memo: String?, chainSpecific: BlockChainSpecific, swapPayload: SwapPayload? = nil, approvePayload: ERC20ApprovePayload? = nil, vault: Vault) async throws -> KeysignPayload {
-
+        
         var utxos: [UtxoInfo] = []
-
-        if case .UTXO(_, _) = chainSpecific {
-            guard let info = utxo.blockchairData.get(coin.blockchairKey)?.selectUTXOsForPayment().map({
-                UtxoInfo(
-                    hash: $0.transactionHash ?? "",
-                    amount: Int64($0.value ?? 0),
-                    index: UInt32($0.index ?? -1)
-                )
-            }), !info.isEmpty else {
+        
+        if case let .UTXO(byteFee, _) = chainSpecific {
+            // 148 is estimate vbytes for every input
+            // estimate we will use maximum 10 utxos
+            let totalAmount = amount + BigInt(byteFee * 1480)
+            guard let info = utxo.blockchairData
+                .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
+                .map({
+                    UtxoInfo(
+                        hash: $0.transactionHash ?? "",
+                        amount: Int64($0.value ?? 0),
+                        index: UInt32($0.index ?? -1)
+                    )
+                }), !info.isEmpty else {
                 throw Errors.notEnoughBalanceError
             }
             utxos = info
         }
-
+        
         return KeysignPayload(
             coin: coin,
             toAddress: toAddress,
@@ -62,7 +67,7 @@ struct KeysignPayloadFactory {
             memo: memo,
             swapPayload: swapPayload,
             approvePayload: approvePayload,
-            vaultPubKeyECDSA: vault.pubKeyECDSA, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID
         )
     }

@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct KeysignSwapConfirmView: View {
-
     @ObservedObject var viewModel: JoinKeysignViewModel
+    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         VStack {
@@ -89,16 +90,16 @@ struct KeysignSwapConfirmView: View {
             return .empty
         }
 
-        return "\(fromCoin.decimal(for: amount)) \(fromCoin.ticker)"
+        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(fromCoin.ticker)"
     }
 
     func getFromAmount() -> String {
         guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(amount) \(payload.fromCoin.ticker)"
+            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.fromCoin.ticker)"
         } else {
-            return "\(amount) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
         }
     }
 
@@ -106,9 +107,9 @@ struct KeysignSwapConfirmView: View {
         guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(amount) \(payload.toCoin.ticker)"
+            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.toCoin.ticker)"
         } else {
-            return "\(amount) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
         }
     }
 
@@ -125,4 +126,8 @@ struct KeysignSwapConfirmView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+}
+
+#Preview {
+    KeysignSwapConfirmView(viewModel: JoinKeysignViewModel())
 }

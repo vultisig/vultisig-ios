@@ -32,6 +32,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case dydx
     case ton
     case osmosis
+    case terra
+    case terraClassic
+    
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -64,6 +67,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dydx: return "Dydx"
         case .ton: return "Ton"
         case .osmosis: return "Osmosis"
+        case .terra: return "Terra"
+        case .terraClassic: return "TerraClassic"
         }
     }
     var feeUnit: String{
@@ -84,6 +89,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dydx: return "adydx"
         case .ton: return "TON"
         case .osmosis: return "uosmo"
+        case .terra: return "uluna"
+        case .terraClassic: return "uluna"
         }
     }
     
@@ -114,6 +121,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dydx: return "ADYDX"
         case .ton: return "TON"
         case .osmosis: return "UOSMO"
+        case .terra: return "ULUNA"
+        case .terraClassic: return "ULUNC"
         }
     }
     
@@ -144,6 +153,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dydx: return "DYDX"
         case .ton: return "TON"
         case .osmosis: return "OSMO"
+        case .terra: return "LUNA"
+        case .terraClassic: return "LUNC"
         }
     }
     
@@ -168,7 +179,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Sui
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain, .kujira, .dydx, .osmosis:
+        case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic:
             return .Cosmos
         case .polkadot:
             return .Polkadot
@@ -229,7 +240,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "ton"
         case .osmosis:
             return "osmo"
-            
+        case .terra:
+            return "luna"
+        case .terraClassic:
+            return "lunc"
         }
     }
     
@@ -255,7 +269,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 25
         case .zksync:
             return 324
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic:
             return nil
         }
     }
@@ -312,10 +326,18 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.ton
         case .osmosis:
             return CoinType.osmosis
+        case .terra:
+            return CoinType.terraV2
+        case .terraClassic:
+            return CoinType.terra
         }
     }
     
     var isECDSA: Bool {
         return signingKeyType == .ECDSA
+    }
+
+    var index: Int {
+        return Chain.allCases.firstIndex(of: self) ?? 0
     }
 }

@@ -16,7 +16,8 @@ final class BlockChainService {
     }
 
     static func normalizeEVMFee(_ value: BigInt, action: Action) -> BigInt {
-        return value + value / 2 // x1.5 fee
+        let normalized = value + value / 2 // x1.5 fee
+        return max(normalized, 1) // To avoid 0 miner tips
     }
 
     enum Action {
@@ -48,43 +49,17 @@ final class BlockChainService {
     private let ton = TonService.shared
     private let osmo = OsmosisService.shared
 
-    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
-        guard !tx.coin.isNativeToken, tx.coin.chainType == .EVM else {
-            let specific = try await fetchSpecific(
-                for: tx.coin,
-                action: .transfer,
-                sendMaxAmount: tx.sendMaxAmount,
-                isDeposit: tx.isDeposit,
-                transactionType: tx.transactionType,
-                gasLimit: tx.gasLimit,
-                byteFee: tx.byteFee,
-                fromAddress: tx.fromAddress,
-                toAddress: tx.toAddress,
-                feeMode: tx.feeMode
-            )
-            return specific
-        }
+    private let terra = TerraService.shared
+    private let terraClassic = TerraClassicService.shared
 
-        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address, mode: tx.feeMode)
-        let estimateGasLimit = tx.coin.isNativeToken ? try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)  :  try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
-        let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        let gasLimit = max(defaultGasLimit, estimateGasLimit)
-        
-        let specific = try await fetchSpecific(
-            for: tx.coin,
-            action: .transfer,
-            sendMaxAmount: tx.sendMaxAmount,
-            isDeposit: tx.isDeposit,
-            transactionType: tx.transactionType,
-            gasLimit: max(gasLimit, tx.gasLimit),
-            byteFee: tx.gasLimit,
-            fromAddress: tx.fromAddress,
-            toAddress: tx.toAddress,
-            feeMode: tx.feeMode
-        )
-        
-        return specific
+
+    func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
+        switch tx.coin.chainType {
+        case .EVM:
+            return try await fetchSpecificForEVM(tx: tx)
+        default:
+            return try await fetchSpecificForNonEVM(tx: tx)
+        }
     }
     
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
@@ -113,6 +88,52 @@ final class BlockChainService {
 }
 
 private extension BlockChainService {
+
+    func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        return try await fetchSpecific(
+            for: tx.coin,
+            action: .transfer,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: tx.gasLimit,
+            byteFee: tx.byteFee,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            feeMode: tx.feeMode
+        )
+    }
+
+    func fetchSpecificForEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+
+        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
+            fromAddress: tx.coin.address,
+            mode: tx.feeMode
+        )
+
+        let estimateGasLimit = tx.coin.isNativeToken ?
+            try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
+            try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+
+        let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let gasLimit = max(defaultGasLimit, estimateGasLimit)
+
+        let specific = try await fetchSpecific(
+            for: tx.coin,
+            action: .transfer,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType,
+            gasLimit: max(gasLimit, tx.gasLimit),
+            byteFee: tx.gasLimit,
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            feeMode: tx.feeMode
+        )
+
+        return specific
+    }
 
     func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, byteFee: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
@@ -181,28 +202,9 @@ private extension BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let baseFee = try await service.getBaseFee()
-            let (gasPrice, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
-            
-            var gas: BigInt? = nil
-            if action == .transfer {
-                if coin.isNativeToken {
-                    gas = try await service.estimateGasForEthTransaction(
-                        senderAddress: coin.address,
-                        recipientAddress: .anyAddress,
-                        value: coin.rawBalance.toBigInt(),
-                        memo: nil
-                    )
-                } else {
-                    gas = try await service.estimateGasForERC20Transfer(
-                        senderAddress: coin.address,
-                        contractAddress: coin.contractAddress,
-                        recipientAddress: .anyAddress,
-                        value: coin.rawBalance.toBigInt()
-                    )
-                }
-            }
-            
-            let gasLimit = gas ?? normalizeGasLimit(coin: coin, action: action)
+            let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
+
+            let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
             let normalizedBaseFee = Self.normalizeEVMFee(baseFee, action: .transfer)
@@ -225,7 +227,7 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .kujira:
             let account = try await kuji.fetchAccountNumber(coin.address)
             
@@ -236,7 +238,20 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await kuji.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                        
+            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .osmosis:
             let account = try await osmo.fetchAccountNumber(coin.address)
             
@@ -247,7 +262,46 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
+        case .terra:
+            let account = try await terra.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await terra.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                        
+            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+            
+            
+        case .terraClassic:
+            let account = try await terraClassic.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 100000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
         case .dydx:
             let account = try await dydx.fetchAccountNumber(coin.address)
             
@@ -258,7 +312,7 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)

@@ -62,7 +62,14 @@ extension TransactionMemoAddressTextField {
     }
     
     var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+        QRCodeScannerView(showScanner: $showScanner, address: binding(for: addressKey), handleScan: handleScan)
+    }
+    
+    private func binding(for key: String) -> Binding<String> {
+        return Binding(
+            get: { self.memo.addressFields[addressKey, default: ""] },
+            set: { self.memo.addressFields[addressKey] = $0 }
+        )
     }
     
     func processImage() {

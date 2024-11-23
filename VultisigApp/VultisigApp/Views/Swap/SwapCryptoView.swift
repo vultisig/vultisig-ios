@@ -28,9 +28,9 @@ struct SwapCryptoView: View {
     }
     
     var view: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 18) {
             ProgressBar(progress: swapViewModel.progress)
-                .padding(.top, 30)
+                .padding(.top, 12)
             
             tabView
         }
@@ -99,7 +99,9 @@ struct SwapCryptoView: View {
                 SendCryptoDoneView(
                     vault: vault, hash: hash, approveHash: swapViewModel.approveHash, 
                     chain: tx.fromCoin.chain,
-                    progressLink: swapViewModel.progressLink(tx: tx, hash: hash)
+                    progressLink: swapViewModel.progressLink(tx: tx, hash: hash),
+                    sendTransaction: nil,
+                    swapTransaction: tx
                 )
             } else {
                 SendCryptoSigningErrorView()

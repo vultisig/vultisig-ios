@@ -34,10 +34,12 @@ extension Coin {
 
             var providers: [SwapProvider] = []
 
+            if thorEthTokens.contains(ticker) {
+                providers.append(.thorchain)
+            }
+
             if mayaEthTokens.contains(ticker) {
                 providers.append(.mayachain)
-            } else if thorEthTokens.contains(ticker) {
-                providers.append(.thorchain)
             }
 
             return providers + defaultProviders
@@ -71,7 +73,7 @@ extension Coin {
             return [.thorchain]
         case .blast:
             return [.lifi]
-        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync, .ton, .osmosis:
+        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync, .ton, .osmosis, .terra, .terraClassic:
             return []
         }
     }

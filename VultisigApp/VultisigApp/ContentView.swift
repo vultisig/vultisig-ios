@@ -13,6 +13,7 @@ struct ContentView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var appViewModel: ApplicationState
 
     var body: some View {
@@ -22,7 +23,7 @@ struct ContentView: View {
             }
             .accentColor(.white)
             .onOpenURL { incomingURL in
-                deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
+                handleDeeplink(incomingURL)
             }
             
             if accountViewModel.showCover {
@@ -79,7 +80,6 @@ struct ContentView: View {
     
     private func setData() {
         authenticateUser()
-        appViewModel.checkCameraPermission()
     }
     
     private func authenticateUser() {
@@ -95,6 +95,19 @@ struct ContentView: View {
         }
         
         accountViewModel.authenticateUser()
+    }
+    
+    private func handleDeeplink(_ incomingURL: URL) {
+        guard let deeplinkType = incomingURL.absoluteString.split(separator: ":").first else {
+            return
+        }
+        
+        if deeplinkType == "file" {
+            vultExtensionViewModel.documentUrl = incomingURL
+            vultExtensionViewModel.showImportView = true
+        } else {
+            deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
+        }
     }
 }
 

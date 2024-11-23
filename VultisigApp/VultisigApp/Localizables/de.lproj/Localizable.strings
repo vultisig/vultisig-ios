@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
+"dontRemind" = "Nicht erneut erinnern";
 "passwordHintTitle" = "Optional: Passwort-Hinweis";
 "enterHint" = "Hinweis eingeben";
 "backupNowTitle" = "Backups müssen auf jedem Gerät in Vultisig durchgeführt werden";
@@ -15,7 +17,7 @@
 "reshareLabelSubtitle" = "Das erneute Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer der Schwellenwert der Geräte erforderlich.";
 "startReshare" = "Erneutes Teilen starten";
-"startFastVaultReshare" = "Erneutes Teilen mit Vultisigner starten";
+"startFastVaultReshare" = "Erneutes Teilen mit Vultiserver starten";
 "joinReshare" = "Erneutem Teilen beitreten";
 "fastVaultSetPasswordTitle" = "Schütze deinen Tresor und das schnelle Signieren.";
 "fastVaultEnterPasswordTitle" = "FastVault-Passwort";
@@ -257,7 +259,7 @@
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
 "customToken" = "Benutzerdefinierten Token";
 "details" = "Details";
-"vaultType" = "Tresortyp";
+"vaultType" = "Tresorteil";
 "ECDSAKey" = "ECDSA-Schlüssel";
 "EdDSAKey" = "EdDSA-Schlüssel";
 "Selected" = "Ausgewählt";
@@ -410,3 +412,19 @@
 "changesInSetup" = "Änderungen in der Konfiguration";
 "yourConfigurationChangedMakeBackup" = "Ihre Konfiguration hat sich geändert, erstellen Sie ein neues Backup.";
 "newVaultSetup" = "Neues Tresor-Setup";
+"saveChanges" = "Änderungen speichern";
+"currentVaults" = "Aktuelle Tresore";
+"useSkipInstead" = "Verwenden Sie stattdessen „Überspringen“";
+"useSkipWithoutPasswordMessage" = "Bitte verwenden Sie „Überspringen“, um ohne Passwort zu speichern";
+"serverBackupVerification" = "Server-Backup-Verifizierung";
+"enterBackupVerificationCode" = "Geben Sie den Code ein, den Sie mit Ihrem Backup per E-Mail erhalten haben:";
+"enterCode" = "Code eingeben";
+"serverBackupVerificationDisclaimer" = "Dieser Code bestätigt den Empfang des Server-Backups per E-Mail.";
+"incorrectCode" = "Falscher Code";
+"verificationCodeTryAgain" = "Bitte überprüfen Sie Ihre E-Mails auf den Verifizierungscode und versuchen Sie es erneut.";
+"chains" = "Ketten";
+"noResultFound" = "Kein Ergebnis gefunden.";
+"value" = "Wert";
+"joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
+"swapTrackingLink" = "Swap-Verfolgungslink";
+"thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";

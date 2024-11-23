@@ -19,6 +19,7 @@ extension SettingsCurrencySelectionView {
             }
         }
         .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

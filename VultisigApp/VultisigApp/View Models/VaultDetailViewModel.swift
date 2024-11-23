@@ -20,12 +20,10 @@ class VaultDetailViewModel: ObservableObject {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
             await balanceService.updateBalances(vault: vault)
-            categorizeCoins(vault: vault)
+            if !Task.isCancelled {
+                categorizeCoins(vault: vault)
+            }
         }
-    }
-    
-    func fetchCoins(for vault: Vault) {
-        categorizeCoins(vault: vault)
     }
     
     func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
@@ -54,6 +52,7 @@ class VaultDetailViewModel: ObservableObject {
             addCoin(coin)
         }
 
+        groups.sort { $0.chain.index < $1.chain.index    }
         groups.sort { $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal }
     }
     

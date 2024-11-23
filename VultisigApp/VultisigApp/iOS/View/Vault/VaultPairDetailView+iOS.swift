@@ -15,6 +15,7 @@ extension VaultPairDetailView {
             main
         }
         .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

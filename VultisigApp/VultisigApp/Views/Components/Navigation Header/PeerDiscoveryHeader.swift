@@ -11,6 +11,8 @@ struct PeerDiscoveryHeader: View {
     let title: String
     let vault: Vault
     let selectedTab: SetupVaultState
+    let hideBackButton: Bool
+    
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
@@ -29,6 +31,7 @@ struct PeerDiscoveryHeader: View {
     
     var leadingAction: some View {
         NavigationBackButton()
+            .opacity(hideBackButton ? 0 : 1)
     }
     
     var text: some View {
@@ -55,6 +58,7 @@ struct PeerDiscoveryHeader: View {
         title: "Keygen",
         vault: Vault.example,
         selectedTab: .fast,
+        hideBackButton: false,
         viewModel: KeygenPeerDiscoveryViewModel(),
         shareSheetViewModel: ShareSheetViewModel()
     )

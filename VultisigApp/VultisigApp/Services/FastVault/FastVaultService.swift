@@ -59,7 +59,7 @@ final class FastVaultService {
         let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
-            print("Send create request to vultisigner successfully")
+            print("Send create request to Vultiserver successfully")
         }
     }
 
@@ -87,7 +87,7 @@ final class FastVaultService {
                                  old_reshare_prefix: oldResharePrefix)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
-            print("Send reshare request to vultisigner successfully")
+            print("Send reshare request to Vultiserver successfully")
         }
     }
 
@@ -110,5 +110,32 @@ final class FastVaultService {
             body: request,
             completion: completion
         )
+    }
+    
+    func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> (isNavigationActive: Bool, showAlert: Bool) {
+        let parameters = "\(ecdsaKey)/\(OTPCode)"
+        let urlString = Endpoint.FastVaultBackupVerification + parameters
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string.")
+            return (isNavigationActive: false, showAlert: true)
+        }
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(from: url)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return (isNavigationActive: false, showAlert: true)
+            }
+            
+            if httpResponse.statusCode == 200 {
+                return (isNavigationActive: true, showAlert: false)
+            } else {
+                return (isNavigationActive: false, showAlert: true)
+            }
+        } catch {
+            print("Error fetching data: \(error.localizedDescription)")
+            return (isNavigationActive: false, showAlert: true)
+        }
     }
 }

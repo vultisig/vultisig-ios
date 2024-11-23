@@ -19,6 +19,7 @@ extension CoinDetailView {
             }
         }
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {

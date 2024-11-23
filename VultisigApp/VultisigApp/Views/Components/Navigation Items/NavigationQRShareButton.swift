@@ -68,7 +68,7 @@ struct NavigationQRShareButton: View {
             let today = Date.now
             let formatter = DateFormatter()
             formatter.dateStyle = .short
-            let date = formatter.string(from: today)
+            let date = formatter.string(from: today).replacingOccurrences(of: "/", with: "-")
             
             let suffix = type == .Keygen ? "VaultKeygen" : "VaultSend"
             

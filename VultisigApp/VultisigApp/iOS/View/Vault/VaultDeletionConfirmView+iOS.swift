@@ -17,6 +17,7 @@ extension VaultDeletionConfirmView {
             main
         }
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

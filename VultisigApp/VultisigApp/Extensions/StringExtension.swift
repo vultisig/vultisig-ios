@@ -29,10 +29,6 @@ extension String {
         return self
     }
     
-    func formatCurrency() -> String {
-        return self.replacingOccurrences(of: ",", with: ".")
-    }
-    
     var isZero: Bool {
         return self == .zero
     }
@@ -63,6 +59,45 @@ extension String {
     }
 }
 
+// MARK: - Amount Formatter
+
+extension String {
+    func formatCurrency(_ currency: SettingsCurrency) -> String {
+        if currency.usesEuropeanFormat {
+            return self.replacingOccurrences(of: ",", with: ".")
+        } else {
+            return self.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ",", with: ".")
+        }
+    }
+    
+    func formatCurrencyWithSeparators(_ currency: SettingsCurrency) -> String {
+        guard let number = parseInput(currency) else {
+            return self
+        }
+        
+        let outputFormatter = NumberFormatter()
+        outputFormatter.numberStyle = .decimal
+        outputFormatter.minimumFractionDigits = 0
+        outputFormatter.maximumFractionDigits = 8
+        outputFormatter.decimalSeparator = "."
+        outputFormatter.groupingSeparator = ","
+        
+        return outputFormatter.string(for: number) ?? self
+    }
+    
+    private func parseInput(_ currency: SettingsCurrency) -> Decimal? {
+        var cleanInput = self.trimmingCharacters(in: .whitespaces)
+        
+        if currency.usesEuropeanFormat {
+            cleanInput = cleanInput.replacingOccurrences(of: ".", with: "")
+            cleanInput = cleanInput.replacingOccurrences(of: ",", with: ".")
+        } else {
+            cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
+        }
+        
+        return Decimal(string: cleanInput)
+    }
+}
 
 extension String {
     func toDecimal() -> Decimal {

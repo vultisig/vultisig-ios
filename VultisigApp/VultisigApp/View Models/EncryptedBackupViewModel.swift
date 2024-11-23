@@ -22,6 +22,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
+    @Published var showPopup: Bool = false
     @Published var isLinkActive: Bool = false
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""

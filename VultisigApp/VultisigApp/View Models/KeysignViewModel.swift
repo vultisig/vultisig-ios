@@ -299,7 +299,14 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .osmosis {
                 let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            } else if keysignPayload.coin.chain == .terra {
+                let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
+            } else if keysignPayload.coin.chain == .terraClassic {
+                let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
             }
+            
             
         case .Ton:
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
@@ -381,6 +388,22 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .dydx:
                     let broadcastResult = await DydxService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
+                case .terra:
+                    let broadcastResult = await TerraService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
+                case .terraClassic:
+                    let broadcastResult = await TerraClassicService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash

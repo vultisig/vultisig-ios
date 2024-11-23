@@ -16,6 +16,8 @@ extension JoinKeygenView {
             main
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(hideBackButton)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()

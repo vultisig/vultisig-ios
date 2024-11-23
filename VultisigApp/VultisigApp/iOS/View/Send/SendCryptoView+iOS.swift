@@ -12,6 +12,7 @@ extension SendCryptoView {
     var container: some View {
         content
             .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if sendCryptoViewModel.currentIndex != 1 {
                     ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

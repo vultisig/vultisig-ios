@@ -15,6 +15,7 @@ extension ImportWalletView {
             main
         }
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()

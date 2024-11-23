@@ -20,10 +20,14 @@ enum JoinKeysignStatus {
 
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
+    
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
+
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
-    
+
+    private let etherfaceService = EtherfaceService.shared
+
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
     @Published var keysignMessages = [String]()
@@ -41,7 +45,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blowfishShow = false
     @Published var blowfishWarningsShow = false
     @Published var blowfishWarnings: [String] = []
-    
+
+    @Published var decodedMemo: String?
+
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
     
@@ -146,6 +152,7 @@ class JoinKeysignViewModel: ObservableObject {
                         let decoder = JSONDecoder()
                         let peers = try decoder.decode([String].self, from: data)
                         if peers.contains(self.localPartyID) {
+                            self.keysignCommittee.removeAll()
                             self.keysignCommittee.append(contentsOf: peers)
                             self.status = .KeysignStarted
                             self.logger.info("Keysign process has started successfully.")
@@ -271,12 +278,32 @@ class JoinKeysignViewModel: ObservableObject {
         
     }
     
-    func blowfishTransactionScan() async throws {
+    func blowfishTransactionScan() {
         blowfishShow = false
         blowfishWarningsShow = false
         blowfishWarnings = []
     }
-    
+
+    func loadThorchainID() async {
+        do {
+            _ = try await ThorchainService.shared.getTHORChainChainID()
+        } catch {
+            print("fail to get thorchain network id, \(error.localizedDescription)")
+        }
+    }
+
+    func loadFunctionName() async {
+        guard let memo = keysignPayload?.memo, keysignPayload?.coin.chainType == .EVM else {
+            return
+        }
+
+        do {
+            decodedMemo = try await etherfaceService.decode(memo: memo)
+        } catch {
+            print("Memo decoding error: \(error.localizedDescription)")
+        }
+    }
+
     func blowfishEVMTransactionScan() async throws -> BlowfishResponse {
         guard let payload = keysignPayload else {
             throw NSError(domain: "JoinKeysignViewModel", code: 2, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for EVM transaction scan."])

@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
+"dontRemind" = "Don’t remind me again";
 "passwordHintTitle" = "Optional: Password hint";
 "enterHint" = "Enter a hint";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
@@ -15,7 +17,7 @@
 "reshareLabelSubtitle" = "Reshare can be used to refresh, expand or reduce the amount of devices in a Vault.";
 "reshareLabelDisclaimer" = "For all Reshare actions the threshold of devices is always required.";
 "startReshare" = "Start Reshare";
-"startFastVaultReshare" = "Start Reshare with Vultisigner";
+"startFastVaultReshare" = "Start Reshare with Vultiserver";
 "joinReshare" = "Join Reshare";
 "fastVaultSetPasswordTitle" = "Protect your vault and fast sign.";
 "fastVaultEnterPasswordTitle" = "FastVault password";
@@ -261,7 +263,7 @@
 "findCustomTokens" = "Find Your Custom Token";
 "customToken" = "Custom Token";
 "details" = "Details";
-"vaultType" = "Vault Type";
+"vaultType" = "Vault Part";
 "ECDSAKey" = "ECDSA Key";
 "EdDSAKey" = "EdDSA Key";
 "Selected" = "Selected";
@@ -425,3 +427,20 @@
 "changesInSetup" = "Changes in Setup";
 "yourConfigurationChangedMakeBackup" = "Your configuration changed, make a new backup.";
 "newVaultSetup" = "New Vault Setup";
+"saveChanges" = "Save Changes";
+"currentVaults" = "Current Vaults";
+"networkFee" = "Network Fee";
+"useSkipInstead" = "Use Skip instead";
+"useSkipWithoutPasswordMessage" = "Please use \"Skip\" to save without password";
+"serverBackupVerification" = "Server backup verification";
+"enterBackupVerificationCode" = "Enter the code received with your backup via email:";
+"enterCode" = "Enter code";
+"serverBackupVerificationDisclaimer" = "This code verifies receiving the server backup via email.";
+"incorrectCode" = "Incorrect Code";
+"verificationCodeTryAgain" = "Please check your mail for the verification code and try again.";
+"chains" = "Chains";
+"noResultFound" = "No result found.";
+"value" = "Value";
+"joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
+"swapTrackingLink" = "Swap tracking link";
+"thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";

@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct NavigationHomeEditButton: View {
     let vault: Vault?
     let showVaultsList: Bool
+    let selectedFolder: Folder
     @Binding var isEditingVaults: Bool
     @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
@@ -17,6 +19,10 @@ struct NavigationHomeEditButton: View {
     var tint: Color = Color.neutral0
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    
+    @Query var folders: [Folder]
+    
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -63,15 +69,11 @@ struct NavigationHomeEditButton: View {
     }
     
     var foldersListEditButton: some View {
-        Button {
-            withAnimation(.easeInOut) {
-                isEditingFolders.toggle()
-            }
-        } label: {
+        ZStack {
             if isEditingFolders {
-                doneButton
+                deleteFolderButton
             } else {
-                editButton
+                editFolderButton
             }
         }
     }
@@ -90,10 +92,46 @@ struct NavigationHomeEditButton: View {
         NavigationEditButton()
     }
     
+    var editFolderButton: some View {
+        Button {
+            withAnimation(.easeInOut) {
+                isEditingFolders.toggle()
+            }
+        } label: {
+            NavigationEditButton()
+        }
+    }
+    
+    var deleteFolderButton: some View {
+        Button {
+            deleteFolder()
+        } label: {
+            Image(systemName: "trash")
+                .font(.body18MenloBold)
+                .foregroundColor(.miamiMarmalade)
+        }
+    }
+    
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(tint)
             .font(.body18MenloBold)
+    }
+    
+    private func deleteFolder() {
+        for folder in folders {
+            if folder == selectedFolder {
+                modelContext.delete(folder)
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Error: \(error)")
+                }
+                isEditingFolders = false
+                showFolderDetails = false
+                return
+            }
+        }
     }
 }
 
@@ -104,7 +142,8 @@ struct NavigationHomeEditButton: View {
             NavigationHomeEditButton(
                 vault: Vault.example,
                 showVaultsList: true,
-                isEditingVaults: .constant(true), 
+                selectedFolder: Folder.example,
+                isEditingVaults: .constant(true),
                 isEditingFolders: .constant(true),
                 showFolderDetails: .constant(true)
             )
@@ -112,6 +151,7 @@ struct NavigationHomeEditButton: View {
             NavigationHomeEditButton(
                 vault: Vault.example,
                 showVaultsList: true,
+                selectedFolder: Folder.example,
                 isEditingVaults: .constant(false),
                 isEditingFolders: .constant(true),
                 showFolderDetails: .constant(true)

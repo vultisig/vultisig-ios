@@ -23,6 +23,7 @@ extension SwapCryptoView {
         }
         .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
         .navigationTitle(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
+        .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(.keyboard)
         .toolbar {
             if swapViewModel.currentIndex != 1 {

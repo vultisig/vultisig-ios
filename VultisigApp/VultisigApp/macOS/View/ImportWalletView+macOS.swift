@@ -14,6 +14,9 @@ extension ImportWalletView {
             Background()
             main
         }
+        .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
+            backupViewModel.handleOnDrop(providers: providers)
+        }
     }
     
     var main: some View {

@@ -1,8 +1,8 @@
 //
-//  Osmosis.swift
+//  cosmos.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza 29/10/2024
+//  Created by Enrique Souza Soares on 19/11/24.
 //
 
 import Foundation
@@ -10,91 +10,104 @@ import WalletCore
 import Tss
 import CryptoSwift
 
-class OsmoHelper {
-    let coinType: CoinType
+class CosmosHelper {
+    var coinType: CoinType
+    var denom: String
+    var gasLimit: UInt64
     
-    init(){
-        self.coinType = CoinType.osmosis
+    init(coinType:CoinType, denom: String, gasLimit: UInt64){
+        self.coinType = coinType
+        self.denom = denom
+        self.gasLimit = gasLimit
     }
-    
-    static let OsmoGasLimit:UInt64 = 200000
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        
-        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get account number and sequence")
-        }
-        
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("invalid hex public key")
-        }
-        
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = OsmoHelper.OsmoGasLimit
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = "uosmo"
-                $0.amount = String(gas)
-            }]
-        }
-        return try input.serializedData()
-    }
-    
-    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get account number and sequence")
-        }
-        
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("invalid hex public key")
-        }
-        
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = self.coinType.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
+            guard case .Cosmos(let accountNumber, let sequence,let gas, _, let _) = keysignPayload.chainSpecific else {
+                throw HelperError.runtimeError("fail to get account number and sequence")
             }
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
-                    $0.fromAddress = keysignPayload.coin.address
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = "uosmo"
-                        $0.amount = String(keysignPayload.toAmount)
-                    }]
-                    $0.toAddress = keysignPayload.toAddress
-                }
-            }]
+            guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+                throw HelperError.runtimeError("invalid hex public key")
+            }
+            var input = signingInput
+            input.publicKey = pubKeyData
+            input.accountNumber = accountNumber
+            input.sequence = sequence
+            input.mode = .sync
             
-            $0.fee = CosmosFee.with {
-                $0.gas = OsmoHelper.OsmoGasLimit
+            input.fee = CosmosFee.with {
+                $0.gas = self.gasLimit
                 $0.amounts = [CosmosAmount.with {
-                    $0.denom = "uosmo"
+                    $0.denom = self.denom
                     $0.amount = String(gas)
                 }]
             }
+            // memo has been set
+            // deposit message has been set
+            return try input.serializedData()
         }
         
-        return try input.serializedData()
+    
+    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
+        }
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            throw HelperError.runtimeError("getPreSignedInputData: invalid hex public key")
+        }
+        let coin = self.coinType
+        
+        if keysignPayload.coin.isNativeToken
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
+        {
+            
+            let input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = coin.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with {
+                    $0.sendCoinsMessage = CosmosMessage.Send.with{
+                        $0.fromAddress = keysignPayload.coin.address
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
+                            $0.amount = String(keysignPayload.toAmount)
+                        }]
+                        $0.toAddress = keysignPayload.toAddress
+                    }
+                }]
+                
+                $0.fee = CosmosFee.with {
+                    $0.gas = self.gasLimit
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = self.denom
+                        $0.amount = String(gas)
+                    }]
+                }
+            }
+            
+            return try input.serializedData()
+            
+        }
+        // https://github.com/vultisig/vultisig-ios/issues/1570 to implement the send from one chain to another.
+        
+        throw HelperError.runtimeError("It must be a native token or a valid IBC token")
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
+            print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
+                
         return [preSigningOutput.dataHash.hexString]
     }
     
@@ -128,6 +141,7 @@ class OsmoHelper {
             let signatureProvider = SignatureProvider(signatures: signatures)
             let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
+                print("getSignedTransaction signature is invalid")
                 throw HelperError.runtimeError("fail to verify signature")
             }
             
@@ -138,6 +152,11 @@ class OsmoHelper {
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+            
+            if output.errorMessage.count > 0 {
+                print("getSignedTransaction Error message: \(output.errorMessage)")
+            }
+            
             let serializedData = output.serialized
             let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
             let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())

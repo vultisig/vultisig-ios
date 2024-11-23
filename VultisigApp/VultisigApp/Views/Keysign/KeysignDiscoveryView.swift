@@ -18,6 +18,7 @@ struct KeysignDiscoveryView: View {
     
     @State var isPhoneSE = false
     @State var isLoading = false
+    @State var screenWidth: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
@@ -29,6 +30,7 @@ struct KeysignDiscoveryView: View {
 #endif
     
     @Environment(\.displayScale) var displayScale
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let columns = [GridItem(.adaptive(minimum: 160))]
     
@@ -112,7 +114,6 @@ struct KeysignDiscoveryView: View {
     
     var lookingForDevices: some View {
         LookingForDevicesLoader(selectedTab: keysignState)
-            .padding()
     }
 
     var keysignState: SetupVaultState {
@@ -210,7 +211,7 @@ struct KeysignDiscoveryView: View {
     }
     
     private func setData(_ proxy: GeometryProxy) {
-        let screenWidth = proxy.size.width
+        screenWidth = proxy.size.width
         
         if screenWidth < 380 {
             isPhoneSE = true
@@ -220,4 +221,5 @@ struct KeysignDiscoveryView: View {
 
 #Preview {
     KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+        .environmentObject(SettingsViewModel())
 }

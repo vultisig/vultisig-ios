@@ -15,6 +15,7 @@ extension RenameVaultView {
             main
         }
         .navigationTitle(NSLocalizedString("renameVault", comment: "Edit Rename Vault View title"))
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     var main: some View {

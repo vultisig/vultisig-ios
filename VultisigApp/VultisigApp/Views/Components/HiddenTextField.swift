@@ -10,17 +10,24 @@ import SwiftUI
 struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
+    var showHideOption: Bool = true
     
     @State var isPasswordVisible: Bool = false
     
     var body: some View {
         field
+            .onAppear {
+                setData()
+            }
     }
     
     var field: some View {
         HStack {
             textfield
-            button
+            
+            if showHideOption {
+                button
+            }
         }
         .frame(height: 44)
         .padding(.horizontal, 16)
@@ -64,6 +71,12 @@ struct HiddenTextField: View {
         }
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
+    }
+    
+    private func setData() {
+        if !showHideOption {
+            isPasswordVisible = true
+        }
     }
 }
 

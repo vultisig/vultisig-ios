@@ -86,34 +86,32 @@ struct TokenSelectionView: View {
     }
 
     var list: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                if !tokenViewModel.selectedTokens.isEmpty {
-                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
-                        ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
+        VStack(alignment: .leading, spacing: 24) {
+            if !tokenViewModel.selectedTokens.isEmpty {
+                Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
+                    ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
+                        TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
-                
-                if tokenViewModel.searchText.isEmpty {
-                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                        ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
+            }
+            
+            if tokenViewModel.searchText.isEmpty {
+                Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                    ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
+                        TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
+                }
+            } else {
+                Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                    if !tokenViewModel.searchedTokens.isEmpty {
+                        ForEach(tokenViewModel.searchedTokens, id: \.self) { asset in
                             TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                        }
-                    }
-                } else {
-                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
-                        if !tokenViewModel.searchedTokens.isEmpty {
-                            ForEach(tokenViewModel.searchedTokens, id: \.self) { asset in
-                                TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                            }
                         }
                     }
                 }
@@ -138,4 +136,13 @@ struct TokenSelectionView: View {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
         }
     }
+}
+
+#Preview {
+    TokenSelectionView(
+        chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example),
+        vault: Vault.example,
+        group: GroupedChain.example
+    )
+    .environmentObject(CoinSelectionViewModel())
 }
