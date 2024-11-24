@@ -444,3 +444,4 @@
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
 "swapTrackingLink" = "Swap tracking link";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
+"skipPassword" = "Skip Password";

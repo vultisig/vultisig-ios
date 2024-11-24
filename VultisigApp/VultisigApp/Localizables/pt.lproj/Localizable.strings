@@ -412,3 +412,4 @@
 "joinKeygenConnectionDisclaimer" = "Problemas de conexão?\nUse uma conexão de hotspot pessoal.\nOu tente uma rede diferente.";
 "swapTrackingLink" = "Link de rastreamento do Swap";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
+"skipPassword" = "Pular senha";
