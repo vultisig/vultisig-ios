@@ -83,6 +83,10 @@ extension SendCryptoDetailsView {
             .onChange(of: keyboardObserver.keyboardHeight) { oldValue, newValue in
                 scrollToField(value)
             }
+            .refreshable {
+                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+                await getBalance()
+            }
         }
     }
     

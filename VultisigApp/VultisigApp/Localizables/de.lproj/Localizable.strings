@@ -428,3 +428,4 @@
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
 "swapTrackingLink" = "Swap-Verfolgungslink";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
+"skipPassword" = "Passwort überspringen";

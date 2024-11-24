@@ -595,6 +595,7 @@
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
 		B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196452C12CA2E0021D27A /* AddressTextField.swift */; };
 		B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196472C12D1110021D27A /* CircularFilledButton.swift */; };
+		B524F55B2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B524F55A2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift */; };
 		B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CD2CDDA7740031FB71 /* TerraService.swift */; };
 		B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FD1CF2CDDAFE50031FB71 /* terra.swift */; };
 		B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */; };
@@ -603,6 +604,7 @@
 		B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */; };
 		B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */; };
+		B541C9262CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B541C9252CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift */; };
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
@@ -1351,6 +1353,7 @@
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
 		B52196452C12CA2E0021D27A /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
 		B52196472C12D1110021D27A /* CircularFilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularFilledButton.swift; sourceTree = "<group>"; };
+		B524F55A2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoBondMayaChain.swift; sourceTree = "<group>"; };
 		B52FD1CD2CDDA7740031FB71 /* TerraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerraService.swift; sourceTree = "<group>"; };
 		B52FD1CF2CDDAFE50031FB71 /* terra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = terra.swift; sourceTree = "<group>"; };
 		B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmServiceEnsServiceExtension.swift; sourceTree = "<group>"; };
@@ -1359,6 +1362,7 @@
 		B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoLeave.swift; sourceTree = "<group>"; };
 		B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmTokenServiceProtocol.swift; sourceTree = "<group>"; };
+		B541C9252CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbondMayaChain.swift; sourceTree = "<group>"; };
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
@@ -2857,8 +2861,10 @@
 				B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */,
 				B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */,
 				B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */,
+				B524F55A2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift */,
 				B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */,
 				B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */,
+				B541C9252CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift */,
 				B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */,
 				B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */,
 				B51119322C0072620020B711 /* TransactionMemoCustom.swift */,
@@ -3691,6 +3697,7 @@
 				A633B13C2B9A6564003D1738 /* SetupQRCodeView.swift in Sources */,
 				A6182F292C9225DA0059BFDD /* MacCheckUpdateView.swift in Sources */,
 				A6C6712B2CA3C24600F59B6A /* AddressTextField+iOS.swift in Sources */,
+				B541C9262CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
 				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
@@ -4068,6 +4075,7 @@
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
+				B524F55B2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,

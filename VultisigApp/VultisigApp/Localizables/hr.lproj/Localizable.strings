@@ -411,3 +411,4 @@
 "joinKeygenConnectionDisclaimer" = "Imate problema s povezivanjem?\nKoristite osobnu hotspot vezu.\nIli pokušajte s drugom mrežom.";
 "swapTrackingLink" = "Link za praćenje zamjene";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
+"skipPassword" = "Preskoči lozinku";
