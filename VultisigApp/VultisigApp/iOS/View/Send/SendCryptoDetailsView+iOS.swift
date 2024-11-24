@@ -84,8 +84,8 @@ extension SendCryptoDetailsView {
                 scrollToField(value)
             }
             .refreshable {
-                setData()
                 await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+                await getBalance()
             }
         }
     }
