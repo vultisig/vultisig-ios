@@ -132,7 +132,6 @@ class SolanaService {
             let dataResponse = try await Utils.asyncGetRequest(
                 urlString: urlString, headers: [:])
             
-            print(String(data: dataResponse, encoding: .utf8) ?? "")
             let tokenInfos = try JSONDecoder().decode(
                 [SolanaJupiterToken].self, from: dataResponse)
             return tokenInfos.map { jupiterTokenInfo in
