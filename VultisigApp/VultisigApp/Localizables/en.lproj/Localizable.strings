@@ -444,3 +444,4 @@
 "swapTrackingLink" = "Swap tracking link";
 "verificationCodeTryAgain" = "Wrong verification code, please enter the correct one.";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
+"skipPassword" = "Skip Password";

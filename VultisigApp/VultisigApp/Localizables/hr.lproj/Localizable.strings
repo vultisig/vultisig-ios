@@ -411,3 +411,4 @@
 "swapTrackingLink" = "Link za praćenje zamjene";
 "verificationCodeTryAgain" = "Pogrešan verifikacijski kod, molimo unesite ispravan.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
+"skipPassword" = "Preskoči lozinku";

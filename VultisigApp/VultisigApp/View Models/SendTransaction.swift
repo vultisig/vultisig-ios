@@ -8,7 +8,6 @@ import Combine
 import VultisigCommonData
 
 class SendTransaction: ObservableObject, Hashable {
-
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty

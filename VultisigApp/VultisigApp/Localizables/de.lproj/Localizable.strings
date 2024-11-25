@@ -428,3 +428,4 @@
 "swapTrackingLink" = "Swap-Verfolgungslink";
 "verificationCodeTryAgain" = "Falscher Verifizierungscode, bitte geben Sie den richtigen ein.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
+"skipPassword" = "Passwort überspringen";

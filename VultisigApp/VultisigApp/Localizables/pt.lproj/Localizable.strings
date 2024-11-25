@@ -412,3 +412,4 @@
 "swapTrackingLink" = "Link de rastreamento do Swap";
 "verificationCodeTryAgain" = "Código de verificação incorreto, por favor insira o correto.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
+"skipPassword" = "Pular senha";

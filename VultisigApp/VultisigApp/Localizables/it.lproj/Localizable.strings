@@ -411,3 +411,4 @@
 "swapTrackingLink" = "Link di monitoraggio dello Swap";
 "verificationCodeTryAgain" = "Codice di verifica errato, si prega di inserire quello corretto.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
+"skipPassword" = "Salta password";

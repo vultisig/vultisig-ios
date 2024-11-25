@@ -58,7 +58,7 @@ extension BackupPasswordSetupView {
         Button(action: {
             showSkipShareSheet = true
         }) {
-            OutlineButton(title: "skip")
+            OutlineButton(title: "skipPassword")
         }
         .sheet(isPresented: $showSkipShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
