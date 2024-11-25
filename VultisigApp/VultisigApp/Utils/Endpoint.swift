@@ -127,6 +127,10 @@ class Endpoint {
         "https://tokens.jup.ag/token/\(tokenAddress)"
     }
     
+    static func solanaTokenInfoList() -> String {
+        "https://tokens.jup.ag/tokens?tags=verified"
+    }
+    
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
