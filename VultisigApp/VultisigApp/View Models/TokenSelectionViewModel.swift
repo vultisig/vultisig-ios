@@ -134,11 +134,9 @@ private extension TokenSelectionViewModel {
     func loadSolanaTokens(chain: Chain) async {
         isLoading = true
         do {
-            let oneInchTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
+            let jupTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
             
-            print(oneInchTokens)
-            
-            let uniqueTokens = oneInchTokens.filter { item in
+            let uniqueTokens = jupTokens.filter { item in
                 !tokens.contains { $0.ticker == item.ticker }
             }
 
