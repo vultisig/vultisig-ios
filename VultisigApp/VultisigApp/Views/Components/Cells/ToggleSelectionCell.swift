@@ -38,10 +38,12 @@ struct ToggleSelectionCell: View {
     }
 
     var image: some View {
-        Image(asset?.logo ?? "")
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(32)
+        AsyncImageView(
+            logo: asset?.logo ?? "",
+            size: CGSize(width: 32, height: 32),
+            ticker: asset?.chain.ticker ?? "",
+            tokenChainLogo: asset?.chain.logo
+        )
     }
 
     var text: some View {
