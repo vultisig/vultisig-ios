@@ -35,7 +35,7 @@ extension ServerBackupVerificationView {
     var backButton: some View {
         Button(action: {
             viewModel.setupLinkActive = true
-            viewModel.isLinkActive = false
+            dismiss()
         }) {
             Image(systemName: "chevron.backward")
                 .font(.body18MenloBold)

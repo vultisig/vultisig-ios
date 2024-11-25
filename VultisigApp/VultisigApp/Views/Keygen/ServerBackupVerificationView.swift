@@ -20,6 +20,8 @@ struct ServerBackupVerificationView: View {
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ZStack {
             Background()

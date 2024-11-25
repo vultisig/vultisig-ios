@@ -42,7 +42,14 @@ struct KeygenView: View {
     var body: some View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                navigationDestination
+                if showVerificationView {
+                    ServerBackupVerificationView(
+                        vault: vault,
+                        viewModel: viewModel
+                    )
+                } else {
+                    BackupVaultNowView(vault: vault)
+                }
             }
             .onAppear {
                 hideBackButton = true
@@ -177,19 +184,6 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
     
-    var navigationDestination: some View {
-        ZStack {
-            if showVerificationView {
-                ServerBackupVerificationView(
-                    vault: vault,
-                    viewModel: viewModel
-                )
-            } else {
-                BackupVaultNowView(vault: vault)
-            }
-        }
-    }
-    
     var retryButton: some View {
         VStack(spacing: 32) {
             appVersion
@@ -265,7 +259,12 @@ struct KeygenView: View {
         
         do {
             try context.save()
-            dismiss()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                viewModel.isLinkActive = false
+                viewModel.setupLinkActive = false
+                dismiss()
+            }
         } catch {
             print("Error: \(error)")
         }
