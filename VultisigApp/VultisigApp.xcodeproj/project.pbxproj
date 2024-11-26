@@ -387,6 +387,7 @@
 		A698222C2CB398E700966D19 /* FolderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A698222B2CB398E700966D19 /* FolderCell.swift */; };
 		A698222E2CB3A8B500966D19 /* CreateFolderView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A698222D2CB3A8B500966D19 /* CreateFolderView+iOS.swift */; };
 		A69822302CB3A8D700966D19 /* CreateFolderView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A698222F2CB3A8D700966D19 /* CreateFolderView+macOS.swift */; };
+		A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69C18482CF0629500B846E8 /* ServerBackupVerificationHeader.swift */; };
 		A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB992C8AD63C00A4B78B /* CreateVaultView+macOS.swift */; };
 		A69FBB9C2C8AD68E00A4B78B /* CreateVaultView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */; };
 		A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9D2C8AD7BD00A4B78B /* ContentView+macOS.swift */; };
@@ -1149,6 +1150,7 @@
 		A698222B2CB398E700966D19 /* FolderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderCell.swift; sourceTree = "<group>"; };
 		A698222D2CB3A8B500966D19 /* CreateFolderView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateFolderView+iOS.swift"; sourceTree = "<group>"; };
 		A698222F2CB3A8D700966D19 /* CreateFolderView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateFolderView+macOS.swift"; sourceTree = "<group>"; };
+		A69C18482CF0629500B846E8 /* ServerBackupVerificationHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerBackupVerificationHeader.swift; sourceTree = "<group>"; };
 		A69FBB992C8AD63C00A4B78B /* CreateVaultView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateVaultView+macOS.swift"; sourceTree = "<group>"; };
 		A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateVaultView+iOS.swift"; sourceTree = "<group>"; };
 		A69FBB9D2C8AD7BD00A4B78B /* ContentView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+macOS.swift"; sourceTree = "<group>"; };
@@ -2555,6 +2557,7 @@
 				A6833D942C66A697002029E1 /* SendCryptoHeader.swift */,
 				A6833D962C671F11002029E1 /* SettingsHeader.swift */,
 				A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */,
+				A69C18482CF0629500B846E8 /* ServerBackupVerificationHeader.swift */,
 			);
 			path = "Navigation Header";
 			sourceTree = "<group>";
@@ -3522,6 +3525,7 @@
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */,
 				A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */,
+				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
