@@ -595,6 +595,10 @@ class TokensStore {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
         
+        static var nobleUsdc: CoinMeta {
+            CoinMeta(chain: Chain.noble, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "", isNativeToken: true)
+        }
+        
         static var zksyncETH: CoinMeta {
             CoinMeta(chain: Chain.zksync, ticker: "ETH", logo: "zsync_era", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
@@ -632,6 +636,8 @@ class TokensStore {
         TokensStore.Token.kujiraMnta,
         
         TokensStore.Token.dydx,
+        
+        TokensStore.Token.nobleUsdc,
         
         TokensStore.Token.terra,
         TokensStore.Token.terraAstro,

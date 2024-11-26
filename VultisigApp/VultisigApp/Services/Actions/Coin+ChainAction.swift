@@ -59,7 +59,7 @@ extension Chain {
             actions = [.send, .swap]
         case .dydx:
             actions = [.send, .memo]
-        case .osmosis, .terra, .terraClassic:
+        case .osmosis, .terra, .terraClassic, .noble:
             actions = [.send]
         }
         return actions.filtered

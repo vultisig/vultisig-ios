@@ -613,6 +613,8 @@
 		B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */; };
 		B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */; };
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
+		B55246C92CF5639A00E3532C /* NobleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55246C82CF5639A00E3532C /* NobleService.swift */; };
+		B55246CB2CF5643800E3532C /* noble.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55246CA2CF5643800E3532C /* noble.swift */; };
 		B55C10762C6A724E0095D274 /* TransactionMemoAddPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */; };
 		B55C10782C6AC0820095D274 /* TransactionMemoWithdrawPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */; };
 		B571384D2CC560F2000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384C2CC560F0000E925B /* Ton.swift */; };
@@ -1371,6 +1373,8 @@
 		B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledNumberField.swift; sourceTree = "<group>"; };
 		B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledFloatingPointField.swift; sourceTree = "<group>"; };
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
+		B55246C82CF5639A00E3532C /* NobleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NobleService.swift; sourceTree = "<group>"; };
+		B55246CA2CF5643800E3532C /* noble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = noble.swift; sourceTree = "<group>"; };
 		B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddPool.swift; sourceTree = "<group>"; };
 		B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawPool.swift; sourceTree = "<group>"; };
 		B571384C2CC560F0000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
@@ -2879,6 +2883,7 @@
 			isa = PBXGroup;
 			children = (
 				DE63AE522BBA627B001BBE5C /* atom.swift */,
+				B55246CA2CF5643800E3532C /* noble.swift */,
 				B58BE8E72CD1C36E00FFD98F /* osmosis.swift */,
 				B5E476AA2C1A13D7005DB485 /* dydx.swift */,
 				B5BC37552CECEFF8005A1C76 /* cosmos.swift */,
@@ -3214,6 +3219,7 @@
 			children = (
 				DE63AE552BBA788D001BBE5C /* GaiaService.swift */,
 				B58BE8E52CD1BD5D00FFD98F /* OsmosisService.swift */,
+				B55246C82CF5639A00E3532C /* NobleService.swift */,
 				46DE088D2BD08C9900AE8BDE /* KujiraService.swift */,
 				46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */,
 				B52FD1CD2CDDA7740031FB71 /* TerraService.swift */,
@@ -3979,6 +3985,7 @@
 				B51097F52C4EB7200066D560 /* BlowfishEvmWarningInformationNote.swift in Sources */,
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
 				A6C670F52CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift in Sources */,
+				B55246CB2CF5643800E3532C /* noble.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A6C670CF2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
@@ -4087,6 +4094,7 @@
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
 				A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
+				B55246C92CF5639A00E3532C /* NobleService.swift in Sources */,
 				A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
