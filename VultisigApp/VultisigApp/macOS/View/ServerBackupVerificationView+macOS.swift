@@ -17,7 +17,7 @@ extension ServerBackupVerificationView {
     }
     
     var header: some View {
-        GeneralMacHeader(title: "serverBackupVerification")
+        ServerBackupVerificationHeader()
     }
     
     var content: some View {
@@ -26,7 +26,7 @@ extension ServerBackupVerificationView {
             textField
             Spacer()
             disclaimer
-            button
+            buttons
         }
         .padding(.horizontal, 40)
     }

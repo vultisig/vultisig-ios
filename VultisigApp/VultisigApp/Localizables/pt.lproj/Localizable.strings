@@ -405,11 +405,11 @@
 "enterCode" = "Insira o código";
 "serverBackupVerificationDisclaimer" = "Este código verifica o recebimento do backup do servidor por e-mail.";
 "incorrectCode" = "Código incorreto";
-"verificationCodeTryAgain" = "Por favor, verifique seu e-mail para o código de verificação e tente novamente.";
 "chains" = "Cadeias";
 "noResultFound" = "Nenhum resultado encontrado.";
 "value" = "Valor";
 "joinKeygenConnectionDisclaimer" = "Problemas de conexão?\nUse uma conexão de hotspot pessoal.\nOu tente uma rede diferente.";
 "swapTrackingLink" = "Link de rastreamento do Swap";
+"verificationCodeTryAgain" = "Código de verificação incorreto, por favor insira o correto.";
 "thresholdNotReachedMessage" = "Limite não alcançado.\nFaltam dispositivos iniciais suficientes.";
 "skipPassword" = "Pular senha";

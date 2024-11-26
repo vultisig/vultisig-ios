@@ -22,6 +22,8 @@ struct KeygenView: View {
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
     @Binding var hideBackButton: Bool
+    
+    var selectedTab: SetupVaultState? = nil
 
     @StateObject var viewModel = KeygenViewModel()
     
@@ -33,13 +35,21 @@ struct KeygenView: View {
     @State var showProgressRing = true
     @State var showVerificationView = false
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                navigationDestination
+                if showVerificationView {
+                    ServerBackupVerificationView(
+                        vault: vault,
+                        viewModel: viewModel
+                    )
+                } else {
+                    BackupVaultNowView(vault: vault)
+                }
             }
             .onAppear {
                 hideBackButton = true
@@ -173,16 +183,6 @@ struct KeygenView: View {
         ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
     
-    var navigationDestination: some View {
-        ZStack {
-            if showVerificationView {
-                ServerBackupVerificationView(vault: vault)
-            } else {
-                BackupVaultNowView(vault: vault)
-            }
-        }
-    }
-    
     var retryButton: some View {
         VStack(spacing: 32) {
             appVersion
@@ -240,11 +240,8 @@ struct KeygenView: View {
     }
     
     private func checkVaultType() {
-        for signer in keygenCommittee {
-            if signer.contains("Server-") {
-                showVerificationView = true
-                return
-            }
+        if let selectedTab, selectedTab == .fast {
+            showVerificationView = true
         }
     }
 }
@@ -262,7 +259,8 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: "",
             fastSignConfig: nil,
-            hideBackButton: .constant(false)
+            hideBackButton: .constant(false),
+            selectedTab: SetupVaultState.active
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }
