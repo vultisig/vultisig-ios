@@ -238,7 +238,7 @@ class TokensStore {
         // BASE
         
         static var baseEth: CoinMeta {
-            CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth_base", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var baseUsdc: CoinMeta {
@@ -288,7 +288,7 @@ class TokensStore {
         //
         
         static var arbETH: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var arbArb: CoinMeta {
@@ -354,7 +354,7 @@ class TokensStore {
         // OPTIMUM
         
         static var optETH: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var optOP: CoinMeta {
@@ -458,7 +458,7 @@ class TokensStore {
         // BLAST
         
         static var blastETH: CoinMeta {
-            CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var blastWETH: CoinMeta {

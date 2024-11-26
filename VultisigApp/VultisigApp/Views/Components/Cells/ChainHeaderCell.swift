@@ -41,7 +41,7 @@ struct ChainHeaderCell: View {
     }
     
     var logo: some View {
-        AsyncImageView(logo: group.logo, size: CGSize(width: 32, height: 32), ticker: group.chain.ticker, tokenChainLogo: nil)
+        AsyncImageView(logo: group.logo, size: CGSize(width: 32, height: 32), ticker: group.chain.ticker, tokenChainLogo: group.chain.logo)
     }
     
     var content: some View {
