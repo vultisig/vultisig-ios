@@ -14,11 +14,6 @@ extension ServerBackupVerificationView {
             .navigationTitle(NSLocalizedString("serverBackupVerification", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-            }
     }
     
     var content: some View {
@@ -27,20 +22,9 @@ extension ServerBackupVerificationView {
             textField
             Spacer()
             disclaimer
-            button
+            buttons
         }
         .padding(.horizontal, 16)
-    }
-    
-    var backButton: some View {
-        Button(action: {
-            viewModel.setupLinkActive = true
-            dismiss()
-        }) {
-            Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
-                .foregroundColor(.neutral0)
-        }
     }
 }
 #endif

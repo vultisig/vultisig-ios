@@ -53,7 +53,6 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
-                dismissView()
             }
     }
     
@@ -243,30 +242,6 @@ struct KeygenView: View {
     private func checkVaultType() {
         if let selectedTab, selectedTab == .fast {
             showVerificationView = true
-        }
-    }
-    
-    private func dismissView() {
-        guard viewModel.setupLinkActive else {
-            return
-        }
-        
-        deleteVault()
-    }
-    
-    func deleteVault() {
-        context.delete(vault)
-        
-        do {
-            try context.save()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                viewModel.isLinkActive = false
-                viewModel.setupLinkActive = false
-                dismiss()
-            }
-        } catch {
-            print("Error: \(error)")
         }
     }
 }

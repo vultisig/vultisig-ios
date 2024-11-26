@@ -8,12 +8,10 @@
 import SwiftUI
 
 struct ServerBackupVerificationHeader: View {
-    @Binding var isLinkActive: Bool
-    @Binding var setupLinkActive: Bool
     
     var body: some View {
         HStack {
-            leadingAction
+            leadingAction.opacity(0)
             Spacer()
             text
             Spacer()
@@ -26,14 +24,9 @@ struct ServerBackupVerificationHeader: View {
     }
     
     var leadingAction: some View {
-        Button(action: {
-            setupLinkActive = true
-            isLinkActive = false
-        }) {
-            Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
-                .foregroundColor(.neutral0)
-        }
+        Image(systemName: "chevron.backward")
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
     }
     
     var text: some View {
@@ -44,5 +37,5 @@ struct ServerBackupVerificationHeader: View {
 }
 
 #Preview {
-    ServerBackupVerificationHeader(isLinkActive: .constant(false), setupLinkActive: .constant(false))
+    ServerBackupVerificationHeader()
 }

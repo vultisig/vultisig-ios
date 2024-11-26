@@ -17,10 +17,7 @@ extension ServerBackupVerificationView {
     }
     
     var header: some View {
-        ServerBackupVerificationHeader(
-            isLinkActive: $viewModel.isLinkActive,
-            setupLinkActive: $viewModel.setupLinkActive
-        )
+        ServerBackupVerificationHeader()
     }
     
     var content: some View {
@@ -29,7 +26,7 @@ extension ServerBackupVerificationView {
             textField
             Spacer()
             disclaimer
-            button
+            buttons
         }
         .padding(.horizontal, 40)
     }

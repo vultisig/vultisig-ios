@@ -32,7 +32,6 @@ class KeygenViewModel: ObservableObject {
     var oldResharePrefix: String
     
     @Published var isLinkActive = false
-    @Published var setupLinkActive = false
     @Published var keygenError: String = ""
     @Published var status = KeygenStatus.CreatingInstance
     
