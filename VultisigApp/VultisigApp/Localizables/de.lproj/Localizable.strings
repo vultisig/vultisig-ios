@@ -421,11 +421,11 @@
 "enterCode" = "Code eingeben";
 "serverBackupVerificationDisclaimer" = "Dieser Code bestätigt den Empfang des Server-Backups per E-Mail.";
 "incorrectCode" = "Falscher Code";
-"verificationCodeTryAgain" = "Bitte überprüfen Sie Ihre E-Mails auf den Verifizierungscode und versuchen Sie es erneut.";
 "chains" = "Ketten";
 "noResultFound" = "Kein Ergebnis gefunden.";
 "value" = "Wert";
 "joinKeygenConnectionDisclaimer" = "Probleme bei der Verbindung?\nVerwenden Sie stattdessen eine persönliche Hotspot-Verbindung.\nOder probieren Sie ein anderes Netzwerk aus.";
 "swapTrackingLink" = "Swap-Verfolgungslink";
+"verificationCodeTryAgain" = "Falscher Verifizierungscode, bitte geben Sie den richtigen ein.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "skipPassword" = "Passwort überspringen";
