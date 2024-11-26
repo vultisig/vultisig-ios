@@ -51,7 +51,7 @@ final class BlockChainService {
 
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
-
+    private let noble = NobleService.shared
 
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
@@ -313,6 +313,19 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+        
+        case .noble:
+            let account = try await noble.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 20000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+        
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)

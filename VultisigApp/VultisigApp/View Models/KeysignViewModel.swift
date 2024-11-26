@@ -305,6 +305,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .terraClassic {
                 let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            } else if keysignPayload.coin.chain == .noble {
+                let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
             }
             
             
@@ -404,6 +407,14 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .terraClassic:
                     let broadcastResult = await TerraClassicService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
+                case .noble:
+                    let broadcastResult = await NobleService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash
