@@ -53,6 +53,7 @@ struct SendCryptoAmountTextField: View {
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
         .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+        .keyboardType(.decimalPad)
         .maxLength(Binding<String>(
             get: { amount },
             set: {
