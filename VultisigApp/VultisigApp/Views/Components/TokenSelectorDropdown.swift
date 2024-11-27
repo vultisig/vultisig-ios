@@ -39,7 +39,12 @@ struct TokenSelectorDropdown: View {
     }
     
     var image: some View {
-        AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
+        AsyncImageView(
+            logo: coin.logo,
+            size: CGSize(width: 32, height: 32),
+            ticker: coin.ticker,
+            tokenChainLogo: coin.chain.logo
+        )
     }
     
     var ticker: some View {
