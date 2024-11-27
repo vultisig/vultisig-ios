@@ -50,15 +50,15 @@ class RpcService {
             }
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                if message.contains("known")
-                    || message.contains("already known")
-                    || message.contains("Transaction is temporarily banned")
-                    || message.contains("nonce too low")
-                    || message.contains("nonce too high")
-                    || message.contains("transaction already exists")
-                    || message.contains("many requests for a specific RPC call")
-                    || message.contains("already")
-                    || message.contains("already mined")
+                if message.lowercased().contains("known".lowercased())
+                    || message.lowercased().contains("already known".lowercased())
+                    || message.lowercased().contains("Transaction is temporarily banned".lowercased())
+                    || message.lowercased().contains("nonce too low".lowercased())
+                    || message.lowercased().contains("nonce too high".lowercased())
+                    || message.lowercased().contains("transaction already exists".lowercased())
+                    || message.lowercased().contains("many requests for a specific RPC call".lowercased())
+                    || message.lowercased().contains("already".lowercased())
+                    || message.lowercased().contains("already mined".lowercased())
                 {
                     return try decode("Transaction already broadcasted.")
                 }
