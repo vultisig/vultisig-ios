@@ -63,7 +63,9 @@ extension String {
 
 extension String {
     func formatCurrency(_ currency: SettingsCurrency) -> String {
-        if currency.usesEuropeanFormat {
+        let decimalPoint = getCurrentDecimalPoint()
+        
+        if currency.usesEuropeanFormat || decimalPoint == "," {
             return self.replacingOccurrences(of: ",", with: ".")
         } else {
             return self.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ",", with: ".")
@@ -96,6 +98,11 @@ extension String {
         }
         
         return Decimal(string: cleanInput)
+    }
+    
+    private func getCurrentDecimalPoint() -> String {
+        let formatter = NumberFormatter()
+        return formatter.decimalSeparator ?? "."
     }
 }
 

@@ -225,6 +225,15 @@ class Endpoint {
     
     static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchNobleAccountBalance(address: String) -> String{
+        "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchNobleAccountNumber(_ address: String) -> String {
+        "https://noble-api.polkachu.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastNobleTransaction = "https://noble-api.polkachu.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -371,6 +380,8 @@ class Endpoint {
             return "https://www.mintscan.io/terra/tx/\(txid)"
         case "ULUNC":
             return "https://finder.terra.money/classic/tx/\(txid)"
+        case "USDC":
+            return "https://www.mintscan.io/noble/tx/\(txid)"
         default:
             return ""
         }
@@ -432,6 +443,8 @@ class Endpoint {
             return "https://www.mintscan.io/terra/address/\(address)"
         case "ULUNC":
             return "https://finder.terra.money/classic/address/\(address)"
+        case "USDC":
+            return "https://www.mintscan.io/noble/address/\(address)"
         default:
             return nil
         }
@@ -493,6 +506,8 @@ class Endpoint {
             return "https://www.mintscan.io/terra/address/\(address)"
         case .terraClassic:
             return "https://finder.terra.money/classic/address/\(address)"
+        case .noble:
+            return "https://www.mintscan.io/noble/address/\(address)"
         case .none:
             return nil
         }

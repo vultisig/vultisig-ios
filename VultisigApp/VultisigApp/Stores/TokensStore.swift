@@ -591,8 +591,24 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "MNTA", logo: "mnta", decimals: 6, priceProviderId: "mantadao", contractAddress: "factory/kujira1643jxg8wasy5cfcn7xm8rd742yeazcksqlg4d7/umnta", isNativeToken: false)
         }
         
+        static var kujiraNSTK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "NSTK", logo: "nstk", decimals: 6, priceProviderId: "unstake-fi", contractAddress: "factory/kujira1aaudpfr9y23lt9d45hrmskphpdfaq9ajxd3ukh/unstk", isNativeToken: false)
+        }
+        
+        static var kujiraWINK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "WINK", logo: "wink", decimals: 6, priceProviderId: "winkhub", contractAddress: "factory/kujira12cjjeytrqcj25uv349thltcygnp9k0kukpct0e/uwink", isNativeToken: false)
+        }
+        
+        static var kujiraUSK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "USK", logo: "usk", decimals: 6, priceProviderId: "usk", contractAddress: "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var nobleUsdc: CoinMeta {
+            CoinMeta(chain: Chain.noble, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "", isNativeToken: true)
         }
         
         static var zksyncETH: CoinMeta {
@@ -631,7 +647,15 @@ class TokensStore {
         TokensStore.Token.kujiraUsdc,
         TokensStore.Token.kujiraMnta,
         
+        TokensStore.Token.kujiraUSK,
+        TokensStore.Token.kujiraNSTK,
+        TokensStore.Token.kujiraWINK,
+
+        
+        
         TokensStore.Token.dydx,
+        
+        TokensStore.Token.nobleUsdc,
         
         TokensStore.Token.terra,
         TokensStore.Token.terraAstro,

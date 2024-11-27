@@ -59,6 +59,9 @@ struct FastVaultSetPasswordView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
+        .onAppear {
+            isLinkActive = false
+        }
     }
 
     var hintField: some View {
