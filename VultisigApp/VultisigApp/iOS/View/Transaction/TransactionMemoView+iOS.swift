@@ -21,12 +21,7 @@ extension TransactionMemoView {
         .toolbar {
             if transactionMemoViewModel.currentIndex != 1 {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    Button {
-                        transactionMemoViewModel.handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                            .offset(x: -8)
-                    }
+                    backButton
                 }
             }
         }
@@ -48,6 +43,19 @@ extension TransactionMemoView {
         .onTapGesture {
             hideKeyboard()
         }
+    }
+    
+    var backButton: some View {
+        let isDone = transactionMemoViewModel.currentIndex==5
+        
+        return Button {
+            transactionMemoViewModel.handleBackTap()
+        } label: {
+            NavigationBlankBackButton()
+                .offset(x: -8)
+        }
+        .opacity(isDone ? 0 : 1)
+        .disabled(isDone)
     }
 }
 #endif

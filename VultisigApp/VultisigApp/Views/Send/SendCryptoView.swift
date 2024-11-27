@@ -185,19 +185,6 @@ struct SendCryptoView: View {
         Loader()
     }
     
-    var backButton: some View {
-        let isDone = sendCryptoViewModel.currentIndex==5
-        
-        return Button {
-            sendCryptoViewModel.handleBackTap()
-        } label: {
-            NavigationBlankBackButton()
-                .offset(x: -8)
-        }
-        .opacity(isDone ? 0 : 1)
-        .disabled(isDone)
-    }
-    
     private func setData() async {
         presetData()
         await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
