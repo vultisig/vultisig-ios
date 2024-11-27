@@ -84,7 +84,7 @@ struct TransactionMemoDetailsView: View {
     }
     
     var functionSelector: some View {
-        TransactionMemoSelectorDropdown(items: .constant(TransactionMemoType.getCases(for: tx.coin)), selected: $selectedFunctionMemoType)
+        TransactionMemoSelectorDropdown(items: .constant(TransactionMemoType.getCases(for: tx.coin)), selected: $selectedFunctionMemoType, coin: $tx.coin)
     }
     
     var contractSelector: some View {

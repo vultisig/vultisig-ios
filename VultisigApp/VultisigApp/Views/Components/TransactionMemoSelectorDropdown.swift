@@ -6,6 +6,8 @@ struct TransactionMemoSelectorDropdown: View {
     @Binding var items: [TransactionMemoType]
     @Binding var selected: TransactionMemoType
     
+    @Binding var coin: Coin
+    
     var onSelect: ((TransactionMemoType) -> Void)?
     
     @State private var isExpanded = false
@@ -35,7 +37,7 @@ struct TransactionMemoSelectorDropdown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text(selected.display)
+            Text(selected.display(coin: coin))
             Spacer()
             
             Image(systemName: "chevron.down")
@@ -61,7 +63,7 @@ struct TransactionMemoSelectorDropdown: View {
     
     private func getCell(for item: TransactionMemoType) -> some View {
         HStack(spacing: 12) {
-            Text(item.display)
+            Text(item.display(coin: coin))
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
