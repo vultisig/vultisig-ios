@@ -25,11 +25,15 @@ struct TransactionMemoHeader: View {
     }
     
     var leadingAction: some View {
-        Button {
+        let isDone = transactionMemoViewModel.currentIndex==5
+        
+        return Button {
             handleBackTap()
         } label: {
             NavigationBlankBackButton()
         }
+        .opacity(isDone ? 0 : 1)
+        .disabled(isDone)
     }
     
     var text: some View {
