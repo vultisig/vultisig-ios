@@ -429,8 +429,8 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .ton:
-                    self.txid = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
-                    
+                    let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
+                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
                 }
 
             case .regularWithApprove(let approve, let transaction):
