@@ -100,7 +100,7 @@ enum TonHelper {
         let output = try TheOpenNetworkSigningOutput(serializedData: compileWithSignature)
         
         let result = SignedTransactionResult(rawTransaction: output.encoded,
-                                             transactionHash: output.hash.base64EncodedString())
+                                             transactionHash: output.hash.hexString)
         
         return result
     }
