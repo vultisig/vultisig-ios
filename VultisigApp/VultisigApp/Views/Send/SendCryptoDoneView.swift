@@ -23,10 +23,6 @@ struct SendCryptoDoneView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    var showProgress: Bool {
-        return progressLink != nil
-    }
-    
     var body: some View {
         ZStack {
             Background()
@@ -52,7 +48,7 @@ struct SendCryptoDoneView: View {
             
             summaryCard
             
-            if showProgress, hash == self.hash {
+            if progressLink != nil, hash == self.hash {
                 Separator()
                     .padding(.horizontal, 16)
                 
@@ -73,7 +69,7 @@ struct SendCryptoDoneView: View {
         Button {
             checkProgressLink()
         } label: {
-            Text(NSLocalizedString("swapTrackingLink", comment: ""))
+            Text(NSLocalizedString(swapTransaction != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
                 .font(.body14MontserratBold)
                 .foregroundColor(.turquoise600)
                 .underline()
