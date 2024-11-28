@@ -214,7 +214,8 @@ struct PeerDiscoveryView: View {
     }
     
     func setData(_ proxy: GeometryProxy) {
-        let screenWidth = proxy.size.width
+        screenWidth = proxy.size.width
+        screenHeight = proxy.size.height
         
         if screenWidth<380 {
             isPhoneSE = true

@@ -176,7 +176,6 @@ extension PeerDiscoveryView {
     
     private func updateScreenSize() {
         screenWidth = UIScreen.main.bounds.size.width
-        screenHeight = UIScreen.main.bounds.size.height
         
         if screenWidth>1100 && idiom == .pad {
             isLandscape = true
