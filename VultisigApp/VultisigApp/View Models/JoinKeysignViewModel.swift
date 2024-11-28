@@ -37,6 +37,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
@@ -189,7 +190,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
-    
+
+    func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
+        self.keysignMessages = [customMessagePayload.message]
+    }
+
     func handleQrCodeSuccessResult(data: String?) async {
         guard let data else {
             return
@@ -202,18 +207,24 @@ class JoinKeysignViewModel: ObservableObject {
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-            if keysignMsg.payload == nil && keysignMsg.payloadID.isEmpty {
+            
+            if keysignMsg.payloadID.isEmpty {
                 throw HelperError.runtimeError("keysign payload is empty")
             }
-            // payload is present in the keysign Message
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
+            if let payload = keysignMsg.customMessagePayload {
+                self.prepareKeysignMessages(customMessagePayload: payload)
+            }
+            
             self.payloadID = keysignMsg.payloadID
-            useVultisigRelay = keysignMsg.useVultisigRelay
+            self.useVultisigRelay = keysignMsg.useVultisigRelay
+
             if useVultisigRelay {
                 self.serverAddress = Endpoint.vultisigRelay
             }
+            
             await ensureKeysignPayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"

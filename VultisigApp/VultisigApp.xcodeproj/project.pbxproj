@@ -121,6 +121,7 @@
 		A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F552BE26BB9001766C8 /* ChainAction.swift */; };
 		A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */; };
 		A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */; };
+		A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
 		A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B502CCA472000B6DA47 /* WarningView.swift */; };
 		A5E66B532CCAB4E800B6DA47 /* BackupVaultWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */; };
@@ -907,6 +908,7 @@
 		A5D49F552BE26BB9001766C8 /* ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainAction.swift; sourceTree = "<group>"; };
 		A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionResolver.swift; sourceTree = "<group>"; };
 		A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction.swift"; sourceTree = "<group>"; };
+		A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessagePayload.swift; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
 		A5E66B502CCA472000B6DA47 /* WarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningView.swift; sourceTree = "<group>"; };
 		A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultWarningView.swift; sourceTree = "<group>"; };
@@ -1960,6 +1962,7 @@
 				A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */,
 				A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */,
 				A58CC34C2C32FB800086D16B /* KeysignMessage.swift */,
+				A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */,
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
@@ -3510,6 +3513,7 @@
 				B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
+				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
 				B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */,
 				A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
