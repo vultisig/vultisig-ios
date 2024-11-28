@@ -30,10 +30,6 @@ struct TransactionMemoView: View {
             }
     }
     
-    var headerMac: some View {
-        TransactionMemoHeader(transactionMemoViewModel: transactionMemoViewModel)
-    }
-    
     var view: some View {
         VStack(spacing: 18) {
             ProgressBar(progress: transactionMemoViewModel.getProgress())

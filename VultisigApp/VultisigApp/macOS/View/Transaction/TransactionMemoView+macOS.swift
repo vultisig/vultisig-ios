@@ -24,6 +24,10 @@ extension TransactionMemoView {
         }
     }
     
+    var headerMac: some View {
+        TransactionMemoHeader(transactionMemoViewModel: transactionMemoViewModel)
+    }
+    
     var layers: some View {
         ZStack {
             Background()
