@@ -18,6 +18,7 @@ extension KeysignView {
                 viewModel.stopMessagePuller()
                 UIApplication.shared.isIdleTimerDisabled = false
             }
+            .navigationBarBackButtonHidden(viewModel.status == .KeysignFinished ? true : false)
     }
 }
 #endif
