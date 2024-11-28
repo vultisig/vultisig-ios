@@ -13,8 +13,15 @@ extension PeerDiscoveryView {
         ZStack {
             GeometryReader { proxy in
                 Background()
+                    .clipped()
                     .onAppear {
                         setData(proxy)
+                    }
+                    .onChange(of: proxy.size.width) { oldValue, newValue in
+                        screenWidth = proxy.size.width
+                    }
+                    .onChange(of: proxy.size.height) { oldValue, newValue in
+                        screenHeight = proxy.size.height
                     }
             }
             
@@ -60,7 +67,6 @@ extension PeerDiscoveryView {
             qrCodeImage?
                 .resizable()
                 .background(Color.blue600)
-                .aspectRatio(contentMode: .fill)
                 .padding(3)
                 .background(Color.neutral0)
                 .cornerRadius(12)
@@ -74,6 +80,8 @@ extension PeerDiscoveryView {
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding(40)
+        .aspectRatio(contentMode: .fit)
+        .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
     }
     
     var outline: some View {
@@ -147,6 +155,10 @@ extension PeerDiscoveryView {
             displayScale: displayScale,
             type: .Keygen
         )
+    }
+    
+    func getMinSize() -> CGFloat {
+        min(screenWidth/2, screenHeight/1.2)
     }
 }
 #endif
