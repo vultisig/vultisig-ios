@@ -59,6 +59,8 @@ class Endpoint {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }
     
+    static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
+    
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
         let isAffiliateParams = isAffiliate
         ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
