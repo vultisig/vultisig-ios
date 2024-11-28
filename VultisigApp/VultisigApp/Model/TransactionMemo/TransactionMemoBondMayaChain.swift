@@ -20,7 +20,6 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
     @Published var fee: Int64 = .zero
     
     // Internal
-    @Published var amountValid: Bool = false
     @Published var nodeAddressValid: Bool = false
     @Published var feeValid: Bool = true
     
@@ -50,8 +49,8 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
     }
     
     private func setupValidation() {
-        Publishers.CombineLatest3($amountValid, $nodeAddressValid, $feeValid)
-            .map { $0 && $1 && $2 }
+        Publishers.CombineLatest($nodeAddressValid, $feeValid)
+            .map { $0 && $1 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -111,13 +110,6 @@ class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
                 )
             )
             
-            StyledFloatingPointField(placeholder: "Amount", value: Binding(
-                get: { self.amount },
-                set: { self.amount = $0 }
-            ), format: .number, isValid: Binding(
-                get: { self.amountValid },
-                set: { self.amountValid = $0 }
-            ))
         })
     }
 }

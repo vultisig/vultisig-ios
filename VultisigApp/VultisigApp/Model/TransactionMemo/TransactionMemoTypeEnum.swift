@@ -13,16 +13,23 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
     case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, addPool, withdrawPool, stake, unstake
     
     var id: String { self.rawValue }
-    var display: String {
+    
+    func display(coin: Coin) -> String {
         switch self {
         case .bond:
+            if coin.chain == .mayaChain {
+                return "Add Bondprovider to WL"
+            }
             return "Bond"
         case .unbond:
+            if coin.chain == .mayaChain {
+                return "Remove Bondprovider from WL"
+            }
             return "Unbond"
         case .bondMaya:
-            return "Bond Maya"
+            return "Bond"
         case .unbondMaya:
-            return "Unbond Maya"
+            return "Unbond"
         case .leave:
             return "Leave"
         case .custom:
