@@ -166,7 +166,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             sessionID: sessionID,
             keysignType: keysignPayload.coin.chain.signingKeyType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
-            keysignPayload: keysignPayload,
+            keysignPayload: keysignPayload, 
+            customMessagePayload: nil,
             transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? ""
         )
@@ -224,6 +225,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             sessionID: sessionID,
             serviceName: serviceName,
             payload: keysignPayload,
+            customMessagePayload: nil,
             encryptionKeyHex: encryptionKeyHex,
             useVultisigRelay: VultisigRelay.IsRelayEnabled,
             payloadID: ""
@@ -237,7 +239,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 let hash = try await payloadService.uploadPayload(payload: keysignPayload)
                 let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
                                                            serviceName: serviceName,
-                                                           payload: nil,
+                                                           payload: nil, 
+                                                           customMessagePayload: nil,
                                                            encryptionKeyHex: encryptionKeyHex,
                                                            useVultisigRelay: VultisigRelay.IsRelayEnabled,
                                                            payloadID: hash)
