@@ -67,9 +67,9 @@ struct SendCryptoView: View {
     }
 
     var view: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 18) {
             ProgressBar(progress: sendCryptoViewModel.getProgress())
-                .padding(.top, 30)
+                .padding(.top, 12)
             
             tabView
         }
@@ -145,7 +145,14 @@ struct SendCryptoView: View {
     var doneView: some View {
         ZStack {
             if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
-                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain)
+                SendCryptoDoneView(
+                    vault: vault,
+                    hash: hash,
+                    approveHash: nil,
+                    chain: chain,
+                    sendTransaction: tx,
+                    swapTransaction: nil
+                )
             } else {
                 SendCryptoSigningErrorView()
             }
@@ -161,7 +168,7 @@ struct SendCryptoView: View {
         Button {
             settingsPresented = true
         } label: {
-            Image(systemName: "gearshape")
+            Image(systemName: "fuelpump")
         }
         .foregroundColor(.neutral0)
     }
@@ -176,19 +183,6 @@ struct SendCryptoView: View {
     
     var loader: some View {
         Loader()
-    }
-    
-    var backButton: some View {
-        let isDone = sendCryptoViewModel.currentIndex==5
-        
-        return Button {
-            sendCryptoViewModel.handleBackTap()
-        } label: {
-            NavigationBlankBackButton()
-                .offset(x: -8)
-        }
-        .opacity(isDone ? 0 : 1)
-        .disabled(isDone)
     }
     
     private func setData() async {

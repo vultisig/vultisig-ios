@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct SendCryptoHeader: View {
+    let tx: SendTransaction
     let vault: Vault
     let showFeeSettings: Bool
     @Binding var settingsPresented: Bool
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
+    
+    @State var animate: Bool = false
+    @State var enableTransition: Bool = true
     
     @Environment(\.dismiss) var dismiss
     
@@ -49,16 +53,27 @@ struct SendCryptoHeader: View {
             .opacity(sendCryptoViewModel.currentIndex == 3 ? 1 : 0)
             .disabled(sendCryptoViewModel.currentIndex != 3)
 
-            if showFeeSettings {
+            HStack(spacing: 32) {
                 Button {
-                    settingsPresented = true
+                    refreshData()
                 } label: {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "arrow.clockwise.circle")
+                        .rotationEffect(.degrees(animate ? 360 : 0))
+                        .animation(enableTransition ? .easeInOut(duration: 1) : nil, value: animate)
                 }
-                .foregroundColor(.neutral0)
-                .opacity(sendCryptoViewModel.currentIndex == 1 ? 1 : 0)
-                .disabled(sendCryptoViewModel.currentIndex != 1)
+                
+                if showFeeSettings {
+                    Button {
+                        settingsPresented = true
+                    } label: {
+                        Image(systemName: "fuelpump")
+                    }
+                }
             }
+            .foregroundColor(.neutral0)
+            .font(.body16Menlo)
+            .opacity(sendCryptoViewModel.currentIndex == 1 ? 1 : 0)
+            .disabled(sendCryptoViewModel.currentIndex != 1)
         }
     }
     
@@ -82,14 +97,32 @@ struct SendCryptoHeader: View {
         
         sendCryptoViewModel.handleBackTap()
     }
+    
+    private func refreshData() {
+        Task {
+            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        }
+        
+        animate = true
+        enableTransition = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            enableTransition = false
+            animate = false
+        }
+    }
 }
 
 #Preview {
-    SendCryptoHeader(
-        vault: Vault.example, 
-        showFeeSettings: true, 
-        settingsPresented: .constant(false),
-        sendCryptoViewModel: SendCryptoViewModel(),
-        shareSheetViewModel: ShareSheetViewModel()
-    )
+    ZStack {
+        Background()
+        SendCryptoHeader(
+            tx: SendTransaction(),
+            vault: Vault.example,
+            showFeeSettings: true,
+            settingsPresented: .constant(false),
+            sendCryptoViewModel: SendCryptoViewModel(),
+            shareSheetViewModel: ShareSheetViewModel()
+        )
+    }
 }

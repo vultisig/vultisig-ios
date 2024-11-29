@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ServerBackupVerificationView: View {
     let vault: Vault
+    @ObservedObject var viewModel: KeygenViewModel
     
     @State var verificationCode = ""
     
@@ -18,6 +20,10 @@ struct ServerBackupVerificationView: View {
     @State var alertTitle = "incorrectCode"
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
+    @State var showHomeView: Bool = false
+    
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -29,7 +35,11 @@ struct ServerBackupVerificationView: View {
             }
         }
         .navigationDestination(isPresented: $isNavigationActive) {
-            BackupVaultNowView(vault: vault)
+            if showHomeView {
+                HomeView()
+            } else {
+                BackupVaultNowView(vault: vault)
+            }
         }
         .alert(isPresented: $showAlert) {
             alert
@@ -46,7 +56,7 @@ struct ServerBackupVerificationView: View {
     
     var textField: some View {
         TextField(NSLocalizedString("enterCode", comment: "").capitalized, text: $verificationCode)
-            .foregroundColor(.neutral500)
+            .foregroundColor(.neutral0)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
             .font(.body12MenloBold)
@@ -63,11 +73,28 @@ struct ServerBackupVerificationView: View {
             .padding(.bottom, 18)
     }
     
-    var button: some View {
+    var buttons: some View {
+        VStack(spacing: 12) {
+            verifyButton
+            cancelButton
+        }
+    }
+    
+    var verifyButton: some View {
         Button {
             verifyCode()
         } label: {
             FilledButton(title: "continue")
+        }
+        .grayscale(verificationCode.isEmpty ? 1 : 0)
+        .disabled(verificationCode.isEmpty)
+    }
+    
+    var cancelButton: some View {
+        Button {
+            deleteVault()
+        } label: {
+            OutlineButton(title: "cancel", gradient: LinearGradient.cancelRed)
         }
         .padding(.bottom, 30)
     }
@@ -105,8 +132,22 @@ struct ServerBackupVerificationView: View {
             isLoading = false
         }
     }
+    
+    private func deleteVault() {
+        modelContext.delete(vault)
+        isLoading = true
+        
+        do {
+            try modelContext.save()
+            isLoading = false
+            showHomeView = true
+            isNavigationActive = true
+        } catch {
+            print("Error: \(error)")
+        }
+    }
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example)
+    ServerBackupVerificationView(vault: Vault.example, viewModel: KeygenViewModel())
 }

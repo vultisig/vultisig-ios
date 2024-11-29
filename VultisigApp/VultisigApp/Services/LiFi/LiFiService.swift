@@ -12,6 +12,9 @@ struct LiFiService {
     
     static let shared = LiFiService()
 
+    private let integratorName: String = "vultisig-iOS"
+    private let integratorFee: String = "0.005"
+
     func fetchQuotes(fromCoin: Coin, toCoin: Coin, fromAmount: BigInt) async throws -> OneInchQuote {
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
@@ -25,7 +28,9 @@ struct LiFiService {
             fromToken: fromToken,
             toToken: toToken,
             fromAmount: String(fromAmount),
-            fromAddress: fromCoin.address
+            fromAddress: fromCoin.address,
+            integrator: integratorName,
+            fee: integratorFee
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)

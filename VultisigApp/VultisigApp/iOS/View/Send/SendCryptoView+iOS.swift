@@ -19,11 +19,13 @@ extension SendCryptoView {
                         backButton
                     }
                 }
+                
                 if showFeeSettings {
                     ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         settingsButton
                     }
                 }
+                
                 if sendCryptoViewModel.currentIndex == 3 {
                     ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         NavigationQRShareButton(
@@ -44,6 +46,19 @@ extension SendCryptoView {
             .onDisappear(){
                 UIApplication.shared.isIdleTimerDisabled = false
             }
+    }
+    
+    var backButton: some View {
+        let isDone = sendCryptoViewModel.currentIndex==5
+        
+        return Button {
+            sendCryptoViewModel.handleBackTap()
+        } label: {
+            NavigationBlankBackButton()
+                .offset(x: -8)
+        }
+        .opacity(isDone ? 0 : 1)
+        .disabled(isDone)
     }
 }
 #endif

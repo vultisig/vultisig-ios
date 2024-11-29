@@ -14,7 +14,10 @@ extension KeygenView {
     var content: some View {
         VStack {
             fields
-            instructions
+            
+            if viewModel.status != .KeygenFailed {
+                instructions
+            }
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
         .navigationBarTitleDisplayMode(.inline)

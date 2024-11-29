@@ -62,7 +62,6 @@ struct JoinKeygenView: View {
         }
         .padding()
         .cornerRadius(10)
-        .shadow(radius: 5)
     }
     
     var keygenStarted: some View {
@@ -121,24 +120,7 @@ struct JoinKeygenView: View {
     var discoveringService: some View {
         VStack {
             Spacer()
-            HStack {
-                Text(NSLocalizedString("thisDevice", comment: "This device"))
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
-                
-                if serviceDelegate.serverURL == nil {
-                    ProgressView().progressViewStyle(.circular).padding(2)
-                } else {
-                    Image(systemName: "checkmark")
-                        .onAppear {
-                            viewModel.serverAddress = serviceDelegate.serverURL!
-                            viewModel.setStatus(status: .JoinKeygen)
-                        }
-                }
-            }
+            card
             Spacer()
             
             if showInformationNote {
@@ -159,6 +141,32 @@ struct JoinKeygenView: View {
                 }
             }
         }
+    }
+    
+    var card: some View {
+        VStack(spacing: 12) {
+            if serviceDelegate.serverURL == nil {
+                ProgressView()
+                    .progressViewStyle(.circular)
+            } else {
+                Image(systemName: "checkmark")
+                    .onAppear {
+                        viewModel.serverAddress = serviceDelegate.serverURL!
+                        viewModel.setStatus(status: .JoinKeygen)
+                    }
+            }
+            
+            HStack {
+                Text(NSLocalizedString("thisDevice", comment: "This device"))
+                Text(self.viewModel.localPartyID)
+            }
+            .padding(.bottom, 22)
+            
+            Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
+        }
+        .padding(22)
+        .background(Color.blue600)
+        .cornerRadius(12)
     }
     
     var joinKeygen: some View {
@@ -226,6 +234,8 @@ struct JoinKeygenView: View {
     }
     
     private func setData() {
+        appViewModel.checkCameraPermission()
+        
         viewModel.setData(
             vault: vault,
             serviceDelegate: self.serviceDelegate,

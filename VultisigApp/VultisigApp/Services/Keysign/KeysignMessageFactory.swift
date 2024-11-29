@@ -71,6 +71,8 @@ struct KeysignMessageFactory {
             return try TerraHelper(coinType: .terraV2, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
         case .terraClassic:
             return try TerraHelper(coinType: .terra, denom: "uluna").getPreSignedImageHash(keysignPayload: payload)
+        case .noble:
+            return try NobleHelper().getPreSignedImageHash(keysignPayload: payload)
         case .polkadot:
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .dydx:

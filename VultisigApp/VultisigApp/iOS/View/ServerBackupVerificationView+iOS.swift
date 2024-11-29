@@ -13,6 +13,7 @@ extension ServerBackupVerificationView {
         content
             .navigationTitle(NSLocalizedString("serverBackupVerification", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
     }
     
     var content: some View {
@@ -21,7 +22,7 @@ extension ServerBackupVerificationView {
             textField
             Spacer()
             disclaimer
-            button
+            buttons
         }
         .padding(.horizontal, 16)
     }

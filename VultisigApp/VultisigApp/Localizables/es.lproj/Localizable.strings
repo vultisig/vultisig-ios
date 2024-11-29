@@ -1,3 +1,5 @@
+"monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
+"dontRemind" = "No volver a recordármelo";
 "passwordHintTitle" = "Opcional: Pista de contraseña";
 "enterHint" = "Introduce una pista";
 "backupNowTitle" = "Es necesario realizar copias de seguridad en cada dispositivo en Vultisig";
@@ -402,4 +404,11 @@
 "enterCode" = "Introducir código";
 "serverBackupVerificationDisclaimer" = "Este código verifica la recepción de la copia de seguridad del servidor por correo electrónico.";
 "incorrectCode" = "Código incorrecto";
-"verificationCodeTryAgain" = "Por favor, revisa tu correo para obtener el código de verificación e inténtalo de nuevo.";
+"chains" = "Cadenas";
+"noResultFound" = "No se encontraron resultados.";
+"value" = "Valor";
+"joinKeygenConnectionDisclaimer" = "¿Tienes problemas para conectar?\nUsa una conexión de punto de acceso personal.\nO prueba con otra red.";
+"swapTrackingLink" = "Enlace de seguimiento del Swap";
+"verificationCodeTryAgain" = "Código de verificación incorrecto, por favor ingrese el correcto.";
+"thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
+"skipPassword" = "Omitir contraseña";

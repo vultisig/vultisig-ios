@@ -21,4 +21,16 @@ class KujiraService: CosmosService {
     override func transactionURL() -> URL? {
         return URL(string: Endpoint.broadcastKujiraTransaction)
     }
+    
+    override func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        return URL(string: Endpoint.fetchKujiraWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload))
+    }
+    
+    override func ibcDenomTraceURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchKujiraIbcDenomTraces(hash: coin.contractAddress.replacingOccurrences(of: "ibc/", with: "")))
+    }
+    
+    override func latestBlockURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchKujiraLatestBlock())
+    }
 }

@@ -30,14 +30,10 @@ struct TransactionMemoView: View {
             }
     }
     
-    var headerMac: some View {
-        TransactionMemoHeader(transactionMemoViewModel: transactionMemoViewModel)
-    }
-    
     var view: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 18) {
             ProgressBar(progress: transactionMemoViewModel.getProgress())
-                .padding(.top, 30)
+                .padding(.top, 12)
 
             tabView
         }
@@ -111,7 +107,7 @@ struct TransactionMemoView: View {
     var doneView: some View {
         ZStack {
             if let hash = transactionMemoViewModel.hash, let chain = keysignPayload?.coin.chain  {
-                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain)
+                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain, sendTransaction: tx, swapTransaction: nil)
             } else {
                 SendCryptoSigningErrorView()
             }

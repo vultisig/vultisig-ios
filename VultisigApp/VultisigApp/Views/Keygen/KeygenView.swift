@@ -22,22 +22,34 @@ struct KeygenView: View {
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
     @Binding var hideBackButton: Bool
+    
+    var selectedTab: SetupVaultState? = nil
 
     @StateObject var viewModel = KeygenViewModel()
     
     let progressTotalCount: Double = 4
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
     @State var showVerificationView = false
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                navigationDestination
+                if showVerificationView {
+                    ServerBackupVerificationView(
+                        vault: vault,
+                        viewModel: viewModel
+                    )
+                } else {
+                    BackupVaultNowView(vault: vault)
+                }
             }
             .onAppear {
                 hideBackButton = true
@@ -52,7 +64,12 @@ struct KeygenView: View {
             }
             states
             Spacer()
-            keygenViewInstructions
+            
+            if viewModel.status == .KeygenFailed {
+                retryButton
+            } else {
+                keygenViewInstructions
+            }
         }
     }
     
@@ -163,25 +180,34 @@ struct KeygenView: View {
     }
     
     var keygenReshareFailedText: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("reshareFailed", comment: "Resharing key failed"))
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-            Text(viewModel.keygenError)
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-        }
+        ErrorMessage(text: "thresholdNotReachedMessage", width: 300)
     }
     
-    var navigationDestination: some View {
-        ZStack {
-            if showVerificationView {
-                ServerBackupVerificationView(vault: vault)
-            } else {
-                BackupVaultNowView(vault: vault)
+    var retryButton: some View {
+        VStack(spacing: 32) {
+            appVersion
+            button
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    var appVersion: some View {
+        return VStack {
+            Text("Vultisig APP V\(version ?? "1")")
+            Text("(Build \(build ?? "1"))")
+        }
+        .textCase(.uppercase)
+        .font(.body14Menlo)
+        .foregroundColor(.turquoise600)
+    }
+    
+    var button: some View {
+        Button {
+            Task {
+                await setData()
             }
+        } label: {
+            FilledButton(title: "retry")
         }
     }
     
@@ -214,11 +240,8 @@ struct KeygenView: View {
     }
     
     private func checkVaultType() {
-        for signer in keygenCommittee {
-            if signer.contains("Server-") {
-                showVerificationView = true
-                return
-            }
+        if let selectedTab, selectedTab == .fast {
+            showVerificationView = true
         }
     }
 }
@@ -236,7 +259,8 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: "",
             fastSignConfig: nil,
-            hideBackButton: .constant(false)
+            hideBackButton: .constant(false),
+            selectedTab: SetupVaultState.active
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }

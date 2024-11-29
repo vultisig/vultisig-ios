@@ -2,14 +2,105 @@ import Foundation
 
 class CosmosService {
     
-    func fetchBalances(address: String) async throws -> [CosmosBalance] {
-        guard let url = balanceURL(forAddress: address) else {
-            return [CosmosBalance]()
+    func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
+        if coin.isNativeToken
+            || (!coin.isNativeToken && coin.contractAddress.contains("ibc/"))
+            || (!coin.isNativeToken && coin.contractAddress.contains("factory/"))
+            || (!coin.isNativeToken && !coin.contractAddress.contains("terra"))
+        {
+            
+            guard let url = balanceURL(forAddress: coin.address) else {
+                return [CosmosBalance]()
+            }
+            
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
+            return balanceResponse.balances
+            
+        } else {
+            
+            let balance = try await fetchWasmTokenBalances(coin: coin)
+            return [CosmosBalance(denom: coin.contractAddress, amount: balance)]
+            
+        }
+        
+    }
+    
+    func fetchIbcDenomTraces(coin: Coin) async -> CosmosIbcDenomTraceDenomTrace? {
+        guard let url = ibcDenomTraceURL(coin: coin) else {
+            return nil
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(CosmosIbcDenomTrace.self, from: data)
+            
+            if let denomTrace = response.denomTrace {
+                // Handle successful response
+                print("Path: \(denomTrace.path)")
+                print("Base Denom: \(denomTrace.baseDenom)")
+                return denomTrace
+            } else if let error = response.error {
+                // Handle "not implemented" error
+                print("Error Code: \(error.code)")
+                print("Error Message: \(error.message)")
+            } else if let code = response.code, let message = response.message {
+                // Handle general error
+                print("Error Code: \(code)")
+                print("Error Message: \(message)")
+                if let details = response.details {
+                    print("Details: \(details)")
+                }
+            } else {
+                // Handle unexpected response
+                print("Unexpected response format.")
+            }
+            
+            return nil
+        } catch {
+            print("An error occurred: \(error)")
+            // Return nil in case of any error
+            return nil
+        }
+    }
+    
+    func fetchWasmTokenBalances(coin: Coin) async throws -> String {
+        
+        let payload = "{\"balance\":{\"address\":\"\(coin.address)\"}}"
+        let base64Payload = payload.data(using: .utf8)?.base64EncodedString()
+        
+        guard let base64Payload else {
+            return "0"
+        }
+        
+        guard let url = wasmTokenBalanceURL(contractAddress: coin.contractAddress, base64Payload: base64Payload) else {
+            return "0"
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        return balanceResponse.balances
+        
+        if let balance = Utils.extractResultFromJson(fromData: data, path: "data.balance") as? String {
+            return balance
+        }
+        
+        return "0"
+    }
+        
+    func fetchLatestBlock(coin: Coin) async throws -> String {
+        
+        guard let url = latestBlockURL(coin: coin) else {
+            return "0"
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        if let block = Utils.extractResultFromJson(fromData: data, path: "block.header.height") as? String {
+            return block
+        }
+        
+        return "0"
     }
     
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
@@ -64,6 +155,18 @@ class CosmosService {
     }
     
     func transactionURL() -> URL? {
+        fatalError("Must override in subclass")
+    }
+    
+    func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        fatalError("Must override in subclass")
+    }
+    
+    func ibcDenomTraceURL(coin: Coin)-> URL? {
+        fatalError("Must override in subclass")
+    }
+    
+    func latestBlockURL(coin: Coin)-> URL? {
         fatalError("Must override in subclass")
     }
 }

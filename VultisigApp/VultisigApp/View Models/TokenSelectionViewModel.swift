@@ -85,6 +85,8 @@ class TokenSelectionViewModel: ObservableObject {
         
         if groupedChain.chain.chainType == .EVM {
             await loadEVMTokens(chain: groupedChain.chain)
+        } else if groupedChain.chain.chainType == .Solana {
+            await loadSolanaTokens(chain: groupedChain.chain)
         }
         selectedTokens = selectedTokens(groupedChain: groupedChain)
         preExistTokens = preExistingTokens(groupedChain: groupedChain)
@@ -116,6 +118,25 @@ private extension TokenSelectionViewModel {
                 .map { $0.toCoinMeta(chain: chain) }
 
             let uniqueTokens = oneInchTokens.filter { item in
+                !tokens.contains { $0.ticker == item.ticker }
+            }
+
+            tokens.append(contentsOf: uniqueTokens)
+            
+        } catch {
+            self.error = Errors.networkError
+        }
+        
+        
+        isLoading = false
+    }
+    
+    func loadSolanaTokens(chain: Chain) async {
+        isLoading = true
+        do {
+            let jupTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
+            
+            let uniqueTokens = jupTokens.filter { item in
                 !tokens.contains { $0.ticker == item.ticker }
             }
 

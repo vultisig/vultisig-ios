@@ -30,8 +30,8 @@ struct SendCryptoKeysignView: View {
             Spacer()
             signingAnimation
             Spacer()
-            wifiInstructions
             appVersion
+            wifiInstructions
         }
     }
     
@@ -74,7 +74,6 @@ struct SendCryptoKeysignView: View {
     var wifiInstructions: some View {
         WifiInstruction()
             .frame(maxHeight: 80)
-            .padding(.bottom, 100)
     }
     
     var errorMessage: some View {

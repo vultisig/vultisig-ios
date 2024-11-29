@@ -65,11 +65,6 @@ class TokensStore {
             CoinMeta(chain: Chain.solana, ticker: "RAY", logo: "raydium-ray-seeklogo-2", decimals: 6, priceProviderId: "raydium", contractAddress: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R", isNativeToken: false)
         }
         
-        
-        
-        
-        
-        
         // EVMS
         
         // ETH
@@ -243,7 +238,7 @@ class TokensStore {
         // BASE
         
         static var baseEth: CoinMeta {
-            CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth_base", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var baseUsdc: CoinMeta {
@@ -293,7 +288,7 @@ class TokensStore {
         //
         
         static var arbETH: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var arbArb: CoinMeta {
@@ -359,7 +354,7 @@ class TokensStore {
         // OPTIMUM
         
         static var optETH: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var optOP: CoinMeta {
@@ -463,7 +458,7 @@ class TokensStore {
         // BLAST
         
         static var blastETH: CoinMeta {
-            CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+            CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
         static var blastWETH: CoinMeta {
@@ -535,25 +530,85 @@ class TokensStore {
         static var gaiaChainAtom: CoinMeta {
             CoinMeta(chain: Chain.gaiaChain, ticker: "ATOM", logo: "atom", decimals: 6, priceProviderId: "cosmos", contractAddress: "", isNativeToken: true)
         }
+                
+        static var gaiaChainUsdc: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/F663521BF1836B00F5F177680F74BFB9A8B5654A694D0D2BC249E03CF2509013", isNativeToken: false)
+        }
         
         static var osmosis: CoinMeta {
             CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var osmosisUsdc: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4", isNativeToken: false)
         }
         
         static var terra: CoinMeta {
             CoinMeta(chain: Chain.terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "terra-luna-2", contractAddress: "", isNativeToken: true)
         }
         
+        static var terraTPT: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "TPT", logo: "terra-poker-token", decimals: 6, priceProviderId: "tpt", contractAddress: "terra13j2k5rfkg0qhk58vz63cze0uze4hwswlrfnm0fa4rnyggjyfrcnqcrs5z2", isNativeToken: false)
+        }
+        
+        static var terraAstroIBC: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "ASTRO-IBC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995", isNativeToken: false)
+        }
+        
+        static var terraAstro: CoinMeta {
+            CoinMeta(chain: Chain.terra, ticker: "ASTRO", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26", isNativeToken: false)
+        }
+        
         static var terraClassic: CoinMeta {
             CoinMeta(chain: Chain.terraClassic, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var terraClassicUSD: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "USTC", logo: "ustc", decimals: 6, priceProviderId: "terrausd", contractAddress: "uusd", isNativeToken: false)
+        }
+                
+        static var terraClassicAstro: CoinMeta {
+            CoinMeta(chain: Chain.terraClassic, ticker: "ASTROC", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport", contractAddress: "terra1xj49zyqrwpv5k928jwfpfy2ha668nwdgkwlrg3", isNativeToken: false)
         }
         
         static var kujira: CoinMeta {
             CoinMeta(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "", isNativeToken: true)
         }
         
+        static var kujiraAstro: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "ASTRO", logo: "terra-astroport", decimals: 6, priceProviderId: "astroport-fi", contractAddress: "ibc/640E1C3E28FD45F611971DF891AE3DC90C825DF759DF8FAA8F33F7F72B35AD56", isNativeToken: false)
+        }
+        
+        static var kujiraLunc: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "LUNC", logo: "lunc", decimals: 6, priceProviderId: "terra-luna", contractAddress: "ibc/119334C55720942481F458C9C462F5C0CD1F1E7EEAC4679D674AA67221916AEA", isNativeToken: false)
+        }
+        
+        static var kujiraUsdc: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/FE98AAD68F02F03565E9FA39A5E627946699B2B07115889ED812D8BA639576A9", isNativeToken: false)
+        }
+        
+        static var kujiraMnta: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "MNTA", logo: "mnta", decimals: 6, priceProviderId: "mantadao", contractAddress: "factory/kujira1643jxg8wasy5cfcn7xm8rd742yeazcksqlg4d7/umnta", isNativeToken: false)
+        }
+        
+        static var kujiraNSTK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "NSTK", logo: "nstk", decimals: 6, priceProviderId: "unstake-fi", contractAddress: "factory/kujira1aaudpfr9y23lt9d45hrmskphpdfaq9ajxd3ukh/unstk", isNativeToken: false)
+        }
+        
+        static var kujiraWINK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "WINK", logo: "wink", decimals: 6, priceProviderId: "winkhub", contractAddress: "factory/kujira12cjjeytrqcj25uv349thltcygnp9k0kukpct0e/uwink", isNativeToken: false)
+        }
+        
+        static var kujiraUSK: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "USK", logo: "usk", decimals: 6, priceProviderId: "usk", contractAddress: "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var nobleUsdc: CoinMeta {
+            CoinMeta(chain: Chain.noble, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "", isNativeToken: true)
         }
         
         static var zksyncETH: CoinMeta {
@@ -581,13 +636,37 @@ class TokensStore {
         TokensStore.Token.solanaRaydium,
         
         TokensStore.Token.osmosis,
+        TokensStore.Token.osmosisUsdc,
+        
         TokensStore.Token.gaiaChainAtom,
+        TokensStore.Token.gaiaChainUsdc,
+        
         TokensStore.Token.kujira,
-        TokensStore.Token.dydx,
-        TokensStore.Token.terra,
-        TokensStore.Token.terraClassic,
+        TokensStore.Token.kujiraAstro,
+        TokensStore.Token.kujiraLunc,
+        TokensStore.Token.kujiraUsdc,
+        TokensStore.Token.kujiraMnta,
+        
+        TokensStore.Token.kujiraUSK,
+        TokensStore.Token.kujiraNSTK,
+        TokensStore.Token.kujiraWINK,
 
         
+        
+        TokensStore.Token.dydx,
+        
+        TokensStore.Token.nobleUsdc,
+        
+        TokensStore.Token.terra,
+        TokensStore.Token.terraAstro,
+        TokensStore.Token.terraAstroIBC,
+        TokensStore.Token.terraTPT,
+        
+        
+        TokensStore.Token.terraClassic,
+        TokensStore.Token.terraClassicAstro,
+        TokensStore.Token.terraClassicUSD,
+
         TokensStore.Token.suiSUI,
         TokensStore.Token.dotDOT,
         TokensStore.Token.ton,

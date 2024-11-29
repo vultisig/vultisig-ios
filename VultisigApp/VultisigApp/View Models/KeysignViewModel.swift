@@ -305,6 +305,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .terraClassic {
                 let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            } else if keysignPayload.coin.chain == .noble {
+                let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
             }
             
             
@@ -410,6 +413,14 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         throw err
                     }
+                case .noble:
+                    let broadcastResult = await NobleService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
                 case .solana:
                     self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:
@@ -418,8 +429,8 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .ton:
-                    self.txid = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
-                    
+                    let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
+                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
                 }
 
             case .regularWithApprove(let approve, let transaction):
