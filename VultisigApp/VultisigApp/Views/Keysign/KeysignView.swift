@@ -112,7 +112,8 @@ struct KeysignView: View {
             sessionID: "session",
             keysignType: .ECDSA,
             messsageToSign: ["message"],
-            keysignPayload: nil,
+            keysignPayload: nil, 
+            customMessagePayload: nil,
             transferViewModel: nil,
             encryptionKeyHex: ""
         )

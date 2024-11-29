@@ -4572,7 +4572,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = "feature/message-to-sign";
 				kind = branch;
 			};
 		};
