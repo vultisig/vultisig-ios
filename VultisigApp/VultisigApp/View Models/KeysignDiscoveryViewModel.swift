@@ -223,8 +223,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let message = KeysignMessage(
             sessionID: sessionID,
             serviceName: serviceName,
-            payload: nil, // TODO: REMOVE!!!
-            customMessagePayload: CustomMessagePayload(method: "eth_personalSign", message: "Message to sign"),
+            payload: keysignPayload,
+            customMessagePayload: nil,
             encryptionKeyHex: encryptionKeyHex,
             useVultisigRelay: VultisigRelay.IsRelayEnabled,
             payloadID: ""
