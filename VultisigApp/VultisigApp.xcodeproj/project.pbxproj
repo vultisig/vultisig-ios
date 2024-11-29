@@ -77,6 +77,7 @@
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
 		A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54676512C179A93004DD782 /* Coin+Swaps.swift */; };
 		A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */; };
+		A553217B2CFA27780057C791 /* KeysignCustomMessageConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A553217A2CFA27780057C791 /* KeysignCustomMessageConfirmView.swift */; };
 		A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74B2C298060007222EB /* SwapCoinsResolver.swift */; };
 		A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74D2C29808D007222EB /* SwapProvider.swift */; };
 		A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */; };
@@ -865,6 +866,7 @@
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
 		A54676512C179A93004DD782 /* Coin+Swaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+Swaps.swift"; sourceTree = "<group>"; };
 		A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferViewModel.swift; sourceTree = "<group>"; };
+		A553217A2CFA27780057C791 /* KeysignCustomMessageConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignCustomMessageConfirmView.swift; sourceTree = "<group>"; };
 		A558D74B2C298060007222EB /* SwapCoinsResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinsResolver.swift; sourceTree = "<group>"; };
 		A558D74D2C29808D007222EB /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadFactory.swift; sourceTree = "<group>"; };
@@ -3111,6 +3113,7 @@
 				DE15729D2B70F284009BC7C5 /* KeysignView.swift */,
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 				A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */,
+				A553217A2CFA27780057C791 /* KeysignCustomMessageConfirmView.swift */,
 				A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */,
 				A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */,
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
@@ -4066,6 +4069,7 @@
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
 				A6386D9E2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
+				A553217B2CFA27780057C791 /* KeysignCustomMessageConfirmView.swift in Sources */,
 				B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */,
 				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
