@@ -67,6 +67,9 @@ extension HomeView {
         .onAppear {
             setData()
         }
+        .onFirstAppear {
+            checkUpdate()
+        }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
@@ -86,7 +89,6 @@ extension HomeView {
         shouldKeysignTransaction = false
      
         macCameraServiceViewModel.stopSession()
-        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
         
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
@@ -97,6 +99,10 @@ extension HomeView {
         }
         
         presetValuesForDeeplink()
+    }
+    
+    func checkUpdate() {
+        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
 }
 #endif
