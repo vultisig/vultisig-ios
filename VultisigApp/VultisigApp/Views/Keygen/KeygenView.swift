@@ -45,10 +45,14 @@ struct KeygenView: View {
                 if showVerificationView {
                     ServerBackupVerificationView(
                         vault: vault,
+                        selectedTab: selectedTab,
                         viewModel: viewModel
                     )
                 } else {
-                    BackupVaultNowView(vault: vault)
+                    BackupVaultNowView(
+                        vault: vault,
+                        selectedTab: selectedTab
+                    )
                 }
             }
             .onAppear {

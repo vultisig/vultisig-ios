@@ -9,7 +9,9 @@ import SwiftUI
 
 struct BackupVaultNowView: View {
     let vault: Vault
+    let selectedTab: SetupVaultState?
 
+    @State var showSkipButton = true
     @State var isWarningShown = false
     @State var isHomeAfterSkipShown = false
 
@@ -20,6 +22,9 @@ struct BackupVaultNowView: View {
             shadowView
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            setData()
+        }
     }
     
     var view: some View {
@@ -32,11 +37,19 @@ struct BackupVaultNowView: View {
     var content: some View {
         VStack(spacing: 0) {
             HStack {
-                Spacer().frame(width: 44)
+                if showSkipButton {
+                    skipButton
+                        .opacity(0)
+                        .disabled(true)
+                }
+                
                 Spacer()
                 logo
                 Spacer()
-                skipButton.frame(width: 44)
+                
+                if showSkipButton {
+                    skipButton
+                }
             }
             image
             title
@@ -103,17 +116,28 @@ struct BackupVaultNowView: View {
         Button {
             isWarningShown = true
         } label: {
-            Image("x")
+            Image(systemName: "xmark")
         }
         .buttonStyle(.plain)
+        .font(.body18MenloBold)
         .padding(16)
         .sheet(isPresented: $isWarningShown) {
             BackupVaultWarningView(isPresented: $isWarningShown, isSkipPressed: $isHomeAfterSkipShown)
                 .presentationDetents([.height(256)])
         }
     }
+    
+    private func setData() {
+        guard let selectedTab else {
+            return
+        }
+        
+        if selectedTab == .fast {
+            showSkipButton = false
+        }
+    }
 }
 
 #Preview {
-    BackupVaultNowView(vault: Vault.example)
+    BackupVaultNowView(vault: Vault.example, selectedTab: .secure)
 }
