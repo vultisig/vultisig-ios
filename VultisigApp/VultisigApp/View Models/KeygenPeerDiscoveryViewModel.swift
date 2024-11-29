@@ -238,7 +238,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     vaultName: vault.name
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
-                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
+                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
             case .Reshare:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
@@ -252,7 +252,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     vaultName: vault.name
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
-                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=\(TssType.Reshare.rawValue)&jsonData=\(data)"
+                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Reshare.rawValue)&jsonData=\(data)"
             }
             return Utils.generateQRCodeImage(from: jsonData)
         } catch {

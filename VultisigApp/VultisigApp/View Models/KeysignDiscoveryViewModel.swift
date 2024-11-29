@@ -246,7 +246,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             } else {
                 jsonData = protoKeysignMsg
             }
-            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
+            let data = "https://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
             return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
