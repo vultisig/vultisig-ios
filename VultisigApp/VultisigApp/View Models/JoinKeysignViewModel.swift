@@ -204,6 +204,7 @@ class JoinKeysignViewModel: ObservableObject {
             let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
             self.keysignPayload = keysignMsg.payload
+            self.customMessagePayload = keysignMsg.customMessagePayload
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")

@@ -36,6 +36,9 @@ extension KeysignMessage: ProtoMappable {
             if let payload {
                 $0.keysignPayload = payload.mapToProtobuff()
             }
+            if let customMessagePayload {
+                $0.customMessagePayload = customMessagePayload.mapToProtobuff()
+            }
             if !payloadID.isEmpty {
                 $0.payloadID = payloadID
             }
