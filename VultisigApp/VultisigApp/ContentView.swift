@@ -25,6 +25,11 @@ struct ContentView: View {
             .onOpenURL { incomingURL in
                 handleDeeplink(incomingURL)
             }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                if let incomingURL = userActivity.webpageURL {
+                    handleDeeplink(incomingURL)
+                }
+            }
             
             if accountViewModel.showCover {
                 CoverView()
