@@ -40,7 +40,6 @@ class TransactionMemoUnbondMayaChain: TransactionMemoAddressable,
 
     private var cancellables = Set<AnyCancellable>()
 
-    let id = UUID()
     required init(assets: [IdentifiableString]?) {
         setupValidation()
 
