@@ -5,9 +5,9 @@
 //  Created by Enrique Souza Soares on 15/05/24.
 //
 
-import SwiftUI
-import Foundation
 import Combine
+import Foundation
+import SwiftUI
 import VultisigCommonData
 
 enum TransactionMemoInstance {
@@ -22,7 +22,7 @@ enum TransactionMemoInstance {
     case withdrawPool(TransactionMemoWithdrawPool)
     case stake(TransactionMemoStake)
     case unstake(TransactionMemoUnstake)
-    
+
     var view: AnyView {
         switch self {
         case .bond(let memo):
@@ -49,7 +49,7 @@ enum TransactionMemoInstance {
             return memo.getView()
         }
     }
-    
+
     var description: String {
         switch self {
         case .bond(let memo):
@@ -76,7 +76,7 @@ enum TransactionMemoInstance {
             return memo.description
         }
     }
-    
+
     var amount: Double {
         switch self {
         case .bond(let memo):
@@ -100,10 +100,10 @@ enum TransactionMemoInstance {
         case .stake(let memo):
             return memo.amount
         case .unstake(let memo):
-            return memo.amount // You must send 1 TON to unstake with a "w" memo
+            return memo.amount  // You must send 1 TON to unstake with a "w" memo
         }
     }
-    
+
     var toAddress: String? {
         switch self {
         case .stake(let memo):
@@ -114,7 +114,7 @@ enum TransactionMemoInstance {
             return nil
         }
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .bond(let memo):
@@ -141,7 +141,7 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         }
     }
-    
+
     func getTransactionType() -> VSTransactionType {
         switch self {
         case .vote(_):
@@ -150,7 +150,7 @@ enum TransactionMemoInstance {
             return .unspecified
         }
     }
-    
+
     var isTheFormValid: Bool {
         switch self {
         case .bond(let memo):
@@ -177,13 +177,13 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         }
     }
-    
+
     static func getDefault(for coin: Coin) -> TransactionMemoInstance {
         switch coin.chain {
         case .thorChain:
             return .bond(TransactionMemoBond())
         case .mayaChain:
-            return .bondMaya(TransactionMemoBondMayaChain(assets: MayachainService.depositAssets))
+            return .bondMaya(TransactionMemoBondMayaChain(assets: nil))
         case .dydx:
             return .vote(TransactionMemoVote())
         case .ton:
@@ -193,7 +193,3 @@ enum TransactionMemoInstance {
         }
     }
 }
-
-
-
-
