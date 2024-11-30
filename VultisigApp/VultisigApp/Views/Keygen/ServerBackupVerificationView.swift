@@ -10,6 +10,7 @@ import SwiftData
 
 struct ServerBackupVerificationView: View {
     let vault: Vault
+    let selectedTab: SetupVaultState?
     @ObservedObject var viewModel: KeygenViewModel
     
     @State var verificationCode = ""
@@ -38,7 +39,7 @@ struct ServerBackupVerificationView: View {
             if showHomeView {
                 HomeView()
             } else {
-                BackupVaultNowView(vault: vault)
+                BackupVaultNowView(vault: vault, selectedTab: selectedTab)
             }
         }
         .alert(isPresented: $showAlert) {
@@ -149,5 +150,5 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example, viewModel: KeygenViewModel())
+    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, viewModel: KeygenViewModel())
 }
