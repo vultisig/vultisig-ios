@@ -64,6 +64,9 @@ extension HomeView {
         .onAppear {
             setData()
         }
+        .onFirstAppear {
+            checkUpdate()
+        }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
@@ -102,8 +105,6 @@ extension HomeView {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
-        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
-        
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
             selectedVault = nil
@@ -113,6 +114,10 @@ extension HomeView {
         }
         
         presetValuesForDeeplink()
+    }
+    
+    func checkUpdate() {
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
     }
 }
 #endif

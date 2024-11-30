@@ -25,6 +25,11 @@ struct ContentView: View {
             .onOpenURL { incomingURL in
                 handleDeeplink(incomingURL)
             }
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                if let incomingURL = userActivity.webpageURL {
+                    handleDeeplink(incomingURL)
+                }
+            }
             
             if accountViewModel.showCover {
                 CoverView()
@@ -105,6 +110,14 @@ struct ContentView: View {
         if deeplinkType == "file" {
             vultExtensionViewModel.documentUrl = incomingURL
             vultExtensionViewModel.showImportView = true
+        } else if deeplinkType == "https" {
+            let updatedURL = incomingURL.absoluteString.replacingOccurrences(of: "https", with: "vultisig")
+            
+            guard let url = URL(string: updatedURL) else {
+                return
+            }
+            
+            deeplinkViewModel.extractParameters(url, vaults: vaults)
         } else {
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }

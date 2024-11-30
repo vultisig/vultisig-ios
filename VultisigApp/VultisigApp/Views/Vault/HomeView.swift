@@ -21,6 +21,7 @@ struct HomeView: View {
     @State var vaults: [Vault] = []
     
     @State var showMenu = false
+    @State var isLoading = false
     @State var didUpdate = true
     @State var showVaultsList = false
     @State var isEditingVaults = false
@@ -35,7 +36,13 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        content
+        ZStack {
+            content
+            
+            if isLoading {
+                Loader()
+            }
+        }
     }
     
     var navigationTitle: some View {
@@ -115,6 +122,8 @@ struct HomeView: View {
     }
     
     private func moveToVaultsView() {
+        isLoading = true
+        
         guard let vault = deeplinkViewModel.selectedVault else {
             return
         }
@@ -122,8 +131,9 @@ struct HomeView: View {
         viewModel.setSelectedVault(vault)
         showVaultsList = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             shouldKeysignTransaction = true
+            isLoading = false
         }
     }
     
