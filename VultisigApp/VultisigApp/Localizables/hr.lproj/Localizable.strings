@@ -412,3 +412,6 @@
 "verificationCodeTryAgain" = "Pogrešan verifikacijski kod, molimo unesite ispravan.";
 "thresholdNotReachedMessage" = "Prag nije dosegnut.\nNedostaje dovoljno početnih uređaja.";
 "skipPassword" = "Preskoči lozinku";
+"transactionTrackingLink" = "Poveznica za praćenje transakcije";
+"secureVault" = "Siguran trezor";
+"secureVaultTempDescription" = "Dostupne postavke za 2od3, 3od4, 4od6 uređaja\nJedna sigurnosna kopija po uređaju\nRedundantno i sigurno";

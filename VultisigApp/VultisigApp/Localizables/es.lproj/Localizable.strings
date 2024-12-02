@@ -412,3 +412,6 @@
 "verificationCodeTryAgain" = "Código de verificación incorrecto, por favor ingrese el correcto.";
 "thresholdNotReachedMessage" = "Umbral no alcanzado.\nFaltan suficientes dispositivos iniciales.";
 "skipPassword" = "Omitir contraseña";
+"transactionTrackingLink" = "Enlace de seguimiento de transacción";
+"secureVault" = "Bóveda Segura";
+"secureVaultTempDescription" = "Configuraciones de 2de3, 3de4, 4de6 dispositivos disponibles\nUn respaldo por dispositivo\nRedundante y seguro";
