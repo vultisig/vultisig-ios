@@ -94,6 +94,7 @@ class TransactionMemoUnbondMayaChain: TransactionMemoAddressable,
                         get: { self.selectedAsset },
                         set: { self.selectedAsset = $0 }
                     ),
+                    mandatoryMessage: "*",
                     descriptionProvider: { $0.value },
                     onSelect: { asset in
                         self.selectedAsset = asset
