@@ -446,3 +446,5 @@
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "skipPassword" = "Skip Password";
 "transactionTrackingLink" = "Transaction tracking link";
+"secureVault" = "Secure Vault";
+"secureVaultTempDescription" = "2of3, 3of4, 4of6  device setups available\nOne backup per device\nRedundant and secure";

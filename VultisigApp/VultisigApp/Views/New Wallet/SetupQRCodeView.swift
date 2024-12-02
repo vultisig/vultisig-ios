@@ -12,7 +12,7 @@ struct SetupQRCodeView: View {
     let tssType: TssType
     let vault: Vault?
 
-    @State var selectedTab: SetupVaultState = .fast
+    @State var selectedTab: SetupVaultState = .secure
     @State var showSheet: Bool = false
     @State var shouldJoinKeygen = false
 

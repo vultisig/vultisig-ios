@@ -15,7 +15,7 @@ struct SetupVaultImageManager: View {
             Spacer()
             imageContent
             Spacer()
-            text
+//            text
         }
         .clipped()
         .padding(.vertical, 16)
