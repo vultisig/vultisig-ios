@@ -68,23 +68,8 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
     func getView() -> AnyView {
         AnyView(VStack {
             
-            StyledIntegerField(
-                placeholder: "Affiliate's Fee",
-                value: Binding(
-                    get: { self.fee },
-                    set: { self.fee = $0 }
-                ),
-                format: .number,
-                isValid: Binding(
-                    get: { self.feeValid },
-                    set: { self.feeValid = $0 }
-                ),
-                isEnabled: false,
-                isOptional: true
-            )
-            
             StyledFloatingPointField(
-                placeholder: "Basis Point",
+                placeholder: "Percentage",
                 value: Binding(
                     get: { Double(self.basisPoint) },
                     set: { self.basisPoint = Int64($0) }
