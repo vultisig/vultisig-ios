@@ -192,7 +192,9 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
-        self.keysignMessages = [customMessagePayload.message]
+        let data = Data(customMessagePayload.message.utf8)
+        let hash = data.sha3(.sha256)
+        self.keysignMessages = [hash.hexString]
     }
 
     func handleQrCodeSuccessResult(data: String?) async {
@@ -208,10 +210,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-            
-            if keysignMsg.payloadID.isEmpty {
-                throw HelperError.runtimeError("keysign payload is empty")
-            }
+
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
