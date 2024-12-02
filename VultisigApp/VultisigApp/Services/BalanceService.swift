@@ -72,7 +72,7 @@ private extension BalanceService {
     
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             return blockChairData.address?.balance?.description ?? "0"
             

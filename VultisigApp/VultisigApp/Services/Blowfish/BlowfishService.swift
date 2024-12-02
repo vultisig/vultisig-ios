@@ -134,7 +134,7 @@ struct BlowfishService {
             return "bnb"
         case .solana:
             return "solana"
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble:
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .cardano:
             throw BlowfishServiceError.unsupportedChain
         }
     }
@@ -145,7 +145,7 @@ struct BlowfishService {
             return "mainnet"
         case .arbitrum:
             return "one"
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble:
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .cardano:
             throw BlowfishServiceError.unsupportedNetwork
         }
     }

@@ -30,6 +30,11 @@ class UTXOChainsHelper {
                 return nil
             }
             return UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+        case .Cardano:
+            guard let coinType = CoinType.from(string: coin.chain.name) else {
+                return nil
+            }
+            return UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode)
         default:
             return nil
         }

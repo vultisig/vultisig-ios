@@ -338,6 +338,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/transaction/\(txid)"
         case "DASH":
             return "https://blockchair.com/dash/transaction/\(txid)"
+        case "ADA":
+            return "https://blockchair.com/cardano/transaction/\(txid)"
         case "RUNE":
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case "SOL":
@@ -401,6 +403,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case "DASH":
             return "https://blockchair.com/dash/address/\(address)"
+        case "ADA":
+            return "https://blockchair.com/cardano/address/\(address)"
         case "RUNE":
             return "https://runescan.io/address/\(address)"
         case "SOL":
@@ -480,6 +484,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
+        case .cardano:
+            return "https://blockchair.com/cardano/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
         case .arbitrum:

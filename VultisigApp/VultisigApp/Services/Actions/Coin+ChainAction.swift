@@ -43,6 +43,8 @@ extension Chain {
             actions = [.send, .swap]
         case .dash:
             actions = [.send, .swap]
+        case .cardano:
+            actions = [.send]
         case .gaiaChain:
             actions = [.send, .swap]
         case .kujira:

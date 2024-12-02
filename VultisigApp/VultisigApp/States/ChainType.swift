@@ -9,6 +9,7 @@ import Foundation
 
 enum ChainType: Codable, CustomStringConvertible {
     case UTXO
+    case Cardano
     case EVM
     case Solana
     case Sui
@@ -21,6 +22,8 @@ enum ChainType: Codable, CustomStringConvertible {
         switch self {
         case .UTXO:
             return "Unspent Transaction Output"
+        case .Cardano:
+            return "Cardano" //Cardano is also UTXO, but uses Ed25519 Cardano, that is why it is separated
         case .EVM:
             return "Ethereum Virtual Machine"
         case .Solana:

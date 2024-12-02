@@ -20,6 +20,9 @@ struct CoinFactory {
         case .mayaChain:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
             address = anyAddress.description
+        case .cardano:
+            let anyAddress = AnyAddress(publicKey: publicKey, coin: .cardano)
+            address = anyAddress.description
         default:
             address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
@@ -48,6 +51,20 @@ private extension CoinFactory {
     static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
         switch asset.chain.signingKeyType {
         case .EdDSA:
+            
+            if asset.chain == .cardano {
+                
+                guard
+                    let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
+                    let publicKey = PublicKey(data: pubKeyData, type: .ed25519Cardano) else {
+                    
+                    print("Public key: \(vault.pubKeyEdDSA) is invalid for ADA chain")
+                    throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
+                }
+                return publicKey
+                
+            }
+            
             guard
                 let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {

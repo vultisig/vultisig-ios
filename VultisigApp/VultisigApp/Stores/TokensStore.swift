@@ -25,6 +25,10 @@ class TokensStore {
             CoinMeta(chain: Chain.dash, ticker: "DASH", logo: "dash", decimals: 8, priceProviderId: "dash", contractAddress: "", isNativeToken: true)
         }
         
+        static var cardano: CoinMeta {
+            CoinMeta(chain: Chain.cardano, ticker: "ADA", logo: "ada", decimals: 8, priceProviderId: "cardano", contractAddress: "", isNativeToken: true)
+        }
+        
         static var thorChain: CoinMeta {
             CoinMeta(chain: Chain.thorChain, ticker: "RUNE", logo: "rune", decimals: 8, priceProviderId: "thorchain", contractAddress: "", isNativeToken: true)
         }
@@ -626,6 +630,8 @@ class TokensStore {
         TokensStore.Token.litecoin,
         TokensStore.Token.dogecoin,
         TokensStore.Token.dash,
+        TokensStore.Token.cardano,
+        
         TokensStore.Token.thorChain,
         TokensStore.Token.mayaChainCacao,
         TokensStore.Token.mayaChainMaya,

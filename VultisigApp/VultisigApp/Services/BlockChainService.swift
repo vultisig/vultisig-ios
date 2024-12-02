@@ -137,7 +137,7 @@ private extension BlockChainService {
 
     func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, byteFee: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .cardano:
             let byteFeeValue: BigInt
             if let byteFee, !byteFee.isZero {
                 byteFeeValue = byteFee
