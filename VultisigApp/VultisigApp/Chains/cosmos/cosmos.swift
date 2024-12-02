@@ -59,6 +59,7 @@ class CosmosHelper {
         if keysignPayload.coin.isNativeToken
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
+            || keysignPayload.coin.contractAddress.lowercased().starts(with: "u")
         {
             
             let input = CosmosSigningInput.with {
