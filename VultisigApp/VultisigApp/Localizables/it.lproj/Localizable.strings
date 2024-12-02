@@ -412,3 +412,6 @@
 "verificationCodeTryAgain" = "Codice di verifica errato, si prega di inserire quello corretto.";
 "thresholdNotReachedMessage" = "Soglia non raggiunta.\nMancano dispositivi iniziali sufficienti.";
 "skipPassword" = "Salta password";
+"transactionTrackingLink" = "Link di tracciamento transazione";
+"secureVault" = "Vault Sicuro";
+"secureVaultTempDescription" = "Configurazioni 2di3, 3di4, 4di6 dispositivi disponibili\nUn backup per dispositivo\nRidondante e sicuro";

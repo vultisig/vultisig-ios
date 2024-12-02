@@ -429,3 +429,6 @@
 "verificationCodeTryAgain" = "Falscher Verifizierungscode, bitte geben Sie den richtigen ein.";
 "thresholdNotReachedMessage" = "Schwelle nicht erreicht.\nEs fehlen genügend Anfangsgeräte.";
 "skipPassword" = "Passwort überspringen";
+"transactionTrackingLink" = "Transaktionsverfolgungslink";
+"secureVault" = "Sicherer Tresor";
+"secureVaultTempDescription" = "2von3, 3von4, 4von6 Geräte-Setups verfügbar\nEin Backup pro Gerät\nRedundant und sicher";
