@@ -543,6 +543,10 @@ class TokensStore {
             CoinMeta(chain: Chain.osmosis, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4", isNativeToken: false)
         }
         
+        static var osmosisIon: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "ION", logo: "ion", decimals: 6, priceProviderId: "ion", contractAddress: "uion", isNativeToken: false)
+        }
+        
         static var terra: CoinMeta {
             CoinMeta(chain: Chain.terra, ticker: "LUNA", logo: "luna", decimals: 6, priceProviderId: "terra-luna-2", contractAddress: "", isNativeToken: true)
         }
@@ -637,6 +641,7 @@ class TokensStore {
         
         TokensStore.Token.osmosis,
         TokensStore.Token.osmosisUsdc,
+        TokensStore.Token.osmosisIon,
         
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.gaiaChainUsdc,
