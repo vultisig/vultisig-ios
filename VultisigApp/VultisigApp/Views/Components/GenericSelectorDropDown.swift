@@ -5,6 +5,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
     
     @Binding var items: [T]
     @Binding var selected: T
+    var mandatoryMessage: String?
     var descriptionProvider: (T) -> String
     var onSelect: ((T) -> Void)?
     
@@ -37,6 +38,13 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
     var cell: some View {
         HStack(spacing: 12) {
             Text(descriptionProvider(selected))
+            
+            if !items.contains(selected) {
+                Text(mandatoryMessage ?? "")
+                    .font(.body14MontserratMedium)
+                    .foregroundColor(.red)
+            }
+            
             Spacer()
             
             if isActive {

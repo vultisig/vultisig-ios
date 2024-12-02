@@ -19,6 +19,7 @@ class TransactionMemoUnbondMayaChain: TransactionMemoAddressable,
     // Internal
     @Published var nodeAddressValid: Bool = false
     @Published var feeValid: Bool = true
+    @Published var assetValid: Bool = false
 
     @Published var selectedAsset: IdentifiableString = .init(value: "Asset")
 
@@ -58,8 +59,8 @@ class TransactionMemoUnbondMayaChain: TransactionMemoAddressable,
     }
 
     private func setupValidation() {
-        Publishers.CombineLatest($nodeAddressValid, $feeValid)
-            .map { $0 && $1 }
+        Publishers.CombineLatest3($nodeAddressValid, $feeValid, $assetValid)
+            .map { $0 && $1 && $2  }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -93,9 +94,11 @@ class TransactionMemoUnbondMayaChain: TransactionMemoAddressable,
                         get: { self.selectedAsset },
                         set: { self.selectedAsset = $0 }
                     ),
+                    mandatoryMessage: "*",
                     descriptionProvider: { $0.value },
                     onSelect: { asset in
                         self.selectedAsset = asset
+                        self.assetValid = asset.value.lowercased() != "Asset".lowercased()
                     }
                 )
 
