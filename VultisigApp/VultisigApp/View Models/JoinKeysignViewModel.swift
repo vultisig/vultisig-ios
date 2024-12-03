@@ -27,6 +27,7 @@ class JoinKeysignViewModel: ObservableObject {
     var serviceDelegate: ServiceDelegate?
 
     private let etherfaceService = EtherfaceService.shared
+    private let fastVaultService = FastVaultService.shared
 
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -79,25 +80,23 @@ class JoinKeysignViewModel: ObservableObject {
     
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
-            self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
-            return
+            return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
         }
-        guard !self.sessionID.isEmpty else {
-            self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
-            return
+        guard !sessionID.isEmpty else {
+            return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
-        
-        let urlString = "\(serverURL)/\(sessionID)"
-        let body = [self.localPartyID]
-        
-        Utils.sendRequest(urlString: urlString,
-                          method: "POST",
-                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
-                          body: body) { success in
-            DispatchQueue.main.async{
+
+        Utils.sendRequest(
+            urlString: "\(serverURL)/\(sessionID)",
+            method: "POST",
+            headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+            body: [localPartyID]
+        ) { success in
+            DispatchQueue.main.async {
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
+                    self.requestFastVaultSignatureIfNeeded()
                 } else {
                     self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
                     self.status = .FailedToStart
@@ -105,7 +104,21 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
     }
-    
+
+    func requestFastVaultSignatureIfNeeded() {
+        fastVaultService.sign(
+            publicKeyEcdsa: vault.pubKeyECDSA,
+            keysignMessages: keysignMessages,
+            sessionID: sessionID,
+            hexEncryptionKey: encryptionKeyHex,
+            derivePath: TokensStore.Token.ethereum.coinType.derivationPath(), // TODO: Double check this
+            isECDSA: true,
+            vaultPassword: "232425" // TODO: Remove test pass
+        ) { isSuccess in
+            print("FastVault signed: \(isSuccess)")
+        }
+    }
+
     func setStatus(status: JoinKeysignStatus) {
         self.status = status
     }
