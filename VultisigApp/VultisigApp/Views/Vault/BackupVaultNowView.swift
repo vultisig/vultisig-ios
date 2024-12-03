@@ -37,19 +37,19 @@ struct BackupVaultNowView: View {
     var content: some View {
         VStack(spacing: 0) {
             HStack {
-                if showSkipButton {
-                    skipButton
-                        .opacity(0)
-                        .disabled(true)
-                }
+//                if showSkipButton {
+//                    skipButton
+//                        .opacity(0)
+//                        .disabled(true)
+//                }
                 
-                Spacer()
+//                Spacer()
                 logo
-                Spacer()
+//                Spacer()
                 
-                if showSkipButton {
-                    skipButton
-                }
+//                if showSkipButton {
+//                    skipButton
+//                }
             }
             image
             title
