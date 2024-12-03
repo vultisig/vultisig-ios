@@ -49,10 +49,7 @@ struct KeygenView: View {
                         viewModel: viewModel
                     )
                 } else {
-                    BackupVaultNowView(
-                        vault: vault,
-                        selectedTab: selectedTab
-                    )
+                    BackupVaultNowView(vault: vault)
                 }
             }
             .onAppear {

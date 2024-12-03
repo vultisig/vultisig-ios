@@ -9,22 +9,14 @@ import SwiftUI
 
 struct BackupVaultNowView: View {
     let vault: Vault
-    let selectedTab: SetupVaultState?
-
-    @State var showSkipButton = true
-    @State var isWarningShown = false
     @State var isHomeAfterSkipShown = false
 
     var body: some View {
         ZStack {
             Background()
             view
-            shadowView
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear {
-            setData()
-        }
     }
     
     var view: some View {
@@ -36,21 +28,7 @@ struct BackupVaultNowView: View {
     
     var content: some View {
         VStack(spacing: 0) {
-            HStack {
-//                if showSkipButton {
-//                    skipButton
-//                        .opacity(0)
-//                        .disabled(true)
-//                }
-                
-//                Spacer()
-                logo
-//                Spacer()
-                
-//                if showSkipButton {
-//                    skipButton
-//                }
-            }
+            logo
             image
             title
             Spacer()
@@ -63,12 +41,6 @@ struct BackupVaultNowView: View {
         .font(.body12Montserrat)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
-    }
-
-    var shadowView: some View {
-        Background()
-            .opacity(isWarningShown ? 0.5 : 0)
-            .animation(.default, value: isWarningShown)
     }
 
     var logo: some View {
@@ -111,33 +83,8 @@ struct BackupVaultNowView: View {
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
     }
-    
-    var skipButton: some View {
-        Button {
-            isWarningShown = true
-        } label: {
-            Image(systemName: "xmark")
-        }
-        .buttonStyle(.plain)
-        .font(.body18MenloBold)
-        .padding(16)
-        .sheet(isPresented: $isWarningShown) {
-            BackupVaultWarningView(isPresented: $isWarningShown, isSkipPressed: $isHomeAfterSkipShown)
-                .presentationDetents([.height(256)])
-        }
-    }
-    
-    private func setData() {
-        guard let selectedTab else {
-            return
-        }
-        
-        if selectedTab == .fast {
-            showSkipButton = false
-        }
-    }
 }
 
 #Preview {
-    BackupVaultNowView(vault: Vault.example, selectedTab: .secure)
+    BackupVaultNowView(vault: Vault.example)
 }

@@ -39,7 +39,7 @@ struct ServerBackupVerificationView: View {
             if showHomeView {
                 HomeView()
             } else {
-                BackupVaultNowView(vault: vault, selectedTab: selectedTab)
+                BackupVaultNowView(vault: vault)
             }
         }
         .alert(isPresented: $showAlert) {
