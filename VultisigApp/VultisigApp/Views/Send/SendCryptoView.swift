@@ -203,6 +203,7 @@ struct SendCryptoView: View {
         }
         
         tx.coin = selectedCoin
+        tx.fromAddress = selectedCoin.address
         tx.toAddress = deeplinkViewModel.address ?? ""
         selectedChain = nil
         DebounceHelper.shared.debounce {
