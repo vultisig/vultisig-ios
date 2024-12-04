@@ -87,7 +87,7 @@ struct SettingsView: View {
             SettingCell(title: "defaultChains", icon: "circle.hexagonpath")
         }
     }
-    
+
     var addressBookCell: some View {
         NavigationLink {
             AddressBookView(
