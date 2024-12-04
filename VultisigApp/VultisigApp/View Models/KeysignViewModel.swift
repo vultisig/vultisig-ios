@@ -158,6 +158,9 @@ class KeysignViewModel: ObservableObject {
         
         if let keysignPayload {
             keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
+        } else {
+            // TODO: Should we use Ether as default derivationPath?
+            keysignReq.derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
         }
 
         // sign messages one by one , since the msg is in hex format , so we need convert it to base64
