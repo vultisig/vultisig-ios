@@ -64,7 +64,7 @@ struct SendCryptoDoneSummary: View {
             
             Separator()
             getGeneralCell(
-                title: swapTransaction != nil ? "swapFee" : "networkFee",
+                title: "networkFee",
                 description: tx.gasInReadable
             )
         }
@@ -92,7 +92,7 @@ struct SendCryptoDoneSummary: View {
             
             Separator()
             getGeneralCell(
-                title: "networkFee",
+                title: "swapFee",
                 description: viewModel.swapFeeString(tx)
             )
         }
