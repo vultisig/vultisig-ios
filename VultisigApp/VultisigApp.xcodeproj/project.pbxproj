@@ -88,6 +88,7 @@
 		A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */; };
 		A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED412BC350520056FDC0 /* SwapTransaction.swift */; };
 		A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */; };
+		A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */; };
 		A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */; };
 		A56C98D42CC013C500FC1B08 /* SettingsBiometryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */; };
 		A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F4672C7E48A1000F46D3 /* FeeMode.swift */; };
@@ -877,6 +878,7 @@
 		A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapVerifyView.swift; sourceTree = "<group>"; };
 		A564ED412BC350520056FDC0 /* SwapTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
 		A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
+		A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCustomMessageView.swift; sourceTree = "<group>"; };
 		A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryView.swift; sourceTree = "<group>"; };
 		A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryViewModel.swift; sourceTree = "<group>"; };
 		A571F4672C7E48A1000F46D3 /* FeeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeMode.swift; sourceTree = "<group>"; };
@@ -2637,6 +2639,7 @@
 			isa = PBXGroup;
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
+				A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */,
 				A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */,
 				A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */,
 				A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */,
@@ -3569,6 +3572,7 @@
 				A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
+				A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */,
 				A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,

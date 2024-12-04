@@ -60,7 +60,15 @@ struct EditVaultView: View {
             EditVaultCell(title: "backup", description: "backupVault", icon: "icloud.and.arrow.up")
         }
     }
-    
+
+    var customMessage: some View {
+        NavigationLink {
+            SettingsCustomMessageView(vault: vault)
+        } label: {
+            EditVaultCell(title: "Sign", description: "Sign custom message", icon: "signature")
+        }
+    }
+
     var editVault: some View {
         NavigationLink {
             RenameVaultView(vaults: vaults, vault: vault)

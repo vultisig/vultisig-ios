@@ -10,4 +10,10 @@ import Foundation
 struct CustomMessagePayload: Codable, Hashable {
     let method: String
     let message: String
+
+    var keysignMessages: [String] {
+        let data = Data(message.utf8)
+        let hash = data.sha3(.keccak256)
+        return [hash.hexString]
+    }
 }
