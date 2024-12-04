@@ -30,6 +30,7 @@ extension EditVaultView {
                 if vault.isFastVault {
                     biometrySelectionCell
                 }
+                customMessage
                 deleteVault
             }
         }
