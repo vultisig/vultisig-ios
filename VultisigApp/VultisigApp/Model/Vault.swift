@@ -22,6 +22,7 @@ final class Vault: ObservableObject, Codable {
     var resharePrefix: String? = nil
     var order: Int = 0
     var isBackedUp: Bool = false
+    var libType: Int = 0
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     
@@ -35,6 +36,7 @@ final class Vault: ObservableObject, Codable {
         case keyshares
         case localPartyID
         case resharePrefix
+        case libType
     }
     
     required init(from decoder: Decoder) throws {
@@ -48,13 +50,14 @@ final class Vault: ObservableObject, Codable {
         keyshares = try container.decode([KeyShare].self, forKey: .keyshares)
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
+        libType = try container.decode(Int.self, forKey: .libType)
     }
     
     init(name: String) {
         self.name = name
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?) {
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?, libType: Int?) {
         self.name = name
         self.signers = signers
         self.createdAt = Date.now
@@ -64,6 +67,7 @@ final class Vault: ObservableObject, Codable {
         self.localPartyID = localPartyID
         self.hexChainCode = hexChainCode
         self.resharePrefix = resharePrefix
+        self.libType = libType ?? 0
     }
     
     func encode(to encoder: Encoder) throws {
@@ -145,6 +149,6 @@ final class Vault: ObservableObject, Codable {
         return "Main Vault"
     }
 
-    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil)
-    static let fastVaultExample = Vault(name: "Server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil)
+    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: 0)
+    static let fastVaultExample = Vault(name: "Server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: nil)
 }

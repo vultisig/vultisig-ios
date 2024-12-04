@@ -23,6 +23,7 @@ extension Vault: ProtoMappable {
         self.createdAt = Date(timeIntervalSince1970: timeInterval)
         self.order = 0
         self.isBackedUp = true
+        
     }
     
     func mapToProtobuff() ->  VSVault {
