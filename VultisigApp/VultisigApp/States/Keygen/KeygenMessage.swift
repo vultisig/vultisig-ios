@@ -10,4 +10,5 @@ struct KeygenMessage {
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
     let vaultName: String
+    let libType: 
 }
