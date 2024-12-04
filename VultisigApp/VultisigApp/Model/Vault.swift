@@ -22,7 +22,7 @@ final class Vault: ObservableObject, Codable {
     var resharePrefix: String? = nil
     var order: Int = 0
     var isBackedUp: Bool = false
-    var libType: Int = 0
+    var libType: LibType? = LibType.GG20
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     
@@ -50,14 +50,14 @@ final class Vault: ObservableObject, Codable {
         keyshares = try container.decode([KeyShare].self, forKey: .keyshares)
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
         resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
-        libType = try container.decode(Int.self, forKey: .libType)
+        libType = try container.decodeIfPresent(LibType.self, forKey: .libType) ?? .GG20
     }
     
     init(name: String) {
         self.name = name
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?, libType: Int?) {
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?, libType: LibType?) {
         self.name = name
         self.signers = signers
         self.createdAt = Date.now
@@ -67,7 +67,7 @@ final class Vault: ObservableObject, Codable {
         self.localPartyID = localPartyID
         self.hexChainCode = hexChainCode
         self.resharePrefix = resharePrefix
-        self.libType = libType ?? 0
+        self.libType = libType ?? .GG20
     }
     
     func encode(to encoder: Encoder) throws {
@@ -81,6 +81,7 @@ final class Vault: ObservableObject, Codable {
         try container.encode(keyshares, forKey: .keyshares)
         try container.encode(localPartyID, forKey: .localPartyID)
         try container.encodeIfPresent(resharePrefix, forKey: .resharePrefix)
+        try container.encodeIfPresent(libType, forKey: .libType)
     }
     
     func addKeyshare(pubkey: String, keyshare: String) {
@@ -149,6 +150,6 @@ final class Vault: ObservableObject, Codable {
         return "Main Vault"
     }
 
-    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: 0)
+    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: .GG20)
     static let fastVaultExample = Vault(name: "Server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: nil)
 }
