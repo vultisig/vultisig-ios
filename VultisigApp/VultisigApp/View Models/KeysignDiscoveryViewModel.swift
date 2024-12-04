@@ -176,7 +176,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignType: keysignType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload, 
-            customMessagePayload: nil,
+            customMessagePayload: customMessagePayload,
             transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? ""
         )

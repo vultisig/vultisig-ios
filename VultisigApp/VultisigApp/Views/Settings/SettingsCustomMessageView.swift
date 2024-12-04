@@ -11,7 +11,7 @@ struct SettingsCustomMessageView: View {
 
     @Environment(\.dismiss) var dismiss
 
-    @StateObject var transferViewModel = FakeTransferViewModel()
+    @StateObject var viewModel = SettingsCustomMessageViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
@@ -29,6 +29,17 @@ struct SettingsCustomMessageView: View {
     }
 
     var view: some View {
+        ZStack {
+            switch viewModel.state {
+            case .initial:
+                customMessage
+            case .keysign:
+                keysign
+            }
+        }
+    }
+
+    var customMessage: some View {
         ScrollView {
             VStack(spacing: 16) {
                 textField(title: "Method", text: $method)
@@ -38,6 +49,16 @@ struct SettingsCustomMessageView: View {
         }
         .safeAreaInset(edge: .bottom) {
             button
+        }
+    }
+
+    var keysign: some View {
+        ZStack {
+            if let keysignView = keysignView {
+                keysignView
+            } else {
+                SendCryptoSigningErrorView()
+            }
         }
     }
 
@@ -72,7 +93,7 @@ struct SettingsCustomMessageView: View {
                 vault: vault,
                 keysignPayload: nil,
                 customMessagePayload: customMessagePayload,
-                transferViewModel: transferViewModel,
+                transferViewModel: viewModel,
                 fastVaultPassword: nil,
                 keysignView: $keysignView,
                 shareSheetViewModel: shareSheetViewModel
