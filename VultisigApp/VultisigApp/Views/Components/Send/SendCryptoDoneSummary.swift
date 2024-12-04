@@ -64,7 +64,7 @@ struct SendCryptoDoneSummary: View {
             
             Separator()
             getGeneralCell(
-                title: "networkFee",
+                title: swapTransaction != nil ? "swapFee" : "networkFee",
                 description: tx.gasInReadable
             )
         }
