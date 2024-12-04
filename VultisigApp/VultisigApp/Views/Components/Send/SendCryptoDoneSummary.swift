@@ -92,7 +92,7 @@ struct SendCryptoDoneSummary: View {
             
             Separator()
             getGeneralCell(
-                title: "networkFee",
+                title: "swapFee",
                 description: viewModel.swapFeeString(tx)
             )
         }
