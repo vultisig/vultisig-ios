@@ -77,7 +77,7 @@ class JoinKeysignViewModel: ObservableObject {
     func startScan() {
         self.isShowingScanner = true
     }
-    
+
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -96,7 +96,6 @@ class JoinKeysignViewModel: ObservableObject {
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
-                    self.requestFastVaultSignatureIfNeeded()
                 } else {
                     self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
                     self.status = .FailedToStart
@@ -105,17 +104,17 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
 
-    func requestFastVaultSignatureIfNeeded() {
+    func joinFastVaultKeysignCommittee() {
         fastVaultService.sign(
             publicKeyEcdsa: vault.pubKeyECDSA,
             keysignMessages: keysignMessages,
             sessionID: sessionID,
             hexEncryptionKey: encryptionKeyHex,
-            derivePath: TokensStore.Token.ethereum.coinType.derivationPath(), // TODO: Double check this
+            derivePath: .empty, // TODO: Double check this
             isECDSA: true,
             vaultPassword: "232425" // TODO: Remove test pass
         ) { isSuccess in
-            print("FastVault signed: \(isSuccess)")
+            print("FastSign: \(isSuccess)")
         }
     }
 
@@ -144,7 +143,12 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Failed to wait for keysign to start.")
         }
     }
-    
+
+    private func fastVaultKeysignCommittee() -> [String] {
+        let fastServer = vault.signers.first(where: { $0.starts(with: "Server") })
+        return [localPartyID, fastServer].compactMap { $0 }
+    }
+
     private func checkKeysignStarted() {
         guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
