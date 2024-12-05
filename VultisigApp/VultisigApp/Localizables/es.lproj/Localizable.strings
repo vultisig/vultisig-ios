@@ -415,3 +415,4 @@
 "transactionTrackingLink" = "Enlace de seguimiento de transacción";
 "secureVault" = "Bóveda Segura";
 "secureVaultTempDescription" = "Configuraciones de 2de3, 3de4, 4de6 dispositivos disponibles\nUn respaldo por dispositivo\nRedundante y seguro";
+"swapFee" = "Tarifa de Swap";

@@ -165,7 +165,7 @@ struct SendCryptoDoneView: View {
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
-        sendTransaction: SendTransaction(),
+        sendTransaction: nil,
         swapTransaction: SwapTransaction()
     )
     .environmentObject(SettingsViewModel())

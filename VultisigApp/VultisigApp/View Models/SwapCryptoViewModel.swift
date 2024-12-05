@@ -11,7 +11,7 @@ import WalletCore
 import Mediator
 
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-    private let titles = ["send", "verify", "pair", "keysign", "done"]
+    private let titles = ["swap", "verify", "pair", "keysign", "done"]
 
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
@@ -25,7 +25,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     var keysignPayload: KeysignPayload?
     
     @MainActor @Published var currentIndex = 1
-    @MainActor @Published var currentTitle = "send"
+    @MainActor @Published var currentTitle = "swap"
     @MainActor @Published var hash: String?
     @MainActor @Published var approveHash: String?
 
