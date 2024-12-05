@@ -25,16 +25,38 @@ struct SettingsCustomMessageView: View {
             Background()
             view
         }
-        .navigationTitle("Sign message")
+        .navigationTitle(NSLocalizedString(viewModel.state.title, comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if viewModel.state != .initial {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    backButton
+                }
+            }
+        }
     }
 
     var view: some View {
+        VStack(spacing: 18) {
+            ProgressBar(progress: viewModel.progress)
+                .padding(.top, 12)
+
+            tabView
+        }
+    }
+
+    @ViewBuilder
+    var tabView: some View {
         ZStack {
             switch viewModel.state {
             case .initial:
                 customMessage
+            case .pair:
+                pair
             case .keysign:
                 keysign
+            case .done:
+                Text("Done")
             }
         }
     }
@@ -98,17 +120,21 @@ struct SettingsCustomMessageView: View {
         )
     }
 
+    var pair: some View {
+        KeysignDiscoveryView(
+            vault: vault,
+            keysignPayload: nil,
+            customMessagePayload: customMessagePayload,
+            transferViewModel: viewModel,
+            fastVaultPassword: nil,
+            keysignView: $keysignView,
+            shareSheetViewModel: shareSheetViewModel
+        )
+    }
+
     var button: some View {
-        return NavigationLink {
-            KeysignDiscoveryView(
-                vault: vault,
-                keysignPayload: nil,
-                customMessagePayload: customMessagePayload,
-                transferViewModel: viewModel,
-                fastVaultPassword: nil,
-                keysignView: $keysignView,
-                shareSheetViewModel: shareSheetViewModel
-            )
+        return Button {
+            viewModel.moveToNextView()
         } label: {
             FilledButton(title: "Sign")
         }
@@ -116,6 +142,17 @@ struct SettingsCustomMessageView: View {
         .padding(.bottom, 12)
         .disabled(!buttonEnabled)
         .opacity(buttonEnabled ? 1 : 0.5)
+    }
+
+    var backButton: some View {
+        return Button {
+            viewModel.handleBackTap()
+        } label: {
+            NavigationBlankBackButton()
+                .offset(x: -8)
+        }
+        .opacity(viewModel.state == .done ? 0 : 1)
+        .disabled(viewModel.state == .done)
     }
 
     var buttonEnabled: Bool {
