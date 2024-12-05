@@ -42,8 +42,10 @@ struct SettingsCustomMessageView: View {
     var customMessage: some View {
         ScrollView {
             VStack(spacing: 16) {
-                textField(title: "Method", text: $method)
-                textField(title: "Message", text: $message)
+                title(text: "Method").padding(.top, 16.0)
+                textField(title: "Signing method", text: $method)
+                title(text: "Message")
+                textField(title: "Message to sign", text: $message)
             }
             .padding(.horizontal, 16)
         }
@@ -59,6 +61,16 @@ struct SettingsCustomMessageView: View {
             } else {
                 SendCryptoSigningErrorView()
             }
+        }
+    }
+
+    func title(text: String) -> some View {
+        HStack {
+            Text(text)
+                .font(.body14Montserrat)
+                .foregroundColor(.white)
+
+            Spacer()
         }
     }
 
@@ -84,7 +96,6 @@ struct SettingsCustomMessageView: View {
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
                 .foregroundColor(.blue600)
         )
-        .padding(.horizontal, 16)
     }
 
     var button: some View {
@@ -103,6 +114,12 @@ struct SettingsCustomMessageView: View {
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 12)
+        .disabled(!buttonEnabled)
+        .opacity(buttonEnabled ? 1 : 0.5)
+    }
+
+    var buttonEnabled: Bool {
+        return !method.isEmpty && !message.isEmpty
     }
 
     var customMessagePayload: CustomMessagePayload? {
