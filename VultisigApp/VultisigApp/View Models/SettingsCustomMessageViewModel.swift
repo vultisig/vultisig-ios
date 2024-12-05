@@ -36,7 +36,7 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
     @Published var currentIndex: Int = 1
 
     var progress: Double {
-        return Double(currentIndex) / Double(titles.count)
+        return Double(currentIndex) / Double(KeysignState.allCases.count)
     }
 
     func moveToNextView() {

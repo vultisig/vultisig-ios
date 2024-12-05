@@ -27,6 +27,7 @@ struct SettingsCustomMessageView: View {
         }
         .navigationTitle(NSLocalizedString(viewModel.state.title, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(viewModel.state != .initial)
         .toolbar {
             if viewModel.state != .initial {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -72,7 +73,9 @@ struct SettingsCustomMessageView: View {
             .padding(.horizontal, 16)
         }
         .safeAreaInset(edge: .bottom) {
-            button
+            if viewModel.state == .initial {
+                button
+            }
         }
     }
 
