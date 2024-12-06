@@ -4560,7 +4560,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = "add-lib-type";
+				branch = main;
 				kind = branch;
 			};
 		};
