@@ -449,3 +449,5 @@
 "secureVault" = "Secure Vault";
 "secureVaultTempDescription" = "2of3, 3of4, 4of6  device setups available\nOne backup per device\nRedundant and secure";
 "swapFee" = "Swap Fee";
+"action" = "Action";
+"swapFrom" = "Swap From";

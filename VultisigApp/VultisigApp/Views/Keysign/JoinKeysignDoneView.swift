@@ -12,6 +12,7 @@ struct JoinKeysignDoneView: View {
     @ObservedObject var viewModel: KeysignViewModel
     @Binding var showAlert: Bool
     
+    @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
