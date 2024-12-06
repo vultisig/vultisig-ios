@@ -115,6 +115,8 @@ struct JoinKeysignDoneSummary: View {
                     )
                 )
             }
+            
+            transactionLink
         }
     }
     
@@ -128,7 +130,7 @@ struct JoinKeysignDoneSummary: View {
             )
             
             
-            if let memo = viewModel.keysignPayload?.memo {
+            if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                 Separator()
                 getGeneralCell(
                     title: "memo",
@@ -151,18 +153,29 @@ struct JoinKeysignDoneSummary: View {
                 isVerticalStacked: false
             )
             
-            link
+            transactionLink
         }
     }
     
-    var link: some View {
+    var transactionLink: some View {
         VStack {
-            if viewModel.txid == viewModel.txid, let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
+            Separator()
+            
+            HStack {
+                Spacer()
+                progressLink(txid: viewModel.txid)
+            }
+        }
+    }
+    
+    var swapLink: some View {
+        VStack {
+            if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
                 Separator()
                 
                 HStack {
                     Spacer()
-                    progressLink(link: link)
+                    progressLink(txid: link)
                 }
             }
         }
@@ -259,14 +272,15 @@ struct JoinKeysignDoneSummary: View {
         
     }
     
-    private func progressLink(link: String) -> some View {
+    private func progressLink(txid: String) -> some View {
         Button {
-            progressLink(link: link)
+            shareLink(txid: txid)
         } label: {
             Text(NSLocalizedString(viewModel.keysignPayload?.swapPayload != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
                 .font(.body14MontserratBold)
                 .foregroundColor(.turquoise600)
                 .underline()
+                .padding(.vertical, 8)
         }
     }
     
