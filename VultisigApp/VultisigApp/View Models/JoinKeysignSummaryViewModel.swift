@@ -10,9 +10,9 @@ import Foundation
 class JoinKeysignSummaryViewModel {
     func getAction(_ keysignPayload: KeysignPayload?) -> String {
         guard keysignPayload?.approvePayload == nil else {
-            return NSLocalizedString("Approve and Swap", comment: "")
+            return NSLocalizedString("approveAndSwap", comment: "")
         }
-        return NSLocalizedString("Swap", comment: "")
+        return NSLocalizedString("swap", comment: "")
     }
 
     func getProvider(_ keysignPayload: KeysignPayload?) -> String {

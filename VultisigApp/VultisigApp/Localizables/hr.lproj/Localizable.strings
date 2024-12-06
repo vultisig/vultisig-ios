@@ -416,3 +416,6 @@
 "secureVault" = "Siguran trezor";
 "secureVaultTempDescription" = "Dostupne postavke za 2od3, 3od4, 4od6 uređaja\nJedna sigurnosna kopija po uređaju\nRedundantno i sigurno";
 "swapFee" = "Naknada za zamjenu";
+"action" = "Akcija";
+"swapFrom" = "Zamjena iz";
+"approveAndSwap" = "Odobri i Zamijeni";

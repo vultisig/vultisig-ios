@@ -416,3 +416,6 @@
 "secureVault" = "Vault Sicuro";
 "secureVaultTempDescription" = "Configurazioni 2di3, 3di4, 4di6 dispositivi disponibili\nUn backup per dispositivo\nRidondante e sicuro";
 "swapFee" = "Commissione di Swap";
+"action" = "Azione";
+"swapFrom" = "Scambia da";
+"approveAndSwap" = "Approva e Scambia";
