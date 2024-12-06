@@ -23,7 +23,7 @@ extension Vault: ProtoMappable {
         self.createdAt = Date(timeIntervalSince1970: timeInterval)
         self.order = 0
         self.isBackedUp = true
-        
+        self.libType = proto.libType.toLibType()
     }
     
     func mapToProtobuff() ->  VSVault {
@@ -35,6 +35,7 @@ extension Vault: ProtoMappable {
             $0.hexChainCode = hexChainCode
             $0.localPartyID = self.localPartyID
             $0.resharePrefix = self.resharePrefix ?? ""
+            $0.libType = libType?.toVSLibType() ?? .gg20
             $0.keyShares = self.keyshares.map{s in
                 var share = VSVault.KeyShare()
                 share.publicKey = s.pubkey
