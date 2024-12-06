@@ -49,17 +49,20 @@ struct KeysignMessageConfirmView: View {
                 Separator()
                 toField
                 Separator()
-                amountField
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
-                    Separator()
                     getSummaryCell(title: "memo", value: memo)
-                }
-
-                if let decodedMemo = viewModel.decodedMemo {
                     Separator()
-                    functionField(decodedMemo: decodedMemo)
                 }
+                
+                if let decodedMemo = viewModel.decodedMemo {
+                    functionField(decodedMemo: decodedMemo)
+                    Separator()
+                }
+                
+                amountField
+                Separator()
+                valueField
 
                 Separator()
             }
@@ -80,6 +83,10 @@ struct KeysignMessageConfirmView: View {
     
     var toField: some View {
         getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "")
+    }
+    
+    var valueField: some View {
+        getSummaryCell(title: "value", value: viewModel.keysignPayload?.toAmountFiatString ?? "")
     }
 
     var amountField: some View {
@@ -105,7 +112,7 @@ struct KeysignMessageConfirmView: View {
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             Text(value)
-                .font(.body12Menlo)
+                .font(.body13MenloBold)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
