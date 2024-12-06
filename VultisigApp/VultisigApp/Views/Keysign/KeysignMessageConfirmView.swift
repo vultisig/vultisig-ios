@@ -63,8 +63,8 @@ struct KeysignMessageConfirmView: View {
                 amountField
                 Separator()
                 valueField
-
-                Separator()
+//                Separator()
+//                networkFeeField
             }
             .padding(16)
             .background(Color.blue600)
@@ -88,6 +88,10 @@ struct KeysignMessageConfirmView: View {
     var valueField: some View {
         getSummaryCell(title: "value", value: viewModel.keysignPayload?.toAmountFiatString ?? "")
     }
+    
+//    var networkFeeField: some View {
+//        getSummaryCell(title: "networkFee", value: viewModel.keysignPayload?.networkFee ?? "")
+//    }
 
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
