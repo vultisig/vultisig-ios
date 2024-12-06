@@ -49,19 +49,22 @@ struct KeysignMessageConfirmView: View {
                 Separator()
                 toField
                 Separator()
-                amountField
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
-                    Separator()
                     getSummaryCell(title: "memo", value: memo)
-                }
-
-                if let decodedMemo = viewModel.decodedMemo {
                     Separator()
-                    functionField(decodedMemo: decodedMemo)
                 }
-
+                
+                if let decodedMemo = viewModel.decodedMemo {
+                    functionField(decodedMemo: decodedMemo)
+                    Separator()
+                }
+                
+                amountField
                 Separator()
+                valueField
+//                Separator()
+//                networkFeeField
             }
             .padding(16)
             .background(Color.blue600)
@@ -81,6 +84,14 @@ struct KeysignMessageConfirmView: View {
     var toField: some View {
         getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "")
     }
+    
+    var valueField: some View {
+        getSummaryCell(title: "value", value: viewModel.keysignPayload?.toAmountFiatString ?? "")
+    }
+    
+//    var networkFeeField: some View {
+//        getSummaryCell(title: "networkFee", value: viewModel.keysignPayload?.networkFee ?? "")
+//    }
 
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
@@ -105,7 +116,7 @@ struct KeysignMessageConfirmView: View {
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             Text(value)
-                .font(.body12Menlo)
+                .font(.body13MenloBold)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
