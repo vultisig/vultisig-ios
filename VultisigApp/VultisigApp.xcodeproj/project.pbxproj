@@ -329,6 +329,7 @@
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
 		A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */; };
 		A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D422C40C45800D47716 /* AddressBookCell.swift */; };
+		A672643B2D02993A0002E97E /* JoinKeysignDoneSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A672643A2D02993A0002E97E /* JoinKeysignDoneSummary.swift */; };
 		A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */; };
 		A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */; };
 		A67530622CAFBDC200B1E344 /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530612CAFBDC200B1E344 /* Folder.swift */; };
@@ -1092,6 +1093,7 @@
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
 		A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		A6725D422C40C45800D47716 /* AddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookCell.swift; sourceTree = "<group>"; };
+		A672643A2D02993A0002E97E /* JoinKeysignDoneSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignDoneSummary.swift; sourceTree = "<group>"; };
 		A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderView.swift; sourceTree = "<group>"; };
 		A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVaultCell.swift; sourceTree = "<group>"; };
 		A67530612CAFBDC200B1E344 /* Folder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Folder.swift; sourceTree = "<group>"; };
@@ -3067,6 +3069,7 @@
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 				A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */,
 				A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */,
+				A672643A2D02993A0002E97E /* JoinKeysignDoneSummary.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -3664,6 +3667,7 @@
 				A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */,
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
+				A672643B2D02993A0002E97E /* JoinKeysignDoneSummary.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
