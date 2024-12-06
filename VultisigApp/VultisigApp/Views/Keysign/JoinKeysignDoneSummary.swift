@@ -14,6 +14,12 @@ struct JoinKeysignDoneSummary: View {
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
+    let summaryViewModel = JoinKeysignSummaryViewModel()
+    
+    var showApprove: Bool {
+        viewModel.keysignPayload?.approvePayload != nil
+    }
+    
     var body: some View {
         ScrollView {
             ZStack {
@@ -64,19 +70,50 @@ struct JoinKeysignDoneSummary: View {
     var swapContent: some View {
         VStack(spacing: 18) {
             Separator()
-            getGeneralCell(title: "action", description: getAction())
+            getGeneralCell(
+                title: "action",
+                description: summaryViewModel.getAction(viewModel.keysignPayload)
+            )
+            
             Separator()
-            getGeneralCell(title: "provider", description: getProvider())
+            getGeneralCell(
+                title: "provider",
+                description: summaryViewModel.getProvider(viewModel.keysignPayload)
+            )
+            
             Separator()
-            getGeneralCell(title: "swapFrom", description: getFromAmount())
+            getGeneralCell(
+                title: "swapFrom",
+                description: summaryViewModel.getFromAmount(
+                    viewModel.keysignPayload,
+                    selectedCurrency: settingsViewModel.selectedCurrency
+                )
+            )
+            
             Separator()
-            getGeneralCell(title: "to", description: getToAmount())
+            getGeneralCell(
+                title: "to",
+                description: summaryViewModel.getToAmount(
+                    viewModel.keysignPayload,
+                    selectedCurrency: settingsViewModel.selectedCurrency
+                )
+            )
             
             if showApprove {
                 Separator()
-                getGeneralCell(title: "allowanceSpender", description: getSpender())
+                getGeneralCell(
+                    title: "allowanceSpender",
+                    description: summaryViewModel.getSpender(viewModel.keysignPayload)
+                )
+                
                 Separator()
-                getGeneralCell(title: "allowanceAmount", description: getAmount())
+                getGeneralCell(
+                    title: "allowanceAmount",
+                    description: summaryViewModel.getAmount(
+                        viewModel.keysignPayload,
+                        selectedCurrency: settingsViewModel.selectedCurrency
+                    )
+                )
             }
         }
     }
@@ -157,7 +194,7 @@ struct JoinKeysignDoneSummary: View {
         .foregroundColor(.neutral100)
     }
     
-    func card(title: String, txid: String) -> some View {
+    private func card(title: String, txid: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             titleSection(title: title, txid: txid)
 
@@ -179,7 +216,7 @@ struct JoinKeysignDoneSummary: View {
         .padding(.horizontal, 16)
     }
     
-    func titleSection(title: String, txid: String) -> some View {
+    private func titleSection(title: String, txid: String) -> some View {
         HStack(spacing: 12) {
             Text(title)
                 .font(.body20MontserratSemiBold)
@@ -190,7 +227,7 @@ struct JoinKeysignDoneSummary: View {
         }
     }
     
-    func progressButton(link: String) -> some View {
+    private func progressButton(link: String) -> some View {
         Button {
             progressLink(link: link)
         } label: {
@@ -200,7 +237,7 @@ struct JoinKeysignDoneSummary: View {
         }
     }
     
-    func copyButton(txid: String) -> some View {
+    private func copyButton(txid: String) -> some View {
         Button {
             copyHash(txid: txid)
         } label: {
@@ -211,7 +248,7 @@ struct JoinKeysignDoneSummary: View {
         
     }
     
-    func linkButton(txid: String) -> some View {
+    private func linkButton(txid: String) -> some View {
         Button {
             shareLink(txid: txid)
         } label: {
@@ -220,19 +257,6 @@ struct JoinKeysignDoneSummary: View {
                 .foregroundColor(.neutral0)
         }
         
-    }
-    
-    private func shareLink(txid: String) {
-        let urlString = viewModel.getTransactionExplorerURL(txid: txid)
-        if !urlString.isEmpty, let url = URL(string: urlString) {
-            openURL(url)
-        }
-    }
-
-    private func progressLink(link: String) {
-        if !link.isEmpty, let url = URL(string: link) {
-            openURL(url)
-        }
     }
     
     private func progressLink(link: String) -> some View {
@@ -246,59 +270,16 @@ struct JoinKeysignDoneSummary: View {
         }
     }
     
-    func getAction() -> String {
-        guard viewModel.keysignPayload?.approvePayload == nil else {
-            return NSLocalizedString("Approve and Swap", comment: "")
-        }
-        return NSLocalizedString("Swap", comment: "")
-    }
-
-    func getProvider() -> String {
-        switch viewModel.keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .none:
-            return .empty
+    private func shareLink(txid: String) {
+        let urlString = viewModel.getTransactionExplorerURL(txid: txid)
+        if !urlString.isEmpty, let url = URL(string: urlString) {
+            openURL(url)
         }
     }
 
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
-
-    func getSpender() -> String {
-        return viewModel.keysignPayload?.approvePayload?.spender ?? .empty
-    }
-
-    func getAmount() -> String {
-        guard let fromCoin = viewModel.keysignPayload?.coin, let amount = viewModel.keysignPayload?.approvePayload?.amount else {
-            return .empty
-        }
-
-        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(fromCoin.ticker)"
-    }
-
-    func getFromAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.fromCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
-        }
-    }
-
-    func getToAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.toCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+    private func progressLink(link: String) {
+        if !link.isEmpty, let url = URL(string: link) {
+            openURL(url)
         }
     }
 }
