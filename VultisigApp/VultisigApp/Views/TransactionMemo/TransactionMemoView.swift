@@ -82,8 +82,9 @@ struct TransactionMemoView: View {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(
                     vault: vault,
-                    keysignPayload: keysignPayload,
-                    transferViewModel: transactionMemoViewModel, 
+                    keysignPayload: keysignPayload, 
+                    customMessagePayload: nil,
+                    transferViewModel: transactionMemoViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel
