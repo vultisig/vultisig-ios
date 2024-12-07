@@ -206,6 +206,7 @@ struct SendCryptoView: View {
         tx.fromAddress = selectedCoin.address
         tx.toAddress = deeplinkViewModel.address ?? ""
         selectedChain = nil
+        
         DebounceHelper.shared.debounce {
             validateAddress(deeplinkViewModel.address ?? "")
         }

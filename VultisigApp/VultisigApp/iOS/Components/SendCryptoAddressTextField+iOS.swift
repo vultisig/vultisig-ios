@@ -94,7 +94,6 @@ extension SendCryptoAddressTextField {
     }
     
     private func handleImageQrCode(image: UIImage) {
-        
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
         
