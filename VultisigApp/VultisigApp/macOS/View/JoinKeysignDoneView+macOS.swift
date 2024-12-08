@@ -9,7 +9,7 @@
 import SwiftUI
 import Cocoa
 
-extension JoinKeysignDoneView {
+extension JoinKeysignDoneSummary {
     func copyHash(txid: String) {
         let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
         showAlert = true

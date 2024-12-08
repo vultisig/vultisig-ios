@@ -47,6 +47,8 @@ public final class Mediator {
         // Payload
         self.server["/payload/:hash"] = self.processPayload
         
+        // setup message
+        self.server["/setup-message/:sessionID"] = self.processSetupMessage
         
     }
     
@@ -345,6 +347,35 @@ public final class Mediator {
                         return HttpResponse.badRequest(.text("invalid hash"))
                     }
                     print("return payload: \(hash)")
+                    return HttpResponse.ok(.text(body))
+                }
+                return HttpResponse.notAcceptable
+            default:
+                return HttpResponse.notFound
+            }
+        } catch{
+            logger.error("fail to process request to payload,error:\(error.localizedDescription)")
+            return HttpResponse.internalServerError
+        }
+    }
+    
+    func processSetupMessage(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        let key = "setup-\(sessionID)"
+        do{
+            switch req.method {
+            case "POST":
+                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                setObject(body, forKey: key)
+                return HttpResponse.created
+            case "GET":
+                if !self.cache.objectExists(forKey: key) {
+                    return HttpResponse.notFound
+                }
+                let body = try self.cache.object(forKey: key) as? String
+                if let body {
                     return HttpResponse.ok(.text(body))
                 }
                 return HttpResponse.notAcceptable

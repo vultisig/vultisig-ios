@@ -28,6 +28,7 @@ struct GeneralCodeScannerView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     
     var body: some View {
         ZStack {
@@ -165,11 +166,7 @@ struct GeneralCodeScannerView: View {
         let address = deeplinkViewModel.address ?? ""
         sendTX.toAddress = address
         
-        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
-            $0.chain.name > $1.chain.name
-        })
-        
-        for asset in sortedAssets {
+        for asset in vaultDetailViewModel.groups {
             let isValid = asset.chain.coinType.validate(address: address)
             
             if isValid {
@@ -194,5 +191,6 @@ struct GeneralCodeScannerView: View {
     .environmentObject(DeeplinkViewModel())
     .environmentObject(SettingsDefaultChainViewModel())
     .environmentObject(HomeViewModel())
+    .environmentObject(VaultDetailViewModel())
 }
 #endif

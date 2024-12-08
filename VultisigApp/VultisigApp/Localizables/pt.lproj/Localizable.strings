@@ -417,3 +417,6 @@
 "secureVault" = "Cofre Seguro";
 "secureVaultTempDescription" = "Configurações de 2de3, 3de4, 4de6 dispositivos disponíveis\nUm backup por dispositivo\nRedundante e seguro";
 "swapFee" = "Taxa de Swap";
+"action" = "Ação";
+"swapFrom" = "Trocar de";
+"approveAndSwap" = "Aprovar e Trocar";
