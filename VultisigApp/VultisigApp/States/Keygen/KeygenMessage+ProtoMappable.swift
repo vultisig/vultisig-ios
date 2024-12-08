@@ -17,6 +17,7 @@ extension KeygenMessage: ProtoMappable {
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
         self.vaultName = proto.vaultName
+        self.libType = proto.libType.toLibType()
     }
 
     func mapToProtobuff() -> VSKeygenMessage {
@@ -27,6 +28,7 @@ extension KeygenMessage: ProtoMappable {
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
             $0.vaultName = vaultName
+            $0.libType = libType.toVSLibType()
         }
     }
 }

@@ -702,6 +702,7 @@
 		DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */; };
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
+		DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE727C0B2D000FC3007E9273 /* LibType.swift */; };
 		DE8554682C2CFBC10002438C /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DE8554672C2CFBC10002438C /* walletcore */; };
 		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
@@ -1468,6 +1469,7 @@
 		DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignViewModel.swift; sourceTree = "<group>"; };
 		DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwaps.swift; sourceTree = "<group>"; };
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
+		DE727C0B2D000FC3007E9273 /* LibType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibType.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
@@ -2516,6 +2518,7 @@
 		A65649F32B966CCB00E4B329 /* States */ = {
 			isa = PBXGroup;
 			children = (
+				DE727C0B2D000FC3007E9273 /* LibType.swift */,
 				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
 				A65649F42B966F3E00E4B329 /* DecodableDefault.swift */,
 				46B106502BA7CAFE00564023 /* ChainType.swift */,
@@ -3497,6 +3500,7 @@
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
 				A6C670922C9CFE1600F59B6A /* HomeView+macOS.swift in Sources */,
+				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
