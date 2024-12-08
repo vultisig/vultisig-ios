@@ -174,6 +174,7 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = keygenMsg.encryptionKeyHex
                 useVultisigRelay = keygenMsg.useVultisigRelay
                 vault.name = keygenMsg.vaultName
+                vault.libType = keygenMsg.libType
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
                     errorMessage = "Vault with name:\(keygenMsg.vaultName) already exist"
                     logger.error("\(self.errorMessage)")
@@ -198,6 +199,7 @@ class JoinKeygenViewModel: ObservableObject {
                             self.localPartyID = reshareVault.localPartyID
                         } else {
                             vault.hexChainCode = reshareMsg.hexChainCode
+                            vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
                                 errorMessage = "Vault with name:\(reshareMsg.vaultName) already exist"

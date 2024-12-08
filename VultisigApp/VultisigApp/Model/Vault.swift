@@ -55,6 +55,7 @@ final class Vault: ObservableObject, Codable {
     
     init(name: String) {
         self.name = name
+        self.libType = GetLibType()
     }
     
     init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?, libType: LibType?) {

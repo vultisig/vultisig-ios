@@ -32,3 +32,11 @@ extension VSLibType {
         }
     }
 }
+
+func GetLibType() -> LibType {
+    #if DEBUG
+    return .DKLS
+    #else
+    return .GG20
+    #endif
+}
