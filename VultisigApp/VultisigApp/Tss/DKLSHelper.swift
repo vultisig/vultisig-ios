@@ -33,7 +33,7 @@ class DKLSHelper{
 }
 
 extension Array where Element == UInt8 {
-    func toGoSlice() -> go_slice {
+    func to_dkls_goslice() -> go_slice {
         let result = self.withUnsafeBufferPointer{ bp in
             return go_slice(
                 ptr: UnsafePointer(bp.baseAddress),
@@ -41,5 +41,19 @@ extension Array where Element == UInt8 {
                 cap: UInt(bp.count))
         }
         return result.self
+    }
+}
+extension String {
+    func to_dkls_goslice() -> go_slice? {
+        guard let utf8Bytes = self.data(using: .utf8) else {
+            return nil
+        }
+        
+        return [UInt8](utf8Bytes).withUnsafeBufferPointer{ bp -> go_slice in
+            return go_slice(
+                ptr: UnsafePointer(bp.baseAddress),
+                len: UInt(bp.count),
+                cap: UInt(bp.count))
+        }
     }
 }

@@ -268,43 +268,4 @@ class KeygenViewModel: ObservableObject {
         return try await t.value
     }
     
-    
-    private func getDklsSetupMessage() throws -> String  {
-        var buf = tss_buffer()
-        defer {
-            tss_buffer_free(&buf)
-        }
-        let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
-        // create setup message and upload it to relay server
-        let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
-        var ids = byteArray.toGoSlice()
-        
-        try withUnsafeMutablePointer(to: &buf){ bufferPointer in
-            let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, bufferPointer)
-            if err != LIB_OK {
-                print("dkls error: \(err)")
-                throw HelperError.runtimeError("dkls error:\(err)")
-            }
-        }
-        
-        let resultArr = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        return Data(resultArr).base64EncodedString()
-    }
-    
-    private func DKLSKeygenWithRetry(attempt: UInt8) async throws {
-        do{
-            if self.isInitiateDevice {
-                let keygenSetupMsg = try getDklsSetupMessage()
-            }
-        }
-        catch{
-            self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
-            if attempt < 3 { // let's retry
-                logger.info("keygen/reshare retry, attemp: \(attempt)")
-                try await DKLSKeygenWithRetry(attempt: attempt + 1)
-            } else {
-                throw error
-            }
-        }
-    }
 }
