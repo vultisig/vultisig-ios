@@ -7,7 +7,8 @@ import SwiftUI
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
-    let keysignPayload: KeysignPayload
+    let keysignPayload: KeysignPayload?
+    let customMessagePayload: CustomMessagePayload? // TODO: Switch to enum
     let transferViewModel: TransferViewModel
     let fastVaultPassword: String?
     @Binding var keysignView: KeysignView?
@@ -141,6 +142,7 @@ struct KeysignDiscoveryView: View {
         viewModel.setData(
             vault: vault,
             keysignPayload: keysignPayload,
+            customMessagePayload: customMessagePayload,
             participantDiscovery: participantDiscovery,
             fastVaultPassword: fastVaultPassword,
             onFastKeysign: { startKeysign() }
@@ -148,20 +150,18 @@ struct KeysignDiscoveryView: View {
 
         qrCodeImage = await viewModel.getQrImage(size: 100)
         
-        guard let qrCodeImage else {
-            return
+        if let qrCodeImage, let keysignPayload {
+            shareSheetViewModel.render(
+                qrCodeImage: qrCodeImage,
+                displayScale: displayScale,
+                type: previewType,
+                vaultName: vault.name,
+                amount: previewType == .Send ? keysignPayload.toAmountString : "",
+                toAddress: previewType == .Send ? keysignPayload.toAddress : "",
+                fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
+                toAmount: previewType == .Swap ? getSwapToAmount() : ""
+            )
         }
-        
-        shareSheetViewModel.render(
-            qrCodeImage: qrCodeImage,
-            displayScale: displayScale, 
-            type: previewType,
-            vaultName: vault.name,
-            amount: previewType == .Send ? keysignPayload.toAmountString : "",
-            toAddress: previewType == .Send ? keysignPayload.toAddress : "",
-            fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
-            toAmount: previewType == .Swap ? getSwapToAmount() : ""
-        )
     }
     
     func getSwapFromAmount() -> String {
@@ -220,6 +220,6 @@ struct KeysignDiscoveryView: View {
 }
 
 #Preview {
-    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, customMessagePayload: nil, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
         .environmentObject(SettingsViewModel())
 }
