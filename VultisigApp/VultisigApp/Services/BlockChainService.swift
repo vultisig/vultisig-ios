@@ -48,6 +48,8 @@ final class BlockChainService {
     private let dydx = DydxService.shared
     private let ton = TonService.shared
     private let osmo = OsmosisService.shared
+    
+    private let ripple = RippleService.shared
 
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
@@ -329,6 +331,15 @@ private extension BlockChainService {
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)
+        case .ripple:
+            
+            let account = try await ripple.fetchAccountsInfo(for: coin.address)
+            
+            let sequence = account?.result?.accountData?.sequence ?? 0
+            
+            let ledgerIndex = account?.result?.ledgerCurrentIndex ?? 0
+            
+            return .Cosmos(accountNumber: UInt64(ledgerIndex), sequence: UInt64(sequence), gas: 200000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         }
     }
     

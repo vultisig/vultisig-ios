@@ -115,6 +115,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Polkadot
         case .ton:
             return .Ton
+        case .ripple:
+            return .Ripple
         }
     }
 
@@ -167,6 +169,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "10000000000"
         case .ton:
             return "7000"
+        case .ripple:
+            return "10"
         }
     }
 

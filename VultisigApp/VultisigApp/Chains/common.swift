@@ -68,6 +68,9 @@ struct SignatureProvider {
             switch sigResult {
             case .success(let sigData):
                 logger.info("successfully get signature")
+                
+                print("successfully get signature")
+                print(sigData.hexString)
                 return sigData
             case .failure(let err):
                 switch err {
