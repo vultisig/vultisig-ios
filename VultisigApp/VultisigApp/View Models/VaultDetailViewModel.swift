@@ -15,7 +15,15 @@ class VaultDetailViewModel: ObservableObject {
 
     private let balanceService = BalanceService.shared
     private var updateBalanceTask: Task<Void, Never>?
-    
+
+    func migrate(vault: Vault) {
+        // MATIC to POL migration
+        for coin in vault.coins where coin.ticker == "MATIC" {
+            coin.ticker = "POL"
+            coin.logo = "pol"
+        }
+    }
+
     func updateBalance(vault: Vault) {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {

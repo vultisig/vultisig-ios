@@ -35,8 +35,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case terra
     case terraClassic
     case noble
-    
-    
+
     enum MigrationKeys: String, CodingKey {
         case ticker
     }
@@ -73,6 +72,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .noble: return "Noble"
         }
     }
+
     var feeUnit: String{
         switch self {
         case .thorChain: return "RUNE"
@@ -115,7 +115,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum: return "ARB"
         case .base: return "BASE" //Base does not have a coin
         case .optimism: return "OP"
-        case .polygon: return "MATIC"
+        case .polygon: return "POL"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
         case .sui: return "SUI"
@@ -210,7 +210,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum:
             return "arbitrum"
         case .polygon:
-            return "matic"
+            return "pol"
         case .optimism:
             return "optimism"
         case .bscChain:
