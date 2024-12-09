@@ -23,11 +23,8 @@ struct SettingsCustomMessageView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
-        .navigationTitle(NSLocalizedString(viewModel.state.title, comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(viewModel.state != .initial)
         .toolbar {
             if viewModel.state != .initial {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -107,12 +104,9 @@ struct SettingsCustomMessageView: View {
                     .foregroundColor(.neutral0)
                     .tint(.neutral0)
                     .font(.body16Menlo)
-                    .submitLabel(.next)
+                    .submitLabel(.done)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.decimalPad)
-                    .textContentType(.oneTimeCode)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 16)
