@@ -20,6 +20,7 @@ extension ReshareMessage: ProtoMappable {
         self.useVultisigRelay = proto.useVultisigRelay
         self.oldResharePrefix = proto.oldResharePrefix
         self.vaultName = proto.vaultName
+        self.libType = proto.libType.toLibType()
     }
 
     func mapToProtobuff() -> VSReshareMessage {
@@ -33,6 +34,7 @@ extension ReshareMessage: ProtoMappable {
             $0.useVultisigRelay = useVultisigRelay
             $0.oldResharePrefix = oldResharePrefix
             $0.vaultName = vaultName
+            $0.libType = libType.toVSLibType()
         }
     }
 }
