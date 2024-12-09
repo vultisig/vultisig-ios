@@ -704,6 +704,8 @@
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE6EF0392D064DAC00A36D6A /* goschnorr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0382D064DAC00A36D6A /* goschnorr.xcframework */; };
 		DE6EF03A2D064DAC00A36D6A /* godkls.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0372D064DAC00A36D6A /* godkls.xcframework */; };
+		DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */; };
+		DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */; };
 		DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE727C0B2D000FC3007E9273 /* LibType.swift */; };
 		DE8554682C2CFBC10002438C /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DE8554672C2CFBC10002438C /* walletcore */; };
 		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
@@ -1473,6 +1475,8 @@
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
 		DE6EF0372D064DAC00A36D6A /* godkls.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = godkls.xcframework; sourceTree = "<group>"; };
 		DE6EF0382D064DAC00A36D6A /* goschnorr.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = goschnorr.xcframework; sourceTree = "<group>"; };
+		DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSHelper.swift; sourceTree = "<group>"; };
+		DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSMessenger.swift; sourceTree = "<group>"; };
 		DE727C0B2D000FC3007E9273 /* LibType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibType.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
@@ -3058,6 +3062,8 @@
 		DE1572932B70F254009BC7C5 /* Tss */ = {
 			isa = PBXGroup;
 			children = (
+				DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */,
+				DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */,
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
 				DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */,
 				DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */,
@@ -3427,6 +3433,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
+				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
@@ -3667,6 +3674,7 @@
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */,
 				A65617F72CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift in Sources */,
+				DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,

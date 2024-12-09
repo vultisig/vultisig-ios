@@ -178,8 +178,9 @@ struct PeerDiscoveryView: View {
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
+            oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
+            isInitiateDevice: true,
             hideBackButton: $hideBackButton,
             selectedTab: selectedTab
         )

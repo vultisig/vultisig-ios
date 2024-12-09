@@ -7,6 +7,7 @@ import Foundation
 import OSLog
 import SwiftData
 import Tss
+import godkls
 
 enum KeygenStatus {
     case CreatingInstance
@@ -30,6 +31,7 @@ class KeygenViewModel: ObservableObject {
     var sessionID: String
     var encryptionKeyHex: String
     var oldResharePrefix: String
+    var isInitiateDevice: Bool
     
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -39,9 +41,9 @@ class KeygenViewModel: ObservableObject {
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-
+    
     private let keychain = DefaultKeychainService.shared
-
+    
     init() {
         self.vault = Vault(name: "Main Vault")
         self.tssType = .Keygen
@@ -51,6 +53,7 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = ""
         self.encryptionKeyHex = ""
         self.oldResharePrefix = ""
+        self.isInitiateDevice = false
     }
     
     func setData(vault: Vault,
@@ -60,7 +63,8 @@ class KeygenViewModel: ObservableObject {
                  mediatorURL: String,
                  sessionID: String,
                  encryptionKeyHex: String,
-                 oldResharePrefix:String) async {
+                 oldResharePrefix:String,
+                 initiateDevice: Bool) async {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -69,6 +73,7 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
+        self.isInitiateDevice = initiateDevice
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
@@ -213,12 +218,12 @@ class KeygenViewModel: ObservableObject {
         }
         
     }
-
+    
     func saveFastSignConfig(_ config: FastSignConfig, vault: Vault) {
         keychain.setFastPassword(config.password, pubKeyECDSA: vault.pubKeyECDSA)
         keychain.setFastHint(config.hint, pubKeyECDSA: vault.pubKeyECDSA)
     }
-
+    
     private func createTssInstance(messenger: TssMessengerProtocol,
                                    localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
     {
@@ -261,5 +266,45 @@ class KeygenViewModel: ObservableObject {
             }
         }
         return try await t.value
+    }
+    
+    
+    private func getDklsSetupMessage() throws -> String  {
+        var buf = tss_buffer()
+        defer {
+            tss_buffer_free(&buf)
+        }
+        let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
+        // create setup message and upload it to relay server
+        let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
+        var ids = byteArray.toGoSlice()
+        
+        try withUnsafeMutablePointer(to: &buf){ bufferPointer in
+            let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, bufferPointer)
+            if err != LIB_OK {
+                print("dkls error: \(err)")
+                throw HelperError.runtimeError("dkls error:\(err)")
+            }
+        }
+        
+        let resultArr = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+        return Data(resultArr).base64EncodedString()
+    }
+    
+    private func DKLSKeygenWithRetry(attempt: UInt8) async throws {
+        do{
+            if self.isInitiateDevice {
+                let keygenSetupMsg = try getDklsSetupMessage()
+            }
+        }
+        catch{
+            self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
+            if attempt < 3 { // let's retry
+                logger.info("keygen/reshare retry, attemp: \(attempt)")
+                try await DKLSKeygenWithRetry(attempt: attempt + 1)
+            } else {
+                throw error
+            }
+        }
     }
 }
