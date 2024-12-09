@@ -44,6 +44,9 @@ struct VaultDetailView: View {
             popup
             shadowView
         }
+        .task {
+            viewModel.migrate(vault: vault)
+        }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
             onAppear()
