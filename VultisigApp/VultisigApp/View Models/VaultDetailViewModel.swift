@@ -20,6 +20,7 @@ class VaultDetailViewModel: ObservableObject {
         // MATIC to POL migration
         for coin in vault.coins where coin.ticker == "MATIC" {
             coin.ticker = "POL"
+            coin.logo = "pol"
         }
     }
 
