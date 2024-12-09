@@ -362,7 +362,7 @@ class Endpoint {
             return "https://basescan.org/tx/\(txid)"
         case "OP":
             return "https://optimistic.etherscan.io/tx/\(txid)"
-        case "MATIC":
+        case "POL":
             return "https://polygonscan.com/tx/\(txid)"
         case "BLAST":
             return "https://blastscan.io/tx/\(txid)"
@@ -425,7 +425,7 @@ class Endpoint {
             return "https://basescan.org/address/\(address)"
         case "OP":
             return "https://optimistic.etherscan.io/address/\(address)"
-        case "MATIC":
+        case "POL":
             return "https://polygonscan.com/address/\(address)"
         case "BLAST":
             return "https://blastscan.io/address/\(address)"
