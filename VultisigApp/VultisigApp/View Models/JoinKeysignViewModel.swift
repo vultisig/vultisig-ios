@@ -209,9 +209,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
 
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
-        let data = Data(customMessagePayload.message.utf8)
-        let hash = data.sha3(.sha256)
-        self.keysignMessages = [hash.hexString]
+        self.keysignMessages = customMessagePayload.keysignMessages
     }
 
     func handleQrCodeSuccessResult(data: String?) async {
