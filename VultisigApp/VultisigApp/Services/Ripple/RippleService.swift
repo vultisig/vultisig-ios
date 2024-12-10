@@ -36,6 +36,11 @@ class RippleService {
             if let engine_result = Utils.extractResultFromJson(fromData: data, path: "result.engine_result") as? String {
                 if engine_result != "tesSUCCESS" {
                     if let engine_result_message = Utils.extractResultFromJson(fromData: data, path: "result.engine_result_message") as? String {
+                        if engine_result_message.lowercased() == "This sequence number has already passed.".lowercased() {
+                            if let result = Utils.extractResultFromJson(fromData: data, path: "result.tx_json.hash") as? String {
+                                return result.description
+                            }
+                        }
                         return engine_result_message.description
                     }
                 }
