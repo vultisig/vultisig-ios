@@ -264,6 +264,7 @@ final class DKLSKeygen {
                 // download the setup message from relay server
                 let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry()
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
+                self.setupMessage = keygenSetupMsg
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
             var handler = godkls.Handle(_0: 0)
