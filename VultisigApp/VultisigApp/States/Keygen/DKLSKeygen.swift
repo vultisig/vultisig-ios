@@ -6,20 +6,10 @@
 //
 import Foundation
 import godkls
+import goschnorr
 import OSLog
+import Mediator
 
-enum DKLSError: Error,LocalizedError{
-    case backoff
-    case runtimeError(String)
-    var errorDescription: String? {
-        switch self {
-        case .runtimeError(let string):
-            return string
-        case .backoff:
-            return "back off"
-        }
-    }
-}
 
 final class DKLSKeygen {
     private let logger = Logger(subsystem: "keygen", category: "dkls")
@@ -35,6 +25,8 @@ final class DKLSKeygen {
     var messenger: DKLSMessenger
     var keygenDoneIndicator = false
     let keyGenLock = NSLock()
+    let localPartyID: String
+    var cache = NSCache<NSString, AnyObject>()
     
     init(vault: Vault,
          tssType: TssType,
@@ -55,6 +47,7 @@ final class DKLSKeygen {
         self.oldResharePrefix = oldResharePrefix
         self.isInitiateDevice = isInitiateDevice
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
+        self.localPartyID = vault.localPartyID
     }
     
     private func getDklsSetupMessage() throws -> String  {
@@ -70,7 +63,7 @@ final class DKLSKeygen {
         try withUnsafeMutablePointer(to: &buf){ bufferPointer in
             let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, bufferPointer)
             if err != LIB_OK {
-                throw DKLSError.runtimeError("fail to setup keygen message, dkls error:\(err)")
+                throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
             }
         }
         
@@ -124,6 +117,9 @@ final class DKLSKeygen {
     func processDKLSOutboundMessage(handle: godkls.Handle) throws  {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
+            if result != LIB_OK {
+                self.logger.error("fail to get outbound message")
+            }
             if outboundMessage.count == 0 {
                 if self.isKeygenDone() {
                     return
@@ -137,7 +133,7 @@ final class DKLSKeygen {
             let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
             for i in 0..<self.keygenCommittee.count {
                 let receiverArray = getOutboundMessageReceiver(handle:handle,
-                                                             message: message, idx: UInt32(i))
+                                                               message: message, idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
                     break
@@ -149,7 +145,87 @@ final class DKLSKeygen {
         
     }
     
-
+    func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
+        let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("invalid url string: \(urlString)")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var isFinished = false
+        let start = DispatchTime.now()
+        repeat {
+            let (data,resp) = try await URLSession.shared.data(for: request)
+            guard let httpResp = resp as? HTTPURLResponse else {
+                throw HelperError.runtimeError("fail to convert resp to http url response")
+            }
+            switch httpResp.statusCode {
+            case 200 ... 299:
+                isFinished = try await processInboundMessage(handle: handle, data: data)
+                if isFinished {
+                    return true
+                }
+                // success
+            default:
+                throw HelperError.runtimeError("invalid status code: \(httpResp.statusCode)")
+            }
+            let currentTime = DispatchTime.now()
+            let elapsedTime = currentTime.uptimeNanoseconds - start.uptimeNanoseconds
+            let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
+            // timeout for 60 seconds
+            if elapsedTimeInSeconds > 60 {
+                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
+            }
+        } while !isFinished
+        
+        return false
+    }
+    
+    func processInboundMessage(handle: godkls.Handle,data:Data) async throws -> Bool {
+        print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
+        let decoder = JSONDecoder()
+        let msgs = try decoder.decode([Message].self, from: data)
+        let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
+        for msg in sortedMsgs {
+            let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
+            if self.cache.object(forKey: key) != nil {
+                self.logger.info("message with key:\(key) has been applied before")
+                // message has been applied before
+                continue
+            }
+            self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
+                throw HelperError.runtimeError("fail to decrypted message body")
+            }
+            guard var decryptedBodySlice = decryptedBody.to_dkls_goslice() else {
+                throw HelperError.runtimeError("fail to convert decrypted message to go_slice")
+            }
+            var isFinished:UInt32 = 0
+            let result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            if result != LIB_OK {
+                throw HelperError.runtimeError("fail to apply message to dkls")
+            }
+            self.cache.setObject(NSObject(), forKey: key)
+            try await deleteMessageFromServer(hash: msg.hash)
+            // local party keygen finished
+            if isFinished != 0 {
+                return true
+            }
+        }
+        return false
+    }
+    
+    func deleteMessageFromServer(hash: String) async throws {
+        let urlString = "\(mediatorURL)/message/\(self.sessionID)/\(self.localPartyID)/\(hash)"
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("invalid url string: \(urlString)")
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        let (_,_) = try await URLSession.shared.data(for: request)
+    }
     
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         let messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
@@ -175,8 +251,21 @@ final class DKLSKeygen {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create session from setup message")
             }
-            
-            
+            let task = Task{
+                try processDKLSOutboundMessage(handle: handler)
+            }
+            let isFinished = try await pullInboundMessages(handle: handler)
+            if isFinished {
+                var keyshareHandler = godkls.Handle(_0: 0)
+                let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
+                if keyShareResult != LIB_OK {
+                    throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
+                }
+                let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
+                let publicKeyECDSA = try getPublicKeyBytes(handle: keyshareHandler)
+                let chainCodeBytes = try getChainCode(handle: keyshareHandler)
+                dkls_keyshare_free(&keyshareHandler)
+            }
         }
         catch{
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
@@ -187,5 +276,40 @@ final class DKLSKeygen {
                 throw error
             }
         }
+    }
+    
+    func getKeyshareBytes(handle: godkls.Handle) throws  -> [UInt8] {
+        var buf = tss_buffer()
+        defer {
+            tss_buffer_free(&buf)
+        }
+        let result = dkls_keyshare_to_bytes(handle,&buf)
+        if result != LIB_OK {
+            throw HelperError.runtimeError("fail to get keyshare from handler, \(result)")
+        }
+        return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+    }
+    
+    func getPublicKeyBytes(handle: godkls.Handle) throws  -> [UInt8] {
+        var buf = tss_buffer()
+        defer {
+            tss_buffer_free(&buf)
+        }
+        let result =  dkls_keyshare_public_key(handle,&buf)
+        if result != LIB_OK {
+            throw HelperError.runtimeError("fail to get ECDSA public key from handler, \(result)")
+        }
+        return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+    }
+    func getChainCode(handle: godkls.Handle) throws -> [UInt8] {
+        var buf = tss_buffer()
+        defer {
+            tss_buffer_free(&buf)
+        }
+        let result =  dkls_keyshare_chaincode(handle,&buf)
+        if result != LIB_OK {
+            throw HelperError.runtimeError("fail to get ECDSA chaincode from handler, \(result)")
+        }
+        return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
 }

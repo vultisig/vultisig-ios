@@ -92,6 +92,38 @@ class KeygenViewModel: ObservableObject {
     }
     
     func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
+        switch(self.vault.libType){
+        case .GG20:
+            await startKeygenGG20(context: context, defaultChains: defaultChains)
+        case .DKLS:
+            await startKeygenDKLS(context: context, defaultChains: defaultChains)
+        default:
+            print("invalid vault lib type")
+            return
+        }
+    }
+    
+    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta]) async {
+        let dklsKeygen = DKLSKeygen(vault: self.vault,
+                                    tssType: self.tssType,
+                                    keygenCommittee: self.keygenCommittee,
+                                    vaultOldCommittee: self.vaultOldCommittee,
+                                    mediatorURL: self.mediatorURL,
+                                    sessionID: self.sessionID,
+                                    encryptionKeyHex: self.encryptionKeyHex,
+                                    oldResharePrefix: self.oldResharePrefix,
+                                    isInitiateDevice: self.isInitiateDevice)
+        do{
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
+        }catch{
+            self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
+            self.status = .KeygenFailed
+            self.keygenError = error.localizedDescription
+            return
+        }
+    }
+    
+    func startKeygenGG20(context: ModelContext, defaultChains: [CoinMeta]) async {
         defer {
             self.messagePuller?.stop()
         }

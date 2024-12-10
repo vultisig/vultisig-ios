@@ -707,7 +707,6 @@
 		DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */; };
 		DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */; };
 		DE6EF0532D068BE700A36D6A /* DKLSKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */; };
-		DE6EF0552D06B57400A36D6A /* DKLSMessagePuller.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0542D06B56D00A36D6A /* DKLSMessagePuller.swift */; };
 		DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE727C0B2D000FC3007E9273 /* LibType.swift */; };
 		DE8554682C2CFBC10002438C /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DE8554672C2CFBC10002438C /* walletcore */; };
 		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
@@ -1480,7 +1479,6 @@
 		DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSHelper.swift; sourceTree = "<group>"; };
 		DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSMessenger.swift; sourceTree = "<group>"; };
 		DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSKeygen.swift; sourceTree = "<group>"; };
-		DE6EF0542D06B56D00A36D6A /* DKLSMessagePuller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSMessagePuller.swift; sourceTree = "<group>"; };
 		DE727C0B2D000FC3007E9273 /* LibType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibType.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
@@ -1810,7 +1808,6 @@
 		46D067E42B8852B70052F535 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
-				DE6EF0542D06B56D00A36D6A /* DKLSMessagePuller.swift */,
 				A51AE8BE2C931C6000EF9A7A /* FastVaultEmailView.swift */,
 				A51AE8BF2C931C6000EF9A7A /* FastVaultEnterPasswordView.swift */,
 				A51AE8BD2C931C6000EF9A7A /* FastVaultSetPasswordView.swift */,
@@ -3872,7 +3869,6 @@
 				A6B7F4982C49402F006D83D1 /* VaultDetailQRCodeView.swift in Sources */,
 				A6C670C12C9D16BD00F59B6A /* CustomTokenView+iOS.swift in Sources */,
 				A6386DA62C90243C00DDD58E /* TokenSelectionCell+iOS.swift in Sources */,
-				DE6EF0552D06B57400A36D6A /* DKLSMessagePuller.swift in Sources */,
 				A6C6713B2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift in Sources */,
 				A6C6711F2CA3BD1600F59B6A /* PeerCell+iOS.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
