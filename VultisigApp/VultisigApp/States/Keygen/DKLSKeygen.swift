@@ -109,7 +109,7 @@ final class DKLSKeygen {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
     
-    func processDKLSOutboundMessage(handle: godkls.Handle) throws  {
+    func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != LIB_OK {
@@ -120,7 +120,7 @@ final class DKLSKeygen {
                     return
                 }
                 // back off 100ms and continue
-                sleep(100)
+                try await Task.sleep(for: .milliseconds(100))
                 continue
             }
             
@@ -133,8 +133,9 @@ final class DKLSKeygen {
                 if receiverArray.count == 0 {
                     break
                 }
-                let receiverString = String(bytes:receiverArray,encoding: .utf8)
-                try self.messenger.send(self.vault.localPartyID, to: receiverString, body: encodedOutboundMessage)
+                let receiverString = String(bytes:receiverArray,encoding: .utf8)!
+                print("sending message from \(self.localPartyID) to: \(receiverString)")
+                try self.messenger.send(self.localPartyID, to: receiverString, body: encodedOutboundMessage)
             }
         } while 1 > 0
         
@@ -142,6 +143,7 @@ final class DKLSKeygen {
     
     func pullInboundMessages(handle: godkls.Handle) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
+        print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("invalid url string: \(urlString)")
         }
@@ -158,9 +160,13 @@ final class DKLSKeygen {
             }
             switch httpResp.statusCode {
             case 200 ... 299:
-                isFinished = try await processInboundMessage(handle: handle, data: data)
-                if isFinished {
-                    return true
+                if data.count > 0 {
+                    isFinished = try await processInboundMessage(handle: handle, data: data)
+                    if isFinished {
+                        return true
+                    }
+                } else {
+                    try await Task.sleep(for: .milliseconds(100))
                 }
                 // success
             default:
@@ -180,6 +186,9 @@ final class DKLSKeygen {
     
     func processInboundMessage(handle: godkls.Handle,data:Data) async throws -> Bool {
         print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
+        if data.count == 0 {
+            return false
+        }
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -195,13 +204,18 @@ final class DKLSKeygen {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
             // need to have a variable to save the array , otherwise dkls function can't access the memory
-            var descryptedBodyArr = decryptedBody.toArray()
+            guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
+                throw HelperError.runtimeError("fail to decrypted inbound message")
+            }
+            
+            let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
             let result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
-                throw HelperError.runtimeError("fail to apply message to dkls")
+                throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
+            print("apply message to local successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
             // local party keygen finished
@@ -243,7 +257,7 @@ final class DKLSKeygen {
                 throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
             }
             let task = Task{
-                try processDKLSOutboundMessage(handle: handler)
+                try await processDKLSOutboundMessage(handle: handler)
             }
             let isFinished = try await pullInboundMessages(handle: handler)
             if isFinished {
