@@ -33,6 +33,7 @@ class DKLSHelper{
 }
 
 extension Array where Element == UInt8 {
+    
     func to_dkls_goslice() -> go_slice {
         let result = self.withUnsafeBufferPointer{ bp in
             return go_slice(

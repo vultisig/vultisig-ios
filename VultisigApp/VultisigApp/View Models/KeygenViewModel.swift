@@ -104,18 +104,48 @@ class KeygenViewModel: ObservableObject {
     }
     
     func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta]) async {
-        let dklsKeygen = DKLSKeygen(vault: self.vault,
-                                    tssType: self.tssType,
-                                    keygenCommittee: self.keygenCommittee,
-                                    vaultOldCommittee: self.vaultOldCommittee,
-                                    mediatorURL: self.mediatorURL,
-                                    sessionID: self.sessionID,
-                                    encryptionKeyHex: self.encryptionKeyHex,
-                                    oldResharePrefix: self.oldResharePrefix,
-                                    isInitiateDevice: self.isInitiateDevice)
         do{
+            let dklsKeygen = DKLSKeygen(vault: self.vault,
+                                        tssType: self.tssType,
+                                        keygenCommittee: self.keygenCommittee,
+                                        vaultOldCommittee: self.vaultOldCommittee,
+                                        mediatorURL: self.mediatorURL,
+                                        sessionID: self.sessionID,
+                                        encryptionKeyHex: self.encryptionKeyHex,
+                                        oldResharePrefix: self.oldResharePrefix,
+                                        isInitiateDevice: self.isInitiateDevice)
+            self.status = .KeygenECDSA
             try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
-        }catch{
+            
+            self.status = .KeygenEdDSA
+            let schnorrKeygen = SchnorrKeygen(vault: self.vault,
+                                              tssType: self.tssType,
+                                              keygenCommittee: self.keygenCommittee,
+                                              vaultOldCommittee: self.vaultOldCommittee,
+                                              mediatorURL: self.mediatorURL,
+                                              sessionID: self.sessionID,
+                                              encryptionKeyHex: self.encryptionKeyHex,
+                                              oldResharePrefix: self.oldResharePrefix,
+                                              setupMessage: dklsKeygen.getSetupMessage())
+            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
+            self.vault.signers = self.keygenCommittee
+            let keyshareECDSA = dklsKeygen.getKeyshare()
+            let keyshareEdDSA = schnorrKeygen.getKeyshare()
+            guard let keyshareECDSA else {
+                throw HelperError.runtimeError("fail to get ECDSA keyshare")
+            }
+            guard let keyshareEdDSA else {
+                throw HelperError.runtimeError("fail to get EdDSA keyshare")
+            }
+            self.vault.hexChainCode = keyshareECDSA.chaincode
+            self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+                                    KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+            VaultDefaultCoinService(context: context)
+                .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
+            context.insert(self.vault)
+            try context.save()
+            self.status = .KeygenFinished
+        } catch{
             self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed
             self.keygenError = error.localizedDescription
