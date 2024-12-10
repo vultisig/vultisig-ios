@@ -44,16 +44,11 @@ extension Array where Element == UInt8 {
     }
 }
 extension String {
-    func to_dkls_goslice() -> go_slice? {
+    func toArray() -> [UInt8] {
         guard let utf8Bytes = self.data(using: .utf8) else {
-            return nil
+            return []
         }
         
-        return [UInt8](utf8Bytes).withUnsafeBufferPointer{ bp -> go_slice in
-            return go_slice(
-                ptr: UnsafePointer(bp.baseAddress),
-                len: UInt(bp.count),
-                cap: UInt(bp.count))
-        }
+        return [UInt8](utf8Bytes)
     }
 }

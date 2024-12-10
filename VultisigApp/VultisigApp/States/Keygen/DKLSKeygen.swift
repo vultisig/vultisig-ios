@@ -63,8 +63,7 @@ final class DKLSKeygen {
         if err != LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
-        
-        return  Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+        return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
@@ -195,9 +194,9 @@ final class DKLSKeygen {
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
-            guard var decryptedBodySlice = decryptedBody.to_dkls_goslice() else {
-                throw HelperError.runtimeError("fail to convert decrypted message to go_slice")
-            }
+            // need to have a variable to save the array , otherwise dkls function can't access the memory
+            var descryptedBodyArr = decryptedBody.toArray()
+            var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
             let result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
@@ -226,7 +225,7 @@ final class DKLSKeygen {
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         let messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         do {
-            var keygenSetupMsg:[UInt8] = []
+            var keygenSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 keygenSetupMsg = try getDklsSetupMessage()
                 try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString())
@@ -237,13 +236,11 @@ final class DKLSKeygen {
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
             var handler = godkls.Handle(_0: 0)
-            guard var localPartyID = vault.localPartyID.to_dkls_goslice() else {
-                throw HelperError.runtimeError("fail to convert local party id to go slice")
-            }
-            
-            let result = dkls_keygen_session_from_setup(&decodedSetupMsg , &localPartyID, &handler)
+            let localPartyIDArr = self.localPartyID.toArray()
+            var localPartySlice = localPartyIDArr.to_dkls_goslice()
+            let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
             if result != LIB_OK {
-                throw HelperError.runtimeError("fail to create session from setup message")
+                throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
             }
             let task = Task{
                 try processDKLSOutboundMessage(handle: handler)
