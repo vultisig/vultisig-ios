@@ -41,6 +41,11 @@ enum RippleHelper {
         print("")
         
         let operation = RippleOperationPayment.with {
+            
+            if let memo = keysignPayload.memo  {
+                $0.destinationTag = Int64(memo) ?? 0
+            }
+            
             $0.destination = keysignPayload.toAddress
             $0.amount = Int64(keysignPayload.toAmount.description) ?? 0
         }
@@ -48,7 +53,6 @@ enum RippleHelper {
         let input = RippleSigningInput.with {
             $0.fee = 10
             $0.sequence = Int32(sequence) // from account info api
-            $0.lastLedgerSequence = Int32(lastLedgerSequence)
             $0.account = keysignPayload.coin.address
             $0.publicKey = publicKey.data
             $0.opPayment = operation
@@ -76,7 +80,7 @@ enum RippleHelper {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-        return [preSigningOutput.data.hexString]
+        return [preSigningOutput.dataHash.hexString]
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
@@ -115,8 +119,8 @@ enum RippleHelper {
         let signatureProvider = SignatureProvider(signatures: signatures)
         
         // If I use datahash it is not finding anything
-        let signature = signatureProvider.getDerSignature(preHash: preSigningOutput.data)
-        guard publicKey.verifyAsDER(signature: signature, message: preSigningOutput.data) else {
+        let signature = signatureProvider.getDerSignature(preHash: preSigningOutput.dataHash)
+        guard publicKey.verifyAsDER(signature: signature, message: preSigningOutput.dataHash) else {
             let errorMessage = "Invalid signature"
             print("\(errorMessage)")
                   throw HelperError.runtimeError(errorMessage)

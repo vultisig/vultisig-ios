@@ -20,6 +20,46 @@ class RippleService {
         print ("Broadcasting transaction...")
         print ("Transaction: \(hex)")
         
+        
+        do {
+            let requestBody: [String: Any] = [
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "submit",
+                "params": [
+                    
+                    [
+                        "tx_blob": hex
+                    ],
+
+                ],
+            ]
+
+            let data = try await postRequest(with: requestBody, url: rpcURL2)
+            
+            print(String(decoding: data, as: UTF8.self))
+            
+            if let error = Utils.extractResultFromJson(fromData: data, path: "result.engine_result") as? String {
+                
+                if error == "tecNO_DST_INSUF_XRP" {
+                    return "Destination does not exist. Too little XRP sent to create it. Send a minimum of 10 XRP."
+                }
+                
+                if error == "tecDST_TAG_NEEDED" {
+                    return "A destination tag is required. Please add a MEMO."
+                }
+                
+            }
+            
+            if let result = Utils.extractResultFromJson(fromData: data, path: "result.tx_json.hash") as? String {
+                return result.description
+            }
+
+        } catch {
+            print("Error in fetchTokenAccountsByOwner:")
+            throw error
+        }
+        
         return ""
     }
     
