@@ -261,6 +261,7 @@ final class DKLSKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: handler)
             if isFinished {
+                print("keygen success")
                 var keyshareHandler = godkls.Handle(_0: 0)
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -269,6 +270,9 @@ final class DKLSKeygen {
                 let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
                 let publicKeyECDSA = try getPublicKeyBytes(handle: keyshareHandler)
                 let chainCodeBytes = try getChainCode(handle: keyshareHandler)
+                print("keyshare:"+keyshareBytes.toBase64())
+                print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
+                print("chaincode: \(chainCodeBytes.toHexString())")
                 dkls_keyshare_free(&keyshareHandler)
             }
         }
