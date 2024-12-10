@@ -7,6 +7,7 @@ import Foundation
 import OSLog
 import SwiftData
 import Tss
+import godkls
 
 enum KeygenStatus {
     case CreatingInstance
@@ -30,6 +31,7 @@ class KeygenViewModel: ObservableObject {
     var sessionID: String
     var encryptionKeyHex: String
     var oldResharePrefix: String
+    var isInitiateDevice: Bool
     
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -39,9 +41,9 @@ class KeygenViewModel: ObservableObject {
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-
+    
     private let keychain = DefaultKeychainService.shared
-
+    
     init() {
         self.vault = Vault(name: "Main Vault")
         self.tssType = .Keygen
@@ -51,6 +53,7 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = ""
         self.encryptionKeyHex = ""
         self.oldResharePrefix = ""
+        self.isInitiateDevice = false
     }
     
     func setData(vault: Vault,
@@ -60,7 +63,8 @@ class KeygenViewModel: ObservableObject {
                  mediatorURL: String,
                  sessionID: String,
                  encryptionKeyHex: String,
-                 oldResharePrefix:String) async {
+                 oldResharePrefix:String,
+                 initiateDevice: Bool) async {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -69,6 +73,7 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
+        self.isInitiateDevice = initiateDevice
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
@@ -87,6 +92,38 @@ class KeygenViewModel: ObservableObject {
     }
     
     func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
+        switch(self.vault.libType){
+        case .GG20:
+            await startKeygenGG20(context: context, defaultChains: defaultChains)
+        case .DKLS:
+            await startKeygenDKLS(context: context, defaultChains: defaultChains)
+        default:
+            print("invalid vault lib type")
+            return
+        }
+    }
+    
+    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta]) async {
+        let dklsKeygen = DKLSKeygen(vault: self.vault,
+                                    tssType: self.tssType,
+                                    keygenCommittee: self.keygenCommittee,
+                                    vaultOldCommittee: self.vaultOldCommittee,
+                                    mediatorURL: self.mediatorURL,
+                                    sessionID: self.sessionID,
+                                    encryptionKeyHex: self.encryptionKeyHex,
+                                    oldResharePrefix: self.oldResharePrefix,
+                                    isInitiateDevice: self.isInitiateDevice)
+        do{
+            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
+        }catch{
+            self.logger.error("Failed to generate DKLS key, error: \(error.localizedDescription)")
+            self.status = .KeygenFailed
+            self.keygenError = error.localizedDescription
+            return
+        }
+    }
+    
+    func startKeygenGG20(context: ModelContext, defaultChains: [CoinMeta]) async {
         defer {
             self.messagePuller?.stop()
         }
@@ -213,12 +250,12 @@ class KeygenViewModel: ObservableObject {
         }
         
     }
-
+    
     func saveFastSignConfig(_ config: FastSignConfig, vault: Vault) {
         keychain.setFastPassword(config.password, pubKeyECDSA: vault.pubKeyECDSA)
         keychain.setFastHint(config.hint, pubKeyECDSA: vault.pubKeyECDSA)
     }
-
+    
     private func createTssInstance(messenger: TssMessengerProtocol,
                                    localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
     {
@@ -262,4 +299,5 @@ class KeygenViewModel: ObservableObject {
         }
         return try await t.value
     }
+    
 }
