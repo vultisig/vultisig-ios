@@ -41,7 +41,7 @@ struct SendCryptoDetailsView: View {
             view
         }
         .gesture(DragGesture())
-        .onAppear {
+        .onFirstAppear {
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
