@@ -137,9 +137,22 @@ class KeygenViewModel: ObservableObject {
             guard let keyshareEdDSA else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare")
             }
+            self.vault.pubKeyECDSA = keyshareECDSA.PubKey
+            self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
             self.vault.hexChainCode = keyshareECDSA.chaincode
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+            // ensure all party created vault successfully
+            let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
+                                            sessionID: self.sessionID,
+                                            localPartyID: self.vault.localPartyID,
+                                            keygenCommittee: self.keygenCommittee)
+            await keygenVerify.markLocalPartyComplete()
+            let allFinished = await keygenVerify.checkCompletedParties()
+            if !allFinished {
+                throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
+            }
+            
             VaultDefaultCoinService(context: context)
                 .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
             context.insert(self.vault)
