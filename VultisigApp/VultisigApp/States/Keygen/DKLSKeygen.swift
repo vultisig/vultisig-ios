@@ -50,7 +50,7 @@ final class DKLSKeygen {
         self.localPartyID = vault.localPartyID
     }
     
-    private func getDklsSetupMessage() throws -> String  {
+    private func getDklsSetupMessage() throws -> [UInt8]  {
         var buf = tss_buffer()
         defer {
             tss_buffer_free(&buf)
@@ -59,16 +59,12 @@ final class DKLSKeygen {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
-        
-        try withUnsafeMutablePointer(to: &buf){ bufferPointer in
-            let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, bufferPointer)
-            if err != LIB_OK {
-                throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
-            }
+        let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, &buf)
+        if err != LIB_OK {
+            throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
         
-        let resultArr = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        return Data(resultArr).base64EncodedString()
+        return  Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
@@ -230,18 +226,16 @@ final class DKLSKeygen {
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         let messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         do {
-            var keygenSetupMsg = ""
+            var keygenSetupMsg:[UInt8] = []
             if self.isInitiateDevice {
                 keygenSetupMsg = try getDklsSetupMessage()
-                try await messenger.uploadSetupMessage(message: keygenSetupMsg)
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString())
             } else {
                 // download the setup message from relay server
-                keygenSetupMsg = try await messenger.downloadSetupMessage()
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                keygenSetupMsg = Array(base64: strKeygenSetupMsg)
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
-            guard var decodedSetupMsg else {
-                throw HelperError.runtimeError("fail to decode dkls keygen setup message")
-            }
             var handler = godkls.Handle(_0: 0)
             guard var localPartyID = vault.localPartyID.to_dkls_goslice() else {
                 throw HelperError.runtimeError("fail to convert local party id to go slice")

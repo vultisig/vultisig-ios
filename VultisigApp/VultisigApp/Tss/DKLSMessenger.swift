@@ -54,6 +54,20 @@ final class DKLSMessenger {
         }
     }
     
+    func downloadSetupMessageWithRetry() async throws -> String {
+        var attempt = 0
+        repeat {
+            do {
+                return try await downloadSetupMessage()
+            } catch {
+                print("fail to download setup message,error \(error), attempt: \(attempt)")
+            }
+            attempt = attempt + 1
+        } while attempt < 10
+        
+        throw HelperError.runtimeError("fail to download setup message after 10 retries")
+    }
+    
     func downloadSetupMessage() async throws -> String {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
