@@ -422,7 +422,7 @@ private extension SwapCryptoViewModel {
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             return BigInt(plan.fee)
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple:
             return chainSpecific.gas
         }
     }

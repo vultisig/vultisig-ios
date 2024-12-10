@@ -20,11 +20,11 @@ enum RippleHelper {
             throw HelperError.runtimeError("coin is not XRP")
         }
 
-        // TODO: Create a Ripple one, for testing I am reusing this from Cosmos.
         guard
-            case .Cosmos(_, let sequence, let gas, _, _) = keysignPayload
+            case .Ripple(let sequence, let gas) = keysignPayload
                 .chainSpecific
         else {
+            print("keysignPayload.chainSpecific is not Ripple")
             throw HelperError.runtimeError(
                 "getPreSignedInputData: fail to get account number and sequence"
             )
