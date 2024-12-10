@@ -37,18 +37,12 @@ class RippleService {
 
             let data = try await postRequest(with: requestBody, url: rpcURL2)
             
-            print(String(decoding: data, as: UTF8.self))
-            
-            if let error = Utils.extractResultFromJson(fromData: data, path: "result.engine_result") as? String {
-                
-                if error == "tecNO_DST_INSUF_XRP" {
-                    return "Destination does not exist. Too little XRP sent to create it. Send a minimum of 10 XRP."
+            if let engine_result = Utils.extractResultFromJson(fromData: data, path: "result.engine_result") as? String {
+                if engine_result != "tesSUCCESS" {
+                    if let engine_result_message = Utils.extractResultFromJson(fromData: data, path: "result.engine_result_message") as? String {
+                        return engine_result_message.description
+                    }
                 }
-                
-                if error == "tecDST_TAG_NEEDED" {
-                    return "A destination tag is required. Please add a MEMO."
-                }
-                
             }
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result.tx_json.hash") as? String {

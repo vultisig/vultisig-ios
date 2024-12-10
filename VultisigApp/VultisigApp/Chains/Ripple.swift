@@ -19,7 +19,7 @@ enum RippleHelper {
         }
         
         // TODO: Create a Ripple one, for testing I am reusing this from Cosmos.
-        guard case .Cosmos(let lastLedgerSequence, let sequence , _, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(_, let sequence, let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
         }
         
@@ -28,17 +28,6 @@ enum RippleHelper {
         }
         
         let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(), vault: vault)
-        
-        print("")
-        print("")
-        print("")
-        print("getPreSignedInputData")
-        print("publicKey: \(publicKey)")
-        print("publicKey.data: \(publicKey.bitcoinKeyHash)")
-        print("publicKey.data.hexString: \(publicKey.data.hexString)")
-        print("")
-        print("")
-        print("")
         
         let operation = RippleOperationPayment.with {
             
@@ -51,7 +40,7 @@ enum RippleHelper {
         }
         
         let input = RippleSigningInput.with {
-            $0.fee = 10
+            $0.fee = Int64(gas)
             $0.sequence = Int32(sequence) // from account info api
             $0.account = keysignPayload.coin.address
             $0.publicKey = publicKey.data
@@ -64,15 +53,6 @@ enum RippleHelper {
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload, vault: Vault) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, vault: vault)
-        
-        print("")
-        print("")
-        print("")
-        print("getPreSignedImageHash")
-        print("INPUT DATA HEX STRING: \(inputData.hexString)")
-        print("")
-        print("")
-        print("")
         
         let hashes = TransactionCompiler.preImageHashes(coinType: .xrp, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
@@ -92,17 +72,6 @@ enum RippleHelper {
     {
         
         let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(), vault: vault)
-        
-        print("")
-        print("")
-        print("")
-        print("getSignedTransaction")
-        print("publicKey: \(publicKey)")
-        print("publicKey.data: \(publicKey.bitcoinKeyHash)")
-        print("publicKey.data.hexString: \(publicKey.data.hexString)")
-        print("")
-        print("")
-        print("")
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload, vault: vault)
         let hashes = TransactionCompiler.preImageHashes(coinType: .xrp, txInputData: inputData)
@@ -125,15 +94,6 @@ enum RippleHelper {
             print("\(errorMessage)")
                   throw HelperError.runtimeError(errorMessage)
         }
-        
-        print("")
-        print("")
-        print("")
-        print("getSignedTransaction")
-        print("INPUT DATA HEX STRING: \(inputData.hexString)")
-        print("")
-        print("")
-        print("")
         
         allSignatures.add(data: signature)
         publicKeys.add(data: publicKey.data)
