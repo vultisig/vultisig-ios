@@ -16,11 +16,7 @@ class RippleService {
     private let rpcURL2 = URL(string: Endpoint.rippleServiceRpc)!
     
     func broadcastTransaction(_ hex: String) async throws -> String {
-        
-        print ("Broadcasting transaction...")
-        print ("Transaction: \(hex)")
-        
-        
+ 
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -50,7 +46,7 @@ class RippleService {
             }
 
         } catch {
-            print("Error in fetchTokenAccountsByOwner:")
+            print("Error in Broadcast XRP Transaction")
             throw error
         }
         
