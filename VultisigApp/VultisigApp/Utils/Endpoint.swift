@@ -133,6 +133,8 @@ class Endpoint {
         "https://tokens.jup.ag/tokens?tags=verified"
     }
     
+    static let rippleServiceRpc = "https://xrplcluster.com"
+    
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
@@ -384,6 +386,8 @@ class Endpoint {
             return "https://finder.terra.money/classic/tx/\(txid)"
         case "USDC":
             return "https://www.mintscan.io/noble/tx/\(txid)"
+        case "XRP":
+            return "https://xrpscan.com/tx/\(txid)"
         default:
             return ""
         }
@@ -447,6 +451,8 @@ class Endpoint {
             return "https://finder.terra.money/classic/address/\(address)"
         case "USDC":
             return "https://www.mintscan.io/noble/address/\(address)"
+        case "XRP":
+            return "https://xrpscan.com/account/\(address)"
         default:
             return nil
         }
@@ -510,6 +516,8 @@ class Endpoint {
             return "https://finder.terra.money/classic/address/\(address)"
         case .noble:
             return "https://www.mintscan.io/noble/address/\(address)"
+        case .ripple:
+            return "https://xrpscan.com/account/\(address)"
         case .none:
             return nil
         }

@@ -61,6 +61,8 @@ extension Chain {
             actions = [.send, .memo]
         case .osmosis, .terra, .terraClassic, .noble:
             actions = [.send]
+        case .ripple:
+            actions = [.send]
         }
         return actions.filtered
     }

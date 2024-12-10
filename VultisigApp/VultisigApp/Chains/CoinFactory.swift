@@ -32,7 +32,7 @@ struct CoinFactory {
     }
 }
 
-private extension CoinFactory {
+extension CoinFactory {
     
     enum Errors: Error, LocalizedError {
         case invalidPublicKey(pubKey: String)

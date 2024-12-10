@@ -79,6 +79,8 @@ struct KeysignMessageFactory {
             return try DydxHelper().getPreSignedImageHash(keysignPayload: payload)
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .ripple:
+            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload, vault: vault)
         }
     }
 }
