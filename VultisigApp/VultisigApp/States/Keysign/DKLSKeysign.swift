@@ -336,11 +336,13 @@ final class DKLSKeysign {
             var keysignSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 keysignSetupMsg = try getDKLSKeysignSetupMessage(message: messageToSign)
-                try await localMessenger.uploadSetupMessage(message:Data(keysignSetupMsg).base64EncodedString())
+                print("keysignsetupmsg: \(keysignSetupMsg.toBase64())")
+                try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64())
             } else {
                 // download the setup message from relay server
                 let strKeysignSetupMsg = try await localMessenger.downloadSetupMessageWithRetry()
                 keysignSetupMsg = Array(base64: strKeysignSetupMsg)
+                print("keysignSetupmsg: \(strKeysignSetupMsg)")
             }
             
             let signingMsg = try DKLSDecodeMessage(setupMsg: keysignSetupMsg)

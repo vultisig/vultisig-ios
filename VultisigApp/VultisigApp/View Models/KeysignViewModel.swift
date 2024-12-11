@@ -77,7 +77,7 @@ class KeysignViewModel: ObservableObject {
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
-        self.isInitiateDevice = true
+        self.isInitiateDevice = isInitiateDevice
     }
 
     func getTransactionExplorerURL(txid: String) -> String {
