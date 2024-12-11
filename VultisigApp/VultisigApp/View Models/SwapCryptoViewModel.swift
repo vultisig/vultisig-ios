@@ -104,6 +104,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return !fee.isEmpty && !fee.isZero
     }
     
+    func showTotalFees(tx: SwapTransaction) -> Bool {
+        let fee = totalFeeString(tx: tx)
+        return !fee.isEmpty && !fee.isZero
+    }
+    
     func showDuration(tx: SwapTransaction) -> Bool {
         return showFees(tx: tx)
     }
@@ -144,6 +149,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let fromCoin = feeCoin(tx: tx)
         let fee = fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    func totalFeeString(tx: SwapTransaction) -> String {
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        
+        let fromCoin = feeCoin(tx: tx)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let swapFee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        let networkFee = fromCoin.fiat(value: tx.fee)
+        let totalFee = swapFee + networkFee
+        return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
     
     func isSufficientBalance(tx: SwapTransaction) -> Bool {
