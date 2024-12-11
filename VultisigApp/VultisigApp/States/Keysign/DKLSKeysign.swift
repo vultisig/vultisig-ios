@@ -216,7 +216,7 @@ final class DKLSKeysign {
                     break
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
-                print("sending message from \(self.localPartyID) to: \(receiverString)")
+                print("sending message from \(self.localPartyID) to: \(receiverString), content:\(encodedOutboundMessage)")
                 try self.messenger?.send(self.localPartyID,
                                          to: receiverString,
                                          body: encodedOutboundMessage)
@@ -282,13 +282,14 @@ final class DKLSKeysign {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(messageID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                self.logger.info("message with key:\(key) has been applied before")
+                print("message with key:\(key) has been applied before")
                 continue
             }
-            self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
+            print("decryptedBody:\(decryptedBody)")
             // need to have a variable to save the array , otherwise dkls function can't access the memory
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
