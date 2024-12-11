@@ -112,6 +112,10 @@ class KeysignViewModel: ObservableObject {
 
         await broadcastTransaction()
 
+        if let customMessagePayload {
+            txid = customMessagePayload.message
+        }
+
         status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
