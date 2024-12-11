@@ -25,7 +25,6 @@ final class DKLSKeysign {
     let chainPath: String
     let publicKeyECDSA: String
     var messenger: DKLSMessenger? = nil
-    var keyshareHandle: godkls.Handle = godkls.Handle()
     var keysignDoneIndicator = false
     let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
@@ -50,18 +49,6 @@ final class DKLSKeysign {
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
-        do {
-            try initLocalKeyshare()
-        } catch {
-            logger.error("fail to initiate local keyshare \(error)")
-        }
-    }
-    
-    deinit {
-        let result = dkls_keyshare_free(&self.keyshareHandle)
-        if result != LIB_OK{
-            print("fail to free keyshare \(result)")
-        }
     }
     
     func getSignatures() -> [String: TssKeysignResponse] {
@@ -92,7 +79,7 @@ final class DKLSKeysign {
         return nil
     }
     
-    func initLocalKeyshare() throws {
+    func getKeyshareBytes() throws -> [UInt8] {
         guard let localKeyshare = getKeyshareString() else {
             throw HelperError.runtimeError("fail to get local keyshare")
         }
@@ -100,12 +87,7 @@ final class DKLSKeysign {
         guard let keyshareData else {
             throw HelperError.runtimeError("fail to decode keyshare")
         }
-        self.keyshare = [UInt8](keyshareData)
-        var keyshareSlice = keyshare.to_dkls_goslice()
-        let result = dkls_keyshare_from_bytes(&keyshareSlice,&self.keyshareHandle)
-        if result != LIB_OK {
-            throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
-        }
+        return [UInt8](keyshareData)
     }
     
     func getDKLSKeyshareID() throws -> [UInt8] {
@@ -113,13 +95,22 @@ final class DKLSKeysign {
         defer {
             godkls.tss_buffer_free(&buf)
         }
-        if self.keyshareHandle._0 == 0 {
-            throw HelperError.runtimeError("keyshare handle is empty")
-        }
-        
-        let result = dkls_keyshare_key_id(self.keyshareHandle, &buf)
+        let keyShareBytes = try getKeyshareBytes()
+        var keyshareSlice = keyShareBytes.to_dkls_goslice()
+        var h = godkls.Handle()
+        let result = dkls_keyshare_from_bytes(&keyshareSlice,&h)
         if result != LIB_OK {
-            throw HelperError.runtimeError("fail to get key id from keyshare: \(result)")
+            throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
+        }
+        defer {
+            let freeResult = dkls_keyshare_free(&h)
+            if freeResult != LIB_OK {
+                print("fail to free keyshare \(freeResult)")
+            }
+        }
+        let keyIDResult = dkls_keyshare_key_id(h, &buf)
+        if keyIDResult != LIB_OK {
+            throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
@@ -136,7 +127,7 @@ final class DKLSKeysign {
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
         
-        let chainPathArr = [UInt8](self.chainPath.data(using: .utf8)!)
+        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
         var chainPathSlice = chainPathArr.to_dkls_goslice()
         
         let decodedMsgData = Data(hexString: message)
@@ -150,6 +141,7 @@ final class DKLSKeysign {
         if err != LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
         }
+        
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
@@ -351,17 +343,28 @@ final class DKLSKeysign {
             if signingMsg != messageToSign {
                 throw HelperError.runtimeError("message doesn't match (\(messageToSign)) vs  (\(signingMsg))")
             }
-            
-            var decodedSetupMsg = keysignSetupMsg.to_dkls_goslice()
+            let finalSetupMsgArr = keysignSetupMsg
+            var decodedSetupMsg = finalSetupMsgArr.to_dkls_goslice()
             var handler = godkls.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            let result = dkls_sign_session_from_setup(&decodedSetupMsg,
-                                                      &localPartySlice,
-                                                      self.keyshareHandle,
-                                                      &handler)
+            let keyShareBytes = try getKeyshareBytes()
+            
+            var keyshareSlice = keyShareBytes.to_dkls_goslice()
+            var keyshareHandle = godkls.Handle()
+            let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
             if result != LIB_OK {
-                throw HelperError.runtimeError("fail to create sign session from setup message,error:\(result)")
+                throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
+            }
+            defer {
+                dkls_keyshare_free(&keyshareHandle)
+            }
+            let sessionResult = dkls_sign_session_from_setup(&decodedSetupMsg,
+                                                      &localPartySlice,
+                                                      keyshareHandle,
+                                                      &handler)
+            if sessionResult != LIB_OK {
+                throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
             // free the handler
             defer {

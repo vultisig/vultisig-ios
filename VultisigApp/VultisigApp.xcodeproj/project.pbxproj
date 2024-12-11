@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -734,6 +734,8 @@
 		DEEB57072D080C8C00B120D1 /* goschnorr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */; };
 		DEEB57082D080C8C00B120D1 /* goschnorr.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */; };
+		DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB57252D096BC100B120D1 /* DERSignature.swift */; };
+		DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
 		DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE22B8AF8B1005170E8 /* publickey.swift */; };
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
@@ -1520,6 +1522,8 @@
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = goschnorr.xcframework; sourceTree = "<group>"; };
 		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
+		DEEB57252D096BC100B120D1 /* DERSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DERSignature.swift; sourceTree = "<group>"; };
+		DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSKeysign.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* evm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = evm.swift; sourceTree = "<group>"; };
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
@@ -1540,10 +1544,6 @@
 		DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeDictionary.swift; sourceTree = "<group>"; };
 		DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedTransactionResult.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		DEEB571E2D0912AB00B120D1 /* Keysign */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Keysign; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		DE49A1602B65F6D9000F3AFB /* Frameworks */ = {
@@ -2553,7 +2553,7 @@
 		A65649F32B966CCB00E4B329 /* States */ = {
 			isa = PBXGroup;
 			children = (
-				DEEB571E2D0912AB00B120D1 /* Keysign */,
+				DEEB57272D096BC100B120D1 /* Keysign */,
 				DE727C0B2D000FC3007E9273 /* LibType.swift */,
 				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
 				A65649F42B966F3E00E4B329 /* DecodableDefault.swift */,
@@ -3290,6 +3290,15 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		DEEB57272D096BC100B120D1 /* Keysign */ = {
+			isa = PBXGroup;
+			children = (
+				DEEB57252D096BC100B120D1 /* DERSignature.swift */,
+				DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */,
+			);
+			path = Keysign;
+			sourceTree = "<group>";
+		};
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
@@ -3316,9 +3325,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				DEEB571E2D0912AB00B120D1 /* Keysign */,
 			);
 			name = VultisigApp;
 			packageProductDependencies = (
@@ -4182,6 +4188,8 @@
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,
+				DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */,
+				DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */,
 				A6C671392CA3C7EE00F59B6A /* VaultDeletionDetails+macOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
