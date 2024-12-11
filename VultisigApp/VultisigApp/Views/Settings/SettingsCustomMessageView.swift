@@ -51,10 +51,8 @@ struct SettingsCustomMessageView: View {
                 customMessage
             case .pair:
                 pair
-            case .keysign:
+            case .keysign, .done:
                 keysign
-            case .done:
-                Text("Done")
             }
         }
     }

@@ -55,7 +55,7 @@ struct KeysignView: View {
     
     var keysignFinished: some View {
         ZStack {
-            if transferViewModel != nil {
+            if transferViewModel != nil, keysignPayload != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
