@@ -226,7 +226,6 @@ final class SchnorrKeygen {
     
     func SchnorrKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        let messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         var task: Task<(), any Error>? = nil
         do {
             var decodedSetupMsg = self.setupMessage.to_dkls_goslice()
@@ -241,14 +240,16 @@ final class SchnorrKeygen {
             defer {
                 schnorr_keygen_session_free(&handler)
             }
-            
+            let h = handler
             task = Task{
-                try await processSchnorrOutboundMessage(handle: handler)
+                try await processSchnorrOutboundMessage(handle: h)
             }
-            let isFinished = try await pullInboundMessages(handle: handler)
+            defer {
+                task?.cancel()
+            }
+            let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
-                task?.cancel()
                 var keyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -259,9 +260,7 @@ final class SchnorrKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
-                print("keyshare:"+keyshareBytes.toBase64())
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
-                
                 // schnorr_keyshare_free(&keyshareHandler)
             }
         }

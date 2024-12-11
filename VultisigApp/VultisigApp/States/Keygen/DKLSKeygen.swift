@@ -230,7 +230,6 @@ final class DKLSKeygen {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
-            print("apply message to local successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
             // local party keygen finished
@@ -253,7 +252,6 @@ final class DKLSKeygen {
     
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        let messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
@@ -278,11 +276,14 @@ final class DKLSKeygen {
             defer {
                 dkls_keygen_session_free(&handler)
             }
-            
+            let h = handler
             task = Task{
-                try await processDKLSOutboundMessage(handle: handler)
+                try await processDKLSOutboundMessage(handle: h)
             }
-            let isFinished = try await pullInboundMessages(handle: handler)
+            defer {
+                task?.cancel()
+            }
+            let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
                 task?.cancel()
@@ -297,7 +298,6 @@ final class DKLSKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyECDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: chainCodeBytes.toHexString())
-                print("keyshare:"+keyshareBytes.toBase64())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
                 dkls_keyshare_free(&keyshareHandler)
