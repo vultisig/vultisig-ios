@@ -189,12 +189,12 @@ final class DKLSKeysign {
     
     func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
         repeat {
-            print("trying to get outbound message")
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != LIB_OK {
                 self.logger.error("fail to get outbound message")
             }
             if outboundMessage.count == 0 {
+                print("outbound message length: \(outboundMessage)")
                 if self.isKeysignDone() {
                     self.logger.info("DKLS ECDSA keysign finished")
                     print("DKLS ECDSA keysign finished")
@@ -206,7 +206,7 @@ final class DKLSKeysign {
             }
             
             let message = outboundMessage.to_dkls_goslice()
-            let encodedOutboundMessage = Data(outboundMessage).base64EncodedString()
+            let encodedOutboundMessage = outboundMessage.toBase64()
             for i in 0..<self.keysignCommittee.count {
                 let receiverArray = getOutboundMessageReceiver(handle:handle,
                                                                message: message,
@@ -272,9 +272,6 @@ final class DKLSKeysign {
     }
     
     func processInboundMessage(handle: godkls.Handle,data:Data,messageID: String) async throws -> Bool {
-        if data.count == 0 {
-            return false
-        }
         print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
@@ -289,20 +286,22 @@ final class DKLSKeysign {
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
-            print("decryptedBody:\(decryptedBody)")
+
             // need to have a variable to save the array , otherwise dkls function can't access the memory
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
             }
             
             let descryptedBodyArr = [UInt8](decodedMsg)
+            
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
             let result = dkls_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
-            print("apply message successfully")
+            
+            print("apply message \(descryptedBodyArr.toBase64()) successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
             // local party keysign finished
@@ -350,17 +349,20 @@ final class DKLSKeysign {
             }
             let finalSetupMsgArr = keysignSetupMsg
             var decodedSetupMsg = finalSetupMsgArr.to_dkls_goslice()
+            
             var handler = godkls.Handle()
+            
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            let keyShareBytes = try getKeyshareBytes()
             
+            let keyShareBytes = try getKeyshareBytes()
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
             var keyshareHandle = godkls.Handle()
             let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
+            
             defer {
                 dkls_keyshare_free(&keyshareHandle)
             }
