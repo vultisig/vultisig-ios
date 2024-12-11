@@ -204,7 +204,7 @@ final class DKLSKeysign {
                 try await Task.sleep(for: .milliseconds(100))
                 continue
             }
-            
+            print("outbound message length:\(outboundMessage.count)")
             let message = outboundMessage.to_dkls_goslice()
             let encodedOutboundMessage = outboundMessage.toBase64()
             for i in 0..<self.keysignCommittee.count {
@@ -264,7 +264,7 @@ final class DKLSKeysign {
             let elapsedTimeInSeconds = Double(elapsedTime) / 1_000_000_000
             // timeout for 60 seconds
             if elapsedTimeInSeconds > 60 {
-                throw HelperError.runtimeError("timeout: failed to create vault within 60 seconds")
+                throw HelperError.runtimeError("timeout: failed to keysign within 60 seconds")
             }
         } while !isFinished
         
@@ -377,17 +377,16 @@ final class DKLSKeysign {
             defer {
                 dkls_sign_session_free(&handler)
             }
-            let h = handler
             task = Task{
-                try await processDKLSOutboundMessage(handle: h)
+                try await processDKLSOutboundMessage(handle: handler)
             }
             defer {
                 task?.cancel()
             }
-            let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
+            let isFinished = try await pullInboundMessages(handle: handler, messageID: msgHash)
             if isFinished {
                 self.setKeysignDone(status: true)
-                let sig = try dklsSignSessionFinish(handle: h)
+                let sig = try dklsSignSessionFinish(handle: handler)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
                 let r = Array(sig.prefix(32))
