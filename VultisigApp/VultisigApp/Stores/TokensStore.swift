@@ -607,6 +607,14 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "USK", logo: "usk", decimals: 6, priceProviderId: "usk", contractAddress: "factory/kujira1qk00h5atutpsv900x202pxx42npjr9thg58dnqpa72f2p7m2luase444a7/uusk", isNativeToken: false)
         }
         
+        static var kujiraNami: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "NAMI", logo: "nami", decimals: 6, priceProviderId: "nami-protocol", contractAddress: "factory/kujira13x2l25mpkhwnwcwdzzd34cr8fyht9jlj7xu9g4uffe36g3fmln8qkvm3qn/unami", isNativeToken: false)
+        }
+            
+        static var kujiraRKuji: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "rKUJI", logo: "rkuji", decimals: 6, priceProviderId: "rkuji", contractAddress: "factory/kujira1tsekaqv9vmem0zwskmf90gpf0twl6k57e8vdnq/urkuji", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
@@ -659,8 +667,8 @@ class TokensStore {
         TokensStore.Token.kujiraUSK,
         TokensStore.Token.kujiraNSTK,
         TokensStore.Token.kujiraWINK,
-
-        
+        TokensStore.Token.kujiraNami,
+        TokensStore.Token.kujiraRKuji,
         
         TokensStore.Token.dydx,
         
