@@ -63,6 +63,7 @@ final class DKLSKeygen {
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
+    
     private func getDklsSetupMessage() throws -> [UInt8]  {
         var buf = tss_buffer()
         defer {
