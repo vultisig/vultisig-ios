@@ -618,6 +618,10 @@ class TokensStore {
         static var zksyncETH: CoinMeta {
             CoinMeta(chain: Chain.zksync, ticker: "ETH", logo: "zsync_era", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
+        
+        static var ripple: CoinMeta {
+            CoinMeta(chain: Chain.ripple, ticker: "XRP", logo: "xrp", decimals: 6, priceProviderId: "ripple", contractAddress: "", isNativeToken: true)
+        }
     }
     
     static var TokenSelectionAssets = [
@@ -629,7 +633,7 @@ class TokensStore {
         TokensStore.Token.thorChain,
         TokensStore.Token.mayaChainCacao,
         TokensStore.Token.mayaChainMaya,
-        
+        TokensStore.Token.ripple,
         
         TokensStore.Token.solana,
         TokensStore.Token.solanaJupiter,

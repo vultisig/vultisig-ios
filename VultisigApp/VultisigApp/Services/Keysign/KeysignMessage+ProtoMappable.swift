@@ -272,7 +272,13 @@ extension BlockChainSpecific {
             self = .Ton(
                 sequenceNumber: value.sequenceNumber, expireAt: value.expireAt, bounceable: value.bounceable
             )
+        case .rippleSpecific(let value):
+            self = .Ripple(
+                sequence: value.sequence,
+                gas: value.gas
+            )
         }
+        
     }
     
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
@@ -353,6 +359,11 @@ extension BlockChainSpecific {
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
+            })
+        case .Ripple(let sequence, let gas):
+            return .rippleSpecific(.with {
+                $0.sequence = sequence
+                $0.gas = gas
             })
         }
     }
