@@ -30,6 +30,7 @@ final class DKLSKeysign {
     let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
+    var keyshare:[UInt8] = []
     
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -99,8 +100,8 @@ final class DKLSKeysign {
         guard let keyshareData else {
             throw HelperError.runtimeError("fail to decode keyshare")
         }
-        let keyshareArray = [UInt8](keyshareData)
-        var keyshareSlice = keyshareArray.to_dkls_goslice()
+        self.keyshare = [UInt8](keyshareData)
+        var keyshareSlice = keyshare.to_dkls_goslice()
         let result = dkls_keyshare_from_bytes(&keyshareSlice,&self.keyshareHandle)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
@@ -125,7 +126,6 @@ final class DKLSKeysign {
     
     func getDKLSKeysignSetupMessage(message: String) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
-        
         defer {
             godkls.tss_buffer_free(&buf)
         }
@@ -395,6 +395,7 @@ final class DKLSKeysign {
             }
         }
         catch {
+            print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             self.logger.error("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
                 try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
