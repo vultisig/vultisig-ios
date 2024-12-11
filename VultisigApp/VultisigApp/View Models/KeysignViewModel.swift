@@ -42,6 +42,7 @@ class KeysignViewModel: ObservableObject {
     var messsageToSign: [String]
     var vault: Vault
     var keysignPayload: KeysignPayload?
+    var customMessagePayload: CustomMessagePayload?
     var encryptionKeyHex: String
 
     init() {
@@ -62,6 +63,7 @@ class KeysignViewModel: ObservableObject {
                  messagesToSign: [String],
                  vault: Vault,
                  keysignPayload: KeysignPayload?,
+                 customMessagePayload: CustomMessagePayload?,
                  encryptionKeyHex: String
     ) async {
         self.keysignCommittee = keysignCommittee
@@ -71,6 +73,7 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
@@ -109,10 +112,14 @@ class KeysignViewModel: ObservableObject {
 
         await broadcastTransaction()
 
+        if let customMessagePayload {
+            txid = customMessagePayload.message
+        }
+
         status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
-    func keysignOneMessageWithRetry(msg: String,attempt: UInt8) async throws {
+    func keysignOneMessageWithRetry(msg: String, attempt: UInt8) async throws {
         logger.info("signing message:\(msg)")
         let msgHash = Utils.getMessageBodyHash(msg: msg)
         let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
@@ -152,9 +159,14 @@ class KeysignViewModel: ObservableObject {
         let keysignReq = TssKeysignRequest()
         keysignReq.localPartyKey = self.vault.localPartyID
         keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
+        
         if let keysignPayload {
             keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
+        } else {
+            // TODO: Should we use Ether as default derivationPath?
+            keysignReq.derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
         }
+
         // sign messages one by one , since the msg is in hex format , so we need convert it to base64
         // and then pass it to TSS for keysign
         if let msgToSign = Data(hexString: msg)?.base64EncodedString() {

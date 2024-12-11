@@ -35,6 +35,7 @@ extension EditVaultView {
                 if vault.isFastVault {
                     biometrySelectionCell
                 }
+                customMessage
                 deleteVault
             }
             .padding(.horizontal, 25)
