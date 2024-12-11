@@ -112,6 +112,7 @@ class KeysignViewModel: ObservableObject {
         do {
             switch self.keysignType {
             case .ECDSA:
+                status = .KeysignECDSA
                 let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,

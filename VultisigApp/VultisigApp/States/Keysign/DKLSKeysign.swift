@@ -177,7 +177,7 @@ final class DKLSKeysign {
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
         var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let result = dkls_sign_session_output_message(handle,&buf)
         if result != LIB_OK {
@@ -189,6 +189,7 @@ final class DKLSKeysign {
     
     func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
         repeat {
+            print("trying to get outbound message")
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != LIB_OK {
                 self.logger.error("fail to get outbound message")
@@ -196,6 +197,7 @@ final class DKLSKeysign {
             if outboundMessage.count == 0 {
                 if self.isKeysignDone() {
                     self.logger.info("DKLS ECDSA keysign finished")
+                    print("DKLS ECDSA keysign finished")
                     return
                 }
                 // back off 100ms and continue
@@ -270,10 +272,10 @@ final class DKLSKeysign {
     }
     
     func processInboundMessage(handle: godkls.Handle,data:Data,messageID: String) async throws -> Bool {
-        print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
         if data.count == 0 {
             return false
         }
+        print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -299,6 +301,7 @@ final class DKLSKeysign {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
+            print("apply message successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
             // local party keysign finished
@@ -321,11 +324,12 @@ final class DKLSKeysign {
     }
     
     func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
+        setKeysignDone(status: false)
         var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
         let localMessenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                            sessionID: self.sessionID,
-                                           messageID: messageToSign,
+                                           messageID: msgHash,
                                            encryptionKeyHex: self.encryptionKeyHex)
         self.messenger = localMessenger
         do {
