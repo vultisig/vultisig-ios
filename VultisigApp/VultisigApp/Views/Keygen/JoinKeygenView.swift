@@ -84,8 +84,9 @@ struct JoinKeygenView: View {
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            oldResharePrefix: viewModel.oldResharePrefix, 
+            oldResharePrefix: viewModel.oldResharePrefix,
             fastSignConfig: nil,
+            isInitiateDevice: false,
             hideBackButton: $hideBackButton
         )
     }

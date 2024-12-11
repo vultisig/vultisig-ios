@@ -21,6 +21,7 @@ struct KeygenView: View {
     let encryptionKeyHex: String
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
+    let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
     
     var selectedTab: SetupVaultState? = nil
@@ -221,7 +222,8 @@ struct KeygenView: View {
             mediatorURL: mediatorURL,
             sessionID: sessionID,
             encryptionKeyHex: encryptionKeyHex,
-            oldResharePrefix: oldResharePrefix
+            oldResharePrefix: oldResharePrefix,
+            initiateDevice: isInitiateDevice
         )
     }
     
@@ -260,6 +262,7 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: "",
             fastSignConfig: nil,
+            isInitiateDevice: false,
             hideBackButton: .constant(false),
             selectedTab: SetupVaultState.active
         )

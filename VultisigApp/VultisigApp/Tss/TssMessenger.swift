@@ -20,7 +20,6 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let isKeygen: Bool
     var vaultPubKey = ""
     let encryptGCM: Bool
-    
 
     var counter: Int64 = 1
     init(mediatorUrl: String,
