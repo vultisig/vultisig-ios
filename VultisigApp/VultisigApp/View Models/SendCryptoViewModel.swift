@@ -33,6 +33,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var ton: TonService = TonService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+    @Published var ripple: RippleService = RippleService.shared
 
     let maya = MayachainService.shared
     let atom = GaiaService.shared
@@ -173,6 +174,27 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     let rawBalance = try await ton.getBalance(tx.coin)
+                    tx.coin.rawBalance = rawBalance
+                    
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                }
+                
+                isLoading = false
+            }
+        case .ripple:
+            Task {
+                do {
+                    let rawBalance = try await ripple.getBalance(tx.coin)
                     tx.coin.rawBalance = rawBalance
                     
                     var gas = BigInt.zero

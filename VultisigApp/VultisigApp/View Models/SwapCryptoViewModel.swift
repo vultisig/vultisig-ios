@@ -104,6 +104,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return !fee.isEmpty && !fee.isZero
     }
     
+    func showTotalFees(tx: SwapTransaction) -> Bool {
+        let fee = totalFeeString(tx: tx)
+        return !fee.isEmpty && !fee.isZero
+    }
+    
     func showDuration(tx: SwapTransaction) -> Bool {
         return showFees(tx: tx)
     }
@@ -144,6 +149,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let fromCoin = feeCoin(tx: tx)
         let fee = fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
+    }
+    
+    func totalFeeString(tx: SwapTransaction) -> String {
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
+        
+        let fromCoin = feeCoin(tx: tx)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let swapFee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
+        let networkFee = fromCoin.fiat(value: tx.fee)
+        let totalFee = swapFee + networkFee
+        return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
     
     func isSufficientBalance(tx: SwapTransaction) -> Bool {
@@ -311,6 +327,20 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
     }
+    
+    func fetchFees(tx: SwapTransaction, vault: Vault) {
+        updateFeesTask?.cancel()
+        updateFeesTask = Task {
+            await updateFees(tx: tx, vault: vault)
+        }
+    }
+
+    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+        updateQuoteTask?.cancel()
+        updateQuoteTask = Task {
+            await updateQuotes(tx: tx, vault: vault)
+        }
+    }
 }
 
 private extension SwapCryptoViewModel {
@@ -391,7 +421,7 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
@@ -422,7 +452,7 @@ private extension SwapCryptoViewModel {
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             return BigInt(plan.fee)
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple:
             return chainSpecific.gas
         }
     }
@@ -430,19 +460,5 @@ private extension SwapCryptoViewModel {
     func oneInchFee(quote: OneInchQuote) -> BigInt {
         let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
-    }
-
-    func fetchFees(tx: SwapTransaction, vault: Vault) {
-        updateFeesTask?.cancel()
-        updateFeesTask = Task {
-            await updateFees(tx: tx, vault: vault)
-        }
-    }
-
-    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
-        updateQuoteTask?.cancel()
-        updateQuoteTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
-        }
     }
 }

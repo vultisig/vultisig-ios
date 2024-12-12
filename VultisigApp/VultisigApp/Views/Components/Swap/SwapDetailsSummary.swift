@@ -21,12 +21,22 @@ struct SwapDetailsSummary: View {
                 getSummaryCell(leadingText: "provider", trailingText: providerName, image: providerName)
             }
             
-            if swapViewModel.showGas(tx: tx) {
-                getSummaryCell(leadingText: "gas(auto)", trailingText: swapViewModel.swapGasString(tx: tx))
-            }
-
             if swapViewModel.showFees(tx: tx) {
-                getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.swapFeeString(tx: tx))
+                getSummaryCell(leadingText: "swapFee", trailingText: swapViewModel.swapFeeString(tx: tx))
+            }
+            
+            if swapViewModel.showGas(tx: tx) {
+                getSummaryCell(
+                    leadingText: "networkFee",
+                    trailingText: "\(swapViewModel.swapGasString(tx: tx))(~\(swapViewModel.approveFeeString(tx: tx)))"
+                )
+            }
+            
+            if swapViewModel.showTotalFees(tx: tx) {
+                getSummaryCell(
+                    leadingText: "totalFee",
+                    trailingText: "\(swapViewModel.totalFeeString(tx: tx))"
+                )
             }
             
             if let error = swapViewModel.error {
@@ -61,7 +71,7 @@ struct SwapDetailsSummary: View {
             
             Text(trailingText)
         }
-        .font(.body14Menlo)
+        .font(.body12MenloBold)
         .foregroundColor(.neutral0)
     }
     

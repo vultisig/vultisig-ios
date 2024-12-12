@@ -365,6 +365,9 @@ class KeysignViewModel: ObservableObject {
         case .Ton:
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
+        case .Ripple:
+            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            return .regular(transaction)
         }
 
         throw HelperError.runtimeError("Unexpected error")
@@ -482,6 +485,9 @@ class KeysignViewModel: ObservableObject {
                 case .ton:
                     let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
                     self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
+                case .ripple:
+                    self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
+                    
                 }
 
             case .regularWithApprove(let approve, let transaction):

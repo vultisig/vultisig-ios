@@ -115,6 +115,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Polkadot
         case .ton:
             return .Ton
+        case .ripple:
+            return .Ripple
         }
     }
 
@@ -167,6 +169,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "10000000000"
         case .ton:
             return "7000"
+        case .ripple:
+            return "10"
         }
     }
 
@@ -250,7 +254,7 @@ class Coin: ObservableObject, Codable, Hashable {
     
     static let example: Coin = {
         let asset = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "BitcoinLogo", decimals: 8, priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", isNativeToken: false)
-        return Coin(asset: asset, address: "bc1qxyz...", hexPublicKey: "HexPublicKeyExample")
+        return Coin(asset: asset, address: "bc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyz", hexPublicKey: "HexPublicKeyExample")
     }()
     
     func toCoinMeta() -> CoinMeta {
