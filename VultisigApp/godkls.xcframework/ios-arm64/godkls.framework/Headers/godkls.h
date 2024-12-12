@@ -9,8 +9,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#define TEXT_TAG 0
-
 typedef enum lib_error {
   LIB_OK,
   LIB_INVALID_HANDLE,
@@ -27,7 +25,11 @@ typedef enum lib_error {
   LIB_NON_EMPTY_OUTPUT_BUFFER,
   LIB_SIGNGEN_ERROR,
   LIB_KEYGEN_ERROR,
+  LIB_QC_ERROR,
   LIB_KEY_EXPORT_ERROR,
+  LIB_INVALID_PARTY_LIST,
+  LIB_INVALID_OLD_PARTY_LIST,
+  LIB_INVALID_NEW_PARTY_LIST,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_1 = 100,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_2,
   LIB_ABORT_PROTOCOL_AND_BAN_PARTY_3,
@@ -388,6 +390,181 @@ enum lib_error dkls_refresh_share_to_bytes(struct Handle share, struct tss_buffe
 enum lib_error dkls_keyshare_free(const struct Handle *share);
 
 enum lib_error dkls_keyshare_chaincode(struct Handle share, struct tss_buffer *buf);
+
+/*
+ Generates a new QC setup message for DKLS.
+
+ # Arguments
+
+ * `keyshare` - key share handle
+
+ * `ids` - List human readable party identifiers encoded as byte
+   array with 0 byte as delimiter. This parameter defines a set of
+   parties executing QC protocol.
+
+ * `old_parties` - Array of indices of old parties. Each old party
+   own a key share.
+
+ * `new_threshold` - `T` parameter after QC.
+
+ * `new_parties` - Array of indicies of new parties.
+   It may overlap with `old_parties`.
+
+ * `setup_msg` - Pointer to output setup message.
+
+ # Returns
+
+ * A `lib_error` indicating success or type of error.
+
+ # Errors
+
+ * `LIB_NULL_PTR` - if one of passed pointers is NULL.
+
+ * `LIB_INVALID_PARTY_LIST` - `ids` contains duplicating
+   or empty party ID.
+
+ * `LIB_INVALID_OLD_PARTY_LIST` - `old_parties` contains
+   duplicating or out of range indices.
+
+ * `LIB_INVALID_NEW_PARTY_LIST` - `new_parties` contains
+   duplicating or out of range indices.
+
+ */
+enum lib_error dkls_qc_setupmsg_new(struct Handle keyshare,
+                                    const struct go_slice *ids,
+                                    const struct go_slice *old_parties,
+                                    uint32_t new_threshold,
+                                    const struct go_slice *new_parties,
+                                    struct tss_buffer *setup_msg);
+
+/*
+ Creates a QC session from a encoded setup message.
+
+ # Arguments
+
+ * `setup` - A reference of encoded setup message
+
+ * `id` - human readable party identifier.
+
+ * `hnd` - A mutable reference to the handle which will store the
+   allocated session.
+
+ # Returns
+
+ * A `lib_error` indicating success or type of error.
+
+ # Errors
+
+ * `LIB_NULL_PTR` - if one of passed pointers is NULL.
+
+ * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
+
+ */
+enum lib_error dkls_qc_session_from_setup(const struct go_slice *setup,
+                                          const struct go_slice *id,
+                                          struct Handle keyshare,
+                                          struct Handle *hnd);
+
+/*
+ Transition the DKLS MPC statemachine on an input message
+
+ # Arguments
+
+ * `session` - The session for that specific DKLS DKG protocol
+
+ * `message` - The message to be passed as input to the
+   state-machine of MPC Execution state machine.
+
+ * `finished` - (return) The MPC new state machine after the
+   input message has been applied
+
+ # Returns
+
+ * A `lib_error` indicating success or type of error.
+
+ # Errors
+
+ * `LIB_NULL_PTR` - if one of passed pointers is NULL.
+
+ */
+enum lib_error dkls_qc_session_input_message(struct Handle session,
+                                             const struct go_slice *message,
+                                             int32_t *finished);
+
+/*
+ Receive an output message.
+
+ # Arguments
+
+ * `session`: session handler
+
+ * `message`: mutable reference to an empty `tss_buffer`.
+
+ # Errors
+
+ * `LIB_NULL_PTR`: passed `message` is null pointer
+
+ * `LIB_NON_EMPTY_OUTPUT_BUFFER`: passed `message is not empty buffer
+
+ */
+enum lib_error dkls_qc_session_output_message(struct Handle session, struct tss_buffer *message);
+
+/*
+ Returns a receiver of a message.
+
+ */
+enum lib_error dkls_qc_session_message_receiver(struct Handle session,
+                                                const struct go_slice *message,
+                                                uint32_t index,
+                                                struct tss_buffer *receiver);
+
+/*
+ Finish the session and collect the generated key share.
+
+ The session will be unconditionally finished, and all inner memory
+ will be released. An error code, if any, will be returned on the first
+ call. Subsequent calls will return `LIB_INVALID_SESSION_STATE`.
+
+ `dkls_keygen_session_free()` must be called to free the session handler.
+
+ # Arguments:
+
+ * `session`: key generation session handler
+
+ * `keyshare`: output keyshare handler pointer
+
+ # Errors:
+
+ * `LIB_NULL_PTR`: keyshare is null pointer
+
+ * `LIB_INVALID_HANDLE`: passed invalid key generation session handler.
+
+ * `LIB_INVALID_SESSION_STATE`: The protocol execution is not finished
+   yet, or the function was called more than once.
+
+ * `LIB_ABORT_PROTOCOL_PARTY_{1..10}`: Execution was aborted by the
+   designated party.
+
+ * `LIB_QC_ERROR`: An key generation protocol error.
+
+ */
+enum lib_error dkls_qc_session_finish(struct Handle session, struct Handle *keyshare);
+
+/*
+ Deallocate session handler and associated memory.
+
+ # Arguments:
+
+ * `session`: key generation session handle
+
+ # Errors:
+
+ * `LIB_NULL_PTR`: passed null pointer
+
+ * `LIB_INVALID_HANDLE`: passed an invalid session handle
+
+ */
+enum lib_error dkls_qc_session_free(const struct Handle *session);
 
 /*
  Returns key_id from encoded setup message.
