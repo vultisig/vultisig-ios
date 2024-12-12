@@ -376,7 +376,7 @@ final class SchnorrKeysign {
                 let s = Array(sig[32..<64])
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
-                resp.recoveryID = String(format:"%02x",sig[64])
+                //resp.recoveryID = String(format:"%02x",sig[64])
                 resp.derSignature = createDERSignature(r: r, s: s).toHexString()
                 
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,

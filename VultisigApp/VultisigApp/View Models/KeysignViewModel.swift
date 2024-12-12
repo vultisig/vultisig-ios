@@ -262,7 +262,16 @@ class KeysignViewModel: ObservableObject {
             case .ECDSA:
                 return try service.keysignECDSA(req)
             case .EdDSA:
-                return try service.keysignEdDSA(req)
+                var resp =  try service.keysignEdDSA(req)
+                guard var rData = Data(hexString: resp.r) else {
+                    throw HelperError.runtimeError("fail to decode EdDSA signature")
+                }
+                resp.r = rData.reversed().toHexString()
+                guard var sData = Data(hexString: resp.s) else {
+                    throw HelperError.runtimeError("fail to decode EddSA signature")
+                }
+                resp.s = sData.reversed().toHexString()
+                return resp
             }
         }
         return try await t.value
