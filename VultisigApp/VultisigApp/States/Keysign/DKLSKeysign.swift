@@ -386,17 +386,17 @@ final class DKLSKeysign {
             defer {
                 dkls_sign_session_free(&handler)
             }
-        
+            let h = handler
             task = Task{
-                try await processDKLSOutboundMessage(handle: handler)
+                try await processDKLSOutboundMessage(handle: h)
             }
             defer {
                 task?.cancel()
             }
-            let isFinished = try await pullInboundMessages(handle: handler, messageID: msgHash)
+            let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
                 self.setKeysignDone(status: true)
-                let sig = try dklsSignSessionFinish(handle: handler)
+                let sig = try dklsSignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
                 let r = Array(sig.prefix(32))
