@@ -29,13 +29,13 @@ struct KeysignSwapConfirmView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            getValueCell(for: "Action", with: getAction())
+            getValueCell(for: "action", with: getAction())
             Separator()
-            getValueCell(for: "Provider", with: getProvider())
+            getValueCell(for: "provider", with: getProvider())
             Separator()
-            getValueCell(for: "Swap from", with: getFromAmount())
+            getValueCell(for: "fromAsset", with: getFromAmount())
             Separator()
-            getValueCell(for: "to", with: getToAmount())
+            getValueCell(for: "toAsset", with: getToAmount())
             if showApprove {
                 Separator()
                 getValueCell(for: "Allowance spender", with: getSpender())
@@ -52,7 +52,7 @@ struct KeysignSwapConfirmView: View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()
         }) {
-            FilledButton(title: "joinKeySign")
+            FilledButton(title: "pairedSign")
         }
         .padding(20)
     }
