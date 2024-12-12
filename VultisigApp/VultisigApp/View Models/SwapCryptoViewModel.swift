@@ -327,6 +327,20 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
     }
+    
+    func fetchFees(tx: SwapTransaction, vault: Vault) {
+        updateFeesTask?.cancel()
+        updateFeesTask = Task {
+            await updateFees(tx: tx, vault: vault)
+        }
+    }
+
+    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+        updateQuoteTask?.cancel()
+        updateQuoteTask = Task {
+            await updateQuotes(tx: tx, vault: vault)
+        }
+    }
 }
 
 private extension SwapCryptoViewModel {
@@ -446,19 +460,5 @@ private extension SwapCryptoViewModel {
     func oneInchFee(quote: OneInchQuote) -> BigInt {
         let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
-    }
-
-    func fetchFees(tx: SwapTransaction, vault: Vault) {
-        updateFeesTask?.cancel()
-        updateFeesTask = Task {
-            await updateFees(tx: tx, vault: vault)
-        }
-    }
-
-    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
-        updateQuoteTask?.cancel()
-        updateQuoteTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
-        }
     }
 }

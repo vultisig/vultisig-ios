@@ -52,7 +52,7 @@ struct KeysignSwapConfirmView: View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()
         }) {
-            FilledButton(title: "pairedSign")
+            FilledButton(title: "sign")
         }
         .padding(20)
     }
