@@ -46,11 +46,11 @@ struct CoinPickerView: View {
     var searchBar: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
-                .font(.body24MontserratMedium)
+                .font(.body20MontserratMedium)
                 .foregroundColor(.neutral500)
             
-            TextField(NSLocalizedString("search", comment: "Search").toFormattedTitleCase(), text: $searchText)
-                .font(.body16Menlo)
+            TextField(NSLocalizedString("search...", comment: "Search...").toFormattedTitleCase(), text: $searchText)
+                .font(.body12MenloBold)
                 .foregroundColor(.neutral500)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
@@ -67,7 +67,7 @@ struct CoinPickerView: View {
                     isSearching = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(.neutral500)
                 }
                 .foregroundColor(.blue)
                 .font(.body12Menlo)
@@ -90,28 +90,7 @@ struct CoinPickerView: View {
             onSelect?(coin)
             dismiss()
         } label: {
-            HStack(spacing: 16) {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 32, height: 32),
-                    ticker: coin.ticker,
-                    tokenChainLogo: coin.chain.logo
-                )
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(coin.ticker)
-                        .font(.body16MontserratBold)
-                        .foregroundColor(.neutral0)
-
-                    Text(coin.chain.name)
-                        .font(.body12MontserratSemiBold)
-                        .foregroundColor(.neutral0)
-                }
-                Spacer()
-            }
-            .frame(height: 72)
-            .padding(.horizontal, 16)
-            .background(Color.blue600)
-            .cornerRadius(10)
+            CoinPickerCell(coin: coin)
         }
     }
     
