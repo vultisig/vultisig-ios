@@ -419,3 +419,8 @@
 "action" = "Acción";
 "swapFrom" = "Intercambiar desde";
 "approveAndSwap" = "Aprobar e Intercambiar";
+"totalFee" = "Comisión total";
+"search..." = "Buscar...";
+"fromAsset" = "Del activo";
+"toAsset" = "Al activo";
+"pairedSign" = "Signo emparejado";

@@ -419,3 +419,8 @@
 "action" = "Akcija";
 "swapFrom" = "Zamjena iz";
 "approveAndSwap" = "Odobri i Zamijeni";
+"totalFee" = "Ukupna naknada";
+"search..." = "Pretraži...";
+"fromAsset" = "Iz imovine";
+"toAsset" = "U imovinu";
+"pairedSign" = "Upareni znak";

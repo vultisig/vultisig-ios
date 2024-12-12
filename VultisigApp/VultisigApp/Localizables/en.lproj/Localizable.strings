@@ -452,3 +452,8 @@
 "action" = "Action";
 "swapFrom" = "Swap From";
 "approveAndSwap" = "Approve and Swap";
+"totalFee" = "Total Fee";
+"search..." = "Search...";
+"fromAsset" = "From Asset";
+"toAsset" = "To Asset";
+"pairedSign" = "Paired Sign";

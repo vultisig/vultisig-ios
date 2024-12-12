@@ -59,16 +59,50 @@ struct SwapVerifyView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            getValueCell(for: "from", with: getFromAmount())
+            getValueCell(
+                for: "fromAsset",
+                with: getFromAmount()
+            )
+            
             Separator()
-            getValueCell(for: "to", with: getToAmount())
+            getValueCell(
+                for: "toAsset",
+                with: getToAmount()
+            )
+            
             if swapViewModel.showAllowance(tx: tx) {
                 Separator()
-                getValueCell(for: "Allowance", with: getFromAmount())
+                getValueCell(
+                    for: "Allowance",
+                    with: getFromAmount()
+                )
             }
-            if swapViewModel.showDuration(tx: tx) {
+            
+            if swapViewModel.showFees(tx: tx) {
                 Separator()
-                getDetailsCell(for: "Estimated Fees", with: swapViewModel.swapFeeString(tx: tx))
+                getValueCell(
+                    for: "swapFee",
+                    with: swapViewModel.swapFeeString(tx: tx),
+                    isVertical: false
+                )
+            }
+            
+            if swapViewModel.showGas(tx: tx) {
+                Separator()
+                getValueCell(
+                    for: "networkFee",
+                    with: "\(swapViewModel.swapGasString(tx: tx))(~\(swapViewModel.approveFeeString(tx: tx)))",
+                    isVertical: false
+                )
+            }
+            
+            if swapViewModel.showTotalFees(tx: tx) {
+                Separator()
+                getValueCell(
+                    for: "totalFee",
+                    with: "\(swapViewModel.totalFeeString(tx: tx))",
+                    isVertical: false
+                )
             }
         }
         .padding(16)
@@ -149,15 +183,28 @@ struct SwapVerifyView: View {
         }
     }
 
-    func getValueCell(for title: String, with value: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString(title, comment: ""))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
+    func getValueCell(for title: String, with value: String, isVertical: Bool = true) -> some View {
+        ZStack {
+            if isVertical {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString(title, comment: ""))
+                        .font(.body20MontserratSemiBold)
+                        .foregroundColor(.neutral0)
 
-            Text(value)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
+                    Text(value)
+                        .font(.body13MenloBold)
+                        .foregroundColor(.turquoise600)
+                }
+            } else {
+                HStack {
+                    Text(NSLocalizedString(title, comment: ""))
+                    Spacer()
+                    Text(value)
+                    
+                }
+                .font(.body16MontserratBold)
+                .foregroundColor(.neutral0)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -43,7 +43,7 @@ struct SwapCryptoAmountTextField: View {
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body12Menlo)
+            .font(.body12MenloBold)
             .foregroundColor(.neutral200)
     }
     
@@ -92,7 +92,7 @@ struct SwapCryptoAmountTextField: View {
     
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
-            .font(.body16Menlo)
+            .font(.body16MenloBold)
             .foregroundColor(.neutral400)
     }
 }
