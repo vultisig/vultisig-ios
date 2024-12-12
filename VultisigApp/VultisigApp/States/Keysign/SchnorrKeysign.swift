@@ -94,16 +94,10 @@ final class SchnorrKeysign {
         }
         let keyShareBytes = try getKeyshareBytes()
         var keyshareSlice = keyShareBytes.to_dkls_goslice()
-        var h = godkls.Handle()
+        var h = goschnorr.Handle()
         let result = schnorr_keyshare_from_bytes(&keyshareSlice,&h)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
-        }
-        defer {
-            let freeResult = dkls_keyshare_free(&h)
-            if freeResult != LIB_OK {
-                print("fail to free keyshare \(freeResult)")
-            }
         }
         let keyIDResult = schnorr_keyshare_key_id(h, &buf)
         if keyIDResult != LIB_OK {
@@ -113,9 +107,9 @@ final class SchnorrKeysign {
     }
     
     func getKeysignSetupMessage(message: String) throws -> [UInt8] {
-        var buf = godkls.tss_buffer()
+        var buf = goschnorr.tss_buffer()
         defer {
-            godkls.tss_buffer_free(&buf)
+            goschnorr.tss_buffer_free(&buf)
         }
         let keyIdArr = try getKeyshareID()
         var keyIdSlice = keyIdArr.to_dkls_goslice()
@@ -348,13 +342,13 @@ final class SchnorrKeysign {
             
             let keyShareBytes = try getKeyshareBytes()
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
-            var keyshareHandle = godkls.Handle()
+            var keyshareHandle = goschnorr.Handle()
             let result = schnorr_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
             
-            let sessionResult = dkls_sign_session_from_setup(&decodedSetupMsg,
+            let sessionResult = schnorr_sign_session_from_setup(&decodedSetupMsg,
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)

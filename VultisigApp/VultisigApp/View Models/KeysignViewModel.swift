@@ -124,6 +124,7 @@ class KeysignViewModel: ObservableObject {
                 try await dklsKeysign.DKLSKeysignWithRetry(attempt: 0)
                 self.signatures = dklsKeysign.getSignatures()
             case .EdDSA:
+                status = .KeysignEdDSA
                 let schnorrKeysign = SchnorrKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,
