@@ -124,9 +124,18 @@ class KeysignViewModel: ObservableObject {
                 try await dklsKeysign.DKLSKeysignWithRetry(attempt: 0)
                 self.signatures = dklsKeysign.getSignatures()
             case .EdDSA:
-                // do something
-                break
+                let schnorrKeysign = SchnorrKeysign(keysignCommittee: self.keysignCommittee,
+                                              mediatorURL: self.mediatorURL,
+                                              sessionID: self.sessionID,
+                                              messsageToSign: self.messsageToSign,
+                                              vault: self.vault,
+                                              encryptionKeyHex: self.encryptionKeyHex,
+                                              isInitiateDevice: self.isInitiateDevice)
+                try await schnorrKeysign.KeysignWithRetry(attempt: 0)
+                self.signatures = schnorrKeysign.getSignatures()
             }
+            await broadcastTransaction()
+            status = .KeysignFinished
         } catch {
             logger.error("TSS keysign failed, error: \(error.localizedDescription)")
             keysignError = error.localizedDescription

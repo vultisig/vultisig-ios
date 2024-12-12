@@ -1,9 +1,10 @@
 //
-//  DKLSKeysign.swift
+//  SchnorrKeysign.swift
 //  VultisigApp
 //
-//  Created by Johnny Luo on 11/12/2024.
+//  Created by Johnny Luo on 12/12/2024.
 //
+
 
 import Foundation
 import godkls
@@ -12,7 +13,7 @@ import OSLog
 import Mediator
 import Tss
 
-final class DKLSKeysign {
+final class SchnorrKeysign {
     let keysignCommittee: [String]
     let mediatorURL: String
     let sessionID: String
@@ -21,8 +22,7 @@ final class DKLSKeysign {
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
     let localPartyID: String
-    let chainPath: String
-    let publicKeyECDSA: String
+    let publicKeyEdDSA: String
     var messenger: DKLSMessenger? = nil
     var keysignDoneIndicator = false
     let keySignLock = NSLock()
@@ -36,7 +36,6 @@ final class DKLSKeysign {
          messsageToSign: [String],
          vault: Vault,
          encryptionKeyHex: String,
-         chainPath: String,
          isInitiateDevice: Bool) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -44,10 +43,9 @@ final class DKLSKeysign {
         self.messsageToSign = messsageToSign
         self.vault = vault
         self.encryptionKeyHex = encryptionKeyHex
-        self.chainPath = chainPath
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
-        self.publicKeyECDSA = vault.pubKeyECDSA
+        self.publicKeyEdDSA = vault.pubKeyEdDSA
     }
     
     func getSignatures() -> [String: TssKeysignResponse] {
@@ -71,7 +69,7 @@ final class DKLSKeysign {
     
     func getKeyshareString() -> String? {
         for ks in vault.keyshares {
-            if ks.pubkey == self.publicKeyECDSA {
+            if ks.pubkey == self.publicKeyEdDSA {
                 return ks.keyshare
             }
         }
@@ -89,15 +87,15 @@ final class DKLSKeysign {
         return [UInt8](keyshareData)
     }
     
-    func getDKLSKeyshareID() throws -> [UInt8] {
-        var buf = godkls.tss_buffer()
+    func getKeyshareID() throws -> [UInt8] {
+        var buf = goschnorr.tss_buffer()
         defer {
-            godkls.tss_buffer_free(&buf)
+            goschnorr.tss_buffer_free(&buf)
         }
         let keyShareBytes = try getKeyshareBytes()
         var keyshareSlice = keyShareBytes.to_dkls_goslice()
         var h = godkls.Handle()
-        let result = dkls_keyshare_from_bytes(&keyshareSlice,&h)
+        let result = schnorr_keyshare_from_bytes(&keyshareSlice,&h)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
         }
@@ -107,27 +105,25 @@ final class DKLSKeysign {
                 print("fail to free keyshare \(freeResult)")
             }
         }
-        let keyIDResult = dkls_keyshare_key_id(h, &buf)
+        let keyIDResult = schnorr_keyshare_key_id(h, &buf)
         if keyIDResult != LIB_OK {
             throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func getDKLSKeysignSetupMessage(message: String) throws -> [UInt8] {
+    func getKeysignSetupMessage(message: String) throws -> [UInt8] {
         var buf = godkls.tss_buffer()
         defer {
             godkls.tss_buffer_free(&buf)
         }
-        let keyIdArr = try getDKLSKeyshareID()
+        let keyIdArr = try getKeyshareID()
         var keyIdSlice = keyIdArr.to_dkls_goslice()
         
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
         
-        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-        var chainPathSlice = chainPathArr.to_dkls_goslice()
         
         let decodedMsgData = Data(hexString: message)
         guard let decodedMsgData else {
@@ -136,22 +132,22 @@ final class DKLSKeysign {
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_dkls_goslice()
         
-        let err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
+        let err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
         if err != LIB_OK {
-            throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
+            throw HelperError.runtimeError("fail to setup keysign message, error:\(err)")
         }
         
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
     func DKLSDecodeMessage(setupMsg: [UInt8]) throws -> String {
-        var buf = godkls.tss_buffer()
+        var buf = goschnorr.tss_buffer()
         
         defer {
-            godkls.tss_buffer_free(&buf)
+            goschnorr.tss_buffer_free(&buf)
         }
         var setupMsgSlice = setupMsg.to_dkls_goslice()
-        let result = dkls_decode_message(&setupMsgSlice,&buf)
+        let result = schnorr_decode_message(&setupMsgSlice,&buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to extract message from setup message:\(result)")
         }
@@ -159,13 +155,13 @@ final class DKLSKeysign {
     }
     
     
-    func getOutboundMessageReceiver(handle: godkls.Handle,message: godkls.go_slice,idx: UInt32) -> [UInt8] {
-        var buf_receiver = tss_buffer()
+    func getOutboundMessageReceiver(handle: goschnorr.Handle,message: goschnorr.go_slice,idx: UInt32) -> [UInt8] {
+        var buf_receiver = goschnorr.tss_buffer()
         defer {
-            tss_buffer_free(&buf_receiver)
+            goschnorr.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
-        let receiverResult = dkls_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
+        let receiverResult = schnorr_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         if receiverResult != LIB_OK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
@@ -173,12 +169,12 @@ final class DKLSKeysign {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
     
-    func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
-        var buf = godkls.tss_buffer()
+    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.lib_error,[UInt8]) {
+        var buf = goschnorr.tss_buffer()
         defer {
-            godkls.tss_buffer_free(&buf)
+            goschnorr.tss_buffer_free(&buf)
         }
-        let result = dkls_sign_session_output_message(handle,&buf)
+        let result = schnorr_sign_session_output_message(handle,&buf)
         if result != LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
@@ -186,15 +182,15 @@ final class DKLSKeysign {
         return (result,Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))))
     }
     
-    func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
+    func processSchnorrOutboundMessage(handle: goschnorr.Handle) async throws  {
         repeat {
-            let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
+            let (result,outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != LIB_OK {
                 print("fail to get outbound message")
             }
             if outboundMessage.count == 0 {
                 if self.isKeysignDone() {
-                    print("DKLS ECDSA keysign finished")
+                    print("EdDSA keysign finished")
                     return
                 }
                 // back off 100ms and continue
@@ -221,7 +217,7 @@ final class DKLSKeysign {
         
     }
     
-    func pullInboundMessages(handle: godkls.Handle,messageID: String) async throws -> Bool {
+    func pullInboundMessages(handle: goschnorr.Handle,messageID: String) async throws -> Bool {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(self.localPartyID)"
         print("start pulling inbound messages from:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -267,7 +263,7 @@ final class DKLSKeysign {
         return false
     }
     
-    func processInboundMessage(handle: godkls.Handle,data:Data,messageID: String) async throws -> Bool {
+    func processInboundMessage(handle: goschnorr.Handle,data:Data,messageID: String) async throws -> Bool {
         let decoder = JSONDecoder()
         let msgs = try decoder.decode([Message].self, from: data)
         let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
@@ -281,7 +277,7 @@ final class DKLSKeysign {
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
-
+            
             // need to have a variable to save the array , otherwise dkls function can't access the memory
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
@@ -291,7 +287,7 @@ final class DKLSKeysign {
             
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
-            let result = dkls_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            let result = schnorr_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
@@ -317,22 +313,8 @@ final class DKLSKeysign {
         request.addValue(messageID, forHTTPHeaderField: "message_id")
         let (_,_) = try await URLSession.shared.data(for: request)
     }
-    func getDerivedPublicKey(handle: godkls.Handle){
-        var buf = godkls.tss_buffer()
-        defer {
-            godkls.tss_buffer_free(&buf)
-        }
-        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-        var chainPathSlice = chainPathArr.toTssBuf()
-        let result = dkls_keyshare_derive_child_public_key(handle,&chainPathSlice,&buf)
-        if result != LIB_OK {
-            print("failed to get child public key \(result)")
-        }
-        let childKey = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        print(childKey.toHexString())
-        
-    }
-    func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
+    
+    func KeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
         var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
@@ -344,7 +326,7 @@ final class DKLSKeysign {
         do {
             var keysignSetupMsg:[UInt8]
             if self.isInitiateDevice {
-                keysignSetupMsg = try getDKLSKeysignSetupMessage(message: messageToSign)
+                keysignSetupMsg = try getKeysignSetupMessage(message: messageToSign)
                 try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64())
             } else {
                 // download the setup message from relay server
@@ -367,28 +349,25 @@ final class DKLSKeysign {
             let keyShareBytes = try getKeyshareBytes()
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
             var keyshareHandle = godkls.Handle()
-            let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
+            let result = schnorr_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
-            getDerivedPublicKey(handle: keyshareHandle)
-            defer {
-                dkls_keyshare_free(&keyshareHandle)
-            }
+            
             let sessionResult = dkls_sign_session_from_setup(&decodedSetupMsg,
-                                                      &localPartySlice,
-                                                      keyshareHandle,
-                                                      &handler)
+                                                             &localPartySlice,
+                                                             keyshareHandle,
+                                                             &handler)
             if sessionResult != LIB_OK {
                 throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
             // free the handler
             defer {
-                dkls_sign_session_free(&handler)
+                schnorr_sign_session_free(&handler)
             }
-        
+            
             task = Task{
-                try await processDKLSOutboundMessage(handle: handler)
+                try await processSchnorrOutboundMessage(handle: handler)
             }
             defer {
                 task?.cancel()
@@ -396,7 +375,7 @@ final class DKLSKeysign {
             let isFinished = try await pullInboundMessages(handle: handler, messageID: msgHash)
             if isFinished {
                 self.setKeysignDone(status: true)
-                let sig = try dklsSignSessionFinish(handle: handler)
+                let sig = try SignSessionFinish(handle: handler)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
                 let r = Array(sig.prefix(32))
@@ -416,27 +395,27 @@ final class DKLSKeysign {
         catch {
             print("Failed to sign message (\(messageToSign)), error: \(error.localizedDescription)")
             if attempt < 3 {
-                try await DKLSKeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
+                try await KeysignOneMessageWithRetry(attempt: attempt+1, messageToSign: messageToSign)
             }
         }
     }
     
-    func dklsSignSessionFinish(handle: godkls.Handle) throws -> [UInt8]{
-        var buf = godkls.tss_buffer()
+    func SignSessionFinish(handle: goschnorr.Handle) throws -> [UInt8]{
+        var buf = goschnorr.tss_buffer()
         defer {
-            godkls.tss_buffer_free(&buf)
+            goschnorr.tss_buffer_free(&buf)
         }
-        let result = dkls_sign_session_finish(handle,&buf)
+        let result = schnorr_sign_session_finish(handle,&buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to get keysign signature \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func DKLSKeysignWithRetry(attempt: UInt8) async throws {
+    func KeysignWithRetry(attempt: UInt8) async throws {
         // get keyshare
         for msg in self.messsageToSign {
-            try await DKLSKeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
+            try await KeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
         }
     }
     

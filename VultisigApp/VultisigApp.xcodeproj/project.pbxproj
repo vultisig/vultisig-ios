@@ -729,6 +729,7 @@
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
+		DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */; };
 		DEEB57042D080C8A00B120D1 /* godkls.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0372D064DAC00A36D6A /* godkls.xcframework */; };
 		DEEB57052D080C8A00B120D1 /* godkls.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0372D064DAC00A36D6A /* godkls.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DEEB57072D080C8C00B120D1 /* goschnorr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */; };
@@ -1520,6 +1521,7 @@
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
+		DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeysign.swift; sourceTree = "<group>"; };
 		DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = goschnorr.xcframework; sourceTree = "<group>"; };
 		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
 		DEEB57252D096BC100B120D1 /* DERSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DERSignature.swift; sourceTree = "<group>"; };
@@ -3293,6 +3295,7 @@
 		DEEB57272D096BC100B120D1 /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */,
 				DEEB57252D096BC100B120D1 /* DERSignature.swift */,
 				DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */,
 			);
@@ -4150,6 +4153,7 @@
 				A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */,
 				A6182F3B2C92331D0059BFDD /* FilledButton+iOS.swift in Sources */,
 				A6182F5D2C9299ED0059BFDD /* MemoTextField+imacOS.swift in Sources */,
+				DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */,
 				A542AE5B2C5B5F220061FEAF /* FilledLabelButton.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */,

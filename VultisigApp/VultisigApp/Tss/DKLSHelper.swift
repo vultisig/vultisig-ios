@@ -43,6 +43,14 @@ extension Array where Element == UInt8 {
         }
         return result.self
     }
+    func toTssBuf() -> godkls.tss_buffer {
+        let result = self.withUnsafeBufferPointer{ bp in
+            return godkls.tss_buffer(
+                ptr: UnsafePointer(bp.baseAddress),
+                len: UInt(bp.count))
+        }
+        return result.self
+    }
 }
 extension String {
     func toArray() -> [UInt8] {
