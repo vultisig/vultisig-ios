@@ -95,23 +95,17 @@ struct CoinPickerView: View {
     }
     
     var scrollView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
-                if searchText.isEmpty {
-                    list
+        LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
+            if searchText.isEmpty {
+                list
+            } else {
+                if filtered.count == 0 {
+                    errorMessage
                 } else {
-                    if filtered.count == 0 {
-                        errorMessage
-                    } else {
-                        filteredList
-                    }
+                    filteredList
                 }
-
             }
-            .padding(.horizontal, 12)
-            .scrollContentBackground(.hidden)
-            .padding(.top, 20)
-            .padding(.bottom, 50)
+
         }
     }
     

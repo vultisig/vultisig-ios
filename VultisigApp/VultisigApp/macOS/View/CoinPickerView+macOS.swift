@@ -36,8 +36,13 @@ extension CoinPickerView {
 
             Separator()
             
-            scrollView
-                .padding(.horizontal, 40)
+            ScrollView {
+                scrollView
+                    .padding(.horizontal, 52)
+                    .scrollContentBackground(.hidden)
+                    .padding(.top, 20)
+                    .padding(.bottom, 50)
+            }
         }
     }
 }
