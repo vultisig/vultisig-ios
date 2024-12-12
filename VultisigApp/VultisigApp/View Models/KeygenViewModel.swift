@@ -7,7 +7,6 @@ import Foundation
 import OSLog
 import SwiftData
 import Tss
-import godkls
 
 enum KeygenStatus {
     case CreatingInstance

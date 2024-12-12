@@ -372,11 +372,13 @@ final class SchnorrKeysign {
                 let sig = try SignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
-                let r = Array(sig.prefix(32))
-                let s = Array(sig[32..<64])
+                // Here we reverse the sig , because those in GG20 is reversed
+                // TssExtension.swift when getSignature will get it convert back
+                // doing it this way thus we don't need to provide special method for Schnorr signature
+                let r = Array(Array(sig.prefix(32)).reversed())
+                let s = Array(Array(sig[32..<64]).reversed())
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
-                //resp.recoveryID = String(format:"%02x",sig[64])
                 resp.derSignature = createDERSignature(r: r, s: s).toHexString()
                 
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
