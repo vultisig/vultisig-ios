@@ -419,3 +419,8 @@
 "action" = "Azione";
 "swapFrom" = "Scambia da";
 "approveAndSwap" = "Approva e Scambia";
+"totalFee" = "Commissione totale";
+"search..." = "Cerca...";
+"fromAsset" = "Da asset";
+"toAsset" = "A asset";
+"pairedSign" = "Segno accoppiato";

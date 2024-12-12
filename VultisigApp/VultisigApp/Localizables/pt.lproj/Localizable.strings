@@ -420,3 +420,8 @@
 "action" = "Ação";
 "swapFrom" = "Trocar de";
 "approveAndSwap" = "Aprovar e Trocar";
+"totalFee" = "Taxa total";
+"search..." = "Pesquisar...";
+"fromAsset" = "Do ativo";
+"toAsset" = "Para ativo";
+"pairedSign" = "Sinal emparelhado";
