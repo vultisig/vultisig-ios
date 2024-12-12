@@ -454,3 +454,5 @@
 "approveAndSwap" = "Approve and Swap";
 "totalFee" = "Total Fee";
 "search..." = "Search...";
+"fromAsset" = "From Asset";
+"toAsset" = "To Asset";
