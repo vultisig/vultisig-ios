@@ -16,6 +16,7 @@ struct ChainCell: View {
     
     @StateObject var viewModel = ChainCellViewModel()
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -91,7 +92,7 @@ struct ChainCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
+        Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString.formatCurrencyAbbreviation(settingsViewModel.selectedCurrency))
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
     }
@@ -107,5 +108,6 @@ struct ChainCell: View {
     ScrollView {
         ChainCell(group: GroupedChain.example, isEditingChains: .constant(true))
             .environmentObject(HomeViewModel())
+            .environmentObject(SettingsViewModel())
     }
 }

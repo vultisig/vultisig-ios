@@ -19,7 +19,7 @@ extension Decimal {
         return truncated
     }
     
-    func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
+    func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
@@ -32,13 +32,25 @@ extension Decimal {
             formatter.groupingSeparator = ","
         }
         
+        if !useAbbreviation {
+            let number = NSDecimalNumber(decimal: getAbbrevationValues().value)
+            return formatter.string(from: number) ?? ""
+        }
+        
         let abbrevation = getAbbrevationValues()
         let value = abbrevation.value
         let prefix = abbrevation.prefix
         
-        // Convert Decimal to NSDecimalNumber before using with NumberFormatter
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        
         let number = NSDecimalNumber(decimal: value)
-        return (formatter.string(from: number) ?? "") + prefix
+        
+        if let formattedNumber = formatter.string(from: number) {
+            return formattedNumber + prefix
+        }
+        
+        return ""
     }
     
     func formatToDecimal(digits: Int) -> String {
@@ -66,10 +78,10 @@ extension Decimal {
         let value: Decimal
         let prefix: String
         
-        if self > billionValue {
+        if self >= billionValue {
             value = self/billionValue
             prefix = "B"
-        } else if self > millionValue {
+        } else if self >= millionValue {
             value = self/millionValue
             prefix = "M"
         } else {
