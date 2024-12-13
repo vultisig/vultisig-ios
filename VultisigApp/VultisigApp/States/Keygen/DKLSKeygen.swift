@@ -17,7 +17,6 @@ struct DKLSKeyshare {
 }
 
 final class DKLSKeygen {
-    private let logger = Logger(subsystem: "keygen", category: "dkls")
     let vault: Vault
     let tssType: TssType
     let keygenCommittee: [String]
@@ -65,9 +64,9 @@ final class DKLSKeygen {
     }
     
     private func getDklsSetupMessage() throws -> [UInt8]  {
-        var buf = tss_buffer()
+        var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
         // create setup message and upload it to relay server
@@ -84,7 +83,7 @@ final class DKLSKeygen {
     func GetDKLSOutboundMessage(handle: godkls.Handle) -> (godkls.lib_error,[UInt8]) {
         var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let result = dkls_keygen_session_output_message(handle,&buf)
         if result != LIB_OK {
@@ -111,9 +110,9 @@ final class DKLSKeygen {
     }
     
     func getOutboundMessageReceiver(handle: godkls.Handle,message: godkls.go_slice,idx: UInt32) -> [UInt8] {
-        var buf_receiver = tss_buffer()
+        var buf_receiver = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf_receiver)
+            godkls.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
         let receiverResult = dkls_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -128,11 +127,11 @@ final class DKLSKeygen {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != LIB_OK {
-                self.logger.error("fail to get outbound message")
+                print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
                 if self.isKeygenDone() {
-                    self.logger.info("DKLS ECDSA keygen finished")
+                    print("DKLS ECDSA keygen finished")
                     return
                 }
                 // back off 100ms and continue
@@ -202,7 +201,6 @@ final class DKLSKeygen {
     }
     
     func processInboundMessage(handle: godkls.Handle,data:Data) async throws -> Bool {
-        print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
         if data.count == 0 {
             return false
         }
@@ -212,10 +210,10 @@ final class DKLSKeygen {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                self.logger.info("message with key:\(key) has been applied before")
+                print("message with key:\(key) has been applied before")
                 continue
             }
-            self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -266,7 +264,7 @@ final class DKLSKeygen {
                 self.setupMessage = keygenSetupMsg
             }
             var decodedSetupMsg = keygenSetupMsg.to_dkls_goslice()
-            var handler = godkls.Handle(_0: 0)
+            var handler = godkls.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
@@ -275,7 +273,10 @@ final class DKLSKeygen {
             }
             // free the handler
             defer {
-                dkls_keygen_session_free(&handler)
+                let sessionFreeResult = dkls_keygen_session_free(&handler)
+                if sessionFreeResult != LIB_OK {
+                    print("fail to free keygen session \(sessionFreeResult)")
+                }
             }
             let h = handler
             task = Task{
@@ -288,10 +289,16 @@ final class DKLSKeygen {
             if isFinished {
                 self.setKeygenDone(status: true)
                 task?.cancel()
-                var keyshareHandler = godkls.Handle(_0: 0)
+                var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
+                }
+                defer {
+                    let freeResult = dkls_keyshare_free(&keyshareHandler)
+                    if freeResult != LIB_OK {
+                        print("fail to free keyshare \(freeResult)")
+                    }
                 }
                 let keyshareBytes = try getKeyshareBytes(handle: keyshareHandler)
                 let publicKeyECDSA = try getPublicKeyBytes(handle: keyshareHandler)
@@ -305,11 +312,11 @@ final class DKLSKeygen {
             }
         }
         catch {
-            self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
+            print("Failed to generate key, error: \(error.localizedDescription)")
             self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
-                logger.info("keygen/reshare retry, attemp: \(attempt)")
+                print("keygen/reshare retry, attemp: \(attempt)")
                 try await DKLSKeygenWithRetry(attempt: attempt + 1)
             } else {
                 throw error
@@ -318,9 +325,9 @@ final class DKLSKeygen {
     }
     
     func getKeyshareBytes(handle: godkls.Handle) throws  -> [UInt8] {
-        var buf = tss_buffer()
+        var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let result = dkls_keyshare_to_bytes(handle,&buf)
         if result != LIB_OK {
@@ -330,9 +337,9 @@ final class DKLSKeygen {
     }
     
     func getPublicKeyBytes(handle: godkls.Handle) throws  -> [UInt8] {
-        var buf = tss_buffer()
+        var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let result =  dkls_keyshare_public_key(handle,&buf)
         if result != LIB_OK {
@@ -342,9 +349,9 @@ final class DKLSKeygen {
     }
     
     func getChainCode(handle: godkls.Handle) throws -> [UInt8] {
-        var buf = tss_buffer()
+        var buf = godkls.tss_buffer()
         defer {
-            tss_buffer_free(&buf)
+            godkls.tss_buffer_free(&buf)
         }
         let result =  dkls_keyshare_chaincode(handle,&buf)
         if result != LIB_OK {

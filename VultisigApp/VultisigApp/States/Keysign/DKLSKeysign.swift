@@ -53,6 +53,7 @@ final class DKLSKeysign {
     func getSignatures() -> [String: TssKeysignResponse] {
         return self.signatures
     }
+    
     func isKeysignDone() -> Bool {
         self.keySignLock.lock()
         defer {
@@ -101,6 +102,7 @@ final class DKLSKeysign {
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
         }
+        
         defer {
             let freeResult = dkls_keyshare_free(&h)
             if freeResult != LIB_OK {
@@ -190,7 +192,7 @@ final class DKLSKeysign {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
             if result != LIB_OK {
-                print("fail to get outbound message")
+                print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
                 if self.isKeysignDone() {
@@ -281,7 +283,7 @@ final class DKLSKeysign {
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
-
+            
             // need to have a variable to save the array , otherwise dkls function can't access the memory
             guard let decodedMsg = Data(base64Encoded: decryptedBody) else {
                 throw HelperError.runtimeError("fail to decrypted inbound message")
@@ -296,7 +298,6 @@ final class DKLSKeysign {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
             
-            print("apply message \(descryptedBodyArr.toBase64()) successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
             // local party keysign finished
@@ -317,21 +318,7 @@ final class DKLSKeysign {
         request.addValue(messageID, forHTTPHeaderField: "message_id")
         let (_,_) = try await URLSession.shared.data(for: request)
     }
-    func getDerivedPublicKey(handle: godkls.Handle){
-        var buf = godkls.tss_buffer()
-        defer {
-            godkls.tss_buffer_free(&buf)
-        }
-        let chainPathArr = [UInt8](self.chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-        var chainPathSlice = chainPathArr.toTssBuf()
-        let result = dkls_keyshare_derive_child_public_key(handle,&chainPathSlice,&buf)
-        if result != LIB_OK {
-            print("failed to get child public key \(result)")
-        }
-        let childKey = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
-        print(childKey.toHexString())
-        
-    }
+    
     func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
         var task: Task<(),any Error>? = nil
@@ -371,14 +358,14 @@ final class DKLSKeysign {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
-            getDerivedPublicKey(handle: keyshareHandle)
+
             defer {
                 dkls_keyshare_free(&keyshareHandle)
             }
             let sessionResult = dkls_sign_session_from_setup(&decodedSetupMsg,
-                                                      &localPartySlice,
-                                                      keyshareHandle,
-                                                      &handler)
+                                                             &localPartySlice,
+                                                             keyshareHandle,
+                                                             &handler)
             if sessionResult != LIB_OK {
                 throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
@@ -405,7 +392,6 @@ final class DKLSKeysign {
                 resp.s = s.toHexString()
                 resp.recoveryID = String(format:"%02x",sig[64])
                 resp.derSignature = createDERSignature(r: r, s: s).toHexString()
-                
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
@@ -434,7 +420,6 @@ final class DKLSKeysign {
     }
     
     func DKLSKeysignWithRetry(attempt: UInt8) async throws {
-        // get keyshare
         for msg in self.messsageToSign {
             try await DKLSKeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
         }

@@ -51,6 +51,7 @@ final class SchnorrKeysign {
     func getSignatures() -> [String: TssKeysignResponse] {
         return self.signatures
     }
+    
     func isKeysignDone() -> Bool {
         self.keySignLock.lock()
         defer {
@@ -117,8 +118,7 @@ final class SchnorrKeysign {
         // create setup message and upload it to relay server
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keysignCommittee)
         var ids = byteArray.to_dkls_goslice()
-        
-        
+           
         let decodedMsgData = Data(hexString: message)
         guard let decodedMsgData else {
             throw HelperError.runtimeError("fail to hex decoded the message to sign")
@@ -136,7 +136,6 @@ final class SchnorrKeysign {
     
     func DKLSDecodeMessage(setupMsg: [UInt8]) throws -> String {
         var buf = goschnorr.tss_buffer()
-        
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
@@ -285,8 +284,6 @@ final class SchnorrKeysign {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
-            
-            print("apply message \(descryptedBodyArr.toBase64()) successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash,messageID:messageID)
             // local party keysign finished

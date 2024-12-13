@@ -12,7 +12,6 @@ import OSLog
 import Mediator
 
 final class SchnorrKeygen {
-    private let logger = Logger(subsystem: "keygen", category: "schnorr")
     let vault: Vault
     let tssType: TssType
     let keygenCommittee: [String]
@@ -47,12 +46,17 @@ final class SchnorrKeygen {
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
         self.setupMessage = setupMessage
-        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
+        self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
+                                       sessionID: self.sessionID,
+                                       messageID: nil,
+                                       encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
     }
+    
     func getKeyshare() -> DKLSKeyshare? {
         return self.keyshare
     }
+    
     func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.lib_error,[UInt8]) {
         var buf = goschnorr.tss_buffer()
         defer {
@@ -100,11 +104,11 @@ final class SchnorrKeygen {
         repeat {
             let (result,outboundMessage) = GetSchnorrOutboundMessage(handle: handle)
             if result != LIB_OK {
-                self.logger.error("fail to get outbound message")
+                print("fail to get outbound message")
             }
             if outboundMessage.count == 0 {
                 if self.isKeygenDone() {
-                    self.logger.info("DKLS ECDSA keygen finished")
+                    print("DKLS ECDSA keygen finished")
                     return
                 }
                 // back off 100ms and continue
@@ -174,7 +178,6 @@ final class SchnorrKeygen {
     }
     
     func processInboundMessage(handle: goschnorr.Handle,data:Data) async throws -> Bool {
-        print("inbound message: \(String(data:data,encoding: .utf8) ?? "")")
         if data.count == 0 {
             return false
         }
@@ -184,10 +187,10 @@ final class SchnorrKeygen {
         for msg in sortedMsgs {
             let key = "\(self.sessionID)-\(self.localPartyID)-\(msg.hash)" as NSString
             if self.cache.object(forKey: key) != nil {
-                self.logger.info("message with key:\(key) has been applied before")
+                print("message with key:\(key) has been applied before")
                 continue
             }
-            self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
+            print("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
             guard let decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex) else {
                 throw HelperError.runtimeError("fail to decrypted message body")
             }
@@ -203,7 +206,6 @@ final class SchnorrKeygen {
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
-            print("apply message to local successfully")
             self.cache.setObject(NSObject(), forKey: key)
             try await deleteMessageFromServer(hash: msg.hash)
             // local party keygen finished
@@ -261,15 +263,14 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
-                // schnorr_keyshare_free(&keyshareHandler)
             }
         }
         catch {
-            self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
+            print("Failed to generate key, error: \(error.localizedDescription)")
             self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
-                logger.info("keygen/reshare retry, attemp: \(attempt)")
+                print("keygen/reshare retry, attemp: \(attempt)")
                 try await SchnorrKeygenWithRetry(attempt: attempt + 1)
             } else {
                 throw error
