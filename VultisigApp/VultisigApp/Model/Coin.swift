@@ -254,7 +254,7 @@ class Coin: ObservableObject, Codable, Hashable {
     
     static let example: Coin = {
         let asset = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "BitcoinLogo", decimals: 8, priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", isNativeToken: false)
-        return Coin(asset: asset, address: "bc1qxyz...", hexPublicKey: "HexPublicKeyExample")
+        return Coin(asset: asset, address: "bc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyzbc1qxyz", hexPublicKey: "HexPublicKeyExample")
     }()
     
     func toCoinMeta() -> CoinMeta {

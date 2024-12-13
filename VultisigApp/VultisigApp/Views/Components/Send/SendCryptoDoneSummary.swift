@@ -11,7 +11,8 @@ struct SendCryptoDoneSummary: View {
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
     
-    let viewModel = SendSummaryViewModel()
+    let sendSummaryViewModel = SendSummaryViewModel()
+    let swapSummaryViewModel = SwapCryptoViewModel()
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -77,7 +78,7 @@ struct SendCryptoDoneSummary: View {
             Separator()
             getGeneralCell(
                 title: "from",
-                description: viewModel.getFromAmount(
+                description: sendSummaryViewModel.getFromAmount(
                     tx,
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
@@ -86,17 +87,35 @@ struct SendCryptoDoneSummary: View {
             Separator()
             getGeneralCell(
                 title: "to",
-                description: viewModel.getToAmount(
+                description: sendSummaryViewModel.getToAmount(
                     tx,
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
             )
             
-            Separator()
-            getGeneralCell(
-                title: "swapFee",
-                description: viewModel.swapFeeString(tx)
-            )
+            if swapSummaryViewModel.showFees(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "swapFee",
+                    description: swapSummaryViewModel.swapFeeString(tx: tx)
+                )
+            }
+            
+            if swapSummaryViewModel.showGas(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "networkFee",
+                    description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
+                )
+            }
+            
+            if swapSummaryViewModel.showTotalFees(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "totalFee",
+                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
+                )
+            }
         }
     }
     
@@ -141,7 +160,7 @@ struct SendCryptoDoneSummary: View {
     ZStack {
         Background()
         SendCryptoDoneSummary(
-            sendTransaction: SendTransaction(),
+            sendTransaction: nil,
             swapTransaction: SwapTransaction()
         )
     }

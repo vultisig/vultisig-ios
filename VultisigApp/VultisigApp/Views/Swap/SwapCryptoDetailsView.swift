@@ -60,6 +60,10 @@ struct SwapCryptoDetailsView: View {
             }
             .padding(.horizontal, 16)
         }
+        .refreshable {
+            swapViewModel.fetchFees(tx: tx, vault: vault)
+            swapViewModel.fetchQuotes(tx: tx, vault: vault)
+        }
     }
     
     var swapContent: some View {

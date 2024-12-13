@@ -612,7 +612,7 @@ class TokensStore {
         }
             
         static var kujiraRKuji: CoinMeta {
-            CoinMeta(chain: Chain.kujira, ticker: "rKUJI", logo: "rkuji", decimals: 6, priceProviderId: "rkuji", contractAddress: "factory/kujira1tsekaqv9vmem0zwskmf90gpf0twl6k57e8vdnq/urkuji", isNativeToken: false)
+            CoinMeta(chain: Chain.kujira, ticker: "rKUJI", logo: "rkuji", decimals: 6, priceProviderId: "kujira", contractAddress: "factory/kujira1tsekaqv9vmem0zwskmf90gpf0twl6k57e8vdnq/urkuji", isNativeToken: false)
         }
         
         static var dydx: CoinMeta {
