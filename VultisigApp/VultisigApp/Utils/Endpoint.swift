@@ -105,7 +105,7 @@ class Endpoint {
     
     static let baseServiceRpcService = "https://api.vultisig.com/base/"
     
-    static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
+    static let arbitrumOneServiceRpcService = "https://api.vultisig.com/arb/"
     
     static let polygonServiceRpcService = "https://polygon-bor-rpc.publicnode.com"
     
@@ -119,9 +119,7 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
-    static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
-    
-    static let solanaServiceRpc2 = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
