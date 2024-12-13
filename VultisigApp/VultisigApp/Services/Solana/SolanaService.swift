@@ -8,7 +8,7 @@ class SolanaService {
     private init() {}
 
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
-    private let rpcURL2 = URL(string: Endpoint.solanaServiceRpc2)!
+
     private let jsonDecoder = JSONDecoder()
 
     func sendSolanaTransaction(encodedTransaction: String) async throws
@@ -167,7 +167,7 @@ class SolanaService {
                 ],
             ]
 
-            let data = try await postRequest(with: requestBody, url: rpcURL2)
+            let data = try await postRequest(with: requestBody, url: rpcURL)
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result
                 .value
@@ -201,7 +201,7 @@ class SolanaService {
                 ],
             ]
 
-            let data = try await postRequest(with: requestBody, url: rpcURL2)
+            let data = try await postRequest(with: requestBody, url: rpcURL)
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             return parsedData.result.value
         } catch {
