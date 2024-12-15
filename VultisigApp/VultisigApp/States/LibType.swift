@@ -6,6 +6,7 @@
 //
 
 import VultisigCommonData
+import Foundation
 
 enum LibType : Int,Codable {
     case GG20 = 0
@@ -34,9 +35,14 @@ extension VSLibType {
 }
 
 func GetLibType() -> LibType {
+    let useDKLS = UserDefaults.standard.bool(forKey: "dkls")
+    if useDKLS {
+        return .DKLS
+    }
     #if DEBUG
     return .DKLS
     #else
     return .GG20
     #endif
+    
 }
