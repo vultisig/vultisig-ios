@@ -21,6 +21,7 @@ struct ChainDetailView: View {
     @State var isMemoLinkActive = false
     @State var isWeweLinkActive = false
     @State var showAlert = false
+    @State var resetActive = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -94,6 +95,10 @@ struct ChainDetailView: View {
                     await updateBalances()
                     await setData()
                 }
+                resetActive = true
+            }
+            .onDisappear {
+                resetActive = false
             }
     }
     
@@ -176,6 +181,10 @@ struct ChainDetailView: View {
     private func setData() async {
         isLoading = false
         viewModel.setData(for: vault)
+        
+        guard resetActive else {
+            return
+        }
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
