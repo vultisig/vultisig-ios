@@ -101,7 +101,7 @@ class Endpoint {
     
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
-    static let bscServiceRpcService = "https://api.vultisig.com/base/bsc/"
+    static let bscServiceRpcService = "https://api.vultisig.com/bsc/"
     
     static let baseServiceRpcService = "https://api.vultisig.com/base/"
     
