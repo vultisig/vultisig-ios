@@ -170,7 +170,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ton:
             return "7000"
         case .ripple:
-            return "10"
+            return "180000"
         }
     }
 
