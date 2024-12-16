@@ -101,23 +101,23 @@ class Endpoint {
     
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
-    static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
+    static let bscServiceRpcService = "https://api.vultisig.com/base/bsc/"
     
     static let baseServiceRpcService = "https://api.vultisig.com/base/"
     
     static let arbitrumOneServiceRpcService = "https://api.vultisig.com/arb/"
     
-    static let polygonServiceRpcService = "https://polygon-bor-rpc.publicnode.com"
+    static let polygonServiceRpcService = "https://api.vultisig.com/polygon/"
     
-    static let optimismServiceRpcService = "https://optimism-rpc.publicnode.com"
+    static let optimismServiceRpcService = "https://api.vultisig.com/opt/"
     
     static let cronosServiceRpcService = "https://cronos-evm-rpc.publicnode.com"
     
-    static let blastServiceRpcService = "https://rpc.ankr.com/blast"
+    static let blastServiceRpcService = "https://api.vultisig.com/blast/"
     
-    static let zksyncServiceRpcService = "https://mainnet.era.zksync.io"
+    static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
     
-    static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
+    static let ethServiceRpcService = "https://api.vultisig.com/eth/"
     
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
