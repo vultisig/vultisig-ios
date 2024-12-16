@@ -20,7 +20,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     var vault: Vault
-    var keysignPayload: KeysignPayload
+    var keysignPayload: KeysignPayload?
+    var customMessagePayload: CustomMessagePayload?
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
     
@@ -48,13 +49,15 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     func setData(
         vault: Vault,
-        keysignPayload: KeysignPayload,
+        keysignPayload: KeysignPayload?,
+        customMessagePayload: CustomMessagePayload?,
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
         onFastKeysign: (() -> Void)?
     ) {
         self.vault = vault
         self.keysignPayload = keysignPayload
+        self.customMessagePayload = customMessagePayload
         self.participantDiscovery = participantDiscovery
         
         if self.sessionID.isEmpty {
@@ -71,53 +74,60 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
         // mediator server need to be
         self.mediator.start(name: self.serviceName)
-        do {
-            let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
-            let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
-            self.keysignMessages = preSignedImageHash.sorted()
-            
-            if self.keysignMessages.isEmpty {
-                self.logger.error("no meessage need to be signed")
+
+        if let keysignPayload {
+            do {
+                let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
+                let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
+                self.keysignMessages = preSignedImageHash.sorted()
+            } catch {
+                self.logger.error("Failed to get preSignedImageHash: \(error)")
+                self.errorMessage = error.localizedDescription
                 self.status = .FailToStart
             }
-            
-            if let fastVaultPassword {
-                // when fast sign , always using relay server
-                serverAddr = Endpoint.vultisigRelay
-                
-                if vault.signers.count <= 3 {
-                    // skip device lookup if possible
-                    self.status = .WaitingForFast
-                }
+        }
 
-                self.fastVaultService.sign(
-                    publicKeyEcdsa: vault.pubKeyECDSA,
-                    keysignMessages: self.keysignMessages,
-                    sessionID: self.sessionID,
-                    hexEncryptionKey: self.encryptionKeyHex!,
-                    derivePath: keysignPayload.coin.coinType.derivationPath(),
-                    isECDSA: keysignPayload.coin.chain.isECDSA,
-                    vaultPassword: fastVaultPassword
-                ) { isSuccess in
-                    if !isSuccess {
-                        self.status = .FailToStart
-                    }
-                }
-                
-                cancellables.forEach { $0.cancel() }
-                
-                participantDiscovery.$peersFound.sink { [weak self] in
-                    $0.forEach { peer in
-                        self?.handleSelection(peer)
-                    }
-                    self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
-                }
-                .store(in: &cancellables)
+        if let customMessagePayload {
+            self.keysignMessages = customMessagePayload.keysignMessages
+        }
+
+        if keysignMessages.isEmpty {
+            logger.error("no meessage need to be signed")
+            status = .FailToStart
+        }
+
+        if let fastVaultPassword, let keysignPayload {
+            // when fast sign , always using relay server
+            serverAddr = Endpoint.vultisigRelay
+
+            if vault.signers.count <= 3 {
+                // skip device lookup if possible
+                status = .WaitingForFast
             }
-        } catch {
-            self.logger.error("Failed to get preSignedImageHash: \(error)")
-            self.errorMessage = error.localizedDescription
-            self.status = .FailToStart
+
+            fastVaultService.sign(
+                publicKeyEcdsa: vault.pubKeyECDSA,
+                keysignMessages: self.keysignMessages,
+                sessionID: self.sessionID,
+                hexEncryptionKey: self.encryptionKeyHex!,
+                derivePath: keysignPayload.coin.coinType.derivationPath(),
+                isECDSA: keysignPayload.coin.chain.isECDSA,
+                vaultPassword: fastVaultPassword
+            ) { isSuccess in
+                if !isSuccess {
+                    self.status = .FailToStart
+                }
+            }
+
+            cancellables.forEach { $0.cancel() }
+
+            participantDiscovery.$peersFound.sink { [weak self] in
+                $0.forEach { peer in
+                    self?.handleSelection(peer)
+                }
+                self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
+            }
+            .store(in: &cancellables)
         }
     }
     
@@ -163,9 +173,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignCommittee: selections.map { $0 },
             mediatorURL: serverAddr,
             sessionID: sessionID,
-            keysignType: keysignPayload.coin.chain.signingKeyType,
+            keysignType: keysignType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
-            keysignPayload: keysignPayload,
+            keysignPayload: keysignPayload, 
+            customMessagePayload: customMessagePayload,
             transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? "",
             isInitiateDevice: true
@@ -224,6 +235,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             sessionID: sessionID,
             serviceName: serviceName,
             payload: keysignPayload,
+            customMessagePayload: customMessagePayload,
             encryptionKeyHex: encryptionKeyHex,
             useVultisigRelay: VultisigRelay.IsRelayEnabled,
             payloadID: ""
@@ -232,12 +244,14 @@ class KeysignDiscoveryViewModel: ObservableObject {
             let protoKeysignMsg = try ProtoSerializer.serialize(message)
             let payloadService = PayloadService(serverURL: serverAddr)
             var jsonData = ""
-            if payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
+            
+            if let keysignPayload, payloadService.shouldUploadToRelay(payload: protoKeysignMsg) {
                 let keysignPayload = try ProtoSerializer.serialize(keysignPayload)
                 let hash = try await payloadService.uploadPayload(payload: keysignPayload)
                 let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
                                                            serviceName: serviceName,
-                                                           payload: nil,
+                                                           payload: nil, 
+                                                           customMessagePayload: nil,
                                                            encryptionKeyHex: encryptionKeyHex,
                                                            useVultisigRelay: VultisigRelay.IsRelayEnabled,
                                                            payloadID: hash)
@@ -254,4 +268,11 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
+    private var keysignType: KeyType {
+        if let keysignPayload {
+            return keysignPayload.coin.chain.signingKeyType
+        } else {
+            return .ECDSA
+        }
+    }
 }

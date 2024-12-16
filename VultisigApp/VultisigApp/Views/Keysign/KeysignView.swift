@@ -13,6 +13,7 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
+    let customMessagePayload: CustomMessagePayload?
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
@@ -54,7 +55,7 @@ struct KeysignView: View {
     
     var keysignFinished: some View {
         ZStack {
-            if transferViewModel != nil {
+            if transferViewModel != nil, keysignPayload != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
@@ -71,11 +72,11 @@ struct KeysignView: View {
     }
     
     func setData() async {
-        guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+        if let keysignPayload, keysignPayload.vaultPubKeyECDSA != vault.pubKeyECDSA {
             viewModel.status = .KeysignVaultMismatch
             return
         }
-        
+
         await viewModel.setData(
             keysignCommittee: self.keysignCommittee,
             mediatorURL: self.mediatorURL,
@@ -84,6 +85,7 @@ struct KeysignView: View {
             messagesToSign: self.messsageToSign,
             vault: self.vault,
             keysignPayload: keysignPayload,
+            customMessagePayload: customMessagePayload,
             encryptionKeyHex: encryptionKeyHex,
             isInitiateDevice: self.isInitiateDevice
         )
@@ -111,7 +113,8 @@ struct KeysignView: View {
             sessionID: "session",
             keysignType: .ECDSA,
             messsageToSign: ["message"],
-            keysignPayload: nil,
+            keysignPayload: nil, 
+            customMessagePayload: nil,
             transferViewModel: nil,
             encryptionKeyHex: "",
             isInitiateDevice: false

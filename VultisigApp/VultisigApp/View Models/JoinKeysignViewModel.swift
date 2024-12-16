@@ -27,6 +27,7 @@ class JoinKeysignViewModel: ObservableObject {
     var serviceDelegate: ServiceDelegate?
 
     private let etherfaceService = EtherfaceService.shared
+    private let fastVaultService = FastVaultService.shared
 
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -37,6 +38,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
+    @Published var customMessagePayload: CustomMessagePayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
@@ -75,25 +77,22 @@ class JoinKeysignViewModel: ObservableObject {
     func startScan() {
         self.isShowingScanner = true
     }
-    
+
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
-            self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
-            return
+            return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
         }
-        guard !self.sessionID.isEmpty else {
-            self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
-            return
+        guard !sessionID.isEmpty else {
+            return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
-        
-        let urlString = "\(serverURL)/\(sessionID)"
-        let body = [self.localPartyID]
-        
-        Utils.sendRequest(urlString: urlString,
-                          method: "POST",
-                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
-                          body: body) { success in
-            DispatchQueue.main.async{
+
+        Utils.sendRequest(
+            urlString: "\(serverURL)/\(sessionID)",
+            method: "POST",
+            headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+            body: [localPartyID]
+        ) { success in
+            DispatchQueue.main.async {
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
@@ -104,7 +103,7 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
     }
-    
+
     func setStatus(status: JoinKeysignStatus) {
         self.status = status
     }
@@ -114,9 +113,11 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
+
     func stopJoiningKeysign(){
         self.status = .DiscoverSigningMsg
     }
+
     func waitForKeysignStart() async {
         do {
             let t = Task {
@@ -130,7 +131,12 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Failed to wait for keysign to start.")
         }
     }
-    
+
+    private func fastVaultKeysignCommittee() -> [String] {
+        let fastServer = vault.signers.first(where: { $0.starts(with: "Server") })
+        return [localPartyID, fastServer].compactMap { $0 }
+    }
+
     private func checkKeysignStarted() {
         guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -189,7 +195,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
-    
+
+    func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
+        self.keysignMessages = customMessagePayload.keysignMessages
+    }
+
     func handleQrCodeSuccessResult(data: String?) async {
         guard let data else {
             return
@@ -199,21 +209,25 @@ class JoinKeysignViewModel: ObservableObject {
             let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
             self.keysignPayload = keysignMsg.payload
+            self.customMessagePayload = keysignMsg.customMessagePayload
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-            if keysignMsg.payload == nil && keysignMsg.payloadID.isEmpty {
-                throw HelperError.runtimeError("keysign payload is empty")
-            }
-            // payload is present in the keysign Message
+
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
+            if let payload = keysignMsg.customMessagePayload {
+                self.prepareKeysignMessages(customMessagePayload: payload)
+            }
+            
             self.payloadID = keysignMsg.payloadID
-            useVultisigRelay = keysignMsg.useVultisigRelay
+            self.useVultisigRelay = keysignMsg.useVultisigRelay
+
             if useVultisigRelay {
                 self.serverAddress = Endpoint.vultisigRelay
             }
+            
             await ensureKeysignPayload()
         } catch {
             self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
