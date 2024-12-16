@@ -70,7 +70,8 @@ struct SwapCryptoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    transferViewModel: swapViewModel, 
+                    customMessagePayload: nil,
+                    transferViewModel: swapViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
