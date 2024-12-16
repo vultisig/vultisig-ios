@@ -104,20 +104,6 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
 
-    func joinFastVaultKeysignCommittee() {
-        fastVaultService.sign(
-            publicKeyEcdsa: vault.pubKeyECDSA,
-            keysignMessages: keysignMessages,
-            sessionID: sessionID,
-            hexEncryptionKey: encryptionKeyHex,
-            derivePath: .empty, // TODO: Double check this
-            isECDSA: true,
-            vaultPassword: "232425" // TODO: Remove test pass
-        ) { isSuccess in
-            print("FastSign: \(isSuccess)")
-        }
-    }
-
     func setStatus(status: JoinKeysignStatus) {
         self.status = status
     }
@@ -127,9 +113,11 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
+
     func stopJoiningKeysign(){
         self.status = .DiscoverSigningMsg
     }
+
     func waitForKeysignStart() async {
         do {
             let t = Task {
