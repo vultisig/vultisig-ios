@@ -44,7 +44,7 @@ struct ChainSelectionCell: View {
             showAlert = true
         } label: {
             cell
-                .disabled(true)
+                .disabled(false)
         }
     }
     
@@ -60,7 +60,7 @@ struct ChainSelectionCell: View {
         }
         
         if tokenSelectionViewModel.selection.contains(where: { cm in
-            cm.chain == nativeAsset.chain && cm.ticker == nativeAsset.ticker
+            cm.chain == nativeAsset.chain && cm.ticker.lowercased() == nativeAsset.ticker.lowercased()
         }) {
             isSelected = true
         } else {
@@ -74,7 +74,7 @@ struct ChainSelectionCell: View {
         selectedTokensCount = 0
         for asset in assets {
             if tokenSelectionViewModel.selection.contains(where: { cm in
-                cm.chain == asset.chain && cm.ticker == asset.ticker
+                cm.chain == asset.chain && cm.ticker.lowercased() == asset.ticker.lowercased()
             }) {
                 selectedTokensCount += 1
             }

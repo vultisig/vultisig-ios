@@ -53,7 +53,7 @@ class SolanaService {
                     fromData: data,
                     path: "result.value"
                 ) as? Int64
-            else { throw Errors.getSolanaBalanceFailed }
+            else { return "0" }
 
             return totalBalance.description
 
@@ -63,7 +63,7 @@ class SolanaService {
                     for: coin.address,
                     contractAddress: coin.contractAddress
                 )
-            else { throw Errors.getSolanaBalanceFailed }
+            else { return "0" }
 
             return balance
         }
@@ -168,6 +168,9 @@ class SolanaService {
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL)
+            
+            print(String(decoding: data, as: UTF8.self))
+            
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result
                 .value
@@ -202,10 +205,13 @@ class SolanaService {
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL)
+            
+            print(String(decoding: data, as: UTF8.self))
+            
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             return parsedData.result.value
         } catch {
-            print("Error in fetchTokenAccountsByOwner:")
+            print("Error in fetchTokenAccountsByOwner: \(error.localizedDescription)")
             throw error
         }
     }
@@ -218,14 +224,14 @@ class SolanaService {
                 try await fetchTokenAccountsByOwner(for: walletAddress)
 
             if let token = accounts.first(where: {
-                $0.account.data.parsed.info.mint == contractAddress
+                $0.account.data.parsed.info.mint.lowercased() == contractAddress.lowercased()
             }) {
                 return token.account.data.parsed.info.tokenAmount.amount
             }
 
             return nil
         } catch {
-            print("Error in fetchTokenBalance:")
+            print("Error in fetchTokenBalance: \(error.localizedDescription)")
             throw error
         }
     }
@@ -399,7 +405,7 @@ class SolanaService {
 
             return data
         } catch {
-            print("Error in postRequest:")
+            print("Error in postRequest: \(error.localizedDescription)")
             throw error
         }
     }
