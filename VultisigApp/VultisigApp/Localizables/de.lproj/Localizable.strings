@@ -441,3 +441,5 @@
 "fromAsset" = "Von Vermögenswert";
 "toAsset" = "Zu Vermögenswert";
 "pairedSign" = "Gepaarter Kurs";
+"advanced" = "Erweitert";
+"enableDKLS" = "DKLS aktivieren";

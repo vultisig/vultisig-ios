@@ -424,3 +424,5 @@
 "fromAsset" = "Del activo";
 "toAsset" = "Al activo";
 "pairedSign" = "Signo emparejado";
+"advanced" = "Avanzado";
+"enableDKLS" = "Habilitar DKLS";
