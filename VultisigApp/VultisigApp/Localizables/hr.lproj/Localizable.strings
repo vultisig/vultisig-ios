@@ -424,3 +424,5 @@
 "fromAsset" = "Iz imovine";
 "toAsset" = "U imovinu";
 "pairedSign" = "Upareni znak";
+"advanced" = "Napredno";
+"enableDKLS" = "Omogući DKLS";

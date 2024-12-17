@@ -14,7 +14,7 @@ extension JoinKeysignView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
+        .navigationTitle(NSLocalizedString("joinKeysign", comment: "Join Keysign"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
