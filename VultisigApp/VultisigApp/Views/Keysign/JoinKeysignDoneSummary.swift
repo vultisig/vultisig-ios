@@ -175,6 +175,12 @@ struct JoinKeysignDoneSummary: View {
                 description: viewModel.customMessagePayload?.message ?? "",
                 isVerticalStacked: true
             )
+            Separator()
+            getGeneralCell(
+                title: "Signature",
+                description: viewModel.customMessageSignature(),
+                isVerticalStacked: true
+            )
         }
     }
 

@@ -468,6 +468,15 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
+    func customMessageSignature() -> String {
+        switch signatures.first?.value.getSignature() {
+        case .success(let sig):
+            return sig.hexString
+        case .none, .failure:
+            return .empty
+        }
+    }
+
     func handleBroadcastError(error: Error, transactionType: SignedTransactionType) {
         var errMessage: String = ""
         switch error {
@@ -489,6 +498,7 @@ class KeysignViewModel: ObservableObject {
             self.status = .KeysignFailed
         }
     }
+
     func handleHelperError(err: Error) {
         var errMessage: String
         switch err {
