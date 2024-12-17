@@ -289,7 +289,6 @@ class RpcEvmService: RpcService {
             ) { result in
                 guard
                     let response = result as? [String: Any],
-                    let _ = response["address"] as? String,
                     let tokenBalances = response["tokenBalances"] as? [[String: Any]]
                 else {
                     throw RpcServiceError.rpcError(code: -1, message: "Invalid JSON for alchemy_getTokenBalances")
