@@ -70,7 +70,7 @@ extension BackupPasswordSetupView {
         Button(action: {
             showSkipShareSheet = true
         }) {
-            OutlineButton(title: "skip")
+            OutlineButton(title: "skipPassword")
         }
         .fileExporter(
             isPresented: $showSkipShareSheet,
