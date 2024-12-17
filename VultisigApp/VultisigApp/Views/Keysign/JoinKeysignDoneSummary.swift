@@ -38,9 +38,11 @@ struct JoinKeysignDoneSummary: View {
                 card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
             }
             
-            card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
-                .padding(.horizontal, -16)
-            
+            if viewModel.customMessagePayload == nil {
+                card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
+                    .padding(.horizontal, -16)
+            }
+
             content
         }
         .padding(.vertical, 12)
@@ -60,6 +62,8 @@ struct JoinKeysignDoneSummary: View {
         ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
                 swapContent
+            } else if viewModel.customMessagePayload != nil {
+                signMessageContent
             } else {
                 transactionContent
             }
@@ -156,7 +160,24 @@ struct JoinKeysignDoneSummary: View {
             transactionLink
         }
     }
-    
+
+    var signMessageContent: some View {
+        VStack(spacing: 18) {
+            getGeneralCell(
+                title: "Method",
+                description: viewModel.customMessagePayload?.method ?? "",
+                isVerticalStacked: true
+            )
+
+            Separator()
+            getGeneralCell(
+                title: "Message",
+                description: viewModel.customMessagePayload?.message ?? "",
+                isVerticalStacked: true
+            )
+        }
+    }
+
     var transactionLink: some View {
         VStack {
             Separator()
