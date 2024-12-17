@@ -39,10 +39,5 @@ func GetLibType() -> LibType {
     if useDKLS {
         return .DKLS
     }
-    #if DEBUG
-    return .DKLS
-    #else
     return .GG20
-    #endif
-    
 }
