@@ -126,6 +126,9 @@ class KeysignViewModel: ObservableObject {
                                               isInitiateDevice: self.isInitiateDevice)
                 try await dklsKeysign.DKLSKeysignWithRetry(attempt: 0)
                 self.signatures = dklsKeysign.getSignatures()
+                if self.signatures.count == 0 {
+                    throw HelperError.runtimeError("fail to sign transaction")
+                }
             case .EdDSA:
                 status = .KeysignEdDSA
                 let schnorrKeysign = SchnorrKeysign(keysignCommittee: self.keysignCommittee,
@@ -137,6 +140,9 @@ class KeysignViewModel: ObservableObject {
                                               isInitiateDevice: self.isInitiateDevice)
                 try await schnorrKeysign.KeysignWithRetry(attempt: 0)
                 self.signatures = schnorrKeysign.getSignatures()
+                if self.signatures.count == 0 {
+                    throw HelperError.runtimeError("fail to sign transaction")
+                }
             }
             await broadcastTransaction()
             status = .KeysignFinished
