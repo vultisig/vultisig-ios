@@ -11,8 +11,15 @@ struct SettingsView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    @State var tapCount = 0
+    @State var scale: CGFloat = 1
+    @State var showAdvancedSettings: Bool = false
+    
     var body: some View {
         content
+            .navigationDestination(isPresented: $showAdvancedSettings) {
+                SettingsAdvancedView()
+            }
     }
     
     var mainSection: some View {
@@ -182,6 +189,29 @@ struct SettingsView: View {
         .textCase(.uppercase)
         .font(.body14Menlo)
         .foregroundColor(.turquoise600)
+        .scaleEffect(scale)
+        .onTapGesture {
+            handleVersionTap()
+        }
+    }
+    
+    private func handleVersionTap() {
+        tapCount += 1
+        
+        withAnimation(.spring(duration: 0.1)) {
+            scale = 1.1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(duration: 0.1)) {
+                scale = 1
+            }
+            
+            if tapCount > 4 {
+                tapCount = 0
+                showAdvancedSettings = true
+            }
+        }
     }
     
     private func getTitle(_ title: String) -> some View {

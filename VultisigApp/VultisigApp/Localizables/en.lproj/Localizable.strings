@@ -457,3 +457,5 @@
 "fromAsset" = "From Asset";
 "toAsset" = "To Asset";
 "pairedSign" = "Paired Sign";
+"advanced" = "Advanced";
+"enableDKLS" = "Enable DKLS";
