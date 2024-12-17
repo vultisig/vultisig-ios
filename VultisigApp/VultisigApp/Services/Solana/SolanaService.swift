@@ -168,9 +168,6 @@ class SolanaService {
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL)
-            
-            print(String(decoding: data, as: UTF8.self))
-            
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result
                 .value
@@ -205,9 +202,6 @@ class SolanaService {
             ]
 
             let data = try await postRequest(with: requestBody, url: rpcURL)
-            
-            print(String(decoding: data, as: UTF8.self))
-            
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             return parsedData.result.value
         } catch {
