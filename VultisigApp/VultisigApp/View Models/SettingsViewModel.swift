@@ -21,6 +21,8 @@ class SettingsViewModel: ObservableObject {
         }
     }
     
+    @AppStorage("isDKLSEnabled") var isDKLSEnabled: Bool = false
+    
     init() {
         self.selectedCurrency = SettingsCurrency.current
         self.selectedLanguage = SettingsLanguage.current
