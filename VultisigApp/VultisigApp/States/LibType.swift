@@ -35,7 +35,7 @@ extension VSLibType {
 }
 
 func GetLibType() -> LibType {
-    let useDKLS = UserDefaults.standard.bool(forKey: "dkls")
+    let useDKLS = UserDefaults.standard.bool(forKey: "isDKLSEnabled")
     if useDKLS {
         return .DKLS
     }
