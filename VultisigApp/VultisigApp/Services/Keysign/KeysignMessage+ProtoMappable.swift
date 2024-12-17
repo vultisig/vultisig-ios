@@ -19,6 +19,11 @@ extension KeysignMessage: ProtoMappable {
         } else {
             self.payload = nil
         }
+        if proto.hasCustomMessagePayload {
+            self.customMessagePayload = try CustomMessagePayload(proto: proto.customMessagePayload)
+        } else {
+            self.customMessagePayload = nil
+        }
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
         self.payloadID =  proto.payloadID
@@ -31,11 +36,29 @@ extension KeysignMessage: ProtoMappable {
             if let payload {
                 $0.keysignPayload = payload.mapToProtobuff()
             }
+            if let customMessagePayload {
+                $0.customMessagePayload = customMessagePayload.mapToProtobuff()
+            }
             if !payloadID.isEmpty {
                 $0.payloadID = payloadID
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
+        }
+    }
+}
+
+extension CustomMessagePayload: ProtoMappable {
+
+    init(proto: VSCustomMessagePayload) throws {
+        self.method = proto.method
+        self.message = proto.message
+    }
+
+    func mapToProtobuff() -> VSCustomMessagePayload {
+        return VSCustomMessagePayload.with {
+            $0.method = method
+            $0.message = message
         }
     }
 }

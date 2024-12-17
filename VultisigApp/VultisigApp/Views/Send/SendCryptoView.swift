@@ -119,8 +119,9 @@ struct SendCryptoView: View {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(
                     vault: vault,
-                    keysignPayload: keysignPayload,
-                    transferViewModel: sendCryptoViewModel, 
+                    keysignPayload: keysignPayload, 
+                    customMessagePayload: nil,
+                    transferViewModel: sendCryptoViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
