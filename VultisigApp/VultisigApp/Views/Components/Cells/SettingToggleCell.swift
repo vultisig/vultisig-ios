@@ -42,11 +42,12 @@ struct SettingToggleCell: View {
     var toggle: some View {
         Toggle("", isOn: $isEnabled)
             .labelsHidden()
-            .scaleEffect(0.6)
+            .scaleEffect(0.8)
             .frame(width: 48, height: 24)
     }
 }
 
 #Preview {
     SettingToggleCell(title: "language", icon: "globe", isEnabled: .constant(false))
+        .environmentObject(SettingsViewModel())
 }

@@ -10,9 +10,12 @@ import SwiftUI
 
 extension SettingsAdvancedView {
     var container: some View {
-        content
-            .navigationTitle(NSLocalizedString("advanced", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
+        ScrollView {
+            content
+                .padding(15)
+        }
+        .navigationTitle(NSLocalizedString("advanced", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 #endif

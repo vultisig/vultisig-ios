@@ -18,15 +18,12 @@ struct SettingsAdvancedView: View {
     }
     
     var content: some View {
-        ScrollView {
-            VStack {
-                SettingToggleCell(
-                    title: "enableDKLS",
-                    icon: "timelapse",
-                    isEnabled: $settingsViewModel.isDKLSEnabled
-                )
-            }
-            .padding(15)
+        VStack {
+            SettingToggleCell(
+                title: "enableDKLS",
+                icon: "timelapse",
+                isEnabled: $settingsViewModel.isDKLSEnabled
+            )
         }
     }
 }

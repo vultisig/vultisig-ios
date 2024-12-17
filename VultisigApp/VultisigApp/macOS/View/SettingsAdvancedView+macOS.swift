@@ -12,7 +12,11 @@ extension SettingsAdvancedView {
     var container: some View {
         VStack {
             header
-            content
+            
+            ScrollView {
+                content
+                    .padding(40)
+            }
         }
     }
     
