@@ -30,6 +30,8 @@ struct VaultPairDetailView: View {
                     isBold: true
                 )
                 
+                VaultPairDetailCell(title: NSLocalizedString("vaultLibType", comment: ""), description: getVaultLibType())
+                
                 VaultPairDetailCell(
                     title: NSLocalizedString("ECDSA", comment: ""),
                     description: vault.pubKeyECDSA
@@ -78,7 +80,20 @@ struct VaultPairDetailView: View {
             }
         }
     }
-    
+    private func getVaultLibType() -> String{
+        guard let libType = vault.libType else {
+            return "GG20"
+        }
+        switch libType {
+        case .DKLS:
+            return "DKLS"
+        case .GG20:
+            return "GG20"
+        default:
+            return "GG20"
+        }
+        
+    }
     private func titlePartText() -> String {
         let part = NSLocalizedString("part", comment: "")
         let of = NSLocalizedString("of", comment: "")
