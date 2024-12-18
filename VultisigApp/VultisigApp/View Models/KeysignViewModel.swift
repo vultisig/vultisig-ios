@@ -44,6 +44,7 @@ class KeysignViewModel: ObservableObject {
     var keysignPayload: KeysignPayload?
     var customMessagePayload: CustomMessagePayload?
     var encryptionKeyHex: String
+    var isInitiateDevice: Bool
 
     init() {
         self.keysignCommittee = []
@@ -54,6 +55,7 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = []
         self.keysignPayload = nil
         self.encryptionKeyHex = ""
+        self.isInitiateDevice = false
     }
 
     func setData(keysignCommittee: [String],
@@ -64,7 +66,8 @@ class KeysignViewModel: ObservableObject {
                  vault: Vault,
                  keysignPayload: KeysignPayload?,
                  customMessagePayload: CustomMessagePayload?,
-                 encryptionKeyHex: String
+                 encryptionKeyHex: String,
+                 isInitiateDevice: Bool
     ) async {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -77,6 +80,7 @@ class KeysignViewModel: ObservableObject {
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
+        self.isInitiateDevice = isInitiateDevice
     }
 
     func getTransactionExplorerURL(txid: String) -> String {
@@ -94,8 +98,63 @@ class KeysignViewModel: ObservableObject {
             return nil
         }
     }
-
     func startKeysign() async {
+        switch vault.libType {
+        case .GG20,.none:
+            await startKeysignGG20()
+        case .DKLS:
+            await startKeysignDKLS()
+        }
+    }
+    
+    func startKeysignDKLS() async {
+        guard let keysignPayload else{
+            status = .KeysignFailed
+            return
+        }
+        do {
+            switch self.keysignType {
+            case .ECDSA:
+                status = .KeysignECDSA
+                let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
+                                              mediatorURL: self.mediatorURL,
+                                              sessionID: self.sessionID,
+                                              messsageToSign: self.messsageToSign,
+                                              vault: self.vault,
+                                              encryptionKeyHex: self.encryptionKeyHex,
+                                              chainPath:keysignPayload.coin.coinType.derivationPath(),
+                                              isInitiateDevice: self.isInitiateDevice)
+                try await dklsKeysign.DKLSKeysignWithRetry(attempt: 0)
+                self.signatures = dklsKeysign.getSignatures()
+                if self.signatures.count == 0 {
+                    throw HelperError.runtimeError("fail to sign transaction")
+                }
+            case .EdDSA:
+                status = .KeysignEdDSA
+                let schnorrKeysign = SchnorrKeysign(keysignCommittee: self.keysignCommittee,
+                                              mediatorURL: self.mediatorURL,
+                                              sessionID: self.sessionID,
+                                              messsageToSign: self.messsageToSign,
+                                              vault: self.vault,
+                                              encryptionKeyHex: self.encryptionKeyHex,
+                                              isInitiateDevice: self.isInitiateDevice)
+                try await schnorrKeysign.KeysignWithRetry(attempt: 0)
+                self.signatures = schnorrKeysign.getSignatures()
+                if self.signatures.count == 0 {
+                    throw HelperError.runtimeError("fail to sign transaction")
+                }
+            }
+            await broadcastTransaction()
+            status = .KeysignFinished
+        } catch {
+            logger.error("TSS keysign failed, error: \(error.localizedDescription)")
+            keysignError = error.localizedDescription
+            status = .KeysignFailed
+        }
+        
+    }
+    
+    func startKeysignGG20() async {
         defer {
             messagePuller?.stop()
         }
@@ -115,7 +174,6 @@ class KeysignViewModel: ObservableObject {
         if let customMessagePayload {
             txid = customMessagePayload.message
         }
-
         status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
