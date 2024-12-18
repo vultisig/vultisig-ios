@@ -16,7 +16,7 @@ struct KeysignView: View {
     let customMessagePayload: CustomMessagePayload?
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
-    
+    let isInitiateDevice: Bool
     @StateObject var viewModel = KeysignViewModel()
     
     @State var showAlert = false
@@ -86,7 +86,8 @@ struct KeysignView: View {
             vault: self.vault,
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
-            encryptionKeyHex: encryptionKeyHex
+            encryptionKeyHex: encryptionKeyHex,
+            isInitiateDevice: self.isInitiateDevice
         )
     }
     
@@ -115,7 +116,8 @@ struct KeysignView: View {
             keysignPayload: nil, 
             customMessagePayload: nil,
             transferViewModel: nil,
-            encryptionKeyHex: ""
+            encryptionKeyHex: "",
+            isInitiateDevice: false
         )
     }
 }

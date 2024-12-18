@@ -178,7 +178,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignPayload: keysignPayload, 
             customMessagePayload: customMessagePayload,
             transferViewModel: viewModel,
-            encryptionKeyHex: encryptionKeyHex ?? ""
+            encryptionKeyHex: encryptionKeyHex ?? "",
+            isInitiateDevice: true
         )
     }
     

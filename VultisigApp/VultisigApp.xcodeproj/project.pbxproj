@@ -719,6 +719,9 @@
 		DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */; };
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
+		DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */; };
+		DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */; };
+		DE6EF0532D068BE700A36D6A /* DKLSKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */; };
 		DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE727C0B2D000FC3007E9273 /* LibType.swift */; };
 		DE8554682C2CFBC10002438C /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DE8554672C2CFBC10002438C /* walletcore */; };
 		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
@@ -743,6 +746,14 @@
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
+		DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */; };
+		DEEB57042D080C8A00B120D1 /* godkls.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0372D064DAC00A36D6A /* godkls.xcframework */; };
+		DEEB57052D080C8A00B120D1 /* godkls.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE6EF0372D064DAC00A36D6A /* godkls.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEEB57072D080C8C00B120D1 /* goschnorr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */; };
+		DEEB57082D080C8C00B120D1 /* goschnorr.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */; };
+		DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB57252D096BC100B120D1 /* DERSignature.swift */; };
+		DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
 		DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE22B8AF8B1005170E8 /* publickey.swift */; };
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
@@ -1516,6 +1527,10 @@
 		DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignViewModel.swift; sourceTree = "<group>"; };
 		DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwaps.swift; sourceTree = "<group>"; };
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
+		DE6EF0372D064DAC00A36D6A /* godkls.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = godkls.xcframework; sourceTree = "<group>"; };
+		DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSHelper.swift; sourceTree = "<group>"; };
+		DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSMessenger.swift; sourceTree = "<group>"; };
+		DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSKeygen.swift; sourceTree = "<group>"; };
 		DE727C0B2D000FC3007E9273 /* LibType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibType.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
@@ -1538,6 +1553,11 @@
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
+		DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeysign.swift; sourceTree = "<group>"; };
+		DEEB57022D080C5F00B120D1 /* goschnorr.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = goschnorr.xcframework; sourceTree = "<group>"; };
+		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
+		DEEB57252D096BC100B120D1 /* DERSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DERSignature.swift; sourceTree = "<group>"; };
+		DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DKLSKeysign.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* evm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = evm.swift; sourceTree = "<group>"; };
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
@@ -2570,6 +2590,7 @@
 		A65649F32B966CCB00E4B329 /* States */ = {
 			isa = PBXGroup;
 			children = (
+				DEEB57272D096BC100B120D1 /* Keysign */,
 				DE727C0B2D000FC3007E9273 /* LibType.swift */,
 				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
 				A65649F42B966F3E00E4B329 /* DecodableDefault.swift */,
@@ -2781,6 +2802,8 @@
 		A6A793E22BB508C000CC5950 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
+				DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */,
+				DE6EF0522D068BE200A36D6A /* DKLSKeygen.swift */,
 				DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */,
 				DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */,
 				A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */,
@@ -3120,6 +3143,8 @@
 		DE1572932B70F254009BC7C5 /* Tss */ = {
 			isa = PBXGroup;
 			children = (
+				DE6EF0502D06708C00A36D6A /* DKLSMessenger.swift */,
+				DE6EF04E2D06610800A36D6A /* DKLSHelper.swift */,
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
 				DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */,
 				DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */,
@@ -3320,6 +3345,16 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		DEEB57272D096BC100B120D1 /* Keysign */ = {
+			isa = PBXGroup;
+			children = (
+				DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */,
+				DEEB57252D096BC100B120D1 /* DERSignature.swift */,
+				DEEB57262D096BC100B120D1 /* DKLSKeysign.swift */,
+			);
+			path = Keysign;
+			sourceTree = "<group>";
+		};
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
@@ -3492,6 +3527,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */,
+				DE6EF0512D06709200A36D6A /* DKLSMessenger.swift in Sources */,
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
@@ -3587,6 +3623,7 @@
 				A698222E2CB3A8B500966D19 /* CreateFolderView+iOS.swift in Sources */,
 				462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
+				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
@@ -3737,6 +3774,7 @@
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */,
 				A65617F72CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift in Sources */,
+				DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,
@@ -3777,6 +3815,7 @@
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */,
 				A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */,
+				DE6EF0532D068BE700A36D6A /* DKLSKeygen.swift in Sources */,
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
 				A6ECA19A2C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
@@ -4179,6 +4218,7 @@
 				A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */,
 				A6182F3B2C92331D0059BFDD /* FilledButton+iOS.swift in Sources */,
 				A6182F5D2C9299ED0059BFDD /* MemoTextField+imacOS.swift in Sources */,
+				DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */,
 				A542AE5B2C5B5F220061FEAF /* FilledLabelButton.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */,
@@ -4218,6 +4258,8 @@
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,
+				DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */,
+				DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */,
 				A6C671392CA3C7EE00F59B6A /* VaultDeletionDetails+macOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
