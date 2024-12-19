@@ -313,8 +313,17 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isValidForm = false
             return isValidForm
         }
-        
-        if gasFee <= 0 {
+
+        if gasFee == 0 {
+            errorTitle = "error"
+            errorMessage = "noGasEstimation"
+            showAlert = true
+            logger.log("No gas estimation.")
+            isValidForm = false
+            return isValidForm
+        }
+
+        if gasFee < 0 {
             errorTitle = "error"
             errorMessage = "nonNegativeFeeError"
             showAlert = true
