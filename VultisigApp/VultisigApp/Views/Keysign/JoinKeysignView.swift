@@ -13,6 +13,7 @@ struct JoinKeysignView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
     let logger = Logger(subsystem: "join-keysign", category: "communication")
 
@@ -148,4 +149,5 @@ struct JoinKeysignView: View {
     JoinKeysignView(vault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(GlobalStateViewModel())
 }

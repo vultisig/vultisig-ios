@@ -26,7 +26,7 @@ extension JoinKeysignView {
     }
     
     var headerMac: some View {
-        JoinKeygenHeader(title: "joinKeySign")
+        JoinKeygenHeader(title: "joinKeySign", hideBackButton: globalStateViewModel.hideBackForKeysign)
     }
 }
 #endif
