@@ -21,6 +21,7 @@ extension VultisigApp {
             .environmentObject(vultExtensionViewModel)
             .environmentObject(settingsDefaultChainViewModel)
             .environmentObject(phoneCheckUpdateViewModel)
+            .environmentObject(globalStateViewModel)
             .onChange(of: scenePhase) {
                 switch scenePhase {
                 case .active:

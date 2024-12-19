@@ -21,6 +21,9 @@ struct KeysignView: View {
     
     @State var showAlert = false
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
+    
     var body: some View {
         container
     }
@@ -69,6 +72,12 @@ struct KeysignView: View {
     
     var forJoinKeysign: some View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
+            .onAppear {
+                globalStateViewModel.hideBackForKeysign = true
+            }
+            .onDisappear {
+                globalStateViewModel.hideBackForKeysign = false
+            }
     }
     
     func setData() async {
@@ -120,4 +129,6 @@ struct KeysignView: View {
             isInitiateDevice: false
         )
     }
+    .environmentObject(HomeViewModel())
+    .environmentObject(GlobalStateViewModel())
 }

@@ -23,6 +23,7 @@ struct VultisigApp: App {
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
+    @StateObject var globalStateViewModel = GlobalStateViewModel()
     
     // Mac specific
     @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
