@@ -13,7 +13,7 @@ import CryptoSwift
 class OsmoHelper: CosmosHelper {
     
     init(){
-        super.init(coinType: .osmosis, denom: "uosmo", gasLimit: 200000)
+        super.init(coinType: .osmosis, denom: "uosmo", gasLimit: 300000)
     }
     
 }

@@ -13,7 +13,7 @@ import CryptoSwift
 class ATOMHelper: CosmosHelper {
     
     init(){
-        super.init(coinType: .cosmos, denom: "uatom", gasLimit: 200000)
+        super.init(coinType: .cosmos, denom: "uatom", gasLimit: 300000)
     }
     
 }

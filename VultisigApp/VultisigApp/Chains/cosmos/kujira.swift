@@ -13,7 +13,7 @@ import CryptoSwift
 class KujiraHelper: CosmosHelper {
     
     init(){
-        super.init(coinType: .kujira, denom: "ukuji", gasLimit: 200000)
+        super.init(coinType: .kujira, denom: "ukuji", gasLimit: 300000)
     }
     
 }

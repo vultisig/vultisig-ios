@@ -13,7 +13,7 @@ import CryptoSwift
 class NobleHelper: CosmosHelper {
     
     init(){
-        super.init(coinType: .noble, denom: "uusdc", gasLimit: 200000)
+        super.init(coinType: .noble, denom: "uusdc", gasLimit: 300000)
     }
     
 }
