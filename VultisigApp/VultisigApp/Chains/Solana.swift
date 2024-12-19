@@ -23,6 +23,9 @@ enum SolanaHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
         
+        let priorityFeePrice = 1_000_000; // Turbo fee in lamports, around 5 cents
+        let priorityFeeLimit = UInt32(100_000);
+        
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
                 $0.transferTransaction = SolanaTransfer.with {
@@ -32,10 +35,13 @@ enum SolanaHelper {
                         $0.memo = memo
                     }
                 }
-                $0.recentBlockhash = recentBlockHash
+                $0.recentBlockhash = recentBlockHash // DKLS should fix it. Using the same, since fetching the latest block hash won't match with Win and Android
                 $0.sender = keysignPayload.coin.address
                 $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                    $0.price = UInt64(priorityFee)
+                    $0.price = UInt64(priorityFeePrice)
+                }
+                $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
+                    $0.limit = priorityFeeLimit
                 }
             }
             return try input.serializedData()
@@ -58,7 +64,10 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = UInt64(priorityFee)
+                        $0.price = UInt64(priorityFeePrice)
+                    }
+                    $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
+                        $0.limit = priorityFeeLimit
                     }
                 }
                 
@@ -89,7 +98,10 @@ enum SolanaHelper {
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
                     $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                        $0.price = UInt64(priorityFee)
+                        $0.price = UInt64(priorityFeePrice)
+                    }
+                    $0.priorityFeeLimit = SolanaPriorityFeeLimit.with {
+                        $0.limit = priorityFeeLimit
                     }
                 }
                 
