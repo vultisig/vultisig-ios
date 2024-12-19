@@ -79,8 +79,6 @@ struct ChainSelectionView: View {
             .disableAutocorrection(true)
             .padding(.horizontal, 8)
             .borderlessTextFieldStyle()
-            .textInputAutocapitalization(.never)
-            .keyboardType(.default)
     }
 
     private func setData() {
