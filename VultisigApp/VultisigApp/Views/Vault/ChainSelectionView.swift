@@ -12,8 +12,10 @@ struct ChainSelectionView: View {
     let vault: Vault
     
     @State var showAlert = false
+    @State var isSearching: Bool = false
+
     @EnvironmentObject var viewModel: CoinSelectionViewModel
-    
+
     var body: some View {
         content
             .onAppear {
@@ -44,7 +46,41 @@ struct ChainSelectionView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
+
+    var searchBar: some View {
+        HStack(spacing: 0) {
+            searchField
+
+            if isSearching {
+                Button("Cancel") {
+                    viewModel.searchText = ""
+                    isSearching = false
+                }
+                .foregroundColor(.blue)
+                .font(.body12Menlo)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+        .padding(.horizontal, 12)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .onChange(of: viewModel.searchText) { oldValue, newValue in
+            isSearching = !newValue.isEmpty
+        }
+        .background(Color.blue600)
+        .cornerRadius(12)
+    }
+
+    var searchField: some View {
+        TextField(NSLocalizedString("Search", comment: "Search"), text: $viewModel.searchText)
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .disableAutocorrection(true)
+            .padding(.horizontal, 8)
+            .borderlessTextFieldStyle()
+    }
+
     private func setData() {
         viewModel.setData(for: vault)
     }

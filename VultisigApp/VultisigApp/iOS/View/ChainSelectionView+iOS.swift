@@ -33,14 +33,16 @@ extension ChainSelectionView {
     var view: some View {
         ScrollView {
             VStack(spacing: 24) {
-                ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
+                searchBar
+
+                ForEach(viewModel.filteredChains, id: \.self) { key in
                     ChainSelectionCell(
                         assets: viewModel.groupedAssets[key] ?? [],
                         showAlert: $showAlert
                     )
                 }
             }
-            .padding(.vertical, 30)
+            .padding(.vertical, 8)
             .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
             .padding(.horizontal, 16)
         }

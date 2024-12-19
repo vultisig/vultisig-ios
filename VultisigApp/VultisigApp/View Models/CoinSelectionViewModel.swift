@@ -13,8 +13,17 @@ import WalletCore
 class CoinSelectionViewModel: ObservableObject {
     
     @Published var groupedAssets: [String: [CoinMeta]] = [:]
+    @Published var searchText: String = .empty
     @Published var selection = Set<CoinMeta>()
-    
+
+    var filteredChains: [String] {
+        return searchText.isEmpty 
+            ? groupedAssets.keys.sorted()
+            : groupedAssets.keys
+                .filter { $0.lowercased().contains(searchText.lowercased()) }
+                .sorted()
+    }
+
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
     let priceService = CryptoPriceService.shared
