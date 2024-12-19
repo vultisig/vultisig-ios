@@ -35,7 +35,7 @@ enum SolanaHelper {
                         $0.memo = memo
                     }
                 }
-                $0.recentBlockhash = recentBlockHash
+                $0.recentBlockhash = recentBlockHash // DKLS should fix it. Using the same, since fetching the latest block hash won't match with Win and Android
                 $0.sender = keysignPayload.coin.address
                 $0.priorityFeePrice = SolanaPriorityFeePrice.with {
                     $0.price = UInt64(priorityFeePrice)
