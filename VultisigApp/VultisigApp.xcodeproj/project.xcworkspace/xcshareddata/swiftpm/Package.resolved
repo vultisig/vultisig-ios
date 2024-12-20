@@ -69,7 +69,7 @@
       "location" : "https://github.com/vultisig/walletcore-spm.git",
       "state" : {
         "branch" : "main",
-        "revision" : "fbca5508a3c9b5d6608d82493525f2a4311f33d3"
+        "revision" : "d3c95e9e34528dfe045ba2ee735d9207c90eac6f"
       }
     }
   ],
