@@ -166,7 +166,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .sui:
             return "3000000"
         case .polkadot:
-            return "10000000000"
+            return "250000000" // 0.025
         case .ton:
             return "7000"
         case .ripple:
