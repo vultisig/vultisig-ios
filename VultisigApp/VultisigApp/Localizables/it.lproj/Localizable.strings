@@ -216,6 +216,7 @@
 "uploadFromGallery" = "Carica dalla galleria";
 "uploadFromFiles" = "Seleziona i file";
 "polkadotExistentialDepositError" = "Assicurati di lasciare fondi sufficienti per coprire le commissioni. Se il saldo di un conto scende sotto 1 DOT (Deposito Esistenziale), il conto verrà disattivato (cancellato) e eventuali fondi rimanenti saranno persi. Puoi riattivare l'indirizzo con un nuovo deposito maggiore del deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
+"rippleExistentialDepositError" = "Assicurati di lasciare fondi sufficienti a coprire le commissioni. Se il saldo di un conto scende al di sotto di 1 XRP (Deposito Esistenziale), il conto verrà disattivato (falciato) e tutti i fondi rimanenti andranno persi. Puoi riattivare l'indirizzo con un nuovo deposito superiore al deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
 "openSettings" = "Apri Impostazioni";
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";

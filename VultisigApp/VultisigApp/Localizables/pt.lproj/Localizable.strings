@@ -216,6 +216,7 @@
 "uploadFromGallery" = "Carregar da galeria";
 "uploadFromFiles" = "Selecione arquivos";
 "polkadotExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 DOT (Depósito Existencial), a conta será desativada (removida) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
+"rippleExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 XRP (Depósito Existencial), a conta será desativada (ceifada) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
 "noCameraPermissionError" = "Permissão para a câmera negada.\n\nPor favor, ative-a nas Configurações.";
 "openSettings" = "Abrir Configurações";
 "fetchingVaultDetails" = "Buscando detalhes do cofre";

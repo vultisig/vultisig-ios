@@ -237,6 +237,7 @@
 "balance" = "Balance";
 "provider" = "Provider";
 "polkadotExistentialDepositError" = "Ensure you leave enough funds to cover the fees. If an account balance falls below 1 DOT (Existential Deposit), the account will be deactivated (reaped) and any remaining funds will be lost. You can reactivate the address with a new deposit larger than the existential deposit at any time. However, this will not recover the lost funds.";
+"rippleExistentialDepositError" = "Ensure you leave enough funds to cover the fees. If an account balance falls below 1 XRP (Existential Deposit), the account will be deactivated (reaped) and any remaining funds will be lost. You can reactivate the address with a new deposit larger than the existential deposit at any time. However, this will not recover the lost funds.";
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
 "openSettings" = "Open Settings";
 "fetchingVaultDetails" = "Fetching Vault Details";
