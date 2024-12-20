@@ -341,7 +341,7 @@ class Endpoint {
         case "RUNE":
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case "SOL":
-            return "https://explorer.solana.com/tx/\(txid)"
+            return "https://solscan.io/tx/\(txid)"
         case "ETH":
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
@@ -406,7 +406,7 @@ class Endpoint {
         case "RUNE":
             return "https://runescan.io/address/\(address)"
         case "SOL":
-            return "https://explorer.solana.com/address/\(address)"
+            return "https://solscan.io/account/\(address)"
         case "ETH":
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
@@ -461,7 +461,7 @@ class Endpoint {
         case .thorChain:
             return "https://thorchain.net/address/\(address)"
         case .solana:
-            return "https://explorer.solana.com/address/\(address)"
+            return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
         case .gaiaChain:
