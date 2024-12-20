@@ -14,7 +14,7 @@
 		</data>
 		<key>ios-arm64/goschnorr.framework/Info.plist</key>
 		<data>
-		5MAAYgQrKJ54t/F7PRPpcGIZa1U=
+		aurFzsjgAclaLvb1Zpik1hcJi18=
 		</data>
 		<key>ios-arm64/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -30,7 +30,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Info.plist</key>
 		<data>
-		5MAAYgQrKJ54t/F7PRPpcGIZa1U=
+		aurFzsjgAclaLvb1Zpik1hcJi18=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -74,11 +74,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			5MAAYgQrKJ54t/F7PRPpcGIZa1U=
+			aurFzsjgAclaLvb1Zpik1hcJi18=
 			</data>
 			<key>hash2</key>
 			<data>
-			H3iUWIAvokiRjgN18Tbaje2ao2AZLZ4baAN3X2qujBc=
+			O8Rq5JmNFN3sJM3URNSvn1f9NcrVob2ot3l8zZ3q1cQ=
 			</data>
 		</dict>
 		<key>ios-arm64/goschnorr.framework/Modules/module.modulemap</key>
@@ -118,11 +118,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			5MAAYgQrKJ54t/F7PRPpcGIZa1U=
+			aurFzsjgAclaLvb1Zpik1hcJi18=
 			</data>
 			<key>hash2</key>
 			<data>
-			H3iUWIAvokiRjgN18Tbaje2ao2AZLZ4baAN3X2qujBc=
+			O8Rq5JmNFN3sJM3URNSvn1f9NcrVob2ot3l8zZ3q1cQ=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Modules/module.modulemap</key>
