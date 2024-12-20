@@ -8,15 +8,17 @@
 import Foundation
 import SwiftUI
 
-struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
+struct StyledFloatingPointField: View {
     let placeholder: String
-    @Binding var value: Value
-    let format: FloatingPointFormatStyle<Value>
+    @Binding var value: Double
+    let format: FloatingPointFormatStyle<Double>
     
     @Binding var isValid: Bool
     var isOptional: Bool = false
     
     @State private var localIsValid: Bool = true
+    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +38,16 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     }
     
     var textField: some View {
-        TextField(placeholder.capitalized, value: customBinding, format: format)
+        TextField(placeholder.capitalized, text: Binding<String>(
+            get: {
+                String(describing: value).formatCurrencyInverse(settingsViewModel.selectedCurrency)
+            },
+            set: { newValue in
+                let newString = newValue.formatCurrency(settingsViewModel.selectedCurrency)
+                
+                guard let newDouble = Double(newString), value != newDouble else { return }
+                value = newDouble
+            }))
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -44,20 +55,13 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
+            .onChange(of: value) { oldValue, newValue in
+                validate(newValue)
+            }
             .onAppear {
                 localIsValid = isValid
                 validate(value)
             }
-    }
-    
-    var customBinding: Binding<Value> {
-        Binding<Value>(
-            get: { value },
-            set: { newValue in
-                value = newValue
-                validate(newValue)
-            }
-        )
     }
     
     var optionalMessage: String {
@@ -67,11 +71,11 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
         return ""
     }
     
-    private func validate(_ newValue: Value) {
+    private func validate(_ newValue: Double) {
         if isOptional {
-            isValid = String(describing: newValue).isEmpty || newValue >= 0
+            isValid = newValue >= 0
         } else {
-            isValid = !String(describing: newValue).isEmpty && newValue > 0
+            isValid = newValue > 0
         }
         localIsValid = isValid
     }

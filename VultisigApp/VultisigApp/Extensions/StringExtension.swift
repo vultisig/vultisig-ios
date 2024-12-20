@@ -72,6 +72,16 @@ extension String {
         }
     }
     
+    func formatCurrencyInverse(_ currency: SettingsCurrency) -> String {
+        let decimalPoint = getCurrentDecimalPoint()
+        
+        if currency.usesEuropeanFormat || decimalPoint == "," {
+            return self.replacingOccurrences(of: ".", with: ",")
+        } else {
+            return self
+        }
+    }
+    
     func formatCurrencyAbbreviation(_ currency: SettingsCurrency) -> String {
         let cleanedValue = self.formatCurrency(currency)
         

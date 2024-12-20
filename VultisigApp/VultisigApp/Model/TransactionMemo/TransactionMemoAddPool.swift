@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 class TransactionMemoAddPool: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Double = 0
     
     // Internal
     @Published var amountValid: Bool = false

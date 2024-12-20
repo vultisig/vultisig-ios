@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Double = 0
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
     @Published var fee: Int64 = .zero

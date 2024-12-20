@@ -12,7 +12,7 @@ import Combine
 class TransactionMemoCustom: TransactionMemoAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     
-    @Published var amount: Double = 0.0
+    @Published var amount: Double = 0
     @Published var custom: String = ""
     
     // Internal

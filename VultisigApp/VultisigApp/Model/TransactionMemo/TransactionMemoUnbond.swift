@@ -13,7 +13,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     
     @Published var nodeAddress: String = ""
-    @Published var amount: Double = 0.0
+    @Published var amount: Double = 0
     @Published var provider: String = ""
     
     // Internal
