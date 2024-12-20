@@ -163,7 +163,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .polkadot:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
-                tx.amount = "\(tx.coin.getMaxValue(BigInt.zero))"
+                
+                var gas = BigInt.zero
+                if percentage == 100 {
+                    gas = tx.coin.feeDefault.toBigInt()
+                }
+                
+                tx.amount = "\(tx.coin.getMaxValue(gas))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 await convertToFiat(newValue: tx.amount, tx: tx)
