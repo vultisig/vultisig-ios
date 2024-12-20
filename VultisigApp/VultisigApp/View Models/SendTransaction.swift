@@ -51,7 +51,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var canBeReaped: Bool {
-        if coin.ticker != Chain.polkadot.ticker {
+        
+        let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
+        if !tickers.contains(coin.ticker) {
             return false
         }
         
@@ -59,7 +61,14 @@ class SendTransaction: ObservableObject, Hashable {
         let totalTransactionCost = amountInRaw + gas
         let remainingBalance = totalBalance - totalTransactionCost
         
-        return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+        switch coin.chainType {
+        case .Polkadot:
+            return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+        case .Ripple:
+            return remainingBalance < RippleHelper.defaultExistentialDeposit
+        default:
+            return false
+        }
     }
     
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {

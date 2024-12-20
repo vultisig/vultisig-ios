@@ -187,7 +187,11 @@ struct SendCryptoDetailsView: View {
     
     var existentialDepositTextMessage: some View {
         HStack {
-            Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
+            if tx.coin.chain == .polkadot {
+                Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
+            } else if tx.coin.chain == .ripple {
+                Text(NSLocalizedString("rippleExistentialDepositError", comment: ""))
+            }
         }
         .font(.body8Menlo)
         .foregroundColor(.red)

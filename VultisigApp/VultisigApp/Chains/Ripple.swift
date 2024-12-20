@@ -11,6 +11,12 @@ import Tss
 import WalletCore
 
 enum RippleHelper {
+    
+    /*
+     https://xrpl.org/docs/concepts/accounts/reserves
+     Ripple deletes your account if less than 1 XRP
+     */
+    static let defaultExistentialDeposit: BigInt = pow(10, 6).description.toBigInt() // 1 XRP
 
     static func getPreSignedInputData(
         keysignPayload: KeysignPayload, vault: Vault
