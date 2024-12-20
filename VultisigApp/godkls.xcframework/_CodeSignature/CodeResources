@@ -6,7 +6,7 @@
 	<dict>
 		<key>.DS_Store</key>
 		<data>
-		0ItYse2rAIncYIdNX0mIYIZOOac=
+		3U2HbvDwsMTQElOFysj83B2hcM8=
 		</data>
 		<key>ios-arm64/godkls.framework/.DS_Store</key>
 		<data>
@@ -18,7 +18,7 @@
 		</data>
 		<key>ios-arm64/godkls.framework/Info.plist</key>
 		<data>
-		vPLu7ZAinhaWOykUKH7x5qvWVnU=
+		pcDiA1/6U6RVQq5qdmIs0BTExXo=
 		</data>
 		<key>ios-arm64/godkls.framework/Modules/module.modulemap</key>
 		<data>
@@ -34,7 +34,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Info.plist</key>
 		<data>
-		PUO/jX9gMfEvUIqq+S3WD1Hjlp0=
+		0P54WuZdxoittnIyYHXh3b8nslo=
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Modules/module.modulemap</key>
 		<data>
@@ -78,11 +78,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			vPLu7ZAinhaWOykUKH7x5qvWVnU=
+			pcDiA1/6U6RVQq5qdmIs0BTExXo=
 			</data>
 			<key>hash2</key>
 			<data>
-			kRZc2AS7nkwQ1RikMrk1KgQhjfy2uGkV7n4iCXa53EM=
+			R1FzzWyRweREgLHzqQZPt8PZdT5yI7t/8oLOGvfUYA8=
 			</data>
 		</dict>
 		<key>ios-arm64/godkls.framework/Modules/module.modulemap</key>
@@ -122,11 +122,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			PUO/jX9gMfEvUIqq+S3WD1Hjlp0=
+			0P54WuZdxoittnIyYHXh3b8nslo=
 			</data>
 			<key>hash2</key>
 			<data>
-			z1eVZniA9dm84o97ELufen0OQSqyN0KHichAHBj3phM=
+			OEUJmePWto22+wMbQWMGTGvzxR9eU5hoA/8HpO1RTC8=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Modules/module.modulemap</key>

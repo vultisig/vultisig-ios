@@ -6,7 +6,7 @@
 	<dict>
 		<key>.DS_Store</key>
 		<data>
-		3lyuggsm6AevFa6WgQwc/9wnGAY=
+		fgQmrZvI27tDxvsEYMQpuwh3S3E=
 		</data>
 		<key>ios-arm64/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
@@ -14,7 +14,7 @@
 		</data>
 		<key>ios-arm64/goschnorr.framework/Info.plist</key>
 		<data>
-		rQy4W4zsXfughQmBkAr+2KkP68c=
+		MriUv+6J+J4ZklXNXbxTUAFo1H8=
 		</data>
 		<key>ios-arm64/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -30,7 +30,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Info.plist</key>
 		<data>
-		Coq2W0FRTTW0SIeonVt2e4KnxSg=
+		4HavQRfWxqtP8IhI0vX5uB69Xo8=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -74,11 +74,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			rQy4W4zsXfughQmBkAr+2KkP68c=
+			MriUv+6J+J4ZklXNXbxTUAFo1H8=
 			</data>
 			<key>hash2</key>
 			<data>
-			ihlI1nhq9MfTJVOvacW3sJzc3VSbw5bab6BTw6QRhuA=
+			G7hQsBXq9BJ/2KOmZoUeEENfjloW0rhG/zG0QQlghME=
 			</data>
 		</dict>
 		<key>ios-arm64/goschnorr.framework/Modules/module.modulemap</key>
@@ -118,11 +118,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			Coq2W0FRTTW0SIeonVt2e4KnxSg=
+			4HavQRfWxqtP8IhI0vX5uB69Xo8=
 			</data>
 			<key>hash2</key>
 			<data>
-			10icpe1wCgUwsO6Mto5UT+Gdf/TQfWp9B5P6ZRXXCik=
+			ibHSFjlbCke8Ktwd25Js4dpx4c/uSVEnb2f+pYQfG10=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Modules/module.modulemap</key>
