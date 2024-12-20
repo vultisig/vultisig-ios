@@ -12,7 +12,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>com.voltix.wallet</string>
+			<string>com.vultisig.wallet</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>vultisig</string>
@@ -88,5 +88,9 @@
 	<false/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We need access to the local network to discover services.</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.5</string>
+	<key>MinimumOSVersion</key>
+	<string>17.0</string>
 </dict>
 </plist>
