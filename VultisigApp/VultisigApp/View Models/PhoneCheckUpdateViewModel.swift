@@ -92,10 +92,9 @@ class PhoneCheckUpdateViewModel: ObservableObject {
             }
             
             do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                   let results = json["results"] as? [[String: Any]],
-                   let appStoreVersion = results.first?["version"] as? String {
-                    completion(appStoreVersion)
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let results = json["results"] as? [[String: Any]], let appStoreVersion = results.first?["version"] as? String {
+                    let buildNumber = results.first?["bundleVersion"] as? String ?? "0"
+                    completion(appStoreVersion + "." + buildNumber)
                 } else {
                     completion(nil)
                 }
