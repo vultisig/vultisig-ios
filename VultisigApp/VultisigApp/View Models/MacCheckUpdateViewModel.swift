@@ -102,7 +102,8 @@ class MacCheckUpdateViewModel: ObservableObject {
             self.latestVersion = latest.replacingOccurrences(of: "v", with: "Version ")
             self.currentVersion = current.replacingOccurrences(of: "v", with: "Version ")
             
-            self.isUpdateAvailable = latest > current
+            let comparisonResult = self.compareVersions(current, latest)
+            self.isUpdateAvailable = comparisonResult == .orderedAscending
             
             if isAutoCheck {
                 if self.isUpdateAvailable {
@@ -112,5 +113,28 @@ class MacCheckUpdateViewModel: ObservableObject {
                 self.showDetails = true
             }
         }
+    }
+    
+    func compareVersions(_ version1: String, _ version2: String) -> ComparisonResult {
+        let versionArray1 = version1.split(separator: ".")
+        let versionArray2 = version2.split(separator: ".")
+        
+        for (v1, v2) in zip(versionArray1, versionArray2) {
+            if let v1Int = Int(v1), let v2Int = Int(v2) {
+                if v1Int > v2Int {
+                    return .orderedDescending
+                } else if v1Int < v2Int {
+                    return .orderedAscending
+                }
+            }
+        }
+        
+        if versionArray1.count > versionArray2.count {
+            return .orderedDescending
+        } else if versionArray1.count < versionArray2.count {
+            return .orderedAscending
+        }
+        
+        return .orderedSame
     }
 }
