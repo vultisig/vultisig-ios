@@ -22,13 +22,7 @@ struct JoinKeysignDoneSummary: View {
     
     var body: some View {
         ScrollView {
-            ZStack {
-                if viewModel.txid.isEmpty {
-                    transactionComplete
-                } else {
-                    summary
-                }
-            }
+            summary
         }
     }
     
@@ -50,12 +44,6 @@ struct JoinKeysignDoneSummary: View {
         .cornerRadius(12)
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
-    }
-    
-    var transactionComplete: some View {
-        Text(NSLocalizedString("transactionComplete", comment: "Transaction"))
-            .font(.body24MontserratMedium)
-            .foregroundColor(.neutral0)
     }
     
     var content: some View {
@@ -241,13 +229,6 @@ struct JoinKeysignDoneSummary: View {
             Text(txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
-
-            if viewModel.txid == txid, let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
-                HStack {
-                    Spacer()
-                    progressButton(link: link)
-                }
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
