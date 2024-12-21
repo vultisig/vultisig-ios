@@ -22,7 +22,6 @@ struct JoinKeysignDoneView: View {
     
     var view: some View {
         VStack(spacing: 32) {
-            header
             cards
             continueButton
         }
@@ -40,13 +39,6 @@ struct JoinKeysignDoneView: View {
         })
         .id(UUID())
         .padding(20)
-    }
-    
-    var header: some View {
-        Text(NSLocalizedString("transactionComplete", comment: ""))
-            .font(.body)
-            .bold()
-            .foregroundColor(.neutral0)
     }
 }
 

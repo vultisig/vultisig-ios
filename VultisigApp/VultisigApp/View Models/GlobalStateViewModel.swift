@@ -8,5 +8,5 @@
 import SwiftUI
 
 class GlobalStateViewModel: ObservableObject {
-    @Published var hideBackForKeysign: Bool = false
+    @Published var showKeysignDoneView: Bool = false
 }
