@@ -241,13 +241,6 @@ struct JoinKeysignDoneSummary: View {
             Text(txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
-
-            if viewModel.txid == txid, let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
-                HStack {
-                    Spacer()
-                    progressButton(link: link)
-                }
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
