@@ -43,7 +43,7 @@ class UTXOChainsHelper {
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
         if !preSignOutputs.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSignOutputs.errorMessage)
         }
@@ -191,7 +191,7 @@ class UTXOChainsHelper {
         
         do {
             let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
-            let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+            let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -205,7 +205,7 @@ class UTXOChainsHelper {
                 publicKeys.add(data: pubkeyData)
             }
             let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: coin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
-            let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
+            let output = try BitcoinSigningOutput(serializedBytes: compileWithSignatures)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString, transactionHash: output.transactionID)
             return result
         } catch {

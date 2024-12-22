@@ -22,7 +22,7 @@ class CosmosHelper {
     }
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-            guard case .Cosmos(let accountNumber, let sequence,let gas, _, let _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas, _, _) = keysignPayload.chainSpecific else {
                 throw HelperError.runtimeError("fail to get account number and sequence")
             }
             guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -48,7 +48,7 @@ class CosmosHelper {
         
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _, let _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -103,7 +103,7 @@ class CosmosHelper {
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -136,7 +136,7 @@ class CosmosHelper {
         
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -152,7 +152,7 @@ class CosmosHelper {
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
-            let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+            let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             
             if output.errorMessage.count > 0 {
                 print("getSignedTransaction Error message: \(output.errorMessage)")

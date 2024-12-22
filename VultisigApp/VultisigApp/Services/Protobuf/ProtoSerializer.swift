@@ -24,7 +24,7 @@ struct ProtoSerializer {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
         let serializedData = try (compressedData as NSData).decompressed(using: .lzma) as Data
-        let proto = try T.ProtoType(serializedData: serializedData)
+        let proto = try T.ProtoType(serializedBytes: serializedData)
         let model = try T(proto: proto)
         return model
     }

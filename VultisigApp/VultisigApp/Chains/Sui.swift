@@ -58,7 +58,7 @@ enum SuiHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -79,7 +79,7 @@ enum SuiHelper {
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         let preSigningOutputDataBlake2b = Hash.blake2b(data: preSigningOutput.data, size: 32)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
@@ -96,7 +96,7 @@ enum SuiHelper {
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
-        let output = try SuiSigningOutput(serializedData: compileWithSignature)
+        let output = try SuiSigningOutput(serializedBytes: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.unsignedTx, transactionHash: .empty, signature: output.signature)
         return result
     }

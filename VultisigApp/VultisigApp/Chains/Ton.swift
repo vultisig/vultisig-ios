@@ -60,7 +60,7 @@ enum TonHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -81,7 +81,7 @@ enum TonHelper {
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -97,7 +97,7 @@ enum TonHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         
-        let output = try TheOpenNetworkSigningOutput(serializedData: compileWithSignature)
+        let output = try TheOpenNetworkSigningOutput(serializedBytes: compileWithSignature)
         
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: output.hash.hexString)

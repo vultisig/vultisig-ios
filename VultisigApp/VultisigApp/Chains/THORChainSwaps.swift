@@ -50,7 +50,7 @@ class THORChainSwaps {
         let inputData = try input.serializedData()
         let outputData = THORChainSwap.buildSwap(input: inputData)
 
-        let output = try THORChainSwapSwapOutput(serializedData: outputData)
+        let output = try THORChainSwapSwapOutput(serializedBytes: outputData)
         switch swapPayload.fromAsset.chain {
         case .thor:
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload, signingInput: output.cosmos)
@@ -74,14 +74,14 @@ class THORChainSwaps {
         switch swapPayload.fromAsset.chain {
         case .thor,.eth,.bsc,.avax,.atom:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
                 throw HelperError.runtimeError(preSigningOutput.errorMessage)
             }
             return [preSigningOutput.dataHash.hexString]
         case .btc,.ltc,.bch,.doge:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
-            let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try BitcoinPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
                 throw HelperError.runtimeError(preSigningOutput.errorMessage)
             }
@@ -114,7 +114,7 @@ class THORChainSwaps {
             keysignPayload: keysignPayload
         )
         let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         return [preSigningOutput.dataHash.hexString]
     }
 
