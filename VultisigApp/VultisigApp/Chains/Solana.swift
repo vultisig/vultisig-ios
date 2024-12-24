@@ -16,7 +16,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, let priorityFee, let fromAddressPubKey, let toAddressPubKey) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -116,7 +116,7 @@ enum SolanaHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-        let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -152,7 +152,7 @@ enum SolanaHelper {
                                                                                           publicKeys: publicKeys,
                                                                                           pubKeyType: .ed25519)
         
-        let output = try SolanaSigningOutput(serializedData: compileWithSignature)
+        let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
 
         return output.encoded
     }
@@ -170,7 +170,7 @@ enum SolanaHelper {
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-        let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -185,7 +185,7 @@ enum SolanaHelper {
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
-        let output = try SolanaSigningOutput(serializedData: compileWithSignature)
+        let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
         

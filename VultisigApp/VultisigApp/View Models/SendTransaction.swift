@@ -198,7 +198,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     func parseCryptoURI(_ uri: String) {
-        guard let url = URLComponents(string: uri) else {
+        guard URLComponents(string: uri) != nil else {
             print("Invalid URI")
             return
         }

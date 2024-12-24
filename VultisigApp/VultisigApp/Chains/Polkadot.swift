@@ -61,7 +61,7 @@ enum PolkadotHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -81,7 +81,7 @@ enum PolkadotHelper {
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -96,7 +96,7 @@ enum PolkadotHelper {
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
-        let output = try PolkadotSigningOutput(serializedData: compileWithSignature)
+        let output = try PolkadotSigningOutput(serializedBytes: compileWithSignature)
         let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                              transactionHash: transactionHash)

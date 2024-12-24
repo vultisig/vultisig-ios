@@ -114,7 +114,7 @@ enum THORChainHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -145,7 +145,7 @@ enum THORChainHelper {
         
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -160,7 +160,7 @@ enum THORChainHelper {
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
-            let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+            let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
             let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
             let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())

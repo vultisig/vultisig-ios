@@ -89,8 +89,6 @@ struct VaultPairDetailView: View {
             return "DKLS"
         case .GG20:
             return "GG20"
-        default:
-            return "GG20"
         }
         
     }

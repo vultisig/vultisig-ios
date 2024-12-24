@@ -75,7 +75,7 @@ enum RippleHelper {
         let hashes = TransactionCompiler.preImageHashes(
             coinType: .xrp, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(
-            serializedData: hashes)
+            serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -99,7 +99,7 @@ enum RippleHelper {
         let hashes = TransactionCompiler.preImageHashes(
             coinType: .xrp, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(
-            serializedData: hashes)
+            serializedBytes: hashes)
 
         if !preSigningOutput.errorMessage.isEmpty {
             print(preSigningOutput.errorMessage)
@@ -132,7 +132,7 @@ enum RippleHelper {
             publicKeys: publicKeys)
 
         let output = try RippleSigningOutput(
-            serializedData: compileWithSignature)
+            serializedBytes: compileWithSignature)
 
         // The error is HERE it accepted it as a DER previously
         if !output.errorMessage.isEmpty {
