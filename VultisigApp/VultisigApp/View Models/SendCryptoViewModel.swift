@@ -49,13 +49,17 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func loadGasInfoForSending(tx: SendTransaction) async {
+        isLoading = true
+        
         do {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
             tx.fee = specific.fee
             tx.estematedGasLimit = specific.gasLimit
+            isLoading = false
         } catch {
             print("error fetching data: \(error.localizedDescription)")
+            isLoading = false
         }
     }
 
@@ -228,7 +232,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         tx.amount = "\(amountDecimal)"
     }
     
-    func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
+    func convertFiatToCoin(newValue: String, tx: SendTransaction) {
         if let newValueDecimal = Decimal(string: newValue) {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
@@ -239,7 +243,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
+    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
         if let newValueDecimal = Decimal(string: newValue) {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
@@ -277,6 +281,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         errorMessage = ""
         isValidForm = true
         isNamespaceResolved = false
+        isLoading = true
         
         guard !tx.toAddress.isEmpty else {
             errorTitle = "invalidAddress"
@@ -284,6 +289,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("Empty address field.")
             isValidForm = false
+            isLoading = false
             return false
         }
 
@@ -296,6 +302,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("We were unable to resolve the address of this domain service on this chain.")
             isValidForm = false
+            isLoading = false
             return false
         }
 
@@ -317,6 +324,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("Invalid or non-positive amount.")
             isValidForm = false
+            isLoading = false
             return isValidForm
         }
 
@@ -326,6 +334,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("No gas estimation.")
             isValidForm = false
+            isLoading = false
             return isValidForm
         }
 
@@ -335,6 +344,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("Invalid or negative fee.")
             isValidForm = false
+            isLoading = false
             return isValidForm
         }
         
@@ -344,7 +354,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
-            
         }
         
         if !tx.coin.isNativeToken {
@@ -368,6 +377,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         }
         
+        isLoading = false
         return isValidForm
     }
     

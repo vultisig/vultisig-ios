@@ -48,6 +48,8 @@ extension SendCryptoDetailsView {
         .padding(.horizontal, 16)
         .padding(.top, 20)
         .padding(.bottom, idiom == .pad ? 30 : 0)
+        .grayscale(sendCryptoViewModel.isLoading ? 1 : 0)
+        .disabled(sendCryptoViewModel.isLoading)
     }
     
     var fields: some View {
