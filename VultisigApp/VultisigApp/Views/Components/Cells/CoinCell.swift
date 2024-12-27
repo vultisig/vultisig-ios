@@ -6,6 +6,7 @@ struct CoinCell: View {
     let vault: Vault
     
     @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -42,7 +43,7 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString)
+        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString.formatCurrencyAbbreviation(settingsViewModel.selectedCurrency))
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
@@ -58,4 +59,5 @@ struct CoinCell: View {
 
 #Preview {
     CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
+        .environmentObject(SettingsViewModel())
 }
