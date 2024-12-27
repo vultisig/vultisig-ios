@@ -6,7 +6,7 @@
     <string>com.vultisig.setenv</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Library/Application Support/Vultisig/vultisig-setenv.sh</string>
+        <string>/Library/Application Support/VultisigApp/vultisig-setenv</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

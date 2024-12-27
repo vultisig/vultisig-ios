@@ -3,7 +3,9 @@
 # Define the path to the plist file
 INSTALL_FLAG_FOLDER="$HOME/Library/Application Support/VultisigApp"
 INSTALL_FLAG_FILE="$INSTALL_FLAG_FOLDER/installed.flag"
+LAUNCH_AGENT_PLIST_SRC="/Library/LaunchAgents/com.vultisig.setenv.plist"
 
+launchctl load "$LAUNCH_AGENT_PLIST_SRC"
 # Check if the file exists
 if [ -f "$INSTALL_FLAG_FILE" ]; then
     echo "The file $INSTALL_FLAG_FILE exists. This is an update."
