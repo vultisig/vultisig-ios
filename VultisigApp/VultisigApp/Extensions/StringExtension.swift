@@ -81,7 +81,7 @@ extension String {
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
+        formatter.maximumFractionDigits = 4
         formatter.minimumFractionDigits = 0
         
         if abs(doubleValue) >= 1_000_000_000 {
