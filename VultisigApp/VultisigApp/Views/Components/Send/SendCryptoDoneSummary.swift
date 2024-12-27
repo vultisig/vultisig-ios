@@ -148,11 +148,11 @@ struct SendCryptoDoneSummary: View {
     }
     
     private func getSendAmount(for tx: SendTransaction) -> String {
-        tx.amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency) + " " + tx.coin.ticker
+        tx.amount.formatCurrencyWithSeparators() + " " + tx.coin.ticker
     }
     
     private func getSendFiatAmount(for tx: SendTransaction) -> String {
-        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)
+        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators()
     }
 }
 

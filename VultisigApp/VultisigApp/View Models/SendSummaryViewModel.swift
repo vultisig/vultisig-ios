@@ -11,17 +11,17 @@ import Foundation
 class SendSummaryViewModel {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(selectedCurrency)) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(selectedCurrency)) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(selectedCurrency)) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(selectedCurrency)) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
     

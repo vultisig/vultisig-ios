@@ -43,7 +43,7 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString.formatCurrencyAbbreviation(settingsViewModel.selectedCurrency))
+        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString.formatCurrencyAbbreviation())
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])

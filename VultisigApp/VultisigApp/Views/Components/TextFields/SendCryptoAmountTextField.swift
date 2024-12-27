@@ -37,7 +37,7 @@ struct SendCryptoAmountTextField: View {
         TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
+                let newValue = $0.formatCurrency()
                 
                 guard amount != newValue else { return }
                 amount = newValue
@@ -56,7 +56,7 @@ struct SendCryptoAmountTextField: View {
         .maxLength(Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
+                let newValue = $0.formatCurrency()
                 
                 guard amount != newValue else { return }
                 amount = newValue

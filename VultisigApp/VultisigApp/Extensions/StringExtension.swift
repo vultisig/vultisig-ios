@@ -62,7 +62,8 @@ extension String {
 // MARK: - Amount Formatter
 
 extension String {
-    func formatCurrency(_ currency: SettingsCurrency) -> String {
+    func formatCurrency() -> String {
+        let currency = SettingsCurrency.current
         let decimalPoint = getCurrentDecimalPoint()
         
         if currency.usesEuropeanFormat || decimalPoint == "," {
@@ -72,8 +73,9 @@ extension String {
         }
     }
     
-    func formatCurrencyAbbreviation(_ currency: SettingsCurrency) -> String {
-        let cleanedValue = self.formatCurrency(currency)
+    func formatCurrencyAbbreviation() -> String {
+        let currency = SettingsCurrency.current
+        let cleanedValue = self.formatCurrency()
         
         guard let doubleValue = Double(cleanedValue) else {
             return self
@@ -95,8 +97,8 @@ extension String {
         }
     }
     
-    func formatCurrencyWithSeparators(_ currency: SettingsCurrency) -> String {
-        guard let number = parseInput(currency) else {
+    func formatCurrencyWithSeparators() -> String {
+        guard let number = parseInput() else {
             return self
         }
         
@@ -110,7 +112,8 @@ extension String {
         return outputFormatter.string(for: number) ?? self
     }
     
-    private func parseInput(_ currency: SettingsCurrency) -> Decimal? {
+    private func parseInput() -> Decimal? {
+        let currency = SettingsCurrency.current
         var cleanInput = self.trimmingCharacters(in: .whitespaces)
         
         if currency.usesEuropeanFormat {
