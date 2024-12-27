@@ -263,6 +263,7 @@ struct SendCryptoDetailsView: View {
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
+            sendCryptoViewModel.isLoading = false
         }
     }
     
