@@ -169,17 +169,17 @@ struct SwapVerifyView: View {
 
     func getFromAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
 
