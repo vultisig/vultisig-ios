@@ -197,11 +197,11 @@ struct SendCryptoVerifyView: View {
     }
     
     private func getAmount() -> String {
-        tx.amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency) + " " + tx.coin.ticker
+        tx.amount.formatCurrencyWithSeparators() + " " + tx.coin.ticker
     }
     
     private func getFiatAmount() -> String {
-        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)
+        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators()
     }
 }
 
