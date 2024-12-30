@@ -136,14 +136,11 @@ struct FolderDetailView: View {
         ForEach(folderViewModel.selectedVaults.sorted(by: {
             $0.order < $1.order
         }), id: \.self) { vault in
-            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditingFolders)
+            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditingFolders, handleVaultSelection: handleVaultSelection)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
                 .background(Color.backgroundBlue)
-                .onTapGesture {
-                    handleVaultSelection(for: vault)
-                }
         }
         .onMove(perform: isEditingFolders ? move : nil)
         .padding(.horizontal, 16)
