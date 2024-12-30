@@ -10,6 +10,7 @@ import SwiftUI
 struct FolderDetailSelectedVaultCell: View {
     let vault: Vault
     let isEditing: Bool
+    let handleVaultSelection: (Vault) -> ()
     
     @StateObject var viewModel = FolderDetailCellViewModel()
     
@@ -33,15 +34,25 @@ struct FolderDetailSelectedVaultCell: View {
             Spacer()
             partAssignedCell
             
-            if isEditing {
-                toggle
-            } else {
-                chevron
-            }
+            action
         }
         .padding(12)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var action: some View {
+        Button {
+            handleVaultSelection(vault)
+        } label: {
+            ZStack {
+                if isEditing {
+                    toggle
+                } else {
+                    chevron
+                }
+            }
+        }
     }
     
     var rearrange: some View {
@@ -96,9 +107,9 @@ struct FolderDetailSelectedVaultCell: View {
     }
 }
 
-#Preview {
-    VStack {
-        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: false)
-        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: true)
-    }
-}
+//#Preview {
+//    VStack {
+//        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: false, handleVaultSelection: <#(Vault) -> ()#>)
+//        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: true)
+//    }
+//}
