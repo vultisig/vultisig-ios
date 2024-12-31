@@ -378,6 +378,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .noble {
                 let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            } else if keysignPayload.coin.chain == .akash {
+                let transaction = try AkashHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+                return .regular(transaction)
             }
             
             
@@ -506,6 +509,25 @@ class KeysignViewModel: ObservableObject {
                     self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
+                case .akash:
+                    
+                    print("")
+                    print("")
+                    print("")
+                    print("")
+                    print(tx.rawTransaction)
+                    print("")
+                    print("")
+                    print("")
+                    print("")
+                    
+                    let broadcastResult = await AkashService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
                     
                 }
 

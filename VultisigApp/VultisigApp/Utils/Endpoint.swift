@@ -227,6 +227,15 @@ class Endpoint {
     
     static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchAkashAccountBalance(address: String) -> String{
+        "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchAkashAccountNumber(_ address: String) -> String {
+        "https://akash-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchNobleAccountBalance(address: String) -> String{
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -386,6 +395,8 @@ class Endpoint {
             return "https://www.mintscan.io/noble/tx/\(txid)"
         case "XRP":
             return "https://xrpscan.com/tx/\(txid)"
+        case "UAKT":
+            return "https://www.mintscan.io/akash/tx/\(txid)"
         default:
             return ""
         }
@@ -451,6 +462,8 @@ class Endpoint {
             return "https://www.mintscan.io/noble/address/\(address)"
         case "XRP":
             return "https://xrpscan.com/account/\(address)"
+        case "UAKT":
+            return "https://www.mintscan.io/akash/address/\(address)"
         default:
             return nil
         }
@@ -516,6 +529,8 @@ class Endpoint {
             return "https://www.mintscan.io/noble/address/\(address)"
         case .ripple:
             return "https://xrpscan.com/account/\(address)"
+        case .akash:
+            return "https://www.mintscan.io/akash/address/\(address)"
         case .none:
             return nil
         }

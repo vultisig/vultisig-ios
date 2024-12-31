@@ -59,7 +59,7 @@ extension Chain {
             actions = [.send, .swap]
         case .dydx:
             actions = [.send, .memo]
-        case .osmosis, .terra, .terraClassic, .noble:
+        case .osmosis, .terra, .terraClassic, .noble, .akash:
             actions = [.send]
         case .ripple:
             actions = [.send]
