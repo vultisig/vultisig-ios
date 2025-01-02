@@ -510,17 +510,6 @@ class KeysignViewModel: ObservableObject {
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
                 case .akash:
-                    
-                    print("")
-                    print("")
-                    print("")
-                    print("")
-                    print(tx.rawTransaction)
-                    print("")
-                    print("")
-                    print("")
-                    print("")
-                    
                     let broadcastResult = await AkashService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
