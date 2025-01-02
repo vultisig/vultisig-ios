@@ -397,6 +397,8 @@ class Endpoint {
             return "https://xrpscan.com/tx/\(txid)"
         case "UAKT":
             return "https://www.mintscan.io/akash/tx/\(txid)"
+        case "TRX":
+            return "https://tronscan.org/#/transaction/\(txid)"
         default:
             return ""
         }
@@ -464,6 +466,8 @@ class Endpoint {
             return "https://xrpscan.com/account/\(address)"
         case "UAKT":
             return "https://www.mintscan.io/akash/address/\(address)"
+        case "TRX":
+            return "https://tronscan.org/#/address/\(address)"
         default:
             return nil
         }
@@ -531,6 +535,8 @@ class Endpoint {
             return "https://xrpscan.com/account/\(address)"
         case .akash:
             return "https://www.mintscan.io/akash/address/\(address)"
+        case .tron:
+            return "https://tronscan.org/#/address/\(address)"
         case .none:
             return nil
         }

@@ -634,6 +634,10 @@ class TokensStore {
         static var akash: CoinMeta {
             CoinMeta(chain: Chain.akash, ticker: "AKT", logo: "akash", decimals: 6, priceProviderId: "akash-network", contractAddress: "", isNativeToken: true)
         }
+        
+        static var tron: CoinMeta {
+            CoinMeta(chain: Chain.tron, ticker: "TRX", logo: "tron", decimals: 6, priceProviderId: "tron", contractAddress: "", isNativeToken: true)
+        }
     }
     
     static var TokenSelectionAssets = [
@@ -656,6 +660,7 @@ class TokensStore {
         TokensStore.Token.solanaRaydium,
         
         TokensStore.Token.akash,
+        TokensStore.Token.tron,
         
         
         TokensStore.Token.osmosis,
