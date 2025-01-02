@@ -445,7 +445,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
     }
     
-    func handleBackTap() {
+    func handleBackTap(_ dismiss: DismissAction) {
+        guard currentIndex>1 else {
+            dismiss()
+            return
+        }
+        
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
     }

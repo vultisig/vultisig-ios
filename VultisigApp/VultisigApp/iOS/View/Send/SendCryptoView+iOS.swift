@@ -13,11 +13,10 @@ extension SendCryptoView {
         content
             .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
             .toolbar {
-                if sendCryptoViewModel.currentIndex != 1 {
-                    ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                        backButton
-                    }
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    backButton
                 }
                 
                 if showFeeSettings {
@@ -52,7 +51,7 @@ extension SendCryptoView {
         let isDone = sendCryptoViewModel.currentIndex==5
         
         return Button {
-            sendCryptoViewModel.handleBackTap()
+            sendCryptoViewModel.handleBackTap(dismiss)
         } label: {
             NavigationBlankBackButton()
                 .offset(x: -8)
