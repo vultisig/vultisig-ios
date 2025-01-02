@@ -107,7 +107,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
             return .UTXO
-        case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble:
+        case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return .Cosmos
         case .sui:
             return .Sui
@@ -171,6 +171,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "7000"
         case .ripple:
             return "180000"
+        case .akash:
+            return "200000"
         }
     }
 

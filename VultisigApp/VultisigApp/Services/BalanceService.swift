@@ -29,6 +29,7 @@ class BalanceService {
     private let terraClassic = TerraClassicService.shared
     
     private let noble = NobleService.shared
+    private let akash = AkashService.shared
     
     private let cryptoPriceService = CryptoPriceService.shared
     
@@ -134,6 +135,13 @@ private extension BalanceService {
             
         case .ripple:
             return try await ripple.getBalance(coin)
+            
+        case .akash:
+            let balance = try await akash.fetchBalances(coin: coin)
+            return balance.balance(denom: Chain.akash.ticker.lowercased(), coin: coin)
+         
+            //
+        
         }
     }
     
