@@ -196,6 +196,10 @@ extension MacCameraServiceViewModel {
         })
         
         for asset in sortedAssets {
+            if checkForMAYAChain(asset: asset, address: address) {
+                return
+            }
+            
             let isValid = asset.chain.coinType.validate(address: address)
             
             if isValid {
@@ -205,6 +209,16 @@ extension MacCameraServiceViewModel {
             }
         }
         shouldSendCrypto = true
+    }
+    
+    private func checkForMAYAChain(asset: CoinMeta, address: String) -> Bool {
+        if asset.chain.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
+            selectedChain = asset.chain
+            shouldSendCrypto = true
+            return true
+        } else {
+            return false
+        }
     }
 }
 #endif
