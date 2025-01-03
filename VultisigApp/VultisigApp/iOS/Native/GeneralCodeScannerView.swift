@@ -167,7 +167,7 @@ struct GeneralCodeScannerView: View {
         sendTX.toAddress = address
         
         for asset in vaultDetailViewModel.groups {
-            if checkForMayaChain(asset: asset, address: address) {
+            if checkForMAYAChain(asset: asset, address: address) {
                 return
             }
             
@@ -182,7 +182,7 @@ struct GeneralCodeScannerView: View {
         shouldSendCrypto = true
     }
     
-    private func checkForMayaChain(asset: GroupedChain, address: String) -> Bool {
+    private func checkForMAYAChain(asset: GroupedChain, address: String) -> Bool {
         if asset.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
             selectedChain = asset.chain
             shouldSendCrypto = true
