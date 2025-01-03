@@ -335,6 +335,12 @@ class Endpoint {
         return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
     }
     
+    static let tronServiceRpc = "https://tron-rpc.publicnode.com"
+    
+    static func fetchAccountInfoTron() -> String {
+        "https://tron-rpc.publicnode.com/wallet/getaccount"
+    }
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":

@@ -117,6 +117,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Ton
         case .ripple:
             return .Ripple
+        case .tron:
+            return .Tron
         }
     }
 
@@ -173,6 +175,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "180000"
         case .akash:
             return "200000"
+        case .tron:
+            return "200000000"
         }
     }
 

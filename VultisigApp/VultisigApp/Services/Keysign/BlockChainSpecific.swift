@@ -21,6 +21,17 @@ enum BlockChainSpecific: Codable, Hashable {
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
     case Ripple(sequence: UInt64, gas: UInt64)
     
+    case Tron(
+        timestamp: UInt64,
+        expiration: UInt64,
+        blockHeaderTimestamp: UInt64,
+        blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64,
+        blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String,
+        blockHeaderWitnessAddress: String
+    )
+    
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _):
@@ -43,6 +54,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return BigInt(0.001 * 10e9)
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
+        case .Tron(_, _, _, _, _, _, _, _):
+            return gas.description.toBigInt()
         }
     }
     
@@ -50,7 +63,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
             return maxFeePerGas * gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return gas
         }
     }
@@ -59,7 +72,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
             return maxFeePerGas - priorityFee
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return nil
         }
     }
@@ -68,7 +81,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):
             return gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return nil
         }
     }

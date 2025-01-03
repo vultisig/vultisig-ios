@@ -665,6 +665,8 @@
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
 		B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AC2C1A556D005DB485 /* DydxService.swift */; };
+		B5E654EB2D277CE2003A037C /* TronService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EA2D277CE0003A037C /* TronService.swift */; };
+		B5E654ED2D2788CC003A037C /* Tron.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EC2D2788CC003A037C /* Tron.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
@@ -1454,6 +1456,8 @@
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
 		B5E476AC2C1A556D005DB485 /* DydxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DydxService.swift; sourceTree = "<group>"; };
+		B5E654EA2D277CE0003A037C /* TronService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronService.swift; sourceTree = "<group>"; };
+		B5E654EC2D2788CC003A037C /* Tron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tron.swift; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
@@ -1665,6 +1669,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B5E654E92D277CD5003A037C /* Tron */,
 				B5A80F192D0645BC00DC9069 /* Ripple */,
 				DE8B69982CD4602500F53E14 /* PayloadService.swift */,
 				B571384E2CC57135000E925B /* Ton */,
@@ -2980,6 +2985,14 @@
 			path = cosmos;
 			sourceTree = "<group>";
 		};
+		B5E654E92D277CD5003A037C /* Tron */ = {
+			isa = PBXGroup;
+			children = (
+				B5E654EA2D277CE0003A037C /* TronService.swift */,
+			);
+			path = Tron;
+			sourceTree = "<group>";
+		};
 		B5F7581B2BD8FD970097B5B9 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -3182,6 +3195,7 @@
 			children = (
 				B5BC37572CECF21D005A1C76 /* cosmos */,
 				B571384C2CC560F0000E925B /* Ton.swift */,
+				B5E654EC2D2788CC003A037C /* Tron.swift */,
 				B5A80F172D0600BA00DC9069 /* Ripple.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
@@ -3589,6 +3603,7 @@
 				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6C670A62C9D0CAC00F59B6A /* RenameVaultView+macOS.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
+				B5E654EB2D277CE2003A037C /* TronService.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
@@ -3743,6 +3758,7 @@
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
 				A6C6711B2CA3BAD100F59B6A /* CachedAsyncImage+iOS.swift in Sources */,
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
+				B5E654ED2D2788CC003A037C /* Tron.swift in Sources */,
 				A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
