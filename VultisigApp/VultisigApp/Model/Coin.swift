@@ -176,7 +176,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .akash:
             return "200000"
         case .tron:
-            return "200000000"
+            return "200000000" // TODO: double check this
         }
     }
 

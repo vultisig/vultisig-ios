@@ -61,6 +61,16 @@ extension CoinFactory {
                 hexChainCode: vault.hexChainCode,
                 derivePath: asset.coinType.derivationPath()
             )
+            
+            if asset.coinType == .tron {
+                guard
+                    let pubKeyData = Data(hexString: derivedKey),
+                    let publicKey = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
+                    throw Errors.invalidPublicKey(pubKey: vault.pubKeyECDSA)
+                }
+                return publicKey
+            }
+            
             guard
                 let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {

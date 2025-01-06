@@ -83,6 +83,8 @@ struct KeysignMessageFactory {
             return try RippleHelper.getPreSignedImageHash(keysignPayload: payload, vault: vault)
         case .akash:
             return try AkashHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .tron:
+            return try TronHelper.getPreSignedImageHash(keysignPayload: payload)
         }
     }
 }

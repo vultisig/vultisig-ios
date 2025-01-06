@@ -49,12 +49,12 @@ extension KeysignMessage: ProtoMappable {
 }
 
 extension CustomMessagePayload: ProtoMappable {
-
+    
     init(proto: VSCustomMessagePayload) throws {
         self.method = proto.method
         self.message = proto.message
     }
-
+    
     func mapToProtobuff() -> VSCustomMessagePayload {
         return VSCustomMessagePayload.with {
             $0.method = method
@@ -300,6 +300,17 @@ extension BlockChainSpecific {
                 sequence: value.sequence,
                 gas: value.gas
             )
+        case .tronSpecific(let value):
+            self = .Tron(
+                timestamp: value.timestamp,
+                expiration: value.expiration,
+                blockHeaderTimestamp: value.blockHeaderTimestamp,
+                blockHeaderNumber: value.blockHeaderNumber,
+                blockHeaderVersion: value.blockHeaderVersion,
+                blockHeaderTxTrieRoot: value.blockHeaderTxTrieRoot,
+                blockHeaderParentHash: value.blockHeaderParentHash,
+                blockHeaderWitnessAddress: value.blockHeaderWitnessAddress
+            )
         }
         
     }
@@ -387,6 +398,26 @@ extension BlockChainSpecific {
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
+            })
+            
+        case .Tron(
+            let timestamp,
+            let expiration,
+            let blockHeaderTimestamp,
+            let blockHeaderNumber,
+            let blockHeaderVersion,
+            let blockHeaderTxTrieRoot,
+            let blockHeaderParentHash,
+            let blockHeaderWitnessAddress):
+            return .tronSpecific(.with {
+                $0.timestamp = timestamp
+                $0.expiration = expiration
+                $0.blockHeaderTimestamp = blockHeaderTimestamp
+                $0.blockHeaderNumber = blockHeaderNumber
+                $0.blockHeaderVersion = blockHeaderVersion
+                $0.blockHeaderParentHash = blockHeaderParentHash
+                $0.blockHeaderTxTrieRoot = blockHeaderTxTrieRoot
+                $0.blockHeaderWitnessAddress = blockHeaderWitnessAddress
             })
         }
     }

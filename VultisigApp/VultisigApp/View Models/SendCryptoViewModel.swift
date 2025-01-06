@@ -26,7 +26,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var errorMessage = ""
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
-
+    
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
@@ -34,15 +34,17 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
     @Published var ripple: RippleService = RippleService.shared
-
+    
+    @Published var tron: TronService = TronService.shared
+    
     let maya = MayachainService.shared
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
-
+    
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-
+    
     let totalViews = 5
     let titles = ["send", "verify", "pair", "keysign", "done"]
     
@@ -62,13 +64,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
         }
     }
-
+    
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
         tx.isFastVault = isExist && !isLocalBackup
     }
-
+    
     func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
@@ -222,6 +224,29 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
+            
+        case .tron:
+            Task {
+                do {
+                    let rawBalance = try await tron.getBalance(coin: tx.coin)
+                    tx.coin.rawBalance = rawBalance
+                    
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                }
+                
+                isLoading = false
+            }
+            
         }
     }
     
@@ -292,7 +317,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
             return false
         }
-
+        
         do {
             tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
             isNamespaceResolved = true
@@ -305,7 +330,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
             return false
         }
-
+        
         // Validate the "To" address
         if !isValidAddress && !isNamespaceResolved {
             errorTitle = "error"
@@ -314,7 +339,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             logger.log("Invalid address.")
             isValidForm = false
         }
-
+        
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         
@@ -327,7 +352,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
             return isValidForm
         }
-
+        
         if gasFee == 0 {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
@@ -337,7 +362,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
             return isValidForm
         }
-
+        
         if gasFee < 0 {
             errorTitle = "error"
             errorMessage = "nonNegativeFeeError"
@@ -398,24 +423,24 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         self.mediator.stop()
         logger.info("mediator server stopped.")
     }
-
+    
     func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
         guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
         let fee = nativeCoin.decimal(for: tx.fee)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
-
+    
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
         guard let utxoInfo = utxo.blockchairData
             .get(key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
             .map({
-            UtxoInfo(
-                hash: $0.transactionHash ?? "",
-                amount: Int64($0.value ?? 0),
-                index: UInt32($0.index ?? -1)
-            )
-        }), !utxoInfo.isEmpty else {
+                UtxoInfo(
+                    hash: $0.transactionHash ?? "",
+                    amount: Int64($0.value ?? 0),
+                    index: UInt32($0.index ?? -1)
+                )
+            }), !utxoInfo.isEmpty else {
             return nil
         }
         

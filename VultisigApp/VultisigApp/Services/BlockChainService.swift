@@ -48,6 +48,7 @@ final class BlockChainService {
     private let dydx = DydxService.shared
     private let ton = TonService.shared
     private let osmo = OsmosisService.shared
+    private let tron = TronService.shared
     
     private let ripple = RippleService.shared
 
@@ -351,7 +352,8 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 200000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
-        
+        case .tron:
+            return try await tron.getBlockInfo()
         }
     }
     

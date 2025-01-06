@@ -390,6 +390,9 @@ class KeysignViewModel: ObservableObject {
         case .Ripple:
             let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
             return .regular(transaction)
+        case .Tron:
+            let transaction = try TronHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, keysignPayload: keysignPayload, signatures: signatures)
+            return .regular(transaction)
         }
 
         throw HelperError.runtimeError("Unexpected error")
@@ -518,6 +521,17 @@ class KeysignViewModel: ObservableObject {
                         throw err
                     }
                     
+                case .tron:
+                    
+                    let broadcastResult = await TronService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    
+                    switch broadcastResult {
+                    case .success(let txHash):
+                        self.txid = txHash
+                        print("Transaction successful, hash: \(txHash)")
+                    case .failure(let error):
+                        throw error
+                    }
                 }
 
             case .regularWithApprove(let approve, let transaction):

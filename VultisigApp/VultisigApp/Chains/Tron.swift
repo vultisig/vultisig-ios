@@ -22,20 +22,20 @@ enum TronHelper {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
+        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .tron) else {
             throw HelperError.runtimeError("fail to get to address")
         }
         
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-                
+        
         let contract = TronTransferContract.with {
             $0.ownerAddress = keysignPayload.coin.address
             $0.toAddress = keysignPayload.toAddress
             $0.amount = Int64(keysignPayload.toAmount)
         }
-
+        
         let input = TronSigningInput.with {
             $0.transaction = TronTransaction.with {
                 $0.contractOneof = .transfer(contract)
@@ -67,7 +67,7 @@ enum TronHelper {
             keysignPayload: keysignPayload
         )
         let hashes = TransactionCompiler.preImageHashes(
-            coinType: .ton,
+            coinType: .tron,
             txInputData: inputData
         )
         let preSigningOutput = try TxCompilerPreSigningOutput(
@@ -81,16 +81,16 @@ enum TronHelper {
     }
     
     static func getSignedTransaction(
-vaultHexPubKey: String,
-                                     keysignPayload: KeysignPayload,
-signatures: [String: TssKeysignResponse]
+        vaultHexPubKey: String,
+        keysignPayload: KeysignPayload,
+        signatures: [String: TssKeysignResponse]
     ) throws -> SignedTransactionResult
     {
         guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
             throw HelperError
                 .runtimeError("public key \(vaultHexPubKey) is invalid")
         }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
+        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
             throw HelperError
                 .runtimeError("public key \(vaultHexPubKey) is invalid")
         }
@@ -99,7 +99,7 @@ signatures: [String: TssKeysignResponse]
             keysignPayload: keysignPayload
         )
         let hashes = TransactionCompiler.preImageHashes(
-            coinType: .ton,
+            coinType: .tron,
             txInputData: inputData
         )
         let preSigningOutput = try TxCompilerPreSigningOutput(
@@ -118,17 +118,17 @@ signatures: [String: TssKeysignResponse]
         
         allSignatures.add(data: signature)
         publicKeys.add(data: pubkeyData)
-        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ton,
+        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .tron,
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         
-        let output = try TheOpenNetworkSigningOutput(
+        let output = try TronSigningOutput(
             serializedBytes: compileWithSignature
         )
         
-        let result = SignedTransactionResult(rawTransaction: output.encoded,
-                                             transactionHash: output.hash.hexString)
+        let result = SignedTransactionResult(rawTransaction: output.json,
+                                             transactionHash: output.id.hexString)
         
         return result
     }

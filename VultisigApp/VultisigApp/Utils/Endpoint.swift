@@ -337,6 +337,10 @@ class Endpoint {
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
     
+    static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
+    
+    static let fetchBlockNowInfoTron = "https://tron-rpc.publicnode.com/wallet/getnowblock"
+    
     static func fetchAccountInfoTron() -> String {
         "https://tron-rpc.publicnode.com/wallet/getaccount"
     }
