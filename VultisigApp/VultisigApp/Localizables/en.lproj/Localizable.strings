@@ -462,3 +462,7 @@
 "advanced" = "Advanced";
 "enableDKLS" = "Enable DKLS";
 "vaultLibType" = "Vault Type";
+"addChain" = "Add Chain";
+"newChainDetected" = "New chain detected";
+"addNewChainToVault1" = "Do you want to add ";
+"addNewChainToVault2" = " to the vault?";

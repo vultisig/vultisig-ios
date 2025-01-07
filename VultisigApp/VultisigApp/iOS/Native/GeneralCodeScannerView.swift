@@ -17,6 +17,7 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldKeysignTransaction: Bool
     @Binding var shouldSendCrypto: Bool
     @Binding var selectedChain: Chain?
+    
     let sendTX: SendTransaction
     var showButtons: Bool = true
     
@@ -25,12 +26,42 @@ struct GeneralCodeScannerView: View {
     
     @Query var vaults: [Vault]
     
+    @State var showAlert: Bool = false
+    @State var newCoinMeta: CoinMeta? = nil
+    
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
+        content
+            .fileImporter(
+                isPresented: $isFilePresented,
+                allowedContentTypes: [UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                do {
+                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                    let result = String(data: qrCode, encoding: .utf8)
+                    guard let url = URL(string: result ?? .empty) else {
+                        return
+                    }
+                    
+                    deeplinkViewModel.extractParameters(url, vaults: vaults)
+                    presetValuesForDeeplink(url)
+                } catch {
+                    print(error)
+                }
+            }
+            .alert(isPresented: $showAlert) {
+                alert
+            }
+    }
+    
+    var content: some View {
         ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
@@ -46,24 +77,6 @@ struct GeneralCodeScannerView: View {
             }
         }
         .ignoresSafeArea()
-        .fileImporter(
-            isPresented: $isFilePresented,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                let result = String(data: qrCode, encoding: .utf8)
-                guard let url = URL(string: result ?? .empty) else {
-                    return
-                }
-                
-                deeplinkViewModel.extractParameters(url, vaults: vaults)
-                presetValuesForDeeplink(url)
-            } catch {
-                print(error)
-            }
-        }
     }
     
     var overlay: some View {
@@ -108,6 +121,27 @@ struct GeneralCodeScannerView: View {
         } label: {
             OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
         }
+    }
+    
+    var alert: Alert {
+        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
+        
+        return Alert(
+            title: Text(NSLocalizedString("newChainDetected", comment: "")),
+            message: Text(message),
+            primaryButton: Alert.Button.default(
+                Text(NSLocalizedString("addChain", comment: "")),
+                action: {
+                    addNewChain()
+                }
+            ),
+            secondaryButton: Alert.Button.default(
+                Text(NSLocalizedString("cancel", comment: "")),
+                action: {
+                    handleCancel()
+                }
+            )
+        )
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
@@ -179,7 +213,8 @@ struct GeneralCodeScannerView: View {
                 return
             }
         }
-        shouldSendCrypto = true
+        
+        checkForRemainingChains(address)
     }
     
     private func checkForMAYAChain(asset: GroupedChain, address: String) -> Bool {
@@ -189,6 +224,52 @@ struct GeneralCodeScannerView: View {
             return true
         } else {
             return false
+        }
+    }
+    
+    private func checkForRemainingChains(_ address: String) {
+        showSheet = true
+        
+        let chains = coinSelectionViewModel.groupedAssets.values.flatMap { $0 }
+        
+        for asset in chains.sorted(by: {
+            $0.chain.name < $1.chain.name
+        }) {
+            let isValid = asset.coinType.validate(address: address)
+            
+            if isValid {
+                newCoinMeta = asset
+                showAlert = true
+                return
+            }
+        }
+    }
+    
+    private func handleCancel() {
+        showSheet = false
+        shouldSendCrypto = true
+    }
+    
+    private func addNewChain() {
+        guard let chain = newCoinMeta else {
+            return
+        }
+        
+        saveAssets(chain)
+    }
+    
+    private func saveAssets(_ chain: CoinMeta) {
+        var selection = coinSelectionViewModel.selection
+        selection.insert(chain)
+        
+        guard let vault = homeViewModel.selectedVault else {
+            return
+        }
+        
+        Task{
+            await CoinService.saveAssets(for: vault, selection: selection)
+            selectedChain = chain.chain
+            handleCancel()
         }
     }
 }
@@ -206,5 +287,7 @@ struct GeneralCodeScannerView: View {
     .environmentObject(SettingsDefaultChainViewModel())
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
+    .environmentObject(CoinSelectionViewModel())
+    .environmentObject(HomeViewModel())
 }
 #endif
