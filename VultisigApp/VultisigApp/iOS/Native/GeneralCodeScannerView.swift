@@ -191,9 +191,11 @@ struct GeneralCodeScannerView: View {
     }
     
     private func moveToSendView() {
-        shouldJoinKeygen = false
-        showSheet = false
-        checkForAddress()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = false
+            showSheet = false
+            checkForAddress()
+        }
     }
     
     private func checkForAddress() {
@@ -210,6 +212,7 @@ struct GeneralCodeScannerView: View {
             if isValid {
                 selectedChain = asset.chain
                 shouldSendCrypto = true
+                
                 return
             }
         }
@@ -246,8 +249,10 @@ struct GeneralCodeScannerView: View {
     }
     
     private func handleCancel() {
-        showSheet = false
-        shouldSendCrypto = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showSheet = false
+            shouldSendCrypto = true
+        }
     }
     
     private func addNewChain() {
@@ -255,6 +260,7 @@ struct GeneralCodeScannerView: View {
             return
         }
         
+        selectedChain = chain.chain
         saveAssets(chain)
     }
     
@@ -268,7 +274,7 @@ struct GeneralCodeScannerView: View {
         
         Task{
             await CoinService.saveAssets(for: vault, selection: selection)
-            selectedChain = chain.chain
+            
             handleCancel()
         }
     }
