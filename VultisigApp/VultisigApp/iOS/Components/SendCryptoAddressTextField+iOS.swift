@@ -105,11 +105,11 @@ extension SendCryptoAddressTextField {
             validateAddress(address)
         }
         
-        Task{
-            if !amount.isEmpty {
-                await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
-            }
+        
+        if !amount.isEmpty {
+            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
         }
+        
     }
 }
 #endif
