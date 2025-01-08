@@ -283,7 +283,7 @@ class RpcEvmService: RpcService {
     func getTokens(nativeToken: Coin) async -> [CoinMeta] {
         do {
             // First RPC call to get token balances
-            let tokenBalances = try await sendRPCRequest(
+            let tokenBalances: [[String: Any]] = try await sendRPCRequest(
                 method: "alchemy_getTokenBalances",
                 params: [nativeToken.address]
             ) { result in
@@ -291,7 +291,7 @@ class RpcEvmService: RpcService {
                     let response = result as? [String: Any],
                     let tokenBalances = response["tokenBalances"] as? [[String: Any]]
                 else {
-                    throw RpcServiceError.rpcError(code: -1, message: "Invalid JSON for alchemy_getTokenBalances")
+                    return []
                 }
                 
                 return tokenBalances
@@ -310,7 +310,7 @@ class RpcEvmService: RpcService {
                 }
                 
                 // Fetch metadata for each token
-                let meta = try await sendRPCRequest(
+                let meta: CoinMeta? = try await sendRPCRequest(
                     method: "alchemy_getTokenMetadata",
                     params: [contractAddress]
                 ) { result in
@@ -318,15 +318,15 @@ class RpcEvmService: RpcService {
                         let response = result as? [String: Any],
                         let symbol = response["symbol"] as? String,
                         let decimalsString = response["decimals"] as? Int64,
-                        let logo = response["logo"] as? String
+                        let logo = response["logo"] as? String?
                     else {
-                        throw RpcServiceError.rpcError(code: -1, message: "Invalid JSON for alchemy_getTokenMetadata")
+                        return nil
                     }
                     
                     return CoinMeta(
                         chain: nativeToken.chain,
                         ticker: symbol,
-                        logo: logo,
+                        logo: logo ?? "",
                         decimals: Int(decimalsString),
                         priceProviderId: "",
                         contractAddress: contractAddress,
@@ -334,7 +334,10 @@ class RpcEvmService: RpcService {
                     )
                 }
                 
-                tokenMetadata.append(meta)
+                if let coinMeta = meta {
+                    tokenMetadata.append(coinMeta)
+                }
+                
             }
             
             return tokenMetadata
