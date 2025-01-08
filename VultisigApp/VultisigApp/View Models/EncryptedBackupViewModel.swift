@@ -133,7 +133,7 @@ class EncryptedBackupViewModel: ObservableObject {
         guard let vsVaultContainer = Data(base64Encoded: data) else {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
-        let vaultContainer = try VSVaultContainer(serializedData: vsVaultContainer)
+        let vaultContainer = try VSVaultContainer(serializedBytes: vsVaultContainer)
         guard let vaultData = Data(base64Encoded: vaultContainer.vault) else {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
@@ -186,7 +186,7 @@ class EncryptedBackupViewModel: ObservableObject {
     
     func restoreVaultBak(modelContext: ModelContext,vaults: [Vault], vaultData: Data, defaultChains: [CoinMeta]) {
         do{
-            let vsVault = try VSVault(serializedData: vaultData)
+            let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
             if !isVaultUnique(backupVault: vault,vaults:vaults){
                 alertTitle = "error"
