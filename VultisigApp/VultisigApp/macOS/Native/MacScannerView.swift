@@ -20,7 +20,8 @@ struct MacScannerView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var cameraViewModel: MacCameraServiceViewModel
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -45,6 +46,9 @@ struct MacScannerView: View {
                 )
             }
         }
+        .alert(isPresented: $cameraViewModel.showAlert) {
+            alert
+        }
     }
     
     var main: some View {
@@ -57,7 +61,8 @@ struct MacScannerView: View {
                 sendTx: sendTx,
                 cameraViewModel: cameraViewModel,
                 deeplinkViewModel: deeplinkViewModel,
-                settingsDefaultChainViewModel: settingsDefaultChainViewModel
+                vaultDetailViewModel: vaultDetailViewModel,
+                coinSelectionViewModel: coinSelectionViewModel
             )
         }
     }
@@ -141,6 +146,30 @@ struct MacScannerView: View {
         }
     }
     
+    var alert: Alert {
+        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (cameraViewModel.newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
+        
+        return Alert(
+            title: Text(NSLocalizedString("newChainDetected", comment: "")),
+            message: Text(message),
+            primaryButton: Alert.Button.default(
+                Text(NSLocalizedString("addChain", comment: "")),
+                action: {
+                    cameraViewModel.addNewChain(
+                        coinSelectionViewModel: coinSelectionViewModel,
+                        homeViewModel: homeViewModel
+                    )
+                }
+            ),
+            secondaryButton: Alert.Button.default(
+                Text(NSLocalizedString("cancel", comment: "")),
+                action: {
+                    cameraViewModel.handleCancel()
+                }
+            )
+        )
+    }
+    
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -162,6 +191,7 @@ struct MacScannerView: View {
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(MacCameraServiceViewModel())
-        .environmentObject(SettingsDefaultChainViewModel())
+        .environmentObject(VaultDetailViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }
 #endif

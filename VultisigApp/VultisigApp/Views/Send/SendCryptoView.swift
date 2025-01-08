@@ -198,7 +198,7 @@ struct SendCryptoView: View {
             return
         }
         
-        guard let selectedCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+        guard let selectedCoin = vault.coins.first(where: { $0.chain == chain}) else {
             selectedChain = nil
             return
         }
