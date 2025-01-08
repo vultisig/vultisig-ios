@@ -220,7 +220,7 @@ struct SendCryptoView: View {
 
 extension SendCryptoView: SendGasSettingsOutput {
 
-    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt) {
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
         switch chain.chainType {
         case .EVM:
             tx.customGasLimit = gasLimit
