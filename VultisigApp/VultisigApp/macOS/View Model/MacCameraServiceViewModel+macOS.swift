@@ -21,6 +21,9 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
     @Published var shouldJoinKeygen = false
     @Published var shouldKeysignTransaction = false
     
+    @Published var showAlert: Bool = false
+    @Published var newCoinMeta: CoinMeta? = nil
+    
     private var session: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
     private var outputQueue = DispatchQueue(label: "CameraOutputQueue")
@@ -130,7 +133,7 @@ extension MacCameraServiceViewModel {
         return NSLocalizedString(text, comment: "")
     }
     
-    func handleScan(vaults: [Vault], sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+    func handleScan(vaults: [Vault], sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         guard let result = cameraViewModel.detectedQRCode, !result.isEmpty else {
             return
         }
@@ -140,10 +143,10 @@ extension MacCameraServiceViewModel {
         }
         
         deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+        presetValuesForDeeplink(sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
     }
     
-    func presetValuesForDeeplink(sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+    func presetValuesForDeeplink(sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -159,7 +162,7 @@ extension MacCameraServiceViewModel {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+            moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -181,22 +184,20 @@ extension MacCameraServiceViewModel {
         }
     }
     
-    private func moveToSendView(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+    private func moveToSendView(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-        checkForAddress(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+        checkForAddress(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
     }
     
-    private func checkForAddress(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+    private func checkForAddress(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         let address = deeplinkViewModel.address ?? ""
         sendTx.toAddress = address
         
-        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
-            $0.chain.name > $1.chain.name
-        })
+        let sortedAssets = vaultDetailViewModel.groups
         
         for asset in sortedAssets {
-            if checkForMAYAChain(asset: asset, address: address) {
+            if checkForMAYAChain(asset: asset.chain, address: address) {
                 return
             }
             
@@ -208,16 +209,66 @@ extension MacCameraServiceViewModel {
                 return
             }
         }
-        shouldSendCrypto = true
+        
+        checkForRemainingChains(address: address, coinSelectionViewModel: coinSelectionViewModel)
     }
     
-    private func checkForMAYAChain(asset: CoinMeta, address: String) -> Bool {
-        if asset.chain.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
-            selectedChain = asset.chain
+    private func checkForMAYAChain(asset: Chain, address: String) -> Bool {
+        if asset.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
+            selectedChain = asset
             shouldSendCrypto = true
             return true
         } else {
             return false
+        }
+    }
+    
+    private func checkForRemainingChains(address: String, coinSelectionViewModel: CoinSelectionViewModel) {
+        showCamera = true
+        
+        let chains = coinSelectionViewModel.groupedAssets.values.flatMap { $0 }
+        
+        for asset in chains.sorted(by: {
+            $0.chain.name < $1.chain.name
+        }) {
+            let isValid = asset.coinType.validate(address: address)
+            
+            if isValid {
+                newCoinMeta = asset
+                showAlert = true
+                return
+            }
+        }
+    }
+    
+    func handleCancel() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.showCamera = false
+            self.shouldSendCrypto = true
+        }
+    }
+    
+    func addNewChain(coinSelectionViewModel: CoinSelectionViewModel, homeViewModel: HomeViewModel) {
+        guard let chain = newCoinMeta else {
+            return
+        }
+        
+        selectedChain = chain.chain
+        saveAssets(chain: chain, coinSelectionViewModel: coinSelectionViewModel, homeViewModel: homeViewModel)
+    }
+    
+    private func saveAssets(chain: CoinMeta, coinSelectionViewModel: CoinSelectionViewModel, homeViewModel: HomeViewModel) {
+        var selection = coinSelectionViewModel.selection
+        selection.insert(chain)
+        
+        guard let vault = homeViewModel.selectedVault else {
+            return
+        }
+        
+        Task{
+            await CoinService.saveAssets(for: vault, selection: selection)
+            
+            handleCancel()
         }
     }
 }
