@@ -13,7 +13,6 @@ class TronService: RpcService {
     static let rpcEndpoint = Endpoint.tronServiceRpc
     static let shared = TronService(rpcEndpoint)
     
-    
     func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
         let url = URL(string: Endpoint.broadcastTransactionTron)!
         
@@ -52,72 +51,67 @@ class TronService: RpcService {
     }
     
     func getBlockInfo() async throws -> BlockChainSpecific {
-        
         let body: [String: Any] = [:]
-        let dataPayload = try JSONSerialization.data(
-            withJSONObject: body,
-            options: []
-        )
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         
         guard let url = URL(string: Endpoint.fetchBlockNowInfoTron) else {
             throw PayloadServiceError.NetworkError(message: "invalid url: \(Endpoint.fetchBlockNowInfoTron)")
         }
         
-        var request = URLRequest(url:url)
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = dataPayload
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let (data ,resp) = try await URLSession.shared.data(for: request)
-        
-        if let httpResponse = resp as? HTTPURLResponse {
-            if !(200...299).contains(httpResponse.statusCode) {
-                throw PayloadServiceError.NetworkError(message: "fail to fetch block info")
-            }
+        let (data, resp) = try await URLSession.shared.data(for: request)
+        if let httpResponse = resp as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw PayloadServiceError.NetworkError(message: "fail to fetch block info")
         }
         
-        let response: TronBlock = try JSONDecoder().decode(TronBlock.self, from: data)
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(TronBlock.self, from: data)
         
         let currentTimestampMillis = UInt64(Date().timeIntervalSince1970 * 1000)
-        
-        // Current time in milliseconds
         let nowMillis = Int64(Date().timeIntervalSince1970 * 1000)
-        // One hour in milliseconds = 3600000
         let oneHourMillis = Int64(60 * 60 * 1000)
-        
         let expiration = nowMillis + oneHourMillis
         
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
             expiration: UInt64(expiration),
-            blockHeaderTimestamp: UInt64(response.block_header?.raw_data?.timestamp ?? "0") ?? 0,
-            blockHeaderNumber: UInt64(response.block_header?.raw_data?.number ?? "0") ?? 0,
-            blockHeaderVersion: UInt64(response.block_header?.raw_data?.version ?? "0") ?? 0,
+            blockHeaderTimestamp: response.block_header?.raw_data?.timestamp ?? 0,
+            blockHeaderNumber: response.block_header?.raw_data?.number ?? 0,
+            blockHeaderVersion: UInt64(response.block_header?.raw_data?.version ?? 0),
             blockHeaderTxTrieRoot: response.block_header?.raw_data?.txTrieRoot ?? "",
             blockHeaderParentHash: response.block_header?.raw_data?.parentHash ?? "",
             blockHeaderWitnessAddress: response.block_header?.raw_data?.witness_address ?? ""
         )
-        
     }
     
     func getBalance(coin: Coin) async throws -> String {
-        
         let body: [String: Any] = ["address": coin.address, "visible": true]
         let dataPayload = try JSONSerialization.data(
             withJSONObject: body,
             options: []
         )
+        
         let data = try await Utils.asyncPostRequest(
             urlString: Endpoint.fetchAccountInfoTron(),
             headers: [:],
             body: dataPayload
         )
         
-        if let balance = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
-            return balance
+        // Attempt to extract the balance as a number first
+        if let balanceNumber = Utils.extractResultFromJson(fromData: data, path: "balance") as? NSNumber {
+            return balanceNumber.stringValue
+        }
+        
+        // If needed, try extracting as a string fallback (in case API changes)
+        if let balanceString = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
+            return balanceString
         }
         
         return "0"
-        
     }
     
 }
@@ -131,17 +125,31 @@ struct TronBlock: Codable {
     let blockID: String?
     let block_header: BlockHeader?
     
+    private enum CodingKeys: String, CodingKey {
+        case blockID
+        case block_header
+    }
+    
     struct BlockHeader: Codable {
         let raw_data: RawData?
         let witness_signature: String?
         
+        private enum CodingKeys: String, CodingKey {
+            case raw_data
+            case witness_signature
+        }
+        
         struct RawData: Codable {
-            let number: String?
+            let number: UInt64?
             let txTrieRoot: String?
             let witness_address: String?
             let parentHash: String?
-            let version: String?
-            let timestamp: String?
+            let version: Int?
+            let timestamp: UInt64?
+            
+            private enum CodingKeys: String, CodingKey {
+                case number, txTrieRoot, witness_address, parentHash, version, timestamp
+            }
         }
     }
 }

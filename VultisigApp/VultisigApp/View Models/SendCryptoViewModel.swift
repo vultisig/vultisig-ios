@@ -239,7 +239,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
-                    await convertToFiat(newValue: tx.amount, tx: tx)
+                    convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }

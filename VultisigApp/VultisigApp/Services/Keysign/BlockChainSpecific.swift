@@ -55,7 +55,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _):
-            return gas.description.toBigInt()
+            return "100000".toBigInt()
         }
     }
     

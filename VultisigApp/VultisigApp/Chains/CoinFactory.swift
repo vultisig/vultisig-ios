@@ -63,12 +63,7 @@ extension CoinFactory {
             )
             
             if asset.coinType == .tron {
-                guard
-                    let pubKeyData = Data(hexString: derivedKey),
-                    let publicKey = PublicKey(data: pubKeyData, type: .secp256k1Extended) else {
-                    throw Errors.invalidPublicKey(pubKey: vault.pubKeyECDSA)
-                }
-                return publicKey
+                return try createTronXpub(derivedKey: derivedKey, chainCode: vault.hexChainCode)
             }
             
             guard
@@ -79,4 +74,44 @@ extension CoinFactory {
             return publicKey
         }
     }
+    
+    static func createTronXpub(derivedKey: String, chainCode: String) throws -> PublicKey {
+        // Convert hex strings to data
+        guard
+            let pubKeyData = Data(hexString: derivedKey),
+            let chainCodeData = Data(hexString: chainCode) else {
+            throw Errors.invalidPublicKey(pubKey: derivedKey)
+        }
+        
+        // XPUB version for Tron (Bitcoin mainnet version is typically used)
+        let version = Data([0x04, 0x88, 0xB2, 0x1E])
+        
+        // Depth (master key = 0)
+        let depth = Data([0x00])
+        
+        // Parent fingerprint (for root keys, it's all zeros)
+        let parentFingerprint = Data([0x00, 0x00, 0x00, 0x00])
+        
+        // Child number (for root keys, it's all zeros)
+        let childNumber = Data([0x00, 0x00, 0x00, 0x00])
+        
+        // Concatenate components
+        var xpubData = Data()
+        xpubData.append(version)
+        xpubData.append(depth)
+        xpubData.append(parentFingerprint)
+        xpubData.append(childNumber)
+        xpubData.append(chainCodeData)
+        xpubData.append(pubKeyData)
+        
+        // Base58Check encode the xpub
+        let xpub = Base58.encode(data: xpubData)
+        
+        guard let publicKey = HDWallet.getPublicKeyFromExtended(extended: xpub, coin: CoinType.tron,  derivationPath: CoinType.tron.derivationPath()) else {
+            throw Errors.invalidPublicKey(pubKey: xpubData.hexString)
+        }
+        
+        return publicKey
+    }
 }
+

@@ -22,11 +22,11 @@ enum TronHelper {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .tron) else {
+        guard AnyAddress(string: keysignPayload.toAddress, coin: .tron) != nil else {
             throw HelperError.runtimeError("fail to get to address")
         }
         
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+        guard Data(hexString: keysignPayload.coin.hexPublicKey) != nil else {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
@@ -83,16 +83,15 @@ enum TronHelper {
     static func getSignedTransaction(
         vaultHexPubKey: String,
         keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]
+        signatures: [String: TssKeysignResponse],
+        vault: Vault
     ) throws -> SignedTransactionResult
     {
-        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
-            throw HelperError
-                .runtimeError("public key \(vaultHexPubKey) is invalid")
-        }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            throw HelperError
-                .runtimeError("public key \(vaultHexPubKey) is invalid")
+        let tronPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode, derivePath: CoinType.tron.derivationPath())
+        guard let pubkeyData = Data(hexString: tronPublicKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            throw HelperError.runtimeError("public key \(tronPublicKey) is invalid")
         }
         
         let inputData = try getPreSignedInputData(
@@ -108,16 +107,17 @@ enum TronHelper {
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
-        let signature = signatureProvider.getSignature(
+        let signature = signatureProvider.getSignatureWithRecoveryID(
             preHash: preSigningOutput.data
         )
         guard publicKey
             .verify(signature: signature, message: preSigningOutput.data) else {
+            print("fail to verify signature")
             throw HelperError.runtimeError("fail to verify signature")
         }
         
         allSignatures.add(data: signature)
-        publicKeys.add(data: pubkeyData)
+        publicKeys.add(data: publicKey.data)
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .tron,
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
@@ -126,6 +126,11 @@ enum TronHelper {
         let output = try TronSigningOutput(
             serializedBytes: compileWithSignature
         )
+        
+        if !output.errorMessage.isEmpty {
+            print(output.errorMessage)
+            throw HelperError.runtimeError("fail to sign transaction")
+        }
         
         let result = SignedTransactionResult(rawTransaction: output.json,
                                              transactionHash: output.id.hexString)
