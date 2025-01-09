@@ -77,7 +77,7 @@ enum TronHelper {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-        return [preSigningOutput.data.hexString]
+        return [preSigningOutput.dataHash.hexString]
     }
     
     static func getSignedTransaction(
@@ -87,13 +87,7 @@ enum TronHelper {
         vault: Vault
     ) throws -> SignedTransactionResult
     {
-        let tronPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode, derivePath: CoinType.tron.derivationPath())
-        guard let pubkeyData = Data(hexString: tronPublicKey),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
-        else {
-            throw HelperError.runtimeError("public key \(tronPublicKey) is invalid")
-        }
-        
+        let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(), vault: vault)
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )
@@ -108,10 +102,10 @@ enum TronHelper {
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignatureWithRecoveryID(
-            preHash: preSigningOutput.data
+            preHash: preSigningOutput.dataHash
         )
         guard publicKey
-            .verify(signature: signature, message: preSigningOutput.data) else {
+            .verify(signature: signature, message: preSigningOutput.dataHash) else {
             print("fail to verify signature")
             throw HelperError.runtimeError("fail to verify signature")
         }

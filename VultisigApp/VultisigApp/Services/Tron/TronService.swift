@@ -14,6 +14,10 @@ class TronService: RpcService {
     static let shared = TronService(rpcEndpoint)
     
     func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
+        
+        print("Broadcast transaction JSON REQUEST: ")
+        print(jsonString)
+        
         let url = URL(string: Endpoint.broadcastTransactionTron)!
         
         guard let jsonData = jsonString.data(using: .utf8) else {
@@ -26,6 +30,10 @@ class TronService: RpcService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do{
             let (data,resp)  =  try await URLSession.shared.data(for: request)
+            
+            print("Broadcast transaction response: ")
+            print(String(data: data, encoding: .utf8))
+            
             guard let httpResponse = resp as? HTTPURLResponse else {
                 return .failure(HelperError.runtimeError("Invalid http response"))
             }
