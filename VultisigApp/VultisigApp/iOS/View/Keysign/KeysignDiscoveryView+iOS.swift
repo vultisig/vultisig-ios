@@ -14,6 +14,12 @@ extension KeysignDiscoveryView {
     var container: some View {
         content
             .detectOrientation($orientation)
+            .onAppear {
+                setSize()
+            }
+            .onChange(of: screenWidth) { oldValue, newValue in
+                setSize()
+            }
     }
     
     var view: some View {
@@ -32,7 +38,7 @@ extension KeysignDiscoveryView {
     
     var orientedContent: some View {
         ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight {
+            if orientation == .landscapeLeft || orientation == .landscapeRight || isiOSAppOnMac {
                 landscapeContent
             } else {
                 portraitContent
@@ -63,21 +69,23 @@ extension KeysignDiscoveryView {
         ZStack {
             qrCodeImage?
                 .resizable()
-                .frame(width: getQRSize())
-                .frame(height: getQRSize())
+                .frame(width: qrSize)
+                .frame(height: qrSize)
                 .scaledToFit()
-                .padding(2)
+                .padding(isiOSAppOnMac ? 20 : 2)
                 .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding(4)
-                .padding(12)
+                .cornerRadius(isiOSAppOnMac ? 40 : 10)
+                .padding(16)
+                .padding(isiOSAppOnMac ? 20 : 0)
                 .background(Color.blue600)
-                .cornerRadius(30)
+                .cornerRadius(isiOSAppOnMac ? 60 : 30)
                 .padding(1)
+                .padding(isiOSAppOnMac ? 50 : 0)
             
             Image("QRScannerOutline")
                 .resizable()
-                .frame(width: getQROutline(), height: getQROutline())
+                .frame(width: qrOutlineSize, height: qrOutlineSize)
+                .frame(maxWidth: minWidth, maxHeight: minWidth)
         }
     }
     
@@ -120,28 +128,54 @@ extension KeysignDiscoveryView {
         }
     }
     
-    private func getQRSize() -> CGFloat {
-        guard !isPhoneSE else {
-            return 250
-        }
-        
-        guard idiom == .phone else {
-            return screenWidth-335
-        }
-        
-        return screenWidth-80
+    private func setSize() {
+        getQRSize()
+        getQROutline()
+        maxSize()
     }
     
-    private func getQROutline() -> CGFloat {
+    private func maxSize() {
+        minWidth = min(screenHeight*0.8, screenWidth/2.5)
+    }
+    
+    private func getQRSize() {
+        guard !isiOSAppOnMac else {
+            let width = screenWidth/2 - 100
+            qrSize = min(width, screenHeight/2)
+            return
+        }
+        
         guard !isPhoneSE else {
-            return 280
+            qrSize = 250
+            return
         }
         
         guard idiom == .phone else {
-            return screenWidth-300
+            qrSize = screenWidth-335
+            return
         }
         
-        return screenWidth-45
+        qrSize = screenWidth-80
+    }
+    
+    private func getQROutline() {
+        guard !isiOSAppOnMac else {
+            let width = screenWidth/2 + 10
+            qrOutlineSize = min(width, screenHeight/2 + 110)
+            return
+        }
+        
+        guard !isPhoneSE else {
+            qrOutlineSize = 280
+            return
+        }
+        
+        guard idiom == .phone else {
+            qrOutlineSize = screenWidth-300
+            return
+        }
+        
+        qrOutlineSize = screenWidth-45
     }
 }
 #endif
