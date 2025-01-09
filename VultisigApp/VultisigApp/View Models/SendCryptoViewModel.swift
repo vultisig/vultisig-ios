@@ -81,7 +81,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             setPercentageAmount(tx: tx, for: percentage)
             Task{
-                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 isLoading = false
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
@@ -102,7 +102,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
                 
-                await convertToFiat(newValue: tx.amount, tx: tx)
+                convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
             
@@ -125,7 +125,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
                 }
                 
-                await convertToFiat(newValue: tx.amount, tx: tx)
+                convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         case .sui:
@@ -142,7 +142,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
-                    await convertToFiat(newValue: tx.amount, tx: tx)
+                    convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
@@ -162,7 +162,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 tx.amount = "\(tx.coin.getMaxValue(gas))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
-                await convertToFiat(newValue: tx.amount, tx: tx)
+                convertToFiat(newValue: tx.amount, tx: tx)
                 
                 isLoading = false
             }
@@ -178,7 +178,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 tx.amount = "\(tx.coin.getMaxValue(gas))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
-                await convertToFiat(newValue: tx.amount, tx: tx)
+                convertToFiat(newValue: tx.amount, tx: tx)
                 
                 isLoading = false
             }
@@ -196,7 +196,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
-                    await convertToFiat(newValue: tx.amount, tx: tx)
+                    convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
@@ -217,7 +217,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
-                    await convertToFiat(newValue: tx.amount, tx: tx)
+                    convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
@@ -470,7 +470,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
     }
     
-    func handleBackTap() {
+    func handleBackTap(_ dismiss: DismissAction) {
+        guard currentIndex>1 else {
+            dismiss()
+            return
+        }
+        
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
     }

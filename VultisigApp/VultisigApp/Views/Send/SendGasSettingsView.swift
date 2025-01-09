@@ -9,7 +9,7 @@ import SwiftUI
 import BigInt
 
 protocol SendGasSettingsOutput {
-    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt)
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?)
 }
 
 struct SendGasSettingsView: View {
@@ -171,21 +171,21 @@ struct SendGasSettingsView: View {
     }
 
     func save() {
-        guard let gasLimit = BigInt(viewModel.gasLimit, radix: 10) else {
-            return
-        }
+        let gasLimit = BigInt(viewModel.gasLimit, radix: 10)
+        let byteFee = BigInt(viewModel.byteFee, radix: 10)
 
-        guard let byteFee = BigInt(viewModel.byteFee, radix: 10) else {
-            return
-        }
-
-        output.didSetFeeSettings(chain: viewModel.chain, mode: viewModel.selectedMode, gasLimit: gasLimit, byteFee: byteFee)
+        output.didSetFeeSettings(
+            chain: viewModel.chain,
+            mode: viewModel.selectedMode,
+            gasLimit: gasLimit,
+            byteFee: byteFee
+        )
     }
 }
 
 #Preview {
     struct Output: SendGasSettingsOutput {
-        func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt) { }
+        func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) { }
     }
     let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .normal)
     return SendGasSettingsView(viewModel: viewModel, output: Output())

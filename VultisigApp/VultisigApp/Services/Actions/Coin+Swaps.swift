@@ -57,13 +57,11 @@ extension Coin {
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .lifi]
+                return [.mayachain, .oneinch(chain), .lifi]
             } else {
-                return [.lifi]
+                return [.oneinch(chain), .lifi]
             }
-        case .base:
-            return [.lifi]
-        case .optimism, .polygon:
+        case .optimism, .polygon, .base:
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]

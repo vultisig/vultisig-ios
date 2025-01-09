@@ -19,10 +19,16 @@ struct KeysignDiscoveryView: View {
     
     @State var isPhoneSE = false
     @State var isLoading = false
+    @State var isiOSAppOnMac = false
+    @State var minWidth: CGFloat = 0
     @State var screenWidth: CGFloat = 0
+    @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
+    
+    @State var qrSize: CGFloat = .zero
+    @State var qrOutlineSize: CGFloat = .zero
     
     var swapTransaction: SwapTransaction = SwapTransaction()
     
@@ -46,6 +52,9 @@ struct KeysignDiscoveryView: View {
             GeometryReader { proxy in
                 Background()
                     .onAppear {
+                        setData(proxy)
+                    }
+                    .onChange(of: proxy.size) { oldValue, newValue in
                         setData(proxy)
                     }
             }
@@ -133,6 +142,8 @@ struct KeysignDiscoveryView: View {
     }
     
     private func setData() async {
+        isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
+        
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         } else {
@@ -212,6 +223,7 @@ struct KeysignDiscoveryView: View {
     
     private func setData(_ proxy: GeometryProxy) {
         screenWidth = proxy.size.width
+        screenHeight = proxy.size.height
         
         if screenWidth < 380 {
             isPhoneSE = true

@@ -15,11 +15,25 @@ struct FolderDetailSelectedVaultCell: View {
     @StateObject var viewModel = FolderDetailCellViewModel()
     
     var body: some View {
-        content
-            .animation(.easeInOut, value: isEditing)
-            .onAppear {
-                setData()
+        ZStack {
+            if isEditing {
+                content
+            } else {
+                button
             }
+        }
+        .animation(.easeInOut, value: isEditing)
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var button: some View {
+        Button {
+            handleVaultSelection(vault)
+        } label: {
+            content
+        }
     }
     
     var content: some View {
