@@ -66,7 +66,7 @@ struct TokenSelectorDropdown: View {
             if let balance {
                 Text(balance)
             } else {
-                Text(coin.balanceString.formatCurrencyAbbreviation())
+                Text(coin.balanceString)
             }
         }
         .font(.body12MenloBold)
