@@ -32,7 +32,7 @@ extension KeysignDiscoveryView {
     
     var orientedContent: some View {
         ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight {
+            if orientation == .landscapeLeft || orientation == .landscapeRight || isiOSAppOnMac {
                 landscapeContent
             } else {
                 portraitContent
@@ -66,14 +66,15 @@ extension KeysignDiscoveryView {
                 .frame(width: getQRSize())
                 .frame(height: getQRSize())
                 .scaledToFit()
-                .padding(2)
+                .padding(isiOSAppOnMac ? 20 : 2)
                 .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding(4)
-                .padding(12)
+                .cornerRadius(isiOSAppOnMac ? 40 : 10)
+                .padding(16)
+                .padding(isiOSAppOnMac ? 20 : 0)
                 .background(Color.blue600)
-                .cornerRadius(30)
+                .cornerRadius(isiOSAppOnMac ? 60 : 30)
                 .padding(1)
+                .padding(isiOSAppOnMac ? 50 : 0)
             
             Image("QRScannerOutline")
                 .resizable()
@@ -121,6 +122,10 @@ extension KeysignDiscoveryView {
     }
     
     private func getQRSize() -> CGFloat {
+        guard !isiOSAppOnMac else {
+            return screenWidth/2 - 100
+        }
+        
         guard !isPhoneSE else {
             return 250
         }
@@ -133,6 +138,10 @@ extension KeysignDiscoveryView {
     }
     
     private func getQROutline() -> CGFloat {
+        guard !isiOSAppOnMac else {
+            return screenWidth/2 + 10
+        }
+        
         guard !isPhoneSE else {
             return 280
         }

@@ -19,6 +19,7 @@ struct KeysignDiscoveryView: View {
     
     @State var isPhoneSE = false
     @State var isLoading = false
+    @State var isiOSAppOnMac = false
     @State var screenWidth: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
@@ -133,6 +134,8 @@ struct KeysignDiscoveryView: View {
     }
     
     private func setData() async {
+        isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
+        
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         } else {
