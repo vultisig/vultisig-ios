@@ -27,7 +27,7 @@ struct CoinPickerCell: View {
                 HStack(spacing: 12) {
                     Text(coin.ticker)
                     Spacer()
-                    Text(coin.balanceString.formatCurrencyAbbreviation())
+                    Text(coin.balanceString)
                         .font(.body12MenloBold)
                     
                     Text(coin.balanceInFiat)

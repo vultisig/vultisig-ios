@@ -58,13 +58,17 @@ extension Decimal {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = digits
         formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
+        formatter.groupingSeparator = ","
         formatter.decimalSeparator = "."
         
         let abbrevation = getAbbrevationValues()
         let value = abbrevation.value
         let prefix = abbrevation.prefix
-        
+
+        if !abbrevation.prefix.isEmpty {
+            formatter.maximumFractionDigits = 2
+        }
+
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
         let number = NSDecimalNumber(decimal: value)
         
