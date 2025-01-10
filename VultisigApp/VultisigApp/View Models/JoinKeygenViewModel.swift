@@ -176,7 +176,7 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
-                    errorMessage = "Vault with name:\(keygenMsg.vaultName) already exist"
+                    errorMessage = NSLocalizedString("vaultExistsError", comment: "")
                     logger.error("\(self.errorMessage)")
                     status = .FailToStart
                     return
@@ -202,7 +202,7 @@ class JoinKeygenViewModel: ObservableObject {
                             vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = "Vault with name:\(reshareMsg.vaultName) already exist"
+                                errorMessage = NSLocalizedString("vaultExistsError", comment: "")
                                 logger.error("\(self.errorMessage)")
                                 status = .FailToStart
                                 return
