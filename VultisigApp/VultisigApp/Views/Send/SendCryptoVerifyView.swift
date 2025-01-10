@@ -100,7 +100,7 @@ struct SendCryptoVerifyView: View {
             Separator()
             getDetailsCell(for: "value", with: getFiatAmount())
             Separator()
-            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable) (~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
+            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
         }
         .padding(16)
         .background(Color.blue600)
