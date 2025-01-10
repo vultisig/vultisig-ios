@@ -113,10 +113,16 @@ class KeygenViewModel: ObservableObject {
                                         encryptionKeyHex: self.encryptionKeyHex,
                                         oldResharePrefix: self.oldResharePrefix,
                                         isInitiateDevice: self.isInitiateDevice)
-            self.status = .KeygenECDSA
-            try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
+            switch self.tssType {
+            case .Keygen:
+                self.status = .KeygenECDSA
+                try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
+            case .Reshare:
+                self.status = .ReshareECDSA
+                try await dklsKeygen.DKLSReshareWithRetry(attempt: 0)
+            }
             
-            self.status = .KeygenEdDSA
+            
             let schnorrKeygen = SchnorrKeygen(vault: self.vault,
                                               tssType: self.tssType,
                                               keygenCommittee: self.keygenCommittee,
@@ -126,7 +132,15 @@ class KeygenViewModel: ObservableObject {
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               oldResharePrefix: self.oldResharePrefix,
                                               setupMessage: dklsKeygen.getSetupMessage())
-            try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
+            switch self.tssType {
+            case .Keygen:
+                self.status = .KeygenEdDSA
+                try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
+            case .Reshare:
+                self.status = .ReshareEdDSA
+                
+            }
+            
             self.vault.signers = self.keygenCommittee
             let keyshareECDSA = dklsKeygen.getKeyshare()
             let keyshareEdDSA = schnorrKeygen.getKeyshare()
@@ -136,11 +150,7 @@ class KeygenViewModel: ObservableObject {
             guard let keyshareEdDSA else {
                 throw HelperError.runtimeError("fail to get EdDSA keyshare")
             }
-            self.vault.pubKeyECDSA = keyshareECDSA.PubKey
-            self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
-            self.vault.hexChainCode = keyshareECDSA.chaincode
-            self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
-                                    KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+            
             // ensure all party created vault successfully
             let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
                                             sessionID: self.sessionID,
@@ -152,9 +162,17 @@ class KeygenViewModel: ObservableObject {
                 throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
             }
             
-            VaultDefaultCoinService(context: context)
-                .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
-            context.insert(self.vault)
+            self.vault.pubKeyECDSA = keyshareECDSA.PubKey
+            self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
+            self.vault.hexChainCode = keyshareECDSA.chaincode
+            self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
+                                    KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
+            
+            if self.tssType == .Keygen || !self.vaultOldCommittee.contains(self.vault.localPartyID){
+                VaultDefaultCoinService(context: context)
+                    .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
+                context.insert(self.vault)
+            }
             try context.save()
             self.status = .KeygenFinished
         } catch{
