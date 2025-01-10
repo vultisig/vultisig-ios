@@ -100,7 +100,7 @@ struct SendCryptoVerifyView: View {
             Separator()
             getDetailsCell(for: "value", with: getFiatAmount())
             Separator()
-            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
+            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable) (~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
         }
         .padding(16)
         .background(Color.blue600)
@@ -201,7 +201,7 @@ struct SendCryptoVerifyView: View {
     }
     
     private func getFiatAmount() -> String {
-        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators()
+        tx.amountInFiat.formatToFiat()
     }
 }
 
