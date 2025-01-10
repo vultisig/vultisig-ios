@@ -1,3 +1,4 @@
+"vaultExistsError" = "Um cofre com o mesmo nome já existe.\nPor favor, tente um nome diferente.";
 "noGasEstimation" = "Não é possível estimar o gás. Por favor, atualize a página.";
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
 "dontRemind" = "Não me lembre novamente";
