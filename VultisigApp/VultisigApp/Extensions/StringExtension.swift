@@ -73,30 +73,6 @@ extension String {
         }
     }
     
-    func formatCurrencyAbbreviation() -> String {
-        let currency = SettingsCurrency.current
-        let cleanedValue = self.formatCurrency()
-        
-        guard let doubleValue = Double(cleanedValue) else {
-            return self
-        }
-        
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 4
-        formatter.minimumFractionDigits = 0
-        
-        if abs(doubleValue) >= 1_000_000_000 {
-            let billionValue = doubleValue / 1_000_000_000
-            return "\(formatter.string(from: NSNumber(value: billionValue)) ?? "")B"
-        } else if abs(doubleValue) >= 1_000_000 {
-            let millionValue = doubleValue / 1_000_000
-            return "\(formatter.string(from: NSNumber(value: millionValue)) ?? "")M"
-        } else {
-            return formatter.string(from: NSNumber(value: doubleValue)) ?? self
-        }
-    }
-    
     func formatCurrencyWithSeparators() -> String {
         guard let number = parseInput() else {
             return self
