@@ -157,8 +157,6 @@ class RpcEvmService: RpcService {
     }
     
     func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        // Strip "0x41" from the wallet address
-        let strippedWalletAddress = String(walletAddress.dropFirst(4)).paddingLeft(toLength: 38, withPad: "0")
         
         // Add "41" prefix after padding with zeros
         let paddedWalletAddress = "0000000000000000000000" + walletAddress.dropFirst(2)
@@ -181,8 +179,6 @@ class RpcEvmService: RpcService {
             ],
             "latest"
         ]
-        
-        print("params: \(params)")
         
         // Call the RPC method
         return try await intRpcCall(method: "eth_call", params: params)

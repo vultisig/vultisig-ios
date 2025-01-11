@@ -73,6 +73,7 @@ enum TronHelper {
             
             let input = TronSigningInput.with {
                 $0.transaction = TronTransaction.with {
+                    $0.feeLimit = 50_000_000 // 50 TRX
                     $0.transferTrc20Contract = contract
                     $0.timestamp = Int64(timestamp)
                     $0.blockHeader = TronBlockHeader.with {
