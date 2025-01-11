@@ -201,7 +201,7 @@ struct SendCryptoVerifyView: View {
     }
     
     private func getFiatAmount() -> String {
-        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators()
+        tx.amountInFiat.formatToFiat()
     }
 }
 

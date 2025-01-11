@@ -1,3 +1,4 @@
+"vaultExistsError" = "Ya existe una bóveda con el mismo nombre.\nPor favor, intente con un nombre diferente.";
 "noGasEstimation" = "No es posible estimar el gas. Por favor, actualice la página.";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
 "dontRemind" = "No volver a recordármelo";
