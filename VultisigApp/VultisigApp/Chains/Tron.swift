@@ -30,35 +30,72 @@ enum TronHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        let contract = TronTransferContract.with {
-            $0.ownerAddress = keysignPayload.coin.address
-            $0.toAddress = keysignPayload.toAddress
-            $0.amount = Int64(keysignPayload.toAmount)
-        }
-        
-        let input = TronSigningInput.with {
-            $0.transaction = TronTransaction.with {
-                $0.contractOneof = .transfer(contract)
-                $0.timestamp = Int64(timestamp)
-                $0.blockHeader = TronBlockHeader.with {
-                    $0.timestamp = Int64(blockHeaderTimestamp)
-                    $0.number = Int64(blockHeaderNumber)
-                    $0.version = Int32(blockHeaderVersion)
-                    $0.txTrieRoot = Data(
-                        hexString: blockHeaderTxTrieRoot
-                    )!
-                    $0.parentHash = Data(
-                        hexString: blockHeaderParentHash
-                    )!
-                    $0.witnessAddress = Data(
-                        hexString: blockHeaderWitnessAddress
-                    )!
-                }
-                $0.expiration = Int64(expiration)
+        if keysignPayload.coin.isNativeToken {
+            
+            let contract = TronTransferContract.with {
+                $0.ownerAddress = keysignPayload.coin.address
+                $0.toAddress = keysignPayload.toAddress
+                $0.amount = Int64(keysignPayload.toAmount)
             }
+            
+            let input = TronSigningInput.with {
+                $0.transaction = TronTransaction.with {
+                    $0.contractOneof = .transfer(contract)
+                    $0.timestamp = Int64(timestamp)
+                    $0.blockHeader = TronBlockHeader.with {
+                        $0.timestamp = Int64(blockHeaderTimestamp)
+                        $0.number = Int64(blockHeaderNumber)
+                        $0.version = Int32(blockHeaderVersion)
+                        $0.txTrieRoot = Data(
+                            hexString: blockHeaderTxTrieRoot
+                        )!
+                        $0.parentHash = Data(
+                            hexString: blockHeaderParentHash
+                        )!
+                        $0.witnessAddress = Data(
+                            hexString: blockHeaderWitnessAddress
+                        )!
+                    }
+                    $0.expiration = Int64(expiration)
+                }
+            }
+            
+            return try input.serializedData()
+            
+        } else {
+            
+            let contract = TronTransferTRC20Contract.with {
+                $0.toAddress = keysignPayload.toAddress
+                $0.contractAddress = keysignPayload.coin.contractAddress
+                $0.ownerAddress = keysignPayload.coin.address
+                $0.amount = keysignPayload.toAmount.serialize()
+            }
+            
+            let input = TronSigningInput.with {
+                $0.transaction = TronTransaction.with {
+                    $0.transferTrc20Contract = contract
+                    $0.timestamp = Int64(timestamp)
+                    $0.blockHeader = TronBlockHeader.with {
+                        $0.timestamp = Int64(blockHeaderTimestamp)
+                        $0.number = Int64(blockHeaderNumber)
+                        $0.version = Int32(blockHeaderVersion)
+                        $0.txTrieRoot = Data(
+                            hexString: blockHeaderTxTrieRoot
+                        )!
+                        $0.parentHash = Data(
+                            hexString: blockHeaderParentHash
+                        )!
+                        $0.witnessAddress = Data(
+                            hexString: blockHeaderWitnessAddress
+                        )!
+                    }
+                    $0.expiration = Int64(expiration)
+                }
+            }
+            
+            return try input.serializedData()
+            
         }
-        
-        return try input.serializedData()
         
     }
     
