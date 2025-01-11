@@ -179,6 +179,19 @@ struct VaultDetailView: View {
         }
     }
     
+    func setData() {
+        if homeViewModel.selectedVault == nil {
+            return
+        }
+        
+        viewModel.updateBalance(vault: vault)
+        viewModel.getGroupAsync(tokenSelectionViewModel)
+        
+        tokenSelectionViewModel.setData(for: vault)
+        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
+        viewModel.categorizeCoins(vault: vault)
+    }
+    
     func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
