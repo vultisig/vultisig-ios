@@ -19,9 +19,10 @@ struct MacScannerView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var cameraViewModel: MacCameraServiceViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
+    @StateObject var cameraViewModel = MacCameraServiceViewModel()
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -190,7 +191,6 @@ struct MacScannerView: View {
     MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction())
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
-        .environmentObject(MacCameraServiceViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())
 }

@@ -180,6 +180,7 @@ extension MacCameraServiceViewModel {
     private func moveToCreateVaultView() {
         shouldSendCrypto = false
         shouldKeysignTransaction = false
+        self.stopSession()
         shouldJoinKeygen = true
     }
     
@@ -187,6 +188,7 @@ extension MacCameraServiceViewModel {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.shouldJoinKeygen = false
             self.shouldSendCrypto = false
+            self.stopSession()
             self.shouldKeysignTransaction = true
         }
     }
@@ -212,6 +214,7 @@ extension MacCameraServiceViewModel {
             
             if isValid {
                 selectedChain = asset.chain
+                self.stopSession()
                 shouldSendCrypto = true
                 return
             }
@@ -223,6 +226,7 @@ extension MacCameraServiceViewModel {
     private func checkForMAYAChain(asset: Chain, address: String) -> Bool {
         if asset.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
             selectedChain = asset
+            self.stopSession()
             shouldSendCrypto = true
             return true
         } else {
@@ -251,6 +255,7 @@ extension MacCameraServiceViewModel {
     func handleCancel() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.showCamera = false
+            self.stopSession()
             self.shouldSendCrypto = true
         }
     }

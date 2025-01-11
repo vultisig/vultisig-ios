@@ -94,8 +94,6 @@ extension VaultDetailView {
         tokenSelectionViewModel.setData(for: vault)
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
         viewModel.categorizeCoins(vault: vault)
-        
-        macCameraServiceViewModel.resetNavigationData()
     }
 }
 #endif

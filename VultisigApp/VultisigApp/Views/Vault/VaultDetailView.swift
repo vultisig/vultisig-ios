@@ -17,7 +17,6 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
-    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
 
@@ -208,5 +207,4 @@ struct VaultDetailView: View {
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
         .environmentObject(SettingsDefaultChainViewModel())
-        .environmentObject(MacCameraServiceViewModel())
 }

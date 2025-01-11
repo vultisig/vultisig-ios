@@ -17,8 +17,6 @@ struct JoinKeysignDoneView: View {
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
-    
     var body: some View {
         view
             .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
@@ -49,11 +47,6 @@ struct JoinKeysignDoneView: View {
     }
     
     private func handleTap() {
-#if os(macOS)
-        macCameraServiceViewModel.stopSession()
-        macCameraServiceViewModel.resetData()
-        macCameraServiceViewModel.resetNavigationData()
-#endif
         moveToHome = true
     }
 }
