@@ -15,7 +15,6 @@ struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
     
     @State var vaults: [Vault] = []
@@ -161,6 +160,5 @@ struct HomeView: View {
     HomeView()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
-        .environmentObject(MacCameraServiceViewModel())
         .environmentObject(MacCheckUpdateViewModel())
 }
