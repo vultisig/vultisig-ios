@@ -12,12 +12,17 @@ struct JoinKeysignDoneView: View {
     @ObservedObject var viewModel: KeysignViewModel
     @Binding var showAlert: Bool
     
+    @State var moveToHome: Bool = false
+    
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         view
             .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
+            .navigationDestination(isPresented: $moveToHome) {
+                HomeView(selectedVault: vault, showVaultsList: false)
+            }
     }
     
     var view: some View {
@@ -32,13 +37,17 @@ struct JoinKeysignDoneView: View {
     }
 
     var continueButton: some View {
-        NavigationLink(destination: {
-            HomeView(selectedVault: vault, showVaultsList: false)
-        }, label: {
+        Button {
+            handleTap()
+        } label: {
             FilledButton(title: "complete")
-        })
+        }
         .id(UUID())
         .padding(20)
+    }
+    
+    private func handleTap() {
+        moveToHome = true
     }
 }
 

@@ -21,7 +21,6 @@ extension VultisigApp {
             .environmentObject(settingsDefaultChainViewModel)
             .environmentObject(vultExtensionViewModel)
             .environmentObject(macCheckUpdateViewModel)
-            .environmentObject(macCameraServiceViewModel)
             .environmentObject(globalStateViewModel)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)

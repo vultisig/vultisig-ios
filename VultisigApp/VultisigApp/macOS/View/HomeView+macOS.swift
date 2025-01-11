@@ -87,8 +87,6 @@ extension HomeView {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-     
-        macCameraServiceViewModel.stopSession()
         
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)

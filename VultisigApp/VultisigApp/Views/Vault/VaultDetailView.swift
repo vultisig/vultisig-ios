@@ -179,7 +179,7 @@ struct VaultDetailView: View {
         }
     }
     
-    private func setData() {
+    func setData() {
         if homeViewModel.selectedVault == nil {
             return
         }
