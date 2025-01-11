@@ -62,10 +62,6 @@ extension CoinFactory {
                 derivePath: asset.coinType.derivationPath()
             )
             
-//            if asset.coinType == .tron {
-//                return try createTronXpub(derivedKey: derivedKey, chainCode: vault.hexChainCode)
-//            }
-            
             guard
                 let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
@@ -73,10 +69,6 @@ extension CoinFactory {
             }
             
             if asset.coinType == .tron {
-                
-                print("Public key: \(publicKey.uncompressed)")
-                print("Public key: \(publicKey.uncompressed.keyType)")
-
                 return publicKey.uncompressed
             }
             

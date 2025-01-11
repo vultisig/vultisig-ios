@@ -345,6 +345,12 @@ class Endpoint {
         "https://tron-rpc.publicnode.com/wallet/getaccount"
     }
     
+    static func triggerConstantContractTron() -> String {
+        "https://api.trongrid.io/wallet/triggerconstantcontract"
+    }
+    
+    static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":

@@ -7,6 +7,7 @@
 
 import Foundation
 import BigInt
+import WalletCore
 
 class TronService: RpcService {
     
@@ -30,9 +31,6 @@ class TronService: RpcService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         do{
             let (data,resp)  =  try await URLSession.shared.data(for: request)
-            
-            print("Broadcast transaction response: ")
-            print(String(data: data, encoding: .utf8))
             
             guard let httpResponse = resp as? HTTPURLResponse else {
                 return .failure(HelperError.runtimeError("Invalid http response"))
@@ -97,29 +95,53 @@ class TronService: RpcService {
     }
     
     func getBalance(coin: Coin) async throws -> String {
-        let body: [String: Any] = ["address": coin.address, "visible": true]
-        let dataPayload = try JSONSerialization.data(
-            withJSONObject: body,
-            options: []
-        )
-        
-        let data = try await Utils.asyncPostRequest(
-            urlString: Endpoint.fetchAccountInfoTron(),
-            headers: [:],
-            body: dataPayload
-        )
-        
-        // Attempt to extract the balance as a number first
-        if let balanceNumber = Utils.extractResultFromJson(fromData: data, path: "balance") as? NSNumber {
-            return balanceNumber.stringValue
+        if coin.isNativeToken {
+            // Native TRX balance
+            let body: [String: Any] = ["address": coin.address, "visible": true]
+            let dataPayload = try JSONSerialization.data(
+                withJSONObject: body,
+                options: []
+            )
+            
+            let data = try await Utils.asyncPostRequest(
+                urlString: Endpoint.fetchAccountInfoTron(),
+                headers: [:],
+                body: dataPayload
+            )
+            
+            // Attempt to extract the balance as a number first
+            if let balanceNumber = Utils.extractResultFromJson(fromData: data, path: "balance") as? NSNumber {
+                return balanceNumber.stringValue
+            }
+            
+            // If needed, try extracting as a string fallback (in case API changes)
+            if let balanceString = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
+                return balanceString
+            }
+            
+            return "0"
+        } else {
+            
+            guard let hexAddressData = Base58.decode(string: coin.address) else {
+                return "0"
+            }
+            
+            let hexAddress = hexAddressData.hexString
+            
+            
+            guard let hexContractAddressData = Base58.decode(string: coin.contractAddress) else {
+                return "0"
+            }
+            
+            let hexContractAddress = hexContractAddressData.hexString
+            
+            let balance = try await TronEvmService.shared.fetchTRC20TokenBalance(
+                contractAddress: "0x" + hexContractAddress,
+                walletAddress: "0x" + hexAddress
+            )
+            return String(balance)
+
         }
-        
-        // If needed, try extracting as a string fallback (in case API changes)
-        if let balanceString = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
-            return balanceString
-        }
-        
-        return "0"
     }
     
 }
@@ -159,5 +181,14 @@ struct TronBlock: Codable {
                 case number, txTrieRoot, witness_address, parentHash, version, timestamp
             }
         }
+    }
+}
+
+struct TRC20BalanceResponse: Codable {
+    let result: ResultStatus
+    let constantResult: [String]?
+    
+    struct ResultStatus: Codable {
+        let result: Bool
     }
 }
