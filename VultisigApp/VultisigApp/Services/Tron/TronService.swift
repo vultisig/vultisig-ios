@@ -15,10 +15,6 @@ class TronService: RpcService {
     static let shared = TronService(rpcEndpoint)
     
     func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
-        
-        print("Broadcast transaction JSON REQUEST: ")
-        print(jsonString)
-        
         let url = URL(string: Endpoint.broadcastTransactionTron)!
         
         guard let jsonData = jsonString.data(using: .utf8) else {
