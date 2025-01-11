@@ -17,6 +17,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
 
@@ -179,19 +180,6 @@ struct VaultDetailView: View {
         }
     }
     
-    private func setData() {
-        if homeViewModel.selectedVault == nil {
-            return
-        }
-        
-        viewModel.updateBalance(vault: vault)
-        viewModel.getGroupAsync(tokenSelectionViewModel)
-        
-        tokenSelectionViewModel.setData(for: vault)
-        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
-        viewModel.categorizeCoins(vault: vault)
-    }
-    
     func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
@@ -220,4 +208,5 @@ struct VaultDetailView: View {
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
         .environmentObject(SettingsDefaultChainViewModel())
+        .environmentObject(MacCameraServiceViewModel())
 }

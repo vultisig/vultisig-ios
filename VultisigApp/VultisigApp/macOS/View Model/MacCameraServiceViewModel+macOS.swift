@@ -42,6 +42,13 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
         showPlaceholderError = false
     }
     
+    func resetNavigationData() {
+        selectedChain = nil
+        shouldSendCrypto = false
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+    }
+    
     func setupSession() {
         resetData()
         session = AVCaptureSession()
