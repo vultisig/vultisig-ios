@@ -405,6 +405,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 
+    func pickerCoins(vault: Vault, tx: SendTransaction) -> [Coin] {
+        return vault.coins.sorted(by: {
+            Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
+        })
+    }
+
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
         guard let utxoInfo = utxo.blockchairData
