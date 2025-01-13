@@ -51,7 +51,7 @@ struct SendCryptoDetailsView: View {
             alert
         }
         .navigationDestination(isPresented: $isCoinPickerActive) {
-            CoinPickerView(coins: vault.coins) { coin in
+            CoinPickerView(coins: pickerCoins) { coin in
                 tx.coin = coin
                 tx.fromAddress = coin.address
             }
@@ -236,7 +236,13 @@ struct SendCryptoDetailsView: View {
         .font(.body14MenloBold)
         .foregroundColor(.neutral0)
     }
-    
+
+    private var pickerCoins: [Coin] {
+        return vault.coins.sorted(by: {
+            Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
+        })
+    }
+
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
