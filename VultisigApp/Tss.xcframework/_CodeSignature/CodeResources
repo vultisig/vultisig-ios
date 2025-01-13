@@ -4,18 +4,6 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>.DS_Store</key>
-		<data>
-		JKZuMMKhsiOUsmSQZwIgicIUzTA=
-		</data>
-		<key>ios-arm64/.DS_Store</key>
-		<data>
-		REnCVQh0pWsz3ErztHUQ7CPZlmw=
-		</data>
-		<key>ios-arm64/Tss.framework/.DS_Store</key>
-		<data>
-		hXpPjVWuwXH1ybfpHZUM4gAkxRA=
-		</data>
 		<key>ios-arm64/Tss.framework/Headers/Tss.h</key>
 		<data>
 		tGFkhoxmF8vmMjlYqRtW12buGfQ=
@@ -34,7 +22,7 @@
 		</data>
 		<key>ios-arm64/Tss.framework/Info.plist</key>
 		<data>
-		XlJDLDE7sqMHhHY6awXbnrPG74U=
+		QN/rrIhZLIzEICmVVJXp5T2vphI=
 		</data>
 		<key>ios-arm64/Tss.framework/Modules/module.modulemap</key>
 		<data>
@@ -42,15 +30,7 @@
 		</data>
 		<key>ios-arm64/Tss.framework/Tss</key>
 		<data>
-		2lWK/g3166DKeKK/E9/BUrAeEHM=
-		</data>
-		<key>ios-arm64_x86_64-simulator/.DS_Store</key>
-		<data>
-		dB+0ZbGo5ciaSyS8CxH0HpGK2QU=
-		</data>
-		<key>ios-arm64_x86_64-simulator/Tss.framework/.DS_Store</key>
-		<data>
-		hXpPjVWuwXH1ybfpHZUM4gAkxRA=
+		5eVFRMdzwVak0wFN2Zi5u3X7B5o=
 		</data>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Headers/Tss.h</key>
 		<data>
@@ -70,7 +50,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Info.plist</key>
 		<data>
-		XlJDLDE7sqMHhHY6awXbnrPG74U=
+		QN/rrIhZLIzEICmVVJXp5T2vphI=
 		</data>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Modules/module.modulemap</key>
 		<data>
@@ -78,27 +58,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Tss</key>
 		<data>
-		u9un480R3H1aiGHenhhBH3ZSWJY=
-		</data>
-		<key>ios-arm64_x86_64-simulator/Tss.framework/Versions/.DS_Store</key>
-		<data>
-		xXcxrUIkgWijz89SRb0u03Zy8aU=
-		</data>
-		<key>ios-arm64_x86_64-simulator/Tss.framework/Versions/A/.DS_Store</key>
-		<data>
-		PFWFccAwMJluD438WkQ54FHiyNg=
-		</data>
-		<key>macos-arm64_x86_64/.DS_Store</key>
-		<data>
-		dB+0ZbGo5ciaSyS8CxH0HpGK2QU=
-		</data>
-		<key>macos-arm64_x86_64/Tss.framework/.DS_Store</key>
-		<data>
-		hXpPjVWuwXH1ybfpHZUM4gAkxRA=
-		</data>
-		<key>macos-arm64_x86_64/Tss.framework/Versions/.DS_Store</key>
-		<data>
-		xXcxrUIkgWijz89SRb0u03Zy8aU=
+		FLuDRYjQHnmaAKwtHrZponmHBv8=
 		</data>
 		<key>macos-arm64_x86_64/Tss.framework/Versions/A/Headers/Tss.h</key>
 		<data>
@@ -122,11 +82,11 @@
 		</data>
 		<key>macos-arm64_x86_64/Tss.framework/Versions/A/Resources/Info.plist</key>
 		<data>
-		XlJDLDE7sqMHhHY6awXbnrPG74U=
+		QN/rrIhZLIzEICmVVJXp5T2vphI=
 		</data>
 		<key>macos-arm64_x86_64/Tss.framework/Versions/A/Tss</key>
 		<data>
-		XLJxeeLUAVQjG2YilzmJG8JwesE=
+		MK9o59OsB8T29kaURILnAa8jNfA=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -179,11 +139,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XlJDLDE7sqMHhHY6awXbnrPG74U=
+			QN/rrIhZLIzEICmVVJXp5T2vphI=
 			</data>
 			<key>hash2</key>
 			<data>
-			fAGlHBRQmqW/d91v3YYJWEzPP7dzbHHUAQtCbyjY+sE=
+			gXdNm+u+UqmsxVHoUKoqo4ICLcvxioTeb3oV45HE/RA=
 			</data>
 		</dict>
 		<key>ios-arm64/Tss.framework/Modules/module.modulemap</key>
@@ -201,11 +161,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			2lWK/g3166DKeKK/E9/BUrAeEHM=
+			5eVFRMdzwVak0wFN2Zi5u3X7B5o=
 			</data>
 			<key>hash2</key>
 			<data>
-			TxADaUzELRirAkDGobgCcrGzZ00S65Jh/AkLBFvJROg=
+			xEdFshooe91IAA/+Dto8RHaDRDtr7vHt+N6Flp49Hlg=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Headers/Tss.h</key>
@@ -256,11 +216,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XlJDLDE7sqMHhHY6awXbnrPG74U=
+			QN/rrIhZLIzEICmVVJXp5T2vphI=
 			</data>
 			<key>hash2</key>
 			<data>
-			fAGlHBRQmqW/d91v3YYJWEzPP7dzbHHUAQtCbyjY+sE=
+			gXdNm+u+UqmsxVHoUKoqo4ICLcvxioTeb3oV45HE/RA=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/Tss.framework/Modules/module.modulemap</key>
@@ -278,11 +238,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			u9un480R3H1aiGHenhhBH3ZSWJY=
+			FLuDRYjQHnmaAKwtHrZponmHBv8=
 			</data>
 			<key>hash2</key>
 			<data>
-			pMvBhBZybf9FLSOy7n3bsefxZ9SGxOYVv3f5+eNVhBA=
+			ZC18aIXwoHhkewHD1tI2aFKRtpjdI8KKIRS26Dc/Wdg=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/Tss.framework/Headers</key>
@@ -364,22 +324,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XlJDLDE7sqMHhHY6awXbnrPG74U=
+			QN/rrIhZLIzEICmVVJXp5T2vphI=
 			</data>
 			<key>hash2</key>
 			<data>
-			fAGlHBRQmqW/d91v3YYJWEzPP7dzbHHUAQtCbyjY+sE=
+			gXdNm+u+UqmsxVHoUKoqo4ICLcvxioTeb3oV45HE/RA=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/Tss.framework/Versions/A/Tss</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			XLJxeeLUAVQjG2YilzmJG8JwesE=
+			MK9o59OsB8T29kaURILnAa8jNfA=
 			</data>
 			<key>hash2</key>
 			<data>
-			vqK5qZhIZykZhvwZKC6rySOZlQ0P7XAEccTySmOwKW0=
+			bTnBNrMsSWrt2L2BSofJ/DkejOotVvnN6xJC7farQO8=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/Tss.framework/Versions/Current</key>
