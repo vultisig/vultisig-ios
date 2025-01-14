@@ -27,13 +27,13 @@ struct SwapCryptoDetailsView: View {
             }
         }
         .navigationDestination(isPresented: $isFromPickerActive) {
-            CoinPickerView(coins: tx.fromCoins) { coin in
+            CoinPickerView(coins: swapViewModel.pickerFromCoins(vault: vault, tx: tx)) { coin in
                 swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
                 swapViewModel.updateCoinLists(tx: tx)
             }
         }
         .navigationDestination(isPresented: $isToPickerActive) {
-            CoinPickerView(coins: tx.toCoins) { coin in
+            CoinPickerView(coins: swapViewModel.pickerToCoins(vault: vault, tx: tx)) { coin in
                 swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
             }
         }
