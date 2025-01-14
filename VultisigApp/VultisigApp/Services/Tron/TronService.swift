@@ -78,13 +78,13 @@ class TronService: RpcService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
         
-        // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
-        // Tron does not have a 0x... it can be any address
-        // We will only simulate the transaction fee with this address
-        let estimation = try await getTriggerConstantContractFee(ownerAddressBase58:coin.address, contractAddressBase58: coin.contractAddress, recipientAddressHex: "0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf", amount: 1000000)
-        
-        print(estimation)
-        
+        var estimation = "200000" // If a TRX we will charge Fee: 200000 SUN = 0.2 TRX
+        if !coin.isNativeToken {
+            // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
+            // Tron does not have a 0x... it can be any address
+            // We will only simulate the transaction fee with this address
+            estimation = try await getTriggerConstantContractFee(ownerAddressBase58:coin.address, contractAddressBase58: coin.contractAddress, recipientAddressHex: "0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf", amount: BigUInt(coin.rawBalance.toBigInt()))
+        }
         
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
