@@ -78,7 +78,7 @@ class TronService: RpcService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
         
-        var estimation = "200000" // If a TRX we will charge Fee: 200000 SUN = 0.2 TRX
+        var estimation = "800000" // If a TRX we will charge Fee: 800000 SUN = 0.8 TRX MEXC charges it. So probably safer
         if !coin.isNativeToken {
             // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
             // Tron does not have a 0x... it can be any address
