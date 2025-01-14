@@ -29,7 +29,8 @@ enum BlockChainSpecific: Codable, Hashable {
         blockHeaderVersion: UInt64,
         blockHeaderTxTrieRoot: String,
         blockHeaderParentHash: String,
-        blockHeaderWitnessAddress: String
+        blockHeaderWitnessAddress: String,
+        gasFeeEstimation: UInt64
     )
     
     var gas: BigInt {
@@ -54,8 +55,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return BigInt(0.001 * 10e9)
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
-        case .Tron(_, _, _, _, _, _, _, _):
-            return "100000".toBigInt()
+        case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
+            return gasFeeEstimation.description.toBigInt()
         }
     }
     

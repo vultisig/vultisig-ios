@@ -349,6 +349,10 @@ class Endpoint {
         "https://api.trongrid.io/wallet/triggerconstantcontract"
     }
     
+    static func triggerSolidityConstantContractTron() -> String {
+        "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
+    }
+    
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     
     static func getExplorerURL(chainTicker: String, txid: String) -> String {

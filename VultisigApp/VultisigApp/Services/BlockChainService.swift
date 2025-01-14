@@ -353,7 +353,7 @@ private extension BlockChainService {
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 200000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .tron:
-            return try await tron.getBlockInfo()
+            return try await tron.getBlockInfo(coin: coin)
         }
     }
     

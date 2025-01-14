@@ -309,7 +309,8 @@ extension BlockChainSpecific {
                 blockHeaderVersion: value.blockHeaderVersion,
                 blockHeaderTxTrieRoot: value.blockHeaderTxTrieRoot,
                 blockHeaderParentHash: value.blockHeaderParentHash,
-                blockHeaderWitnessAddress: value.blockHeaderWitnessAddress
+                blockHeaderWitnessAddress: value.blockHeaderWitnessAddress,
+                gasFeeEstimation: value.gasEstimation
             )
         }
         
@@ -408,7 +409,9 @@ extension BlockChainSpecific {
             let blockHeaderVersion,
             let blockHeaderTxTrieRoot,
             let blockHeaderParentHash,
-            let blockHeaderWitnessAddress):
+            let blockHeaderWitnessAddress,
+            let gasEstimation
+        ):
             return .tronSpecific(.with {
                 $0.timestamp = timestamp
                 $0.expiration = expiration
@@ -418,6 +421,7 @@ extension BlockChainSpecific {
                 $0.blockHeaderParentHash = blockHeaderParentHash
                 $0.blockHeaderTxTrieRoot = blockHeaderTxTrieRoot
                 $0.blockHeaderWitnessAddress = blockHeaderWitnessAddress
+                $0.gasEstimation = gasEstimation
             })
         }
     }
