@@ -91,7 +91,7 @@ struct ChainCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
+        Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString.formatCurrencyWithSeparators())
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
     }
