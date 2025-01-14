@@ -12,6 +12,7 @@ struct CoinDetailView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     @ObservedObject var sendTx: SendTransaction
+    @Binding var resetActive: Bool
     
     @State var isLoading = false
     
@@ -79,5 +80,5 @@ struct CoinDetailView: View {
 }
 
 #Preview {
-    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction())
+    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction(), resetActive: .constant(false))
 }

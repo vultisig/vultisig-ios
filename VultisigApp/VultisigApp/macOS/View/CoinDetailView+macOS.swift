@@ -25,6 +25,13 @@ extension CoinDetailView {
             headerMac
             view
         }
+        .onChange(of: isSendLinkActive) { oldValue, newValue in
+            if isSendLinkActive {
+                resetActive = false
+            } else {
+                resetActive = true
+            }
+        }
     }
     
     var headerMac: some View {
