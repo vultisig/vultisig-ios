@@ -78,26 +78,28 @@ extension String {
             return self
         }
         
+        let currency = SettingsCurrency.current
+        let decimalPoint = getCurrentDecimalPoint()
+        
         let outputFormatter = NumberFormatter()
         outputFormatter.numberStyle = .decimal
         outputFormatter.minimumFractionDigits = 0
         outputFormatter.maximumFractionDigits = 8
-        outputFormatter.decimalSeparator = "."
-        outputFormatter.groupingSeparator = ","
+        
+        if (currency.usesEuropeanFormat || decimalPoint == ",") {
+            outputFormatter.decimalSeparator = ","
+            outputFormatter.groupingSeparator = "."
+        } else {
+            outputFormatter.decimalSeparator = "."
+            outputFormatter.groupingSeparator = ","
+        }
         
         return outputFormatter.string(for: number) ?? self
     }
     
     private func parseInput() -> Decimal? {
-        let currency = SettingsCurrency.current
         var cleanInput = self.trimmingCharacters(in: .whitespaces)
-        
-        if currency.usesEuropeanFormat {
-            cleanInput = cleanInput.replacingOccurrences(of: ".", with: "")
-            cleanInput = cleanInput.replacingOccurrences(of: ",", with: ".")
-        } else {
-            cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
-        }
+        cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
         
         return Decimal(string: cleanInput)
     }
