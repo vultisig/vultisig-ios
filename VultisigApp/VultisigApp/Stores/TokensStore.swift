@@ -634,6 +634,15 @@ class TokensStore {
         static var akash: CoinMeta {
             CoinMeta(chain: Chain.akash, ticker: "AKT", logo: "akash", decimals: 6, priceProviderId: "akash-network", contractAddress: "", isNativeToken: true)
         }
+        
+        static var tron: CoinMeta {
+            CoinMeta(chain: Chain.tron, ticker: "TRX", logo: "tron", decimals: 6, priceProviderId: "tron", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var tronUSDT: CoinMeta {
+            CoinMeta(chain: Chain.tron, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "tether", contractAddress: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", isNativeToken: false)
+        }
+        
     }
     
     static var TokenSelectionAssets = [
@@ -656,7 +665,8 @@ class TokensStore {
         TokensStore.Token.solanaRaydium,
         
         TokensStore.Token.akash,
-        
+        TokensStore.Token.tron,
+        TokensStore.Token.tronUSDT,
         
         TokensStore.Token.osmosis,
         TokensStore.Token.osmosisUsdc,
