@@ -69,9 +69,9 @@ extension Coin {
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
-        case .blast:
+        case .blast, .solana:
             return [.lifi]
-        case .solana, .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
+        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
             return []
         }
     }
