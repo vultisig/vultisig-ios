@@ -11,8 +11,7 @@ import SwiftData
 import AVFoundation
 
 struct MacAddressScannerView: View {
-    @Binding var text: String
-    @Binding var isPresented: Bool
+    @Binding var address: String
     
     @StateObject var scannerViewModel = MacAddressScannerViewModel()
     
@@ -129,6 +128,6 @@ struct MacAddressScannerView: View {
 }
 
 #Preview {
-    MacAddressScannerView(text: .constant(""), isPresented: .constant(true))
+    MacAddressScannerView(address: .constant(""))
 }
 #endif

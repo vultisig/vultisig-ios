@@ -62,10 +62,22 @@ extension SendCryptoAddressTextField {
             ))
             
             pasteButton
-            fileButton
+//            fileButton
+            cameraScanButton
             addressBookButton
         }
         .padding(.horizontal, 12)
+    }
+    
+    var cameraScanButton: some View {
+        NavigationLink {
+            MacAddressScannerView(address: $tx.toAddress)
+        } label: {
+            Image(systemName: "camera")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
     
     func pasteAddress() {
