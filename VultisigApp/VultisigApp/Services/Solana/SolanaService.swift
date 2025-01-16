@@ -11,6 +11,8 @@ class SolanaService {
     
     private let jsonDecoder = JSONDecoder()
     
+    private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+    
     func sendSolanaTransaction(encodedTransaction: String) async throws
     -> String?
     {
@@ -154,7 +156,7 @@ class SolanaService {
     
     func fetchTokenAssociatedAccountByOwner(
         for walletAddress: String, mintAddress: String
-    ) async throws -> String {
+    ) async throws -> (String, Bool) {
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -173,10 +175,12 @@ class SolanaService {
                 .value
             
             guard let associatedAccount = accounts.first else {
-                return .empty
+                return (.empty, false)
             }
             
-            return associatedAccount.pubkey
+            let isToken2022 = associatedAccount.account.owner == TOKEN_PROGRAM_ID_2022
+            
+            return (associatedAccount.pubkey, isToken2022)
         } catch {
             print("Error in fetchTokenAssociatedAccountByOwner:")
             throw error

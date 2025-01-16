@@ -187,13 +187,13 @@ private extension BlockChainService {
             if let fromAddress, let toAddress, !toAddress.isEmpty, !coin.isNativeToken {
                 async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: fromAddress, mintAddress: coin.contractAddress)
                 async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
-                let associatedTokenAddressFrom = try await associatedTokenAddressFromPromise
-                let associatedTokenAddressTo = try await associatedTokenAddressToPromise
+                let (associatedTokenAddressFrom, _) = try await associatedTokenAddressFromPromise
+                let (associatedTokenAddressTo, isToken2022) = try await associatedTokenAddressToPromise
                 
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: associatedTokenAddressTo)
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: associatedTokenAddressTo, hasProgramId: isToken2022)
             }
             
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil)
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)

@@ -266,7 +266,8 @@ extension BlockChainSpecific {
                 recentBlockHash: value.recentBlockHash,
                 priorityFee: BigInt(stringLiteral: value.priorityFee),
                 fromAddressPubKey: value.fromTokenAssociatedAddress,
-                toAddressPubKey: value.toTokenAssociatedAddress
+                toAddressPubKey: value.toTokenAssociatedAddress,
+                hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
             self = .Polkadot(
@@ -355,12 +356,13 @@ extension BlockChainSpecific {
                     $0.latestBlock = ibc?.height ?? "0"
                 }
             })
-        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
+        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):
             return .solanaSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.priorityFee = String(priorityFee)
                 $0.fromTokenAssociatedAddress = fromTokenAssociatedAddress ?? .empty
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
+                $0.programID = tokenProgramId
             })
         case .Sui(let referenceGasPrice, let coins):
             // `coins` is of type `[[String: String]]`
