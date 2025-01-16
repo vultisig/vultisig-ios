@@ -60,7 +60,6 @@ struct MacScannerView: View {
             cameraViewModel.handleScan(
                 vaults: vaults,
                 sendTx: sendTx,
-                cameraViewModel: cameraViewModel,
                 deeplinkViewModel: deeplinkViewModel,
                 vaultDetailViewModel: vaultDetailViewModel,
                 coinSelectionViewModel: coinSelectionViewModel
