@@ -16,7 +16,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, _, let fromAddressPubKey, let toAddressPubKey, let tokenProgramId) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -57,6 +57,7 @@ enum SolanaHelper {
                     $0.recipientTokenAddress = toPubKey
                     $0.amount = UInt64(keysignPayload.toAmount)
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
+                    $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
                 }
                 
                 let input = SolanaSigningInput.with {
@@ -91,6 +92,7 @@ enum SolanaHelper {
                     $0.senderTokenAddress = fromPubKey
                     $0.amount = UInt64(keysignPayload.toAmount)
                     $0.decimals = UInt32(keysignPayload.coin.decimals)
+                    $0.tokenProgramID = tokenProgramId ? SolanaTokenProgramId.token2022Program : SolanaTokenProgramId.tokenProgram
                 }
                 
                 let input = SolanaSigningInput.with {

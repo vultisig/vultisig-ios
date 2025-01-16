@@ -15,7 +15,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
-    case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?) // priority fee is in microlamports
+    case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
