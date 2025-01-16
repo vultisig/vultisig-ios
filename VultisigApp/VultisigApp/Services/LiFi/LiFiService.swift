@@ -21,16 +21,19 @@ struct LiFiService {
         }
         let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
         let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
+        let integrator = fromCoin.isLifiFeesSupported ? integratorName : nil
+        let fee = fromCoin.isLifiFeesSupported ? integratorFee : nil
 
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),
             fromToken: fromToken,
+            toAddress: toCoin.address,
             toToken: toToken,
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address,
-            integrator: integratorName,
-            fee: integratorFee
+            integrator: integrator,
+            fee: fee
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)

@@ -75,6 +75,15 @@ extension Coin {
             return []
         }
     }
+
+    var isLifiFeesSupported: Bool {
+        switch chain.chainType {
+        case .EVM:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 private extension Coin {
