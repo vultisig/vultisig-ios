@@ -26,6 +26,7 @@ extension SendCryptoAddressTextField {
                 do {
                     let qrCode = try Utils.handleQrCodeFromImage(result: result)
                     handleImageQrCode(data: qrCode)
+                    print(qrCode)
                 } catch {
                     print(error)
                 }
@@ -62,7 +63,7 @@ extension SendCryptoAddressTextField {
             ))
             
             pasteButton
-//            fileButton
+            fileButton
             cameraScanButton
             addressBookButton
         }
@@ -71,7 +72,11 @@ extension SendCryptoAddressTextField {
     
     var cameraScanButton: some View {
         NavigationLink {
-            MacAddressScannerView(address: $tx.toAddress)
+            MacAddressScannerView(
+                address: $tx.toAddress,
+                tx: tx,
+                sendCryptoViewModel: sendCryptoViewModel
+            )
         } label: {
             Image(systemName: "camera")
                 .font(.body16Menlo)

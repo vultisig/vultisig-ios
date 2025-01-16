@@ -113,10 +113,4 @@ extension MacAddressScannerViewModel: AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
 }
-
-extension MacAddressScannerViewModel {
-    func handleScan() {
-        print(detectedQRCode)
-    }
-}
 #endif

@@ -12,8 +12,12 @@ import AVFoundation
 
 struct MacAddressScannerView: View {
     @Binding var address: String
+    @ObservedObject var tx: SendTransaction
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @StateObject var scannerViewModel = MacAddressScannerViewModel()
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -28,7 +32,7 @@ struct MacAddressScannerView: View {
             view
         }
         .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
-            scannerViewModel.handleScan()
+            handleScan()
         }
     }
     
@@ -97,7 +101,7 @@ struct MacAddressScannerView: View {
     
     var uploadQRCodeButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: .SignTransaction)
+            
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }
@@ -125,9 +129,27 @@ struct MacAddressScannerView: View {
                 .padding(40)
         }
     }
+    
+    private func handleScan() {
+        guard let detectedQRCode = scannerViewModel.detectedQRCode else {
+            return
+        }
+        
+        tx.parseCryptoURI(detectedQRCode)
+        validateAddress(tx.toAddress)
+        dismiss()
+    }
+    
+    func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
 }
 
 #Preview {
-    MacAddressScannerView(address: .constant(""))
+    MacAddressScannerView(
+        address: .constant(""),
+        tx: SendTransaction(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
 }
 #endif
