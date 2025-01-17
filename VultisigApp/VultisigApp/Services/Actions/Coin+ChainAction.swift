@@ -63,6 +63,8 @@ extension Chain {
             actions = [.send]
         case .ripple:
             actions = [.send]
+        case .tron:
+            actions = [.send]
         }
         return actions.filtered
     }

@@ -79,3 +79,12 @@ class BnbService: RpcEvmService, EvmTokenServiceProtocol {
         return await super.getTokens(nativeToken: nativeToken)
     }
 }
+
+class TronEvmService: RpcEvmService, EvmTokenServiceProtocol {
+    static let rpcEndpoint = Endpoint.tronEvmServiceRpc
+    static let shared = TronEvmService(rpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(nativeToken: nativeToken)
+    }
+}

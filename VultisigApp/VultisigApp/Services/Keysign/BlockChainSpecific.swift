@@ -15,11 +15,23 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
-    case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?) // priority fee is in microlamports
+    case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
     case Ripple(sequence: UInt64, gas: UInt64)
+    
+    case Tron(
+        timestamp: UInt64,
+        expiration: UInt64,
+        blockHeaderTimestamp: UInt64,
+        blockHeaderNumber: UInt64,
+        blockHeaderVersion: UInt64,
+        blockHeaderTxTrieRoot: String,
+        blockHeaderParentHash: String,
+        blockHeaderWitnessAddress: String,
+        gasFeeEstimation: UInt64
+    )
     
     var gas: BigInt {
         switch self {
@@ -43,6 +55,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return BigInt(0.001 * 10e9)
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
+        case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
+            return gasFeeEstimation.description.toBigInt()
         }
     }
     
@@ -50,7 +64,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
             return maxFeePerGas * gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return gas
         }
     }
@@ -59,7 +73,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
             return maxFeePerGas - priorityFee
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return nil
         }
     }
@@ -68,7 +82,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):
             return gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
             return nil
         }
     }
