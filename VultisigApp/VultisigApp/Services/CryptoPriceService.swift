@@ -89,38 +89,51 @@ private extension CryptoPriceService {
     }
     
     func fetchPrices(contracts: [String], chain: Chain) async throws {
-        let currencies = SettingsCurrency.allCases
-            .map { $0.rawValue }
-            .joined(separator: ",")
         
-        let url = Endpoint.fetchTokenPrice(
-            network: coinGeckoPlatform(chain: chain),
-            addresses: contracts,
-            currencies: currencies
-        )
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-        
-        let contractsNotFoundOnCoingecko = contracts.filter{ !response.keys.contains($0) }
-        
-        var rates = mapRates(response: response)
-        
-        // now lets try to find the price for the notFoundPricesOnCoingecko
-        for contract in contractsNotFoundOnCoingecko {
-            let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
-            rates.append(lifiRate)
+        if chain == .solana {
+            
+            var rates: [Rate] = []
+            for contract in contracts {
+                let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract)
+                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                
+                print(poolRate)
+                
+                rates.append(poolRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
+
+            
+        } else {
+            
+            let currencies = SettingsCurrency.allCases
+                .map { $0.rawValue }
+                .joined(separator: ",")
+            
+            let url = Endpoint.fetchTokenPrice(
+                network: coinGeckoPlatform(chain: chain),
+                addresses: contracts,
+                currencies: currencies
+            )
+            
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
+            
+            
+            let contractsNotFoundOnCoingecko = contracts.filter{ !response.keys.contains($0) }
+            
+            var rates = mapRates(response: response)
+            
+            // now lets try to find the price for the notFoundPricesOnCoingecko
+            for contract in contractsNotFoundOnCoingecko {
+                let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
+                rates.append(lifiRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
         }
-        
-        let pricesNotFoundOnLifi = rates.filter{ $0.value == 0.0 }
-        
-        for rate in pricesNotFoundOnLifi {
-            let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: rate.crypto)
-            let poolRate: Rate = .init(fiat: "usd", crypto: rate.crypto, value: poolPrice)
-            rates.append(poolRate)
-        }
-               
-        try await RateProvider.shared.save(rates: rates)
     }
     
     func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate {

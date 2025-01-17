@@ -259,25 +259,6 @@ class SolanaService {
             
             var coinMetaList = [CoinMeta]()
             for tokenAddress in tokenAddresses {
-                if let tokenInfo = tokenInfos[tokenAddress] {
-                    let coinMeta = CoinMeta(
-                        chain: .solana,
-                        ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
-                        logo: tokenInfo.tokenList.image.description,
-                        decimals: tokenInfo.decimals,
-                        priceProviderId: tokenInfo.tokenList.extensions?
-                            .coingeckoId ?? .empty,
-                        contractAddress: tokenAddress,
-                        isNativeToken: false
-                    )
-                    coinMetaList.append(coinMeta)
-                }
-            }
-            
-            let missingTokenAddresses = tokenAddresses.filter {
-                !tokenInfos.keys.contains($0)
-            }
-            for tokenAddress in missingTokenAddresses {
                 let jupiterTokenInfo: SolanaJupiterToken =
                 try await fetchSolanaJupiterTokenInfoList(
                     contractAddress: tokenAddress)
@@ -441,7 +422,7 @@ class SolanaService {
         
         do {
             
-            let amountDecimal = 1 * pow(10, 6) // USDC
+            let amountDecimal = 1_000_000 // 1 USDC
             
             let urlString: String = Endpoint.solanaTokenQuote(
                 inputMint: contractAddress,
@@ -451,12 +432,9 @@ class SolanaService {
             )
             
             let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "swapUsdValue") as? String ?? "0"
             
-            let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "outAmount") as? Int64 ?? 0
-            
-            let usdValue = Double(rawAmount) / pow(10, 6)
-            
-            return usdValue
+            return Double(rawAmount) ?? 0.0
             
         } catch {
             print("Error in fetchSolanaJupiterTokenInfoList:")
