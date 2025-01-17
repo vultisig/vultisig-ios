@@ -111,7 +111,15 @@ private extension CryptoPriceService {
             let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
             rates.append(lifiRate)
         }
-                
+        
+        let pricesNotFoundOnLifi = rates.filter{ $0.value == 0.0 }
+        
+        for rate in pricesNotFoundOnLifi {
+            let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: rate.crypto)
+            let poolRate: Rate = .init(fiat: "usd", crypto: rate.crypto, value: poolPrice)
+            rates.append(poolRate)
+        }
+               
         try await RateProvider.shared.save(rates: rates)
     }
     

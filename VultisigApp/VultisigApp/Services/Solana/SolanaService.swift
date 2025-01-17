@@ -436,6 +436,34 @@ class SolanaService {
             throw error
         }
     }
+    
+    static func getTokenUSDValue(contractAddress: String) async -> Double {
+        
+        do {
+            
+            let amountDecimal = 1 * pow(10, 6) // USDC
+            
+            let urlString: String = Endpoint.solanaTokenQuote(
+                inputMint: contractAddress,
+                outputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                amount: amountDecimal.description,
+                slippageBps: "50"
+            )
+            
+            let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            
+            let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "outAmount") as? Int64 ?? 0
+            
+            let usdValue = Double(rawAmount) / pow(10, 6)
+            
+            return usdValue
+            
+        } catch {
+            print("Error in fetchSolanaJupiterTokenInfoList:")
+            return 0.0
+        }
+        
+    }
 }
 
 extension SolanaService {
