@@ -430,3 +430,5 @@
 "advanced" = "Napredno";
 "enableDKLS" = "Omogući DKLS";
 "vaultLibType" = "tip svoda";
+"scanQRCode" = "Skeniraj QR kod";
+"uploadFileWithQRCode" = "Učitaj datoteku s QR kodom";
