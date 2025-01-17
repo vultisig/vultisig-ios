@@ -10,6 +10,7 @@ import SwiftData
 
 struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
+    let sendTx: SendTransaction
     
     @State var fileName: String? = nil
     @State var alertDescription = ""
@@ -157,7 +158,7 @@ struct GeneralQRImportMacView: View {
             }
             
             deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink()
+            presetValuesForDeeplink(result)
         } catch {
             if let description = error as? UtilsQrCodeFromImageError {
                 alertDescription = description.localizedDescription
@@ -167,7 +168,7 @@ struct GeneralQRImportMacView: View {
         }
     }
     
-    private func presetValuesForDeeplink() {
+    private func presetValuesForDeeplink(_ result: String) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -182,7 +183,7 @@ struct GeneralQRImportMacView: View {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            return
+            parseAddress(result)
         }
     }
     
@@ -195,10 +196,14 @@ struct GeneralQRImportMacView: View {
             shouldKeysignTransaction = true
         }
     }
+    
+    private func parseAddress(_ result: String) {
+        sendTx.toAddress = result
+    }
 }
 
 #Preview {
-    GeneralQRImportMacView(type: .NewVault)
+    GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }

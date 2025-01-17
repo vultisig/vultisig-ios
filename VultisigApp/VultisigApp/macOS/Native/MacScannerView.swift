@@ -132,7 +132,7 @@ struct MacScannerView: View {
     
     var uploadQRCodeButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: type)
+            GeneralQRImportMacView(type: type, sendTx: sendTx)
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }

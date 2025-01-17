@@ -11,9 +11,11 @@ import SwiftData
 import AVFoundation
 
 struct MacAddressScannerView: View {
-    @Binding var address: String
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Binding var showCameraScanView: Bool
+    
+    @State var showImportOptions: Bool = false
     
     @StateObject var scannerViewModel = MacAddressScannerViewModel()
     
@@ -22,26 +24,37 @@ struct MacAddressScannerView: View {
     var body: some View {
         ZStack(alignment: .top) {
             Background()
-            main
+            content
             headerMac
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-            view
         }
         .onChange(of: scannerViewModel.detectedQRCode) { oldValue, newValue in
             handleScan()
         }
+        .onChange(of: tx.toAddress) { oldValue, newValue in
+            goBack()
+        }
+    }
+    
+    var content: some View {
+        ZStack {
+            if showImportOptions {
+                importOption
+            } else {
+                camera
+            }
+        }
+    }
+    
+    var importOption: some View {
+        GeneralQRImportMacView(type: .Unknown, sendTx: tx)
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "Scan")
+        GeneralMacHeader(title: "scanQRCode")
             .padding(.bottom, 8)
     }
     
-    var view: some View {
+    var camera: some View {
         ZStack {
             if scannerViewModel.showPlaceholderError {
                 fallbackErrorView
@@ -100,8 +113,8 @@ struct MacAddressScannerView: View {
     }
     
     var uploadQRCodeButton: some View {
-        NavigationLink {
-            
+        Button {
+            showImportOptions = true
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }
@@ -137,6 +150,13 @@ struct MacAddressScannerView: View {
         
         tx.parseCryptoURI(detectedQRCode)
         validateAddress(tx.toAddress)
+        goBack()
+    }
+    
+    private func goBack() {
+        scannerViewModel.stopSession()
+        showImportOptions = false
+        showCameraScanView = false
         dismiss()
     }
     
@@ -147,9 +167,9 @@ struct MacAddressScannerView: View {
 
 #Preview {
     MacAddressScannerView(
-        address: .constant(""),
         tx: SendTransaction(),
-        sendCryptoViewModel: SendCryptoViewModel()
+        sendCryptoViewModel: SendCryptoViewModel(),
+        showCameraScanView: .constant(true)
     )
 }
 #endif

@@ -34,6 +34,13 @@ extension SendCryptoAddressTextField {
             .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
                 OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
             }
+            .navigationDestination(isPresented: $showCameraScanView) {
+                MacAddressScannerView(
+                    tx: tx,
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    showCameraScanView: $showCameraScanView
+                )
+            }
     }
     
     var field: some View {
@@ -71,12 +78,8 @@ extension SendCryptoAddressTextField {
     }
     
     var cameraScanButton: some View {
-        NavigationLink {
-            MacAddressScannerView(
-                address: $tx.toAddress,
-                tx: tx,
-                sendCryptoViewModel: sendCryptoViewModel
-            )
+        Button {
+            showCameraScanView = true
         } label: {
             Image(systemName: "camera")
                 .font(.body16Menlo)
