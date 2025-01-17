@@ -48,6 +48,7 @@
 		46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
+		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A50E793A2BFE30210031DB47 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50E79392BFE30210031DB47 /* Storage.swift */; };
 		A5125F042BEBBE43008A79AA /* SwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F032BEBBE43008A79AA /* SwapService.swift */; };
 		A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */; };
@@ -842,6 +843,7 @@
 		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
+		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
 		A50E79392BFE30210031DB47 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		A5125F032BEBBE43008A79AA /* SwapService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapService.swift; sourceTree = "<group>"; };
 		A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchQuote.swift; sourceTree = "<group>"; };
@@ -1909,6 +1911,7 @@
 			isa = PBXGroup;
 			children = (
 				A52287472C42BB0000E1CC5A /* LiFiService.swift */,
+				A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */,
 			);
 			path = LiFi;
 			sourceTree = "<group>";
@@ -4170,6 +4173,7 @@
 				A6C6709E2C9D0B4900F59B6A /* ChainSelectionView+macOS.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */,
+				A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */,
 				A622C8462C9BBD2F00908332 /* TransactionMemoView+iOS.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
