@@ -51,8 +51,6 @@ class MacAddressScannerViewModel: NSObject, ObservableObject {
             return
         }
         
-        print("Camera device found: \(device.localizedName)")
-        
         do {
             let input = try AVCaptureDeviceInput(device: device)
             if session?.canAddInput(input) == true {

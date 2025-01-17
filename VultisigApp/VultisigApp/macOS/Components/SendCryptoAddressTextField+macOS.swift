@@ -26,7 +26,6 @@ extension SendCryptoAddressTextField {
                 do {
                     let qrCode = try Utils.handleQrCodeFromImage(result: result)
                     handleImageQrCode(data: qrCode)
-                    print(qrCode)
                 } catch {
                     print(error)
                 }
