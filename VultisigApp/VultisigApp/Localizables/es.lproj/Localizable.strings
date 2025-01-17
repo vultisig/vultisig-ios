@@ -430,3 +430,5 @@
 "advanced" = "Avanzado";
 "enableDKLS" = "Habilitar DKLS";
 "vaultLibType" = "tipo de bóveda";
+"scanQRCode" = "Escanear código QR";
+"uploadFileWithQRCode" = "Subir archivo con código QR";

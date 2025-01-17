@@ -108,22 +108,30 @@ struct GeneralQRImportMacView: View {
     private func getTitle() -> String {
         let text: String
         
-        if type == .NewVault {
+        switch type {
+        case .NewVault:
             text = "pair"
-        } else {
+        case .SignTransaction:
             text = "keysign"
+        case .Unknown:
+            text = "scanQRCode"
         }
+        
         return NSLocalizedString(text, comment: "")
     }
     
     private func getDescription() -> String {
         let text: String
         
-        if type == .NewVault {
+        switch type {
+        case .NewVault:
             text = "uploadQRCodeImageKeygen"
-        } else {
+        case .SignTransaction:
             text = "uploadQRCodeImageKeysign"
+        case .Unknown:
+            text = "uploadFileWithQRCode"
         }
+        
         return NSLocalizedString(text, comment: "")
     }
     

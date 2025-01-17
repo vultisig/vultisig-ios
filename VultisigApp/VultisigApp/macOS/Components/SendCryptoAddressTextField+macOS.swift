@@ -70,7 +70,6 @@ extension SendCryptoAddressTextField {
             ))
             
             pasteButton
-            fileButton
             cameraScanButton
             addressBookButton
         }
