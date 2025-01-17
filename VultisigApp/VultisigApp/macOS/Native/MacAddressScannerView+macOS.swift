@@ -1,5 +1,5 @@
 //
-//  MacAddressScannerView.swift
+//  MacAddressScannerView+macOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-01-16.

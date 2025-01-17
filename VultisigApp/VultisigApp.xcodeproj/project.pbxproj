@@ -424,7 +424,7 @@
 		A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96112C2E3D6100992578 /* ImportFileCell.swift */; };
 		A6AF96142C2E545800992578 /* UtilsQrCodeFromImageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */; };
 		A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */; };
-		A6B662D32D38CD54001E8BC1 /* MacAddressScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B662D22D38CD54001E8BC1 /* MacAddressScannerView.swift */; };
+		A6B662D32D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */; };
 		A6B662D52D38CDD5001E8BC1 /* MacAddressScannerViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B662D42D38CDD3001E8BC1 /* MacAddressScannerViewModel+macOS.swift */; };
 		A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48B2C47A077006D83D1 /* InformationNote.swift */; };
 		A6B7F4962C493DD9006D83D1 /* NavigationQRCodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */; };
@@ -1219,7 +1219,7 @@
 		A6AF96112C2E3D6100992578 /* ImportFileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFileCell.swift; sourceTree = "<group>"; };
 		A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsQrCodeFromImageError.swift; sourceTree = "<group>"; };
 		A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnFirstAppear.swift; sourceTree = "<group>"; };
-		A6B662D22D38CD54001E8BC1 /* MacAddressScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAddressScannerView.swift; sourceTree = "<group>"; };
+		A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacAddressScannerView+macOS.swift"; sourceTree = "<group>"; };
 		A6B662D42D38CDD3001E8BC1 /* MacAddressScannerViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacAddressScannerViewModel+macOS.swift"; sourceTree = "<group>"; };
 		A6B7F48B2C47A077006D83D1 /* InformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationNote.swift; sourceTree = "<group>"; };
 		A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationQRCodeButton.swift; sourceTree = "<group>"; };
@@ -2788,7 +2788,7 @@
 			children = (
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
-				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView.swift */,
+				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */,
 			);
 			path = Native;
 			sourceTree = "<group>";
@@ -4035,7 +4035,7 @@
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				B52196422C1296DF0021D27A /* IntExtension.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
-				A6B662D32D38CD54001E8BC1 /* MacAddressScannerView.swift in Sources */,
+				A6B662D32D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift in Sources */,
 				46B106512BA7CAFE00564023 /* ChainType.swift in Sources */,
 				A6C671152CA396D600F59B6A /* AuthenticationType.swift in Sources */,
 				A6182F372C92328E0059BFDD /* NetworkPromptCell+iOS.swift in Sources */,
