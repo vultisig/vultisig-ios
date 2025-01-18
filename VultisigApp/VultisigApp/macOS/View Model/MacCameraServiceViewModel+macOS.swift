@@ -133,8 +133,8 @@ extension MacCameraServiceViewModel {
         return NSLocalizedString(text, comment: "")
     }
     
-    func handleScan(vaults: [Vault], sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
-        guard let result = cameraViewModel.detectedQRCode, !result.isEmpty else {
+    func handleScan(vaults: [Vault], sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
+        guard let result = detectedQRCode, !result.isEmpty else {
             return
         }
         
@@ -143,10 +143,10 @@ extension MacCameraServiceViewModel {
         }
         
         deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
+        presetValuesForDeeplink(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
     }
     
-    func presetValuesForDeeplink(sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
+    func presetValuesForDeeplink(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -165,8 +165,8 @@ extension MacCameraServiceViewModel {
             moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            cameraViewModel.detectedQRCode = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+            detectedQRCode = ""
         }
     }
     
