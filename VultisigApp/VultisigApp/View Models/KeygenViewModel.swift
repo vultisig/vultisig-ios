@@ -138,7 +138,7 @@ class KeygenViewModel: ObservableObject {
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             case .Reshare:
                 self.status = .ReshareEdDSA
-                
+                try await schnorrKeygen.SchnorrReshareWithRetry(attempt: 0)
             }
             
             self.vault.signers = self.keygenCommittee

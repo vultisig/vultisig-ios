@@ -27,6 +27,7 @@ final class SchnorrKeygen {
     let setupMessage: [UInt8]
     var cache = NSCache<NSString, AnyObject>()
     var keyshare: DKLSKeyshare?
+    let publicKeyEdDSA: String
     
     init(vault: Vault,
          tssType: TssType,
@@ -51,6 +52,7 @@ final class SchnorrKeygen {
                                        messageID: nil,
                                        encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
+        self.publicKeyEdDSA = vault.pubKeyEdDSA
     }
     
     func getKeyshare() -> DKLSKeyshare? {
@@ -62,7 +64,14 @@ final class SchnorrKeygen {
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
-        let result = schnorr_keygen_session_output_message(handle,&buf)
+        var result: goschnorr.lib_error
+        switch self.tssType {
+        case .Keygen:
+            result = schnorr_keygen_session_output_message(handle,&buf)
+        case .Reshare:
+            result = schnorr_qc_session_output_message(handle,&buf)
+        }
+        
         if result != LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
@@ -92,7 +101,13 @@ final class SchnorrKeygen {
             goschnorr.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
-        let receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
+        var receiverResult: goschnorr.lib_error
+        switch self.tssType {
+        case .Keygen:
+            receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
+        case .Reshare:
+            receiverResult = schnorr_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
+        }
         if receiverResult != LIB_OK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
@@ -202,7 +217,14 @@ final class SchnorrKeygen {
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
-            let result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            var result: goschnorr.lib_error
+            switch self.tssType {
+            case .Keygen:
+                result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            case .Reshare:
+                result = schnorr_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
+            }
+            
             if result != LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
@@ -300,5 +322,119 @@ final class SchnorrKeygen {
             throw HelperError.runtimeError("fail to get ECDSA public key from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
+    }
+    
+    // processReshareCommittee combine old keygen party and new keygen party into the same array , and return two seperate index array
+    func processReshareCommittee(oldCommittee: [String],newCommittee: [String]) -> ([String],[UInt8],[UInt8]) {
+        var allParties = oldCommittee
+        var oldPartiesIdx = [UInt8]()
+        var newPartiesIdx = [UInt8]()
+        
+        for item in newCommittee {
+            if !allParties.contains(item) {
+                allParties.append(item)
+            }
+        }
+        
+        for(idx,item) in allParties.enumerated() {
+            if oldCommittee.contains(item){
+                oldPartiesIdx.append(UInt8(idx))
+            }
+            if newCommittee.contains(item){
+                newPartiesIdx.append(UInt8(idx))
+            }
+        }
+        return (allParties,newPartiesIdx,oldPartiesIdx)
+    }
+    
+    func getKeyshareString() -> String? {
+        for ks in vault.keyshares {
+            if ks.pubkey == self.publicKeyEdDSA {
+                return ks.keyshare
+            }
+        }
+        return nil
+    }
+    
+    func getKeyshareBytesFromVault() throws -> [UInt8] {
+        guard let localKeyshare = getKeyshareString() else {
+            throw HelperError.runtimeError("fail to get local keyshare")
+        }
+        let keyshareData = Data(base64Encoded: localKeyshare)
+        guard let keyshareData else {
+            throw HelperError.runtimeError("fail to decode keyshare")
+        }
+        return [UInt8](keyshareData)
+    }
+    
+    func SchnorrReshareWithRetry(attempt: UInt8) async throws {
+        self.setKeygenDone(status: false)
+        var task: Task<(), any Error>? = nil
+        do {
+            var keyshareHandle = godkls.Handle()
+            if !self.publicKeyEdDSA.isEmpty {
+                // we are part of the old keygen committee, let's load existing keyshare
+                let keyshare = try getKeyshareBytesFromVault()
+                var keyshareSlice = keyshare.to_dkls_goslice()
+                let result = schnorr_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
+                if result != LIB_OK {
+                    throw HelperError.runtimeError("fail to get keyshare, \(result)")
+                }
+            }
+            
+            let reshareSetupMsg = self.setupMessage
+            var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
+            var handler = godkls.Handle()
+            let localPartyIDArr = self.localPartyID.toArray()
+            var localPartySlice = localPartyIDArr.to_dkls_goslice()
+            
+            let result = schnorr_qc_session_from_setup(&decodedSetupMsg,&localPartySlice, keyshareHandle,&handler)
+            if result != LIB_OK {
+                throw HelperError.runtimeError("fail to create session from reshare setup message,error:\(result)")
+            }
+            // free the handler
+            defer {
+                let sessionFreeResult = schnorr_qc_session_free(&handler)
+                if sessionFreeResult != LIB_OK {
+                    print("fail to free reshare session \(sessionFreeResult)")
+                }
+            }
+            let h = handler
+            task = Task{
+                try await processSchnorrOutboundMessage(handle: h)
+            }
+            defer {
+                task?.cancel()
+            }
+            let isFinished = try await pullInboundMessages(handle: h)
+            if isFinished {
+                self.setKeygenDone(status: true)
+                task?.cancel()
+                var newKeyshareHandler = goschnorr.Handle()
+                let keyShareResult = schnorr_qc_session_finish(handler,&newKeyshareHandler)
+                if keyShareResult != LIB_OK {
+                    throw HelperError.runtimeError("fail to get new keyshare,\(keyShareResult)")
+                }
+                
+                let keyshareBytes = try getKeyshareBytes(handle: newKeyshareHandler)
+                let publicKeyEdDSA = try getPublicKeyBytes(handle: newKeyshareHandler)
+
+                self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
+                                             Keyshare: keyshareBytes.toBase64(),
+                                             chaincode: "")
+                print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+            }
+        }
+        catch {
+            print("Failed to reshare key, error: \(error.localizedDescription)")
+            self.setKeygenDone(status: true)
+            task?.cancel()
+            if attempt < 3 { // let's retry
+                print("keygen/reshare retry, attemp: \(attempt)")
+                try await SchnorrReshareWithRetry(attempt: attempt + 1)
+            } else {
+                throw error
+            }
+        }
     }
 }
