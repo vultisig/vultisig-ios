@@ -131,6 +131,7 @@ class KeygenViewModel: ObservableObject {
                                               sessionID: self.sessionID,
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               oldResharePrefix: self.oldResharePrefix,
+                                              isInitiatedDevice: self.isInitiateDevice,
                                               setupMessage: dklsKeygen.getSetupMessage())
             switch self.tssType {
             case .Keygen:

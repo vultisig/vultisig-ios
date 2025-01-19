@@ -20,6 +20,7 @@ final class SchnorrKeygen {
     let sessionID: String
     let encryptionKeyHex: String
     let oldResharePrefix: String
+    let isInitiateDevice: Bool
     var messenger: DKLSMessenger
     var keygenDoneIndicator = false
     let keyGenLock = NSLock()
@@ -37,6 +38,7 @@ final class SchnorrKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          oldResharePrefix: String,
+         isInitiatedDevice: Bool,
          setupMessage: [UInt8]) {
         self.vault = vault
         self.tssType = tssType
@@ -46,6 +48,7 @@ final class SchnorrKeygen {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
+        self.isInitiateDevice = isInitiatedDevice
         self.setupMessage = setupMessage
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
                                        sessionID: self.sessionID,
@@ -367,6 +370,24 @@ final class SchnorrKeygen {
         return [UInt8](keyshareData)
     }
     
+    private func getSchnorrReshareSetupMessage(keyshareHandle: goschnorr.Handle) throws ->[UInt8] {
+        var buf = goschnorr.tss_buffer()
+        defer {
+            goschnorr.tss_buffer_free(&buf)
+        }
+        let threshold = DKLSHelper.getThreshod(input: self.keygenCommittee.count)
+        let (allParties,newPartiesIdx,oldPartiesIdx) = processReshareCommittee(oldCommittee: self.vaultOldCommittee, newCommittee: self.keygenCommittee)
+        let byteArray = DKLSHelper.arrayToBytes(parties: allParties)
+        var ids = byteArray.to_dkls_goslice()
+        var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
+        var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
+        let result = schnorr_qc_setupmsg_new(keyshareHandle, &ids, &newPartiesIdxSlice,threshold,&oldPartiesIdxSlice,&buf)
+        if result != LIB_OK {
+            throw HelperError.runtimeError("fail to get qc setup message, \(result)")
+        }
+        return Array(UnsafeBufferPointer(start: buf.ptr,count: Int(buf.len)))
+    }
+    
     func SchnorrReshareWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
         var task: Task<(), any Error>? = nil
@@ -382,7 +403,18 @@ final class SchnorrKeygen {
                 }
             }
             
-            let reshareSetupMsg = self.setupMessage
+            var reshareSetupMsg:[UInt8]
+            // currently reshare Schnorr need to have it's own setup message, let's set it up
+            // it might not needed
+            if self.isInitiateDevice {
+                reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
+            } else {
+                // download the setup message from relay server
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                reshareSetupMsg = Array(base64: strReshareSetupMsg)
+                // self.setupMessage = reshareSetupMsg
+            }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
             var handler = godkls.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
