@@ -381,7 +381,7 @@ final class SchnorrKeygen {
         var ids = byteArray.to_dkls_goslice()
         var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
         var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
-        let result = schnorr_qc_setupmsg_new(keyshareHandle, &ids, &newPartiesIdxSlice,threshold,&oldPartiesIdxSlice,&buf)
+        let result = schnorr_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice ,threshold,&newPartiesIdxSlice,&buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to get qc setup message, \(result)")
         }
@@ -405,15 +405,16 @@ final class SchnorrKeygen {
             
             var reshareSetupMsg:[UInt8]
             // currently reshare Schnorr need to have it's own setup message, let's set it up
-            // it might not needed
+            //it might not needed
             if self.isInitiateDevice {
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
                 try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
             } else {
                 // download the setup message from relay server
+                // backoff for 500ms so the initiate device will upload the setup message correctly
+                try await Task.sleep(for: .milliseconds(500))
                 let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
-                // self.setupMessage = reshareSetupMsg
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
             var handler = godkls.Handle()
@@ -450,7 +451,7 @@ final class SchnorrKeygen {
                 
                 let keyshareBytes = try getKeyshareBytes(handle: newKeyshareHandler)
                 let publicKeyEdDSA = try getPublicKeyBytes(handle: newKeyshareHandler)
-
+                
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")

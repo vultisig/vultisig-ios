@@ -333,7 +333,6 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                dkls_keyshare_free(&keyshareHandler)
             }
         }
         catch {
@@ -439,7 +438,7 @@ final class DKLSKeygen {
         var ids = byteArray.to_dkls_goslice()
         var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
         var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
-        let result = dkls_qc_setupmsg_new(keyshareHandle, &ids, &newPartiesIdxSlice,threshold,&oldPartiesIdxSlice,&buf)
+        let result = dkls_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice,threshold,&newPartiesIdxSlice,&buf)
         if result != LIB_OK {
             throw HelperError.runtimeError("fail to get qc setup message, \(result)")
         }
@@ -515,9 +514,9 @@ final class DKLSKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyECDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: chainCodeBytes.toHexString())
+                print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                dkls_keyshare_free(&newKeyshareHandler)
             }
         }
         catch {
