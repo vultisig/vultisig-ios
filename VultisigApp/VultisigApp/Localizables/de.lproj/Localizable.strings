@@ -1,3 +1,4 @@
+"vaultExistsError" = "Ein Tresor mit demselben Namen existiert bereits.\nBitte versuchen Sie einen anderen Namen.";
 "noGasEstimation" = "Keine Gas-Schätzung möglich. Bitte aktualisieren Sie die Seite.";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
 "dontRemind" = "Nicht erneut erinnern";
@@ -446,3 +447,5 @@
 "advanced" = "Erweitert";
 "enableDKLS" = "DKLS aktivieren";
 "vaultLibType" = "Tresortyp";
+"scanQRCode" = "QR-Code scannen";
+"uploadFileWithQRCode" = "Datei mit QR-Code hochladen";

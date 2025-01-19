@@ -335,6 +335,26 @@ class Endpoint {
         return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
     }
     
+    static let tronServiceRpc = "https://tron-rpc.publicnode.com"
+    
+    static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
+    
+    static let fetchBlockNowInfoTron = "https://tron-rpc.publicnode.com/wallet/getnowblock"
+    
+    static func fetchAccountInfoTron() -> String {
+        "https://tron-rpc.publicnode.com/wallet/getaccount"
+    }
+    
+    static func triggerConstantContractTron() -> String {
+        "https://api.trongrid.io/wallet/triggerconstantcontract"
+    }
+    
+    static func triggerSolidityConstantContractTron() -> String {
+        "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
+    }
+    
+    static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
@@ -397,6 +417,8 @@ class Endpoint {
             return "https://xrpscan.com/tx/\(txid)"
         case "UAKT":
             return "https://www.mintscan.io/akash/tx/\(txid)"
+        case "TRX":
+            return "https://tronscan.org/#/transaction/\(txid)"
         default:
             return ""
         }
@@ -464,6 +486,8 @@ class Endpoint {
             return "https://xrpscan.com/account/\(address)"
         case "UAKT":
             return "https://www.mintscan.io/akash/address/\(address)"
+        case "TRX":
+            return "https://tronscan.org/#/address/\(address)"
         default:
             return nil
         }
@@ -531,6 +555,8 @@ class Endpoint {
             return "https://xrpscan.com/account/\(address)"
         case .akash:
             return "https://www.mintscan.io/akash/address/\(address)"
+        case .tron:
+            return "https://tronscan.org/#/address/\(address)"
         case .none:
             return nil
         }

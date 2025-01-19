@@ -341,6 +341,18 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             await updateQuotes(tx: tx, vault: vault)
         }
     }
+
+    func pickerFromCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+        return tx.fromCoins.sorted(by: {
+            Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
+        })
+    }
+
+    func pickerToCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+        return tx.toCoins.sorted(by: {
+            Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
+        })
+    }
 }
 
 private extension SwapCryptoViewModel {
@@ -421,7 +433,7 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
@@ -452,7 +464,7 @@ private extension SwapCryptoViewModel {
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             return BigInt(plan.fee)
 
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
     }

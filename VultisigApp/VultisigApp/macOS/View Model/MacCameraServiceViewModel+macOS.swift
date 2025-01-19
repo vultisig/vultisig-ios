@@ -133,8 +133,8 @@ extension MacCameraServiceViewModel {
         return NSLocalizedString(text, comment: "")
     }
     
-    func handleScan(vaults: [Vault], sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
-        guard let result = cameraViewModel.detectedQRCode, !result.isEmpty else {
+    func handleScan(vaults: [Vault], sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
+        guard let result = detectedQRCode, !result.isEmpty else {
             return
         }
         
@@ -143,10 +143,10 @@ extension MacCameraServiceViewModel {
         }
         
         deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
+        presetValuesForDeeplink(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
     }
     
-    func presetValuesForDeeplink(sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
+    func presetValuesForDeeplink(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, vaultDetailViewModel: VaultDetailViewModel, coinSelectionViewModel: CoinSelectionViewModel) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -165,14 +165,15 @@ extension MacCameraServiceViewModel {
             moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, vaultDetailViewModel: vaultDetailViewModel, coinSelectionViewModel: coinSelectionViewModel)
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            cameraViewModel.detectedQRCode = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+            detectedQRCode = ""
         }
     }
     
     private func moveToCreateVaultView() {
         shouldSendCrypto = false
         shouldKeysignTransaction = false
+        self.stopSession()
         shouldJoinKeygen = true
     }
     
@@ -180,6 +181,7 @@ extension MacCameraServiceViewModel {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.shouldJoinKeygen = false
             self.shouldSendCrypto = false
+            self.stopSession()
             self.shouldKeysignTransaction = true
         }
     }
@@ -205,6 +207,7 @@ extension MacCameraServiceViewModel {
             
             if isValid {
                 selectedChain = asset.chain
+                self.stopSession()
                 shouldSendCrypto = true
                 return
             }
@@ -216,6 +219,7 @@ extension MacCameraServiceViewModel {
     private func checkForMAYAChain(asset: Chain, address: String) -> Bool {
         if asset.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
             selectedChain = asset
+            self.stopSession()
             shouldSendCrypto = true
             return true
         } else {
@@ -244,6 +248,7 @@ extension MacCameraServiceViewModel {
     func handleCancel() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.showCamera = false
+            self.stopSession()
             self.shouldSendCrypto = true
         }
     }

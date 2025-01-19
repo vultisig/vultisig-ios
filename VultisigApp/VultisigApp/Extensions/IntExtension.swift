@@ -13,3 +13,9 @@ extension Int {
         self.init(cleanedHex, radix: 16)
     }
 }
+
+extension Numeric {
+    init(_ pred: Bool) {
+        self = if pred { 1 } else { 0 }
+    }
+}

@@ -25,9 +25,6 @@ struct VultisigApp: App {
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     
-    // Mac specific
-    @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
-    
     var body: some Scene {
         WindowGroup {
             content

@@ -1,3 +1,4 @@
+"vaultExistsError" = "Un caveau con lo stesso nome esiste già.\nSi prega di provare un nome diverso.";
 "noGasEstimation" = "Nessuna stima del gas possibile. Si prega di aggiornare la pagina.";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
 "dontRemind" = "Non ricordarmelo più";
@@ -429,3 +430,5 @@
 "advanced" = "Avanzato";
 "enableDKLS" = "Abilita DKLS";
 "vaultLibType" = "tipo di volta";
+"scanQRCode" = "Scansiona codice QR";
+"uploadFileWithQRCode" = "Carica file con codice QR";

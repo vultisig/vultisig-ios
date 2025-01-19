@@ -49,12 +49,12 @@ extension KeysignMessage: ProtoMappable {
 }
 
 extension CustomMessagePayload: ProtoMappable {
-
+    
     init(proto: VSCustomMessagePayload) throws {
         self.method = proto.method
         self.message = proto.message
     }
-
+    
     func mapToProtobuff() -> VSCustomMessagePayload {
         return VSCustomMessagePayload.with {
             $0.method = method
@@ -266,7 +266,8 @@ extension BlockChainSpecific {
                 recentBlockHash: value.recentBlockHash,
                 priorityFee: BigInt(stringLiteral: value.priorityFee),
                 fromAddressPubKey: value.fromTokenAssociatedAddress,
-                toAddressPubKey: value.toTokenAssociatedAddress
+                toAddressPubKey: value.toTokenAssociatedAddress,
+                hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
             self = .Polkadot(
@@ -299,6 +300,18 @@ extension BlockChainSpecific {
             self = .Ripple(
                 sequence: value.sequence,
                 gas: value.gas
+            )
+        case .tronSpecific(let value):
+            self = .Tron(
+                timestamp: value.timestamp,
+                expiration: value.expiration,
+                blockHeaderTimestamp: value.blockHeaderTimestamp,
+                blockHeaderNumber: value.blockHeaderNumber,
+                blockHeaderVersion: value.blockHeaderVersion,
+                blockHeaderTxTrieRoot: value.blockHeaderTxTrieRoot,
+                blockHeaderParentHash: value.blockHeaderParentHash,
+                blockHeaderWitnessAddress: value.blockHeaderWitnessAddress,
+                gasFeeEstimation: value.gasEstimation
             )
         }
         
@@ -343,12 +356,13 @@ extension BlockChainSpecific {
                     $0.latestBlock = ibc?.height ?? "0"
                 }
             })
-        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
+        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):
             return .solanaSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.priorityFee = String(priorityFee)
                 $0.fromTokenAssociatedAddress = fromTokenAssociatedAddress ?? .empty
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
+                $0.programID = tokenProgramId
             })
         case .Sui(let referenceGasPrice, let coins):
             // `coins` is of type `[[String: String]]`
@@ -387,6 +401,29 @@ extension BlockChainSpecific {
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
+            })
+            
+        case .Tron(
+            let timestamp,
+            let expiration,
+            let blockHeaderTimestamp,
+            let blockHeaderNumber,
+            let blockHeaderVersion,
+            let blockHeaderTxTrieRoot,
+            let blockHeaderParentHash,
+            let blockHeaderWitnessAddress,
+            let gasEstimation
+        ):
+            return .tronSpecific(.with {
+                $0.timestamp = timestamp
+                $0.expiration = expiration
+                $0.blockHeaderTimestamp = blockHeaderTimestamp
+                $0.blockHeaderNumber = blockHeaderNumber
+                $0.blockHeaderVersion = blockHeaderVersion
+                $0.blockHeaderParentHash = blockHeaderParentHash
+                $0.blockHeaderTxTrieRoot = blockHeaderTxTrieRoot
+                $0.blockHeaderWitnessAddress = blockHeaderWitnessAddress
+                $0.gasEstimation = gasEstimation
             })
         }
     }

@@ -61,7 +61,7 @@ extension Coin {
             } else {
                 return [.oneinch(chain), .lifi]
             }
-        case .optimism, .polygon, .base:
+        case .optimism, .polygon, .base, .zksync:
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]
@@ -71,7 +71,7 @@ extension Coin {
             return [.thorchain]
         case .blast:
             return [.lifi]
-        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash:
+        case .solana, .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
             return []
         }
     }

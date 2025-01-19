@@ -12,6 +12,8 @@ struct EditVaultView: View {
     let vault: Vault
 
     @Query var vaults: [Vault]
+    @Query var folders: [Folder]
+    
     @Environment(\.dismiss) var dismiss
     
     @State var devicesInfo: [DeviceInfo] = []
@@ -71,7 +73,7 @@ struct EditVaultView: View {
 
     var editVault: some View {
         NavigationLink {
-            RenameVaultView(vaults: vaults, vault: vault)
+            RenameVaultView(vaults: vaults, folders: folders, vault: vault)
         } label: {
             EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
         }

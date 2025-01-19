@@ -19,9 +19,10 @@ struct MacScannerView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var cameraViewModel: MacCameraServiceViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
+    @StateObject var cameraViewModel = MacCameraServiceViewModel()
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -59,7 +60,6 @@ struct MacScannerView: View {
             cameraViewModel.handleScan(
                 vaults: vaults,
                 sendTx: sendTx,
-                cameraViewModel: cameraViewModel,
                 deeplinkViewModel: deeplinkViewModel,
                 vaultDetailViewModel: vaultDetailViewModel,
                 coinSelectionViewModel: coinSelectionViewModel
@@ -132,7 +132,7 @@ struct MacScannerView: View {
     
     var uploadQRCodeButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: type)
+            GeneralQRImportMacView(type: type, sendTx: sendTx)
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }
@@ -190,7 +190,6 @@ struct MacScannerView: View {
     MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction())
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
-        .environmentObject(MacCameraServiceViewModel())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())
 }
