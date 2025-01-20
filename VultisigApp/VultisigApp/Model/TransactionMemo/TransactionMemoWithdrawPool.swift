@@ -69,7 +69,7 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
         AnyView(VStack {
             
             StyledFloatingPointField(
-                placeholder: "Percentage",
+                placeholder: "Basis Point (10,000 - 100%)",
                 value: Binding(
                     get: { Double(self.basisPoint) },
                     set: { self.basisPoint = Int64($0) }

@@ -27,11 +27,10 @@ struct ChainSelectionCell: View {
     
     var content: some View {
         ZStack {
-            if selectedTokensCount>1, isSelected {
-                disabledContent
-            } else {
-                enabledContent
-            }
+            
+            // This allow to remove the chains even with tokens
+            enabledContent
+            
         }
     }
     
