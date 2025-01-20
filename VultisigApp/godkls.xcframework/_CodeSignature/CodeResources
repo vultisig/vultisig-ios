@@ -4,14 +4,6 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>.DS_Store</key>
-		<data>
-		yHIhZRgiNgIIgWr9bVpTlLkkym8=
-		</data>
-		<key>ios-arm64/godkls.framework/.DS_Store</key>
-		<data>
-		lORK3pmmdxsF+6+y+43My+DIWhM=
-		</data>
 		<key>ios-arm64/godkls.framework/Headers/godkls.h</key>
 		<data>
 		ssbH3xtBQ09HRbdkxc5hLjkpf2c=
@@ -26,7 +18,7 @@
 		</data>
 		<key>ios-arm64/godkls.framework/godkls</key>
 		<data>
-		j1Mu2aa67KvahAI6A5Ef42p7x2M=
+		bC255VuspQkK7xXC6N7L8jyaVwU=
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Headers/godkls.h</key>
 		<data>
@@ -42,7 +34,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/godkls</key>
 		<data>
-		H4oNXw7JlVqwhPUrM4+J1TeIR0M=
+		+nCkfA2EnSgOgCECG2UH6Nu2fag=
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Modules/module.modulemap</key>
 		<data>
@@ -58,7 +50,7 @@
 		</data>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/A/godkls</key>
 		<data>
-		B76byPLahiYSmZp69XIFZoSmDGA=
+		GNHynuK1VTHOPL1ckcceJM1kvjo=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -100,11 +92,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			j1Mu2aa67KvahAI6A5Ef42p7x2M=
+			bC255VuspQkK7xXC6N7L8jyaVwU=
 			</data>
 			<key>hash2</key>
 			<data>
-			zUz7rxlZilFdn9TsmU17Xeh6cLFjeEykbEoDpZHvj8o=
+			7Bw2oOL7hOmh4VOrhKIZUrUeWIxK9HfjWdcRIOc0/ak=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/godkls.framework/Headers/godkls.h</key>
@@ -144,11 +136,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			H4oNXw7JlVqwhPUrM4+J1TeIR0M=
+			+nCkfA2EnSgOgCECG2UH6Nu2fag=
 			</data>
 			<key>hash2</key>
 			<data>
-			f3yJlKvceMrFgo2hWMv+I2r4PbkcenrJ2Gz6nei9zXY=
+			DUuvwAnm/shwi1/9z5NSMQCo9KdFEJdwfAd1MEFPaNA=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Headers</key>
@@ -198,11 +190,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			B76byPLahiYSmZp69XIFZoSmDGA=
+			GNHynuK1VTHOPL1ckcceJM1kvjo=
 			</data>
 			<key>hash2</key>
 			<data>
-			T18WXgCR19lpxiyrd3n1MXKCPwaUFF3Ig0tXe8lLBO4=
+			Kk5JCHGRVWyA+cQ1gdj13b2xfPM5xi0IIdyAWs62jUg=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/godkls.framework/Versions/Current</key>
