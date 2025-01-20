@@ -31,12 +31,6 @@ struct ChainSelectionCell: View {
             // This allow to remove the chains even with tokens
             enabledContent
             
-            // To restrict again the removal of chains with tokens uncomment this
-            // if selectedTokensCount>1, isSelected {
-            //   disabledContent
-            //  } else {
-            //   enabledContent
-            //  }
         }
     }
     
