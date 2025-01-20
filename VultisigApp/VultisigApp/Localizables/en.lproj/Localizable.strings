@@ -467,3 +467,5 @@
 "newChainDetected" = "New chain detected";
 "addNewChainToVault1" = "Do you want to add ";
 "addNewChainToVault2" = " to the vault?";
+"scanQRCode" = "Scan QR Code";
+"uploadFileWithQRCode" = "Upload file with QR Code";

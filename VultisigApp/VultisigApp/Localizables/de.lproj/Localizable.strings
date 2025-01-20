@@ -447,3 +447,5 @@
 "advanced" = "Erweitert";
 "enableDKLS" = "DKLS aktivieren";
 "vaultLibType" = "Tresortyp";
+"scanQRCode" = "QR-Code scannen";
+"uploadFileWithQRCode" = "Datei mit QR-Code hochladen";

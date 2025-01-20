@@ -16,6 +16,7 @@ struct SendCryptoAddressTextField: View {
     @State var showScanner = false
     @State var showImagePicker = false
     @State var isUploading: Bool = false
+    @State var showCameraScanView = false
     
 #if os(iOS)
     @State var selectedImage: UIImage?

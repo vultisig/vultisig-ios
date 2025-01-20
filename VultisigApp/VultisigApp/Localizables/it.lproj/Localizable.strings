@@ -430,3 +430,5 @@
 "advanced" = "Avanzato";
 "enableDKLS" = "Abilita DKLS";
 "vaultLibType" = "tipo di volta";
+"scanQRCode" = "Scansiona codice QR";
+"uploadFileWithQRCode" = "Carica file con codice QR";
