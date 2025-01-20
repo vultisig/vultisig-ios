@@ -131,6 +131,10 @@ class Endpoint {
         "https://tokens.jup.ag/tokens?tags=verified"
     }
     
+    static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
+        "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
+    }
+    
     static let rippleServiceRpc = "https://xrplcluster.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"

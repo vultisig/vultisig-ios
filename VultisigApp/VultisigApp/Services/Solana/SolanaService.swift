@@ -259,25 +259,6 @@ class SolanaService {
             
             var coinMetaList = [CoinMeta]()
             for tokenAddress in tokenAddresses {
-                if let tokenInfo = tokenInfos[tokenAddress] {
-                    let coinMeta = CoinMeta(
-                        chain: .solana,
-                        ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
-                        logo: tokenInfo.tokenList.image.description,
-                        decimals: tokenInfo.decimals,
-                        priceProviderId: tokenInfo.tokenList.extensions?
-                            .coingeckoId ?? .empty,
-                        contractAddress: tokenAddress,
-                        isNativeToken: false
-                    )
-                    coinMetaList.append(coinMeta)
-                }
-            }
-            
-            let missingTokenAddresses = tokenAddresses.filter {
-                !tokenInfos.keys.contains($0)
-            }
-            for tokenAddress in missingTokenAddresses {
                 let jupiterTokenInfo: SolanaJupiterToken =
                 try await fetchSolanaJupiterTokenInfoList(
                     contractAddress: tokenAddress)
@@ -435,6 +416,31 @@ class SolanaService {
             print("Error in parseSolanaTokenResponse:")
             throw error
         }
+    }
+    
+    static func getTokenUSDValue(contractAddress: String) async -> Double {
+        
+        do {
+            
+            let amountDecimal = 1_000_000 // 1 USDC
+            
+            let urlString: String = Endpoint.solanaTokenQuote(
+                inputMint: contractAddress,
+                outputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                amount: amountDecimal.description,
+                slippageBps: "50"
+            )
+            
+            let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            let rawAmount = Utils.extractResultFromJson(fromData: dataResponse, path: "swapUsdValue") as? String ?? "0"
+            
+            return Double(rawAmount) ?? 0.0
+            
+        } catch {
+            print("Error in fetchSolanaJupiterTokenInfoList:")
+            return 0.0
+        }
+        
     }
 }
 

@@ -29,8 +29,8 @@ final class RateProvider {
 
     static func cryptoId(for coin: Coin) -> CryptoId {
         switch coin.chain.chainType {
-        case .EVM:
-            if coin.isNativeToken {
+        case .EVM, .Solana:
+            if coin.isNativeToken || !coin.priceProviderId.isEmpty {
                 return .priceProvider(coin.priceProviderId)
             } else {
                 return .contract(coin.contractAddress)
