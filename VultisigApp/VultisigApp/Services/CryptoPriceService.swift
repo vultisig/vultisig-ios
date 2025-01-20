@@ -96,9 +96,6 @@ private extension CryptoPriceService {
             for contract in contracts {
                 let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
-                
-                print(poolRate)
-                
                 rates.append(poolRate)
             }
             
