@@ -33,7 +33,7 @@ struct KeysignMessageFactory {
             case .oneInch(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyECDSA)
+                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
                     messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
                 default:
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)

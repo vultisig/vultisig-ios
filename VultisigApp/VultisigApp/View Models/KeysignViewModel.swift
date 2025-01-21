@@ -309,7 +309,7 @@ class KeysignViewModel: ObservableObject {
             case .oneInch(let payload):
                 switch keysignPayload.coin.chain {
                 case .solana:
-                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyECDSA)
+                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
                     let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
                     signedTransactions.append(transaction)
                 default:
