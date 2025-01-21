@@ -28,7 +28,7 @@
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
 "thisDevice" = "This Device:";
 "start" = "Start";
-"createNewVault" = "Create a New Vault";
+"createNewVault" = "Create new vault";
 "importExistingVault" = "Import an Existing Vault";
 "import" = "Import";
 "continue" = "Continue";
@@ -469,3 +469,5 @@
 "addNewChainToVault2" = " to the vault?";
 "scanQRCode" = "Scan QR Code";
 "uploadFileWithQRCode" = "Upload file with QR Code";
+"scanQRStartScreen" = "Scan QR";
+"importVault" = "Import Vault";

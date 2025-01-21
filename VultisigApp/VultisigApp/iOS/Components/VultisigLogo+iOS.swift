@@ -12,10 +12,5 @@ extension VultisigLogo {
     var container: some View {
         content
     }
-    
-    var descriptionContainer: some View {
-        descriptionContent
-            .padding(.top, 10)
-    }
 }
 #endif
