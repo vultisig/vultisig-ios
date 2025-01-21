@@ -78,8 +78,14 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
     
-    static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String, fee: String) -> URL {
-        return "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&integrator=\(integrator)&fee=\(fee)".asUrl
+    static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
+        let url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
+
+        if let integrator, let fee {
+            return (url + "&integrator=\(integrator)&fee=\(fee)").asUrl
+        }
+
+        return url.asUrl
     }
     
     static func fetchTokens(chain: Int) -> String {

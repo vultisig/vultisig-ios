@@ -301,7 +301,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 25
         case .zksync:
             return 324
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
+        case .solana:
+            return 1151111081099710
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
             return nil
         }
     }

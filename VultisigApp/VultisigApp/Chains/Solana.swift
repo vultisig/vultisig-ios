@@ -117,6 +117,11 @@ enum SolanaHelper {
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let imageHash = try SolanaHelper.getPreSignedImageHash(inputData: inputData)
+        return imageHash
+    }
+
+    static func getPreSignedImageHash(inputData: Data) throws -> [String] {
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
@@ -125,7 +130,7 @@ enum SolanaHelper {
         }
         return [preSigningOutput.data.hexString]
     }
-    
+
     static func getZeroSignedTransaction(vaultHexPubKey: String,
                                          vaultHexChainCode: String,
                                          keysignPayload: KeysignPayload) throws -> String
@@ -171,16 +176,36 @@ enum SolanaHelper {
         }
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+
+        let result = try SolanaHelper.getSignedTransaction(
+            vaultHexPubKey: vaultHexPubKey,
+            inputData: inputData,
+            signatures: signatures
+        )
+
+        return result
+    }
+
+    static func getSignedTransaction(vaultHexPubKey: String, inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+
+        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        }
+        guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        }
+
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
+
         guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
             throw HelperError.runtimeError("fail to verify signature")
         }
-        
+
         allSignatures.add(data: signature)
         publicKeys.add(data: pubkeyData)
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,
@@ -190,10 +215,10 @@ enum SolanaHelper {
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
-        
+
         return result
     }
-    
+
     static func getHashFromRawTransaction(tx: String) -> String {
         let sig =  Data(tx.prefix(64).utf8)
         return sig.base64EncodedString()

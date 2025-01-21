@@ -307,9 +307,16 @@ class KeysignViewModel: ObservableObject {
                 signedTransactions.append(transaction)
                 
             case .oneInch(let payload):
-                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
-                signedTransactions.append(transaction)
+                switch keysignPayload.coin.chain {
+                case .solana:
+                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
+                    let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                    signedTransactions.append(transaction)
+                default:
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                    signedTransactions.append(transaction)
+                }
             case .mayachain:
                 break // No op - Regular transaction with memo
             }

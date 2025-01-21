@@ -21,43 +21,62 @@ struct LiFiService {
         }
         let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
         let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
+        let integrator = fromCoin.isLifiFeesSupported ? integratorName : nil
+        let fee = fromCoin.isLifiFeesSupported ? integratorFee : nil
 
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),
             fromToken: fromToken,
+            toAddress: toCoin.address,
             toToken: toToken,
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address,
-            integrator: integratorName,
-            fee: integratorFee
+            integrator: integrator,
+            fee: fee
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)
-        let response = try JSONDecoder().decode(QuoteResponse.self, from: data)
+        let response = try JSONDecoder().decode(LifiQuoteResponse.self, from: data)
 
-        guard 
-            let value = BigInt(response.transactionRequest.value.stripHexPrefix(), radix: 16),
-            let gasPrice = BigInt(response.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
-            let gas = Int64(response.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
-            throw Errors.unexpectedError
-        }
+        switch response {
+        case .evm(let quote):
+            guard
+                let value = BigInt(quote.transactionRequest.value.stripHexPrefix(), radix: 16),
+                let gasPrice = BigInt(quote.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
+                let gas = Int64(quote.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
+                throw Errors.unexpectedError
+            }
 
-        let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
+            let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
 
-        let quote = OneInchQuote(
-            dstAmount: response.estimate.toAmount,
-            tx: OneInchQuote.Transaction(
-                from: response.transactionRequest.from,
-                to: response.transactionRequest.to,
-                data: response.transactionRequest.data,
-                value: String(value),
-                gasPrice: String(gasPrice),
-                gas: normalizedGas
+            let quote = OneInchQuote(
+                dstAmount: quote.estimate.toAmount,
+                tx: OneInchQuote.Transaction(
+                    from: quote.transactionRequest.from,
+                    to: quote.transactionRequest.to,
+                    data: quote.transactionRequest.data,
+                    value: String(value),
+                    gasPrice: String(gasPrice),
+                    gas: normalizedGas
+                )
             )
-        )
 
-        return quote
+            return quote
+
+        case .solana(let quote):
+            return OneInchQuote(
+                dstAmount: quote.estimate.toAmount,
+                tx: OneInchQuote.Transaction(
+                    from: .empty,
+                    to: .empty,
+                    data: quote.transactionRequest.data,
+                    value: .empty,
+                    gasPrice: .empty,
+                    gas: 0
+                )
+            )
+        }
     }
 }
 
@@ -65,24 +84,5 @@ private extension LiFiService {
 
     enum Errors: Error {
         case unexpectedError
-    }
-
-    struct QuoteResponse: Codable {
-        struct Estimate: Codable {
-            let toAmount: String
-            let toAmountMin: String
-            let executionDuration: Decimal
-        }
-        struct TransactionRequest: Codable {
-            let data: String
-            let to: String
-            let value: String
-            let from: String
-            let chainId: Int
-            let gasLimit: String
-            let gasPrice: String
-        }
-        let estimate: Estimate
-        let transactionRequest: TransactionRequest
     }
 }
