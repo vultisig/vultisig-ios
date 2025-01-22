@@ -173,7 +173,7 @@ private extension CryptoPriceService {
             return "blast"
         case .arbitrum:
             return "arbitrum-one"
-        case .polygon:
+        case .polygon, .polygonV2:
             return "polygon-pos"
         case .optimism:
             return "optimistic-ethereum"

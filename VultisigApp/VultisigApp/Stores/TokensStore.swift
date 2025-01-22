@@ -401,6 +401,59 @@ class TokensStore {
             CoinMeta(chain: Chain.optimism, ticker: "LDO", logo: "ldo", decimals: 18, priceProviderId: "", contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F", isNativeToken: false)
         }
         
+        // POL POLYGON
+        static var maticPOL: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "POL", logo: "matic", decimals: 18, priceProviderId: "polygon-ecosystem-token", contractAddress: "", isNativeToken: true)
+        }
+        
+        static var maticPOLWETH: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "WETH", logo: "weth", decimals: 18, priceProviderId: "", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", isNativeToken: false)
+        }
+        
+        static var maticPOLFox: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", isNativeToken: false)
+        }
+        
+        static var maticPOLUSDT: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "", contractAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", isNativeToken: false)
+        }
+        
+        static var maticPOLBNB: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "BNB", logo: "bsc", decimals: 18, priceProviderId: "", contractAddress: "0x3BA4c387f786bFEE076A58914F5Bd38d668B42c3", isNativeToken: false)
+        }
+        
+        static var maticPOLSOL: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "SOL", logo: "solana", decimals: 9, priceProviderId: "", contractAddress: "0xd93f7E271cB87c23AaA73edC008A79646d1F9912", isNativeToken: false)
+        }
+        
+        static var maticPOLUSDC: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", isNativeToken: false)
+        }
+        
+        static var maticPOLUSDCe: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "USDC.e", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", isNativeToken: false)
+        }
+        
+        static var maticPOLBUSD: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "BUSD", logo: "busd", decimals: 18, priceProviderId: "", contractAddress: "0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7", isNativeToken: false)
+        }
+        
+        static var maticPOLWBTC: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "WBTC", logo: "wbtc", decimals: 8, priceProviderId: "", contractAddress: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6", isNativeToken: false)
+        }
+        
+        static var maticPOLAVAX: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "AVAX", logo: "avax", decimals: 18, priceProviderId: "", contractAddress: "0x2C89bbc92BD86F8075d1DEcc58C7F4E0107f286b", isNativeToken: false)
+        }
+        
+        static var maticPOLSHIB: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "SHIB", logo: "shib", decimals: 18, priceProviderId: "", contractAddress: "0x6f8a06447Ff6FcF75d803135a7de15CE88C1d4ec", isNativeToken: false)
+        }
+        
+        static var maticPOLLINK: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "LINK", logo: "link", decimals: 18, priceProviderId: "", contractAddress: "0xb0897686c545045aFc77CF20eC7A532E3120E0F1", isNativeToken: false)
+        }
+        
         // MATIC POLYGON
         
         static var matic: CoinMeta {
@@ -816,6 +869,21 @@ class TokensStore {
         TokensStore.Token.maticAVAX,
         TokensStore.Token.maticSHIB,
         TokensStore.Token.maticLINK,
+        
+        // POL
+        TokensStore.Token.maticPOL,
+        TokensStore.Token.maticPOLWETH,
+        TokensStore.Token.maticPOLFox,
+        TokensStore.Token.maticPOLUSDT,
+        TokensStore.Token.maticPOLBNB,
+        TokensStore.Token.maticPOLSOL,
+        TokensStore.Token.maticPOLUSDC,
+        TokensStore.Token.maticPOLUSDCe,
+        TokensStore.Token.maticPOLBUSD,
+        TokensStore.Token.maticPOLWBTC,
+        TokensStore.Token.maticPOLAVAX,
+        TokensStore.Token.maticPOLSHIB,
+        TokensStore.Token.maticPOLLINK,
         
         // BLAST
         TokensStore.Token.blastETH,

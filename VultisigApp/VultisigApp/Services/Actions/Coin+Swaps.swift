@@ -61,7 +61,7 @@ extension Coin {
             } else {
                 return [.oneinch(chain), .lifi]
             }
-        case .optimism, .polygon, .base, .zksync:
+        case .optimism, .polygon, .polygonV2, .base, .zksync:
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]

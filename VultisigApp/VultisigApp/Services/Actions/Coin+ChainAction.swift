@@ -14,7 +14,7 @@ extension Chain {
         switch self {
         case .thorChain, .mayaChain:
             actions = [.send, .swap, .memo]
-        case .solana, .ethereum, .avalanche, .base, .arbitrum, .polygon, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .zksync:
+        case .solana, .ethereum, .avalanche, .base, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .zksync:
             actions = [.send, .swap]
         case .ton, .dydx:
             actions = [.send, .memo]
