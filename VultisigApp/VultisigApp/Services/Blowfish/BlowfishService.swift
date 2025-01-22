@@ -118,7 +118,7 @@ struct BlowfishService {
         switch chain {
         case .ethereum:
             return "ethereum"
-        case .polygon:
+        case .polygon, .polygonV2:
             return "polygon"
         case .avalanche:
             return "avalanche"
@@ -141,7 +141,7 @@ struct BlowfishService {
     
     func blowfishNetwork(chain: Chain) throws -> String {
         switch chain {
-        case .ethereum, .polygon, .avalanche, .optimism, .base, .blast, .bscChain, .solana:
+        case .ethereum, .polygon, .polygonV2, .avalanche, .optimism, .base, .blast, .bscChain, .solana:
             return "mainnet"
         case .arbitrum:
             return "one"

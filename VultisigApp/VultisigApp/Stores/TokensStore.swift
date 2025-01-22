@@ -403,6 +403,10 @@ class TokensStore {
         
         // MATIC POLYGON
         
+        static var maticPOL: CoinMeta {
+            CoinMeta(chain: Chain.polygonV2, ticker: "POL", logo: "matic", decimals: 18, priceProviderId: "polygon-ecosystem-token", contractAddress: "", isNativeToken: true)
+        }
+        
         static var matic: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "MATIC", logo: "matic", decimals: 18, priceProviderId: "matic-network", contractAddress: "", isNativeToken: true)
         }
@@ -816,6 +820,9 @@ class TokensStore {
         TokensStore.Token.maticAVAX,
         TokensStore.Token.maticSHIB,
         TokensStore.Token.maticLINK,
+        
+        // POL
+        TokensStore.Token.maticPOL,
         
         // BLAST
         TokensStore.Token.blastETH,

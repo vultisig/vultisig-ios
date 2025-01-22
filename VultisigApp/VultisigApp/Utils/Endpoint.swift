@@ -539,7 +539,7 @@ class Endpoint {
             return "https://basescan.org/address/\(address)" // Hypothetical URL
         case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon:
+        case .polygon, .polygonV2:
             return "https://polygonscan.com/address/\(address)"
         case .blast:
             return "https://blastscan.io/address/\(address)"
