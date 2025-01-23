@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct OnboardingView: View {
     @State var tabIndex = 0
     @EnvironmentObject var accountViewModel: AccountViewModel
     
-    init() {
-         tabViewSetup()
-    }
+    let animationVM = RiveViewModel(fileName: "Onboarding", autoPlay: false)
+    
+    let totalTabCount: Int = 6
     
     var body: some View {
         container
@@ -27,26 +28,50 @@ struct OnboardingView: View {
     }
     
     var view: some View {
-        VStack {
-            title
-            tabs
-            buttons
+        VStack(spacing: 0) {
+            header
+            progressBar
+            animation
+            button
         }
     }
     
-    var title: some View {
-        Image("LogoWithTitle")
-            .padding(.top, 30)
+    var header: some View {
+        HStack {
+            headerTitle
+            Spacer()
+            skipButton
+        }
+        .padding(16)
+    }
+    
+    var headerTitle: some View {
+        Text(NSLocalizedString("intro", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body18BrockmannMedium)
+    }
+    
+    var progressBar: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<totalTabCount) { index in
+                Rectangle()
+                    .frame(height: 2)
+                    .frame(maxWidth: .infinity)
+                    .foregroundColor(index <= tabIndex ? .turquoise400 : .blue400)
+            }
+        }
+        .padding(.horizontal, 16)
     }
     
     var nextButton: some View {
         Button {
             nextTapped()
         } label: {
-            FilledButton(title: "next")
+            FilledButton(icon: "chevron.right")
         }
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
+        .frame(width: 80)
     }
     
     var skipButton: some View {
@@ -54,26 +79,23 @@ struct OnboardingView: View {
             skipTapped()
         } label: {
             Text(NSLocalizedString("skip", comment: ""))
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .foregroundColor(Color.turquoise600)
-                .font(.body16MontserratMedium)
+                .foregroundColor(Color.extraLightGray)
+                .font(.body14BrockmannMedium)
         }
-        .opacity(tabIndex==3 ? 0 : 1)
-        .disabled(tabIndex==3 ? true : false)
-        .animation(.easeInOut, value: tabIndex)
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
     }
     
     private func nextTapped() {
-        guard tabIndex<3 else {
+        animationVM.pause()
+        guard tabIndex<totalTabCount else {
             moveToVaultView()
             return
         }
         
-        withAnimation {
+        withAnimation(.easeOut(duration: 0.1)) {
             tabIndex+=1
+            animationVM.play()
         }
     }
     

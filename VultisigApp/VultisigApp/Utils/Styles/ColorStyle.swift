@@ -49,6 +49,8 @@ extension Color {
     static let reshareCellGreen = Color(hex: "#15D7AC")
     static let reshareCellRed = Color(hex: "#DA2E2E")
     
+    static let extraLightGray = Color(hex: "8295AE")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }

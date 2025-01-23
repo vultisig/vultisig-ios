@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FilledButton: View {
-    let title: String
+    var title: String = ""
     var icon: String = ""
     var textColor: Color = Color.blue600
     var background: Color = Color.turquoise600
@@ -18,7 +18,10 @@ struct FilledButton: View {
             if !icon.isEmpty {
                 image
             }
-            text
+            
+            if !title.isEmpty {
+                text
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity)
