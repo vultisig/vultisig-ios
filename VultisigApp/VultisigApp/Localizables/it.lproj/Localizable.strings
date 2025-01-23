@@ -434,3 +434,5 @@
 "uploadFileWithQRCode" = "Carica file con codice QR";
 "scanQRStartScreen" = "Scansiona QR";
 "importVault" = "Importa Vault";
+"uploadFromGallerySingleLine" = "Carica dalla galleria";
+"uploadFromFilesSingleLine" = "Carica dai file";

@@ -37,31 +37,77 @@ struct GeneralCodeScannerView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        content
-            .fileImporter(
-                isPresented: $isFilePresented,
-                allowedContentTypes: [UTType.image],
-                allowsMultipleSelection: false
-            ) { result in
-                do {
-                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                    let result = String(data: qrCode, encoding: .utf8)
-                    guard let url = URL(string: result ?? .empty) else {
-                        return
-                    }
-                    
-                    deeplinkViewModel.extractParameters(url, vaults: vaults)
-                    presetValuesForDeeplink(url)
-                } catch {
-                    print(error)
+        ZStack {
+            Background()
+            content
+        }
+        .fileImporter(
+            isPresented: $isFilePresented,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            do {
+                let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                let result = String(data: qrCode, encoding: .utf8)
+                guard let url = URL(string: result ?? .empty) else {
+                    return
                 }
+                
+                deeplinkViewModel.extractParameters(url, vaults: vaults)
+                presetValuesForDeeplink(url)
+            } catch {
+                print(error)
             }
-            .alert(isPresented: $showAlert) {
-                alert
-            }
+        }
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var content: some View {
+        VStack {
+            header
+            cameraView
+            
+            if showButtons {
+                buttons
+            }
+        }
+    }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            helpButton
+        }
+        .foregroundColor(.neutral0)
+        .font(.body18BrockmannMedium)
+        .padding(16)
+        .offset(y: 8)
+    }
+    
+    var backButton: some View {
+        Button {
+            showSheet = false
+        } label: {
+            getIcon(for: "chevron.left")
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString("scanQRStartScreen", comment: ""))
+    }
+    
+    var helpButton: some View {
+        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
+            getIcon(for: "questionmark.circle")
+        }
+    }
+    
+    var cameraView: some View {
         ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
@@ -69,14 +115,21 @@ struct GeneralCodeScannerView: View {
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay (
+                border
+            )
             
             overlay
-            
-            if showButtons {
-                buttonsStack
-            }
         }
-        .ignoresSafeArea()
+        .cornerRadius(16)
+        .padding(16)
+    }
+    
+    var border: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.neutral0, lineWidth: 1)
+            .opacity(0.2)
     }
     
     var overlay: some View {
@@ -84,34 +137,23 @@ struct GeneralCodeScannerView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .padding(60)
-            .offset(y: -50)
             .allowsHitTesting(false)
     }
     
-    var buttonsStack: some View {
-        VStack {
-            Spacer()
-            buttons
-        }
-    }
-    
     var buttons: some View {
-        HStack(spacing: 0) {
+        VStack {
             galleryButton
-                .frame(maxWidth: .infinity)
-
             fileButton
-                .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 50)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 30)
     }
     
     var galleryButton: some View {
         Button {
             isGalleryPresented.toggle()
         } label: {
-            OpenButton(buttonIcon: "photo", buttonLabel: "uploadFromGallery")
+            FilledButton(title: "uploadFromGallerySingleLine")
         }
     }
     
@@ -119,7 +161,7 @@ struct GeneralCodeScannerView: View {
         Button {
             isFilePresented.toggle()
         } label: {
-            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
+            FilledButton(title: "uploadFromFilesSingleLine")
         }
     }
     
@@ -142,6 +184,10 @@ struct GeneralCodeScannerView: View {
                 }
             )
         )
+    }
+    
+    private func getIcon(for icon: String) -> some View {
+        Image(systemName: icon)
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {

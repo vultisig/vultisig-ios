@@ -435,3 +435,5 @@
 "uploadFileWithQRCode" = "Carregar arquivo com código QR";
 "scanQRStartScreen" = "Escanear QR";
 "importVault" = "Importar Cofre";
+"uploadFromGallerySingleLine" = "Carregar da galeria";
+"uploadFromFilesSingleLine" = "Carregar dos arquivos";

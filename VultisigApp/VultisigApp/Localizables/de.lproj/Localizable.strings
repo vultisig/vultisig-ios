@@ -451,3 +451,5 @@
 "uploadFileWithQRCode" = "Datei mit QR-Code hochladen";
 "scanQRStartScreen" = "QR scannen";
 "importVault" = "Tresor importieren";
+"uploadFromGallerySingleLine" = "Aus der Galerie hochladen";
+"uploadFromFilesSingleLine" = "Aus Dateien hochladen";

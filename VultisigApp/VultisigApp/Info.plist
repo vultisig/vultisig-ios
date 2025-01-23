@@ -4,6 +4,25 @@
 <dict>
 	<key>ATSApplicationFontsPath</key>
 	<string>.</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vult</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Custom File Type</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.vultisig.wallet</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>CFBundleURLTypes</key>
@@ -23,6 +42,8 @@
 	<array>
 		<string>Intent</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -34,36 +55,28 @@
 		<string>_bonjour._tcp</string>
 		<string>_lnp._tcp.</string>
 	</array>
-	<key>CFBundleDocumentTypes</key>
+	<key>UIAppFonts</key>
 	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Custom File Type</string>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.vultisig.wallet</string>
-			</array>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>vult</string>
-			</array>
-		</dict>
+		<string>Brockmann-SemiBold.otf</string>
+		<string>Brockmann-Regular.otf</string>
+		<string>Brockmann-Medium.otf</string>
+		<string>Brockmann-Bold.otf</string>
+		<string>Montserrat-Italic.ttf</string>
+		<string>Montserrat.ttf</string>
 	</array>
+	<key>UIRequiresPersistentWiFi</key>
+	<true/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeDescription</key>
-			<string>Custom File</string>
-			<key>UTTypeIdentifier</key>
-			<string>com.vultisig.wallet</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Custom File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.vultisig.wallet</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -75,18 +88,5 @@
 			</dict>
 		</dict>
 	</array>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Montserrat-Italic.ttf</string>
-		<string>Montserrat.ttf</string>
-	</array>
-	<key>UIRequiresPersistentWiFi</key>
-	<true/>
-	<key>UISupportsDocumentBrowser</key>
-	<true/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>We need access to the local network to discover services.</string>
 </dict>
 </plist>

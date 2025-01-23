@@ -434,3 +434,5 @@
 "uploadFileWithQRCode" = "Učitaj datoteku s QR kodom";
 "scanQRStartScreen" = "Skeniraj QR";
 "importVault" = "Uvezi trezor";
+"uploadFromGallerySingleLine" = "Prenesi iz galerije";
+"uploadFromFilesSingleLine" = "Prenesi iz datoteka";
