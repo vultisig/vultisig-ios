@@ -11,8 +11,7 @@ final class FastVaultService {
 
     static let shared = FastVaultService()
 
-    //private let endpoint = "https://api.vultisig.com/vault"
-    private let endpoint = "http://127.0.0.1:8080/vault"
+    private let endpoint = "https://api.vultisig.com/vault"
 
     static func localPartyID(sessionID: String) -> String {
         guard let data = sessionID.data(using: .utf8) else {
