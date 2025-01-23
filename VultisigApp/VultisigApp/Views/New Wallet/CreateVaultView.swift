@@ -83,32 +83,12 @@ struct CreateVaultView: View {
         .animation(.spring(duration: 0.3), value: showSeparator)
     }
     
-    var scanButton: some View {
-        ZStack {
-            if ProcessInfo.processInfo.isiOSAppOnMac {
-                scanMacButton
-            } else {
-                scanPhoneButton
-            }
-        }
-    }
-    
     var scanPhoneButton: some View {
         Button(action: {
             showSheet = true
         }) {
             scanQRButton
         }
-        .sheet(isPresented: $showSheet, content: {
-            GeneralCodeScannerView(
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                shouldSendCrypto: .constant(false),         // -
-                selectedChain: .constant(nil),              // -
-                sendTX: SendTransaction()                   // -
-            )
-        })
     }
     
     var scanMacButton: some View {

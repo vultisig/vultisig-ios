@@ -15,5 +15,9 @@ extension CreateVaultView {
             view
         }
     }
+    
+    var scanButton: some View {
+        scanMacButton
+    }
 }
 #endif
