@@ -363,7 +363,11 @@ public final class Mediator {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
-        let key = "setup-\(sessionID)"
+        var key = "setup-\(sessionID)"
+        let messageID = req.headers["message_id"]
+        if let messageID {
+            key += "-\(messageID)"
+        }
         do{
             switch req.method {
             case "POST":
