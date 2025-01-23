@@ -31,8 +31,14 @@ struct KeysignMessageFactory {
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
-                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                switch payload.coin.chain {
+                case .solana:
+                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
+                    messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
+                default:
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                }
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -46,7 +52,7 @@ struct KeysignMessageFactory {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
