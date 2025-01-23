@@ -31,7 +31,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
-    @MainActor @Published var quoteLoading = false
     @MainActor @Published var dataLoaded = false
 
     var progress: Double {
@@ -208,7 +207,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && !tx.toAmountDecimal.isZero
             && tx.quote != nil
             && isSufficientBalance(tx: tx)
-            && !quoteLoading
+            && !isLoading
     }
     
     func moveToNextView() {
@@ -375,8 +374,8 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, vault: Vault) async {
-        quoteLoading = true
-        defer { quoteLoading = false }
+        isLoading = true
+        defer { isLoading = false }
         
         clearQuote(tx: tx)
         
