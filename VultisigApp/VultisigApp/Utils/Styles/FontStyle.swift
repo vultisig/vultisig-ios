@@ -41,6 +41,7 @@ extension Font {
     static let body20MenloMedium = Font.custom("Menlo", size: 20).weight(.medium)
     
     static let body12BrockmannMedium = Font.custom("Brockmann-Medium", size: 12)
+    static let body18BrockmannMedium = Font.custom("Brockmann-Medium", size: 18)
     
     // Semi-bold
     static let body10MontserratSemiBold = Font.custom("Montserrat", size: 10).weight(.semibold)

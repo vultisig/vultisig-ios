@@ -66,11 +66,44 @@ struct GeneralCodeScannerView: View {
     
     var content: some View {
         VStack {
+            header
             cameraView
             
             if showButtons {
                 buttons
             }
+        }
+    }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            helpButton
+        }
+        .foregroundColor(.neutral0)
+        .font(.body18BrockmannMedium)
+        .padding(16)
+        .offset(y: 8)
+    }
+    
+    var backButton: some View {
+        Button {
+            showSheet = false
+        } label: {
+            getIcon(for: "chevron.left")
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString("scanQRStartScreen", comment: ""))
+    }
+    
+    var helpButton: some View {
+        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
+            getIcon(for: "questionmark.circle")
         }
     }
     
@@ -83,11 +116,20 @@ struct GeneralCodeScannerView: View {
                 completion: handleScan
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay (
+                border
+            )
             
             overlay
         }
         .cornerRadius(16)
         .padding(16)
+    }
+    
+    var border: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.neutral0, lineWidth: 1)
+            .opacity(0.2)
     }
     
     var overlay: some View {
@@ -142,6 +184,10 @@ struct GeneralCodeScannerView: View {
                 }
             )
         )
+    }
+    
+    private func getIcon(for icon: String) -> some View {
+        Image(systemName: icon)
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
