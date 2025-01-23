@@ -449,3 +449,5 @@
 "vaultLibType" = "Tresortyp";
 "scanQRCode" = "QR-Code scannen";
 "uploadFileWithQRCode" = "Datei mit QR-Code hochladen";
+"scanQRStartScreen" = "QR scannen";
+"importVault" = "Tresor importieren";

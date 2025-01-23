@@ -3489,6 +3489,7 @@
 				DE6325B52C2C12FB000D05B9 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				DE8554662C2CFBC10002438C /* XCRemoteSwiftPackageReference "walletcore-spm" */,
 				A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */,
+				A6BEAC8D2D3F678A0046C30A /* XCRemoteSwiftPackageReference "rive-ios" */,
 			);
 			productRefGroup = DE49A1642B65F6D9000F3AFB /* Products */;
 			projectDirPath = "";
@@ -4724,6 +4725,14 @@
 			requirement = {
 				branch = main;
 				kind = branch;
+			};
+		};
+		A6BEAC8D2D3F678A0046C30A /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rive-app/rive-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.5.7;
 			};
 		};
 		DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */ = {

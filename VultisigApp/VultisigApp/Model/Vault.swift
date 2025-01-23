@@ -128,20 +128,29 @@ final class Vault: ObservableObject, Codable {
         }
     }
 
-    static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState) -> String {
+    static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do{
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
             let start = vaults.count
             var idx = start
             repeat {
-                let vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
-                let vaultExist = vaults.contains {v in
+                let vaultName: String?
+                
+                if let state {
+                    vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
+                } else {
+                    vaultName = "Vault #\(idx + 1)"
+                }
+                
+                let vaultExist = vaults.contains { v in
                     v.name == vaultName && !v.pubKeyECDSA.isEmpty
                 }
+                
                 if !vaultExist {
-                    return vaultName
+                    return vaultName ?? ""
                 }
+                
                 idx += 1
             } while idx < 1000
         }

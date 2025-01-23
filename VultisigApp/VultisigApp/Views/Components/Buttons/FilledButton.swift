@@ -10,6 +10,7 @@ import SwiftUI
 struct FilledButton: View {
     let title: String
     var icon: String = ""
+    var textColor: Color = Color.blue600
     var background: Color = Color.turquoise600
     
     var body: some View {

@@ -432,3 +432,5 @@
 "vaultLibType" = "tipo di volta";
 "scanQRCode" = "Scansiona codice QR";
 "uploadFileWithQRCode" = "Carica file con codice QR";
+"scanQRStartScreen" = "Scansiona QR";
+"importVault" = "Importa Vault";
