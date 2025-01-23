@@ -591,6 +591,7 @@
 		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
 		A6F7B6722D42BDCD00AC8104 /* Onboarding.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */; };
 		A6F7B6752D42BE4200AC8104 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = A6F7B6742D42BE4200AC8104 /* RiveRuntime */; };
+		A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */; };
@@ -1391,6 +1392,7 @@
 		A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralCodeScannerView.swift; sourceTree = "<group>"; };
 		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
 		A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = Onboarding.riv; sourceTree = "<group>"; };
+		A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextCard.swift; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultImageManager.swift; sourceTree = "<group>"; };
@@ -2666,6 +2668,7 @@
 				A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */,
 				A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */,
 				A6D07E422C36756700594687 /* OnboardingView4.swift */,
+				A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -4254,6 +4257,7 @@
 				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
 				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
+				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,

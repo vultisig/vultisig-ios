@@ -43,6 +43,7 @@ extension Font {
     static let body12BrockmannMedium = Font.custom("Brockmann-Medium", size: 12)
     static let body14BrockmannMedium = Font.custom("Brockmann-Medium", size: 14)
     static let body18BrockmannMedium = Font.custom("Brockmann-Medium", size: 18)
+    static let body28BrockmannMedium = Font.custom("Brockmann-Medium", size: 28)
     
     // Semi-bold
     static let body10MontserratSemiBold = Font.custom("Montserrat", size: 10).weight(.semibold)

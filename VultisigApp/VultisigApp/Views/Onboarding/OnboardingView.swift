@@ -23,6 +23,7 @@ struct OnboardingView: View {
     var content: some View {
         ZStack {
             Background()
+            animation
             view
         }
     }
@@ -31,7 +32,8 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             header
             progressBar
-            animation
+            Spacer()
+            text
             button
         }
     }
@@ -53,14 +55,28 @@ struct OnboardingView: View {
     
     var progressBar: some View {
         HStack(spacing: 5) {
-            ForEach(0..<totalTabCount) { index in
+            ForEach(0..<totalTabCount, id: \.self) { index in
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
                     .foregroundColor(index <= tabIndex ? .turquoise400 : .blue400)
+                    .animation(.easeInOut, value: tabIndex)
             }
         }
         .padding(.horizontal, 16)
+    }
+    
+    var text: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<totalTabCount, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    OnboardingTextCard(index: index)
+                }
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .frame(maxWidth: .infinity)
     }
     
     var nextButton: some View {
@@ -88,15 +104,13 @@ struct OnboardingView: View {
     
     private func nextTapped() {
         animationVM.pause()
-        guard tabIndex<totalTabCount else {
+        guard tabIndex<totalTabCount-1 else {
             moveToVaultView()
             return
         }
         
-        withAnimation(.easeOut(duration: 0.1)) {
-            tabIndex+=1
-            animationVM.play()
-        }
+        tabIndex+=1
+        animationVM.play()
     }
     
     func skipTapped() {
