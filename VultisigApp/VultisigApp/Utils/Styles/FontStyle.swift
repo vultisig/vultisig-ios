@@ -40,12 +40,16 @@ extension Font {
     static let body18MenloMedium = Font.custom("Menlo", size: 18).weight(.medium)
     static let body20MenloMedium = Font.custom("Menlo", size: 20).weight(.medium)
     
+    static let body12BrockmannMedium = Font.custom("Brockmann-Medium", size: 12)
+    
     // Semi-bold
     static let body10MontserratSemiBold = Font.custom("Montserrat", size: 10).weight(.semibold)
     static let body12MontserratSemiBold = Font.custom("Montserrat", size: 12).weight(.semibold)
     static let body14MontserratSemiBold = Font.custom("Montserrat", size: 14).weight(.semibold)
     static let body16MontserratSemiBold = Font.custom("Montserrat", size: 16).weight(.semibold)
     static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
+    
+    static let body14BrockmannSemiBold = Font.custom("Brockmann-SemiBold", size: 14)
     
     // Bold
     static let body10MenloBold = Font.custom("Menlo", size: 10).bold()

@@ -37,31 +37,44 @@ struct GeneralCodeScannerView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        content
-            .fileImporter(
-                isPresented: $isFilePresented,
-                allowedContentTypes: [UTType.image],
-                allowsMultipleSelection: false
-            ) { result in
-                do {
-                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                    let result = String(data: qrCode, encoding: .utf8)
-                    guard let url = URL(string: result ?? .empty) else {
-                        return
-                    }
-                    
-                    deeplinkViewModel.extractParameters(url, vaults: vaults)
-                    presetValuesForDeeplink(url)
-                } catch {
-                    print(error)
+        ZStack {
+            Background()
+            content
+        }
+        .fileImporter(
+            isPresented: $isFilePresented,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            do {
+                let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                let result = String(data: qrCode, encoding: .utf8)
+                guard let url = URL(string: result ?? .empty) else {
+                    return
                 }
+                
+                deeplinkViewModel.extractParameters(url, vaults: vaults)
+                presetValuesForDeeplink(url)
+            } catch {
+                print(error)
             }
-            .alert(isPresented: $showAlert) {
-                alert
-            }
+        }
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var content: some View {
+        VStack {
+            cameraView
+            
+            if showButtons {
+                buttons
+            }
+        }
+    }
+    
+    var cameraView: some View {
         ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
@@ -69,14 +82,12 @@ struct GeneralCodeScannerView: View {
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             overlay
-            
-            if showButtons {
-                buttonsStack
-            }
         }
-        .ignoresSafeArea()
+        .cornerRadius(16)
+        .padding(16)
     }
     
     var overlay: some View {
@@ -84,34 +95,23 @@ struct GeneralCodeScannerView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .padding(60)
-            .offset(y: -50)
             .allowsHitTesting(false)
     }
     
-    var buttonsStack: some View {
-        VStack {
-            Spacer()
-            buttons
-        }
-    }
-    
     var buttons: some View {
-        HStack(spacing: 0) {
+        VStack {
             galleryButton
-                .frame(maxWidth: .infinity)
-
             fileButton
-                .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 50)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 30)
     }
     
     var galleryButton: some View {
         Button {
             isGalleryPresented.toggle()
         } label: {
-            OpenButton(buttonIcon: "photo", buttonLabel: "uploadFromGallery")
+            FilledButton(title: "uploadFromGallerySingleLine")
         }
     }
     
@@ -119,7 +119,7 @@ struct GeneralCodeScannerView: View {
         Button {
             isFilePresented.toggle()
         } label: {
-            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
+            FilledButton(title: "uploadFromFilesSingleLine")
         }
     }
     
