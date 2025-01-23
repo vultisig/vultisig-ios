@@ -434,3 +434,5 @@
 "uploadFileWithQRCode" = "Subir archivo con código QR";
 "scanQRStartScreen" = "Escanear QR";
 "importVault" = "Importar Vault";
+"uploadFromGallerySingleLine" = "Subir desde la galería";
+"uploadFromFilesSingleLine" = "Subir desde archivos";
