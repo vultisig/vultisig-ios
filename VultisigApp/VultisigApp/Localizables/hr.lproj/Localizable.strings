@@ -432,3 +432,5 @@
 "vaultLibType" = "tip svoda";
 "scanQRCode" = "Skeniraj QR kod";
 "uploadFileWithQRCode" = "Učitaj datoteku s QR kodom";
+"scanQRStartScreen" = "Skeniraj QR";
+"importVault" = "Uvezi trezor";

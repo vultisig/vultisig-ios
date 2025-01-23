@@ -433,3 +433,5 @@
 "vaultLibType" = "tipo de cofre";
 "scanQRCode" = "Escanear código QR";
 "uploadFileWithQRCode" = "Carregar arquivo com código QR";
+"scanQRStartScreen" = "Escanear QR";
+"importVault" = "Importar Cofre";

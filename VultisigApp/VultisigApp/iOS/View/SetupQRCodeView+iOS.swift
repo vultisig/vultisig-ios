@@ -26,44 +26,5 @@ extension SetupQRCodeView {
     var main: some View {
         view
     }
-    
-    var pairButton: some View {
-        ZStack {
-            if ProcessInfo.processInfo.isiOSAppOnMac {
-                pairMacButton
-            } else {
-                pairPhoneButton
-            }
-        }
-    }
-    
-    var pairPhoneButton: some View {
-        Button(action: {
-            showSheet = true
-        }) {
-            OutlineButton(title: "pair")
-        }
-        .sheet(isPresented: $showSheet, content: {
-            GeneralCodeScannerView(
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                shouldSendCrypto: .constant(false),         // -
-                selectedChain: .constant(nil),              // -
-                sendTX: SendTransaction()                   // -
-            )
-        })
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: makeVault())
-        }
-    }
-    
-    var pairMacButton: some View {
-        NavigationLink {
-            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
-        } label: {
-            OutlineButton(title: "pair")
-        }
-    }
 }
 #endif

@@ -89,7 +89,7 @@ private extension BalanceService {
         case .sui:
             return try await sui.getBalance(coin: coin)
             
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
             
