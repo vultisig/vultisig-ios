@@ -13,6 +13,10 @@ struct CreateVaultView: View {
     @State var showNewVaultButton = false
     @State var showSeparator = false
     @State var showButtonStack = false
+    @State var showSheet = false
+    @State var shouldJoinKeygen = false
+    
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
@@ -20,7 +24,7 @@ struct CreateVaultView: View {
             main
         }
         .navigationBarBackButtonHidden(showBackButton ? false : true)
-        .onAppear {
+        .onFirstAppear {
             setData()
         }
     }
@@ -42,7 +46,7 @@ struct CreateVaultView: View {
         VStack(spacing: 16) {
             newVaultButton
             orSeparator
-            scanQRButton
+            scanButton
             importVaultButton
         }
         .padding(40)
@@ -79,19 +83,51 @@ struct CreateVaultView: View {
         .animation(.spring(duration: 0.3), value: showSeparator)
     }
     
-    var scanQRButton: some View {
-        NavigationLink {
-            
-        } label: {
-            FilledButton(title: "scanQRStartScreen", textColor: .neutral0, background: Color.blue400)
+    var scanButton: some View {
+        ZStack {
+            if ProcessInfo.processInfo.isiOSAppOnMac {
+                scanMacButton
+            } else {
+                scanPhoneButton
+            }
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
-        .opacity(showButtonStack ? 1 : 0)
-        .offset(y: showButtonStack ? 0 : 50)
-        .scaleEffect(showButtonStack ? 1 : 0.8)
-        .blur(radius: showButtonStack ? 0 : 10)
-        .animation(.spring(duration: 0.3), value: showButtonStack)
+    }
+    
+    var scanPhoneButton: some View {
+        Button(action: {
+            showSheet = true
+        }) {
+            scanQRButton
+        }
+        .sheet(isPresented: $showSheet, content: {
+            GeneralCodeScannerView(
+                showSheet: $showSheet,
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
+                shouldSendCrypto: .constant(false),         // -
+                selectedChain: .constant(nil),              // -
+                sendTX: SendTransaction()                   // -
+            )
+        })
+    }
+    
+    var scanMacButton: some View {
+        NavigationLink {
+            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
+        } label: {
+            scanQRButton
+        }
+    }
+    
+    var scanQRButton: some View {
+        FilledButton(title: "scanQRStartScreen", textColor: .neutral0, background: Color.blue400)
+            .buttonStyle(PlainButtonStyle())
+            .background(Color.clear)
+            .opacity(showButtonStack ? 1 : 0)
+            .offset(y: showButtonStack ? 0 : 50)
+            .scaleEffect(showButtonStack ? 1 : 0.8)
+            .blur(radius: showButtonStack ? 0 : 10)
+            .animation(.spring(duration: 0.3), value: showButtonStack)
     }
     
     var importVaultButton: some View {
@@ -121,6 +157,11 @@ struct CreateVaultView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             showButtonStack = true
         }
+    }
+    
+    func createVault() -> Vault {
+        let vaultName = Vault.getUniqueVaultName(modelContext: modelContext)
+        return Vault(name: vaultName)
     }
 }
 

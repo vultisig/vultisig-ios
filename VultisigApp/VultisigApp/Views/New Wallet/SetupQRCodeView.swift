@@ -35,14 +35,9 @@ struct SetupQRCodeView: View {
     }
     
     var buttons: some View {
-        VStack(spacing: 16) {
-            startButton
-            if selectedTab.hasOtherDevices {
-                pairButton
-            }
-        }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 40)
+        startButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 40)
     }
     
     var startButton: some View {
@@ -73,11 +68,6 @@ struct SetupQRCodeView: View {
         } label: {
             FilledButton(title: "start".uppercased())
         }
-    }
-
-    func makeVault() -> Vault {
-        let vaultName = Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
-        return Vault(name: vaultName)
     }
 }
 

@@ -11,6 +11,9 @@ import SwiftUI
 extension CreateVaultView {
     var main: some View {
         view
+            .navigationDestination(isPresented: $shouldJoinKeygen) {
+                JoinKeygenView(vault: createVault())
+            }
     }
 }
 #endif
