@@ -83,22 +83,6 @@ struct CreateVaultView: View {
         .animation(.spring(duration: 0.3), value: showSeparator)
     }
     
-    var scanPhoneButton: some View {
-        Button(action: {
-            showSheet = true
-        }) {
-            scanQRButton
-        }
-    }
-    
-    var scanMacButton: some View {
-        NavigationLink {
-            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
-        } label: {
-            scanQRButton
-        }
-    }
-    
     var scanQRButton: some View {
         FilledButton(title: "scanQRStartScreen", textColor: .neutral0, background: Color.blue400)
             .buttonStyle(PlainButtonStyle())

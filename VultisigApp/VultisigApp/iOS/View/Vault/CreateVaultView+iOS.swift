@@ -35,5 +35,21 @@ extension CreateVaultView {
             }
         }
     }
+    
+    var scanPhoneButton: some View {
+        Button(action: {
+            showSheet = true
+        }) {
+            scanQRButton
+        }
+    }
+    
+    var scanMacButton: some View {
+        NavigationLink {
+            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
+        } label: {
+            scanQRButton
+        }
+    }
 }
 #endif
