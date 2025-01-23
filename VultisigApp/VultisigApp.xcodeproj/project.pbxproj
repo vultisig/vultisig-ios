@@ -323,6 +323,10 @@
 		A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */; };
 		A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */; };
 		A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65C754C2BBF5A250076F30A /* PeerCell.swift */; };
+		A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A122D42224100CF4DDB /* Brockmann-Bold.otf */; };
+		A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */; };
+		A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */; };
+		A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
@@ -1121,6 +1125,10 @@
 		A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignStartView.swift; sourceTree = "<group>"; };
 		A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignDoneView.swift; sourceTree = "<group>"; };
 		A65C754C2BBF5A250076F30A /* PeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerCell.swift; sourceTree = "<group>"; };
+		A65F8A122D42224100CF4DDB /* Brockmann-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Bold.otf"; sourceTree = "<group>"; };
+		A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Medium.otf"; sourceTree = "<group>"; };
+		A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Regular.otf"; sourceTree = "<group>"; };
+		A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-SemiBold.otf"; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -2131,6 +2139,10 @@
 		A633B11E2B993BDC003D1738 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				A65F8A122D42224100CF4DDB /* Brockmann-Bold.otf */,
+				A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */,
+				A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */,
+				A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */,
 				A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */,
 				A633B1202B993BF5003D1738 /* Montserrat.ttf */,
 			);
@@ -3507,6 +3519,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
+				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
+				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
+				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
@@ -4487,6 +4503,7 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -4498,6 +4515,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -4544,6 +4562,7 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "We need access to the local network to discover services.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -4555,6 +4574,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";

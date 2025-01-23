@@ -471,3 +471,5 @@
 "uploadFileWithQRCode" = "Upload file with QR Code";
 "scanQRStartScreen" = "Scan QR";
 "importVault" = "Import Vault";
+"uploadFromGallerySingleLine" = "Upload from Gallery";
+"uploadFromFilesSingleLine" = "Upload from Files";

@@ -28,7 +28,7 @@ struct FilledButton: View {
     
     var image: some View {
         Image(systemName: icon)
-            .font(.body16Menlo)
+            .font(.body14BrockmannSemiBold)
             .foregroundColor(.blue600)
     }
 }
