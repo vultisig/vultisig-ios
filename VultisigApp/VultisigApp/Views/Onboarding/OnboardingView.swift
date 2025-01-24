@@ -54,12 +54,6 @@ struct OnboardingView: View {
         }
     }
     
-    var button: some View {
-        nextButton
-            .padding(.horizontal, 40)
-            .padding(.bottom, 10)
-    }
-    
     var header: some View {
         HStack {
             headerTitle

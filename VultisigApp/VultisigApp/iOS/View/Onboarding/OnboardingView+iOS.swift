@@ -29,6 +29,12 @@ extension OnboardingView {
         .frame(maxWidth: .infinity)
     }
     
+    var button: some View {
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 10)
+    }
+    
     func getBottomPadding() -> CGFloat {
         idiom == .phone ? 0 : 50
     }

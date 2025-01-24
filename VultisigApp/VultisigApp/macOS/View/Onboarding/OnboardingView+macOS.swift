@@ -18,6 +18,40 @@ extension OnboardingView {
             .frame(maxWidth: .infinity)
     }
     
+    var button: some View {
+        HStack {
+            if tabIndex != 0 {
+                prevButton
+            }
+            
+            nextButton
+        }
+        .padding(.horizontal, 40)
+        .padding(.bottom, 10)
+    }
+    
+    var prevButton: some View {
+        Button {
+            prevTapped()
+        } label: {
+            FilledButton(icon: "chevron.left")
+        }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
+        .frame(width: 80)
+        .padding(.bottom, getBottomPadding())
+    }
+    
+    private func prevTapped() {
+        guard tabIndex>0 else {
+            return
+        }
+        
+        withAnimation {
+            tabIndex-=1
+        }
+    }
+    
     func getBottomPadding() -> CGFloat {
         50
     }
