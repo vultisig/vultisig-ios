@@ -12,6 +12,10 @@ struct OnboardingView: View {
     @State var tabIndex = 0
     @EnvironmentObject var accountViewModel: AccountViewModel
     
+    @State var showOnboarding = false
+    @State var showStartupText = false
+    @State var startupTextOpacity = true
+    
     let animationVM = RiveViewModel(fileName: "Onboarding", animationName: "Screen 1")
     
     let totalTabCount: Int = 6
@@ -23,8 +27,13 @@ struct OnboardingView: View {
     var content: some View {
         ZStack {
             Background()
-            animation
-            view
+            
+            if showOnboarding {
+                animation
+                view
+            } else {
+                startupText
+            }
         }
         .onChange(of: tabIndex) { oldValue, newValue in
             animationVM.play(animationName: "Screen \(tabIndex+1)")
@@ -105,6 +114,27 @@ struct OnboardingView: View {
         .background(Color.clear)
     }
     
+    var startupText: some View {
+        Group {
+            Text(NSLocalizedString("sayGoodbyeTo", comment: ""))
+                .foregroundColor(.neutral0) +
+            Text(NSLocalizedString("seedPhrases", comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient)
+        }
+        .font(.body28BrockmannMedium)
+        .multilineTextAlignment(.center)
+        .opacity(showStartupText ? 1 : 0)
+        .offset(y: showStartupText ? 0 : 100)
+        .blur(radius: showStartupText ? 0 : 10)
+        .scaleEffect(showStartupText ? 1 : 0.8)
+        .animation(.spring, value: showStartupText)
+        .opacity(startupTextOpacity ? 1 : 0)
+        .animation(.easeInOut, value: startupTextOpacity)
+        .onAppear {
+            setupStartupText()
+        }
+    }
+    
     private func nextTapped() {
         guard tabIndex<totalTabCount-1 else {
             moveToVaultView()
@@ -120,6 +150,18 @@ struct OnboardingView: View {
     
     private func moveToVaultView() {
         accountViewModel.showOnboarding = false
+    }
+    
+    private func setupStartupText() {
+        showStartupText = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            startupTextOpacity = false
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            showOnboarding = true
+        }
     }
 }
 
