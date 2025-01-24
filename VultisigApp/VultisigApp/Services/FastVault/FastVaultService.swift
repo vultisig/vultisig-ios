@@ -11,7 +11,7 @@ final class FastVaultService {
 
     static let shared = FastVaultService()
 
-    private let endpoint = "http://127.0.0.1:8080/vault"
+    private let endpoint = "https://api.vultisig.com/vault"
 
     static func localPartyID(sessionID: String) -> String {
         guard let data = sessionID.data(using: .utf8) else {
@@ -73,7 +73,8 @@ final class FastVaultService {
         encryptionPassword:String,
         email: String,
         oldParties: [String],
-        oldResharePrefix: String
+        oldResharePrefix: String,
+        lib_type: Int
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
         let req = ReshareRequest(name: name,
@@ -85,7 +86,8 @@ final class FastVaultService {
                                  old_parties: oldParties,
                                  encryption_password: encryptionPassword,
                                  email: email,
-                                 old_reshare_prefix: oldResharePrefix)
+                                 old_reshare_prefix: oldResharePrefix,
+                                 lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
             print("Send reshare request to Vultiserver successfully")

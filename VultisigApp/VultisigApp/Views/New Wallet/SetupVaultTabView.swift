@@ -17,7 +17,7 @@ struct SetupVaultTabView: View {
     var content: some View {
         VStack {
             secureTag
-            SetupVaultTab(selectedTab: $selectedTab)
+//            SetupVaultTab(selectedTab: $selectedTab)
             SetupVaultImageManager(selectedTab: $selectedTab)
             secureText
         }
