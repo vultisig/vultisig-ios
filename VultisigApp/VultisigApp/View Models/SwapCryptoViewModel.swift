@@ -31,7 +31,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
-    @MainActor @Published var quoteLoading = false
     @MainActor @Published var dataLoaded = false
 
     var progress: Double {
@@ -208,7 +207,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && !tx.toAmountDecimal.isZero
             && tx.quote != nil
             && isSufficientBalance(tx: tx)
-            && !quoteLoading
+            && !isLoading
     }
     
     func moveToNextView() {
@@ -375,8 +374,8 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, vault: Vault) async {
-        quoteLoading = true
-        defer { quoteLoading = false }
+        isLoading = true
+        defer { isLoading = false }
         
         clearQuote(tx: tx)
         
@@ -398,8 +397,10 @@ private extension SwapCryptoViewModel {
             
             switch quote {
             case .oneinch(let quote), .lifi(let quote):
-                tx.oneInchFee = oneInchFee(quote: quote)
-            case .thorchain, .mayachain: 
+                if let oneInchFee = oneInchFee(quote: quote) {
+                    tx.oneInchFee = oneInchFee
+                }
+            case .thorchain, .mayachain:
                 break
             }
             
@@ -433,9 +434,9 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
             return tx.fromCoin
-        case .EVM:
+        case .EVM, .Solana:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
             return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
@@ -469,8 +470,10 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func oneInchFee(quote: OneInchQuote) -> BigInt {
-        let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
+    func oneInchFee(quote: OneInchQuote) -> BigInt? {
+        guard let gasPrice = BigInt(quote.tx.gasPrice) else {
+            return nil
+        }
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
     }
 }
