@@ -40,6 +40,10 @@ struct OnboardingView: View {
         }
     }
     
+    var animation: some View {
+        animationVM.view()
+    }
+    
     var view: some View {
         VStack(spacing: 0) {
             header
@@ -48,6 +52,12 @@ struct OnboardingView: View {
             text
             button
         }
+    }
+    
+    var button: some View {
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 10)
     }
     
     var header: some View {
@@ -76,19 +86,6 @@ struct OnboardingView: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-    
-    var text: some View {
-        TabView(selection: $tabIndex) {
-            ForEach(0..<totalTabCount, id: \.self) { index in
-                VStack {
-                    Spacer()
-                    OnboardingTextCard(index: index, animationVM: animationVM)
-                }
-            }
-        }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .frame(maxWidth: .infinity)
     }
     
     var nextButton: some View {

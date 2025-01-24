@@ -16,14 +16,17 @@ extension OnboardingView {
             .toolbar(.hidden, for: .navigationBar)
     }
     
-    var animation: some View {
-        animationVM.view()
-    }
-    
-    var button: some View {
-        nextButton
-            .padding(.horizontal, 40)
-            .padding(.bottom, 10)
+    var text: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<totalTabCount, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    OnboardingTextCard(index: index, animationVM: animationVM)
+                }
+            }
+        }
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .frame(maxWidth: .infinity)
     }
     
     func getBottomPadding() -> CGFloat {
