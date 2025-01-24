@@ -5,6 +5,7 @@
 
 import Foundation
 import OSLog
+import BigInt
 
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
@@ -347,5 +348,40 @@ class JoinKeysignViewModel: ObservableObject {
             fromAddress: payload.coin.address,
             zeroSignedTransaction: zeroSignedTransaction
         )
+    }
+    
+    func getCalculatedNetworkFee() -> String {
+        guard let payload = keysignPayload else {
+            return "0"
+        }
+        
+        // TODO: Add support for other chains
+        // TODO: display the fee in fiat currency as well
+        
+        let gasInReadable = ((Double( payload.coin.feeDefault ) ?? 0.0) / pow( 10, Double(payload.coin.decimals) )).description
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.coin.feeDefault.toBigInt())
+        
+        feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
+        
+        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
+    }
+    
+    func feesInReadable(coin: Coin, fee: BigInt) -> String {
+        var nativeCoinAux: Coin?
+        
+        if coin.isNativeToken {
+            nativeCoinAux = coin
+        } else {
+            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+        }
+        
+        
+        
+        guard let nativeCoin = nativeCoinAux else {
+            return ""
+        }
+        
+        let fee = nativeCoin.decimal(for: fee)
+        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 }
