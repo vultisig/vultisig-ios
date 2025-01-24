@@ -13,39 +13,47 @@ extension OnboardingView {
         content
     }
     
-    var tabs: some View {
-        ZStack {
-            switch tabIndex {
-            case 0:
-                OnboardingView1(tabIndex: $tabIndex)
-            case 1:
-                OnboardingView2(tabIndex: $tabIndex)
-            case 2:
-                OnboardingView3(tabIndex: $tabIndex)
-            default:
-                OnboardingView4(tabIndex: $tabIndex)
+    var text: some View {
+        OnboardingTextCard(index: tabIndex, animationVM: animationVM)
+            .frame(maxWidth: .infinity)
+    }
+    
+    var button: some View {
+        HStack {
+            if tabIndex != 0 {
+                prevButton
             }
+            
+            nextButton
         }
+        .padding(.horizontal, 40)
+        .padding(.bottom, 10)
     }
     
-    var buttons: some View {
-        setupVaultButton
-            .padding(.horizontal, 40)
-            .padding(.bottom, 10)
-    }
-    
-    var setupVaultButton: some View {
+    var prevButton: some View {
         Button {
-            skipTapped()
+            prevTapped()
         } label: {
-            FilledButton(title: "setupVault")
+            FilledButton(icon: "chevron.left")
         }
-        .animation(.easeInOut, value: tabIndex)
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
-        .padding(.bottom, 40)
+        .frame(width: 80)
+        .padding(.bottom, getBottomPadding())
     }
     
-    func tabViewSetup() {}
+    private func prevTapped() {
+        guard tabIndex>0 else {
+            return
+        }
+        
+        withAnimation {
+            tabIndex-=1
+        }
+    }
+    
+    func getBottomPadding() -> CGFloat {
+        50
+    }
 }
 #endif
