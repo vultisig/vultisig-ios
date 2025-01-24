@@ -138,7 +138,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .mayaChain:
             return "2000000000"
         case .solana:
-            return "7000"
+            return SolanaHelper.defaultFeeInLamports.description
         case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain:
             if self.isNativeToken {
                 return "23000"
