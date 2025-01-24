@@ -348,4 +348,15 @@ class JoinKeysignViewModel: ObservableObject {
             zeroSignedTransaction: zeroSignedTransaction
         )
     }
+    
+    func getCalculatedNetworkFee() -> String {
+        guard let payload = keysignPayload else {
+            return "0"
+        }
+        
+        // TODO: Add support for other chains
+        // TODO: display the fee in fiat currency as well
+        
+        return ((Double( payload.coin.feeDefault ) ?? 0.0) / pow( 10, Double(payload.coin.decimals) )).description
+    }
 }
