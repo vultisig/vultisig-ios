@@ -12,7 +12,7 @@ struct OnboardingView: View {
     @State var tabIndex = 0
     @EnvironmentObject var accountViewModel: AccountViewModel
     
-    let animationVM = RiveViewModel(fileName: "Onboarding", autoPlay: false)
+    let animationVM = RiveViewModel(fileName: "Onboarding", animationName: "Screen 1")
     
     let totalTabCount: Int = 6
     
@@ -25,6 +25,9 @@ struct OnboardingView: View {
             Background()
             animation
             view
+        }
+        .onChange(of: tabIndex) { oldValue, newValue in
+            animationVM.play(animationName: "Screen \(tabIndex+1)")
         }
     }
     
@@ -71,7 +74,7 @@ struct OnboardingView: View {
             ForEach(0..<totalTabCount, id: \.self) { index in
                 VStack {
                     Spacer()
-                    OnboardingTextCard(index: index)
+                    OnboardingTextCard(index: index, animationVM: animationVM)
                 }
             }
         }
@@ -103,14 +106,12 @@ struct OnboardingView: View {
     }
     
     private func nextTapped() {
-        animationVM.pause()
         guard tabIndex<totalTabCount-1 else {
             moveToVaultView()
             return
         }
         
         tabIndex+=1
-        animationVM.play()
     }
     
     func skipTapped() {

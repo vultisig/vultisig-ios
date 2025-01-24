@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct OnboardingTextCard: View {
     let index: Int
+    let animationVM: RiveViewModel
     
     @State var showText: Bool = false
     
@@ -43,5 +45,5 @@ struct OnboardingTextCard: View {
 }
 
 #Preview {
-    OnboardingTextCard(index: 0)
+    OnboardingTextCard(index: 0, animationVM: RiveViewModel(fileName: "Onboarding", autoPlay: false))
 }
