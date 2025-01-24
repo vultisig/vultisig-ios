@@ -32,7 +32,7 @@ class Endpoint {
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     
-    static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
+    static let FastVaultBackupVerification = "http://127.0.0.1:8080/vault/verify/"
     
     static func fetchBlowfishTransactions(chain: String, network: String) -> String {
         "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
