@@ -100,6 +100,7 @@ struct OnboardingView: View {
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
         .frame(width: 80)
+        .padding(.bottom, getBottomPadding())
     }
     
     var skipButton: some View {

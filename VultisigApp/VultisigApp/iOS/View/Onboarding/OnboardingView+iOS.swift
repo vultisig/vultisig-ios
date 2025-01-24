@@ -9,6 +9,8 @@
 import SwiftUI
 
 extension OnboardingView {
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var container: some View {
         content
             .toolbar(.hidden, for: .navigationBar)
@@ -22,6 +24,10 @@ extension OnboardingView {
         nextButton
             .padding(.horizontal, 40)
             .padding(.bottom, 10)
+    }
+    
+    func getBottomPadding() -> CGFloat {
+        idiom == .phone ? 0 : 50
     }
 }
 #endif
