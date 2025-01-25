@@ -33,7 +33,9 @@ extension FastVaultSetPasswordView {
     var view: some View {
         VStack {
             passwordField
-            hintField
+            if tssType == .Keygen {
+                hintField
+            }
             Spacer()
             disclaimer
             buttons

@@ -589,6 +589,9 @@
 		A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */; };
 		A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */; };
 		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
+		A6F7B6722D42BDCD00AC8104 /* Onboarding.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */; };
+		A6F7B6752D42BE4200AC8104 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = A6F7B6742D42BE4200AC8104 /* RiveRuntime */; };
+		A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */; };
@@ -1388,6 +1391,8 @@
 		A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralCodeScannerView.swift; sourceTree = "<group>"; };
 		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
+		A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = Onboarding.riv; sourceTree = "<group>"; };
+		A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextCard.swift; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultImageManager.swift; sourceTree = "<group>"; };
@@ -1592,6 +1597,7 @@
 				DE49A19A2B660D8D000F3AFB /* Mediator in Frameworks */,
 				DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */,
 				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
+				A6F7B6752D42BE4200AC8104 /* RiveRuntime in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
 				DE03EA0E2D0D3D0700AA4BB0 /* godkls.xcframework in Frameworks */,
@@ -2131,6 +2137,7 @@
 		A633B11D2B993BCD003D1738 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				A6F7B6702D42BDB700AC8104 /* Animations */,
 				A633B11E2B993BDC003D1738 /* Fonts */,
 			);
 			path = Resources;
@@ -2661,6 +2668,7 @@
 				A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */,
 				A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */,
 				A6D07E422C36756700594687 /* OnboardingView4.swift */,
+				A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -2866,6 +2874,14 @@
 				A6ECA1B32C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift */,
 			);
 			path = "View Model";
+			sourceTree = "<group>";
+		};
+		A6F7B6702D42BDB700AC8104 /* Animations */ = {
+			isa = PBXGroup;
+			children = (
+				A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */,
+			);
+			path = Animations;
 			sourceTree = "<group>";
 		};
 		A6F9E7A32BED6BA200BA36E1 /* New Wallet */ = {
@@ -3415,6 +3431,7 @@
 				DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */,
 				DE8554672C2CFBC10002438C /* walletcore */,
 				A58CC3422C32C4EE0086D16B /* VultisigCommonData */,
+				A6F7B6742D42BE4200AC8104 /* RiveRuntime */,
 			);
 			productName = voltixApp;
 			productReference = DE49A1632B65F6D9000F3AFB /* VultisigApp.app */;
@@ -3501,7 +3518,7 @@
 				DE6325B52C2C12FB000D05B9 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				DE8554662C2CFBC10002438C /* XCRemoteSwiftPackageReference "walletcore-spm" */,
 				A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */,
-				A6BEAC8D2D3F678A0046C30A /* XCRemoteSwiftPackageReference "rive-ios" */,
+				A6F7B6732D42BE4200AC8104 /* XCRemoteSwiftPackageReference "rive-ios" */,
 			);
 			productRefGroup = DE49A1642B65F6D9000F3AFB /* Products */;
 			projectDirPath = "";
@@ -3523,6 +3540,7 @@
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
+				A6F7B6722D42BDCD00AC8104 /* Onboarding.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
@@ -4239,6 +4257,7 @@
 				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
 				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
+				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
@@ -4747,12 +4766,12 @@
 				kind = branch;
 			};
 		};
-		A6BEAC8D2D3F678A0046C30A /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+		A6F7B6732D42BE4200AC8104 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/rive-app/rive-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 6.5.7;
+				minimumVersion = 6.5.8;
 			};
 		};
 		DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
@@ -4802,6 +4821,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */;
 			productName = VultisigCommonData;
+		};
+		A6F7B6742D42BE4200AC8104 /* RiveRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A6F7B6732D42BE4200AC8104 /* XCRemoteSwiftPackageReference "rive-ios" */;
+			productName = RiveRuntime;
 		};
 		D9A22EB62B667C41007281BF /* Mediator */ = {
 			isa = XCSwiftPackageProductDependency;
