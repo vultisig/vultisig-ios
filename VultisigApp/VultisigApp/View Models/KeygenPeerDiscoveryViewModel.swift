@@ -120,7 +120,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          encryptionPassword: config.password,
                                          email: config.email,
                                          oldParties: vault.signers,
-                                         oldResharePrefix: vault.resharePrefix ?? "")
+                                         oldResharePrefix: vault.resharePrefix ?? "",
+                                         lib_type: vault.libType == .DKLS ? 1 : 0)
             }
         }
         
