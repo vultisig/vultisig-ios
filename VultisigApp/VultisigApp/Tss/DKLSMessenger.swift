@@ -28,7 +28,7 @@ final class DKLSMessenger {
         self.encryptionKeyHex = encryptionKeyHex
     }
     
-    func uploadSetupMessage(message: String) async throws {
+    func uploadSetupMessage(message: String,_ additionalHeader: String?) async throws {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
         guard let url else {
@@ -39,6 +39,11 @@ final class DKLSMessenger {
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
+        // additionalHeader override the message_id
+        // currently additionalHeader only used in DKLS reshare
+        if let additionalHeader {
+            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
         
         let encryptedBody = message.aesEncryptGCM(key: self.encryptionKeyHex)
@@ -54,11 +59,11 @@ final class DKLSMessenger {
         }
     }
     
-    func downloadSetupMessageWithRetry() async throws -> String {
+    func downloadSetupMessageWithRetry(_ additionalHeader: String?) async throws -> String {
         var attempt = 0
         repeat {
             do {
-                return try await downloadSetupMessage()
+                return try await downloadSetupMessage(additionalHeader)
             } catch {
                 print("fail to download setup message,error \(error), attempt: \(attempt)")
             }
@@ -68,7 +73,7 @@ final class DKLSMessenger {
         throw HelperError.runtimeError("fail to download setup message after 10 retries")
     }
     
-    func downloadSetupMessage() async throws -> String {
+    func downloadSetupMessage(_ additionalHeader: String?) async throws -> String {
         let urlString = "\(self.mediatorURL)/setup-message/\(self.sessionID)"
         let url = URL(string: urlString)
         guard let url else {
@@ -79,6 +84,9 @@ final class DKLSMessenger {
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
+        }
+        if let additionalHeader {
+            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
         }
         let (data,resp) = try await URLSession.shared.data(for: req)
         if let httpResponse = resp as? HTTPURLResponse {

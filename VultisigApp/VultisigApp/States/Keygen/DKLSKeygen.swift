@@ -281,10 +281,10 @@ final class DKLSKeygen {
             var keygenSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 keygenSetupMsg = try getDklsSetupMessage()
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -463,10 +463,10 @@ final class DKLSKeygen {
             var reshareSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
                 self.setupMessage = reshareSetupMsg
             }

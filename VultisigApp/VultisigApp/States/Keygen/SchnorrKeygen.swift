@@ -407,13 +407,15 @@ final class SchnorrKeygen {
             // currently reshare Schnorr need to have it's own setup message, let's set it up
             //it might not needed
             if self.isInitiateDevice {
+                // DKLS/Schnorr reshare need to upload different setup message , thus here pass in an additional header as "eddsa" to make sure
+                // dkls and schnorr setup message will be saved differently
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),"eddsa")
             } else {
                 // download the setup message from relay server
                 // backoff for 500ms so the initiate device will upload the setup message correctly
                 try await Task.sleep(for: .milliseconds(500))
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry("eddsa")
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
