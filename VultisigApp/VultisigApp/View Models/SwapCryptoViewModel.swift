@@ -265,7 +265,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
 
-            case .oneinch(let quote), .lifi(let quote):
+            case .oneinch(let quote, _), .lifi(let quote, _):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = OneInchSwapPayload(
                     fromCoin: tx.fromCoin,
@@ -395,15 +395,6 @@ private extension SwapCryptoViewModel {
                 isAffiliate: tx.isAlliliate
             )
             
-            switch quote {
-            case .oneinch(let quote), .lifi(let quote):
-                if let oneInchFee = oneInchFee(quote: quote) {
-                    tx.oneInchFee = oneInchFee
-                }
-            case .thorchain, .mayachain:
-                break
-            }
-            
             tx.quote = quote
 
             if !isSufficientBalance(tx: tx) {
@@ -468,12 +459,5 @@ private extension SwapCryptoViewModel {
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
-    }
-    
-    func oneInchFee(quote: OneInchQuote) -> BigInt? {
-        guard let gasPrice = BigInt(quote.tx.gasPrice) else {
-            return nil
-        }
-        return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
     }
 }
