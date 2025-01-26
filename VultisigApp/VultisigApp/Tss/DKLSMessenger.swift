@@ -86,7 +86,7 @@ final class DKLSMessenger {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
         if let additionalHeader {
-            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
+            req.setValue(additionalHeader, forHTTPHeaderField: "message-id")
         }
         let (data,resp) = try await URLSession.shared.data(for: req)
         if let httpResponse = resp as? HTTPURLResponse {
