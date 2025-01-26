@@ -43,7 +43,7 @@ final class DKLSMessenger {
         // additionalHeader override the message_id
         // currently additionalHeader only used in DKLS reshare
         if let additionalHeader {
-            req.setValue(additionalHeader, forHTTPHeaderField: "message_id")
+            req.setValue(additionalHeader, forHTTPHeaderField: "message-id")
         }
         
         let encryptedBody = message.aesEncryptGCM(key: self.encryptionKeyHex)
@@ -168,7 +168,7 @@ final class DKLSMessenger {
                 logger.error("invalid response code")
                 return
             }
-            logger.debug("send message (\(msg.hash) to (\(msg.to)) successfully")
+            logger.info("send message (\(msg.hash) to (\(msg.to)) successfully")
         }.resume()
     }
 }

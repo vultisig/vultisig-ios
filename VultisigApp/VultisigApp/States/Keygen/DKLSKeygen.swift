@@ -313,7 +313,6 @@ final class DKLSKeygen {
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
-                task?.cancel()
                 var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -495,8 +494,6 @@ final class DKLSKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
-                task?.cancel()
                 var newKeyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -517,6 +514,8 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
+                self.setKeygenDone(status: true)
             }
         }
         catch {

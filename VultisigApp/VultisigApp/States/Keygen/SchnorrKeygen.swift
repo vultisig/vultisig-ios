@@ -126,7 +126,7 @@ final class SchnorrKeygen {
             }
             if outboundMessage.count == 0 {
                 if self.isKeygenDone() {
-                    print("DKLS ECDSA keygen finished")
+                    print("DKLS EdDSA keygen finished")
                     return
                 }
                 // back off 100ms and continue
@@ -142,7 +142,7 @@ final class SchnorrKeygen {
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
-                    break
+                    continue
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString)")
@@ -276,7 +276,7 @@ final class SchnorrKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
+                
                 var keyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -288,6 +288,7 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                self.setKeygenDone(status: true)
             }
         }
         catch {
@@ -444,7 +445,6 @@ final class SchnorrKeygen {
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
-                task?.cancel()
                 var newKeyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != LIB_OK {
