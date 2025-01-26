@@ -15,7 +15,12 @@ struct LiFiService {
     private let integratorName: String = "vultisig-iOS"
     private let integratorFee: String = "0.005"
 
-    func fetchQuotes(fromCoin: Coin, toCoin: Coin, fromAmount: BigInt) async throws -> OneInchQuote {
+    func fetchQuotes(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: BigInt
+    ) async throws -> (quote: OneInchQuote, fee: BigInt?) {
+
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
         }
@@ -62,10 +67,10 @@ struct LiFiService {
                 )
             )
 
-            return quote
+            return (quote, response.fee)
 
         case .solana(let quote):
-            return OneInchQuote(
+            let quote = OneInchQuote(
                 dstAmount: quote.estimate.toAmount,
                 tx: OneInchQuote.Transaction(
                     from: .empty,
@@ -76,6 +81,8 @@ struct LiFiService {
                     gas: 0
                 )
             )
+
+            return (quote, response.fee)
         }
     }
 }

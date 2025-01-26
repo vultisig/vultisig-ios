@@ -11,14 +11,14 @@ import BigInt
 enum SwapQuote {
     case thorchain(ThorchainSwapQuote)
     case mayachain(ThorchainSwapQuote)
-    case oneinch(OneInchQuote)
-    case lifi(OneInchQuote)
+    case oneinch(OneInchQuote, fee: BigInt?)
+    case lifi(OneInchQuote, fee: BigInt?)
 
     var router: String? {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.router
-        case .oneinch(let quote), .lifi(let quote):
+        case .oneinch(let quote, _), .lifi(let quote, _):
             return quote.tx.to
         }
     }
@@ -36,7 +36,7 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.inboundAddress
-        case .oneinch(let quote), .lifi(let quote):
+        case .oneinch(let quote, _), .lifi(let quote, _):
             return quote.tx.to
         }
     }

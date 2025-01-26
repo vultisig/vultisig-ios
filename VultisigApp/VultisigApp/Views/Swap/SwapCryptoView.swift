@@ -25,6 +25,9 @@ struct SwapCryptoView: View {
     
     var body: some View {
         content
+            .onAppear {
+                swapViewModel.fetchFees(tx: tx, vault: vault)
+            }
     }
     
     var view: some View {
