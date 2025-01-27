@@ -254,7 +254,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var tokenChainLogo: String? {
-        guard !isNativeToken else { return nil }
+        guard chain.logo != logo else { return nil }
         return chain.logo
     }
     
