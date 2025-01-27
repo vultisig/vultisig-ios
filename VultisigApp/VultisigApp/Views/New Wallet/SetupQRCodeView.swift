@@ -26,7 +26,7 @@ struct SetupQRCodeView: View {
     var view: some View {
         VStack {
             tabView
-            buttons
+            button
         }
     }
     
@@ -34,7 +34,7 @@ struct SetupQRCodeView: View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     
-    var buttons: some View {
+    var button: some View {
         startButton
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
@@ -66,7 +66,7 @@ struct SetupQRCodeView: View {
                 }
             }
         } label: {
-            FilledButton(title: "start".uppercased())
+            FilledButton(title: "next")
         }
     }
 }
