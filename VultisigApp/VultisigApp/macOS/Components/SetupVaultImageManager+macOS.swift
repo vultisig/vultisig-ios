@@ -8,7 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension SetupVaultImageManager {
+extension SetupVaultAnimationManager {
     var imageContainer: some View {
         imageContent
             .offset(y: 15)

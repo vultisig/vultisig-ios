@@ -16,7 +16,7 @@ struct SetupVaultTabView: View {
     
     var content: some View {
         VStack {
-            SetupVaultImageManager(selectedTab: $selectedTab)
+            SetupVaultAnimationManager(selectedTab: $selectedTab)
             secureText
         }
         .padding(.horizontal, 16)
