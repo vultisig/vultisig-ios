@@ -504,3 +504,5 @@
 "secureVaultSecureTextDescription" = "Full control, only your devices\nMultiple devices to sign transactions\nUse as cold vault";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVault relies on server uptime";
 "chooseSetUp" = "Choose Set-up";
+"secure" = "Secure";
+"fast" = "Fast";

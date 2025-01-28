@@ -11,14 +11,13 @@ import RiveRuntime
 struct SetupVaultAnimationManager: View {
     @Binding var selectedTab: SetupVaultState
     
-    let animationVM = RiveViewModel(fileName: "ChooseVault", animationName: "Secure")
+    let animationVM = RiveViewModel(fileName: "ChooseVault")
     
     var body: some View {
-        animation
-            .padding(.vertical, 16)
-            .onChange(of: selectedTab) { oldValue, newValue in
-                animationVM.play(animationName: newValue == .secure ? "Secure" : "Secure 1")
-            }
+        VStack {
+            animation
+                .padding(.vertical, 16)
+        }
     }
     
     var animation: some View {

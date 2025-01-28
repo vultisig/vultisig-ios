@@ -16,10 +16,19 @@ struct SetupVaultTabView: View {
     
     var content: some View {
         VStack {
-            SetupVaultAnimationManager(selectedTab: $selectedTab)
+            animation
+            switchControl
             secureText
         }
         .padding(.horizontal, 16)
+    }
+    
+    var animation: some View {
+        SetupVaultAnimationManager(selectedTab: $selectedTab)
+    }
+    
+    var switchControl: some View {
+        SetupVaultSwithControl(selectedTab: $selectedTab)
     }
     
     var secureText: some View {
