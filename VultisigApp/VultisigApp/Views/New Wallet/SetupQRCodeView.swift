@@ -37,7 +37,7 @@ struct SetupQRCodeView: View {
     var button: some View {
         startButton
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.bottom, 24)
     }
     
     var startButton: some View {
