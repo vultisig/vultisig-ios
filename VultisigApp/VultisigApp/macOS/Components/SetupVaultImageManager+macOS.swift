@@ -10,7 +10,7 @@ import SwiftUI
 
 extension SetupVaultAnimationManager {
     var imageContainer: some View {
-        imageContent
+        animation
             .offset(y: 15)
             .scaleEffect(1.1)
     }
