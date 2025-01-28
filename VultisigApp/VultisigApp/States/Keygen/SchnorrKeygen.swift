@@ -126,7 +126,7 @@ final class SchnorrKeygen {
             }
             if outboundMessage.count == 0 {
                 if self.isKeygenDone() {
-                    print("DKLS ECDSA keygen finished")
+                    print("DKLS EdDSA keygen finished")
                     return
                 }
                 // back off 100ms and continue
@@ -142,7 +142,7 @@ final class SchnorrKeygen {
                                                                idx: UInt32(i))
                 
                 if receiverArray.count == 0 {
-                    break
+                    continue
                 }
                 let receiverString = String(bytes:receiverArray,encoding: .utf8)!
                 print("sending message from \(self.localPartyID) to: \(receiverString)")
@@ -276,7 +276,7 @@ final class SchnorrKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
+                
                 var keyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -288,6 +288,7 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                self.setKeygenDone(status: true)
             }
         }
         catch {
@@ -407,13 +408,15 @@ final class SchnorrKeygen {
             // currently reshare Schnorr need to have it's own setup message, let's set it up
             //it might not needed
             if self.isInitiateDevice {
+                // DKLS/Schnorr reshare need to upload different setup message , thus here pass in an additional header as "eddsa" to make sure
+                // dkls and schnorr setup message will be saved differently
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),"eddsa")
             } else {
                 // download the setup message from relay server
                 // backoff for 500ms so the initiate device will upload the setup message correctly
                 try await Task.sleep(for: .milliseconds(500))
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry("eddsa")
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
@@ -442,7 +445,6 @@ final class SchnorrKeygen {
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
-                task?.cancel()
                 var newKeyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != LIB_OK {

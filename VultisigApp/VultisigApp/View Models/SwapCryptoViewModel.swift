@@ -31,7 +31,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
-    @MainActor @Published var quoteLoading = false
     @MainActor @Published var dataLoaded = false
 
     var progress: Double {
@@ -208,7 +207,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && !tx.toAmountDecimal.isZero
             && tx.quote != nil
             && isSufficientBalance(tx: tx)
-            && !quoteLoading
+            && !isLoading
     }
     
     func moveToNextView() {
@@ -266,7 +265,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
 
-            case .oneinch(let quote), .lifi(let quote):
+            case .oneinch(let quote, _), .lifi(let quote, _):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = OneInchSwapPayload(
                     fromCoin: tx.fromCoin,
@@ -375,8 +374,8 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, vault: Vault) async {
-        quoteLoading = true
-        defer { quoteLoading = false }
+        isLoading = true
+        defer { isLoading = false }
         
         clearQuote(tx: tx)
         
@@ -395,13 +394,6 @@ private extension SwapCryptoViewModel {
                 toCoin: tx.toCoin,
                 isAffiliate: tx.isAlliliate
             )
-            
-            switch quote {
-            case .oneinch(let quote), .lifi(let quote):
-                tx.oneInchFee = oneInchFee(quote: quote)
-            case .thorchain, .mayachain: 
-                break
-            }
             
             tx.quote = quote
 
@@ -433,9 +425,9 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
             return tx.fromCoin
-        case .EVM:
+        case .EVM, .Solana:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
             return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
@@ -467,10 +459,5 @@ private extension SwapCryptoViewModel {
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
             return chainSpecific.gas
         }
-    }
-    
-    func oneInchFee(quote: OneInchQuote) -> BigInt {
-        let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
-        return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
     }
 }

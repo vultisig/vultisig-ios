@@ -281,10 +281,10 @@ final class DKLSKeygen {
             var keygenSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 keygenSetupMsg = try getDklsSetupMessage()
-                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
-                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strKeygenSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
                 keygenSetupMsg = Array(base64: strKeygenSetupMsg)
                 self.setupMessage = keygenSetupMsg
             }
@@ -313,7 +313,6 @@ final class DKLSKeygen {
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
                 self.setKeygenDone(status: true)
-                task?.cancel()
                 var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -463,10 +462,10 @@ final class DKLSKeygen {
             var reshareSetupMsg:[UInt8]
             if self.isInitiateDevice {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
-                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString())
+                try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),nil)
             } else {
                 // download the setup message from relay server
-                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry()
+                let strReshareSetupMsg = try await messenger.downloadSetupMessageWithRetry(nil)
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
                 self.setupMessage = reshareSetupMsg
             }
@@ -495,8 +494,6 @@ final class DKLSKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
-                task?.cancel()
                 var newKeyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -517,6 +514,8 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
+                self.setKeygenDone(status: true)
             }
         }
         catch {
