@@ -182,20 +182,7 @@ struct JoinKeysignDoneSummary: View {
             }
         }
     }
-    
-    var swapLink: some View {
-        VStack {
-            if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
-                Separator()
-                
-                HStack {
-                    Spacer()
-                    progressLink(txid: link)
-                }
-            }
-        }
-    }
-    
+
     private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
         ZStack {
             if isVerticalStacked {
@@ -248,16 +235,6 @@ struct JoinKeysignDoneSummary: View {
         }
     }
     
-    private func progressButton(link: String) -> some View {
-        Button {
-            progressLink(link: link)
-        } label: {
-            Text(NSLocalizedString("Swap progress", comment: ""))
-                .font(.body14Menlo)
-                .foregroundColor(.neutral0)
-        }
-    }
-    
     private func copyButton(txid: String) -> some View {
         Button {
             copyHash(txid: txid)
@@ -282,7 +259,11 @@ struct JoinKeysignDoneSummary: View {
     
     private func progressLink(txid: String) -> some View {
         Button {
-            shareLink(txid: txid)
+            if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
+                progressLink(link: link)
+            } else {
+                shareLink(txid: txid)
+            }
         } label: {
             Text(NSLocalizedString(viewModel.keysignPayload?.swapPayload != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
                 .font(.body14MontserratBold)

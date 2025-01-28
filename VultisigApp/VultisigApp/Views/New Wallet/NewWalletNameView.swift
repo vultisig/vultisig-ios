@@ -11,7 +11,6 @@ import SwiftData
 struct NewWalletNameView: View {
     let tssType: TssType
     let selectedTab: SetupVaultState
-    let header: String
 
     @State var name: String
 
@@ -37,29 +36,43 @@ struct NewWalletNameView: View {
     }
     
     var textfield: some View {
-        TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .submitLabel(.done)
-            .padding(12)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .colorScheme(.dark)
-            .borderlessTextFieldStyle()
-            .maxLength($name)
-            .autocorrectionDisabled()
-            .onTapGesture {
-                resetPlaceholderName()
+        HStack {
+            TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .submitLabel(.done)
+            
+            if !name.isEmpty {
+                clearButton
             }
+        }
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .colorScheme(.dark)
+        .borderlessTextFieldStyle()
+        .maxLength($name)
+        .autocorrectionDisabled()
+        .padding(.top, 32)
+    }
+    
+    var clearButton: some View {
+        Button {
+            resetPlaceholderName()
+        } label: {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundColor(.neutral500)
+        }
     }
     
     var button: some View {
         Button {
             verifyVault()
         } label: {
-            FilledButton(title: "continue")
+            FilledButton(title: "next")
         }
-        .padding(40)
+        .padding(.vertical, 40)
+        .padding(.horizontal, 24)
         .navigationDestination(isPresented: $isLinkActive) {
             if selectedTab.isFastVault {
                 FastVaultEmailView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab)
@@ -107,5 +120,5 @@ struct NewWalletNameView: View {
 }
 
 #Preview {
-    NewWalletNameView(tssType: .Keygen, selectedTab: .fast, header: "name", name: "Fast Vault #1")
+    NewWalletNameView(tssType: .Keygen, selectedTab: .fast, name: "Fast Vault #1")
 }

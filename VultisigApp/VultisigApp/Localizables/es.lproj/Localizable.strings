@@ -463,3 +463,10 @@
 "OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Di adiós a ";
 "seedPhrases" = "las frases semilla";
+"ultimateSecurity" = "Máxima Seguridad";
+"fastSetUp" = "Configuración Rápida";
+"secureVaultSecureTextDescription" = "Control total, solo tus dispositivos\nMúltiples dispositivos para firmar transacciones\nÚsalo como cofre frío";
+"fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda pequeños fondos para acciones rápidas\nEl cofre depende del tiempo de actividad del servidor";
+"chooseSetUp" = "Elige Configuración";
+"secure" = "Seguro";
+"fast" = "Rápido";
