@@ -463,3 +463,10 @@
 "OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Dì addio a ";
 "seedPhrases" = "frasi di recupero";
+"ultimateSecurity" = "Massima Sicurezza";
+"fastSetUp" = "Configurazione Veloce";
+"secureVaultSecureTextDescription" = "Controllo completo, solo i tuoi dispositivi\nPiù dispositivi per firmare le transazioni\nUsa come cassaforte fredda";
+"fastVaultSecureTextDescription" = "Serve solo 1 dispositivo\nConserva piccole somme per azioni rapide\nCassaforte dipende dalla disponibilità del server";
+"chooseSetUp" = "Scegli Configurazione";
+"secure" = "Sicuro";
+"fast" = "Veloce";

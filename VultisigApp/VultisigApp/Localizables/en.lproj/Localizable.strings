@@ -450,7 +450,6 @@
 "skipPassword" = "Skip Password";
 "transactionTrackingLink" = "Transaction tracking link";
 "secureVault" = "Secure Vault";
-"secureVaultTempDescription" = "2of3, 3of4, 4of6  device setups available\nOne backup per device\nRedundant and secure";
 "swapFee" = "Swap Fee";
 "action" = "Action";
 "swapFrom" = "Swap From";
@@ -500,3 +499,12 @@
 "OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Say goodbye to ";
 "seedPhrases" = "seed phrases";
+"ultimateSecurity" = "Ultimate Security";
+"fastSetUp" = "Fast set-up";
+"secureVaultSecureTextDescription" = "Full control, only your devices\nMultiple devices to sign transactions\nUse as cold vault";
+"fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVault relies on server uptime";
+"chooseSetUp" = "Choose Set-up";
+"secure" = "Secure";
+"fast" = "Fast";
+"nameYourVault" = "Name your vault";
+"newWalletNameDescription" = "You can always rename your vault later in settings";

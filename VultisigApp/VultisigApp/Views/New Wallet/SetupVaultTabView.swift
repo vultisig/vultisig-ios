@@ -6,55 +6,65 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SetupVaultTabView: View {
     @Binding var selectedTab: SetupVaultState
     
+    @State var showContent = false
+    @State var showAnimation = false
+    
+    let animationVM = RiveViewModel(fileName: "ChooseVault")
+    
     var body: some View {
         content
+            .onAppear {
+                setData()
+            }
     }
     
     var content: some View {
         VStack {
-            secureTag
-//            SetupVaultTab(selectedTab: $selectedTab)
-            SetupVaultImageManager(selectedTab: $selectedTab)
+            animation
+//            switchControl
             secureText
         }
         .padding(.horizontal, 16)
     }
     
-    var secureTag: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "shield")
-                .foregroundColor(.turquoise600)
-                .padding(12)
-                .background(Color.blue600)
-                .cornerRadius(8)
-            
-            Text(NSLocalizedString("secureVault", comment: ""))
-                .foregroundColor(.neutral0)
-        }
-        .font(.body16MontserratBold)
+    var animation: some View {
+        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: $selectedTab)
+            .opacity(showAnimation ? 1 : 0)
+            .blur(radius: showAnimation ? 0 : 10)
+            .animation(.easeInOut, value: showAnimation)
+    }
+    
+    var switchControl: some View {
+        SetupVaultSwithControl(animationVM: animationVM, selectedTab: $selectedTab)
+            .opacity(showContent ? 1 : 0)
+            .offset(y: showContent ? 0 : 50)
+            .blur(radius: showContent ? 0 : 10)
+            .scaleEffect(showContent ? 1 : 0.8)
+            .animation(.spring, value: showContent)
     }
     
     var secureText: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(0..<3) { _ in
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.turquoise400)
-                }
-            }
-            
-            Text(NSLocalizedString("secureVaultTempDescription", comment: ""))
-                .foregroundColor(.neutral0)
-                .lineSpacing(12)
-                .multilineTextAlignment(.leading)
+        SetupVaultSecureText(selectedTab: selectedTab)
+            .opacity(showContent ? 1 : 0)
+            .offset(y: showContent ? 0 : 50)
+            .blur(radius: showContent ? 0 : 10)
+            .scaleEffect(showContent ? 1 : 0.8)
+            .animation(.spring, value: showContent)
+    }
+    
+    private func setData() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showContent = true
         }
-        .font(.body14MontserratSemiBold)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 16)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            showAnimation = true
+        }
     }
 }
 

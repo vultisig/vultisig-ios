@@ -480,3 +480,10 @@
 "OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Sagen Sie Auf Wiedersehen zu ";
 "seedPhrases" = "Seed-Phrasen";
+"ultimateSecurity" = "Ultimative Sicherheit";
+"fastSetUp" = "Schnelle Einrichtung";
+"secureVaultSecureTextDescription" = "Volle Kontrolle, nur Ihre Geräte\nMehrere Geräte für Transaktionssignaturen\nVerwendbar als kalter Tresor";
+"fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nKleine Beträge für schnelle Aktionen speichern\nTresor hängt von der Serververfügbarkeit ab";
+"chooseSetUp" = "Einrichtung wählen";
+"secure" = "Sicher";
+"fast" = "Schnell";
