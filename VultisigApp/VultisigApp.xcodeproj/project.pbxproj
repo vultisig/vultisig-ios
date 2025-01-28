@@ -595,6 +595,7 @@
 		A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */; };
 		A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */; };
 		A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */; };
+		A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */; };
@@ -1399,6 +1400,7 @@
 		A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSecureText.swift; sourceTree = "<group>"; };
 		A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = ChooseVault.riv; sourceTree = "<group>"; };
 		A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSwithControl.swift; sourceTree = "<group>"; };
+		A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRCodeScanned.riv; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultAnimationManager.swift; sourceTree = "<group>"; };
@@ -2889,6 +2891,7 @@
 			children = (
 				A6F7B6712D42BDCD00AC8104 /* Onboarding.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
+				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -3546,6 +3549,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
+				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */,

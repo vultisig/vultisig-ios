@@ -5,6 +5,7 @@
 
 import OSLog
 import SwiftUI
+import RiveRuntime
 
 struct PeerDiscoveryView: View {
     let tssType: TssType
@@ -39,6 +40,7 @@ struct PeerDiscoveryView: View {
     ]
     
     let logger = Logger(subsystem: "peers-discory", category: "communication")
+    let animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
     var body: some View {
         content

@@ -70,21 +70,25 @@ extension PeerDiscoveryView {
     
     var paringBarcode: some View {
         ZStack {
-            qrCodeImage?
-                .resizable()
-                .frame(maxWidth: 500, maxHeight: 500)
-                .aspectRatio(contentMode: .fill)
-                .padding(16)
-                .background(Color.blue600)
-                .cornerRadius(24)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 24)
-                        .strokeBorder(Color.blue200, lineWidth: 1)
-                )
+            animation
+            qrCodeContent
         }
-        .cornerRadius(22)
-        .shadow(radius: 5)
         .padding(isPhoneSE ? 8 : 20)
+    }
+    
+    var qrCodeContent: some View {
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: 500, maxHeight: 500)
+            .aspectRatio(contentMode: .fill)
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(38)
+            .padding(2)
+    }
+    
+    var animation: some View {
+        animationVM.view()
     }
     
     var scrollList: some View {
