@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SetupVaultSwithControl: View {
+    let animationVM: RiveViewModel
     @Binding var selectedTab: SetupVaultState
     
     @State var width: CGFloat = .zero
@@ -37,22 +39,8 @@ struct SetupVaultSwithControl: View {
     var content: some View {
         GeometryReader { size in
             HStack {
-                Button {
-                    withAnimation {
-                        selectedTab = .secure
-                        
-                    }
-                } label: {
-                    secureOption
-                }
-                
-                Button {
-                    withAnimation {
-                        selectedTab = .fast
-                    }
-                } label: {
-                    fastOption
-                }
+                getButton(for: .secure)
+                getButton(for: .fast)
             }
             .onAppear {
                 width = size.size.width
@@ -60,7 +48,22 @@ struct SetupVaultSwithControl: View {
         }
     }
     
-    var secureOption: some View {
+    private func getButton(for option: SetupVaultState) -> some View {
+        Button {
+            withAnimation {
+                selectedTab = option
+                animationVM.triggerInput("Switch")
+            }
+        } label: {
+            if option == .secure {
+                secureButtonLabel
+            } else {
+                fastButtonLabel
+            }
+        }
+    }
+    
+    var secureButtonLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: "shield")
                 .font(.body20Menlo)
@@ -75,7 +78,7 @@ struct SetupVaultSwithControl: View {
         .cornerRadius(100)
     }
     
-    var fastOption: some View {
+    var fastButtonLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: "bolt")
                 .font(.body20Menlo)
@@ -92,5 +95,5 @@ struct SetupVaultSwithControl: View {
 }
 
 #Preview {
-    SetupVaultSwithControl(selectedTab: .constant(.secure))
+    SetupVaultSwithControl(animationVM: RiveViewModel(fileName: "ChooseVault"), selectedTab: .constant(.secure))
 }

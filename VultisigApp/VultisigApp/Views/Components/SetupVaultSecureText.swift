@@ -21,8 +21,7 @@ struct SetupVaultSecureText: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .cornerRadius(16)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 16)
+        .padding(.vertical, 16)
     }
     
     var header: some View {
@@ -48,6 +47,7 @@ struct SetupVaultSecureText: View {
                 ForEach(0..<3) { index in
                     Image(systemName: getImage(for: index))
                         .foregroundColor(getTint(for: index))
+                        .frame(width: 16, height: 16)
                 }
             }
             

@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SetupVaultTabView: View {
     @Binding var selectedTab: SetupVaultState
+    
+    let animationVM = RiveViewModel(fileName: "ChooseVault")
     
     var body: some View {
         content
@@ -24,11 +27,11 @@ struct SetupVaultTabView: View {
     }
     
     var animation: some View {
-        SetupVaultAnimationManager(selectedTab: $selectedTab)
+        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: $selectedTab)
     }
     
     var switchControl: some View {
-        SetupVaultSwithControl(selectedTab: $selectedTab)
+        SetupVaultSwithControl(animationVM: animationVM, selectedTab: $selectedTab)
     }
     
     var secureText: some View {
