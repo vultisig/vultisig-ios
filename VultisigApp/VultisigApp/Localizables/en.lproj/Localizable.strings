@@ -508,3 +508,4 @@
 "fast" = "Fast";
 "nameYourVault" = "Name your vault";
 "newWalletNameDescription" = "You can always rename your vault later in settings";
+"waitingOnDevices..." = "Waiting on devices...";

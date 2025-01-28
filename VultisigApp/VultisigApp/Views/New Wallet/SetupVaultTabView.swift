@@ -26,7 +26,7 @@ struct SetupVaultTabView: View {
     var content: some View {
         VStack {
             animation
-//            switchControl
+            switchControl
             secureText
         }
         .padding(.horizontal, 16)

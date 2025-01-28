@@ -52,6 +52,9 @@ extension Color {
     
     static let extraLightGray = Color(hex: "8295AE")
     
+    static let textDisabled = Color(hex: "4D5F75")
+    static let buttonDisabled = Color(hex: "0F1E36")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }

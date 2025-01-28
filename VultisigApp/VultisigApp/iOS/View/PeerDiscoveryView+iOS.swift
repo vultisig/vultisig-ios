@@ -72,27 +72,19 @@ extension PeerDiscoveryView {
         ZStack {
             qrCodeImage?
                 .resizable()
-                .background(Color.blue600)
                 .frame(maxWidth: 500, maxHeight: 500)
                 .aspectRatio(contentMode: .fill)
-                .padding(2)
-                .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding()
+                .padding(16)
                 .background(Color.blue600)
-                .cornerRadius(15)
-            
-            outline
+                .cornerRadius(24)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 24)
+                        .strokeBorder(Color.blue200, lineWidth: 1)
+                )
         }
         .cornerRadius(22)
         .shadow(radius: 5)
         .padding(isPhoneSE ? 8 : 20)
-    }
-    
-    var outline: some View {
-        Image("QRScannerOutline")
-            .resizable()
-            .frame(maxWidth: 540, maxHeight: 540)
     }
     
     var scrollList: some View {
@@ -142,17 +134,21 @@ extension PeerDiscoveryView {
     }
     
     var bottomButton: some View {
-        Button(action: {
+        let isButtonDisabled = disableContinueButton()
+        
+        return Button(action: {
             viewModel.showSummary()
         }) {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: isButtonDisabled ? "waitingOnDevices..." : "continue",
+                textColor: isButtonDisabled ? .textDisabled : .blue600,
+                background: isButtonDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
-        .disabled(disableContinueButton())
-        .opacity(disableContinueButton() ? 0.8 : 1)
-        .grayscale(disableContinueButton() ? 1 : 0)
+        .disabled(isButtonDisabled)
     }
 
     var isShareButtonVisible: Bool {
