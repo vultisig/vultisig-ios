@@ -52,8 +52,6 @@ extension Color {
     
     static let extraLightGray = Color(hex: "8295AE")
     
-    static let extraLightGray = Color(hex: "8295AE")
-    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }
