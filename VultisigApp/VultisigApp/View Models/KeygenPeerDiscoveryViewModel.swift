@@ -103,7 +103,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
-                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: config.password, email: config.email)
+                fastVaultService.create(name: vault.name,
+                                        sessionID: sessionID,
+                                        hexEncryptionKey: encryptionKeyHex!,
+                                        hexChainCode: vault.hexChainCode,
+                                        encryptionPassword: config.password,
+                                        email: config.email,
+                                        lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -114,7 +120,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          encryptionPassword: config.password,
                                          email: config.email,
                                          oldParties: vault.signers,
-                                         oldResharePrefix: vault.resharePrefix ?? "")
+                                         oldResharePrefix: vault.resharePrefix ?? "",
+                                         lib_type: vault.libType == .DKLS ? 1 : 0)
             }
         }
         

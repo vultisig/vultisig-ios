@@ -53,10 +53,11 @@ final class FastVaultService {
         hexEncryptionKey: String,
         hexChainCode: String,
         encryptionPassword: String,
-        email: String
+        email: String,
+        lib_type: Int
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
+        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email,lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
             print("Send create request to Vultiserver successfully")
@@ -72,7 +73,8 @@ final class FastVaultService {
         encryptionPassword:String,
         email: String,
         oldParties: [String],
-        oldResharePrefix: String
+        oldResharePrefix: String,
+        lib_type: Int
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
         let req = ReshareRequest(name: name,
@@ -84,7 +86,8 @@ final class FastVaultService {
                                  old_parties: oldParties,
                                  encryption_password: encryptionPassword,
                                  email: email,
-                                 old_reshare_prefix: oldResharePrefix)
+                                 old_reshare_prefix: oldResharePrefix,
+                                 lib_type: lib_type)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
             print("Send reshare request to Vultiserver successfully")
