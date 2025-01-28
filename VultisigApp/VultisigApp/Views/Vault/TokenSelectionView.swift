@@ -87,17 +87,18 @@ struct TokenSelectionView: View {
 
     var list: some View {
         VStack(alignment: .leading, spacing: 24) {
-            if !tokenViewModel.selectedTokens.isEmpty {
-                Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
-                    ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
-                        TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    }
-                }
-            }
-            
             if tokenViewModel.searchText.isEmpty {
+                if !tokenViewModel.selectedTokens.isEmpty {
+                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
+                        .background(Color.backgroundBlue)) {
+                            ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
+                                TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                            }
+                        }
+                }
+
                 Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
                     ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
                         TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
