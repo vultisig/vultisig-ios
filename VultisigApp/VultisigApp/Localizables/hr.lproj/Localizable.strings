@@ -463,3 +463,10 @@
 "OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Zbogom ";
 "seedPhrases" = "seed frazama";
+"ultimateSecurity" = "Krajnja Sigurnost";
+"fastSetUp" = "Brza Postavka";
+"secureVaultSecureTextDescription" = "Potpuna kontrola, samo vaši uređaji\nViše uređaja za potpisivanje transakcija\nKoristite kao hladni trezor";
+"fastVaultSecureTextDescription" = "Potreban je samo 1 uređaj\nPohranite male iznose za brze akcije\nTrezor ovisi o dostupnosti poslužitelja";
+"chooseSetUp" = "Odaberite Postavku";
+"secure" = "Sigurno";
+"fast" = "Brzo";

@@ -74,4 +74,22 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("secureLoaderTitle", comment: "")
         }
     }
+    
+    var secureTextTitle: String {
+        switch self {
+        case .secure:
+            return NSLocalizedString("ultimateSecurity", comment: "")
+        case .fast, .active:
+            return NSLocalizedString("fastSetUp", comment: "")
+        }
+    }
+    
+    var secureTextDecription: String {
+        switch self {
+        case .secure:
+            return NSLocalizedString("secureVaultSecureTextDescription", comment: "")
+        case .fast, .active:
+            return NSLocalizedString("fastVaultSecureTextDescription", comment: "")
+        }
+    }
 }

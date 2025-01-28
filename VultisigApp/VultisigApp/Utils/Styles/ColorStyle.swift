@@ -39,15 +39,16 @@ extension Color {
     static let loadingBlue = Color(hex: "1DA7FA")
     static let loadingGreen = Color(hex: "24D7A6")
     
-    static let alertRed = Color(hex: "#FF4040")
-    static let warningYellow = Color(hex: "#F7961B")
+    static let alertRed = Color(hex: "FF4040")
+    static let alertTurquoise = Color(hex: "13C89D")
+    static let warningYellow = Color(hex: "F7961B")
     
-    static let logoBlue = Color(hex: "#0D86BB")
+    static let logoBlue = Color(hex: "0D86BB")
     
-    static let miamiMarmalade = Color(hex: "#F7961B")
+    static let miamiMarmalade = Color(hex: "F7961B")
     
-    static let reshareCellGreen = Color(hex: "#15D7AC")
-    static let reshareCellRed = Color(hex: "#DA2E2E")
+    static let reshareCellGreen = Color(hex: "15D7AC")
+    static let reshareCellRed = Color(hex: "DA2E2E")
     
     static let extraLightGray = Color(hex: "8295AE")
     
