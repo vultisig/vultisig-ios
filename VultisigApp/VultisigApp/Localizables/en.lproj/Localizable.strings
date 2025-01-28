@@ -509,3 +509,7 @@
 "nameYourVault" = "Name your vault";
 "newWalletNameDescription" = "You can always rename your vault later in settings";
 "waitingOnDevices..." = "Waiting on devices...";
+"peerDiscoveryInfoTitle1" = "Scan the ";
+"peerDiscoveryInfoTitle2" = "QR code";
+"peerDiscoveryInfoDescription" = "Download Vultisig on your other device(s) and select ‘Scan QR code’";
+"gotIt" = "Got it";

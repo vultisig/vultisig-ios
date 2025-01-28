@@ -24,6 +24,7 @@ struct PeerDiscoveryView: View {
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
     
+    @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
     @State private var showInvalidNumberOfSelectedDevices = false
     
@@ -84,6 +85,8 @@ struct PeerDiscoveryView: View {
             }
         }
         .foregroundColor(.neutral0)
+        .blur(radius: showInfoSheet ? 1 : 0)
+        .animation(.easeInOut, value: showInfoSheet)
     }
 
     var waitingForDevices: some View {
