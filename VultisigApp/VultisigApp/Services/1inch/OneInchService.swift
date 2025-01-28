@@ -20,8 +20,8 @@ struct OneInchService {
         return "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
     }
     
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> OneInchQuote {
-        
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: OneInchQuote, fee: BigInt?) {
+
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
         
@@ -44,7 +44,12 @@ struct OneInchService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(OneInchQuote.self, from: data)
-        return response
+
+        let gasPrice = BigInt(response.tx.gasPrice) ?? 0
+        let gas = BigInt(response.tx.gas)
+        let fee = gas * gasPrice
+        
+        return (response, fee)
     }
     
     func fetchTokens(chain: Int) async throws -> [OneInchToken] {

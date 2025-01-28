@@ -118,7 +118,7 @@ private extension SwapService {
 
     func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
-        let quote = try await oneInchService.fetchQuotes(
+        let response = try await oneInchService.fetchQuotes(
             chain: String(chain),
             source: fromCoin.contractAddress,
             destination: toCoin.contractAddress,
@@ -126,16 +126,16 @@ private extension SwapService {
             from: fromCoin.address,
             isAffiliate: isAffiliate
         )
-        return .oneinch(quote)
+        return .oneinch(response.quote, fee: response.fee)
     }
 
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let quote = try await lifiService.fetchQuotes(
+        let response = try await lifiService.fetchQuotes(
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount
         )
-        return .lifi(quote)
+        return .lifi(response.quote, fee: response.fee)
     }
 }

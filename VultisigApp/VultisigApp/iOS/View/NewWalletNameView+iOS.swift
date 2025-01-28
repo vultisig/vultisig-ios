@@ -14,13 +14,8 @@ extension NewWalletNameView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString(header, comment: ""))
+        .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
-        }
         .onTapGesture {
             hideKeyboard()
         }
@@ -31,15 +26,19 @@ extension NewWalletNameView {
     }
     
     var fields: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("vaultName", comment: ""))
-                .font(.body14MontserratMedium)
+        VStack(alignment: .leading, spacing: 16) {
+            Text(NSLocalizedString("nameYourVault", comment: ""))
+                .font(.body34BrockmannMedium)
                 .foregroundColor(.neutral0)
+                .padding(.top, 16)
+            
+            Text(NSLocalizedString("newWalletNameDescription", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
             
             textfield
         }
         .padding(.horizontal, 16)
-        .padding(.top, 30)
     }
 }
 #endif

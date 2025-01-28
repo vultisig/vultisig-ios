@@ -8,9 +8,9 @@
 #if os(macOS)
 import SwiftUI
 
-extension SetupVaultImageManager {
+extension SetupVaultAnimationManager {
     var imageContainer: some View {
-        imageContent
+        animation
             .offset(y: 15)
             .scaleEffect(1.1)
     }

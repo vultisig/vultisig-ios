@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 enum LifiQuoteResponse: Codable {
     struct EvmQuoteResponse: Codable {
@@ -29,13 +30,28 @@ enum LifiQuoteResponse: Codable {
         let transactionRequest: TransactionRequest
     }
     struct Estimate: Codable {
+        struct GasCosts: Codable {
+            let estimate: String
+        }
         let toAmount: String
         let toAmountMin: String
         let executionDuration: Decimal
+        let gasCosts: [GasCosts]
     }
 
     case evm(EvmQuoteResponse)
     case solana(SolanaQuoteResponse)
+
+    var fee: BigInt? {
+        switch self {
+        case .evm(let quote):
+            let estimate = quote.estimate.gasCosts.first?.estimate
+            return estimate.map { BigInt(stringLiteral: $0) }
+        case .solana(let quote):
+            let estimate = quote.estimate.gasCosts.first?.estimate
+            return estimate.map { BigInt(stringLiteral: $0) }
+        }
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

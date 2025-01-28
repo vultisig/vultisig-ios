@@ -13,7 +13,6 @@ class SwapTransaction: ObservableObject {
 
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
-    @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
     @Published var isFastVault: Bool = false
@@ -43,8 +42,8 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch, .lifi:
-            return oneInchFee
+        case .oneinch(_ , let fee), .lifi(_, let fee):
+            return fee ?? 0
         case nil:
             return .zero
         }
@@ -58,7 +57,7 @@ class SwapTransaction: ObservableObject {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
             return expected / toCoin.thorswapMultiplier
-        case .oneinch(let quote), .lifi(let quote):
+        case .oneinch(let quote, _), .lifi(let quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }
