@@ -161,11 +161,17 @@ class Coin: ObservableObject, Codable, Hashable {
             return "1000"
         case .dogecoin:
             return "1000000"
-        case .gaiaChain,.kujira, .osmosis, .noble:
+        case .noble:
             return "200000"
         case .terraClassic:
             return "100000000"
         case .terra:
+            return "7500"
+        case .kujira:
+            return "7500"
+        case .osmosis:
+            return "7500"
+        case .gaiaChain:
             return "7500"
         case .dydx:
             return DydxHelper.DydxGasLimit.description
