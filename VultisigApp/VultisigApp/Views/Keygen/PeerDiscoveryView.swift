@@ -40,6 +40,11 @@ struct PeerDiscoveryView: View {
         GridItem(.adaptive(minimum: 160)),
     ]
     
+    let phoneColumns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160))
+    ]
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     let animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
@@ -126,29 +131,6 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
-        VStack(spacing: isPhoneSE ? 4 : 12) {
-            deviceContent
-        }
-    }
-    
-    var deviceContent: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
-    }
-    
-    var lookingForDevices: some View {
-        LookingForDevicesLoader(
-            tssType: tssType,
-            selectedTab: selectedTab
-        )
-    }
-    
-    var deviceList: some View {
         ZStack {
             if isLandscape {
                 gridList
@@ -157,6 +139,13 @@ struct PeerDiscoveryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    var lookingForDevices: some View {
+        LookingForDevicesLoader(
+            tssType: tssType,
+            selectedTab: selectedTab
+        )
     }
     
     func disableContinueButton() -> Bool {

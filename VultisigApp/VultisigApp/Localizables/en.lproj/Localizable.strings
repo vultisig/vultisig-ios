@@ -513,3 +513,5 @@
 "peerDiscoveryInfoTitle2" = "QR code";
 "peerDiscoveryInfoDescription" = "Download Vultisig on your other device(s) and select ‘Scan QR code’";
 "gotIt" = "Got it";
+"scanWith" = "Scan with";
+"device" = "device";

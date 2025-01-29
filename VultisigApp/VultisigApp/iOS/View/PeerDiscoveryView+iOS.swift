@@ -95,14 +95,14 @@ extension PeerDiscoveryView {
         VStack {
             listTitle
             
-            ScrollView(.horizontal) {
-                HStack(spacing: 18) {
+            ScrollView {
+                LazyVGrid(columns: phoneColumns, spacing: 18) {
                     devices
+                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
                 }
-                .padding(.horizontal, 30)
+                .padding(.horizontal, 18)
             }
         }
-        .padding(idiom == .phone ? 0 : 20)
     }
     
     var gridList: some View {
