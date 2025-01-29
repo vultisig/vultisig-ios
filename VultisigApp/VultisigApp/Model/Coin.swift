@@ -184,7 +184,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ripple:
             return "180000"
         case .akash:
-            return "200000"
+            return "3000" // 0.003 AKT Cosmos station uses something like that
         case .tron:
             return "800000"
         }
@@ -264,7 +264,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var tokenChainLogo: String? {
-        guard !isNativeToken else { return nil }
+        guard chain.logo != logo else { return nil }
         return chain.logo
     }
     
