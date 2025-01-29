@@ -23,13 +23,13 @@ enum JoinKeysignStatus {
 class JoinKeysignViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
-
+    
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
-
+    
     private let etherfaceService = EtherfaceService.shared
     private let fastVaultService = FastVaultService.shared
-
+    
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
     @Published var keysignMessages = [String]()
@@ -48,9 +48,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var blowfishShow = false
     @Published var blowfishWarningsShow = false
     @Published var blowfishWarnings: [String] = []
-
+    
     @Published var decodedMemo: String?
-
+    
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
     
@@ -78,7 +78,7 @@ class JoinKeysignViewModel: ObservableObject {
     func startScan() {
         self.isShowingScanner = true
     }
-
+    
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
             return logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -86,7 +86,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard !sessionID.isEmpty else {
             return logger.error("Session ID has not been acquired. Please scan the QR code again.")
         }
-
+        
         Utils.sendRequest(
             urlString: "\(serverURL)/\(sessionID)",
             method: "POST",
@@ -104,7 +104,7 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
     }
-
+    
     func setStatus(status: JoinKeysignStatus) {
         self.status = status
     }
@@ -114,11 +114,11 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
-
+    
     func stopJoiningKeysign(){
         self.status = .DiscoverSigningMsg
     }
-
+    
     func waitForKeysignStart() async {
         do {
             let t = Task {
@@ -132,12 +132,12 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Failed to wait for keysign to start.")
         }
     }
-
+    
     private func fastVaultKeysignCommittee() -> [String] {
         let fastServer = vault.signers.first(where: { $0.starts(with: "Server") })
         return [localPartyID, fastServer].compactMap { $0 }
     }
-
+    
     private func checkKeysignStarted() {
         guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -196,11 +196,11 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
-
+    
     func prepareKeysignMessages(customMessagePayload: CustomMessagePayload) {
         self.keysignMessages = customMessagePayload.keysignMessages
     }
-
+    
     func handleQrCodeSuccessResult(data: String?) async {
         guard let data else {
             return
@@ -214,7 +214,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.serviceName = keysignMsg.serviceName
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-
+            
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
@@ -224,7 +224,7 @@ class JoinKeysignViewModel: ObservableObject {
             
             self.payloadID = keysignMsg.payloadID
             self.useVultisigRelay = keysignMsg.useVultisigRelay
-
+            
             if useVultisigRelay {
                 self.serverAddress = Endpoint.vultisigRelay
             }
@@ -298,7 +298,7 @@ class JoinKeysignViewModel: ObservableObject {
         blowfishWarningsShow = false
         blowfishWarnings = []
     }
-
+    
     func loadThorchainID() async {
         do {
             _ = try await ThorchainService.shared.getTHORChainChainID()
@@ -306,19 +306,19 @@ class JoinKeysignViewModel: ObservableObject {
             print("fail to get thorchain network id, \(error.localizedDescription)")
         }
     }
-
+    
     func loadFunctionName() async {
         guard let memo = keysignPayload?.memo, keysignPayload?.coin.chainType == .EVM else {
             return
         }
-
+        
         do {
             decodedMemo = try await etherfaceService.decode(memo: memo)
         } catch {
             print("Memo decoding error: \(error.localizedDescription)")
         }
     }
-
+    
     func blowfishEVMTransactionScan() async throws -> BlowfishResponse {
         guard let payload = keysignPayload else {
             throw NSError(domain: "JoinKeysignViewModel", code: 2, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for EVM transaction scan."])
@@ -355,11 +355,36 @@ class JoinKeysignViewModel: ObservableObject {
             return "0"
         }
         
+        let nativeTokenAux = TokensStore.TokenSelectionAssets.first{ $0.isNativeToken && $0.chain == payload.coin.chain }
+        
+        guard let nativeToken = nativeTokenAux else {
+            return "0"
+        }
+        
+        var gasInReadable = ((Double( payload.coin.feeDefault ) ?? 0.0) / pow( 10, Double(nativeToken.decimals) )).description
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.coin.feeDefault.toBigInt())
+        
+        if payload.coin.chainType == .EVM {
+            
+            guard case .Ethereum(
+                let maxFeePerGasWei,
+                let priorityFeeWei,
+                let nonce,
+                let gasLimit
+            ) = payload.chainSpecific else {
+                return "0"
+            }
+            
+            // convert to Gwei , show as Gwei for EVM chain only
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
+                return .empty
+            }
+            return "\(Decimal( maxFeePerGasWei ) / weiPerGWeiDecimal) \(payload.coin.chain.feeUnit)"
+            
+        }
+        
         // TODO: Add support for other chains
         // TODO: display the fee in fiat currency as well
-        
-        let gasInReadable = ((Double( payload.coin.feeDefault ) ?? 0.0) / pow( 10, Double(payload.coin.decimals) )).description
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.coin.feeDefault.toBigInt())
         
         feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
         
