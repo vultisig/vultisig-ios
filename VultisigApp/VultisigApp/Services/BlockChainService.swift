@@ -351,7 +351,7 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 200000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 3000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .tron:
             return try await tron.getBlockInfo(coin: coin)
         }
