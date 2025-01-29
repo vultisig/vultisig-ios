@@ -42,7 +42,14 @@ struct LiFiService {
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)
-        let response = try JSONDecoder().decode(LifiQuoteResponse.self, from: data)
+        let response: LifiQuoteResponse
+
+        do {
+            response = try JSONDecoder().decode(LifiQuoteResponse.self, from: data)
+        } catch {
+            let error = try JSONDecoder().decode(LiFiSwapError.self, from: data)
+            throw error
+        }
 
         switch response {
         case .evm(let quote):
