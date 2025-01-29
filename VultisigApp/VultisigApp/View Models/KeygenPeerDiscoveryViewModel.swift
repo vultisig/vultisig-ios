@@ -141,12 +141,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func handleSelection(_ peer: String) {
-        if selections.contains(peer) {
-            if peer != localPartyID {
-                selections.remove(peer)
+        withAnimation {
+            if selections.contains(peer) {
+                if peer != localPartyID {
+                    selections.remove(peer)
+                }
+            } else {
+                selections.insert(peer)
             }
-        } else {
-            selections.insert(peer)
         }
     }
     

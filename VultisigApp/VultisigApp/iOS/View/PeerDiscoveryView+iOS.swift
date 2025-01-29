@@ -64,10 +64,6 @@ extension PeerDiscoveryView {
             VStack {
                 list
                     .padding(20)
-                
-                if selectedTab == .secure {
-                    networkPrompts
-                }
             }
         }
     }
