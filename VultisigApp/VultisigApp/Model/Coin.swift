@@ -174,7 +174,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .ripple:
             return "180000"
         case .akash:
-            return "200000"
+            return "3000" // 0.003 AKT Cosmos station uses something like that
         case .tron:
             return "800000"
         }
