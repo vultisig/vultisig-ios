@@ -108,8 +108,9 @@ extension PeerDiscoveryView {
     var gridList: some View {
         ScrollView {
             listTitle
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: isLandscape ? phoneColumns : columns, spacing: 8) {
                 devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
             .padding(idiom == .phone ? 0 : 20)
         }
@@ -151,7 +152,7 @@ extension PeerDiscoveryView {
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
-        .padding(.bottom, 10)
+        .padding(.bottom, 30)
         .disabled(isButtonDisabled)
     }
 
