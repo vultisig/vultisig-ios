@@ -29,5 +29,10 @@ extension KeygenView {
                 UIApplication.shared.isIdleTimerDisabled = false
             }
     }
+    
+    var progressContainer: some View {
+        KeygenProgressContainer(progressCounter: progressCounter)
+            .padding(.bottom, idiom == .phone ? 10 : 50)
+    }
 }
 #endif

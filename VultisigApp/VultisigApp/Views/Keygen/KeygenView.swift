@@ -244,10 +244,6 @@ struct KeygenView: View {
         }
     }
     
-    var progressContainer: some View {
-        KeygenProgressContainer(progressCounter: progressCounter)
-    }
-    
     func setData() async {
         await viewModel.setData(
             vault: vault,
