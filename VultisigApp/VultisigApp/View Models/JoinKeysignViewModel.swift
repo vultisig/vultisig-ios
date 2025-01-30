@@ -364,7 +364,7 @@ class JoinKeysignViewModel: ObservableObject {
         
         if payload.coin.chainType == .EVM {
             
-            var gas = payload.chainSpecific.gas
+            let gas = payload.chainSpecific.gas
             
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
@@ -376,7 +376,7 @@ class JoinKeysignViewModel: ObservableObject {
             
             let gasGwei = (gasDecimal / weiPerGWeiDecimal)
             
-            var gasInReadable = gasGwei.description
+            let gasInReadable = gasGwei.description
             
             var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
             feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
