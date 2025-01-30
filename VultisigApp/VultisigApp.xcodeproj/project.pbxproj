@@ -64,6 +64,7 @@
 		A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52287472C42BB0000E1CC5A /* LiFiService.swift */; };
 		A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A522C3492C46948A00BC4311 /* SwapError.swift */; };
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
+		A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A524F5702D4AD63500F294B2 /* LiFiSwapError.swift */; };
 		A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */; };
 		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
 		A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D022CA53DCE00507966 /* ReshareView.swift */; };
@@ -873,6 +874,7 @@
 		A52287472C42BB0000E1CC5A /* LiFiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiFiService.swift; sourceTree = "<group>"; };
 		A522C3492C46948A00BC4311 /* SwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapError.swift; sourceTree = "<group>"; };
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
+		A524F5702D4AD63500F294B2 /* LiFiSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiFiSwapError.swift; sourceTree = "<group>"; };
 		A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A52B0D022CA53DCE00507966 /* ReshareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareView.swift; sourceTree = "<group>"; };
@@ -1941,6 +1943,7 @@
 			isa = PBXGroup;
 			children = (
 				A52287472C42BB0000E1CC5A /* LiFiService.swift */,
+				A524F5702D4AD63500F294B2 /* LiFiSwapError.swift */,
 				A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */,
 			);
 			path = LiFi;
@@ -4125,6 +4128,7 @@
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
+				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
