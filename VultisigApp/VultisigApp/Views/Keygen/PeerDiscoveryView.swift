@@ -5,6 +5,7 @@
 
 import OSLog
 import SwiftUI
+import RiveRuntime
 
 struct PeerDiscoveryView: View {
     let tssType: TssType
@@ -23,6 +24,7 @@ struct PeerDiscoveryView: View {
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
     
+    @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
     @State private var showInvalidNumberOfSelectedDevices = false
     
@@ -38,7 +40,17 @@ struct PeerDiscoveryView: View {
         GridItem(.adaptive(minimum: 160)),
     ]
     
+    let phoneColumns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160))
+    ]
+    
+    let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
+    ]
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
+    let animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
     var body: some View {
         content
@@ -82,6 +94,8 @@ struct PeerDiscoveryView: View {
             }
         }
         .foregroundColor(.neutral0)
+        .blur(radius: showInfoSheet ? 1 : 0)
+        .animation(.easeInOut, value: showInfoSheet)
     }
 
     var waitingForDevices: some View {
@@ -111,10 +125,6 @@ struct PeerDiscoveryView: View {
     
     var portraitContent: some View {
         VStack(spacing: 0) {
-            if selectedTab == .secure {
-                networkPrompts
-            }
-            
             qrCode
             list
         }
@@ -125,29 +135,6 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
-        VStack(spacing: isPhoneSE ? 4 : 12) {
-            deviceContent
-        }
-    }
-    
-    var deviceContent: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
-    }
-    
-    var lookingForDevices: some View {
-        LookingForDevicesLoader(
-            tssType: tssType,
-            selectedTab: selectedTab
-        )
-    }
-    
-    var deviceList: some View {
         ZStack {
             if isLandscape {
                 gridList
@@ -156,6 +143,13 @@ struct PeerDiscoveryView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    var lookingForDevices: some View {
+        LookingForDevicesLoader(
+            tssType: tssType,
+            selectedTab: selectedTab
+        )
     }
     
     func disableContinueButton() -> Bool {
@@ -196,22 +190,12 @@ struct PeerDiscoveryView: View {
     }
     
     var listTitle: some View {
-        Text(NSLocalizedString("selectPairingDevices", comment: ""))
-            .font(.body14MontserratSemiBold)
+        Text(NSLocalizedString("devices", comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body22BrockmannMedium)
             .foregroundColor(.neutral0)
             .padding(.bottom, 8)
-    }
-    
-    func getTitle() -> String {
-        guard tssType == .Keygen else {
-            return NSLocalizedString("resharingTheVault", comment: "")
-        }
-        
-        return NSLocalizedString("keygenFor", comment: "") +
-        " " +
-        selectedTab.title +
-        " " +
-        NSLocalizedString("vault", comment: "")
+            .padding(.horizontal, 24)
     }
     
     func setData(_ proxy: GeometryProxy) {

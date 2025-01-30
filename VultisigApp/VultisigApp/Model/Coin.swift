@@ -221,7 +221,7 @@ class Coin: ObservableObject, Codable, Hashable {
             if chain == .kujira {
                 return "\(chain.swapAsset).KUJI"
             }
-            if chain == .arbitrum {
+            if chain == .arbitrum || chain == .base {
                 return "\(chain.swapAsset).ETH"
             }
             return "\(chain.swapAsset).\(chain.ticker)"

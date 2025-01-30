@@ -10,6 +10,7 @@ import OSLog
 import SwiftData
 import SwiftUI
 import Tss
+import RiveRuntime
 
 struct KeygenView: View {
     let vault: Vault
@@ -31,6 +32,9 @@ struct KeygenView: View {
     let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+    
+    let circleAnimationVM = RiveViewModel(fileName: "CreatingVaultCircles", autoPlay: true)
+    let checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
@@ -59,18 +63,20 @@ struct KeygenView: View {
     }
     
     var fields: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 12) {
             Spacer()
             if showProgressRing {
-                progress
+                if progressCounter<4 {
+                    title
+                }
+                states
             }
-            states
             Spacer()
             
             if viewModel.status == .KeygenFailed {
                 retryButton
             } else {
-                keygenViewInstructions
+                progressContainer
             }
         }
     }
@@ -94,15 +100,12 @@ struct KeygenView: View {
                 keygenFailedView
             }
         }
-        .frame(
-            maxWidth: showProgressRing ? 280 : .infinity,
-            maxHeight: showProgressRing ? 50 : .infinity
-        )
-        .offset(y: -20)
     }
     
-    var progress: some View {
-        ProgressRing(progress: Double(progressCounter/progressTotalCount))
+    var title: some View {
+        Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
+            .foregroundColor(.extraLightGray)
+            .font(.body16BrockmannMedium)
     }
     
     var instructions: some View {
@@ -111,46 +114,74 @@ struct KeygenView: View {
     }
     
     var preparingVaultText: some View {
-        KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
-            .onAppear {
-                progressCounter = 1
-            }
+        KeygenStatusText(
+            gradientText: "preparingVaultText1",
+            plainText: "preparingVaultText2"
+        )
+        .onAppear {
+            progressCounter = 1
+        }
     }
     
     var generatingECDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("generatingECDSA", comment: "GENERATING ECDSA KEY"))
-            .onAppear {
-                progressCounter = 2
-            }
+        KeygenStatusText(
+            gradientText: "generatingECDSAText1",
+            plainText: "generatingECDSAText2"
+        )
+        .onAppear {
+            progressCounter = 2
+        }
     }
     
     var generatingEdDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("generatingEdDSA", comment: "GENERATING EdDSA KEY"))
-            .onAppear {
-                progressCounter = 3
-            }
+        KeygenStatusText(
+            gradientText: "generatingEdDSAText1",
+            plainText: "generatingEdDSAText2"
+        )
+        .onAppear {
+            progressCounter = 3
+        }
     }
     
     var reshareECDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("reshareECDSA", comment: "Resharing ECDSA KEY"))
-            .onAppear {
-                progressCounter = 2
-            }
+        KeygenStatusText(
+            gradientText: "",
+            plainText: "reshareECDSA"
+        )
+        .onAppear {
+            progressCounter = 2
+        }
     }
     
     var reshareEdDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
-            .onAppear {
-                progressCounter = 3
-            }
+        KeygenStatusText(
+            gradientText: "",
+            plainText: "reshareEdDSA"
+        )
+        .onAppear {
+            progressCounter = 3
+        }
     }
     
     var doneText: some View {
-        Text("DONE")
-            .foregroundColor(.backgroundBlue)
-            .onAppear {
-                setDoneData()
+        ZStack {
+            circleAnimationVM.view()
+                .scaleEffect(1.1)
+            
+            VStack(spacing: 24) {
+                checkmarkAnimationVM.view()
+                    .frame(width: 80, height: 80)
+                
+                Text(NSLocalizedString("success", comment: ""))
+                    .font(.body28BrockmannMedium)
+                    .foregroundColor(.alertTurquoise)
+                    .opacity(progressCounter == 4 ? 1 : 0)
+                    .animation(.easeInOut, value: progressCounter)
             }
+        }
+        .onAppear {
+            setDoneData()
+        }
     }
     
     var keygenFailedView: some View {

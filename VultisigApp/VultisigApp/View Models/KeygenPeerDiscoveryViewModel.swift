@@ -141,12 +141,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func handleSelection(_ peer: String) {
-        if selections.contains(peer) {
-            if peer != localPartyID {
-                selections.remove(peer)
+        withAnimation {
+            if selections.contains(peer) {
+                if peer != localPartyID {
+                    selections.remove(peer)
+                }
+            } else {
+                selections.insert(peer)
             }
-        } else {
-            selections.insert(peer)
         }
     }
     
@@ -186,10 +188,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.participantDiscovery?.peersFound = [String]()
         self.startSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
-                                                   sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
+        self.participantDiscovery?.getParticipants(
+            serverAddr: self.serverAddr,
+            sessionID: self.sessionID,
+            localParty: self.localPartyID,
+            pubKeyECDSA: vault.pubKeyECDSA
+        )
     }
     
     func showSummary() {
