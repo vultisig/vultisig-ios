@@ -145,7 +145,7 @@ extension PeerDiscoveryView {
             viewModel.showSummary()
         }) {
             FilledButton(
-                title: isButtonDisabled ? "waitingOnDevices..." : "continue",
+                title: isButtonDisabled ? "waitingOnDevices..." : "next",
                 textColor: isButtonDisabled ? .textDisabled : .blue600,
                 background: isButtonDisabled ? .buttonDisabled : .turquoise600
             )

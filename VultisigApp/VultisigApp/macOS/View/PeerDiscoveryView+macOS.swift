@@ -120,17 +120,21 @@ extension PeerDiscoveryView {
     }
     
     var bottomButton: some View {
-        Button(action: {
+        let isButtonDisabled = disableContinueButton()
+        
+        return Button(action: {
             viewModel.showSummary()
         }) {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: isButtonDisabled ? "waitingOnDevices..." : "next",
+                textColor: isButtonDisabled ? .textDisabled : .blue600,
+                background: isButtonDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
-        .disabled(disableContinueButton())
-        .opacity(disableContinueButton() ? 0.8 : 1)
-        .grayscale(disableContinueButton() ? 1 : 0)
+        .disabled(isButtonDisabled)
         .padding(.bottom, 30)
     }
     

@@ -599,6 +599,10 @@
 		A6F7B6C42D499FDF00AC8104 /* Onboarding.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */; };
 		A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */; };
 		A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */; };
+		A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */; };
+		A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */; };
+		A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */; };
+		A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */; };
@@ -1407,6 +1411,10 @@
 		A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = Onboarding.riv; sourceTree = "<group>"; };
 		A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyPeerCell.swift; sourceTree = "<group>"; };
 		A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = WaitingForDevice.riv; sourceTree = "<group>"; };
+		A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenProgressContainer.swift; sourceTree = "<group>"; };
+		A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenProgressBar.swift; sourceTree = "<group>"; };
+		A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = CreatingVaultCircles.riv; sourceTree = "<group>"; };
+		A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = CreatingVaultCheckmark.riv; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultAnimationManager.swift; sourceTree = "<group>"; };
@@ -2899,6 +2907,8 @@
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
 				A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */,
+				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
+				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -2909,6 +2919,8 @@
 				A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */,
 				A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */,
 				A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */,
+				A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */,
+				A6F7B6E62D4B07B500AC8104 /* KeygenProgressBar.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -3558,6 +3570,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
+				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
@@ -3567,6 +3580,7 @@
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
+				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C42D499FDF00AC8104 /* Onboarding.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
@@ -3796,6 +3810,7 @@
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				A6C670EF2CA26F6400F59B6A /* SettingsView+macOS.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
+				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
 				A622C84A2C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift in Sources */,
 				A672643F2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift in Sources */,
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
@@ -4004,6 +4019,7 @@
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,
 				B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */,
+				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
 				A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */,
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,

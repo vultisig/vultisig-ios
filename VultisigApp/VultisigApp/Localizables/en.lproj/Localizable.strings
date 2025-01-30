@@ -101,9 +101,9 @@
 "discoveringMediator" = "Discovering mediator service, please wait...";
 "joiningKeygen" = "Joining key generation / share process, please wait...";
 "waitingForKeygenToStart" = "Waiting for key generation to start, please wait...";
-"preparingVault" = "PREPARING VAULT...";
-"generatingECDSA" = "GENERATING ECDSA KEY";
-"generatingEdDSA" = "GENERATING EdDSA KEY";
+"preparingVault" = "Preparing Vault";
+"generatingECDSA" = "Generating ECDSA Key";
+"generatingEdDSA" = "Generating EdDSA Key";
 "reshareECDSA" = "Resharing ECDSA KEY";
 "reshareEdDSA" = "Resharing EdDSA KEY";
 "keygenFailed" = "Key generation failed";
@@ -515,3 +515,11 @@
 "gotIt" = "Got it";
 "scanWith" = "Scan with";
 "device" = "device";
+"whileYouWait" = "While you wait, Vultisig is...";
+"preparingVaultText1" = "Multi-factor security, ";
+"preparingVaultText2" = "removing the single-point of failure";
+"generatingECDSAText1" = "Self-custodial, ";
+"generatingECDSAText2" = "giving complete control over your assets";
+"generatingEdDSAText1" = "Cross-chain. ";
+"generatingEdDSAText2" = "Swap your favourite tokens all in one vault";
+"creatingVault" = "Creating Vault";
