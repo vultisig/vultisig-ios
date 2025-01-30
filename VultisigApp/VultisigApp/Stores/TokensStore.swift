@@ -596,6 +596,14 @@ class TokensStore {
             CoinMeta(chain: Chain.osmosis, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4", isNativeToken: false)
         }
         
+        static var osmosisUsdcEthAxl: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "USDC.eth.axl", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/D189335C6E4A68B513C10AB227BF1C1D38C746766278BA3EEB4FB14124F1D858", isNativeToken: false)
+        }
+        
+        static var osmosisLVN: CoinMeta {
+            CoinMeta(chain: Chain.osmosis, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "factory/osmo1mlng7pz4pnyxtpq0akfwall37czyk9lukaucsrn30ameplhhshtqdvfm5c/ulvn", isNativeToken: false)
+        }
+        
         static var osmosisIon: CoinMeta {
             CoinMeta(chain: Chain.osmosis, ticker: "ION", logo: "ion", decimals: 6, priceProviderId: "ion", contractAddress: "uion", isNativeToken: false)
         }
@@ -723,7 +731,9 @@ class TokensStore {
         
         TokensStore.Token.osmosis,
         TokensStore.Token.osmosisUsdc,
+        TokensStore.Token.osmosisUsdcEthAxl,
         TokensStore.Token.osmosisIon,
+        TokensStore.Token.osmosisLVN,
         
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.gaiaChainUsdc,
