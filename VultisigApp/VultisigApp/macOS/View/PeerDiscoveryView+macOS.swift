@@ -38,7 +38,7 @@ extension PeerDiscoveryView {
     
     var headerMac: some View {
         PeerDiscoveryHeader(
-            title: getTitle(),
+            title: "scanQR",
             vault: vault,
             selectedTab: selectedTab,
             hideBackButton: hideBackButton,
@@ -51,48 +51,38 @@ extension PeerDiscoveryView {
         HStack {
             qrCode
             
-            VStack {
-                if selectedTab == .secure {
-                    networkPrompts
-                }
-                
-                list
-            }
-            .padding(40)
+            list
+                .padding(40)
         }
     }
     
     var paringBarcode: some View {
         ZStack {
-            qrCodeImage?
-                .resizable()
-                .background(Color.blue600)
-                .padding(3)
-                .background(Color.neutral0)
-                .cornerRadius(12)
-                .padding(32)
-                .background(Color.blue600)
-                .cornerRadius(40)
-                .cornerRadius(15)
-            
-            outline
+            animation
+            qrCodeContent
         }
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding(40)
-        .aspectRatio(contentMode: .fit)
-        .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
+        .offset(x: 24)
     }
     
-    var outline: some View {
-        Image("QRScannerOutline")
+    var qrCodeContent: some View {
+        qrCodeImage?
             .resizable()
+            .padding(32)
+            .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
+            .cornerRadius(32)
+            .padding(24)
+    }
+    
+    var animation: some View {
+        animationVM.view()
     }
     
     var scrollList: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 18) {
                 devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
             .padding(.horizontal, 30)
         }
@@ -101,8 +91,9 @@ extension PeerDiscoveryView {
     
     var gridList: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 8) {
                 devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
         }
         .scrollIndicators(.hidden)
@@ -129,17 +120,21 @@ extension PeerDiscoveryView {
     }
     
     var bottomButton: some View {
-        Button(action: {
+        let isButtonDisabled = disableContinueButton()
+        
+        return Button(action: {
             viewModel.showSummary()
         }) {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: isButtonDisabled ? "waitingOnDevices..." : "next",
+                textColor: isButtonDisabled ? .textDisabled : .blue600,
+                background: isButtonDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
-        .disabled(disableContinueButton())
-        .opacity(disableContinueButton() ? 0.8 : 1)
-        .grayscale(disableContinueButton() ? 1 : 0)
+        .disabled(isButtonDisabled)
         .padding(.bottom, 30)
     }
     

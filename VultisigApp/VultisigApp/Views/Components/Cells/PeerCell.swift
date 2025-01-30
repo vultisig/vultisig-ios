@@ -14,60 +14,51 @@ struct PeerCell: View {
     @State var isPhone: Bool = false
     
     var body: some View {
-        content
-            .padding(1)
-            .onAppear {
-                setData()
-            }
+        cell
     }
     
     var cell: some View {
-        VStack(spacing: 12) {
-            image
+        VStack(alignment: .leading, spacing: 0) {
+            check
+            Spacer()
             deviceId
             description
         }
         .padding(16)
         .frame(
             width: 150,
-            height: 200
+            height: 100
         )
         .background(Color.blue600)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.neutral0, lineWidth: 2)
+                .stroke(Color.alertTurquoise, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
         .padding(1)
     }
     
-    var image: some View {
-        getDeviceImage()
-            .frame(width: 50)
-            .frame(maxHeight: .infinity)
-    }
-    
     var deviceId: some View {
         Text(getDeviceName())
-            .font(.body18MenloMedium)
+            .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var description: some View {
         Text(id)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .frame(height: 30)
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.lightText)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var check: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .opacity(isSelected ? 1 : 0)
-            .font(.body18MenloMedium)
-            .foregroundColor(.neutral0)
-            .padding(.horizontal, 2)
-            .offset(x: -10, y: 10)
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+            .font(.body24MontserratMedium)
+            .foregroundColor(.alertTurquoise)
     }
     
     private func getDeviceName() -> String {
@@ -88,33 +79,6 @@ struct PeerCell: View {
             deviceName = "Phone"
         }
         return deviceName
-    }
-    
-    private func getDeviceImage() -> some View {
-        let idString = id.lowercased()
-        
-        if idString.contains("iphone") {
-            return Image("iPhoneAsset")
-                .resizable()
-                .frame(width: 30, height: 50)
-        } else if idString.contains("ipad") {
-            return Image("iPadAsset")
-                .resizable()
-                .frame(width: 60, height: 80)
-        } else if idString.contains("mac") {
-            return Image("macAsset")
-                .resizable()
-                .frame(width: 100, height: 67)
-        } else if idString.contains("server-") {
-            return Image("ServerAsset")
-                .resizable()
-                .frame(width: 46, height: 46)
-        } else {
-            // this could be android device, just show as phone
-            return Image("iPhoneAsset")
-                .resizable()
-                .frame(width: 30, height: 50)
-        }
     }
 }
 

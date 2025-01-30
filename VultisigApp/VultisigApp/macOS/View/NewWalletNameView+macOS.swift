@@ -33,6 +33,10 @@ extension NewWalletNameView {
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
             
+            Text(NSLocalizedString("newWalletNameDescription", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+            
             textfield
         }
         .padding(.horizontal, 40)
