@@ -8,26 +8,28 @@
 import SwiftUI
 
 struct KeygenStatusText: View {
-    let status: String
+    let gradientText: String
+    let plainText: String
     
     var body: some View {
-        HStack {
-            Text(self.status)
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-            
-            ProgressView()
-                .progressViewStyle(.circular)
-                .padding(2)
+        Group {
+            Text(NSLocalizedString(gradientText, comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient) +
+            Text(NSLocalizedString(plainText, comment: ""))
                 .foregroundColor(.neutral0)
         }
+        .font(.body22BrockmannMedium)
+        .padding(.horizontal, 32)
+        .multilineTextAlignment(.center)
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
+        KeygenStatusText(
+            gradientText: "preparingVaultText1",
+            plainText: "preparingVaultText2"
+        )
     }
 }

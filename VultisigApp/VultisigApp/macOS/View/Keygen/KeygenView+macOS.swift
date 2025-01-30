@@ -10,26 +10,19 @@ import SwiftUI
 
 extension KeygenView {
     var content: some View {
-        VStack {
-            fields
-            
-            if viewModel.status != .KeygenFailed {
-                instructions
+        fields
+            .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
+            .task {
+                await setData()
+                await viewModel.startKeygen(
+                    context: context,
+                    defaultChains: settingsDefaultChainViewModel.defaultChains
+                )
             }
-        }
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
-        .task {
-            await setData()
-            await viewModel.startKeygen(
-                context: context,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
-        }
     }
     
-    var keygenViewInstructions: some View {
-        KeygenViewInstructionsMac()
-            .padding(.vertical, 30)
+    var progressContainer: some View {
+        KeygenProgressContainer(progressCounter: progressCounter)
     }
 }
 #endif
