@@ -368,9 +368,9 @@ class JoinKeysignViewModel: ObservableObject {
             
             guard case .Ethereum(
                 let maxFeePerGasWei,
-                let priorityFeeWei,
-                let nonce,
-                let gasLimit
+                _,
+                _,
+                _
             ) = payload.chainSpecific else {
                 return "0"
             }
@@ -380,6 +380,18 @@ class JoinKeysignViewModel: ObservableObject {
                 return .empty
             }
             return "\(Decimal( maxFeePerGasWei ) / weiPerGWeiDecimal) \(payload.coin.chain.feeUnit)"
+            
+        } else if payload.coin.chainType == .UTXO {
+            
+            guard case .UTXO(
+                let byteFee,
+                _
+            ) = payload.chainSpecific else {
+                return "0"
+            }
+            
+            gasInReadable = String(format: "%.\(nativeToken.decimals)f", ((Double(byteFee)) / pow(10, Double(nativeToken.decimals))))
+            feeInReadable = feesInReadable(coin: payload.coin, fee: byteFee)
             
         }
         
