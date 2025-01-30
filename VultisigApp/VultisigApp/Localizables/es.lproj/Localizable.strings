@@ -303,7 +303,7 @@
 "initiatingDevice" = "Dispositivo iniciador";
 "pairingDevice" = "Dispositivo de emparejamiento";
 "createQR" = "Crear QR";
-"scanQR" = "Escanear QR / Emparejar dispositivo";
+"scanQR" = "Escanear QR";
 "or" = "O";
 "selectYourVaultType" = "Selecciona tu tipo de almacén";
 "shouldBackupVaultsSeparateLocations" = "Debes respaldar todas las acciones del almacén en ubicaciones separadas.";

@@ -22,7 +22,7 @@ extension PeerDiscoveryView {
             
             main
         }
-        .navigationTitle(getTitle())
+        .navigationTitle("scanQR")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
@@ -152,7 +152,7 @@ extension PeerDiscoveryView {
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
-        .padding(.bottom, 30)
+        .padding(.bottom, idiom == .phone ? 10 : 30)
         .disabled(isButtonDisabled)
     }
 

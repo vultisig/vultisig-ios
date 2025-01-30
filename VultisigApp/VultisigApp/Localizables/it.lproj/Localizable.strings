@@ -303,7 +303,7 @@
 "initiatingDevice" = "Dispositivo di inizio";
 "pairingDevice" = "Dispositivo di accoppiamento";
 "createQR" = "Crea QR";
-"scanQR" = "Scansiona QR / Accoppia dispositivo";
+"scanQR" = "Scansiona QR";
 "or" = "OPPURE";
 "selectYourVaultType" = "Seleziona il tipo di caveau";
 "shouldBackupVaultsSeparateLocations" = "Dovresti eseguire il backup di tutte le quote del caveau in luoghi separati.";

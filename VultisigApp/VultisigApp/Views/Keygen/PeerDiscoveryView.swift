@@ -45,6 +45,10 @@ struct PeerDiscoveryView: View {
         GridItem(.adaptive(minimum: 160))
     ]
     
+    let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
+    ]
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     let animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
@@ -186,22 +190,12 @@ struct PeerDiscoveryView: View {
     }
     
     var listTitle: some View {
-        Text(NSLocalizedString("selectPairingDevices", comment: ""))
-            .font(.body14MontserratSemiBold)
+        Text(NSLocalizedString("devices", comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body22BrockmannMedium)
             .foregroundColor(.neutral0)
             .padding(.bottom, 8)
-    }
-    
-    func getTitle() -> String {
-        guard tssType == .Keygen else {
-            return NSLocalizedString("resharingTheVault", comment: "")
-        }
-        
-        return NSLocalizedString("keygenFor", comment: "") +
-        " " +
-        selectedTab.title +
-        " " +
-        NSLocalizedString("vault", comment: "")
+            .padding(.horizontal, 24)
     }
     
     func setData(_ proxy: GeometryProxy) {

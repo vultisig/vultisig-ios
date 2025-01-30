@@ -320,7 +320,7 @@
 "initiatingDevice" = "Initiierendes Gerät";
 "pairingDevice" = "Kopplungsgerät";
 "createQR" = "QR erstellen";
-"scanQR" = "QR scannen / Gerät koppeln";
+"scanQR" = "QR scannen";
 "or" = "ODER";
 "selectYourVaultType" = "Wähle deinen Tresortyp";
 "shouldBackupVaultsSeparateLocations" = "Du solltest alle Tresoranteile an verschiedenen Orten sichern.";

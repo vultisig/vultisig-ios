@@ -304,7 +304,7 @@
 "initiatingDevice" = "Dispositivo de início";
 "pairingDevice" = "Dispositivo de emparelhamento";
 "createQR" = "Criar QR";
-"scanQR" = "Digitalizar QR / Emparelhar dispositivo";
+"scanQR" = "Digitalizar QR";
 "or" = "OU";
 "selectYourVaultType" = "Selecione o tipo de cofre";
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";

@@ -303,7 +303,7 @@
 "initiatingDevice" = "Pokrećući uređaj";
 "pairingDevice" = "Uređaj za uparivanje";
 "createQR" = "Stvori QR";
-"scanQR" = "Skeniraj QR / Upari uređaj";
+"scanQR" = "Skeniraj QR";
 "or" = "ILI";
 "selectYourVaultType" = "Odaberite vrstu spremišta";
 "shouldBackupVaultsSeparateLocations" = "Trebali biste napraviti sigurnosnu kopiju svih dijelova spremišta na različitim lokacijama.";

@@ -326,7 +326,7 @@
 "initiatingDevice" = "Initiating Device";
 "pairingDevice" = "Pairing Device";
 "createQR" = "Create QR";
-"scanQR" = "Scan QR / Pair device";
+"scanQR" = "Scan QR";
 "or" = "OR";
 "selectYourVaultType" = "Select your Vault Type";
 "shouldBackupVaultsSeparateLocations" = "You should backup all vault shares in separate locations.";
