@@ -10,6 +10,7 @@ import OSLog
 import SwiftData
 import SwiftUI
 import Tss
+import RiveRuntime
 
 struct KeygenView: View {
     let vault: Vault
@@ -31,6 +32,9 @@ struct KeygenView: View {
     let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+    
+    let circleAnimationVM = RiveViewModel(fileName: "CreatingVaultCircles", autoPlay: true)
+    let checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
@@ -62,10 +66,11 @@ struct KeygenView: View {
         VStack(spacing: 12) {
             Spacer()
             if showProgressRing {
-                title
+                if progressCounter<4 {
+                    title
+                }
+                states
             }
-            
-            states
             Spacer()
             
             if viewModel.status == .KeygenFailed {
@@ -159,11 +164,24 @@ struct KeygenView: View {
     }
     
     var doneText: some View {
-        Text("DONE")
-            .foregroundColor(.backgroundBlue)
-            .onAppear {
-                setDoneData()
+        ZStack {
+            circleAnimationVM.view()
+                .scaleEffect(1.1)
+            
+            VStack(spacing: 24) {
+                checkmarkAnimationVM.view()
+                    .frame(width: 80, height: 80)
+                
+                Text(NSLocalizedString("success", comment: ""))
+                    .font(.body28BrockmannMedium)
+                    .foregroundColor(.alertTurquoise)
+                    .opacity(progressCounter == 4 ? 1 : 0)
+                    .animation(.easeInOut, value: progressCounter)
             }
+        }
+        .onAppear {
+            setDoneData()
+        }
     }
     
     var keygenFailedView: some View {

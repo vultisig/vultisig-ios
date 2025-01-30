@@ -25,9 +25,9 @@ struct KeygenProgressContainer: View {
     
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
-            getCell(for: "preparingVault", isComplete: progressCounter>0)
-            getCell(for: "generatingECDSA", isComplete: progressCounter>1)
-            getCell(for: "generatingEdDSA", isComplete: progressCounter>2)
+            getCell(for: "preparingVault", isComplete: progressCounter>1)
+            getCell(for: "generatingECDSA", isComplete: progressCounter>2)
+            getCell(for: "generatingEdDSA", isComplete: progressCounter>3)
         }
         .padding(.horizontal, 36)
         .padding(.vertical, 28)
