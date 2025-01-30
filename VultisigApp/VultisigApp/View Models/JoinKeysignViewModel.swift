@@ -351,6 +351,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func getCalculatedNetworkFee() -> String {
+        
         guard let payload = keysignPayload else {
             return "0"
         }
@@ -361,45 +362,35 @@ class JoinKeysignViewModel: ObservableObject {
             return "0"
         }
         
-        var gasInReadable = ((Double( payload.coin.feeDefault ) ?? 0.0) / pow( 10, Double(nativeToken.decimals) )).description
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.coin.feeDefault.toBigInt())
-        
         if payload.coin.chainType == .EVM {
             
-            guard case .Ethereum(
-                let maxFeePerGasWei,
-                _,
-                _,
-                _
-            ) = payload.chainSpecific else {
-                return "0"
-            }
+            var gas = payload.chainSpecific.gas
             
-            // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\(Decimal( maxFeePerGasWei ) / weiPerGWeiDecimal) \(payload.coin.chain.feeUnit)"
             
-        } else if payload.coin.chainType == .UTXO {
-            
-            guard case .UTXO(
-                let byteFee,
-                _
-            ) = payload.chainSpecific else {
-                return "0"
+            guard let gasDecimal = Decimal(string: gas.description) else {
+                return .empty
             }
             
-            gasInReadable = String(format: "%.\(nativeToken.decimals)f", ((Double(byteFee)) / pow(10, Double(nativeToken.decimals))))
-            feeInReadable = feesInReadable(coin: payload.coin, fee: byteFee)
+            let gasGwei = (gasDecimal / weiPerGWeiDecimal)
+            
+            var gasInReadable = gasGwei.description
+            
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
+            feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
+            return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
             
         }
         
-        // TODO: Add support for other chains
-        // TODO: display the fee in fiat currency as well
+        var gasInReadable = ((Double(payload.chainSpecific.gas)) / pow(10, Double(nativeToken.decimals))).description
+        if gasInReadable.contains("e-") {
+            gasInReadable = String(format: "%.\(nativeToken.decimals)f", ((Double(payload.chainSpecific.gas)) / pow(10, Double(nativeToken.decimals))))
+        }
         
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
-        
         return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
     }
     
