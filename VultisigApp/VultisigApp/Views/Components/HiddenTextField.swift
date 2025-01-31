@@ -23,6 +23,7 @@ struct HiddenTextField: View {
                 error
             }
         }
+        .animation(.easeInOut, value: errorMessage)
         .onAppear {
             setData()
         }

@@ -37,7 +37,7 @@ extension FastVaultSetPasswordView {
                 hintField
             }
             Spacer()
-            buttons
+            button
         }
     }
 }

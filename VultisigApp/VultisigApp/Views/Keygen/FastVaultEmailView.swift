@@ -38,6 +38,8 @@ struct FastVaultEmailView: View {
             textfield(title: NSLocalizedString("email", comment: ""), text: $email)
         }
         .padding(.horizontal, 16)
+        .animation(.easeInOut, value: isEmptyEmail)
+        .animation(.easeInOut, value: isInvalidEmail)
     }
 
     var emptyEmailLabel: some View {

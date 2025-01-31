@@ -105,16 +105,7 @@ struct FastVaultSetPasswordView: View {
         )
     }
 
-    var buttons: some View {
-        VStack(spacing: 20) {
-            saveButton
-        }
-        .padding(.top, 16)
-        .padding(.bottom, 40)
-        .padding(.horizontal, 16)
-    }
-
-    var saveButton: some View {
+    var button: some View {
         Button(action: {
             if fastVaultExist {
                 Task { await checkPassword() }
@@ -124,6 +115,9 @@ struct FastVaultSetPasswordView: View {
         }) {
             FilledButton(title: "next")
         }
+        .padding(.top, 16)
+        .padding(.bottom, 40)
+        .padding(.horizontal, 16)
     }
 
     var fastSignConfig: FastSignConfig {
