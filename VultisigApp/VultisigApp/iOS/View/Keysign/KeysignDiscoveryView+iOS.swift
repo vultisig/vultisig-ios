@@ -73,7 +73,6 @@ extension KeysignDiscoveryView {
                 .frame(height: qrSize)
                 .scaledToFit()
                 .padding(isiOSAppOnMac ? 20 : 2)
-                .background(Color.neutral0)
                 .cornerRadius(isiOSAppOnMac ? 40 : 10)
                 .padding(16)
                 .padding(isiOSAppOnMac ? 20 : 0)
@@ -81,11 +80,6 @@ extension KeysignDiscoveryView {
                 .cornerRadius(isiOSAppOnMac ? 60 : 30)
                 .padding(1)
                 .padding(isiOSAppOnMac ? 50 : 0)
-            
-            Image("QRScannerOutline")
-                .resizable()
-                .frame(width: qrOutlineSize, height: qrOutlineSize)
-                .frame(maxWidth: minWidth, maxHeight: minWidth)
         }
     }
     

@@ -138,7 +138,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .mayaChain:
             return "2000000000"
         case .solana:
-            return "7000"
+            return SolanaHelper.defaultFeeInLamports.description
         case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain:
             if self.isNativeToken {
                 return "23000"
@@ -161,8 +161,18 @@ class Coin: ObservableObject, Codable, Hashable {
             return "1000"
         case .dogecoin:
             return "1000000"
-        case .gaiaChain,.kujira, .osmosis, .terra, .terraClassic, .noble:
+        case .noble:
             return "200000"
+        case .terraClassic:
+            return "100000000"
+        case .terra:
+            return "7500"
+        case .kujira:
+            return "7500"
+        case .osmosis:
+            return "7500"
+        case .gaiaChain:
+            return "7500"
         case .dydx:
             return DydxHelper.DydxGasLimit.description
         case .sui:
@@ -170,7 +180,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .polkadot:
             return "250000000" // 0.025
         case .ton:
-            return "7000"
+            return BigInt(0.001 * 10e9).description
         case .ripple:
             return "180000"
         case .akash:
