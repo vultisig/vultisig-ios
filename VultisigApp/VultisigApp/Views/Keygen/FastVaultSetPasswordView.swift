@@ -76,6 +76,7 @@ struct FastVaultSetPasswordView: View {
 
             hintTextfield
         }
+        .padding(.top, 24)
         .padding(.horizontal, 16)
     }
 

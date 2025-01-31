@@ -70,6 +70,9 @@ struct PeerDiscoveryView: View {
             .onDisappear {
                 viewModel.stopMediator()
             }
+            .onFirstAppear {
+                showInfo()
+            }
     }
     
     var states: some View {
@@ -205,6 +208,14 @@ struct PeerDiscoveryView: View {
         if screenWidth<380 {
             isPhoneSE = true
         }
+    }
+    
+    private func showInfo() {
+        guard selectedTab == .secure else {
+            return
+        }
+        
+        showInfoSheet = true
     }
 }
 
