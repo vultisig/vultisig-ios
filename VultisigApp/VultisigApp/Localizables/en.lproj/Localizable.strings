@@ -523,3 +523,7 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Swap your favourite tokens all in one vault";
 "creatingVault" = "Creating Vault";
+"invalidEmailPleaseCheck" = "Invalid e-mail, please check.";
+"emptyEmailPleaseCheck" = "Empty e-mail, please check.";
+"enterYourEmail" = "Enter your e-mail";
+"enterYourEmailDescription" = "This email is only used to send the backup of the server";
