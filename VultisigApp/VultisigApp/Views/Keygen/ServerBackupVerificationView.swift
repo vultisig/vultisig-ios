@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import RiveRuntime
 
 struct ServerBackupVerificationView: View {
     let vault: Vault
@@ -18,7 +19,6 @@ struct ServerBackupVerificationView: View {
     @State var isLoading: Bool = false
     @State var isNavigationActive: Bool = false
     
-    @State var alertTitle = "incorrectCode"
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
     @State var showHomeView: Bool = false
@@ -26,14 +26,12 @@ struct ServerBackupVerificationView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    let animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+    
     var body: some View {
         ZStack {
             Background()
             container
-            
-            if isLoading {
-                loader
-            }
         }
         .navigationDestination(isPresented: $isNavigationActive) {
             if showHomeView {
@@ -42,36 +40,83 @@ struct ServerBackupVerificationView: View {
                 BackupVaultNowView(vault: vault)
             }
         }
-        .alert(isPresented: $showAlert) {
-            alert
-        }
     }
     
     var title: some View {
-        Text(NSLocalizedString("enterBackupVerificationCode", comment: ""))
+        Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
+            .font(.body34BrockmannMedium)
             .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
             .multilineTextAlignment(.leading)
-            .padding(.top, 30)
+    }
+    
+    var description: some View {
+        Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.extraLightGray)
     }
     
     var textField: some View {
+        HStack {
+            field
+            pasteButton
+        }
+        .colorScheme(.dark)
+        .padding(.top, 32)
+    }
+    
+    var field: some View {
         TextField(NSLocalizedString("enterCode", comment: "").capitalized, text: $verificationCode)
             .foregroundColor(.neutral0)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
-            .font(.body12MenloBold)
-            .frame(height: 48)
+            .font(.body16BrockmannMedium)
+            .frame(height: 56)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .background(Color.blue600)
-            .cornerRadius(10)
-            .colorScheme(.dark)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(getBorderColor(), lineWidth: 1)
+            )
     }
     
-    var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("serverBackupVerificationDisclaimer", comment: ""))
-            .padding(.bottom, 18)
+    var pasteButton: some View {
+        Button {
+            pasteCode()
+        } label: {
+            Text(NSLocalizedString("paste", comment: ""))
+                .padding(12)
+                .frame(height: 56)
+                .font(.body16BrockmannMedium)
+                .foregroundColor(.neutral0)
+                .background(Color.blue600)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.blue200, lineWidth: 1)
+                )
+        }
+    }
+    
+    var loadingText: some View {
+        HStack {
+            animationVM.view()
+                .frame(width: 24, height: 24)
+            
+            Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body14BrockmannMedium)
+            
+            Spacer()
+        }
+    }
+    
+    var alertText: some View {
+        Text(NSLocalizedString(alertDescription, comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .foregroundColor(.alertRed)
+            .font(.body14BrockmannMedium)
     }
     
     var buttons: some View {
@@ -85,10 +130,12 @@ struct ServerBackupVerificationView: View {
         Button {
             verifyCode()
         } label: {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: isLoading ? "verifying..." : "next",
+                textColor: isLoading ? .textDisabled : .blue600,
+                background: isLoading ? .buttonDisabled : .turquoise600
+            )
         }
-        .grayscale(verificationCode.isEmpty ? 1 : 0)
-        .disabled(verificationCode.isEmpty)
     }
     
     var cancelButton: some View {
@@ -100,28 +147,14 @@ struct ServerBackupVerificationView: View {
         .padding(.bottom, 30)
     }
     
-    var loader: some View {
-        Loader()
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString(alertTitle, comment: "")),
-            message: Text(NSLocalizedString(alertDescription, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
     private func verifyCode() {
         guard !verificationCode.isEmpty else {
-            alertTitle = "emptyField"
-            alertDescription = "checkEmptyField"
+            alertDescription = "emptyField"
             showAlert = true
             return
         }
         
         Task {
-            alertTitle = "incorrectCode"
             alertDescription = "verificationCodeTryAgain"
             isLoading = true
             
@@ -145,6 +178,14 @@ struct ServerBackupVerificationView: View {
             isNavigationActive = true
         } catch {
             print("Error: \(error)")
+        }
+    }
+    
+    func getBorderColor() -> Color {
+        if showAlert {
+            return .alertRed
+        } else {
+            return .blue200
         }
     }
 }

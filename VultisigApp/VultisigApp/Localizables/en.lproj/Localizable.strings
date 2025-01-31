@@ -445,7 +445,7 @@
 "value" = "Value";
 "joinKeygenConnectionDisclaimer" = "Having trouble connecting?\nUse a personal hotspot connection instead.\nOr try a different network.";
 "swapTrackingLink" = "Swap tracking link";
-"verificationCodeTryAgain" = "Wrong verification code, please enter the correct one.";
+"verificationCodeTryAgain" = "Error verifying code, please try again";
 "thresholdNotReachedMessage" = "Threshold not reached.\nMissing enough initial devices.";
 "skipPassword" = "Skip Password";
 "transactionTrackingLink" = "Transaction tracking link";
@@ -532,3 +532,8 @@
 "moreInfoDescription" = "This happens because the password encrypts the backup file locally, like encrypting a hard drive. In the next step you have the possibility to add a hint.";
 "connectingWithServer..." = "Connecting with server...";
 "shouldOnlyTakeAMinute..." = "This should only take a minute";
+"enter5DigitVerificationCode" = "Enter the 5 digit code we emailed you";
+"enter5DigitVerificationCodeDescription" = "This code will confirm that you’ve received your vault share via email";
+"verifyingCodePleaseWait" = "Verifying code, please wait";
+"verifying..." = "Verifying...";
+"paste" = "Paste";
