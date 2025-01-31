@@ -33,6 +33,7 @@ struct ServerBackupVerificationView: View {
             Background()
             container
         }
+        .animation(.easeInOut, value: showAlert)
         .navigationDestination(isPresented: $isNavigationActive) {
             if showHomeView {
                 HomeView()
@@ -47,6 +48,7 @@ struct ServerBackupVerificationView: View {
             .font(.body34BrockmannMedium)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.leading)
+            .padding(.top, 50)
     }
     
     var description: some View {
@@ -97,6 +99,8 @@ struct ServerBackupVerificationView: View {
                         .stroke(Color.blue200, lineWidth: 1)
                 )
         }
+        .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var loadingText: some View {
@@ -124,6 +128,8 @@ struct ServerBackupVerificationView: View {
             verifyButton
             cancelButton
         }
+        .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var verifyButton: some View {

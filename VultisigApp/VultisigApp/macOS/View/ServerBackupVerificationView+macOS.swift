@@ -23,12 +23,28 @@ extension ServerBackupVerificationView {
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
+            description
             textField
+            
+            if isLoading {
+                loadingText
+            }
+            
+            if showAlert {
+                alertText
+            }
+            
             Spacer()
-            disclaimer
             buttons
         }
         .padding(.horizontal, 40)
+    }
+    
+    func pasteCode() {
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            verificationCode = clipboardContent
+        }
     }
 }
 #endif

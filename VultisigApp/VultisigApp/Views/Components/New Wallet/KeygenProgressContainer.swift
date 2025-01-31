@@ -12,6 +12,7 @@ struct KeygenProgressContainer: View {
     let progressCounter: Double
     
     let animationVMCheckmark = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+    let animationVMLoader = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
     
     var body: some View {
         ZStack {
@@ -21,6 +22,7 @@ struct KeygenProgressContainer: View {
         .frame(height: 150)
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 24)
+        .padding(.bottom, 24)
     }
     
     var content: some View {
@@ -56,8 +58,7 @@ struct KeygenProgressContainer: View {
                 if isComplete {
                     animationVMCheckmark.view()
                 } else {
-                    ProgressView()
-                        .colorScheme(.dark)
+                    animationVMLoader.view()
                 }
             }
             .frame(width: 24, height: 24)
