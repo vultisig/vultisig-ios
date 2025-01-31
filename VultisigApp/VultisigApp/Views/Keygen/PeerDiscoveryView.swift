@@ -212,6 +212,7 @@ struct PeerDiscoveryView: View {
     
     private func showInfo() {
         guard selectedTab == .secure else {
+            showInfoSheet = false
             return
         }
         
