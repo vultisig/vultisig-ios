@@ -31,7 +31,7 @@ extension FastVaultSetPasswordView {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "password")
+        GeneralMacHeader(title: "")
     }
     
     var view: some View {
@@ -41,8 +41,7 @@ extension FastVaultSetPasswordView {
                 hintField
             }
             Spacer()
-            disclaimer
-            buttons
+            button
         }
         .padding(.horizontal, 25)
     }

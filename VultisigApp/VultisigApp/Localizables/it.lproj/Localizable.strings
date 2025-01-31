@@ -487,3 +487,17 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Scambia i tuoi token preferiti tutti in un unico vault";
 "creatingVault" = "Creazione del Vault";
+"invalidEmailPleaseCheck" = "E-mail non valida, controlla.";
+"emptyEmailPleaseCheck" = "E-mail vuota, controlla.";
+"enterYourEmail" = "Inserisci la tua e-mail";
+"enterYourEmailDescription" = "Questa e-mail viene utilizzata solo per inviare il backup del server";
+"PasswordCannotBeReset" = "La password non può essere reimpostata o recuperata";
+"moreInfo" = "Maggiori informazioni";
+"moreInfoDescription" = "Ciò accade perché la password cripta il file di backup localmente, come la crittografia di un disco rigido. Nel passaggio successivo hai la possibilità di aggiungere un suggerimento.";
+"connectingWithServer..." = "Connessione al server in corso...";
+"shouldOnlyTakeAMinute..." = "Dovrebbe richiedere solo un minuto";
+"enter5DigitVerificationCode" = "Inserisci il codice di 5 cifre che ti abbiamo inviato via e-mail";
+"enter5DigitVerificationCodeDescription" = "Questo codice confermerà che hai ricevuto la tua quota di vault via e-mail";
+"verifyingCodePleaseWait" = "Verifica del codice in corso, attendere";
+"verifying..." = "Verifica in corso...";
+"paste" = "Incolla";

@@ -30,7 +30,7 @@ struct ServerBackupVerificationHeader: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString("serverBackupVerification", comment: ""))
+        Text(NSLocalizedString("", comment: ""))
             .foregroundColor(.neutral0)
             .font(.title3)
     }

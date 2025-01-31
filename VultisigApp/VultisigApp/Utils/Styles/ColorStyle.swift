@@ -40,6 +40,8 @@ extension Color {
     static let loadingGreen = Color(hex: "24D7A6")
     
     static let alertRed = Color(hex: "FF4040")
+    static let alertYellow = Color(hex: "FFC25C")
+    static let alertYellowBackground = Color(hex: "362B17")
     static let alertTurquoise = Color(hex: "13C89D")
     static let warningYellow = Color(hex: "F7961B")
     
@@ -55,6 +57,7 @@ extension Color {
     static let buttonDisabled = Color(hex: "0F1E36")
     static let lightText = Color(hex: "C9D6E8")
     static let borderBlue = Color(hex: "1B3F73")
+    static let disabledText = Color(hex: "718096")
     
     // Background
     static let backgroundBlue = Color(hex: "02122B")

@@ -38,7 +38,7 @@ struct NewWalletNameView: View {
     var textfield: some View {
         HStack {
             TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
-                .font(.body16Menlo)
+                .font(.body16BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
             
@@ -46,13 +46,18 @@ struct NewWalletNameView: View {
                 clearButton
             }
         }
-        .padding(12)
+        .frame(height: 56)
+        .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
         .maxLength($name)
         .autocorrectionDisabled()
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue200, lineWidth: 1)
+        )
         .padding(.top, 32)
     }
     
@@ -88,6 +93,22 @@ struct NewWalletNameView: View {
             message: Text(NSLocalizedString("vaultNameUnique", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("dismiss", comment: "")))
         )
+    }
+    
+    var fields: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(NSLocalizedString("nameYourVault", comment: ""))
+                .font(.body34BrockmannMedium)
+                .foregroundColor(.neutral0)
+                .padding(.top, 16)
+            
+            Text(NSLocalizedString("newWalletNameDescription", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+            
+            textfield
+        }
+        .padding(.horizontal, 16)
     }
 
     private func verifyVault() {

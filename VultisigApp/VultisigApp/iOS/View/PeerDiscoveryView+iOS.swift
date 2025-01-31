@@ -161,7 +161,6 @@ extension PeerDiscoveryView {
     }
 
     func setData() {
-        showInfoSheet = true
         updateScreenSize()
         qrCodeImage = viewModel.getQrImage(size: 100)
         

@@ -20,17 +20,12 @@ struct FastVaultSetPasswordView: View {
     @State var isLinkActive = false
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
+    @State var showTooltip = false
+    
+    @State var passwordFieldError = ""
+    @State var verifyFieldError = ""
 
     private let fastVaultService: FastVaultService = .shared
-
-    var title: String {
-        switch fastVaultExist {
-        case false:
-            return NSLocalizedString("fastVaultSetPasswordTitle", comment: "")
-        case true:
-            return NSLocalizedString("fastVaultEnterPasswordTitle", comment: "")
-        }
-    }
 
     var disclaimerText: String {
         switch fastVaultExist {
@@ -43,6 +38,7 @@ struct FastVaultSetPasswordView: View {
 
     var body: some View {
         content
+            .animation(.easeInOut, value: showTooltip)
             .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
                 Button("OK", role: .cancel) { }
             }
@@ -50,10 +46,8 @@ struct FastVaultSetPasswordView: View {
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-
+            title
+            disclaimer
             textfield
             verifyTextfield
         }
@@ -62,6 +56,16 @@ struct FastVaultSetPasswordView: View {
         .onAppear {
             isLinkActive = false
         }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString("password", comment: ""))
+            .font(.body34BrockmannMedium)
+            .foregroundColor(.neutral0)
+    }
+    
+    var disclaimer: some View {
+        FastVaultPasswordDisclaimer(showTooltip: $showTooltip)
     }
 
     var hintField: some View {
@@ -72,17 +76,26 @@ struct FastVaultSetPasswordView: View {
 
             hintTextfield
         }
+        .padding(.top, 24)
         .padding(.horizontal, 16)
     }
 
     var textfield: some View {
-        HiddenTextField(placeholder: "enterPassword", password: $password)
-            .padding(.top, 8)
+        HiddenTextField(
+            placeholder: "enterPassword",
+            password: $password,
+            errorMessage: passwordFieldError
+        )
+        .padding(.top, 32)
     }
 
     var verifyTextfield: some View {
-        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
-            .opacity(fastVaultExist ? 0 : 1)
+        HiddenTextField(
+            placeholder: "verifyPassword",
+            password: $verifyPassword,
+            errorMessage: verifyFieldError
+        )
+        .opacity(fastVaultExist ? 0 : 1)
     }
 
     var hintTextfield: some View {
@@ -93,41 +106,19 @@ struct FastVaultSetPasswordView: View {
         )
     }
 
-    var disclaimer: some View {
-        OutlinedDisclaimer(text: disclaimerText)
-            .padding(.horizontal, 16)
-    }
-
-    var buttons: some View {
-        VStack(spacing: 20) {
-            saveButton
-        }
-        .padding(.top, 16)
-        .padding(.bottom, 40)
-        .padding(.horizontal, 16)
-    }
-
-    var saveButton: some View {
+    var button: some View {
         Button(action: {
             if fastVaultExist {
                 Task { await checkPassword() }
             } else {
-                isLinkActive = true
+                handleTap()
             }
         }) {
-            FilledButton(title: "continue")
+            FilledButton(title: "next")
         }
-        .opacity(isSaveButtonDisabled ? 0.5 : 1)
-        .disabled(isSaveButtonDisabled)
-    }
-
-    var isSaveButtonDisabled: Bool {
-        switch fastVaultExist {
-        case false:
-            return password.isEmpty || password != verifyPassword
-        case true:
-            return password.isEmpty
-        }
+        .padding(.top, 16)
+        .padding(.bottom, 40)
+        .padding(.horizontal, 16)
     }
 
     var fastSignConfig: FastSignConfig {
@@ -154,6 +145,28 @@ struct FastVaultSetPasswordView: View {
             return
         }
 
+        isLinkActive = true
+    }
+    
+    private func handleTap() {
+        guard !password.isEmpty else {
+            verifyFieldError = ""
+            passwordFieldError = "emptyField"
+            return
+        }
+        
+        guard !verifyPassword.isEmpty else {
+            verifyFieldError = "emptyField"
+            passwordFieldError = ""
+            return
+        }
+        
+        guard password == verifyPassword else {
+            verifyFieldError = "passwordMismatch"
+            passwordFieldError = "passwordMismatch"
+            return
+        }
+        
         isLinkActive = true
     }
 }
