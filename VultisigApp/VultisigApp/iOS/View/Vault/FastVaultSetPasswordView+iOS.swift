@@ -19,7 +19,7 @@ extension FastVaultSetPasswordView {
                 Loader()
             }
         }
-        .navigationTitle(NSLocalizedString("password", comment: ""))
+        .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -37,7 +37,6 @@ extension FastVaultSetPasswordView {
                 hintField
             }
             Spacer()
-            disclaimer
             buttons
         }
     }

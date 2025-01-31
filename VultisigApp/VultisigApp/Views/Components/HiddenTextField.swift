@@ -29,10 +29,14 @@ struct HiddenTextField: View {
                 button
             }
         }
-        .frame(height: 44)
+        .frame(height: 56)
         .padding(.horizontal, 16)
         .background(Color.blue600)
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue200, lineWidth: 1)
+        )
     }
     
     var textfield: some View {
@@ -41,7 +45,6 @@ struct HiddenTextField: View {
                 HStack {
                     Text(NSLocalizedString(placeholder, comment: ""))
                         .foregroundColor(Color.neutral500)
-                        .font(.body12Menlo)
                     Spacer()
                 }
             }
@@ -56,7 +59,7 @@ struct HiddenTextField: View {
         }
         .submitLabel(.done)
         .colorScheme(.dark)
-        .font(.body16Menlo)
+        .font(.body16BrockmannMedium)
         .foregroundColor(.neutral0)
     }
     
