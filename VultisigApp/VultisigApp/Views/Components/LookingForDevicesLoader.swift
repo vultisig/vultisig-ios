@@ -6,25 +6,20 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct LookingForDevicesLoader: View {
     var tssType: TssType? = nil
     var selectedTab: SetupVaultState? = nil
     
+    let animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+    
     @State var didSwitch = false
 
     var body: some View {
-        VStack {
-            Spacer()
-            title
-            loader
-            
-            if selectedTab == .fast {
-                pleaseWait
-            }
-            
-            Spacer()
-            InstructionPrompt(networkType: .Internet)
+        ZStack {
+            shadow
+            content
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -37,6 +32,30 @@ struct LookingForDevicesLoader: View {
         }
     }
     
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.02)
+            .blur(radius: 20)
+            .clipped()
+    }
+    
+    var content: some View {
+        VStack {
+            Spacer()
+            loader
+            
+            if selectedTab == .fast {
+                fastContent
+            } else {
+                title
+            }
+            
+            Spacer()
+        }
+    }
+    
     var title: some View {
         Text(getTitle())
             .font(.body14Montserrat)
@@ -45,20 +64,20 @@ struct LookingForDevicesLoader: View {
             .multilineTextAlignment(.center)
     }
     
-    var loader: some View {
-        HStack {
-            Circle()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.loadingBlue)
-                .offset(x: didSwitch ? 0 : 28)
+    var fastContent: some View {
+        VStack {
+            Text(NSLocalizedString("connectingWithServer...", comment: ""))
+                .font(.body22BrockmannMedium)
             
-            Circle()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.loadingGreen)
-                .offset(x: didSwitch ? 0 : -28)
+            Text(NSLocalizedString("shouldOnlyTakeAMinute...", comment: ""))
+                .font(.body14BrockmannMedium)
         }
-        .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: didSwitch)
-        .frame(height: 20)
+        .foregroundColor(.lightText)
+    }
+    
+    var loader: some View {
+        animationVM.view()
+            .frame(width: 24, height: 24)
     }
     
     var pleaseWait: some View {
