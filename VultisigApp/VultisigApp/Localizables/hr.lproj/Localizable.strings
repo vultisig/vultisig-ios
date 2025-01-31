@@ -487,3 +487,17 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Zamijenite svoje omiljene tokene u jednom trezoru";
 "creatingVault" = "Stvaranje Trezora";
+"invalidEmailPleaseCheck" = "Neispravna e-mail adresa, provjerite.";
+"emptyEmailPleaseCheck" = "Prazno polje za e-mail, provjerite.";
+"enterYourEmail" = "Unesite svoju e-mail adresu";
+"enterYourEmailDescription" = "Ova e-mail adresa se koristi samo za slanje sigurnosne kopije servera";
+"PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
+"moreInfo" = "Više informacija";
+"moreInfoDescription" = "Ovo se događa jer lozinka šifrira sigurnosnu kopiju lokalno, slično enkripciji tvrdog diska. U sljedećem koraku imate mogućnost dodavanja savjeta.";
+"connectingWithServer..." = "Povezivanje sa serverom...";
+"shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
+"enter5DigitVerificationCode" = "Unesite 5-znamenkasti kod koji smo vam poslali e-mailom";
+"enter5DigitVerificationCodeDescription" = "Ovaj kod potvrđuje da ste primili svoj vault dio putem e-maila";
+"verifyingCodePleaseWait" = "Provjera koda, pričekajte";
+"verifying..." = "Provjera u tijeku...";
+"paste" = "Zalijepi";

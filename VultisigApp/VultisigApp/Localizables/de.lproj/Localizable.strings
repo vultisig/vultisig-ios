@@ -504,3 +504,17 @@
 "generatingEdDSAText1" = "Kettenübergreifend. ";
 "generatingEdDSAText2" = "Tauschen Sie Ihre bevorzugten Token in einem einzigen Tresor";
 "creatingVault" = "Tresor wird erstellt";
+"invalidEmailPleaseCheck" = "Ungültige E-Mail, bitte überprüfen.";
+"emptyEmailPleaseCheck" = "Leere E-Mail, bitte überprüfen.";
+"enterYourEmail" = "Geben Sie Ihre E-Mail ein";
+"enterYourEmailDescription" = "Diese E-Mail wird nur verwendet, um das Server-Backup zu senden";
+"PasswordCannotBeReset" = "Passwort kann nicht zurückgesetzt oder wiederhergestellt werden";
+"moreInfo" = "Mehr Infos";
+"moreInfoDescription" = "Dies geschieht, weil das Passwort die Backup-Datei lokal verschlüsselt, ähnlich wie eine Festplatte. Im nächsten Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
+"connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
+"shouldOnlyTakeAMinute..." = "Das sollte nur eine Minute dauern";
+"enter5DigitVerificationCode" = "Geben Sie den 5-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
+"enter5DigitVerificationCodeDescription" = "Dieser Code bestätigt, dass Sie Ihren Tresoranteil per E-Mail erhalten haben";
+"verifyingCodePleaseWait" = "Code wird überprüft, bitte warten";
+"verifying..." = "Überprüfung läuft...";
+"paste" = "Einfügen";

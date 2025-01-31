@@ -487,3 +487,17 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Intercambia tus tokens favoritos en una sola bóveda";
 "creatingVault" = "Creando Bóveda";
+"invalidEmailPleaseCheck" = "Correo electrónico no válido, por favor verifique.";
+"emptyEmailPleaseCheck" = "Campo de correo electrónico vacío, por favor verifique.";
+"enterYourEmail" = "Introduce tu correo electrónico";
+"enterYourEmailDescription" = "Este correo solo se usa para enviar la copia de seguridad del servidor";
+"PasswordCannotBeReset" = "La contraseña no se puede restablecer ni recuperar";
+"moreInfo" = "Más información";
+"moreInfoDescription" = "Esto ocurre porque la contraseña cifra el archivo de respaldo localmente, como si cifraras un disco duro. En el siguiente paso, tendrás la posibilidad de agregar una pista.";
+"connectingWithServer..." = "Conectando con el servidor...";
+"shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
+"enter5DigitVerificationCode" = "Introduce el código de 5 dígitos que te enviamos por correo electrónico";
+"enter5DigitVerificationCodeDescription" = "Este código confirmará que has recibido tu parte del vault por correo electrónico";
+"verifyingCodePleaseWait" = "Verificando código, por favor espera";
+"verifying..." = "Verificando...";
+"paste" = "Pegar";

@@ -488,3 +488,17 @@
 "generatingEdDSAText1" = "Cross-chain. ";
 "generatingEdDSAText2" = "Troque seus tokens favoritos em um único cofre";
 "creatingVault" = "Criando Cofre";
+"invalidEmailPleaseCheck" = "E-mail inválido, verifique.";
+"emptyEmailPleaseCheck" = "E-mail vazio, verifique.";
+"enterYourEmail" = "Digite seu e-mail";
+"enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor";
+"PasswordCannotBeReset" = "A senha não pode ser redefinida ou recuperada";
+"moreInfo" = "Mais informações";
+"moreInfoDescription" = "Isso acontece porque a senha criptografa o arquivo de backup localmente, como a criptografia de um disco rígido. Na próxima etapa, você terá a possibilidade de adicionar uma dica.";
+"connectingWithServer..." = "Conectando-se ao servidor...";
+"shouldOnlyTakeAMinute..." = "Isso deve levar apenas um minuto";
+"enter5DigitVerificationCode" = "Digite o código de 5 dígitos que enviamos por e-mail";
+"enter5DigitVerificationCodeDescription" = "Este código confirmará que você recebeu sua parte do cofre por e-mail";
+"verifyingCodePleaseWait" = "Verificando código, aguarde";
+"verifying..." = "Verificando...";
+"paste" = "Colar";
