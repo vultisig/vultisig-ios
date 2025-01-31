@@ -276,7 +276,7 @@
 "verifyEmail" = "Verify Email";
 "passwordMismatch" = "Password Mismatch";
 "verifyPasswordMismatch" = "Please make sure your passwords match.";
-"emptyField" = "Empty Field(s)";
+"emptyField" = "Empty Field";
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "optionalPasswordProtectBackup" = "Optional password protection of your Vault";
 "setupVault" = "Setup Vault";

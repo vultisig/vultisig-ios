@@ -21,6 +21,9 @@ struct FastVaultSetPasswordView: View {
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
     @State var showTooltip = false
+    
+    @State var passwordFieldError = ""
+    @State var verifyFieldError = ""
 
     private let fastVaultService: FastVaultService = .shared
 
@@ -77,13 +80,21 @@ struct FastVaultSetPasswordView: View {
     }
 
     var textfield: some View {
-        HiddenTextField(placeholder: "enterPassword", password: $password)
-            .padding(.top, 32)
+        HiddenTextField(
+            placeholder: "enterPassword",
+            password: $password,
+            errorMessage: passwordFieldError
+        )
+        .padding(.top, 32)
     }
 
     var verifyTextfield: some View {
-        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
-            .opacity(fastVaultExist ? 0 : 1)
+        HiddenTextField(
+            placeholder: "verifyPassword",
+            password: $verifyPassword,
+            errorMessage: verifyFieldError
+        )
+        .opacity(fastVaultExist ? 0 : 1)
     }
 
     var hintTextfield: some View {
@@ -108,21 +119,10 @@ struct FastVaultSetPasswordView: View {
             if fastVaultExist {
                 Task { await checkPassword() }
             } else {
-                isLinkActive = true
+                handleTap()
             }
         }) {
             FilledButton(title: "next")
-        }
-        .opacity(isSaveButtonDisabled ? 0.5 : 1)
-        .disabled(isSaveButtonDisabled)
-    }
-
-    var isSaveButtonDisabled: Bool {
-        switch fastVaultExist {
-        case false:
-            return password.isEmpty || password != verifyPassword
-        case true:
-            return password.isEmpty
         }
     }
 
@@ -150,6 +150,28 @@ struct FastVaultSetPasswordView: View {
             return
         }
 
+        isLinkActive = true
+    }
+    
+    private func handleTap() {
+        guard !password.isEmpty else {
+            verifyFieldError = ""
+            passwordFieldError = "emptyField"
+            return
+        }
+        
+        guard !verifyPassword.isEmpty else {
+            verifyFieldError = "emptyField"
+            passwordFieldError = ""
+            return
+        }
+        
+        guard password == verifyPassword else {
+            verifyFieldError = "passwordMismatch"
+            passwordFieldError = "passwordMismatch"
+            return
+        }
+        
         isLinkActive = true
     }
 }

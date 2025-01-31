@@ -11,14 +11,28 @@ struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
     var showHideOption: Bool = true
+    var errorMessage: String = ""
     
     @State var isPasswordVisible: Bool = false
     
     var body: some View {
-        field
-            .onAppear {
-                setData()
+        VStack {
+            field
+            
+            if !errorMessage.isEmpty {
+                error
             }
+        }
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var error: some View {
+        Text(NSLocalizedString(errorMessage, comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertRed)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var field: some View {
@@ -35,7 +49,7 @@ struct HiddenTextField: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Color.blue200 : Color.alertRed, lineWidth: 1)
         )
     }
     
