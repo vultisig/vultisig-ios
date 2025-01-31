@@ -33,26 +33,43 @@ extension FastVaultEmailView {
     var view: some View {
         VStack {
             emailField
-            emailMismatchLabel
+            
+            if isEmptyEmail {
+                emptyEmailLabel
+            } else if isInvalidEmail {
+                validEmailLabel
+            }
+            
             Spacer()
-            buttons
+            button
         }
         .padding(.horizontal, 25)
     }
     
     func textfield(title: String, text: Binding<String>) -> some View {
-        TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Color.neutral500)
-            .font(.body12Menlo)
-        )
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-        .submitLabel(.done)
+        HStack {
+            TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(Color.neutral500)
+                .font(.body12Menlo)
+            )
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .submitLabel(.done)
+            
+            if !email.isEmpty {
+                clearButton
+            }
+        }
         .padding(12)
         .background(Color.blue600)
         .cornerRadius(12)
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(getBorderColor(), lineWidth: 1)
+        )
+        .padding(.top, 32)
     }
 }
 #endif
