@@ -56,7 +56,6 @@ extension KeysignDiscoveryView {
                 .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .scaledToFit()
                 .padding(2)
-                .background(Color.neutral0)
                 .cornerRadius(10)
                 .padding(16)
                 .background(Color.blue600)
