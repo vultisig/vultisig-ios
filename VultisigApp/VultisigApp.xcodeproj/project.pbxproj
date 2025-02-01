@@ -611,6 +611,9 @@
 		A6F7B7002D4D623D00AC8104 /* FastVaultBackupSucces.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6FF2D4D623D00AC8104 /* FastVaultBackupSucces.riv */; };
 		A6F7B7172D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7162D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift */; };
 		A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7182D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift */; };
+		A6F7B71B2D4ECDE800AC8104 /* SecureVaultOverview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */; };
+		A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */; };
+		A6F7B7212D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */; };
@@ -1431,6 +1434,9 @@
 		A6F7B6FF2D4D623D00AC8104 /* FastVaultBackupSucces.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = FastVaultBackupSucces.riv; sourceTree = "<group>"; };
 		A6F7B7162D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultSuccessView+iOS.swift"; sourceTree = "<group>"; };
 		A6F7B7182D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultSuccessView+macOS.swift"; sourceTree = "<group>"; };
+		A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = SecureVaultOverview.riv; sourceTree = "<group>"; };
+		A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureBackupVaultOverview+iOS.swift"; sourceTree = "<group>"; };
+		A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureBackupVaultOverview+macOS.swift"; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultAnimationManager.swift; sourceTree = "<group>"; };
@@ -2751,6 +2757,8 @@
 		A69FBBA12C8AD9F500A4B78B /* View */ = {
 			isa = PBXGroup;
 			children = (
+				A5340A682CECF093002ADD35 /* MonthlyBackupView+iOS.swift */,
+				A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */,
 				A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */,
 				A62766502C85275F002C666A /* ImportWalletView+iOS.swift */,
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
@@ -2833,6 +2841,7 @@
 				A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */,
 				A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */,
 				A6F7B7182D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift */,
+				A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2930,6 +2939,7 @@
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
 				A6F7B6FD2D4D609300AC8104 /* SecureVaultBackupSuccess.riv */,
 				A6F7B6FF2D4D623D00AC8104 /* FastVaultBackupSucces.riv */,
+				A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -3223,7 +3233,6 @@
 				B52196432C12C3540021D27A /* CustomTokenView.swift */,
 				A638752E2C38570F000CF242 /* BackupVaultNowView.swift */,
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
-				A5340A682CECF093002ADD35 /* MonthlyBackupView+iOS.swift */,
 				A5340A6A2CECF099002ADD35 /* MonthlyBackupView+macOS.swift */,
 				A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
@@ -3601,6 +3610,7 @@
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
+				A6F7B71B2D4ECDE800AC8104 /* SecureVaultOverview.riv in Resources */,
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
@@ -3926,6 +3936,7 @@
 				A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
+				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
 				A6386DB02C9025BC00DDD58E /* ChainNavigationCell+macOS.swift in Sources */,
@@ -4234,6 +4245,7 @@
 				A6C670B52C9D139100F59B6A /* CoinDetailView+iOS.swift in Sources */,
 				A50E793A2BFE30210031DB47 /* Storage.swift in Sources */,
 				A6505AF32CA677B50002FBF4 /* KeyboardObserver+iOS.swift in Sources */,
+				A6F7B7212D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift in Sources */,
 				A6B662D52D38CDD5001E8BC1 /* MacAddressScannerViewModel+macOS.swift in Sources */,
 				A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */,
 				A6C670F32CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift in Sources */,
