@@ -54,7 +54,7 @@ struct KeygenView: View {
                         viewModel: viewModel
                     )
                 } else {
-                    BackupVaultNowView(vault: vault)
+                    SecureBackupVaultOverview(vault: vault)
                 }
             }
             .onAppear {

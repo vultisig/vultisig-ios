@@ -14,9 +14,16 @@ struct BackupVaultSuccessView: View {
     let secureAnimationVM = RiveViewModel(fileName: "SecureVaultBackupSuccess", autoPlay: true)
     let fastAnimationVM = RiveViewModel(fileName: "FastVaultBackupSucces", autoPlay: true)
     
-    let loaderAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+    @State var isLinkActive = false
     
     var body: some View {
+        container
+            .navigationDestination(isPresented: $isLinkActive) {
+                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            }
+    }
+    
+    var main: some View {
         ZStack {
             Background()
             content
@@ -25,11 +32,9 @@ struct BackupVaultSuccessView: View {
     
     var content: some View {
         VStack {
-            Spacer()
             animation
-            Spacer()
             text
-            loader
+            button
         }
     }
     
@@ -56,10 +61,26 @@ struct BackupVaultSuccessView: View {
         .multilineTextAlignment(.center)
     }
     
-    var loader: some View {
-        loaderAnimationVM.view()
-            .frame(width: 24, height: 24)
-            .padding(.bottom, 100)
+    var button: some View {
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 40)
+    }
+    
+    var nextButton: some View {
+        Button {
+            nextTapped()
+        } label: {
+            FilledButton(icon: "chevron.right")
+        }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
+        .frame(width: 80)
+        .padding(.bottom, 50)
+    }
+    
+    private func nextTapped() {
+        isLinkActive = true
     }
 }
 

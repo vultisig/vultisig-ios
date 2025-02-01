@@ -24,7 +24,7 @@ struct SecureBackupVaultOverview: View {
             content
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            BackupVaultSuccessView(vault: vault)
+            BackupVaultNowView(vault: vault)
         }
     }
     
@@ -74,7 +74,7 @@ struct SecureBackupVaultOverview: View {
                         index: index,
                         textPrefix: "SecureVaultOverview",
                         animationVM: animationVM,
-                        deviceCount: tabIndex==0 ? "3" : nil
+                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
                     )
                 }
             }
