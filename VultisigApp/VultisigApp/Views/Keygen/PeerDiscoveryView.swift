@@ -73,6 +73,10 @@ struct PeerDiscoveryView: View {
             .onFirstAppear {
                 showInfo()
             }
+            .sheet(isPresented: $showInfoSheet) {
+                PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
+                    .presentationDetents([.height(450)])
+            }
     }
     
     var states: some View {

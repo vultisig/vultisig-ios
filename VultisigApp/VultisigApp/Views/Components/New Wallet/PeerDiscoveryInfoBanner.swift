@@ -81,6 +81,7 @@ struct PeerDiscoveryInfoBanner: View {
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
+        .buttonStyle(.plain)
     }
 }
 

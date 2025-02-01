@@ -51,10 +51,6 @@ extension PeerDiscoveryView {
     
     var main: some View {
         states
-            .sheet(isPresented: $showInfoSheet) {
-                PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
-                    .presentationDetents([.height(450)])
-            }
     }
     
     var landscapeContent: some View {
