@@ -13,5 +13,16 @@ extension SecureBackupVaultOverview {
         content
             .navigationBarBackButtonHidden(true)
     }
+    
+    var textTabView: some View {
+        text
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+    }
+    
+    var button: some View {
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 30)
+    }
 }
 #endif

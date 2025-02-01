@@ -34,7 +34,7 @@ struct SecureBackupVaultOverview: View {
             header
             progressBar
             Spacer()
-            text
+            textTabView
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
@@ -87,14 +87,7 @@ struct SecureBackupVaultOverview: View {
                 }
             }
         }
-        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
         .frame(maxWidth: .infinity)
-    }
-    
-    var button: some View {
-        nextButton
-            .padding(.horizontal, 40)
-            .padding(.bottom, 30)
     }
     
     var nextButton: some View {
