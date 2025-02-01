@@ -537,3 +537,14 @@
 "verifyingCodePleaseWait" = "Verifying code, please wait";
 "verifying..." = "Verifying...";
 "paste" = "Paste";
+"vaultOverview" = "Vault Overview";
+"SecureVaultOverview1Text1" = "Your vault holds ";
+"SecureVaultOverview1Text2" = "";
+"SecureVaultOverview1Text3" = " shares, ";
+"SecureVaultOverview1Text4" = "each device needs its own backup.";
+"SecureVaultOverview2Text1" = "Back up ";
+"SecureVaultOverview2Text2" = "this vault share";
+"SecureVaultOverview2Text3" = " to ensure access, preferably ";
+"SecureVaultOverview2Text4" = "online.";
+"wellDone." = "Well done.";
+"readyToUseNewWalletStandard." = "You’re ready to use a new wallet standard.";

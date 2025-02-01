@@ -501,3 +501,14 @@
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
 "verifying..." = "Provjera u tijeku...";
 "paste" = "Zalijepi";
+"vaultOverview" = "Pregled trezora";
+"SecureVaultOverview1Text1" = "Vaš trezor sadrži ";
+"SecureVaultOverview1Text2" = "";
+"SecureVaultOverview1Text3" = " dijelova, ";
+"SecureVaultOverview1Text4" = "svaki uređaj treba vlastitu sigurnosnu kopiju.";
+"SecureVaultOverview2Text1" = "Napravite sigurnosnu kopiju ";
+"SecureVaultOverview2Text2" = "ovog dijela trezora";
+"SecureVaultOverview2Text3" = " kako biste osigurali pristup, najbolje ";
+"SecureVaultOverview2Text4" = "online.";
+"wellDone." = "Dobro napravljeno.";
+"readyToUseNewWalletStandard." = "Spremni ste za korištenje novog standarda novčanika.";
