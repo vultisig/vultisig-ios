@@ -69,6 +69,7 @@ struct PeerDiscoveryView: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
+                animationVM.stop()
             }
             .onFirstAppear {
                 showInfo()

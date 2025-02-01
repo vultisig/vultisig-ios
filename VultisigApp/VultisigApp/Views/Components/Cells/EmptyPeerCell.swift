@@ -17,6 +17,9 @@ struct EmptyPeerCell: View {
     
     var body: some View {
         cell
+            .onDisappear {
+                animationVM.stop()
+            }
     }
     
     var cell: some View {

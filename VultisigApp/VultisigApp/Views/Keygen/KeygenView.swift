@@ -60,6 +60,10 @@ struct KeygenView: View {
             .onAppear {
                 hideBackButton = true
             }
+            .onDisappear {
+                circleAnimationVM.stop()
+                checkmarkAnimationVM.stop()
+            }
     }
     
     var fields: some View {

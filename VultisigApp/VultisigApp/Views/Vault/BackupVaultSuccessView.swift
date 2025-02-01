@@ -21,6 +21,10 @@ struct BackupVaultSuccessView: View {
             .navigationDestination(isPresented: $isLinkActive) {
                 HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
             }
+            .onDisappear {
+                secureAnimationVM.stop()
+                fastAnimationVM.stop()
+            }
     }
     
     var main: some View {

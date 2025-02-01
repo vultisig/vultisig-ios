@@ -27,6 +27,9 @@ struct SecureBackupVaultOverview: View {
         .navigationDestination(isPresented: $isLinkActive) {
             BackupVaultNowView(vault: vault)
         }
+        .onDisappear {
+            animationVM.stop()
+        }
     }
     
     var content: some View {

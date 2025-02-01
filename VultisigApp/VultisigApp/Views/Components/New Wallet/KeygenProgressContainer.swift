@@ -23,6 +23,10 @@ struct KeygenProgressContainer: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
+        .onDisappear {
+            animationVMCheckmark.stop()
+            animationVMLoader.stop()
+        }
     }
     
     var content: some View {
