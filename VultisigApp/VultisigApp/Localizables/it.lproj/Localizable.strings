@@ -501,3 +501,14 @@
 "verifyingCodePleaseWait" = "Verifica del codice in corso, attendere";
 "verifying..." = "Verifica in corso...";
 "paste" = "Incolla";
+"vaultOverview" = "Panoramica del Vault";
+"SecureVaultOverview1Text1" = "Il tuo vault contiene ";
+"SecureVaultOverview1Text2" = "";
+"SecureVaultOverview1Text3" = " parti, ";
+"SecureVaultOverview1Text4" = "ogni dispositivo ha bisogno del proprio backup.";
+"SecureVaultOverview2Text1" = "Esegui il backup di ";
+"SecureVaultOverview2Text2" = "questa parte del vault";
+"SecureVaultOverview2Text3" = " per garantire l'accesso, preferibilmente ";
+"SecureVaultOverview2Text4" = "online.";
+"wellDone." = "Ben fatto.";
+"readyToUseNewWalletStandard." = "Ora sei pronto per usare un nuovo standard di wallet.";

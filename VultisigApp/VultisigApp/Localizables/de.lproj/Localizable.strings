@@ -518,3 +518,14 @@
 "verifyingCodePleaseWait" = "Code wird überprüft, bitte warten";
 "verifying..." = "Überprüfung läuft...";
 "paste" = "Einfügen";
+"vaultOverview" = "Tresorübersicht";
+"SecureVaultOverview1Text1" = "Ihr Tresor enthält ";
+"SecureVaultOverview1Text2" = "";
+"SecureVaultOverview1Text3" = " Anteile, ";
+"SecureVaultOverview1Text4" = "jedes Gerät benötigt ein eigenes Backup.";
+"SecureVaultOverview2Text1" = "Sichern Sie ";
+"SecureVaultOverview2Text2" = "diesen Tresoranteil";
+"SecureVaultOverview2Text3" = ", um den Zugriff sicherzustellen, vorzugsweise ";
+"SecureVaultOverview2Text4" = "online.";
+"wellDone." = "Gut gemacht.";
+"readyToUseNewWalletStandard." = "Sie sind bereit, einen neuen Wallet-Standard zu verwenden.";

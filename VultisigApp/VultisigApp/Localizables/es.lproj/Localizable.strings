@@ -501,3 +501,14 @@
 "verifyingCodePleaseWait" = "Verificando código, por favor espera";
 "verifying..." = "Verificando...";
 "paste" = "Pegar";
+"vaultOverview" = "Resumen del Bóveda";
+"SecureVaultOverview1Text1" = "Tu bóveda contiene ";
+"SecureVaultOverview1Text2" = "";
+"SecureVaultOverview1Text3" = " partes, ";
+"SecureVaultOverview1Text4" = "cada dispositivo necesita su propia copia de seguridad.";
+"SecureVaultOverview2Text1" = "Realiza una copia de seguridad de ";
+"SecureVaultOverview2Text2" = "esta parte de la bóveda";
+"SecureVaultOverview2Text3" = " para garantizar el acceso, preferiblemente ";
+"SecureVaultOverview2Text4" = "en línea.";
+"wellDone." = "Bien hecho.";
+"readyToUseNewWalletStandard." = "Estás listo para usar un nuevo estándar de billetera.";
