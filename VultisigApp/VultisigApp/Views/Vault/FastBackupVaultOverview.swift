@@ -1,22 +1,22 @@
 //
-//  SecureBackupVaultOverview.swift
+//  FastBackupVaultOverview.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-01-31.
+//  Created by Amol Kumar on 2025-02-01.
 //
 
 import SwiftUI
 import RiveRuntime
 
-struct SecureBackupVaultOverview: View {
+struct FastBackupVaultOverview: View {
     let vault: Vault
     
     @State var tabIndex = 0
     @State var isLinkActive = false
     
-    let totalTabCount = 2
+    let totalTabCount = 3
     
-    let animationVM = RiveViewModel(fileName: "SecureVaultOverview", autoPlay: true)
+    let animationVM = RiveViewModel(fileName: "FastVaultOverview", autoPlay: true)
     
     var body: some View {
         ZStack {
@@ -127,5 +127,5 @@ struct SecureBackupVaultOverview: View {
 }
 
 #Preview {
-    SecureBackupVaultOverview(vault: Vault.example)
+    FastBackupVaultOverview(vault: Vault.example)
 }

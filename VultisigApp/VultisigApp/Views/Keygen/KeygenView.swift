@@ -47,15 +47,16 @@ struct KeygenView: View {
     var body: some View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                if showVerificationView {
-                    ServerBackupVerificationView(
-                        vault: vault,
-                        selectedTab: selectedTab,
-                        viewModel: viewModel
-                    )
-                } else {
-                    SecureBackupVaultOverview(vault: vault)
-                }
+//                if showVerificationView {
+//                    ServerBackupVerificationView(
+//                        vault: vault,
+//                        selectedTab: selectedTab,
+//                        viewModel: viewModel
+//                    )
+//                } else {
+//                    SecureBackupVaultOverview(vault: vault)
+//                }
+                overviewView
             }
             .onAppear {
                 hideBackButton = true
@@ -64,6 +65,16 @@ struct KeygenView: View {
                 circleAnimationVM.stop()
                 checkmarkAnimationVM.stop()
             }
+    }
+    
+    var overviewView: some View {
+        ZStack {
+            if showVerificationView {
+                FastBackupVaultOverview(vault: vault)
+            } else {
+                SecureBackupVaultOverview(vault: vault)
+            }
+        }
     }
     
     var fields: some View {
