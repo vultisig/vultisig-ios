@@ -16,8 +16,7 @@ extension OnboardingView {
     var text: some View {
         OnboardingTextCard(
             index: tabIndex,
-            textPrefix: "OnboardingCard",
-            animationVM: animationVM
+            textPrefix: "OnboardingCard"
         )
         .frame(maxWidth: .infinity)
     }
