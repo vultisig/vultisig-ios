@@ -11,8 +11,8 @@ import RiveRuntime
 struct BackupVaultSuccessView: View {
     let vault: Vault
     
-    let secureAnimationVM = RiveViewModel(fileName: "SecureVaultBackupSuccess", autoPlay: true)
-    let fastAnimationVM = RiveViewModel(fileName: "FastVaultBackupSucces", autoPlay: true)
+    @State var secureAnimationVM: RiveViewModel? = nil
+    @State var fastAnimationVM: RiveViewModel? = nil
     
     @State var isLinkActive = false
     
@@ -21,9 +21,12 @@ struct BackupVaultSuccessView: View {
             .navigationDestination(isPresented: $isLinkActive) {
                 HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
             }
+            .onAppear {
+                setData()
+            }
             .onDisappear {
-                secureAnimationVM.stop()
-                fastAnimationVM.stop()
+                secureAnimationVM?.stop()
+                fastAnimationVM?.stop()
             }
     }
     
@@ -44,10 +47,12 @@ struct BackupVaultSuccessView: View {
     
     var animation: some View {
         ZStack {
-            if vault.isFastVault {
+            if let fastAnimationVM {
                 fastAnimationVM.view()
-            } else {
+            } else if let secureAnimationVM {
                 secureAnimationVM.view()
+            } else {
+                Spacer()
             }
         }
     }
@@ -81,6 +86,16 @@ struct BackupVaultSuccessView: View {
         .background(Color.clear)
         .frame(width: 80)
         .padding(.bottom, 50)
+    }
+    
+    private func setData() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if vault.isFastVault {
+                fastAnimationVM = RiveViewModel(fileName: "FastVaultBackupSucces", autoPlay: true)
+            } else {
+                secureAnimationVM = RiveViewModel(fileName: "SecureVaultBackupSuccess", autoPlay: true)
+            }
+        }
     }
     
     private func nextTapped() {
