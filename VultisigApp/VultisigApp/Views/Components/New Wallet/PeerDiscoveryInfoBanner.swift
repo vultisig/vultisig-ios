@@ -18,6 +18,9 @@ struct PeerDiscoveryInfoBanner: View {
             Background()
             content
         }
+        .onDisappear {
+            animationVM.stop()
+        }
     }
     
     var content: some View {
@@ -81,6 +84,7 @@ struct PeerDiscoveryInfoBanner: View {
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
+        .buttonStyle(.plain)
     }
 }
 

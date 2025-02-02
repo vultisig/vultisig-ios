@@ -38,6 +38,9 @@ struct OnboardingView: View {
         .onChange(of: tabIndex) { oldValue, newValue in
             animationVM.play(animationName: "Screen \(tabIndex+1)")
         }
+        .onDisappear {
+            animationVM.stop()
+        }
     }
     
     var animation: some View {

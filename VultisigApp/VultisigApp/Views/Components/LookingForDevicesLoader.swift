@@ -30,6 +30,9 @@ struct LookingForDevicesLoader: View {
                 didSwitch.toggle()
             }
         }
+        .onDisappear {
+            animationVM.stop()
+        }
     }
     
     var shadow: some View {

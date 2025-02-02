@@ -21,6 +21,9 @@ struct SetupVaultTabView: View {
             .onAppear {
                 setData()
             }
+            .onDisappear {
+                animationVM.stop()
+            }
     }
     
     var content: some View {

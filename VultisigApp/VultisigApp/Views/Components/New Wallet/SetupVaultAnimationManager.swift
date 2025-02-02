@@ -13,10 +13,8 @@ struct SetupVaultAnimationManager: View {
     @Binding var selectedTab: SetupVaultState
     
     var body: some View {
-        VStack {
-            animation
-                .padding(.vertical, 16)
-        }
+        animation
+            .padding(.vertical, 16)
     }
     
     var animation: some View {
