@@ -10,13 +10,15 @@ import RiveRuntime
 
 struct FastBackupVaultOverview: View {
     let vault: Vault
+    let selectedTab: SetupVaultState?
+    @ObservedObject var viewModel: KeygenViewModel
     
     @State var tabIndex = 0
     @State var isLinkActive = false
     
     let totalTabCount = 3
     
-    let animationVM = RiveViewModel(fileName: "FastVaultOverview", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
         ZStack {
@@ -25,10 +27,16 @@ struct FastBackupVaultOverview: View {
             container
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            BackupVaultNowView(vault: vault)
+            ServerBackupVerificationView(
+                vault: vault,
+                selectedTab: selectedTab,
+                viewModel: viewModel
+            )
         }
-        .onDisappear {
-            animationVM.stop()
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                animationVM = RiveViewModel(fileName: "FastVaultOverview", autoPlay: true)
+            }
         }
     }
     
@@ -73,7 +81,13 @@ struct FastBackupVaultOverview: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        ZStack{
+            if let animationVM {
+                animationVM.view()
+            } else {
+                Spacer()
+            }
+        }
     }
     
     var text: some View {
@@ -83,8 +97,7 @@ struct FastBackupVaultOverview: View {
                     Spacer()
                     OnboardingTextCard(
                         index: index,
-                        textPrefix: "SecureVaultOverview",
-                        animationVM: animationVM,
+                        textPrefix: "FastVaultOverview",
                         deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
                     )
                 }
@@ -121,11 +134,15 @@ struct FastBackupVaultOverview: View {
     
     private func animate() {
         withAnimation {
-            animationVM.triggerInput("Next")
+            animationVM?.triggerInput("Next")
         }
     }
 }
 
 #Preview {
-    FastBackupVaultOverview(vault: Vault.example)
+    FastBackupVaultOverview(
+        vault: Vault.example,
+        selectedTab: .secure,
+        viewModel: KeygenViewModel()
+    )
 }

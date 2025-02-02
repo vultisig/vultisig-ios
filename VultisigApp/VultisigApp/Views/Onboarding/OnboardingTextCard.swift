@@ -11,7 +11,6 @@ import RiveRuntime
 struct OnboardingTextCard: View {
     let index: Int
     let textPrefix: String
-    let animationVM: RiveViewModel
     
     var deviceCount: String? = nil
     
@@ -51,5 +50,5 @@ struct OnboardingTextCard: View {
 }
 
 #Preview {
-    OnboardingTextCard(index: 0, textPrefix: "OnboardingCard", animationVM: RiveViewModel(fileName: "Onboarding", autoPlay: false))
+    OnboardingTextCard(index: 0, textPrefix: "OnboardingCard")
 }

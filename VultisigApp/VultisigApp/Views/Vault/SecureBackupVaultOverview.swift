@@ -84,7 +84,6 @@ struct SecureBackupVaultOverview: View {
                     OnboardingTextCard(
                         index: index,
                         textPrefix: "SecureVaultOverview",
-                        animationVM: animationVM,
                         deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
                     )
                 }

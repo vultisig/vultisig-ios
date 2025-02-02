@@ -23,8 +23,7 @@ extension OnboardingView {
                     Spacer()
                     OnboardingTextCard(
                         index: index,
-                        textPrefix: "OnboardingCard",
-                        animationVM: animationVM
+                        textPrefix: "OnboardingCard"
                     )
                 }
             }
