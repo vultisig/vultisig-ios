@@ -512,3 +512,15 @@
 "SecureVaultOverview2Text4" = "en línea.";
 "wellDone." = "Bien hecho.";
 "readyToUseNewWalletStandard." = "Estás listo para usar un nuevo estándar de billetera.";
+"FastVaultOverview1Text1" = "Tu bóveda contiene ";
+"FastVaultOverview1Text2" = "";
+"FastVaultOverview1Text3" = " partes, ";
+"FastVaultOverview1Text4" = "haz una copia de seguridad ahora.";
+"FastVaultOverview2Text1" = "Parte del bóveda enviada al servidor para custodia completa! ";
+"FastVaultOverview2Text2" = "Revisa tu correo electrónico para verificar.";
+"FastVaultOverview2Text3" = "";
+"FastVaultOverview2Text4" = "";
+"FastVaultOverview3Text1" = "Realiza una copia de seguridad de ";
+"FastVaultOverview3Text2" = "esta parte de la bóveda";
+"FastVaultOverview3Text3" = " de forma segura, preferiblemente ";
+"FastVaultOverview3Text4" = "en línea.";

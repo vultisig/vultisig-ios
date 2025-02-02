@@ -548,17 +548,14 @@
 "SecureVaultOverview2Text4" = "online.";
 "wellDone." = "Well done.";
 "readyToUseNewWalletStandard." = "You’re ready to use a new wallet standard.";
-
 "FastVaultOverview1Text1" = "Your vault holds ";
 "FastVaultOverview1Text2" = "";
 "FastVaultOverview1Text3" = " shares, ";
 "FastVaultOverview1Text4" = "back them up  now";
-
 "FastVaultOverview2Text1" = "Server vault share sent for complete self-custody!  ";
 "FastVaultOverview2Text2" = "Check your e-mail to verify";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
-
 "FastVaultOverview3Text1" = "Back up ";
 "FastVaultOverview3Text2" = "this vault share";
 "FastVaultOverview3Text3" = " securely, preferably ";

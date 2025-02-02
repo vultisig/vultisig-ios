@@ -529,3 +529,15 @@
 "SecureVaultOverview2Text4" = "online.";
 "wellDone." = "Gut gemacht.";
 "readyToUseNewWalletStandard." = "Sie sind bereit, einen neuen Wallet-Standard zu verwenden.";
+"FastVaultOverview1Text1" = "Ihr Tresor enthält ";
+"FastVaultOverview1Text2" = "";
+"FastVaultOverview1Text3" = " Anteile, ";
+"FastVaultOverview1Text4" = "sichern Sie sie jetzt.";
+"FastVaultOverview2Text1" = "Tresoranteil an den Server gesendet für vollständige Selbstverwaltung! ";
+"FastVaultOverview2Text2" = "Überprüfen Sie Ihre E-Mail zur Bestätigung.";
+"FastVaultOverview2Text3" = "";
+"FastVaultOverview2Text4" = "";
+"FastVaultOverview3Text1" = "Sichern Sie ";
+"FastVaultOverview3Text2" = "diesen Tresoranteil";
+"FastVaultOverview3Text3" = " sicher, vorzugsweise ";
+"FastVaultOverview3Text4" = "online.";

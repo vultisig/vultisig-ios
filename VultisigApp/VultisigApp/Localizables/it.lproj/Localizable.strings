@@ -512,3 +512,15 @@
 "SecureVaultOverview2Text4" = "online.";
 "wellDone." = "Ben fatto.";
 "readyToUseNewWalletStandard." = "Ora sei pronto per usare un nuovo standard di wallet.";
+"FastVaultOverview1Text1" = "Il tuo vault contiene ";
+"FastVaultOverview1Text2" = "";
+"FastVaultOverview1Text3" = " parti, ";
+"FastVaultOverview1Text4" = "esegui il backup ora.";
+"FastVaultOverview2Text1" = "Parte del vault inviata al server per la completa autocustodia! ";
+"FastVaultOverview2Text2" = "Controlla la tua e-mail per verificare.";
+"FastVaultOverview2Text3" = "";
+"FastVaultOverview2Text4" = "";
+"FastVaultOverview3Text1" = "Esegui il backup di ";
+"FastVaultOverview3Text2" = "questa parte del vault";
+"FastVaultOverview3Text3" = " in modo sicuro, preferibilmente ";
+"FastVaultOverview3Text4" = "online.";
