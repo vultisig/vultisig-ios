@@ -36,6 +36,7 @@ class SuiService {
         
         let allTokens = try await getAllTokensWithMetadata(coin: coin)
         
+        print(allTokens)
         
         guard let totalBalance = Utils.extractResultFromJson(
             fromData: data,
@@ -161,10 +162,10 @@ class SuiService {
         return []
     }
     
-    func getAllTokensWithMetadata(coin: Coin) async throws -> [[String: String]] {
+    func getAllTokensWithMetadata(coin: Coin) async throws -> [CoinMeta] {
         let allTokens = try await getAllTokens(coin: coin) // Get tokens first
         
-        var tokensWithMetadata: [[String: String]] = []
+        var tokensWithMetadata: [CoinMeta] = []
         
         for token in allTokens {
             if let objType = token["coinType"] {
@@ -172,25 +173,33 @@ class SuiService {
                     
                     let metadata = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getCoinMetadata", params: [objType])
                     
-                    print(String(data: metadata, encoding: .utf8) ?? "")
-                    
                     let tokenData: [String: String] = [
                         "objectID": token["objectID"] ?? "",
                         "type": objType,
                         "symbol": Utils.extractResultFromJson(fromData: metadata, path: "result.symbol") as? String ?? "Unknown",
                         "name": Utils.extractResultFromJson(fromData: metadata, path: "result.name") as? String ?? "Unknown",
-                        "decimals": Utils.extractResultFromJson(fromData: metadata, path: "result.decimals") as? String ?? "0",
+                        "decimals": (Utils.extractResultFromJson(fromData: metadata, path: "result.decimals") as? Int ?? 0).description,
                         "logo": Utils.extractResultFromJson(fromData: metadata, path: "result.iconUrl") as? String ?? ""
                     ]
                     
-                    tokensWithMetadata.append(tokenData)
+                    var coinMeta = CoinMeta(
+                        chain: .sui,
+                        ticker: tokenData["symbol"]!,
+                        logo: tokenData["logo"]!,
+                        decimals: Int(tokenData["decimals"] ?? "0")!,
+                        priceProviderId: "",
+                        contractAddress: tokenData["objectID"]!,
+                        isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false
+                    )
+                    
+                    tokensWithMetadata.append(coinMeta)
                 } catch {
                     print("Error fetching metadata for \(objType): \(error.localizedDescription)")
                 }
             }
         }
         
-        return tokensWithMetadata
+        return tokensWithMetadata.filter { $0.isNativeToken == false }
     }
     
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String{
