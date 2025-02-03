@@ -28,39 +28,27 @@ class SuiService {
     }
     
     func getBalance(coin: Coin) async throws -> String {
-        let data = try await Utils.PostRequestRpc(
-            rpcURL: rpcURL,
-            method: "suix_getBalance",
-            params:  [coin.address]
-        )
-        
-        let allTokens = try await getAllTokensWithMetadata(coin: coin)
-        
-        print(allTokens)
-        
-        guard let totalBalance = Utils.extractResultFromJson(
-            fromData: data,
-            path: "result.totalBalance"
-        ) as? String else { throw Errors.getBalanceFailed }
-        
-        return totalBalance
+        return try await getAllBalances(coin: coin)
     }
     
     func getAllBalances(coin: Coin) async throws -> String {
         let data = try await Utils.PostRequestRpc(
             rpcURL: rpcURL,
             method: "suix_getAllBalances",
-            params:  [coin.address]
+            params: [coin.address]
         )
+
+        if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {
+            if let item = result.first(where: {
+                guard let coinType = $0["coinType"] as? String else { return false }
+                return coinType.contains(coin.ticker.uppercased())
+            }),
+            let balance = item["totalBalance"] as? String {
+                return balance
+            }
+        }
         
-        print(String(data: data, encoding: .utf8) ?? "")
-        
-        guard let totalBalance = Utils.extractResultFromJson(
-            fromData: data,
-            path: "result.totalBalance"
-        ) as? String else { throw Errors.getBalanceFailed }
-        
-        return totalBalance
+        return "0"
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
@@ -182,7 +170,7 @@ class SuiService {
                         "logo": Utils.extractResultFromJson(fromData: metadata, path: "result.iconUrl") as? String ?? ""
                     ]
                     
-                    var coinMeta = CoinMeta(
+                    let coinMeta = CoinMeta(
                         chain: .sui,
                         ticker: tokenData["symbol"]!,
                         logo: tokenData["logo"]!,
