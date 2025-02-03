@@ -56,9 +56,6 @@ struct FastVaultSetHintView: View {
                     .font(.body16BrockmannMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .textEditorStyle(.plain)
-                    .keyboardType(.emailAddress)
 
                 if !hint.isEmpty {
                     VStack {
