@@ -32,12 +32,12 @@ struct FastVaultSetHintView: View {
 
     var hintField: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(NSLocalizedString("Add a optional hint", comment: ""))
+            Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
                 .font(.body34BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 16)
 
-            Text(NSLocalizedString("This email is only used to send the backup of the server", comment: ""))
+            Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.extraLightGray)
 
