@@ -51,6 +51,7 @@ struct FastVaultSetHintView: View {
         ZStack {
             HStack {
                 TextEditor(text: $hint)
+                    .textEditorStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .foregroundColor(.neutral500)
                     .font(.body16BrockmannMedium)

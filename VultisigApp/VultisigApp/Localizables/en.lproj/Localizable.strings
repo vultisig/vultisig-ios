@@ -1,5 +1,5 @@
-"setPasswordHintTitle" = "Fügen Sie einen optionalen Hinweis hinzu";
-"setPasswordHintSubtitle" = "Diese E-Mail wird nur zum Senden der Server-Sicherung verwendet";
+"setPasswordHintTitle" = "Add a optional hint";
+"setPasswordHintSubtitle" = "This email is only used to send the backup of the server";
 "vaultExistsError" = "Vault with same name already exists.\nPlease try a different name.";
 "noGasEstimation" = "No gas estimation possible. Please refresh the page";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
