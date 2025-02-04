@@ -1,3 +1,5 @@
+"setPasswordHintTitle" = "Dodajte opcionalni savjet";
+"setPasswordHintSubtitle" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja";
 "vaultExistsError" = "Sef s istim imenom već postoji.\nPokušajte s drugim imenom.";
 "noGasEstimation" = "Nije moguće procijeniti gas. Molimo osvježite stranicu.";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";

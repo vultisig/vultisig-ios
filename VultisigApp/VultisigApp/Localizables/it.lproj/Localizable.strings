@@ -1,3 +1,5 @@
+"setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
+"setPasswordHintSubtitle" = "Questa email viene utilizzata solo per inviare il backup del server";
 "vaultExistsError" = "Un caveau con lo stesso nome esiste già.\nSi prega di provare un nome diverso.";
 "noGasEstimation" = "Nessuna stima del gas possibile. Si prega di aggiornare la pagina.";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
