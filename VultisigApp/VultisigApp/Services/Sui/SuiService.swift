@@ -28,23 +28,28 @@ class SuiService {
     }
     
     func getAllBalances(coin: Coin) async throws -> String {
-        let data = try await Utils.PostRequestRpc(
-            rpcURL: rpcURL,
-            method: "suix_getAllBalances",
-            params: [coin.address]
-        )
-
-        if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {
-            if let item = result.first(where: {
-                guard let coinType = $0["coinType"] as? String else { return false }
-                return coinType.contains(coin.ticker.uppercased())
-            }),
-            let balance = item["totalBalance"] as? String {
-                return balance
+        do {
+            let data = try await Utils.PostRequestRpc(
+                rpcURL: rpcURL,
+                method: "suix_getAllBalances",
+                params: [coin.address]
+            )
+            
+            if let result = Utils.extractResultFromJson(fromData: data, path: "result") as? [[String: Any]] {
+                if let item = result.first(where: {
+                    guard let coinType = $0["coinType"] as? String else { return false }
+                    return coinType.lowercased().contains("\(coin.ticker.lowercased())")
+                }),
+                   let balance = item["totalBalance"] as? String {
+                    return balance
+                }
             }
+            
+            return "0"
+        } catch {
+            print ("Error fetching suix_getAllBalances: \(error.localizedDescription)")
+            return "0"
         }
-        
-        return "0"
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
