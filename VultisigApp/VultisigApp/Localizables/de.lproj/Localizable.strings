@@ -543,3 +543,5 @@
 "FastVaultOverview3Text2" = "diesen Tresoranteil";
 "FastVaultOverview3Text3" = " sicher, vorzugsweise ";
 "FastVaultOverview3Text4" = "online.";
+"secureVaultSummaryDiscalimer" = "Ich habe gelesen und verstanden, was zu tun ist.";
+"startUsingVault" = "Vault verwenden";

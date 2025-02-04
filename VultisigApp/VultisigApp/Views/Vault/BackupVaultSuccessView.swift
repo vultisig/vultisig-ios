@@ -19,7 +19,7 @@ struct BackupVaultSuccessView: View {
     var body: some View {
         container
             .navigationDestination(isPresented: $isLinkActive) {
-                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+                VaultSetupSummaryView(vault: vault)
             }
             .onAppear {
                 setData()
