@@ -14,10 +14,6 @@ class SuiService {
     static let shared = SuiService()
     private init() {}
     
-    private var cacheFeePrice: ThreadSafeDictionary<String, (data: BigInt, timestamp: Date)> = ThreadSafeDictionary()
-    private var cacheLatestCheckpointSequenceNumber: ThreadSafeDictionary<String, (data: Int64, timestamp: Date)> = ThreadSafeDictionary()
-    private var cacheAllCoins: ThreadSafeDictionary<String, (data: [[String:String]], timestamp: Date)> = ThreadSafeDictionary()
-    
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
@@ -52,17 +48,11 @@ class SuiService {
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
-        let cacheKey = "\(coin.chain.name.lowercased())-getReferenceGasPrice"
-        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
-            return cachedData
-        }
-        
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params:  [])
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
                let resultString = result as? String {
                 let intResult = resultString.toBigInt()
-                self.cacheFeePrice.set(cacheKey, (data: intResult, timestamp: Date()))
                 return intResult
             } else {
                 print("JSON decoding error")
@@ -75,17 +65,12 @@ class SuiService {
     }
     
     func getAllCoins(coin: Coin) async throws -> [[String:String]] {
-        let cacheKey = "\(coin.chain.name.lowercased())-\(coin.address)-suix_getAllCoins"
-        
-        // Attempt to fetch cached data
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAllCoins, timeInSeconds: 60*5) {
-            return cachedData
-        }
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
+            
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
-                let allCoins = coins.filter{ $0.coinType.contains("SUI") || $0.coinType.contains(coin.ticker.uppercased()) }.map { coin in
+                let allCoins = coins.filter{ $0.coinType.uppercased().contains("SUI") || $0.coinType.uppercased().contains(coin.ticker.uppercased()) }.map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description
                     coinDict["version"] = String(coin.version)
@@ -94,8 +79,7 @@ class SuiService {
                     coinDict["coinType"] = String(coin.coinType)
                     return coinDict
                 }
-                // Caching the transformed data instead of the raw data
-                self.cacheAllCoins.set(cacheKey, (data: allCoins, timestamp: Date()))
+                
                 return allCoins
             } else {
                 print("Failed to decode coins")
@@ -108,11 +92,6 @@ class SuiService {
     }
     
     func getAllTokens(coin: Coin) async throws -> [[String: String]] {
-        let cacheKey = "\(coin.chain.name.lowercased())-\(coin.address)-suix_getOwnedObjects"
-        
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAllCoins, timeInSeconds: 60*5) {
-            return cachedData
-        }
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getOwnedObjects", params: [coin.address])
@@ -139,7 +118,6 @@ class SuiService {
                     }
                 }
                 
-                self.cacheAllCoins.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {
                 print("Failed to decode owned objects")
