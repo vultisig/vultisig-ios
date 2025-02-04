@@ -31,8 +31,4 @@ extension View {
     func borderlessTextFieldStyle() -> some View {
         self.textFieldStyle(PlainTextFieldStyle())
     }
-    
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape( RoundedCorner(radius: radius, corners: corners) )
-    }
 }
