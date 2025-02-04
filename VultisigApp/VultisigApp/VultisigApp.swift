@@ -27,7 +27,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            content
+            VaultSetupSummaryView(vault: Vault.example)
         }
         .modelContainer(sharedModelContainer)
         

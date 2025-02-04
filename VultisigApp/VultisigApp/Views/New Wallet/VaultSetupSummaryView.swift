@@ -14,6 +14,9 @@ struct VaultSetupSummaryView: View {
     @State var isFastVault = false
     @State var isLinkActive = false
     
+    @State var contentHeight: CGFloat = .zero
+    @State var cellHeight: CGFloat = .zero
+    
     var body: some View {
         container
             .navigationDestination(isPresented: $isLinkActive) {
@@ -25,14 +28,24 @@ struct VaultSetupSummaryView: View {
     }
     
     var main: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            content
-            Spacer()
-            disclaimer
-            button
+        HStack(spacing: 0) {
+            rectangle
+            VStack(spacing: 16) {
+                Spacer()
+                content
+                Spacer()
+                disclaimer
+                button
+            }
         }
         .padding(24)
+    }
+    
+    var rectangle: some View {
+        Rectangle()
+            .frame(width: 2, height: contentHeight-cellHeight+6)
+            .foregroundColor(.blue600)
+            .offset(y: -50)
     }
     
     var content: some View {
@@ -41,6 +54,14 @@ struct VaultSetupSummaryView: View {
             title
             list
         }
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear {
+                        contentHeight = geometry.size.height
+                    }
+            }
+        )
     }
     
     var headerContent: some View {
@@ -63,6 +84,7 @@ struct VaultSetupSummaryView: View {
             RoundedRectangle(cornerRadius: 32)
                 .stroke(Color.blue200, lineWidth: 1)
         )
+        .offset(x: -2)
     }
     
     var icon: some View {
@@ -81,6 +103,7 @@ struct VaultSetupSummaryView: View {
             .foregroundColor(.neutral0)
             .font(.body34BrockmannMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 24)
     }
     
     var list: some View {
@@ -99,6 +122,14 @@ struct VaultSetupSummaryView: View {
             getCell(icon: "checkmark.icloud", text: "fastVaultSummaryText2")
             getCell(icon: "arrow.trianglehead.branch", text: "fastVaultSummaryText3")
             getCell(icon: "square.3.layers.3d", text: "fastVaultSummaryText4")
+                .background(
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                cellHeight = geometry.size.height
+                            }
+                    }
+                )
         }
     }
     
@@ -110,6 +141,14 @@ struct VaultSetupSummaryView: View {
             getCell(icon: "checkmark.icloud", text: "secureVaultSummaryText2")
             getCell(icon: "arrow.trianglehead.branch", text: "secureVaultSummaryText3")
             getCell(icon: "square.3.layers.3d", text: "secureVaultSummaryText4")
+                .background(
+                    GeometryReader { geometry in
+                        Color.clear
+                            .onAppear {
+                                cellHeight = geometry.size.height
+                            }
+                    }
+                )
         }
     }
     
@@ -149,22 +188,28 @@ struct VaultSetupSummaryView: View {
     }
     
     private func getCell(icon: String, text: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(.iconLightBlue)
+        HStack(spacing: 0){
+            Rectangle()
+                .frame(width: 22, height: 2)
+                .foregroundColor(.blue600)
             
-            Text(NSLocalizedString(text, comment: ""))
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .foregroundColor(.iconLightBlue)
+                
+                Text(NSLocalizedString(text, comment: ""))
+                    .foregroundColor(.neutral0)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .font(.body14BrockmannMedium)
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.blue200, lineWidth: 1)
+            )
         }
-        .font(.body14BrockmannMedium)
-        .padding(16)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
     }
 }
 
