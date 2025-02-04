@@ -69,9 +69,14 @@ struct PeerDiscoveryView: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
+                animationVM.stop()
             }
             .onFirstAppear {
                 showInfo()
+            }
+            .sheet(isPresented: $showInfoSheet) {
+                PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
+                    .presentationDetents([.height(450)])
             }
     }
     
@@ -212,6 +217,7 @@ struct PeerDiscoveryView: View {
     
     private func showInfo() {
         guard selectedTab == .secure else {
+            showInfoSheet = false
             return
         }
         

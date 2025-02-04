@@ -48,17 +48,21 @@ struct KeygenView: View {
         content
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if showVerificationView {
-                    ServerBackupVerificationView(
+                    FastBackupVaultOverview(
                         vault: vault,
                         selectedTab: selectedTab,
                         viewModel: viewModel
                     )
                 } else {
-                    BackupVaultNowView(vault: vault)
+                    SecureBackupVaultOverview(vault: vault)
                 }
             }
             .onAppear {
                 hideBackButton = true
+            }
+            .onDisappear {
+                circleAnimationVM.stop()
+                checkmarkAnimationVM.stop()
             }
     }
     

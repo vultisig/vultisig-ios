@@ -8,15 +8,11 @@
 #if os(macOS)
 import SwiftUI
 
-extension FastVaultSetPasswordView {
+extension FastVaultSetHintView {
     var content: some View {
         ZStack {
             Background()
             main
-
-            if isLoading {
-                Loader()
-            }
         }
     }
     
@@ -26,7 +22,7 @@ extension FastVaultSetPasswordView {
             view
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetHintView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
+            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
         }
     }
 
@@ -36,9 +32,9 @@ extension FastVaultSetPasswordView {
     
     var view: some View {
         VStack {
-            passwordField
+            hintField
             Spacer()
-            button
+            buttons
         }
         .padding(.horizontal, 25)
     }

@@ -21,7 +21,10 @@ extension OnboardingView {
             ForEach(0..<totalTabCount, id: \.self) { index in
                 VStack {
                     Spacer()
-                    OnboardingTextCard(index: index, animationVM: animationVM)
+                    OnboardingTextCard(
+                        index: index,
+                        textPrefix: "OnboardingCard"
+                    )
                 }
             }
         }
