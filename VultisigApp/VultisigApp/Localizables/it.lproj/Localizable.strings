@@ -526,3 +526,5 @@
 "FastVaultOverview3Text2" = "questa parte del vault";
 "FastVaultOverview3Text3" = " in modo sicuro, preferibilmente ";
 "FastVaultOverview3Text4" = "online.";
+"secureVaultSummaryDiscalimer" = "Ho letto e capito cosa fare.";
+"startUsingVault" = "Inizia a usare il vault";

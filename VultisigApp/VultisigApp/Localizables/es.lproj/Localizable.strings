@@ -526,3 +526,5 @@
 "FastVaultOverview3Text2" = "esta parte de la bóveda";
 "FastVaultOverview3Text3" = " de forma segura, preferiblemente ";
 "FastVaultOverview3Text4" = "en línea.";
+"secureVaultSummaryDiscalimer" = "He leído y entendido qué hacer.";
+"startUsingVault" = "Empezar a usar la bóveda";
