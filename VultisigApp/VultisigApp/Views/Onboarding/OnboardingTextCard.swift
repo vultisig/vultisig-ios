@@ -10,19 +10,23 @@ import RiveRuntime
 
 struct OnboardingTextCard: View {
     let index: Int
-    let animationVM: RiveViewModel
+    let textPrefix: String
+    
+    var deviceCount: String? = nil
     
     @State var showText: Bool = false
     
     var body: some View {
         Group {
-            Text(NSLocalizedString("OnboardingCard\(index+1)Text1", comment: ""))
+            Text(NSLocalizedString("\(textPrefix)\(index+1)Text1", comment: ""))
                 .foregroundColor(.neutral0) +
-            Text(NSLocalizedString("OnboardingCard\(index+1)Text2", comment: ""))
+            Text(deviceCount ?? "")
+                .foregroundColor(.neutral0) +
+            Text(NSLocalizedString("\(textPrefix)\(index+1)Text2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
-            Text(NSLocalizedString("OnboardingCard\(index+1)Text3", comment: ""))
+            Text(NSLocalizedString("\(textPrefix)\(index+1)Text3", comment: ""))
                 .foregroundColor(.neutral0) +
-            Text(NSLocalizedString("OnboardingCard\(index+1)Text4", comment: ""))
+            Text(NSLocalizedString("\(textPrefix)\(index+1)Text4", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
         .font(.body28BrockmannMedium)
@@ -46,5 +50,5 @@ struct OnboardingTextCard: View {
 }
 
 #Preview {
-    OnboardingTextCard(index: 0, animationVM: RiveViewModel(fileName: "Onboarding", autoPlay: false))
+    OnboardingTextCard(index: 0, textPrefix: "OnboardingCard")
 }

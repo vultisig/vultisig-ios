@@ -41,6 +41,9 @@ struct ServerBackupVerificationView: View {
                 BackupVaultNowView(vault: vault)
             }
         }
+        .onDisappear {
+            animationVM.stop()
+        }
     }
     
     var title: some View {
