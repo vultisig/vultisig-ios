@@ -58,6 +58,7 @@ extension Color {
     static let lightText = Color(hex: "C9D6E8")
     static let borderBlue = Color(hex: "1B3F73")
     static let disabledText = Color(hex: "718096")
+    static let iconLightBlue = Color(hex: "467FF8")
     
     // Background
     static let backgroundBlue = Color(hex: "02122B")

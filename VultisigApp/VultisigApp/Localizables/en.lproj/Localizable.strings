@@ -562,3 +562,14 @@
 "FastVaultOverview3Text2" = "this vault share";
 "FastVaultOverview3Text3" = " securely, preferably ";
 "FastVaultOverview3Text4" = "online.";
+"fastVault" = "Fast Vault";
+"backupGuide" = "Back-up guide";
+"fastVaultSummaryText1" = "Vault Share 1 received via mail";
+"fastVaultSummaryText2" = "Vault Share 2 stored by you";
+"fastVaultSummaryText3" = "Keep vault shares in different locations";
+"fastVaultSummaryText4" = "All vault shares ensure secure access to your funds";
+"secureVaultSummaryText2" = "Backup each vault share separately";
+"secureVaultSummaryText3" = "Keep vault shares in different locations";
+"secureVaultSummaryText4" = "All vault shares ensure secure access to your funds";
+"secureVaultSummaryDiscalimer" = "I have read and understand what to do";
+"startUsingVault" = "Start using vault";
