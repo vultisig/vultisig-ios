@@ -105,7 +105,7 @@ class Endpoint {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
     
-    static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
+    static let avalancheServiceRpcService = "https://api.vultisig.com/avax/"
     
     static let bscServiceRpcService = "https://api.vultisig.com/bsc/"
     
