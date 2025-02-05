@@ -517,7 +517,7 @@
 "moreInfoDescription" = "Dies geschieht, weil das Passwort die Backup-Datei lokal verschlüsselt, ähnlich wie eine Festplatte. Im nächsten Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Minute dauern";
-"enter5DigitVerificationCode" = "Geben Sie den 5-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
+"enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
 "enter5DigitVerificationCodeDescription" = "Dieser Code bestätigt, dass Sie Ihren Tresoranteil per E-Mail erhalten haben";
 "verifyingCodePleaseWait" = "Code wird überprüft, bitte warten";
 "verifying..." = "Überprüfung läuft...";

@@ -500,7 +500,7 @@
 "moreInfoDescription" = "Esto ocurre porque la contraseña cifra el archivo de respaldo localmente, como si cifraras un disco duro. En el siguiente paso, tendrás la posibilidad de agregar una pista.";
 "connectingWithServer..." = "Conectando con el servidor...";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
-"enter5DigitVerificationCode" = "Introduce el código de 5 dígitos que te enviamos por correo electrónico";
+"enter5DigitVerificationCode" = "Introduce el código de 4 dígitos que te enviamos por correo electrónico";
 "enter5DigitVerificationCodeDescription" = "Este código confirmará que has recibido tu parte del vault por correo electrónico";
 "verifyingCodePleaseWait" = "Verificando código, por favor espera";
 "verifying..." = "Verificando...";

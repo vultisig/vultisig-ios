@@ -501,7 +501,7 @@
 "moreInfoDescription" = "Isso acontece porque a senha criptografa o arquivo de backup localmente, como a criptografia de um disco rígido. Na próxima etapa, você terá a possibilidade de adicionar uma dica.";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um minuto";
-"enter5DigitVerificationCode" = "Digite o código de 5 dígitos que enviamos por e-mail";
+"enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";
 "enter5DigitVerificationCodeDescription" = "Este código confirmará que você recebeu sua parte do cofre por e-mail";
 "verifyingCodePleaseWait" = "Verificando código, aguarde";
 "verifying..." = "Verificando...";

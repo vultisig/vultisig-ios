@@ -500,7 +500,7 @@
 "moreInfoDescription" = "Ovo se događa jer lozinka šifrira sigurnosnu kopiju lokalno, slično enkripciji tvrdog diska. U sljedećem koraku imate mogućnost dodavanja savjeta.";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
-"enter5DigitVerificationCode" = "Unesite 5-znamenkasti kod koji smo vam poslali e-mailom";
+"enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
 "enter5DigitVerificationCodeDescription" = "Ovaj kod potvrđuje da ste primili svoj vault dio putem e-maila";
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
 "verifying..." = "Provjera u tijeku...";
