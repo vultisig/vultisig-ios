@@ -48,7 +48,7 @@ extension ServerBackupVerificationView {
     }
 
     func pasteCode() {
-        if let clipboardContent = UIPasteboard.general.string {
+        if let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength {
             otp = clipboardContent.map { String($0) }
         }
     }

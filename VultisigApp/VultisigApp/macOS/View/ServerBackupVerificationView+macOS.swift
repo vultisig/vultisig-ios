@@ -50,8 +50,9 @@ extension ServerBackupVerificationView {
 
     func pasteCode() {
         let pasteboard = NSPasteboard.general
-        if let clipboardContent = pasteboard.string(forType: .string) {
-            otp = clipboardContent.map { String($0) }
+        if let clipboardContent = pasteboard.string(forType: .string), clipboardContent.count == Self.codeLength {
+            otp = clipboardContent
+                .map { String($0) }
         }
     }
 }

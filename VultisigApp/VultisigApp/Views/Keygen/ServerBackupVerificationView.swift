@@ -18,7 +18,7 @@ struct ServerBackupVerificationView: View {
 
     @FocusState private var focusedField: Int?
 
-    @State var otp: [String] = Array(repeating: "", count: 5)
+    @State var otp: [String] = Array(repeating: "", count: codeLength)
 
     @State var isLoading: Bool = false
     @State var isNavigationActive: Bool = false
@@ -29,6 +29,10 @@ struct ServerBackupVerificationView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
+
+    static var codeLength: Int {
+        return 4
+    }
 
     var verificationCode: String {
         return otp.joined().trimmingCharacters(in: .whitespaces)
@@ -76,7 +80,7 @@ struct ServerBackupVerificationView: View {
     
     var field: some View {
         HStack(spacing: 8) {
-            ForEach(0..<5, id: \.self) { index in
+            ForEach(0 ..< Self.codeLength, id: \.self) { index in
                 TextField("", text: $otp[index])
                     .foregroundColor(.neutral0)
                     .disableAutocorrection(true)
@@ -120,13 +124,13 @@ struct ServerBackupVerificationView: View {
             otp[index] = String(newValue.last!)
         }
 
-        if !newValue.isEmpty && index < 4 {
+        if !newValue.isEmpty && index < Self.codeLength - 1 {
             focusedField = index + 1
         } else if newValue.isEmpty && index > 0 {
             focusedField = index - 1
         }
 
-        if verificationCode.count == 5 {
+        if verificationCode.count == Self.codeLength {
             verifyCode()
         }
     }
