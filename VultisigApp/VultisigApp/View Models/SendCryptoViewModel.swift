@@ -134,15 +134,23 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     let rawBalance = try await sui.getBalance(coin: tx.coin)
                     tx.coin.rawBalance = rawBalance
                     
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
+                    if tx.coin.isNativeToken {
+                        
+                        var gas = BigInt.zero
+                        if percentage == 100 {
+                            gas = tx.coin.feeDefault.toBigInt()
+                        }
+                        
+                        tx.amount = "\(tx.coin.getMaxValue(gas))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                        
+                        convertToFiat(newValue: tx.amount, tx: tx)
+                    } else {
+                        
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
+                        setPercentageAmount(tx: tx, for: percentage)
+                        
                     }
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(gas))"
-                    setPercentageAmount(tx: tx, for: percentage)
-                    
-                    convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }

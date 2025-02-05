@@ -27,31 +27,95 @@ enum SuiHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
         
-        // We expect an array like a JSON
-        // [["objectDigest": "", "objectID": "", "version": ""]]
-        // NOT key value pair object
-        // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
-        let suiCoins = coins.map{
-            var obj = SuiObjectRef()
-            obj.objectID = $0["objectID"] ?? .empty
-            obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
-            obj.objectDigest = $0["objectDigest"] ?? .empty
-            return obj
+        guard !coins.isEmpty else {
+            throw HelperError.runtimeError("No coins available for transaction")
         }
         
-        let input = SuiSigningInput.with {
-            $0.paySui = SuiPaySui.with {
-                $0.inputCoins = suiCoins
-                $0.recipients = [toAddress.description]
-                $0.amounts = [UInt64(keysignPayload.toAmount)]
+        if keysignPayload.coin.isNativeToken {
+            
+            // We expect an array like a JSON
+            // [["objectDigest": "", "objectID": "", "version": ""]]
+            // NOT key value pair object
+            // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
+            let suiCoins = coins.filter{ $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map{
+                var obj = SuiObjectRef()
+                obj.objectID = $0["objectID"] ?? .empty
+                obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
+                obj.objectDigest = $0["objectDigest"] ?? .empty
+                return obj
             }
-            // 0.003 SUI
-            $0.signer = keysignPayload.coin.address
-            $0.gasBudget = 3000000
-            $0.referenceGasPrice = UInt64(referenceGasPrice)
+            
+            guard !suiCoins.isEmpty else {
+                throw HelperError.runtimeError("Native token transaction requires at least one SUI coin")
+            }
+            
+            let input = SuiSigningInput.with {
+                $0.paySui = SuiPaySui.with {
+                    $0.inputCoins = suiCoins
+                    $0.recipients = [toAddress.description]
+                    $0.amounts = [UInt64(keysignPayload.toAmount)]
+                }
+                // 0.003 SUI
+                $0.signer = keysignPayload.coin.address
+                $0.gasBudget = 3000000
+                $0.referenceGasPrice = UInt64(referenceGasPrice)
+            }
+            
+            return try input.serializedData()
+            
+        } else {
+            
+            guard coins.count >= 2 else {
+                throw HelperError.runtimeError("We must have at least one TOKEN and one SUI coin")
+            }
+            
+            // We expect an array like a JSON
+            // [["objectDigest": "", "objectID": "", "version": ""]]
+            // NOT key value pair object
+            // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
+            let suiCoins = coins.filter{ $0["coinType"]?.uppercased().contains(keysignPayload.coin.ticker.uppercased()) == true }.map{
+                var obj = SuiObjectRef()
+                obj.objectID = $0["objectID"] ?? .empty
+                obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
+                obj.objectDigest = $0["objectDigest"] ?? .empty
+                return obj
+            }
+            
+            guard !suiCoins.isEmpty else {
+                throw HelperError.runtimeError("Non-native token transaction requires the token to be present")
+            }
+            
+            let suiObjectForGas = coins.filter{ $0["coinType"]?.uppercased().contains("SUI") == true }.map{
+                var obj = SuiObjectRef()
+                obj.objectID = $0["objectID"] ?? .empty
+                obj.version = UInt64($0["version"] ?? .zero) ?? UInt64.zero
+                obj.objectDigest = $0["objectDigest"] ?? .empty
+                return obj
+            }
+            
+            guard !suiObjectForGas.isEmpty else {
+                throw HelperError.runtimeError("Non-native token transaction requires at least one SUI coin for gas fees")
+            }
+            
+            let input = SuiSigningInput.with {
+                $0.pay = SuiPay.with {
+                    $0.inputCoins = suiCoins
+                    $0.recipients = [toAddress.description]
+                    $0.amounts = [UInt64(keysignPayload.toAmount)]
+                    
+                    if let gasObject = suiObjectForGas.first {
+                        $0.gas = gasObject
+                    }
+                }
+                // 0.003 SUI
+                $0.signer = keysignPayload.coin.address
+                $0.gasBudget = 3000000
+                $0.referenceGasPrice = UInt64(referenceGasPrice)
+            }
+            
+            return try input.serializedData()
         }
         
-        return try input.serializedData()
     }
     
     
