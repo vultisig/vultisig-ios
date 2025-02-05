@@ -1,3 +1,5 @@
+"emailSentTo" = "Inviato a %@";
+"changeEmailAndRestart" = "Cambia email e riavvia il keygen";
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
 "setPasswordHintSubtitle" = "Questa email viene utilizzata solo per inviare il backup del server";
 "vaultExistsError" = "Un caveau con lo stesso nome esiste già.\nSi prega di provare un nome diverso.";

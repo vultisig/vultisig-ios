@@ -12,10 +12,14 @@ import RiveRuntime
 struct ServerBackupVerificationView: View {
     let vault: Vault
     let selectedTab: SetupVaultState?
+    let email: String
+
     @ObservedObject var viewModel: KeygenViewModel
-    
-    @State var verificationCode = ""
-    
+
+    @FocusState private var focusedField: Int?
+
+    @State var otp: [String] = Array(repeating: "", count: codeLength)
+
     @State var isLoading: Bool = false
     @State var isNavigationActive: Bool = false
     
@@ -25,13 +29,27 @@ struct ServerBackupVerificationView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
-    
+
+    static var codeLength: Int {
+        return 4
+    }
+
+    var verificationCode: String {
+        return otp.joined().trimmingCharacters(in: .whitespaces)
+    }
+
     let animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
     
     var body: some View {
         ZStack {
             Background()
             container
+        }
+        .onAppear {
+            focusedField = 0
+        }
+        .safeAreaInset(edge: .bottom) {
+            cancelButton
         }
         .animation(.easeInOut, value: showAlert)
         .navigationDestination(isPresented: $isNavigationActive) {
@@ -60,39 +78,78 @@ struct ServerBackupVerificationView: View {
             .foregroundColor(.extraLightGray)
     }
     
-    var textField: some View {
-        HStack {
-            field
-            pasteButton
-        }
-        .colorScheme(.dark)
-        .padding(.top, 32)
-    }
-    
     var field: some View {
-        TextField(NSLocalizedString("enterCode", comment: "").capitalized, text: $verificationCode)
-            .foregroundColor(.neutral0)
-            .disableAutocorrection(true)
-            .borderlessTextFieldStyle()
-            .font(.body16BrockmannMedium)
-            .frame(height: 56)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(getBorderColor(), lineWidth: 1)
-            )
+        HStack(spacing: 8) {
+            ForEach(0 ..< Self.codeLength, id: \.self) { index in
+                TextField("", text: $otp[index])
+                    .foregroundColor(.neutral0)
+                    .disableAutocorrection(true)
+                    .borderlessTextFieldStyle()
+                    .font(.body16BrockmannMedium)
+                    .frame(width: 46, height: 46)
+                    .background(Color.blue600)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(getBorderColor(index), lineWidth: 1)
+                    )
+                    .focused($focusedField, equals: index)
+                    .onChange(of: otp[index]) { _, newValue in
+                        handleInputChange(newValue, index: index)
+                    }
+            }
+        }
     }
-    
+
+    private var cancelButton: some View {
+        Button {
+            deleteVault()
+        } label: {
+            VStack(spacing: 12) {
+                Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
+                    .font(.body14BrockmannMedium)
+                    .foregroundColor(.extraLightGray)
+
+                Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
+                    .font(.body14BrockmannMedium)
+                    .foregroundColor(.lightText)
+                    .underline()
+            }
+        }
+        .padding(.bottom, 24)
+    }
+
+    private func handleInputChange(_ newValue: String, index: Int) {
+        if newValue.count > 1 {
+            otp[index] = String(newValue.last!)
+        }
+
+        if !newValue.isEmpty && index < Self.codeLength - 1 {
+            focusedField = index + 1
+        } else if newValue.isEmpty && index > 0 {
+            focusedField = index - 1
+        }
+
+        if verificationCode.count == Self.codeLength {
+            verifyCode()
+        }
+    }
+
+    private func getBorderColor(_ index: Int) -> Color {
+        if showAlert {
+            return .alertRed
+        } else {
+            return focusedField == index ? .blue200 : .blue400
+        }
+    }
+
     var pasteButton: some View {
         Button {
             pasteCode()
         } label: {
             Text(NSLocalizedString("paste", comment: ""))
                 .padding(12)
-                .frame(height: 56)
+                .frame(height: 46)
                 .font(.body16BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .background(Color.blue600)
@@ -124,36 +181,6 @@ struct ServerBackupVerificationView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundColor(.alertRed)
             .font(.body14BrockmannMedium)
-    }
-    
-    var buttons: some View {
-        VStack(spacing: 12) {
-            verifyButton
-            cancelButton
-        }
-        .listStyle(PlainListStyle())
-        .buttonStyle(BorderlessButtonStyle())
-    }
-    
-    var verifyButton: some View {
-        Button {
-            verifyCode()
-        } label: {
-            FilledButton(
-                title: isLoading ? "verifying..." : "next",
-                textColor: isLoading ? .textDisabled : .blue600,
-                background: isLoading ? .buttonDisabled : .turquoise600
-            )
-        }
-    }
-    
-    var cancelButton: some View {
-        Button {
-            deleteVault()
-        } label: {
-            OutlineButton(title: "cancel", gradient: LinearGradient.cancelRed)
-        }
-        .padding(.bottom, 30)
     }
     
     private func verifyCode() {
@@ -189,16 +216,8 @@ struct ServerBackupVerificationView: View {
             print("Error: \(error)")
         }
     }
-    
-    func getBorderColor() -> Color {
-        if showAlert {
-            return .alertRed
-        } else {
-            return .blue200
-        }
-    }
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, viewModel: KeygenViewModel())
+    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", viewModel: KeygenViewModel())
 }

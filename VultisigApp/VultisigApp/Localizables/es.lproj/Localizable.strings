@@ -1,3 +1,5 @@
+"emailSentTo" = "Enviado a %@";
+"changeEmailAndRestart" = "Cambiar correo electrónico y reiniciar keygen";
 "setPasswordHintTitle" = "Agrega una pista opcional";
 "setPasswordHintSubtitle" = "Este correo electrónico solo se usa para enviar la copia de seguridad del servidor";
 "vaultExistsError" = "Ya existe una bóveda con el mismo nombre.\nPor favor, intente con un nombre diferente.";

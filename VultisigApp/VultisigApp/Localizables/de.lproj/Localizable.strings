@@ -1,3 +1,5 @@
+"emailSentTo" = "Gesendet an %@";
+"changeEmailAndRestart" = "E-Mail ändern und Keygen neu starten";
 "setPasswordHintTitle" = "Fügen Sie einen optionalen Hinweis hinzu";
 "setPasswordHintSubtitle" = "Diese E-Mail wird nur zum Senden der Server-Sicherung verwendet";
 "vaultExistsError" = "Ein Tresor mit demselben Namen existiert bereits.\nBitte versuchen Sie einen anderen Namen.";

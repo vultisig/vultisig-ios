@@ -35,15 +35,24 @@ extension ServerBackupVerificationView {
             }
             
             Spacer()
-            buttons
         }
         .padding(.horizontal, 40)
     }
-    
+
+    var textField: some View {
+        HStack(spacing: 8) {
+            field
+            pasteButton
+        }
+        .colorScheme(.dark)
+        .padding(.top, 32)
+    }
+
     func pasteCode() {
         let pasteboard = NSPasteboard.general
-        if let clipboardContent = pasteboard.string(forType: .string) {
-            verificationCode = clipboardContent
+        if let clipboardContent = pasteboard.string(forType: .string), clipboardContent.count == Self.codeLength {
+            otp = clipboardContent
+                .map { String($0) }
         }
     }
 }
