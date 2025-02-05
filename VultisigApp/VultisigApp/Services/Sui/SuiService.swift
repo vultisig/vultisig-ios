@@ -78,7 +78,7 @@ class SuiService {
 
                 // Debugging print to verify pool existence
                 if let pool = pool {
-                    print("Pool found: \(pool)")
+                    print("Pool found: \(contractAddress)")
                 } else {
                     print("No pool found for contract address: \(contractAddress)")
                     return 0.0
