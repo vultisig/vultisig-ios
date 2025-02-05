@@ -185,6 +185,7 @@ struct VaultSetupSummaryView: View {
                 background: didAgree ? .turquoise600 : .buttonDisabled
             )
         }
+        .disabled(!didAgree)
     }
     
     private func getCell(icon: String, text: String) -> some View {
