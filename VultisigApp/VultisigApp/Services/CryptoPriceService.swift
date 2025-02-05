@@ -102,6 +102,17 @@ private extension CryptoPriceService {
             try await RateProvider.shared.save(rates: rates)
 
             
+        } else if chain == .sui {
+            
+            var rates: [Rate] = []
+            for contract in contracts {
+                let poolPrice = await SuiService.getTokenUSDValue(contractAddress: contract)
+                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                rates.append(poolRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
+            
         } else {
             
             let currencies = SettingsCurrency.allCases

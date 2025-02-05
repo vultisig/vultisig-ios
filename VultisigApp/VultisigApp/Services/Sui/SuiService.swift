@@ -52,6 +52,64 @@ class SuiService {
         }
     }
     
+    static func getTokenUSDValue(contractAddress: String) async -> Double {
+        do {
+            let urlString: String = Endpoint.suiTokenQuote()
+            let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+
+            if let pools = Utils.extractResultFromJson(fromData: dataResponse, path: "data.pools") as? [[String: Any]] {
+                
+                let usdcAddress = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+
+                // Find a pool where `contractAddress` is in either `coin_a` or `coin_b`
+                let pool = pools.first { pool in
+                    guard
+                        let coinA = pool["coin_a"] as? [String: Any],
+                        let coinAAddress = coinA["address"] as? String,
+                        let coinB = pool["coin_b"] as? [String: Any],
+                        let coinBAddress = coinB["address"] as? String
+                    else {
+                        return false
+                    }
+
+                    return (coinAAddress.uppercased().contains(contractAddress.uppercased()) && coinBAddress.uppercased().contains(usdcAddress.uppercased())) ||
+                           (coinBAddress.uppercased().contains(contractAddress.uppercased()) && coinAAddress.uppercased().contains(usdcAddress.uppercased()))
+                }
+
+                // Debugging print to verify pool existence
+                if let pool = pool {
+                    print("Pool found: \(pool)")
+                } else {
+                    print("No pool found for contract address: \(contractAddress)")
+                    return 0.0
+                }
+
+                // Extract price
+                if let priceString = pool?["price"] as? String, let price = Double(priceString) {
+                    guard
+                        let coinA = pool?["coin_a"] as? [String: Any],
+                        let coinAAddress = coinA["address"] as? String
+                    else {
+                        return 0.0
+                    }
+
+                    // If USDC is `coin_a`, invert the price
+                    if coinAAddress.uppercased().contains(usdcAddress.uppercased()) {
+                        return price > 0 ? 1 / price : 0.0
+                    }
+                    
+                    return price
+                }
+            }
+
+            return 0.0
+
+        } catch {
+            print("Error fetching token price: \(error.localizedDescription)")
+            return 0.0
+        }
+    }
+    
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params:  [])
@@ -160,7 +218,7 @@ class SuiService {
                         logo: tokenData["logo"]!,
                         decimals: Int(tokenData["decimals"] ?? "0")!,
                         priceProviderId: "",
-                        contractAddress: tokenData["objectID"]!,
+                        contractAddress: objType,
                         isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false
                     )
                     
