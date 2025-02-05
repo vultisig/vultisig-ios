@@ -31,14 +31,13 @@ extension ServerBackupVerificationView {
             }
             
             Spacer()
-            buttons
         }
         .padding(.horizontal, 16)
     }
     
     func pasteCode() {
         if let clipboardContent = UIPasteboard.general.string {
-            verificationCode = clipboardContent
+            otp = clipboardContent.map { String($0) }
         }
     }
 }

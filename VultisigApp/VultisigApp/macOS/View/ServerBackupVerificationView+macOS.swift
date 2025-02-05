@@ -35,7 +35,6 @@ extension ServerBackupVerificationView {
             }
             
             Spacer()
-            buttons
         }
         .padding(.horizontal, 40)
     }
@@ -43,7 +42,7 @@ extension ServerBackupVerificationView {
     func pasteCode() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {
-            verificationCode = clipboardContent
+            otp = clipboardContent.map { String($0) }
         }
     }
 }
