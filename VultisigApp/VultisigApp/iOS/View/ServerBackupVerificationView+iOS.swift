@@ -34,7 +34,19 @@ extension ServerBackupVerificationView {
         }
         .padding(.horizontal, 16)
     }
-    
+
+
+    var textField: some View {
+        HStack(spacing: 8) {
+            field
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.center)
+            pasteButton
+        }
+        .colorScheme(.dark)
+        .padding(.top, 32)
+    }
+
     func pasteCode() {
         if let clipboardContent = UIPasteboard.general.string {
             otp = clipboardContent.map { String($0) }

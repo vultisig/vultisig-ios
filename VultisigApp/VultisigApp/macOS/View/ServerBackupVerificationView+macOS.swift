@@ -38,7 +38,16 @@ extension ServerBackupVerificationView {
         }
         .padding(.horizontal, 40)
     }
-    
+
+    var textField: some View {
+        HStack(spacing: 8) {
+            field
+            pasteButton
+        }
+        .colorScheme(.dark)
+        .padding(.top, 32)
+    }
+
     func pasteCode() {
         let pasteboard = NSPasteboard.general
         if let clipboardContent = pasteboard.string(forType: .string) {

@@ -74,15 +74,6 @@ struct ServerBackupVerificationView: View {
             .foregroundColor(.extraLightGray)
     }
     
-    var textField: some View {
-        HStack(spacing: 8) {
-            field
-            pasteButton
-        }
-        .colorScheme(.dark)
-        .padding(.top, 32)
-    }
-    
     var field: some View {
         HStack(spacing: 8) {
             ForEach(0..<5, id: \.self) { index in
@@ -91,8 +82,6 @@ struct ServerBackupVerificationView: View {
                     .disableAutocorrection(true)
                     .borderlessTextFieldStyle()
                     .font(.body16BrockmannMedium)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.center)
                     .frame(width: 46, height: 46)
                     .background(Color.blue600)
                     .cornerRadius(12)
