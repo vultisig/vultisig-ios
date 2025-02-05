@@ -141,6 +141,10 @@ class Endpoint {
         "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
     }
     
+    static func suiTokenQuote() -> String {
+        "https://api-sui.cetus.zone/v2/sui/swap/count"
+    }
+    
     static let rippleServiceRpc = "https://xrplcluster.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"

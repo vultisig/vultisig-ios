@@ -284,7 +284,8 @@ extension BlockChainSpecific {
                     "objectID": coin.coinObjectID,
                     "version": coin.version,
                     "objectDigest": coin.digest,
-                    "balance": coin.balance
+                    "balance": coin.balance,
+                    "coinType": coin.coinType
                 ]
             }
             
@@ -372,6 +373,7 @@ extension BlockChainSpecific {
                 suiCoin.version = coinDict["version"] ?? ""
                 suiCoin.digest = coinDict["objectDigest"] ?? ""
                 suiCoin.balance = coinDict["balance"] ?? ""
+                suiCoin.coinType = coinDict["coinType"] ?? ""
                 return suiCoin
             }
             

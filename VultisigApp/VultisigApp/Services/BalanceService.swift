@@ -35,9 +35,14 @@ class BalanceService {
     private let cryptoPriceService = CryptoPriceService.shared
     
     func updateBalances(vault: Vault) async {
+        
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
-            
+        } catch {
+            print("Fetch Rates error: \(error.localizedDescription)")
+        }
+        
+        do {
             await withTaskGroup(of: Void.self) { group in
                 for coin in vault.coins {
                     group.addTask { [unowned self]  in
@@ -55,13 +60,17 @@ class BalanceService {
             
             try await Storage.shared.save()
         } catch {
-            print("Fetch Rates error: \(error.localizedDescription)")
+            print("Update Balances error: \(error.localizedDescription)")
         }
     }
     
     @MainActor func updateBalance(for coin: Coin) async {
         do {
             try await cryptoPriceService.fetchPrice(coin: coin)
+        } catch {
+            print("Fetch Price error: \(error.localizedDescription)")
+        }
+        do {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
             try await Storage.shared.save()
