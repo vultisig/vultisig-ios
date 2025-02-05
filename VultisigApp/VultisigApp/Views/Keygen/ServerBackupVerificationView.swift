@@ -113,11 +113,11 @@ struct ServerBackupVerificationView: View {
             deleteVault()
         } label: {
             VStack(spacing: 12) {
-                Text("Sent to \(email)")
+                Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
                     .font(.body14BrockmannMedium)
                     .foregroundColor(.extraLightGray)
 
-                Text("Change email and restart keygen")
+                Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
                     .font(.body14BrockmannMedium)
                     .foregroundColor(.lightText)
                     .underline()

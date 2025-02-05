@@ -1,3 +1,5 @@
+"emailSentTo" = "Enviado para %@";
+"changeEmailAndRestart" = "Alterar email e reiniciar o keygen";
 "setPasswordHintTitle" = "Adicione uma dica opcional";
 "setPasswordHintSubtitle" = "Este e-mail é usado apenas para enviar o backup do servidor";
 "vaultExistsError" = "Um cofre com o mesmo nome já existe.\nPor favor, tente um nome diferente.";
