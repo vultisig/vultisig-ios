@@ -76,36 +76,25 @@ class SuiService {
                            (coinBAddress.uppercased().contains(contractAddress.uppercased()) && coinAAddress.uppercased().contains(usdcAddress.uppercased()))
                 }
 
-                // Debugging print to verify pool existence
-                if let pool = pool {
-                    print("Pool found: \(contractAddress)")
-                } else {
-                    print("No pool found for contract address: \(contractAddress)")
+                // If no pool is found, return 0.0
+                guard let pool = pool else {
                     return 0.0
                 }
 
                 // Extract price
-                if let priceString = pool?["price"] as? String, let price = Double(priceString) {
-                    guard
-                        let coinA = pool?["coin_a"] as? [String: Any],
-                        let coinAAddress = coinA["address"] as? String
-                    else {
+                if let priceString = pool["price"] as? String, let price = Double(priceString) {
+                    guard let coinA = pool["coin_a"] as? [String: Any], let coinAAddress = coinA["address"] as? String else {
                         return 0.0
                     }
 
                     // If USDC is `coin_a`, invert the price
-                    if coinAAddress.uppercased().contains(usdcAddress.uppercased()) {
-                        return price > 0 ? 1 / price : 0.0
-                    }
-                    
-                    return price
+                    return coinAAddress.uppercased().contains(usdcAddress.uppercased()) ? (price > 0 ? 1 / price : 0.0) : price
                 }
             }
 
             return 0.0
 
         } catch {
-            print("Error fetching token price: \(error.localizedDescription)")
             return 0.0
         }
     }
