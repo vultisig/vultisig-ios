@@ -18,7 +18,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var customGasLimit: BigInt?
     @Published var customByteFee: BigInt?
     @Published var fee: BigInt = .zero
-    @Published var feeMode: FeeMode = .normal
+    @Published var feeMode: FeeMode = .default
     @Published var sendMaxAmount: Bool = false
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
@@ -191,7 +191,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.estematedGasLimit = nil
         self.customGasLimit = nil
         self.customByteFee = nil
-        self.feeMode = .normal
+        self.feeMode = .default
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address

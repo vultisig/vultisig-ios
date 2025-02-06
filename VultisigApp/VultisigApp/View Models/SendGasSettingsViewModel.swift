@@ -13,7 +13,7 @@ final class SendGasSettingsViewModel: ObservableObject {
     private let coin: Coin
     private let vault: Vault
 
-    @Published var selectedMode: FeeMode = .normal
+    @Published var selectedMode: FeeMode = .default
 
     // EVM
     @Published var gasLimit: String = .empty

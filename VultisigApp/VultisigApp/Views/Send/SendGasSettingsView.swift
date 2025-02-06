@@ -187,6 +187,6 @@ struct SendGasSettingsView: View {
     struct Output: SendGasSettingsOutput {
         func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) { }
     }
-    let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .normal)
+    let viewModel = SendGasSettingsViewModel(coin: .example, vault: .example, gasLimit: "21000", byteFee: "2", baseFee: "6.559000", selectedMode: .default)
     return SendGasSettingsView(viewModel: viewModel, output: Output())
 }
