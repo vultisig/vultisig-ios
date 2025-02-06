@@ -12,6 +12,10 @@ enum FeeMode: CaseIterable, Hashable {
     case normal
     case fast
 
+    static var `default`: FeeMode {
+        return .fast
+    }
+
     var title: String {
         switch self {
         case .safeLow:
