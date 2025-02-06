@@ -511,7 +511,7 @@
 "secure" = "Secure";
 "fast" = "Fast";
 "nameYourVault" = "Name your vault";
-"newWalletNameDescription" = "You can always rename your vault later in settings";
+"newWalletNameDescription" = "You can always rename your vault later in the settings";
 "waitingOnDevices..." = "Waiting on devices...";
 "peerDiscoveryInfoTitle1" = "Scan the ";
 "peerDiscoveryInfoTitle2" = "QR code";
