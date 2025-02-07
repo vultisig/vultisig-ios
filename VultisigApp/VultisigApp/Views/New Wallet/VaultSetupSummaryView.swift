@@ -120,7 +120,7 @@ struct VaultSetupSummaryView: View {
         VStack(spacing: 16) {
             getCell(icon: "envelope", text: "fastVaultSummaryText1")
             getCell(icon: "checkmark.icloud", text: "fastVaultSummaryText2")
-            getCell(icon: "arrow.trianglehead.branch", text: "fastVaultSummaryText3")
+            getCell(icon: "arrow.triangle.branch", text: "fastVaultSummaryText3")
             getCell(icon: "square.3.layers.3d", text: "fastVaultSummaryText4")
                 .background(
                     GeometryReader { geometry in
@@ -139,7 +139,7 @@ struct VaultSetupSummaryView: View {
         return VStack(spacing: 16) {
             getCell(icon: "info.circle", text: secureVaultSummaryText1)
             getCell(icon: "checkmark.icloud", text: "secureVaultSummaryText2")
-            getCell(icon: "arrow.trianglehead.branch", text: "secureVaultSummaryText3")
+            getCell(icon: "arrow.triangle.branch", text: "secureVaultSummaryText3")
             getCell(icon: "square.3.layers.3d", text: "secureVaultSummaryText4")
                 .background(
                     GeometryReader { geometry in
