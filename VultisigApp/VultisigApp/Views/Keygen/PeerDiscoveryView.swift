@@ -93,8 +93,6 @@ struct PeerDiscoveryView: View {
                 }
             case (.WaitingForDevices, true):
                 waitingForDevices
-            case (.Summary, _):
-                summary
             case (.Keygen, _):
                 keygenView
             case (.Failure, _):
@@ -111,14 +109,6 @@ struct PeerDiscoveryView: View {
             views
             bottomButton
         }
-    }
-    
-    var summary: some View {
-        KeyGenSummaryView(
-            state: selectedTab,
-            tssType: tssType,
-            viewModel: viewModel
-        )
     }
     
     var views: some View {

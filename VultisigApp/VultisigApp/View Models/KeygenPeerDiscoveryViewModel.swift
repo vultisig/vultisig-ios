@@ -11,7 +11,6 @@ import Combine
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
-    case Summary
     case Keygen
     case Failure
 }
@@ -194,10 +193,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             localParty: self.localPartyID,
             pubKeyECDSA: vault.pubKeyECDSA
         )
-    }
-    
-    func showSummary() {
-        self.status = .Summary
     }
     
     func startKeygen() {

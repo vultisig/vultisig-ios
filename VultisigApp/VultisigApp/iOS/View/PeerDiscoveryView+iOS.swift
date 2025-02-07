@@ -138,7 +138,7 @@ extension PeerDiscoveryView {
         let isButtonDisabled = disableContinueButton()
         
         return Button(action: {
-            viewModel.showSummary()
+            viewModel.startKeygen()
         }) {
             FilledButton(
                 title: isButtonDisabled ? "waitingOnDevices..." : "next",
