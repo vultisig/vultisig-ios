@@ -9,13 +9,16 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingView: View {
-    @State var tabIndex = 0
+
     @EnvironmentObject var accountViewModel: AccountViewModel
+
+    @State var tabIndex = 0
     
     @State var showOnboarding = false
     @State var showStartupText = false
     @State var startupTextOpacity = true
-    
+    @State var showSummary = false
+
     let animationVM = RiveViewModel(fileName: "Onboarding", animationName: "Screen 1")
     
     let totalTabCount: Int = 6
@@ -40,6 +43,10 @@ struct OnboardingView: View {
         }
         .onDisappear {
             animationVM.stop()
+        }
+        .sheet(isPresented: $showSummary) {
+            OnboardingSummaryView(isPresented: $showSummary)
+                .environmentObject(accountViewModel)
         }
     }
     
@@ -132,21 +139,22 @@ struct OnboardingView: View {
     
     private func nextTapped() {
         guard tabIndex<totalTabCount-1 else {
-            moveToVaultView()
+            showSummary = true
             return
         }
         
         tabIndex+=1
     }
-    
+
     func skipTapped() {
         moveToVaultView()
     }
-    
+
+
     private func moveToVaultView() {
         accountViewModel.showOnboarding = false
     }
-    
+
     private func setupStartupText() {
         showStartupText = true
         
