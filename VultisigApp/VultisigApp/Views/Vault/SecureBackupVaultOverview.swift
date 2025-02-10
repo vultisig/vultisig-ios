@@ -16,8 +16,8 @@ struct SecureBackupVaultOverview: View {
     
     let totalTabCount = 2
     
-    let animationVM = RiveViewModel(fileName: "SecureVaultOverview", autoPlay: true)
-    
+    let animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
+
     var body: some View {
         ZStack {
             Background()
@@ -41,7 +41,7 @@ struct SecureBackupVaultOverview: View {
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
-            animate()
+            animate(index: newValue)
         }
     }
     
@@ -103,9 +103,7 @@ struct SecureBackupVaultOverview: View {
         .frame(width: 80)
     }
     
-    private func nextTapped() {
-        animate()
-        
+    private func nextTapped() {        
         guard tabIndex<totalTabCount-1 else {
             moveToBackupView()
             return
@@ -118,10 +116,8 @@ struct SecureBackupVaultOverview: View {
         isLinkActive = true
     }
     
-    private func animate() {
-        withAnimation {
-            animationVM.triggerInput("Next")
-        }
+    private func animate(index: Int) {
+        animationVM.setInput("index", value: Double(index))
     }
 }
 

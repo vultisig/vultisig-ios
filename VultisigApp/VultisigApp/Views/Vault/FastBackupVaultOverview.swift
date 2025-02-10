@@ -37,7 +37,7 @@ struct FastBackupVaultOverview: View {
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                animationVM = RiveViewModel(fileName: "FastVaultOverview", autoPlay: true)
+                animationVM = RiveViewModel(fileName: "fastvault_overview", autoPlay: true)
             }
         }
     }
@@ -51,7 +51,7 @@ struct FastBackupVaultOverview: View {
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
-            animate()
+            animate(index: newValue)
         }
     }
     
@@ -120,8 +120,6 @@ struct FastBackupVaultOverview: View {
     }
     
     private func nextTapped() {
-        animate()
-        
         guard tabIndex<totalTabCount-1 else {
             moveToBackupView()
             return
@@ -134,10 +132,8 @@ struct FastBackupVaultOverview: View {
         isLinkActive = true
     }
     
-    private func animate() {
-        withAnimation {
-            animationVM?.triggerInput("Next")
-        }
+    private func animate(index: Int) {
+        animationVM?.setInput("Index", value: Double(index))
     }
 }
 
