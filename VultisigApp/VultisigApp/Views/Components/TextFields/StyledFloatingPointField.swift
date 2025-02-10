@@ -73,6 +73,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
         } else {
             isValid = !String(describing: newValue).isEmpty && newValue > 0
         }
+        print("new value: \(newValue)")
         localIsValid = isValid
     }
 }
