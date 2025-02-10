@@ -74,6 +74,7 @@
 		A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */; };
 		A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F72D57CB43000B82E6 /* quick_summary.riv */; };
 		A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */; };
+		A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */; };
 		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */; };
 		A5340A672CEC9503002ADD35 /* DateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5340A662CEC9503002ADD35 /* DateExtension.swift */; };
@@ -617,7 +618,6 @@
 		A6F7B6FC2D4D5BE600AC8104 /* BackupVaultSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6FB2D4D5BE600AC8104 /* BackupVaultSuccessView.swift */; };
 		A6F7B7172D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7162D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift */; };
 		A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7182D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift */; };
-		A6F7B71B2D4ECDE800AC8104 /* SecureVaultOverview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */; };
 		A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */; };
 		A6F7B7212D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */; };
 		A6F7B7392D4EF7BB00AC8104 /* FastBackupVaultOverview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B7382D4EF7BB00AC8104 /* FastBackupVaultOverview.swift */; };
@@ -910,6 +910,7 @@
 		A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSummaryView.swift; sourceTree = "<group>"; };
 		A53065F72D57CB43000B82E6 /* quick_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = quick_summary.riv; sourceTree = "<group>"; };
 		A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_overview.riv; sourceTree = "<group>"; };
+		A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_overview.riv; sourceTree = "<group>"; };
 		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBackupView.swift; sourceTree = "<group>"; };
 		A5340A662CEC9503002ADD35 /* DateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtension.swift; sourceTree = "<group>"; };
@@ -1451,7 +1452,6 @@
 		A6F7B6FB2D4D5BE600AC8104 /* BackupVaultSuccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultSuccessView.swift; sourceTree = "<group>"; };
 		A6F7B7162D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultSuccessView+iOS.swift"; sourceTree = "<group>"; };
 		A6F7B7182D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultSuccessView+macOS.swift"; sourceTree = "<group>"; };
-		A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = SecureVaultOverview.riv; sourceTree = "<group>"; };
 		A6F7B71E2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureBackupVaultOverview+iOS.swift"; sourceTree = "<group>"; };
 		A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SecureBackupVaultOverview+macOS.swift"; sourceTree = "<group>"; };
 		A6F7B7382D4EF7BB00AC8104 /* FastBackupVaultOverview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastBackupVaultOverview.swift; sourceTree = "<group>"; };
@@ -2958,6 +2958,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
@@ -2966,7 +2967,6 @@
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
-				A6F7B71A2D4ECDE800AC8104 /* SecureVaultOverview.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
 				A6F7B7582D4F1B4B00AC8104 /* FastVaultBackupSucces.riv */,
 				A6F7B75A2D4F1B6500AC8104 /* SecureVaultBackupSuccess.riv */,
@@ -3645,7 +3645,6 @@
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
-				A6F7B71B2D4ECDE800AC8104 /* SecureVaultOverview.riv in Resources */,
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
@@ -3659,6 +3658,7 @@
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
+				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

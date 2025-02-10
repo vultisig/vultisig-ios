@@ -51,7 +51,7 @@ struct FastBackupVaultOverview: View {
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
-            animate(index: tabIndex)
+            animate(index: newValue)
         }
     }
     
