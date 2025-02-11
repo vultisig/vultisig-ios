@@ -22,7 +22,7 @@ struct OnboardingSummaryView: View {
             case .fast:
                 return "fastvault_summary"
             case .secure:
-                return "quick_summary"
+                return "securevault_summary"
             }
         }
     }
