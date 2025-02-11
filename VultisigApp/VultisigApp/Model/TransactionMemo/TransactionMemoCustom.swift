@@ -68,7 +68,8 @@ class TransactionMemoCustom: TransactionMemoAddressable, ObservableObject {
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
-                )
+                ),
+                isOptional: true
             )
             StyledTextField(
                 placeholder: "Custom Memo",
