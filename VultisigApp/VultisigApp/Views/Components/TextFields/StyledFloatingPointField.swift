@@ -16,7 +16,13 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     @Binding var isValid: Bool
     var isOptional: Bool = false
     
+    @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
+    
+    // Determine the decimal separator based on the current locale
+    private var decimalSeparator: String {
+        return Locale.current.decimalSeparator ?? "."
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +42,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     }
     
     var textField: some View {
-        TextField(placeholder.capitalized, value: customBinding, format: format)
+        TextField(placeholder.capitalized, text: $textFieldValue)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -44,27 +50,48 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
+            .onChange(of: textFieldValue) { newValue in
+                updateValue(newValue)
+            }
             .onAppear {
+                textFieldValue = formatInitialValue()
                 localIsValid = isValid
-                validate(value)
             }
-    }
-    
-    var customBinding: Binding<Value> {
-        Binding<Value>(
-            get: { value },
-            set: { newValue in
-                value = newValue
-                validate(newValue)
-            }
-        )
-    }
-    
-    var optionalMessage: String {
-        if isOptional {
-            return " (optional)"
         }
-        return ""
+    
+    private func formatInitialValue() -> String {
+        // Convert initial value to string using the current locale
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 8 // Adjust as needed
+        return formatter.string(from: NSNumber(value: Double(value))) ?? ""
+    }
+    
+    private func updateValue(_ newValue: String) {
+        // Replace locale-specific decimal separator with standard decimal point
+        let standardizedValue = newValue.replacingOccurrences(of: decimalSeparator, with: ".")
+        
+        // Remove any characters that are not digits or a single decimal point
+        let filteredValue = standardizedValue
+            .components(separatedBy: CharacterSet(charactersIn: "0123456789.").inverted)
+            .joined()
+        
+        // Ensure only one decimal point
+        let parts = filteredValue.components(separatedBy: ".")
+        let processedValue = parts.count > 2
+            ? parts[0] + "." + parts[1..<parts.count].joined(separator: "")
+            : filteredValue
+        
+        // Update text field and value
+        textFieldValue = processedValue.replacingOccurrences(of: ".", with: decimalSeparator)
+        
+        // Convert to numeric value
+        if let doubleValue = Double(processedValue) {
+            value = Value(doubleValue)
+            validate(value)
+        } else if processedValue.isEmpty || processedValue == decimalSeparator {
+            value = 0
+        }
     }
     
     private func validate(_ newValue: Value) {
@@ -74,5 +101,9 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             isValid = !String(describing: newValue).isEmpty && newValue > 0
         }
         localIsValid = isValid
+    }
+    
+    var optionalMessage: String {
+        return isOptional ? " (optional)" : ""
     }
 }
