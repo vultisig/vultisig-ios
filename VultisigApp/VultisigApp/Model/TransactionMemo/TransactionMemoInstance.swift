@@ -18,8 +18,6 @@ enum TransactionMemoInstance {
     case leave(TransactionMemoLeave)
     case custom(TransactionMemoCustom)
     case vote(TransactionMemoVote)
-    case addPool(TransactionMemoAddPool)
-    case withdrawPool(TransactionMemoWithdrawPool)
     case stake(TransactionMemoStake)
     case unstake(TransactionMemoUnstake)
 
@@ -38,10 +36,6 @@ enum TransactionMemoInstance {
         case .custom(let memo):
             return memo.getView()
         case .vote(let memo):
-            return memo.getView()
-        case .addPool(let memo):
-            return memo.getView()
-        case .withdrawPool(let memo):
             return memo.getView()
         case .stake(let memo):
             return memo.getView()
@@ -66,10 +60,6 @@ enum TransactionMemoInstance {
             return memo.description
         case .vote(let memo):
             return memo.description
-        case .addPool(let memo):
-            return memo.description
-        case .withdrawPool(let memo):
-            return memo.description
         case .stake(let memo):
             return memo.description
         case .unstake(let memo):
@@ -82,20 +72,16 @@ enum TransactionMemoInstance {
         case .bond(let memo):
             return memo.amount
         case .unbond:
-            return 1 / pow(10, 8)
+            return .zero
         case .bondMaya(let memo):
             return memo.amount
         case .unbondMaya:
             return 1 / pow(10, 8)
         case .leave:
-            return 1 / pow(10, 8)
+            return .zero
         case .custom(let memo):
             return memo.amount
         case .vote:
-            return .zero
-        case .addPool(let memo):
-            return memo.amount
-        case .withdrawPool(_):
             return .zero
         case .stake(let memo):
             return memo.amount
@@ -131,10 +117,6 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         case .vote(let memo):
             return memo.toDictionary()
-        case .addPool(let memo):
-            return memo.toDictionary()
-        case .withdrawPool(let memo):
-            return memo.toDictionary()
         case .stake(let memo):
             return memo.toDictionary()
         case .unstake(let memo):
@@ -166,10 +148,6 @@ enum TransactionMemoInstance {
         case .custom(let memo):
             return memo.isTheFormValid
         case .vote(let memo):
-            return memo.isTheFormValid
-        case .addPool(let memo):
-            return memo.isTheFormValid
-        case .withdrawPool(let memo):
             return memo.isTheFormValid
         case .stake(let memo):
             return memo.isTheFormValid

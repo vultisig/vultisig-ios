@@ -101,7 +101,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
-
+            
             StyledIntegerField(
                 placeholder: "Operator's Fee",
                 value: Binding(
@@ -117,7 +117,9 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
             )
             StyledFloatingPointField(placeholder: "Amount", value: Binding(
                 get: { self.amount },
-                set: { self.amount = $0 }
+                set: {
+                    self.amount = $0
+                }
             ), format: .number, isValid: Binding(
                 get: { self.amountValid },
                 set: { self.amountValid = $0 }
