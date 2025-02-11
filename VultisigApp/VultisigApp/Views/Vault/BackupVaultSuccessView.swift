@@ -13,13 +13,25 @@ struct BackupVaultSuccessView: View {
     
     @State var secureAnimationVM: RiveViewModel? = nil
     @State var fastAnimationVM: RiveViewModel? = nil
-    
-    @State var isLinkActive = false
-    
+
+    @State var isHomeViewActive = false
+    @State var isFastSummaryActive = false
+    @State var isSecureSummaryActive = false
+
     var body: some View {
         container
-            .navigationDestination(isPresented: $isLinkActive) {
-                VaultSetupSummaryView(vault: vault)
+            .navigationDestination(isPresented: $isHomeViewActive) {
+                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            }
+            .sheet(isPresented: $isFastSummaryActive) {
+                OnboardingSummaryView(kind: .fast, isPresented: $isFastSummaryActive, onDismiss: {
+                    isHomeViewActive = true
+                })
+            }
+            .sheet(isPresented: $isSecureSummaryActive) {
+                OnboardingSummaryView(kind: .secure, isPresented: $isSecureSummaryActive, onDismiss: {
+                    isHomeViewActive = true
+                })
             }
             .onAppear {
                 setData()

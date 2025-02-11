@@ -88,6 +88,8 @@
 		A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74B2C298060007222EB /* SwapCoinsResolver.swift */; };
 		A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74D2C29808D007222EB /* SwapProvider.swift */; };
 		A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */; };
+		A55C62FB2D5C02CF005DBF68 /* fastvault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */; };
+		A55C62FD2D5C02D6005DBF68 /* securevault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */; };
 		A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563867F2C3A213B008B848E /* ProtoMappableError.swift */; };
 		A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386812C3A2148008B848E /* ProtoCoinResolver.swift */; };
 		A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386832C3A2167008B848E /* ProtoSerializer.swift */; };
@@ -922,6 +924,8 @@
 		A558D74B2C298060007222EB /* SwapCoinsResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinsResolver.swift; sourceTree = "<group>"; };
 		A558D74D2C29808D007222EB /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadFactory.swift; sourceTree = "<group>"; };
+		A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_summary.riv; sourceTree = "<group>"; };
+		A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_summary.riv; sourceTree = "<group>"; };
 		A563867F2C3A213B008B848E /* ProtoMappableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappableError.swift; sourceTree = "<group>"; };
 		A56386812C3A2148008B848E /* ProtoCoinResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoCoinResolver.swift; sourceTree = "<group>"; };
 		A56386832C3A2167008B848E /* ProtoSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoSerializer.swift; sourceTree = "<group>"; };
@@ -2956,10 +2960,12 @@
 			children = (
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */,
+				A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
 				A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */,
+				A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */,
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
@@ -3647,6 +3653,8 @@
 				A6F7B6C42D499FDF00AC8104 /* Onboarding.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
+				A55C62FD2D5C02D6005DBF68 /* securevault_summary.riv in Resources */,
+				A55C62FB2D5C02CF005DBF68 /* fastvault_summary.riv in Resources */,
 				A6F7B75B2D4F1B6500AC8104 /* SecureVaultBackupSuccess.riv in Resources */,
 				A6F7B7592D4F1B4B00AC8104 /* FastVaultBackupSucces.riv in Resources */,
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
