@@ -111,7 +111,11 @@ struct BackupVaultSuccessView: View {
     }
     
     private func nextTapped() {
-        isLinkActive = true
+        if vault.isFastVault {
+            isFastSummaryActive = true
+        } else {
+            isSecureSummaryActive = true
+        }
     }
 }
 
