@@ -48,13 +48,12 @@ struct OnboardingSummaryView: View {
 
             view
         }
-
     }
 
     var view: some View {
         VStack(spacing: 16) {
             Spacer()
-            animationVM.view()
+            animation
             Spacer()
             disclaimer
             button
@@ -70,6 +69,7 @@ struct OnboardingSummaryView: View {
         } label: {
             disclaimerLabel
         }
+        .buttonStyle(.plain)
     }
 
     var disclaimerLabel: some View {
@@ -97,5 +97,6 @@ struct OnboardingSummaryView: View {
             )
         }
         .disabled(!didAgree)
+        .buttonStyle(.plain)
     }
 }

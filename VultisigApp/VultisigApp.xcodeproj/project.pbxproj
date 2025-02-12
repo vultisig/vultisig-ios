@@ -71,6 +71,8 @@
 		A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D042CA59E8200507966 /* ReshareViewModel.swift */; };
 		A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D062CA6216400507966 /* ReshareView+iOS.swift */; };
 		A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D082CA621B500507966 /* ReshareView+macOS.swift */; };
+		A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */; };
+		A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */; };
 		A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */; };
 		A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F72D57CB43000B82E6 /* quick_summary.riv */; };
 		A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */; };
@@ -904,6 +906,8 @@
 		A52B0D042CA59E8200507966 /* ReshareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareViewModel.swift; sourceTree = "<group>"; };
 		A52B0D062CA6216400507966 /* ReshareView+iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReshareView+iOS.swift"; sourceTree = "<group>"; };
 		A52B0D082CA621B500507966 /* ReshareView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareView+macOS.swift"; sourceTree = "<group>"; };
+		A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+iOS.swift"; sourceTree = "<group>"; };
+		A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+macOS.swift"; sourceTree = "<group>"; };
 		A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSummaryView.swift; sourceTree = "<group>"; };
 		A53065F72D57CB43000B82E6 /* quick_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = quick_summary.riv; sourceTree = "<group>"; };
 		A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_overview.riv; sourceTree = "<group>"; };
@@ -2727,6 +2731,8 @@
 			children = (
 				A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */,
 				A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */,
+				A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */,
+				A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */,
 				A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */,
 				A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */,
 				A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */,
@@ -4096,6 +4102,7 @@
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
+				A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */,
 				A6C671012CA276EF00F59B6A /* OnboardingView+iOS.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A594A9EB2C64364600A3D09E /* Rate.swift in Sources */,
@@ -4190,6 +4197,7 @@
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C671352CA3C53800F59B6A /* QRShareSheetImage+macOS.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
+				A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */,
 				B52196422C1296DF0021D27A /* IntExtension.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				A6B662D32D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift in Sources */,
