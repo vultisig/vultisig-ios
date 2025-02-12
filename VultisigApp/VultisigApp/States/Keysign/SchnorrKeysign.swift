@@ -376,7 +376,7 @@ final class SchnorrKeysign {
                 let s = Array(Array(sig[32..<64]).reversed())
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
-                resp.derSignature = createDERSignature(r: r, s: s).toHexString()
+                resp.derSignature = encodeCanonicalDERSignature(r: r, s: s).toHexString()
                 
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)

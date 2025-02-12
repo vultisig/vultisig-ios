@@ -391,7 +391,7 @@ final class DKLSKeysign {
                 resp.r = r.toHexString()
                 resp.s = s.toHexString()
                 resp.recoveryID = String(format:"%02x",sig[64])
-                resp.derSignature = createDERSignature(r: r, s: s).toHexString()
+                resp.derSignature = encodeCanonicalDERSignature(r: r, s: s).toHexString()
                 let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
