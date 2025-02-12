@@ -12,8 +12,9 @@ struct SecureBackupVaultOverview: View {
     let vault: Vault
     
     @State var tabIndex = 0
-    @State var isLinkActive = false
-    
+    @State var isVerificationLinkActive = false
+    @State var isBackupLinkActive = false
+
     let totalTabCount = 2
     
     let animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
@@ -24,8 +25,8 @@ struct SecureBackupVaultOverview: View {
             animation
             container
         }
-        .navigationDestination(isPresented: $isLinkActive) {
-            BackupVaultNowView(vault: vault)
+        .navigationDestination(isPresented: $isBackupLinkActive) {
+            BackupPasswordSetupView(vault: vault, isNewVault: true)
         }
         .onDisappear {
             animationVM.stop()
@@ -113,7 +114,7 @@ struct SecureBackupVaultOverview: View {
     }
     
     private func moveToBackupView() {
-        isLinkActive = true
+        isBackupLinkActive = true
     }
     
     private func animate(index: Int) {
