@@ -113,6 +113,7 @@ struct ServerBackupVerificationView: View {
             }
         }
         .padding(.bottom, 24)
+        .buttonStyle(.plain)
     }
 
     private func handleInputChange(_ newValue: String, index: Int) {
