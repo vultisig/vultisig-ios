@@ -45,8 +45,9 @@ struct OnboardingView: View {
             animationVM.stop()
         }
         .sheet(isPresented: $showSummary) {
-            OnboardingSummaryView(isPresented: $showSummary)
-                .environmentObject(accountViewModel)
+            OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
+                accountViewModel.showOnboarding = false
+            })
         }
     }
     

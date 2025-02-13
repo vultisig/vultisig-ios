@@ -14,6 +14,8 @@ struct ServerBackupVerificationView: View {
     let selectedTab: SetupVaultState?
     let email: String
 
+    @Binding var isPresented: Bool
+
     @ObservedObject var viewModel: KeygenViewModel
 
     @FocusState private var focusedField: Int?
@@ -21,13 +23,11 @@ struct ServerBackupVerificationView: View {
     @State var otp: [String] = Array(repeating: "", count: codeLength)
 
     @State var isLoading: Bool = false
-    @State var isNavigationActive: Bool = false
-    
+    @State var isCancelLinkActive: Bool = false
+
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
-    @State var showHomeView: Bool = false
-    
-    @Environment(\.dismiss) var dismiss
+
     @Environment(\.modelContext) private var modelContext
 
     static var codeLength: Int {
@@ -52,12 +52,8 @@ struct ServerBackupVerificationView: View {
             cancelButton
         }
         .animation(.easeInOut, value: showAlert)
-        .navigationDestination(isPresented: $isNavigationActive) {
-            if showHomeView {
-                HomeView()
-            } else {
-                BackupVaultNowView(vault: vault)
-            }
+        .navigationDestination(isPresented: $isCancelLinkActive) {
+            HomeView()
         }
         .onDisappear {
             animationVM.stop()
@@ -117,6 +113,7 @@ struct ServerBackupVerificationView: View {
             }
         }
         .padding(.bottom, 24)
+        .buttonStyle(.plain)
     }
 
     private func handleInputChange(_ newValue: String, index: Int) {
@@ -194,11 +191,17 @@ struct ServerBackupVerificationView: View {
             alertDescription = "verificationCodeTryAgain"
             isLoading = true
             
-            (isNavigationActive, showAlert) = await FastVaultService.shared.verifyBackupOTP(
+            let isSuccess = await FastVaultService.shared.verifyBackupOTP(
                 ecdsaKey: vault.pubKeyECDSA,
                 OTPCode: verificationCode
             )
-            
+
+            if isSuccess {
+                isPresented = false
+            } else {
+                showAlert = true
+            }
+
             isLoading = false
         }
     }
@@ -210,8 +213,7 @@ struct ServerBackupVerificationView: View {
         do {
             try modelContext.save()
             isLoading = false
-            showHomeView = true
-            isNavigationActive = true
+            isPresented = false
         } catch {
             print("Error: \(error)")
         }
@@ -219,5 +221,5 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", viewModel: KeygenViewModel())
+    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", isPresented: .constant(false), viewModel: KeygenViewModel())
 }

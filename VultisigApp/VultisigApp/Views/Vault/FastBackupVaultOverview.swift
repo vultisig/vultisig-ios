@@ -15,8 +15,9 @@ struct FastBackupVaultOverview: View {
     @ObservedObject var viewModel: KeygenViewModel
     
     @State var tabIndex = 0
-    @State var isLinkActive = false
-    
+    @State var isVerificationLinkActive = false
+    @State var isBackupLinkActive = false
+
     let totalTabCount = 3
     
     @State var animationVM: RiveViewModel? = nil
@@ -27,13 +28,17 @@ struct FastBackupVaultOverview: View {
             animation
             container
         }
-        .navigationDestination(isPresented: $isLinkActive) {
+        .sheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
                 vault: vault,
                 selectedTab: selectedTab,
                 email: email,
+                isPresented: $isVerificationLinkActive,
                 viewModel: viewModel
             )
+        }
+        .navigationDestination(isPresented: $isBackupLinkActive) {
+            BackupPasswordSetupView(vault: vault, isNewVault: true)
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -120,16 +125,19 @@ struct FastBackupVaultOverview: View {
     }
     
     private func nextTapped() {
-        guard tabIndex<totalTabCount-1 else {
-            moveToBackupView()
-            return
+        guard tabIndex < totalTabCount - 1 else {
+            return isBackupLinkActive = true
         }
-        
-        tabIndex+=1
+
+        tabIndex += 1
+
+        guard tabIndex != 2 else {
+            return isVerificationLinkActive = true
+        }
     }
     
     private func moveToBackupView() {
-        isLinkActive = true
+        isVerificationLinkActive = true
     }
     
     private func animate(index: Int) {
