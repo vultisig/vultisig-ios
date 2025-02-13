@@ -12,7 +12,7 @@ extension OnboardingSummaryView {
 
     var animation: some View {
         animationVM.view()
-            .frame(width: 400, height: 400)
+            .frame(width: 700, height: 500)
     }
 }
 
