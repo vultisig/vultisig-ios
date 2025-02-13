@@ -10,13 +10,37 @@ import RiveRuntime
 
 struct OnboardingSummaryView: View {
 
-    let animationVM = RiveViewModel(fileName: "quick_summary")
+    enum Kind {
+        case initial
+        case fast
+        case secure
+
+        var animation: String {
+            switch self {
+            case .initial:
+                return "quick_summary"
+            case .fast:
+                return "fastvault_summary"
+            case .secure:
+                return "securevault_summary"
+            }
+        }
+    }
+
+    let kind: Kind
+    let animationVM: RiveViewModel
+    let onDismiss: (() -> Void)?
 
     @Binding var isPresented: Bool
 
     @State var didAgree: Bool = false
 
-    @EnvironmentObject var accountViewModel: AccountViewModel
+    init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?) {
+        self.kind = kind
+        self.animationVM = RiveViewModel(fileName: kind.animation)
+        self._isPresented = isPresented
+        self.onDismiss = onDismiss
+    }
 
     var body: some View {
         ZStack {
@@ -24,13 +48,12 @@ struct OnboardingSummaryView: View {
 
             view
         }
-
     }
 
     var view: some View {
         VStack(spacing: 16) {
             Spacer()
-            animationVM.view()
+            animation
             Spacer()
             disclaimer
             button
@@ -46,6 +69,7 @@ struct OnboardingSummaryView: View {
         } label: {
             disclaimerLabel
         }
+        .buttonStyle(.plain)
     }
 
     var disclaimerLabel: some View {
@@ -64,7 +88,7 @@ struct OnboardingSummaryView: View {
     var button: some View {
         Button {
             isPresented = false
-            accountViewModel.showOnboarding = false
+            onDismiss?()
         } label: {
             FilledButton(
                 title: "startUsingVault",
@@ -73,9 +97,6 @@ struct OnboardingSummaryView: View {
             )
         }
         .disabled(!didAgree)
-    }
-
-    private func moveToVaultView() {
-        accountViewModel.showOnboarding = false
+        .buttonStyle(.plain)
     }
 }

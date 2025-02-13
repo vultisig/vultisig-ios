@@ -115,30 +115,30 @@ final class FastVaultService {
         )
     }
     
-    func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> (isNavigationActive: Bool, showAlert: Bool) {
+    func verifyBackupOTP(ecdsaKey: String, OTPCode: String) async -> Bool {
         let parameters = "\(ecdsaKey)/\(OTPCode)"
         let urlString = Endpoint.FastVaultBackupVerification + parameters
         
         guard let url = URL(string: urlString) else {
             print("Invalid URL string.")
-            return (isNavigationActive: false, showAlert: true)
+            return false
         }
         
         do {
             let (_, response) = try await URLSession.shared.data(from: url)
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                return (isNavigationActive: false, showAlert: true)
+                return false
             }
             
             if httpResponse.statusCode == 200 {
-                return (isNavigationActive: true, showAlert: false)
+                return true
             } else {
-                return (isNavigationActive: false, showAlert: true)
+                return false
             }
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
-            return (isNavigationActive: false, showAlert: true)
+            return false
         }
     }
 }
