@@ -48,6 +48,7 @@
 		46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
+		A501FD012D5E9FAA00E6BF15 /* backupvault_splash.riv in Resources */ = {isa = PBXBuildFile; fileRef = A501FD002D5E9FAA00E6BF15 /* backupvault_splash.riv */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */; };
 		A50E793A2BFE30210031DB47 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50E79392BFE30210031DB47 /* Storage.swift */; };
@@ -883,6 +884,7 @@
 		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
+		A501FD002D5E9FAA00E6BF15 /* backupvault_splash.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backupvault_splash.riv; sourceTree = "<group>"; };
 		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
 		A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaSwaps.swift; sourceTree = "<group>"; };
 		A50E79392BFE30210031DB47 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
@@ -2964,6 +2966,7 @@
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
 				A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */,
 				A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */,
+				A501FD002D5E9FAA00E6BF15 /* backupvault_splash.riv */,
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
@@ -3634,6 +3637,7 @@
 			files = (
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
+				A501FD012D5E9FAA00E6BF15 /* backupvault_splash.riv in Resources */,
 				A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */,
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,

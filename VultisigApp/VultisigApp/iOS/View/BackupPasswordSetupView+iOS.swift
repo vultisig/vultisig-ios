@@ -27,41 +27,21 @@ extension BackupPasswordSetupView {
     
     var view: some View {
         VStack {
-            passwordField
+            animation.view()
+                .padding(.top, 42)
             Spacer()
-            disclaimer
             buttons
         }
     }
     
     var saveButton: some View {
         Button(action: {
-            handleProxyTap()
+            export()
         }) {
-            FilledButton(title: "save")
+            FilledButton(title: "Back Up Now", icon: "square.and.arrow.down")
         }
         .sheet(isPresented: $showSaveShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
-                }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
-            }
-        }
-    }
-    
-    var skipButton: some View {
-        Button(action: {
-            showSkipShareSheet = true
-        }) {
-            OutlineButton(title: "skipPassword")
-        }
-        .sheet(isPresented: $showSkipShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
                 ShareSheetViewController(activityItems: [fileURL]) { didSave in
                     if didSave {
                         fileSaved()
