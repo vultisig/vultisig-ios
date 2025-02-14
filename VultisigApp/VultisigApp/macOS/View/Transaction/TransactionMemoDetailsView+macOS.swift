@@ -24,5 +24,16 @@ extension TransactionMemoDetailsView {
         }
         .padding(.horizontal, 25)
     }
+    
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                contractSelector
+                functionSelector
+                txMemoInstance.view
+            }
+            .padding(.horizontal, 16)
+        }
+    }
 }
 #endif
