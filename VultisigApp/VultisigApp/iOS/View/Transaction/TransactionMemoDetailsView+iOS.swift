@@ -33,5 +33,17 @@ extension TransactionMemoDetailsView {
             button
         }
     }
+    
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                contractSelector
+                functionSelector
+                txMemoInstance.view
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, keyboardObserver.keyboardHeight)
+        }
+    }
 }
 #endif
