@@ -9,7 +9,6 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingSummaryView: View {
-
     enum Kind {
         case initial
         case fast
@@ -28,6 +27,7 @@ struct OnboardingSummaryView: View {
     }
 
     let kind: Kind
+    let vault: Vault?
     let onDismiss: (() -> Void)?
 
     @Binding var isPresented: Bool
@@ -35,16 +35,16 @@ struct OnboardingSummaryView: View {
     @State var didAgree: Bool = false
     @State var animationVM: RiveViewModel? = nil
 
-    init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?) {
+    init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?, vault: Vault? = nil) {
         self.kind = kind
         self._isPresented = isPresented
         self.onDismiss = onDismiss
+        self.vault = vault
     }
 
     var body: some View {
         ZStack {
             Background()
-
             view
         }
     }

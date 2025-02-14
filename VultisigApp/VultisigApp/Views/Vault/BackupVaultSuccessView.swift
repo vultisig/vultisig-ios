@@ -26,12 +26,12 @@ struct BackupVaultSuccessView: View {
             .sheet(isPresented: $isFastSummaryActive) {
                 OnboardingSummaryView(kind: .fast, isPresented: $isFastSummaryActive, onDismiss: {
                     isHomeViewActive = true
-                })
+                }, vault: vault)
             }
             .sheet(isPresented: $isSecureSummaryActive) {
                 OnboardingSummaryView(kind: .secure, isPresented: $isSecureSummaryActive, onDismiss: {
                     isHomeViewActive = true
-                })
+                }, vault: vault)
             }
             .onAppear {
                 setData()
