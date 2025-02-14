@@ -10,6 +10,8 @@ struct TransactionMemoDetailsView: View {
     @State private var selectedContractMemoType: TransactionMemoContractType
     @State private var txMemoInstance: TransactionMemoInstance
     @State private var showInvalidFormAlert = false
+    
+    @StateObject var keyboardObserver = KeyboardObserver()
 
     init(
         tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
@@ -114,6 +116,7 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance.view
             }
             .padding(.horizontal, 16)
+            .padding(.bottom, keyboardObserver.keyboardHeight)
         }
     }
 
