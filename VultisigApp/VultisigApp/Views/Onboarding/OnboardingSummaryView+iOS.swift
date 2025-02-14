@@ -11,7 +11,7 @@ import SwiftUI
 extension OnboardingSummaryView {
 
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
 }
 

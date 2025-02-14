@@ -28,16 +28,15 @@ struct OnboardingSummaryView: View {
     }
 
     let kind: Kind
-    let animationVM: RiveViewModel
     let onDismiss: (() -> Void)?
 
     @Binding var isPresented: Bool
 
     @State var didAgree: Bool = false
+    @State var animationVM: RiveViewModel? = nil
 
     init(kind: Kind, isPresented: Binding<Bool>, onDismiss: (() -> Void)?) {
         self.kind = kind
-        self.animationVM = RiveViewModel(fileName: kind.animation)
         self._isPresented = isPresented
         self.onDismiss = onDismiss
     }
@@ -59,6 +58,9 @@ struct OnboardingSummaryView: View {
             button
         }
         .padding(24)
+        .onAppear {
+            setData()
+        }
     }
 
     var disclaimer: some View {
@@ -98,5 +100,9 @@ struct OnboardingSummaryView: View {
         }
         .disabled(!didAgree)
         .buttonStyle(.plain)
+    }
+    
+    private func setData() {
+        animationVM = RiveViewModel(fileName: kind.animation)
     }
 }
