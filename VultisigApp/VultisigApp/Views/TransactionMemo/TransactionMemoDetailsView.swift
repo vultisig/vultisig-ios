@@ -8,8 +8,9 @@ struct TransactionMemoDetailsView: View {
 
     @State private var selectedFunctionMemoType: TransactionMemoType
     @State private var selectedContractMemoType: TransactionMemoContractType
-    @State private var txMemoInstance: TransactionMemoInstance
     @State private var showInvalidFormAlert = false
+    
+    @State var txMemoInstance: TransactionMemoInstance
     
     @StateObject var keyboardObserver = KeyboardObserver()
 
@@ -106,18 +107,6 @@ struct TransactionMemoDetailsView: View {
             ),
             dismissButton: .default(Text("OK"))
         )
-    }
-
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                contractSelector
-                functionSelector
-                txMemoInstance.view
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, keyboardObserver.keyboardHeight)
-        }
     }
 
     var functionSelector: some View {
