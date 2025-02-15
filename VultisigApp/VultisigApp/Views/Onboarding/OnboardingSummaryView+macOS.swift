@@ -11,8 +11,14 @@ import SwiftUI
 extension OnboardingSummaryView {
 
     var animation: some View {
-        animationVM?.view()
-            .frame(width: 700, height: 500)
+        ZStack {
+            if kind == .secure {
+                SecureBackupGuideAnimation(vault: vault)
+            } else {
+                animationVM?.view()
+            }
+        }
+        .frame(width: 700, height: 500)
     }
 }
 
