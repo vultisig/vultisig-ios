@@ -19,7 +19,7 @@ struct BackupNowDisclaimer: View {
     
     var navigationCell: some View {
         NavigationLink {
-            BackupPasswordSetupView(vault: vault)
+            BackupSetupView(vault: vault)
         } label: {
             content
         }

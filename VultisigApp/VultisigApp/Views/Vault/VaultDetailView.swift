@@ -77,7 +77,7 @@ struct VaultDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupPasswordSetupView(vault: vault)
+            BackupSetupView(vault: vault)
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
