@@ -29,7 +29,7 @@ extension BackupSetupView {
     
     var view: some View {
         VStack {
-            animation.view()
+            animation?.view()
             labels
             Spacer().frame(height: 100)
             buttons

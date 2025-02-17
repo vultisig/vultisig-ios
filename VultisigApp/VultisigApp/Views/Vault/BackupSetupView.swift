@@ -17,7 +17,7 @@ struct BackupSetupView: View {
     @State var showSkipShareSheet = false
     @State var showSaveShareSheet = false
 
-    let animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
+    @State var animation: RiveViewModel?
 
     @Environment(\.dismiss) var dismiss
     
@@ -25,6 +25,9 @@ struct BackupSetupView: View {
         mainContent
             .navigationDestination(isPresented: $navigationLinkActive) {
                 BackupPasswordSetupView(vault: vault, isNewVault: isNewVault)
+            }
+            .onAppear {
+                animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
             }
     }
     
