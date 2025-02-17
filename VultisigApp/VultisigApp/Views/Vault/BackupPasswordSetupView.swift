@@ -13,6 +13,7 @@ struct BackupPasswordSetupView: View {
     
     @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
+    @State var homeLinkActive = false
     @State var alreadyShowingPopup = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
@@ -144,7 +145,7 @@ struct BackupPasswordSetupView: View {
         if isNewVault {
             navigationLinkActive = true
         } else {
-            dismiss()
+            homeLinkActive = true
         }
     }
 }

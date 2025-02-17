@@ -24,6 +24,9 @@ extension BackupPasswordSetupView {
         .navigationDestination(isPresented: $navigationLinkActive) {
             BackupVaultSuccessView(vault: vault)
         }
+        .navigationDestination(isPresented: $homeLinkActive) {
+            HomeView(selectedVault: vault)
+        }
     }
     
     var headerMac: some View {

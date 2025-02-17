@@ -1,3 +1,7 @@
+"backupNow" = "Effettua il backup ora";
+"backupSetupTitle" = "Effettua il backup del tuo vault\ncondividi online";
+"backupSetupSubtitle" = "L'archiviazione online è consigliata ed è sicura –\nle condivisioni del vault sono state create per questo.";
+"learnMore" = "Scopri di più";
 "emailSentTo" = "Inviato a %@";
 "changeEmailAndRestart" = "Cambia email e riavvia il keygen";
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";

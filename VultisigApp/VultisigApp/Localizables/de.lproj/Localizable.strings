@@ -1,3 +1,7 @@
+"backupNow" = "Jetzt sichern";
+"backupSetupTitle" = "Sichere deinen Tresor\nteile ihn online";
+"backupSetupSubtitle" = "Online-Speicher wird empfohlen und ist sicher –\nTresorfreigaben sind dafür konzipiert.";
+"learnMore" = "Mehr erfahren";
 "emailSentTo" = "Gesendet an %@";
 "changeEmailAndRestart" = "E-Mail ändern und Keygen neu starten";
 "setPasswordHintTitle" = "Fügen Sie einen optionalen Hinweis hinzu";

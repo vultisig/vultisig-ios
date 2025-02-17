@@ -38,7 +38,7 @@ struct FastBackupVaultOverview: View {
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupPasswordSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(vault: vault, isNewVault: true)
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
