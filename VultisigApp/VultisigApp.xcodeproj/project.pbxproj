@@ -127,6 +127,10 @@
 		A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */; };
 		A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */; };
 		A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* EtherfaceService.swift */; };
+		A5AB69C32D63E07D00E54DEB /* BackupSetupView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */; };
+		A5AB69C42D63E07D00E54DEB /* BackupSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */; };
+		A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */; };
+		A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */ = {isa = PBXBuildFile; fileRef = A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -962,6 +966,10 @@
 		A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+iOS.swift"; sourceTree = "<group>"; };
 		A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+MacOS.swift"; sourceTree = "<group>"; };
 		A598FD792CE2098800F26516 /* EtherfaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherfaceService.swift; sourceTree = "<group>"; };
+		A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSetupView.swift; sourceTree = "<group>"; };
+		A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+iOS.swift"; sourceTree = "<group>"; };
+		A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+macOS.swift"; sourceTree = "<group>"; };
+		A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backupvault_splash.riv; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -2959,6 +2967,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */,
 				A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */,
@@ -3272,6 +3281,9 @@
 				A6F7B6F92D4D515100AC8104 /* SecureBackupVaultOverview.swift */,
 				A6F7B6FB2D4D5BE600AC8104 /* BackupVaultSuccessView.swift */,
 				A6F7B7382D4EF7BB00AC8104 /* FastBackupVaultOverview.swift */,
+				A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */,
+				A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */,
+				A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -3637,6 +3649,7 @@
 			files = (
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
+				A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */,
 				A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */,
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
@@ -4273,6 +4286,9 @@
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
+				A5AB69C32D63E07D00E54DEB /* BackupSetupView+macOS.swift in Sources */,
+				A5AB69C42D63E07D00E54DEB /* BackupSetupView.swift in Sources */,
+				A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,

@@ -26,7 +26,7 @@ struct SecureBackupVaultOverview: View {
             container
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupPasswordSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(vault: vault, isNewVault: true)
         }
         .onDisappear {
             animationVM.stop()
