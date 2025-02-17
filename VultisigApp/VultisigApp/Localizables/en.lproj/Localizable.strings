@@ -1,3 +1,7 @@
+"backupNow" = "Back Up Now";
+"backupSetupTitle" = "Back up your vault\nshare online";
+"backupSetupSubtitle" = "Online storage is recommended and safe -\nvault shares are designed for this.";
+"learnMore" = "Learn more";
 "emailSentTo" = "Sent to %@";
 "changeEmailAndRestart" = "Change email and restart keygen";
 "setPasswordHintTitle" = "Add a optional hint";

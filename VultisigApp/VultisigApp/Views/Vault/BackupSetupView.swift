@@ -42,27 +42,27 @@ struct BackupSetupView: View {
         Button(action: {
             navigationLinkActive = true
         }) {
-            FilledButton(title: "Back Up Now", icon: "square.and.arrow.down")
+            FilledButton(title: "backupNow", icon: "square.and.arrow.down")
         }
     }
 
     var labels: some View {
         VStack(spacing: 0) {
-            Text("Back up your vault\nshare online")
+            Text(NSLocalizedString("backupSetupTitle", comment: ""))
                 .font(.body34BrockmannMedium)
                 .foregroundColor(Color.neutral0)
                 .padding(.bottom, 16)
                 .multilineTextAlignment(.center)
 
-            Text("Online storage is recommended and safe -\nvault shares are designed for this.")
+            Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
                 .font(.body14BrockmannMedium)
                 .foregroundColor(Color.extraLightGray)
                 .multilineTextAlignment(.center)
 
             Button {
-
+                // TODO: Learn more link
             } label: {
-                Text("Learn more")
+                Text(NSLocalizedString("learnMore", comment: ""))
                     .font(.body14BrockmannMedium)
                     .foregroundColor(Color.lightText)
                     .underline()

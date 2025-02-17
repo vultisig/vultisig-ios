@@ -1,3 +1,7 @@
+"backupNow" = "Napravite sigurnosnu kopiju sada";
+"backupSetupTitle" = "Napravite sigurnosnu kopiju svog trezora\npodijelite ga online";
+"backupSetupSubtitle" = "Online pohrana je preporučena i sigurna –\ndijelovi trezora su dizajnirani za to.";
+"learnMore" = "Saznaj više";
 "emailSentTo" = "Poslano na %@";
 "changeEmailAndRestart" = "Promijeni email i ponovno pokreni keygen";
 "setPasswordHintTitle" = "Dodajte opcionalni savjet";
