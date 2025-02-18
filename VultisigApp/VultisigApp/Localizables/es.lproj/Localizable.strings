@@ -473,8 +473,6 @@
 "seedPhrases" = "las frases semilla";
 "ultimateSecurity" = "Máxima Seguridad";
 "fastSetUp" = "Configuración Rápida";
-"secureVaultSecureTextDescription" = "Control total, solo tus dispositivos\nMúltiples dispositivos para firmar transacciones\nÚsalo como cofre frío";
-"fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda pequeños fondos para acciones rápidas\nEl cofre depende del tiempo de actividad del servidor";
 "chooseSetUp" = "Elige Configuración";
 "secure" = "Seguro";
 "fast" = "Rápido";
@@ -534,3 +532,5 @@
 "FastVaultOverview3Text4" = "en línea.";
 "secureVaultSummaryDiscalimer" = "He leído y entendido qué hacer.";
 "startUsingVault" = "Empezar a usar la bóveda";
+"secureVaultSecureTextDescription" = "Máxima seguridad con múltiples dispositivos\nSiempre accesible con copias de seguridad de dispositivos\nProtege cualquier cantidad de activos";
+"fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para uso diario\nVultiserver firma instantáneamente";
