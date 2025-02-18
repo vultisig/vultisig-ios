@@ -93,6 +93,7 @@ extension PeerDiscoveryView {
             
             ScrollView {
                 LazyVGrid(columns: phoneColumns, spacing: 18) {
+                    ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                     devices
                     EmptyPeerCell(counter: participantDiscovery.peersFound.count)
                 }

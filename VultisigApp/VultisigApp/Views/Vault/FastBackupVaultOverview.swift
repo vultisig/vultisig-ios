@@ -95,6 +95,7 @@ struct FastBackupVaultOverview: View {
                 Spacer()
             }
         }
+        .offset(y: -100)
     }
     
     var text: some View {
