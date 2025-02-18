@@ -472,7 +472,6 @@
 "sayGoodbyeTo" = "Di adiós a ";
 "seedPhrases" = "las frases semilla";
 "ultimateSecurity" = "Máxima Seguridad";
-"fastSetUp" = "Configuración Rápida";
 "chooseSetUp" = "Elige Configuración";
 "secure" = "Seguro";
 "fast" = "Rápido";
@@ -534,3 +533,4 @@
 "startUsingVault" = "Empezar a usar la bóveda";
 "secureVaultSecureTextDescription" = "Máxima seguridad con múltiples dispositivos\nSiempre accesible con copias de seguridad de dispositivos\nProtege cualquier cantidad de activos";
 "fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para uso diario\nVultiserver firma instantáneamente";
+"fastSetUp" = "Configuración rápida con 1 dispositivo";

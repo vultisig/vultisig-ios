@@ -472,7 +472,6 @@
 "sayGoodbyeTo" = "Zbogom ";
 "seedPhrases" = "seed frazama";
 "ultimateSecurity" = "Krajnja Sigurnost";
-"fastSetUp" = "Brza Postavka";
 "chooseSetUp" = "Odaberite Postavku";
 "secure" = "Sigurno";
 "fast" = "Brzo";
@@ -534,3 +533,4 @@
 "startUsingVault" = "Počnite koristiti trezor";
 "secureVaultSecureTextDescription" = "Maksimalna sigurnost s više uređaja\nUvijek dostupan uz sigurnosne kopije uređaja\nOsiguraj bilo koji iznos imovine";
 "fastVaultSecureTextDescription" = "Potreban je samo 1 uređaj\nPohrani manje iznose za svakodnevnu upotrebu\nVultiserver odmah supotpisuje";
+"fastSetUp" = "Brza postavka s 1 uređajem";

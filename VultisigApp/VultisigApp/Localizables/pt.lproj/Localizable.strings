@@ -473,7 +473,6 @@
 "sayGoodbyeTo" = "Diga adeus às ";
 "seedPhrases" = "frases-semente";
 "ultimateSecurity" = "Segurança Máxima";
-"fastSetUp" = "Configuração Rápida";
 "chooseSetUp" = "Escolha a Configuração";
 "secure" = "Seguro";
 "fast" = "Rápido";
@@ -535,3 +534,4 @@
 "startUsingVault" = "Começar a usar o cofre";
 "secureVaultSecureTextDescription" = "Máxima segurança com vários dispositivos\nSempre acessível com backups de dispositivos\nProteja qualquer quantia de ativos";
 "fastVaultSecureTextDescription" = "Apenas 1 dispositivo necessário\nArmazene pequenos fundos para uso diário\nVultiserver assina instantaneamente";
+"fastSetUp" = "Configuração rápida com 1 dispositivo";

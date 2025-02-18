@@ -472,7 +472,6 @@
 "sayGoodbyeTo" = "Dì addio a ";
 "seedPhrases" = "frasi di recupero";
 "ultimateSecurity" = "Massima Sicurezza";
-"fastSetUp" = "Configurazione Veloce";
 "chooseSetUp" = "Scegli Configurazione";
 "secure" = "Sicuro";
 "fast" = "Veloce";
@@ -534,3 +533,4 @@
 "startUsingVault" = "Inizia a usare il vault";
 "secureVaultSecureTextDescription" = "Massima sicurezza con più dispositivi\nSempre accessibile con backup del dispositivo\nProteggi qualsiasi importo di asset";
 "fastVaultSecureTextDescription" = "Solo 1 dispositivo necessario\nConserva piccoli fondi per l'uso quotidiano\nVultiserver firma istantaneamente";
+"fastSetUp" = "Configurazione rapida con 1 dispositivo";

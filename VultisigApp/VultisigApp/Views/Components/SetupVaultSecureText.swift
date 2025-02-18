@@ -25,8 +25,19 @@ struct SetupVaultSecureText: View {
     }
     
     var header: some View {
+        ZStack {
+            if selectedTab == .fast {
+                headerText
+                    .foregroundStyle(LinearGradient.primaryGradient)
+            } else {
+                headerText
+                    .foregroundColor(.alertTurquoise)
+            }
+        }
+    }
+    
+    var headerText: some View {
         Text(selectedTab.secureTextTitle)
-            .foregroundColor(selectedTab == .fast ? .warningYellow : .alertTurquoise)
             .font(.body18BrockmannMedium)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)

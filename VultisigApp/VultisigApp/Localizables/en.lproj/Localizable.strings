@@ -508,7 +508,6 @@
 "sayGoodbyeTo" = "Say goodbye to ";
 "seedPhrases" = "seed phrases";
 "ultimateSecurity" = "Ultimate Security";
-"fastSetUp" = "Fast set-up";
 "chooseSetUp" = "Choose Set-up";
 "secure" = "Secure";
 "fast" = "Fast";
@@ -579,3 +578,4 @@
 "startUsingVault" = "Start using vault";
 "secureVaultSecureTextDescription" = "Maximum security with multiple devices\nAlways accessible with device backups\nSecure any amount of assets";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore smaller funds for daily use\nVultiserver co-signs instantly";
+"fastSetUp" = "Quick, 1 device setup";
