@@ -25,8 +25,19 @@ struct SetupVaultSecureText: View {
     }
     
     var header: some View {
+        ZStack {
+            if selectedTab == .fast {
+                headerText
+                    .foregroundStyle(LinearGradient.primaryGradient)
+            } else {
+                headerText
+                    .foregroundColor(.alertTurquoise)
+            }
+        }
+    }
+    
+    var headerText: some View {
         Text(selectedTab.secureTextTitle)
-            .foregroundColor(selectedTab == .fast ? .warningYellow : .alertTurquoise)
             .font(.body18BrockmannMedium)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
@@ -45,8 +56,8 @@ struct SetupVaultSecureText: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(0..<3) { index in
-                    Image(systemName: getImage(for: index))
-                        .foregroundColor(getTint(for: index))
+                    Image(systemName: "checkmark")
+                        .foregroundColor(Color.turquoise400)
                         .frame(width: 16, height: 16)
                 }
             }
@@ -61,30 +72,6 @@ struct SetupVaultSecureText: View {
         .font(.body14BrockmannMedium)
         .padding(24)
         .background(Color.blue600)
-    }
-    
-    private func getImage(for index: Int) -> String {
-        guard selectedTab == .fast else {
-            return "checkmark"
-        }
-        
-        if index == 2 {
-            return "minus"
-        } else {
-            return "checkmark"
-        }
-    }
-    
-    private func getTint(for index: Int) -> Color {
-        guard selectedTab == .fast else {
-            return Color.turquoise400
-        }
-        
-        if index == 2 {
-            return Color.warningYellow
-        } else {
-            return Color.turquoise400
-        }
     }
 }
 

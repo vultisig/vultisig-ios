@@ -489,9 +489,6 @@
 "sayGoodbyeTo" = "Sagen Sie Auf Wiedersehen zu ";
 "seedPhrases" = "Seed-Phrasen";
 "ultimateSecurity" = "Ultimative Sicherheit";
-"fastSetUp" = "Schnelle Einrichtung";
-"secureVaultSecureTextDescription" = "Volle Kontrolle, nur Ihre Geräte\nMehrere Geräte für Transaktionssignaturen\nVerwendbar als kalter Tresor";
-"fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nKleine Beträge für schnelle Aktionen speichern\nTresor hängt von der Serververfügbarkeit ab";
 "chooseSetUp" = "Einrichtung wählen";
 "secure" = "Sicher";
 "fast" = "Schnell";
@@ -551,3 +548,6 @@
 "FastVaultOverview3Text4" = "online.";
 "secureVaultSummaryDiscalimer" = "Ich habe gelesen und verstanden, was zu tun ist.";
 "startUsingVault" = "Vault verwenden";
+"secureVaultSecureTextDescription" = "Maximale Sicherheit mit mehreren Geräten\nImmer zugänglich mit Geräte-Backups\nSichere beliebige Vermögenswerte";
+"fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nSpeichere kleinere Beträge für den täglichen Gebrauch\nVultiserver unterschreibt sofort";
+"fastSetUp" = "Schnelle Einrichtung mit 1 Gerät";

@@ -80,10 +80,14 @@ struct SetupVaultSwithControl: View {
     
     var fastButtonLabel: some View {
         HStack(spacing: 8) {
-            Image(systemName: "bolt")
-                .font(.body20Menlo)
-                .foregroundColor(selectedTab == .secure ? .neutral0 : .warningYellow)
-                
+            if selectedTab == .secure {
+                boltImage
+                    .foregroundColor(.neutral0)
+            } else {
+                boltImage
+                    .foregroundStyle(LinearGradient.primaryGradient)
+            }
+            
             Text(NSLocalizedString("fast", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
@@ -91,6 +95,11 @@ struct SetupVaultSwithControl: View {
         .frame(height: 44)
         .frame(maxWidth: .infinity)
         .cornerRadius(100)
+    }
+    
+    var boltImage: some View {
+        Image(systemName: "bolt")
+            .font(.body20Menlo)
     }
 }
 

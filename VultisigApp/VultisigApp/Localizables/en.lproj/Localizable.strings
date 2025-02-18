@@ -508,9 +508,6 @@
 "sayGoodbyeTo" = "Say goodbye to ";
 "seedPhrases" = "seed phrases";
 "ultimateSecurity" = "Ultimate Security";
-"fastSetUp" = "Fast set-up";
-"secureVaultSecureTextDescription" = "Full control, only your devices\nMultiple devices to sign transactions\nUse as cold vault";
-"fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVault relies on server uptime";
 "chooseSetUp" = "Choose Set-up";
 "secure" = "Secure";
 "fast" = "Fast";
@@ -579,3 +576,6 @@
 "secureVaultSummaryText4" = "All vault shares ensure secure access to your funds";
 "secureVaultSummaryDiscalimer" = "I have read and understand what to do";
 "startUsingVault" = "Start using vault";
+"secureVaultSecureTextDescription" = "Maximum security with multiple devices\nAlways accessible with device backups\nSecure any amount of assets";
+"fastVaultSecureTextDescription" = "Only 1 device needed\nStore smaller funds for daily use\nVultiserver co-signs instantly";
+"fastSetUp" = "Quick, 1 device setup";
