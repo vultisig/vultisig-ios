@@ -75,6 +75,7 @@ struct SecureBackupVaultOverview: View {
     
     var animation: some View {
         animationVM.view()
+            .offset(y: -80)
     }
     
     var text: some View {

@@ -464,6 +464,7 @@
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
 		A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */; };
 		A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */; };
+		A6C344982D642AD20072B528 /* ThisDevicePeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */; };
 		A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */; };
 		A6C3ABCA2C3E5A8700F13ED0 /* NavigationAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */; };
 		A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */; };
@@ -1305,6 +1306,7 @@
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionCell.swift; sourceTree = "<group>"; };
 		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
+		A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThisDevicePeerCell.swift; sourceTree = "<group>"; };
 		A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookView.swift; sourceTree = "<group>"; };
 		A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationAddButton.swift; sourceTree = "<group>"; };
 		A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -3031,6 +3033,7 @@
 				A6ACAD5A2D0A613A00432CC4 /* CoinPickerCell.swift */,
 				A6ACAD642D110B6000432CC4 /* SettingToggleCell.swift */,
 				A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */,
+				A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -4313,6 +4316,7 @@
 				A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
+				A6C344982D642AD20072B528 /* ThisDevicePeerCell.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6C6710B2CA27D1400F59B6A /* OnboardingView2+macOS.swift in Sources */,

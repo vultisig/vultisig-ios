@@ -22,7 +22,7 @@ extension FastBackupVaultOverview {
     var button: some View {
         nextButton
             .padding(.horizontal, 40)
-            .padding(.bottom, 30)
+            .padding(.bottom, 100)
     }
 }
 #endif
