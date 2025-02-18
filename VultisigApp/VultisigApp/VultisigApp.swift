@@ -27,7 +27,12 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            content
+            FastBackupVaultOverview(
+                vault: Vault.example,
+                selectedTab: .secure,
+                email: "mail@email.com",
+                viewModel: KeygenViewModel()
+            )
         }
         .modelContainer(sharedModelContainer)
         
