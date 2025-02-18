@@ -81,6 +81,7 @@ extension PeerDiscoveryView {
     var scrollList: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 18) {
+                ThisDevicePeerCell(deviceName: "Mac")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
@@ -92,6 +93,7 @@ extension PeerDiscoveryView {
     var gridList: some View {
         ScrollView {
             LazyVGrid(columns: adaptiveColumns, spacing: 8) {
+                ThisDevicePeerCell(deviceName: "Mac")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
