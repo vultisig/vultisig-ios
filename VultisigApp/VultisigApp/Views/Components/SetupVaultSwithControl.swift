@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SetupVaultSwithControl: View {
-    @Binding var animationVM: RiveViewModel?
+    let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
     
     @State var width: CGFloat = .zero
@@ -115,7 +115,7 @@ struct SetupVaultSwithControl: View {
 
 #Preview {
     SetupVaultSwithControl(
-        animationVM: .constant(RiveViewModel(fileName: "ChooseVault")),
+        animationVM: RiveViewModel(fileName: "ChooseVault"),
         selectedTab: .constant(.secure)
     )
 }

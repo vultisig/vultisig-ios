@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct SetupVaultAnimationManager: View {
     let animationVM: RiveViewModel?
-    @Binding var selectedTab: SetupVaultState
+    let selectedTab: SetupVaultState
     
     var body: some View {
         animation
@@ -25,6 +25,6 @@ struct SetupVaultAnimationManager: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultAnimationManager(animationVM: RiveViewModel(fileName: "ChooseVault"), selectedTab: .constant(.secure))
+        SetupVaultAnimationManager(animationVM: RiveViewModel(fileName: "ChooseVault"), selectedTab: .secure)
     }
 }

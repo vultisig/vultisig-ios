@@ -36,14 +36,14 @@ struct SetupVaultTabView: View {
     }
     
     var animation: some View {
-        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: $selectedTab)
+        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: selectedTab)
             .opacity(showAnimation ? 1 : 0)
             .blur(radius: showAnimation ? 0 : 10)
             .animation(.easeInOut, value: showAnimation)
     }
     
     var switchControl: some View {
-        SetupVaultSwithControl(animationVM: $animationVM, selectedTab: $selectedTab)
+        SetupVaultSwithControl(animationVM: animationVM, selectedTab: $selectedTab)
             .opacity(showContent ? 1 : 0)
             .offset(y: showContent ? 0 : 50)
             .blur(radius: showContent ? 0 : 10)
