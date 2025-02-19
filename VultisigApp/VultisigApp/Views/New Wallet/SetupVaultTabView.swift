@@ -14,7 +14,7 @@ struct SetupVaultTabView: View {
     @State var showContent = false
     @State var showAnimation = false
     
-    let animationVM = RiveViewModel(fileName: "ChooseVault")
+    @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
         content
@@ -22,7 +22,7 @@ struct SetupVaultTabView: View {
                 setData()
             }
             .onDisappear {
-                animationVM.stop()
+                animationVM?.stop()
             }
     }
     
@@ -36,7 +36,7 @@ struct SetupVaultTabView: View {
     }
     
     var animation: some View {
-        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: $selectedTab)
+        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: selectedTab)
             .opacity(showAnimation ? 1 : 0)
             .blur(radius: showAnimation ? 0 : 10)
             .animation(.easeInOut, value: showAnimation)
@@ -61,6 +61,8 @@ struct SetupVaultTabView: View {
     }
     
     private func setData() {
+        animationVM = RiveViewModel(fileName: "ChooseVault")
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             showContent = true
         }
