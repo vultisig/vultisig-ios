@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SetupVaultSwithControl: View {
-    let animationVM: RiveViewModel
+    @Binding var animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
     
     @State var width: CGFloat = .zero
@@ -51,8 +51,7 @@ struct SetupVaultSwithControl: View {
     private func getButton(for option: SetupVaultState) -> some View {
         Button {
             withAnimation {
-                selectedTab = option
-                animationVM.triggerInput("Switch")
+                handleSwitch(option)
             }
         } label: {
             if option == .secure {
@@ -101,8 +100,22 @@ struct SetupVaultSwithControl: View {
         Image(systemName: "bolt")
             .font(.body20Menlo)
     }
+    
+    private func handleSwitch(_ option: SetupVaultState) {
+        selectedTab = option
+        
+        if option == .secure {
+            animationVM?.triggerInput("Switch")
+            animationVM?.triggerInput("Switch")
+        } else {
+            animationVM?.triggerInput("Switch")
+        }
+    }
 }
 
 #Preview {
-    SetupVaultSwithControl(animationVM: RiveViewModel(fileName: "ChooseVault"), selectedTab: .constant(.secure))
+    SetupVaultSwithControl(
+        animationVM: .constant(RiveViewModel(fileName: "ChooseVault")),
+        selectedTab: .constant(.secure)
+    )
 }

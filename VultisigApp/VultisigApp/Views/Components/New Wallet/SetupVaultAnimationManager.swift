@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SetupVaultAnimationManager: View {
-    let animationVM: RiveViewModel
+    let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
     
     var body: some View {
@@ -18,7 +18,7 @@ struct SetupVaultAnimationManager: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
 }
 
