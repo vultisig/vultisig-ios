@@ -28,6 +28,7 @@ typedef enum lib_error {
   LIB_SIGNGEN_ERROR,
   LIB_KEYGEN_ERROR,
   LIB_KEY_EXPORT_ERROR,
+  LIB_INVALID_THRESHOLD,
   LIB_INVALID_PARTY_LIST,
   LIB_INVALID_OLD_PARTY_LIST,
   LIB_INVALID_NEW_PARTY_LIST,
@@ -231,12 +232,6 @@ enum lib_error schnorr_keygen_session_finish(struct Handle session, struct Handl
  */
 enum lib_error schnorr_keygen_session_free(const struct Handle *session);
 
-enum lib_error schnorr_presign_from_bytes(const struct go_slice *buf, struct Handle *hnd);
-
-enum lib_error schnorr_presign_to_bytes(struct Handle share, struct tss_buffer *buf);
-
-enum lib_error schnorr_presign_session_id(struct Handle share, struct tss_buffer *buf);
-
 /*
  Generates a new QC setup message.
 
@@ -420,6 +415,8 @@ enum lib_error schnorr_keyshare_public_key(struct Handle share, struct tss_buffe
 
 enum lib_error schnorr_keyshare_key_id(struct Handle share, struct tss_buffer *buf);
 
+enum lib_error schnorr_keyshare_chaincode(struct Handle share, struct tss_buffer *buf);
+
 /*
  Returns key_id from encoded setup message.
 
@@ -457,14 +454,6 @@ enum lib_error schnorr_sign_setupmsg_new(const struct go_slice *key_id,
                                          struct tss_buffer *setup_msg);
 
 /*
- Generate new DSG Finish setup message.
- */
-enum lib_error schnorr_finish_setupmsg_new(const struct go_slice *session_id,
-                                           const struct go_slice *message,
-                                           const struct go_slice *ids,
-                                           struct tss_buffer *setup_msg);
-
-/*
  Create a full sign session from the decoded setup message.
 
  # Arguments:
@@ -490,7 +479,7 @@ enum lib_error schnorr_finish_setupmsg_new(const struct go_slice *session_id,
  */
 enum lib_error schnorr_sign_session_from_setup(const struct go_slice *setup,
                                                const struct go_slice *id,
-                                               struct Handle share_or_presign,
+                                               struct Handle share,
                                                struct Handle *hnd);
 
 /*
