@@ -33,12 +33,11 @@ struct KeygenView: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
-    let circleAnimationVM = RiveViewModel(fileName: "CreatingVaultCircles", autoPlay: true)
-    let checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
-    
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
     @State var showVerificationView = false
+    @State var vaultCreatedAnimationVM: RiveViewModel? = nil
+    @State var checkmarkAnimationVM: RiveViewModel? = nil
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
@@ -60,10 +59,11 @@ struct KeygenView: View {
             }
             .onAppear {
                 hideBackButton = true
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
             }
             .onDisappear {
-                circleAnimationVM.stop()
-                checkmarkAnimationVM.stop()
+                vaultCreatedAnimationVM?.stop()
             }
     }
     
@@ -78,10 +78,12 @@ struct KeygenView: View {
             }
             Spacer()
             
-            if viewModel.status == .KeygenFailed {
-                retryButton
-            } else {
-                progressContainer
+            if progressCounter < 4 {
+                if viewModel.status == .KeygenFailed {
+                    retryButton
+                } else {
+                    progressContainer
+                }
             }
         }
     }
@@ -169,20 +171,24 @@ struct KeygenView: View {
     }
     
     var doneText: some View {
-        ZStack {
-            circleAnimationVM.view()
-                .scaleEffect(1.1)
+        VStack(spacing: 18) {
+            vaultCreatedAnimationVM?.view()
+                .scaleEffect(0.8)
+                .frame(maxWidth: 512)
             
-            VStack(spacing: 24) {
-                checkmarkAnimationVM.view()
-                    .frame(width: 80, height: 80)
-                
-                Text(NSLocalizedString("success", comment: ""))
-                    .font(.body28BrockmannMedium)
-                    .foregroundColor(.alertTurquoise)
-                    .opacity(progressCounter == 4 ? 1 : 0)
-                    .animation(.easeInOut, value: progressCounter)
+            VStack {
+                Text(NSLocalizedString("vaultCreated", comment: ""))
+                    .foregroundColor(.neutral0)
+                Text(NSLocalizedString("successfully", comment: ""))
+                    .foregroundStyle(LinearGradient.primaryGradient)
             }
+            .font(.body28BrockmannMedium)
+            .opacity(progressCounter == 4 ? 1 : 0)
+            .animation(.easeInOut, value: progressCounter)
+            .padding(.top, 60)
+            
+            checkmarkAnimationVM?.view()
+                .frame(width: 80, height: 80)
         }
         .onAppear {
             setDoneData()

@@ -534,3 +534,5 @@
 "secureVaultSecureTextDescription" = "Maksimalna sigurnost s više uređaja\nUvijek dostupan uz sigurnosne kopije uređaja\nOsiguraj bilo koji iznos imovine";
 "fastVaultSecureTextDescription" = "Potreban je samo 1 uređaj\nPohrani manje iznose za svakodnevnu upotrebu\nVultiserver odmah supotpisuje";
 "fastSetUp" = "Brza postavka s 1 uređajem";
+"vaultCreated" = "Trezoor stvoren";
+"successfully" = "uspješno";

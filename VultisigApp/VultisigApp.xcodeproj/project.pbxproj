@@ -344,6 +344,7 @@
 		A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */; };
 		A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */; };
 		A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */; };
+		A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
@@ -1187,6 +1188,7 @@
 		A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Medium.otf"; sourceTree = "<group>"; };
 		A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Regular.otf"; sourceTree = "<group>"; };
 		A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-SemiBold.otf"; sourceTree = "<group>"; };
+		A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vaultCreatedAnimation.riv; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -2973,6 +2975,7 @@
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */,
 				A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */,
+				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
@@ -3657,6 +3660,7 @@
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A65505152D66918200EDEB8C /* SecureVaultBackupSuccess.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
+				A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
 				A65505172D6691BA00EDEB8C /* FastVaultBackupSucces.riv in Resources */,
