@@ -551,3 +551,5 @@
 "secureVaultSecureTextDescription" = "Maximale Sicherheit mit mehreren Geräten\nImmer zugänglich mit Geräte-Backups\nSichere beliebige Vermögenswerte";
 "fastVaultSecureTextDescription" = "Nur 1 Gerät erforderlich\nSpeichere kleinere Beträge für den täglichen Gebrauch\nVultiserver unterschreibt sofort";
 "fastSetUp" = "Schnelle Einrichtung mit 1 Gerät";
+"vaultCreated" = "Tresor erstellt";
+"successfully" = "erfolgreich";

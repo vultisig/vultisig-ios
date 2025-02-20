@@ -534,3 +534,5 @@
 "secureVaultSecureTextDescription" = "Máxima seguridad con múltiples dispositivos\nSiempre accesible con copias de seguridad de dispositivos\nProtege cualquier cantidad de activos";
 "fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para uso diario\nVultiserver firma instantáneamente";
 "fastSetUp" = "Configuración rápida con 1 dispositivo";
+"vaultCreated" = "Bóveda creada";
+"successfully" = "exitosamente";
