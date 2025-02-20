@@ -84,7 +84,7 @@ class KeygenViewModel: ObservableObject {
             if !VultisigRelay.IsRelayEnabled {
                 try await Task.sleep(for: .seconds(3)) // Back off 3s
             } else {
-                try await Task.sleep(for: .seconds(1)) // Back off 1s, so we can at least show the done animation
+                try await Task.sleep(for: .seconds(2)) // Back off 1s, so we can at least show the done animation
             }
             self.isLinkActive = true
         }

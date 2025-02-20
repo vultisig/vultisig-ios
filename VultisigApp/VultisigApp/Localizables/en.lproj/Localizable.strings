@@ -579,3 +579,5 @@
 "secureVaultSecureTextDescription" = "Maximum security with multiple devices\nAlways accessible with device backups\nSecure any amount of assets";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore smaller funds for daily use\nVultiserver co-signs instantly";
 "fastSetUp" = "Quick, 1 device setup";
+"vaultCreated" = "Vault created";
+"successfully" = "successfully";
