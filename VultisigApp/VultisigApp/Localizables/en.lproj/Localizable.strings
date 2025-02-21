@@ -481,30 +481,6 @@
 "uploadFromGallerySingleLine" = "Upload from Gallery";
 "uploadFromFilesSingleLine" = "Upload from Files";
 "intro" = "Intro";
-"OnboardingCard1Text1" = "Say hello to ";
-"OnboardingCard1Text2" = "vault shares, ";
-"OnboardingCard1Text3" = "your new recovery method";
-"OnboardingCard1Text4" = "";
-"OnboardingCard2Text1" = "They’re split into ";
-"OnboardingCard2Text2" = "different parts for increased security, ";
-"OnboardingCard2Text3" = "removing single-point of failure";
-"OnboardingCard2Text4" = "";
-"OnboardingCard3Text1" = "";
-"OnboardingCard3Text2" = "Each device ";
-"OnboardingCard3Text3" = "in your vault holds ";
-"OnboardingCard3Text4" = "one vault share";
-"OnboardingCard4Text1" = "";
-"OnboardingCard4Text2" = "Always back-up ";
-"OnboardingCard4Text3" = "your vault shares individually, each in a ";
-"OnboardingCard4Text4" = "different location";
-"OnboardingCard5Text1" = "Back up ";
-"OnboardingCard5Text2" = "each vault share ";
-"OnboardingCard5Text3" = "separately in a ";
-"OnboardingCard5Text4" = "different location.";
-"OnboardingCard6Text1" = "These shares collaborate to ";
-"OnboardingCard6Text2" = "unlock your vault.";
-"OnboardingCard6Text3" = "";
-"OnboardingCard6Text4" = "";
 "sayGoodbyeTo" = "Say goodbye to ";
 "seedPhrases" = "seed phrases";
 "ultimateSecurity" = "Ultimate Security";
@@ -581,3 +557,33 @@
 "fastSetUp" = "Quick, 1 device setup";
 "vaultCreated" = "Vault created";
 "successfully" = "successfully";
+
+"OnboardingCard1Text1" = "Say hello to ";
+"OnboardingCard1Text2" = "vault shares, ";
+"OnboardingCard1Text3" = "your new recovery method";
+"OnboardingCard1Text4" = "";
+
+"OnboardingCard2Text1" = "They’re split into ";
+"OnboardingCard2Text2" = "different parts for increased security, ";
+"OnboardingCard2Text3" = "removing single-point of failure";
+"OnboardingCard2Text4" = "";
+
+"OnboardingCard3Text1" = "";
+"OnboardingCard3Text2" = "Each device ";
+"OnboardingCard3Text3" = "in your vault holds ";
+"OnboardingCard3Text4" = "one vault share";
+
+"OnboardingCard4Text1" = "Recover your vault even ";
+"OnboardingCard4Text2" = "if a device is lost or damaged";
+"OnboardingCard4Text3" = "";
+"OnboardingCard4Text4" = "";
+
+"OnboardingCard5Text1" = "";
+"OnboardingCard5Text2" = "Always back up ";
+"OnboardingCard5Text3" = "your vault shares individually, each in a ";
+"OnboardingCard5Text4" = "different location";
+
+"OnboardingCard6Text1" = "These shares collaborate to ";
+"OnboardingCard6Text2" = "unlock your vault.";
+"OnboardingCard6Text3" = "";
+"OnboardingCard6Text4" = "";
