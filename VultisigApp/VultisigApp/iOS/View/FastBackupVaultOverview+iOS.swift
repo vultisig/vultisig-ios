@@ -17,6 +17,9 @@ extension FastBackupVaultOverview {
     var textTabView: some View {
         text
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .onAppear {
+                  UIScrollView.appearance().isScrollEnabled = false
+            }
     }
     
     var button: some View {
