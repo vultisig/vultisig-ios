@@ -1,5 +1,5 @@
-"backupNow" = "Back Up Now";
-"backupSetupTitle" = "Back up your vault\nshare online";
+"backupNow" = "Backup Now";
+"backupSetupTitle" = "Backup your vault\nshare online";
 "backupSetupSubtitle" = "Online storage is recommended and safe -\nvault shares are designed for this.";
 "learnMore" = "Learn more";
 "emailSentTo" = "Sent to %@";
@@ -13,7 +13,7 @@
 "passwordHintTitle" = "Optional: Password hint";
 "enterHint" = "Enter a hint";
 "backupNowTitle" = "Backups need to be done on every device in Vultisig";
-"backupNowWarning" = "Back up your vault on every device individually!";
+"backupNowWarning" = "Backup your vault on every device individually!";
 "backupNowSubtitle" = "Each device has its own unique vault share, which are needed for recovery";
 "backupNowCheckbox" = "I understand that by skipping the backup I may lose access to my funds.";
 "emailMismatch" = "Email address mismatch";
@@ -202,7 +202,7 @@
 "moneyFAQQuestion" = "How does Vultisig make money?";
 "moneyFAQAnswer" = "Vultisig only charges a flat fee on swap and bridging. There are no other hidden fees.";
 "assetRecoveryFAQQuestion" = "Can I recover my assets if I lose a device?";
-"assetRecoveryFAQAnswer" = "You can back-up your vault by exporting the vault shares of every device.";
+"assetRecoveryFAQAnswer" = "You can backup your vault by exporting the vault shares of every device.";
 "registerFAQQuestion" = "Do I need to register?";
 "registerFAQAnswer" = "No, there are no registration requirements.";
 "languageChangeTitle" = "Language changed";
@@ -431,8 +431,8 @@
 "fastVaultSetDisclaimer" = "This Password encrypts your Vault Share received via email";
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
 "selectPairingDevices" = "Select the pairing devices";
-"backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";
-"backupYourVaultNow" = "Back up your vault share of this device now!";
+"backupVaultOnEveryDeviceIndividually!" = "Backup your vault on every device individually!";
+"backupYourVaultNow" = "Backup your vault share of this device now!";
 "resharingTheVault" = "Resharing the Vault";
 "resharingLoaderTitle" = "Add devices to include or leave devices out to remove from Vault";
 "changesInSetup" = "Changes in Setup";
@@ -494,10 +494,10 @@
 "OnboardingCard3Text3" = "in your vault holds ";
 "OnboardingCard3Text4" = "one vault share";
 "OnboardingCard4Text1" = "";
-"OnboardingCard4Text2" = "Always back-up ";
+"OnboardingCard4Text2" = "Always backup ";
 "OnboardingCard4Text3" = "your vault shares individually, each in a ";
 "OnboardingCard4Text4" = "different location";
-"OnboardingCard5Text1" = "Back up ";
+"OnboardingCard5Text1" = "Backup ";
 "OnboardingCard5Text2" = "each vault share ";
 "OnboardingCard5Text3" = "separately in a ";
 "OnboardingCard5Text4" = "different location.";
@@ -508,7 +508,7 @@
 "sayGoodbyeTo" = "Say goodbye to ";
 "seedPhrases" = "seed phrases";
 "ultimateSecurity" = "Ultimate Security";
-"chooseSetUp" = "Choose Set-up";
+"chooseSetUp" = "Choose Setup";
 "secure" = "Secure";
 "fast" = "Fast";
 "nameYourVault" = "Name your vault";
@@ -547,7 +547,7 @@
 "SecureVaultOverview1Text2" = "";
 "SecureVaultOverview1Text3" = " shares, ";
 "SecureVaultOverview1Text4" = "each device needs its own backup.";
-"SecureVaultOverview2Text1" = "Back up ";
+"SecureVaultOverview2Text1" = "Backup ";
 "SecureVaultOverview2Text2" = "this vault share";
 "SecureVaultOverview2Text3" = " to ensure access, preferably ";
 "SecureVaultOverview2Text4" = "online.";
@@ -561,12 +561,12 @@
 "FastVaultOverview2Text2" = "Check your e-mail to verify";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
-"FastVaultOverview3Text1" = "Back up ";
+"FastVaultOverview3Text1" = "Backup ";
 "FastVaultOverview3Text2" = "this vault share";
 "FastVaultOverview3Text3" = " securely, preferably ";
 "FastVaultOverview3Text4" = "online.";
 "fastVault" = "Fast Vault";
-"backupGuide" = "Back-up guide";
+"backupGuide" = "Backup guide";
 "fastVaultSummaryText1" = "Vault Share 1 received via mail";
 "fastVaultSummaryText2" = "Vault Share 2 stored by you";
 "fastVaultSummaryText3" = "Keep vault shares in different locations";
