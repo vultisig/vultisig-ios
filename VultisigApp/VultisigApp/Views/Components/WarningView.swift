@@ -46,5 +46,5 @@ struct WarningView: View {
 }
 
 #Preview {
-    WarningView(text: "Back up your vault on every device individually!")
+    WarningView(text: "Backup your vault on every device individually!")
 }
