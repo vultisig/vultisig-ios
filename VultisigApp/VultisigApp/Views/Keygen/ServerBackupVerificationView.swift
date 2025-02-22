@@ -58,6 +58,7 @@ struct ServerBackupVerificationView: View {
         .onDisappear {
             animationVM.stop()
         }
+        .interactiveDismissDisabled()
     }
     
     var title: some View {
