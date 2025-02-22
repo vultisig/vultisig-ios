@@ -19,7 +19,7 @@ struct OnboardingView: View {
     @State var startupTextOpacity = true
     @State var showSummary = false
 
-    let animationVM = RiveViewModel(fileName: "Onboarding", animationName: "Screen 1")
+    @State var animationVM: RiveViewModel? = nil
     
     let totalTabCount: Int = 6
     
@@ -38,11 +38,14 @@ struct OnboardingView: View {
                 startupText
             }
         }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "Onboarding", stateMachineName: "State Machine 1")
+        }
         .onChange(of: tabIndex) { oldValue, newValue in
-            animationVM.play(animationName: "Screen \(tabIndex+1)")
+            playAnimation()
         }
         .onDisappear {
-            animationVM.stop()
+            animationVM?.stop()
         }
         .sheet(isPresented: $showSummary) {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
@@ -52,7 +55,7 @@ struct OnboardingView: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
     
     var view: some View {
@@ -166,6 +169,10 @@ struct OnboardingView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             showOnboarding = true
         }
+    }
+    
+    private func playAnimation() {
+        animationVM?.setInput("Index", value: Double(tabIndex))
     }
 }
 

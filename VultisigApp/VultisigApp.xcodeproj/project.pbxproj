@@ -601,6 +601,7 @@
 		A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */; };
 		A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1B12C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift */; };
 		A6ECA1B42C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1B32C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift */; };
+		A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6EF93512D690BC8004D7EBF /* Onboarding.riv */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -615,7 +616,6 @@
 		A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */; };
 		A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */; };
 		A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */; };
-		A6F7B6C42D499FDF00AC8104 /* Onboarding.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */; };
 		A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */; };
 		A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */; };
 		A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */; };
@@ -1441,6 +1441,7 @@
 		A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EncryptedBackupViewModel+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA1B12C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailQRCodeViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1B32C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailQRCodeViewModel+macOS.swift"; sourceTree = "<group>"; };
+		A6EF93512D690BC8004D7EBF /* Onboarding.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = Onboarding.riv; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1455,7 +1456,6 @@
 		A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRCodeScanned.riv; sourceTree = "<group>"; };
 		A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryInfoBanner.swift; sourceTree = "<group>"; };
 		A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = PeerDiscoveryInfoBanner.riv; sourceTree = "<group>"; };
-		A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = Onboarding.riv; sourceTree = "<group>"; };
 		A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyPeerCell.swift; sourceTree = "<group>"; };
 		A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = WaitingForDevice.riv; sourceTree = "<group>"; };
 		A6F7B6E42D4B046800AC8104 /* KeygenProgressContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenProgressContainer.swift; sourceTree = "<group>"; };
@@ -2971,9 +2971,9 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
-				A6F7B6C32D499FDF00AC8104 /* Onboarding.riv */,
 				A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
@@ -3653,6 +3653,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
 				A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */,
@@ -3672,7 +3673,6 @@
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
-				A6F7B6C42D499FDF00AC8104 /* Onboarding.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
 				A55C62FD2D5C02D6005DBF68 /* securevault_summary.riv in Resources */,
