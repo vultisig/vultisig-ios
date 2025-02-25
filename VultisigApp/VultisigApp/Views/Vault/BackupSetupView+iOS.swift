@@ -17,6 +17,7 @@ extension BackupSetupView {
         }
         .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
     }
     
     var main: some View {
