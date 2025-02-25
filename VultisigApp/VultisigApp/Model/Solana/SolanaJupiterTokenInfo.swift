@@ -5,7 +5,7 @@ class SolanaJupiterToken: Codable {
     let name: String?
     let symbol: String?
     let decimals: Int?
-    let logoURI: URL?
+    let logoURI: String?
     let extensions: SolanaJupiterTokenExtensions?
 }
 
