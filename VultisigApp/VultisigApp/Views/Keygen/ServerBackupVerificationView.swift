@@ -15,6 +15,7 @@ struct ServerBackupVerificationView: View {
     let email: String
 
     @Binding var isPresented: Bool
+    @Binding var isBackupLinkActive: Bool
 
     @ObservedObject var viewModel: KeygenViewModel
 
@@ -199,6 +200,7 @@ struct ServerBackupVerificationView: View {
 
             if isSuccess {
                 isPresented = false
+                isBackupLinkActive = true
             } else {
                 showAlert = true
             }
@@ -222,5 +224,5 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", isPresented: .constant(false), viewModel: KeygenViewModel())
+    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", isPresented: .constant(false), isBackupLinkActive: .constant(false), viewModel: KeygenViewModel())
 }

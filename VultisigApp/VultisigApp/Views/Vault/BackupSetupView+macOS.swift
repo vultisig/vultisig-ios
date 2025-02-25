@@ -24,7 +24,7 @@ extension BackupSetupView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "backup")
+        GeneralMacHeader(title: "backup", showActions: false)
     }
     
     var view: some View {

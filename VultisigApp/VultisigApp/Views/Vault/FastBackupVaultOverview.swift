@@ -34,6 +34,7 @@ struct FastBackupVaultOverview: View {
                 selectedTab: selectedTab,
                 email: email,
                 isPresented: $isVerificationLinkActive,
+                isBackupLinkActive: $isBackupLinkActive,
                 viewModel: viewModel
             )
         }
@@ -126,15 +127,12 @@ struct FastBackupVaultOverview: View {
     }
     
     private func nextTapped() {
-        guard tabIndex < totalTabCount - 1 else {
-            return isBackupLinkActive = true
+        guard tabIndex < totalTabCount-1 else {
+            isVerificationLinkActive = true
+            return
         }
-
+        
         tabIndex += 1
-
-        guard tabIndex != 2 else {
-            return isVerificationLinkActive = true
-        }
     }
     
     private func moveToBackupView() {

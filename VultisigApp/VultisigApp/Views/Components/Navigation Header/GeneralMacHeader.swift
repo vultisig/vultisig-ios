@@ -10,15 +10,23 @@ import SwiftUI
 struct GeneralMacHeader: View {
     let title: String
     
+    var showActions: Bool = true
+    
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         HStack {
-            leadingAction
+            if showActions {
+                leadingAction
+            }
+            
             Spacer()
             text
             Spacer()
-            leadingAction.opacity(0)
+            
+            if showActions {
+                leadingAction.opacity(0)
+            }
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
