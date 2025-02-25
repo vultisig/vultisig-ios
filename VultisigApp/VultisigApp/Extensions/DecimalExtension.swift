@@ -33,7 +33,7 @@ extension Decimal {
         }
         
         if !useAbbreviation {
-            let number = NSDecimalNumber(decimal: getAbbrevationValues().value)
+            let number = NSDecimalNumber(decimal: self)
             return formatter.string(from: number) ?? ""
         }
         
