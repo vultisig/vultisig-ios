@@ -45,8 +45,6 @@ struct ContentView: View {
                 splashView
             } else if accountViewModel.showCover {
                 coverView
-            } else if accountViewModel.showOnboarding {
-                onboardingView
             } else if vaults.count>0 {
                 homeView
             } else {
@@ -71,16 +69,12 @@ struct ContentView: View {
         CoverView()
     }
     
-    var onboardingView: some View {
-        OnboardingView()
-    }
-    
     var homeView: some View {
         HomeView()
     }
     
     var createVaultView: some View {
-        CreateVaultView()
+        CreateVaultView(showBackButton: false)
     }
     
     private func setData() {

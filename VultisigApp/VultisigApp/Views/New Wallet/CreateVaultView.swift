@@ -17,6 +17,7 @@ struct CreateVaultView: View {
     @State var shouldJoinKeygen = false
     
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var accountViewModel: AccountViewModel
 
     var body: some View {
         ZStack {
@@ -54,7 +55,11 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         NavigationLink {
-            SetupQRCodeView(tssType: .Keygen, vault: nil)
+            if accountViewModel.showOnboarding {
+                OnboardingView()
+            } else {
+                SetupQRCodeView(tssType: .Keygen, vault: nil)
+            }
         } label: {
             FilledButton(title: "createNewVault")
         }
