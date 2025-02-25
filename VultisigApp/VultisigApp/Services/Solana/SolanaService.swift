@@ -140,7 +140,7 @@ class SolanaService {
                 let coinMeta = CoinMeta(
                     chain: .solana,
                     ticker: jupiterTokenInfo.symbol ?? "",
-                    logo: jupiterTokenInfo.logoURI?.description ?? "",
+                    logo: jupiterTokenInfo.logoURI ?? "",
                     decimals: jupiterTokenInfo.decimals ?? 0,
                     priceProviderId: jupiterTokenInfo.extensions?.coingeckoId ?? "",
                     contractAddress: jupiterTokenInfo.address ?? "",
