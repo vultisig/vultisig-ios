@@ -102,7 +102,10 @@ struct SetupVaultSwithControl: View {
     }
     
     private func handleSwitch(_ option: SetupVaultState) {
+        let oldTab = selectedTab
         selectedTab = option
+        
+        guard oldTab != selectedTab else { return }
         
         if option == .secure {
             animationVM?.triggerInput("Switch")
