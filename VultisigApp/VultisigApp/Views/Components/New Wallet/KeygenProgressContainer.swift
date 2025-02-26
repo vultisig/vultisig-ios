@@ -11,8 +11,8 @@ import RiveRuntime
 struct KeygenProgressContainer: View {
     let progressCounter: Double
     
-    let animationVMCheckmark = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
-    let animationVMLoader = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+    @State var animationVMCheckmark: RiveViewModel? = nil
+    @State var animationVMLoader: RiveViewModel? = nil
     
     var body: some View {
         ZStack {
@@ -23,9 +23,13 @@ struct KeygenProgressContainer: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
+        .onAppear {
+            animationVMCheckmark = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+            animationVMLoader = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+        }
         .onDisappear {
-            animationVMCheckmark.stop()
-            animationVMLoader.stop()
+            animationVMCheckmark?.stop()
+            animationVMLoader?.stop()
         }
     }
     
@@ -60,9 +64,9 @@ struct KeygenProgressContainer: View {
         HStack(spacing: 8) {
             ZStack {
                 if isComplete {
-                    animationVMCheckmark.view()
+                    animationVMCheckmark?.view()
                 } else {
-                    animationVMLoader.view()
+                    animationVMLoader?.view()
                 }
             }
             .frame(width: 24, height: 24)

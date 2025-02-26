@@ -34,6 +34,8 @@ struct PeerDiscoveryView: View {
     @State var orientation = UIDevice.current.orientation
 #endif
     
+    @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
+    
     let columns = [
         GridItem(.adaptive(minimum: 160)),
         GridItem(.adaptive(minimum: 160)),
@@ -50,7 +52,6 @@ struct PeerDiscoveryView: View {
     ]
     
     let logger = Logger(subsystem: "peers-discory", category: "communication")
-    let animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
     var body: some View {
         content
@@ -58,6 +59,7 @@ struct PeerDiscoveryView: View {
                 viewModel.startDiscovery()
             }
             .onAppear {
+                animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
                 viewModel.setData(
                     vault: vault,
                     tssType: tssType, 

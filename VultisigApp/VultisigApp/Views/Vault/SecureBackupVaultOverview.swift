@@ -14,10 +14,9 @@ struct SecureBackupVaultOverview: View {
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
+    @State var animationVM: RiveViewModel? = nil
 
     let totalTabCount = 2
-    
-    let animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
 
     var body: some View {
         ZStack {
@@ -28,8 +27,11 @@ struct SecureBackupVaultOverview: View {
         .navigationDestination(isPresented: $isBackupLinkActive) {
             BackupSetupView(vault: vault, isNewVault: true)
         }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
+        }
         .onDisappear {
-            animationVM.stop()
+            animationVM?.stop()
         }
     }
     
@@ -74,7 +76,7 @@ struct SecureBackupVaultOverview: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
             .offset(y: -80)
     }
     
@@ -119,7 +121,7 @@ struct SecureBackupVaultOverview: View {
     }
     
     private func animate(index: Int) {
-        animationVM.setInput("index", value: Double(index))
+        animationVM?.setInput("index", value: Double(index))
     }
 }
 
