@@ -28,6 +28,7 @@ struct ServerBackupVerificationView: View {
 
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
+    @State var animationVM: RiveViewModel? = nil
 
     @Environment(\.modelContext) private var modelContext
 
@@ -38,8 +39,6 @@ struct ServerBackupVerificationView: View {
     var verificationCode: String {
         return otp.joined().trimmingCharacters(in: .whitespaces)
     }
-
-    let animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
     
     var body: some View {
         ZStack {
@@ -48,6 +47,7 @@ struct ServerBackupVerificationView: View {
         }
         .onAppear {
             focusedField = 0
+            animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
         }
         .safeAreaInset(edge: .bottom) {
             cancelButton
@@ -57,7 +57,7 @@ struct ServerBackupVerificationView: View {
             HomeView()
         }
         .onDisappear {
-            animationVM.stop()
+            animationVM?.stop()
         }
         .interactiveDismissDisabled()
     }
@@ -164,7 +164,7 @@ struct ServerBackupVerificationView: View {
     
     var loadingText: some View {
         HStack {
-            animationVM.view()
+            animationVM?.view()
                 .frame(width: 24, height: 24)
             
             Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))

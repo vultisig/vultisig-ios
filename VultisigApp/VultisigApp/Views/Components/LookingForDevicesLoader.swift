@@ -12,7 +12,7 @@ struct LookingForDevicesLoader: View {
     var tssType: TssType? = nil
     var selectedTab: SetupVaultState? = nil
     
-    let animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     @State var didSwitch = false
 
@@ -26,12 +26,14 @@ struct LookingForDevicesLoader: View {
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
+            animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 didSwitch.toggle()
             }
         }
         .onDisappear {
-            animationVM.stop()
+            animationVM?.stop()
         }
     }
     
@@ -79,7 +81,7 @@ struct LookingForDevicesLoader: View {
     }
     
     var loader: some View {
-        animationVM.view()
+        animationVM?.view()
             .frame(width: 24, height: 24)
     }
     
