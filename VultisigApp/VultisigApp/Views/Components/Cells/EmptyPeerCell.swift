@@ -12,13 +12,15 @@ struct EmptyPeerCell: View {
     let counter: Int
     
     @State var isPhone: Bool = false
-    
-    let animationVM = RiveViewModel(fileName: "WaitingForDevice", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
         cell
+            .onAppear {
+                animationVM = RiveViewModel(fileName: "WaitingForDevice", autoPlay: true)
+            }
             .onDisappear {
-                animationVM.stop()
+                animationVM?.stop()
             }
     }
     
@@ -55,7 +57,7 @@ struct EmptyPeerCell: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
             .frame(width: 24, height: 24)
     }
     

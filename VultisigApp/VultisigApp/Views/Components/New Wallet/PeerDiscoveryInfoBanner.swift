@@ -11,15 +11,18 @@ import RiveRuntime
 struct PeerDiscoveryInfoBanner: View {
     @Binding var isPresented: Bool
     
-    let animationVM = RiveViewModel(fileName: "PeerDiscoveryInfoBanner", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
         ZStack {
             Background()
             content
         }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "PeerDiscoveryInfoBanner", autoPlay: true)
+        }
         .onDisappear {
-            animationVM.stop()
+            animationVM?.stop()
         }
     }
     
@@ -46,7 +49,7 @@ struct PeerDiscoveryInfoBanner: View {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
             .frame(width: 80, height: 80)
             .offset(x: -80, y: 6)
     }
