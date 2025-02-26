@@ -4,8 +4,8 @@
 "learnMore" = "Mehr erfahren";
 "emailSentTo" = "Gesendet an %@";
 "changeEmailAndRestart" = "E-Mail ändern und Keygen neu starten";
-"setPasswordHintTitle" = "Fügen Sie einen optionalen Hinweis hinzu";
-"setPasswordHintSubtitle" = "Diese E-Mail wird nur zum Senden der Server-Sicherung verwendet";
+"setPasswordHintTitle" = "Optionalen Hinweis hinzufügen";
+"setPasswordHintSubtitle" = "Dieser wird angezeigt, falls du dein Passwort vergisst";
 "vaultExistsError" = "Ein Tresor mit demselben Namen existiert bereits.\nBitte versuchen Sie einen anderen Namen.";
 "noGasEstimation" = "Keine Gas-Schätzung möglich. Bitte aktualisieren Sie die Seite.";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
