@@ -81,6 +81,11 @@ struct PeerDiscoveryView: View {
                 PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
                     .presentationDetents([.height(450)])
             }
+            .onChange(of: viewModel.selectedNetwork) {
+                print("selected network changed: \(viewModel.selectedNetwork)")
+                viewModel.restartParticipantDiscovery()
+                setData()
+            }
     }
     
     var states: some View {
@@ -111,6 +116,7 @@ struct PeerDiscoveryView: View {
         VStack(spacing: 0) {
             views
             bottomButton
+            SwitchToLocalLink(viewModel: viewModel)
         }
     }
     
@@ -135,7 +141,9 @@ struct PeerDiscoveryView: View {
         VStack(spacing: 0) {
             paringBarcode
             
-            if showDisclaimer {
+            if viewModel.selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
                 PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
             }
         }
