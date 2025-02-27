@@ -536,3 +536,8 @@
 "OnboardingCard6Text2" = "sbloccare il tuo vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"createVaultPrivately" = "Vuoi creare il vault in privato?";
+"switchToLocalMode" = "Passa alla modalità locale";
+"youAreInLocalMode" = "Sei in modalità locale";
+"switchBackToInternetMode" = "Torna alla modalità internet";
+"peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";

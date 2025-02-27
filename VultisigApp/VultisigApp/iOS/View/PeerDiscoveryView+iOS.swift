@@ -69,7 +69,7 @@ extension PeerDiscoveryView {
             animation
             qrCodeContent
         }
-        .padding(isPhoneSE ? 8 : 20)
+        .padding(8)
     }
     
     var qrCodeContent: some View {
@@ -151,6 +151,20 @@ extension PeerDiscoveryView {
         .padding(.top, 20)
         .padding(.bottom, idiom == .phone ? 10 : 30)
         .disabled(isButtonDisabled)
+    }
+    
+    var disclaimer: some View {
+        ZStack {
+            if viewModel.selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+            }
+        }
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(viewModel: viewModel)
     }
 
     var isShareButtonVisible: Bool {

@@ -26,6 +26,7 @@ struct PeerDiscoveryView: View {
     
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
+    @State var showDisclaimer: Bool = true
     @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
@@ -80,6 +81,11 @@ struct PeerDiscoveryView: View {
                 PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
                     .presentationDetents([.height(450)])
             }
+            .onChange(of: viewModel.selectedNetwork) {
+                print("selected network changed: \(viewModel.selectedNetwork)")
+                viewModel.restartParticipantDiscovery()
+                setData()
+            }
     }
     
     var states: some View {
@@ -110,6 +116,7 @@ struct PeerDiscoveryView: View {
         VStack(spacing: 0) {
             views
             bottomButton
+            switchLink
         }
     }
     
@@ -131,7 +138,10 @@ struct PeerDiscoveryView: View {
     }
     
     var qrCode: some View {
-        paringBarcode
+        VStack(spacing: 0) {
+            paringBarcode
+            disclaimer
+        }
     }
     
     var list: some View {
@@ -190,12 +200,16 @@ struct PeerDiscoveryView: View {
     }
     
     var listTitle: some View {
-        Text(NSLocalizedString("devices", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body22BrockmannMedium)
-            .foregroundColor(.neutral0)
-            .padding(.bottom, 8)
-            .padding(.horizontal, 24)
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/3)")
+                .opacity(viewModel.selections.count>3 ? 0 : 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
     }
     
     func setData(_ proxy: GeometryProxy) {

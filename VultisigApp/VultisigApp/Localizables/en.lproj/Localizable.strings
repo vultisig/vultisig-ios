@@ -581,3 +581,8 @@
 "OnboardingCard6Text2" = "unlock your vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"createVaultPrivately" = "Want to create vault privately?";
+"switchToLocalMode" = "Switch to local mode";
+"youAreInLocalMode" = "You’re in local mode";
+"switchBackToInternetMode" = " Switch back to internet mode";
+"peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
