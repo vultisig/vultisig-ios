@@ -140,6 +140,22 @@ extension PeerDiscoveryView {
         .padding(.bottom, 30)
     }
     
+    var disclaimer: some View {
+        ZStack {
+            if viewModel.selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+            }
+        }
+        .padding(.leading, 24)
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(viewModel: viewModel)
+            .padding(.bottom, 24)
+    }
+    
     func setData() {
         qrCodeImage = viewModel.getQrImage(size: 100)
         

@@ -116,7 +116,7 @@ struct PeerDiscoveryView: View {
         VStack(spacing: 0) {
             views
             bottomButton
-            SwitchToLocalLink(viewModel: viewModel)
+            switchLink
         }
     }
     
@@ -140,12 +140,7 @@ struct PeerDiscoveryView: View {
     var qrCode: some View {
         VStack(spacing: 0) {
             paringBarcode
-            
-            if viewModel.selectedNetwork == .Local {
-                LocalModeDisclaimer()
-            } else if showDisclaimer {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-            }
+            disclaimer
         }
     }
     

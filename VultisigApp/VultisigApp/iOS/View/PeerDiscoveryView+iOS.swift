@@ -152,6 +152,20 @@ extension PeerDiscoveryView {
         .padding(.bottom, idiom == .phone ? 10 : 30)
         .disabled(isButtonDisabled)
     }
+    
+    var disclaimer: some View {
+        ZStack {
+            if viewModel.selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+            }
+        }
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(viewModel: viewModel)
+    }
 
     var isShareButtonVisible: Bool {
         return viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
