@@ -537,3 +537,8 @@
 "OnboardingCard6Text2" = "desbloquear seu cofre.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"createVaultPrivately" = "Quer criar o cofre em modo privado?";
+"switchToLocalMode" = "Mudar para o modo local";
+"youAreInLocalMode" = "Você está no modo local";
+"switchBackToInternetMode" = "Voltar para o modo internet";
+"peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";

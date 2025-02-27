@@ -553,3 +553,8 @@
 "OnboardingCard6Text2" = "deinen Tresor zu entsperren.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"createVaultPrivately" = "Möchtest du das Vault privat erstellen?";
+"switchToLocalMode" = "Wechsle in den lokalen Modus";
+"youAreInLocalMode" = "Du bist im lokalen Modus";
+"switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
+"peerDiscoveryScanDeviceDisclaimer" = "Scanne den QR-Code mit einem anderen Gerät. 3-Geräte-Setup empfohlen, 2 sind ausreichend.";

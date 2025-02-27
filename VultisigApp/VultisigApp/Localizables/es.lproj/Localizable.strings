@@ -536,3 +536,8 @@
 "OnboardingCard6Text2" = "desbloquear tu bóveda.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"createVaultPrivately" = "¿Quieres crear el vault en privado?";
+"switchToLocalMode" = "Cambiar al modo local";
+"youAreInLocalMode" = "Estás en modo local";
+"switchBackToInternetMode" = "Volver al modo internet";
+"peerDiscoveryScanDeviceDisclaimer" = "Escanea el QR con otro dispositivo. Se recomienda una configuración de 3 dispositivos, 2 son suficientes.";
