@@ -581,3 +581,4 @@
 "OnboardingCard6Text2" = "unlock your vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
+"peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";

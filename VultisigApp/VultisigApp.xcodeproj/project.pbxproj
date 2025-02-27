@@ -434,6 +434,7 @@
 		A69FBBCE2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBCD2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift */; };
 		A69FBBD02C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBCF2C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift */; };
 		A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */; };
+		A6A6EFBF2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A6EFBE2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift */; };
 		A6A8163A2CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */; };
 		A6A8163C2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */; };
 		A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */; };
@@ -1277,6 +1278,7 @@
 		A69FBBCD2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoVerifyView+macOS.swift"; sourceTree = "<group>"; };
 		A69FBBCF2C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoVerifyView+iOS.swift"; sourceTree = "<group>"; };
 		A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewController.swift; sourceTree = "<group>"; };
+		A6A6EFBE2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryScanDeviceDisclaimer.swift; sourceTree = "<group>"; };
 		A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+macOS.swift"; sourceTree = "<group>"; };
 		A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+iOS.swift"; sourceTree = "<group>"; };
 		A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileQRCodeImporterMac+iOS.swift"; sourceTree = "<group>"; };
@@ -1757,6 +1759,7 @@
 				A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */,
 				A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */,
 				A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */,
+				A6A6EFBE2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -3870,6 +3873,7 @@
 				A690E00E2BC0ED290006DC0D /* URL.swift in Sources */,
 				DE0893562C47C8FA007632F7 /* Chain+extensions.swift in Sources */,
 				A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */,
+				A6A6EFBF2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift in Sources */,
 				A6C670F72CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift in Sources */,
 				A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */,
 				A67530642CB0716300B1E344 /* FolderDetailView.swift in Sources */,

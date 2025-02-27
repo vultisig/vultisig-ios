@@ -69,7 +69,7 @@ extension PeerDiscoveryView {
             animation
             qrCodeContent
         }
-        .padding(isPhoneSE ? 8 : 20)
+        .padding(8)
     }
     
     var qrCodeContent: some View {

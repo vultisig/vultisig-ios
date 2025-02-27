@@ -26,6 +26,7 @@ struct PeerDiscoveryView: View {
     
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
+    @State var showDisclaimer: Bool = true
     @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
@@ -131,7 +132,13 @@ struct PeerDiscoveryView: View {
     }
     
     var qrCode: some View {
-        paringBarcode
+        VStack(spacing: 0) {
+            paringBarcode
+            
+            if showDisclaimer {
+                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+            }
+        }
     }
     
     var list: some View {
