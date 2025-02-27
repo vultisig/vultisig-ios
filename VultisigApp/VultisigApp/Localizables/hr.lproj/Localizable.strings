@@ -4,8 +4,8 @@
 "learnMore" = "Saznaj više";
 "emailSentTo" = "Poslano na %@";
 "changeEmailAndRestart" = "Promijeni email i ponovno pokreni keygen";
-"setPasswordHintTitle" = "Dodajte opcionalni savjet";
-"setPasswordHintSubtitle" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja";
+"setPasswordHintTitle" = "Dodajte opcionalni podsjetnik";
+"setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite lozinku";
 "vaultExistsError" = "Sef s istim imenom već postoji.\nPokušajte s drugim imenom.";
 "noGasEstimation" = "Nije moguće procijeniti gas. Molimo osvježite stranicu.";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";

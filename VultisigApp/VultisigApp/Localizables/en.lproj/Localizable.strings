@@ -4,8 +4,8 @@
 "learnMore" = "Learn more";
 "emailSentTo" = "Sent to %@";
 "changeEmailAndRestart" = "Change email and restart keygen";
-"setPasswordHintTitle" = "Add a optional hint";
-"setPasswordHintSubtitle" = "This email is only used to send the backup of the server";
+"setPasswordHintTitle" = "Add an optional hint";
+"setPasswordHintSubtitle" = "This will be shown in case your forget your password";
 "vaultExistsError" = "Vault with same name already exists.\nPlease try a different name.";
 "noGasEstimation" = "No gas estimation possible. Please refresh the page";
 "monthlyBackupTitle" = "Don't forget to backup your\nvault shares and verify the completeness.";
