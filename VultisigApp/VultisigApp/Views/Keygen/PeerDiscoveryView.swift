@@ -190,12 +190,16 @@ struct PeerDiscoveryView: View {
     }
     
     var listTitle: some View {
-        Text(NSLocalizedString("devices", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body22BrockmannMedium)
-            .foregroundColor(.neutral0)
-            .padding(.bottom, 8)
-            .padding(.horizontal, 24)
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/3)")
+                .opacity(viewModel.selections.count>3 ? 0 : 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
     }
     
     func setData(_ proxy: GeometryProxy) {
