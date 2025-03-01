@@ -8,6 +8,7 @@
 import Foundation
 
 struct ThorchainSwapError: Codable, Error, LocalizedError {
-    let error: String
-    var errorDescription: String? { return error.capitalized }
+    let code: Int
+    let message: String
+    var errorDescription: String? { return message }
 }
