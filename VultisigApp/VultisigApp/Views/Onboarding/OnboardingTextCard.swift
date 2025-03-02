@@ -30,7 +30,7 @@ struct OnboardingTextCard: View {
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
         .font(.body28BrockmannMedium)
-        .frame(maxWidth: 512)
+        .frame(maxWidth: 1024)
         .padding(.horizontal, 36)
         .padding(.vertical, 24)
         .multilineTextAlignment(.center)

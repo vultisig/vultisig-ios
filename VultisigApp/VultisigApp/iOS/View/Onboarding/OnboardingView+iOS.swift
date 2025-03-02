@@ -38,8 +38,30 @@ extension OnboardingView {
             .padding(.bottom, 10)
     }
     
+    var animation: some View {
+        animationVM?.view()
+            .scaleEffect(animationScale)
+            .padding(.bottom, idiom == .pad ? 100 : 0)
+            .onAppear {
+                getScale()
+            }
+            .onChange(of: orientation, { oldValue, newValue in
+                getScale()
+            })
+    }
+    
     func getBottomPadding() -> CGFloat {
         idiom == .phone ? 0 : 50
+    }
+    
+    private func getScale() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        
+        if screenWidth>1050 && idiom == .pad {
+            animationScale = 0.8
+        } else {
+            animationScale = 1
+        }
     }
 }
 #endif
