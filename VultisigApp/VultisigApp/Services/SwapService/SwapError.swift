@@ -11,6 +11,7 @@ enum SwapError: Error, LocalizedError {
     case routeUnavailable
     case swapAmountTooSmall
     case lessThenMinSwapAmount(amount: String)
+    case serverError(message: String)
 
     var errorDescription: String? {
         switch self {
@@ -20,6 +21,8 @@ enum SwapError: Error, LocalizedError {
             return "Swap amount too small"
         case .lessThenMinSwapAmount(let amount):
             return "Swap amount too small. Recommended amount \(amount)"
+        case .serverError(let msg):
+            return msg
         }
     }
 }
