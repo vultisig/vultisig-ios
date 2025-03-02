@@ -45,6 +45,10 @@ extension OnboardingView {
         .padding(.bottom, getBottomPadding())
     }
     
+    var animation: some View {
+        animationVM?.view()
+    }
+    
     private func prevTapped() {
         guard tabIndex>0 else {
             return
