@@ -33,7 +33,7 @@ struct SwapCryptoDetailsView: View {
             }
         }
         .navigationDestination(isPresented: $isToPickerActive) {
-            CoinPickerView(coins: swapViewModel.pickerToCoins(vault: vault, tx: tx)) { coin in
+            CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
                 swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
             }
         }
