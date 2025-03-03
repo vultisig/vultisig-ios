@@ -27,7 +27,7 @@ struct SwapCryptoDetailsView: View {
             }
         }
         .navigationDestination(isPresented: $isFromPickerActive) {
-            CoinPickerView(coins: swapViewModel.pickerFromCoins(vault: vault, tx: tx)) { coin in
+            CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
                 swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
                 swapViewModel.updateCoinLists(tx: tx)
             }

@@ -19,7 +19,6 @@ final class SchnorrKeygen {
     let mediatorURL: String
     let sessionID: String
     let encryptionKeyHex: String
-    let oldResharePrefix: String
     let isInitiateDevice: Bool
     var messenger: DKLSMessenger
     var keygenDoneIndicator = false
@@ -37,7 +36,6 @@ final class SchnorrKeygen {
          mediatorURL: String,
          sessionID: String,
          encryptionKeyHex: String,
-         oldResharePrefix: String,
          isInitiatedDevice: Bool,
          setupMessage: [UInt8]) {
         self.vault = vault
@@ -47,7 +45,6 @@ final class SchnorrKeygen {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
-        self.oldResharePrefix = oldResharePrefix
         self.isInitiateDevice = isInitiatedDevice
         self.setupMessage = setupMessage
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL,

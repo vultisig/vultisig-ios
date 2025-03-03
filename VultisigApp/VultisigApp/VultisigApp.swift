@@ -3,7 +3,6 @@
 //  VultisigApp
 //
 
-import Mediator
 import SwiftData
 import SwiftUI
 import WalletCore
