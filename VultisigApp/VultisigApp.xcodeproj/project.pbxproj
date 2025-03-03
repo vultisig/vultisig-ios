@@ -13,15 +13,12 @@
 		461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
 		461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */; };
 		461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1BA2BC7239C00959278 /* DeviceInfo.swift */; };
-		462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */; };
-		462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */; };
 		463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463408652BA9C1D200246248 /* CoinTypeExtension.swift */; };
 		465036BB2BCF968E00856B34 /* BigInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465036BA2BCF968E00856B34 /* BigInt.swift */; };
 		465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D522B9E689B006E7457 /* SolanaService.swift */; };
 		465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */; };
 		465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* SendTransaction.swift */; };
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
-		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
 		468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 468029302BC8E4CE005A9EEF /* Localizable.strings */; };
 		469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3932B98E776008D4951 /* ThorchainService.swift */; };
 		469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */; };
@@ -655,9 +652,6 @@
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
 		B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */; };
-		B51097EE2C4E43830066D560 /* BlowfishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097ED2C4E43830066D560 /* BlowfishService.swift */; };
-		B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */; };
-		B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */; };
 		B51097F52C4EB7200066D560 /* BlowfishEvmWarningInformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F42C4EB7200066D560 /* BlowfishEvmWarningInformationNote.swift */; };
 		B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* TransactionMemoCustom.swift */; };
 		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
@@ -689,7 +683,6 @@
 		B55246CB2CF5643800E3532C /* noble.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55246CA2CF5643800E3532C /* noble.swift */; };
 		B571384D2CC560F2000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384C2CC560F0000E925B /* Ton.swift */; };
 		B57138502CC5713E000E925B /* TonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384F2CC5713A000E925B /* TonService.swift */; };
-		B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
 		B58156352C5D4DC9006164BF /* BlowfishViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */; };
@@ -810,7 +803,6 @@
 		DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE22B8AF8B1005170E8 /* publickey.swift */; };
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
-		DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */; };
 		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
 		DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */; };
 		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
@@ -853,15 +845,12 @@
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
 		461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCell.swift; sourceTree = "<group>"; };
 		461AD1BA2BC7239C00959278 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
-		462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaQuote.swift; sourceTree = "<group>"; };
-		462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaCoin.swift; sourceTree = "<group>"; };
 		463408652BA9C1D200246248 /* CoinTypeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinTypeExtension.swift; sourceTree = "<group>"; };
 		465036BA2BCF968E00856B34 /* BigInt.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigInt.swift; sourceTree = "<group>"; };
 		465A8D522B9E689B006E7457 /* SolanaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaService.swift; sourceTree = "<group>"; };
 		465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolanaRpc.swift; sourceTree = "<group>"; };
 		465B09A82B7C176700952DD9 /* SendTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendTransaction.swift; sourceTree = "<group>"; };
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
-		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
 		4680292F2BC8E4CE005A9EEF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		468029512BC8E7DD005A9EEF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		468029522BC8E7F9005A9EEF /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1498,9 +1487,6 @@
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoContractTypeEnum.swift; sourceTree = "<group>"; };
-		B51097ED2C4E43830066D560 /* BlowfishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishService.swift; sourceTree = "<group>"; };
-		B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishRequest.swift; sourceTree = "<group>"; };
-		B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishResponse.swift; sourceTree = "<group>"; };
 		B51097F42C4EB7200066D560 /* BlowfishEvmWarningInformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishEvmWarningInformationNote.swift; sourceTree = "<group>"; };
 		B51119322C0072620020B711 /* TransactionMemoCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoCustom.swift; sourceTree = "<group>"; };
 		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
@@ -1532,7 +1518,6 @@
 		B55246CA2CF5643800E3532C /* noble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = noble.swift; sourceTree = "<group>"; };
 		B571384C2CC560F0000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
 		B571384F2CC5713A000E925B /* TonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonService.swift; sourceTree = "<group>"; };
-		B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishSolanaRequest.swift; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
 		B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishViewModel.swift; sourceTree = "<group>"; };
@@ -1653,7 +1638,6 @@
 		DEEDAEE02B8AF7EF005170E8 /* evm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = evm.swift; sourceTree = "<group>"; };
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
-		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
 		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
@@ -1790,7 +1774,6 @@
 				A51AE8BB2C931C2000EF9A7A /* FastVault */,
 				A5A6969C2C74D0DB0075AA45 /* Fee */,
 				A5E841C92C639550009325CB /* Rates */,
-				B51097EC2C4E43660066D560 /* Blowfish */,
 				A52287462C42BAEB00E1CC5A /* LiFi */,
 				A563867E2C3A2121008B848E /* Protobuf */,
 				A58CC3442C32EDDB0086D16B /* Keysign */,
@@ -1824,15 +1807,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		462DCD6E2BCA14D9003D542F /* Coinpaprika */ = {
-			isa = PBXGroup;
-			children = (
-				462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */,
-				462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */,
-			);
-			path = Coinpaprika;
-			sourceTree = "<group>";
-		};
 		465A8D512B9E6887006E7457 /* Solana */ = {
 			isa = PBXGroup;
 			children = (
@@ -1862,23 +1836,6 @@
 				A65649EF2B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift */,
 			);
 			path = UTXO;
-			sourceTree = "<group>";
-		};
-		465B189D2BA3D7AD001D7407 /* Coingecko */ = {
-			isa = PBXGroup;
-			children = (
-				465B09B62B7D909400952DD9 /* CryptoPrice.swift */,
-			);
-			path = Coingecko;
-			sourceTree = "<group>";
-		};
-		465B189E2BA3D7B5001D7407 /* Prices */ = {
-			isa = PBXGroup;
-			children = (
-				462DCD6E2BCA14D9003D542F /* Coinpaprika */,
-				465B189D2BA3D7AD001D7407 /* Coingecko */,
-			);
-			path = Prices;
 			sourceTree = "<group>";
 		};
 		468029352BC8E4CE005A9EEF /* Localizables */ = {
@@ -2679,7 +2636,6 @@
 				A65649DD2B96602700E4B329 /* VaultExtension.swift */,
 				A65649DE2B96602700E4B329 /* TssExtension.swift */,
 				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
-				DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */,
 				DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */,
 				463408652BA9C1D200246248 /* CoinTypeExtension.swift */,
 				DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */,
@@ -3050,24 +3006,6 @@
 			path = Cells;
 			sourceTree = "<group>";
 		};
-		B51097EC2C4E43660066D560 /* Blowfish */ = {
-			isa = PBXGroup;
-			children = (
-				B51097ED2C4E43830066D560 /* BlowfishService.swift */,
-			);
-			path = Blowfish;
-			sourceTree = "<group>";
-		};
-		B51097EF2C4E48BB0066D560 /* Blowfish */ = {
-			isa = PBXGroup;
-			children = (
-				B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */,
-				B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */,
-				B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */,
-			);
-			path = Blowfish;
-			sourceTree = "<group>";
-		};
 		B54B01982BDE0A0F00FDA472 /* Polkadot */ = {
 			isa = PBXGroup;
 			children = (
@@ -3198,10 +3136,8 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				B51097EF2C4E48BB0066D560 /* Blowfish */,
 				B5A97CFA2BF43653007574D7 /* TransactionMemo */,
 				B5F7581B2BD8FD970097B5B9 /* Sui */,
-				465B189E2BA3D7B5001D7407 /* Prices */,
 				465B189C2BA3D786001D7407 /* UTXO */,
 				465A8D552B9E6E0A006E7457 /* Solana */,
 				469ED3962B98E7B7008D4951 /* Cosmos */,
@@ -3756,7 +3692,6 @@
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				A6C671232CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift in Sources */,
 				A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */,
-				B51097EE2C4E43830066D560 /* BlowfishService.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
 				A6386D942C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift in Sources */,
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
@@ -3799,7 +3734,6 @@
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
 				A6386D9C2C90224300DDD58E /* SendCryptoSigningErrorView+macOS.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
-				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
 				A6C670922C9CFE1600F59B6A /* HomeView+macOS.swift in Sources */,
 				DE727C0C2D000FC9007E9273 /* LibType.swift in Sources */,
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
@@ -3811,7 +3745,6 @@
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				A698222E2CB3A8B500966D19 /* CreateFolderView+iOS.swift in Sources */,
 				A575F2CE2D50D421000C4F14 /* FastVaultSetHintView+macOS.swift in Sources */,
-				462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
@@ -3824,7 +3757,6 @@
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */,
 				A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */,
-				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */,
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
@@ -4189,11 +4121,9 @@
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
-				B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */,
 				A6833D822C65B199002029E1 /* AddressBookHeader.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				A6C670A42C9D0CA200F59B6A /* RenameVaultView+iOS.swift in Sources */,
-				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A622C84C2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift in Sources */,
 				A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */,
 				A6ACAD612D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift in Sources */,
@@ -4369,7 +4299,6 @@
 				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
-				B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
 				A6C671372CA3C7E500F59B6A /* VaultDeletionDetails+iOS.swift in Sources */,
 				A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */,
@@ -4423,7 +4352,6 @@
 				A622C85E2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
 				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
-				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
 				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,

@@ -24,7 +24,6 @@ final class DKLSKeygen {
     let mediatorURL: String
     let sessionID: String
     let encryptionKeyHex: String
-    let oldResharePrefix: String
     let isInitiateDevice: Bool
     var messenger: DKLSMessenger
     var keygenDoneIndicator = false
@@ -42,7 +41,6 @@ final class DKLSKeygen {
          mediatorURL: String,
          sessionID: String,
          encryptionKeyHex: String,
-         oldResharePrefix: String,
          isInitiateDevice: Bool) {
         self.vault = vault
         self.tssType = tssType
@@ -51,7 +49,6 @@ final class DKLSKeygen {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
-        self.oldResharePrefix = oldResharePrefix
         self.isInitiateDevice = isInitiateDevice
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID

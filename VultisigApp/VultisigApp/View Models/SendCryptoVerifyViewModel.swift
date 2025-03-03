@@ -43,39 +43,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         blowfishWarnings = []
     }
     
-    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse {
-        return try await BlowfishService.shared.blowfishEVMTransactionScan(
-            fromAddress: tx.fromAddress,
-            toAddress: tx.toAddress,
-            amountInRaw: tx.amountInRaw,
-            memo: tx.memo,
-            chain: tx.coin.chain
-        )
-    }
-    
-    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
-        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-        
-        let keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-            coin: tx.coin,
-            toAddress: tx.toAddress,
-            amount: tx.amountInRaw,
-            memo: tx.memo,
-            chainSpecific: chainSpecific,
-            vault: vault
-        )
-        
-        let zeroSignedTransaction: String = try SolanaHelper.getZeroSignedTransaction(
-            vaultHexPubKey: vault.pubKeyEdDSA,
-            vaultHexChainCode: vault.hexChainCode,
-            keysignPayload: keysignPayload
-        )
-        
-        return try await BlowfishService.shared.blowfishSolanaTransactionScan(
-            fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
-        )
-    }
-    
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         if !isValidForm {
             self.errorMessage = "mustAgreeTermsError"

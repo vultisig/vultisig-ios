@@ -319,37 +319,6 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishResponse {
-        guard let payload = keysignPayload else {
-            throw NSError(domain: "JoinKeysignViewModel", code: 2, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for EVM transaction scan."])
-        }
-        
-        return try await BlowfishService.shared.blowfishEVMTransactionScan(
-            fromAddress: payload.coin.address,
-            toAddress: payload.toAddress,
-            amountInRaw: payload.toAmount,
-            memo: payload.memo,
-            chain: payload.coin.chain
-        )
-    }
-    
-    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse {
-        guard let payload = keysignPayload else {
-            throw NSError(domain: "JoinKeysignViewModel", code: 3, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for Solana transaction scan."])
-        }
-        
-        let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
-            vaultHexPubKey: vault.pubKeyEdDSA,
-            vaultHexChainCode: vault.hexChainCode,
-            keysignPayload: payload
-        )
-        
-        return try await BlowfishService.shared.blowfishSolanaTransactionScan(
-            fromAddress: payload.coin.address,
-            zeroSignedTransaction: zeroSignedTransaction
-        )
-    }
-    
     func getCalculatedNetworkFee() -> String {
         
         guard let payload = keysignPayload else {

@@ -341,13 +341,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func pickerFromCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+    func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
         return tx.fromCoins.sorted(by: {
             Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
         })
     }
 
-    func pickerToCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+    func pickerToCoins(tx: SwapTransaction) -> [Coin] {
         return tx.toCoins.sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })

@@ -9,9 +9,6 @@ import Foundation
 
 @MainActor
 class ChainCellViewModel: ObservableObject {
-
-    private let balanceService = BalanceService.shared
-    
     func getGroupCount(_ group: GroupedChain) -> String {
         guard group.coins.count>1 else {
             return "1 " + NSLocalizedString("asset", comment: "")
