@@ -221,31 +221,11 @@ struct JoinKeygenView: View {
     }
     
     var joiningKeygenCardContent: some View {
-        VStack(spacing: 12) {
-            Text(NSLocalizedString("joiningKeygen", comment: ""))
-                .foregroundColor(.neutral0)
-                .font(.body28BrockmannMedium)
-            
-            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
-                .font(.body14BrockmannMedium)
-        }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal)
+        getKeygenCardContent("joiningKeygen")
     }
     
     var waitingForKeygenCardContent: some View {
-        VStack(spacing: 12) {
-            Text(NSLocalizedString("joinKeygenViewTitle", comment: ""))
-                .foregroundColor(.neutral0)
-                .font(.body28BrockmannMedium)
-            
-            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
-                .font(.body14BrockmannMedium)
-        }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal)
+        getKeygenCardContent("joinKeygenViewTitle")
     }
     
     var animation: some View {
@@ -281,6 +261,20 @@ struct JoinKeygenView: View {
             viewModel.isShowingScanner = false
             viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
+    }
+    
+    private func getKeygenCardContent(_ title: String) -> some View {
+        VStack(spacing: 12) {
+            Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body28BrockmannMedium)
+            
+            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                .font(.body14BrockmannMedium)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal)
     }
 }
 
