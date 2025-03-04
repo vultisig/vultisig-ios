@@ -184,10 +184,13 @@ struct JoinKeygenView: View {
     var joinKeygen: some View {
         VStack(spacing: 26) {
             capsule
-            cardContent
+            joiningKeygenCardContent
             animation
         }
         .padding(.vertical, 30)
+        .onAppear {
+            viewModel.joinKeygenCommittee()
+        }
     }
     
     var filePicker: some View {
@@ -202,20 +205,11 @@ struct JoinKeygenView: View {
     }
     
     var waitingForKeygenStart: some View {
-        VStack {
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("waitingForKeygenStart", comment: "Waiting for key generation to start..."))
-                ProgressView().progressViewStyle(.circular).padding(2)
-            }
+        VStack(spacing: 26) {
+            capsule
+            waitingForKeygenCardContent
+            animation
         }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
-        .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .task {
             await viewModel.waitForKeygenStart()
@@ -226,7 +220,21 @@ struct JoinKeygenView: View {
         IconCapsule(title: "secureVault", icon: "shield")
     }
     
-    var cardContent: some View {
+    var joiningKeygenCardContent: some View {
+        VStack(spacing: 12) {
+            Text(NSLocalizedString("joiningKeygen", comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body28BrockmannMedium)
+            
+            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                .font(.body14BrockmannMedium)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal)
+    }
+    
+    var waitingForKeygenCardContent: some View {
         VStack(spacing: 12) {
             Text(NSLocalizedString("joinKeygenViewTitle", comment: ""))
                 .foregroundColor(.neutral0)
