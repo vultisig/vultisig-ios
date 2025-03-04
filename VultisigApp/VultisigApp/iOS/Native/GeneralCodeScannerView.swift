@@ -36,11 +36,15 @@ struct GeneralCodeScannerView: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var body: some View {
         ZStack {
-            Background()
+            cameraView
             content
         }
+        .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
+        .ignoresSafeArea()
         .fileImporter(
             isPresented: $isFilePresented,
             allowedContentTypes: [UTType.image],
@@ -62,17 +66,27 @@ struct GeneralCodeScannerView: View {
         .alert(isPresented: $showAlert) {
             alert
         }
+        .overlay {
+            background
+        }
+    }
+    
+    var background: some View {
+        Image("QRScannerBackgroundImage")
+            .resizable()
+            .scaledToFill()
+            .opacity(0.2)
     }
     
     var content: some View {
         VStack {
             header
-            cameraView
-            
+            Spacer()
             if showButtons {
                 buttons
             }
         }
+        .padding(.vertical, 8)
     }
     
     var header: some View {
@@ -93,7 +107,7 @@ struct GeneralCodeScannerView: View {
         Button {
             showSheet = false
         } label: {
-            getIcon(for: "chevron.left")
+            getIcon(for: "xmark")
         }
     }
     
@@ -115,15 +129,9 @@ struct GeneralCodeScannerView: View {
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay (
-                border
-            )
             
             overlay
         }
-        .cornerRadius(16)
-        .padding(16)
     }
     
     var border: some View {
@@ -134,8 +142,6 @@ struct GeneralCodeScannerView: View {
     
     var overlay: some View {
         Image("QRScannerOutline")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
             .padding(60)
             .allowsHitTesting(false)
     }
