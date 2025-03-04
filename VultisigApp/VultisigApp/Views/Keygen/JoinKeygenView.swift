@@ -7,6 +7,7 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
+import RiveRuntime
 
 struct JoinKeygenView: View {
     let vault: Vault
@@ -18,6 +19,8 @@ struct JoinKeygenView: View {
     @State var showFileImporter = false
     @State var showInformationNote = false
     @State var hideBackButton: Bool = false
+    
+    @State var loadingAnimationVM: RiveViewModel? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -170,22 +173,20 @@ struct JoinKeygenView: View {
         .cornerRadius(12)
     }
     
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.05)
+            .blur(radius: 20)
+    }
+    
     var joinKeygen: some View {
-        VStack {
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("joinKeygen", comment: "Joining key generation, please wait..."))
-                    .onAppear {
-                        viewModel.joinKeygenCommittee()
-                    }
-            }
+        VStack(spacing: 26) {
+            capsule
+            cardContent
+            animation
         }
-        .font(.body15MenloBold)
-        .multilineTextAlignment(.center)
         .padding(.vertical, 30)
     }
     
@@ -221,6 +222,29 @@ struct JoinKeygenView: View {
         }
     }
     
+    var capsule: some View {
+        IconCapsule(title: "secureVault", icon: "shield")
+    }
+    
+    var cardContent: some View {
+        VStack(spacing: 12) {
+            Text(NSLocalizedString("joinKeygenViewTitle", comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body28BrockmannMedium)
+            
+            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                .font(.body14BrockmannMedium)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal)
+    }
+    
+    var animation: some View {
+        loadingAnimationVM?.view()
+            .frame(width: 24, height: 24)
+    }
+    
     var cameraErrorView: some View {
         NoCameraPermissionView()
     }
@@ -236,6 +260,7 @@ struct JoinKeygenView: View {
     
     private func setData() {
         appViewModel.checkCameraPermission()
+        loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
         
         viewModel.setData(
             vault: vault,

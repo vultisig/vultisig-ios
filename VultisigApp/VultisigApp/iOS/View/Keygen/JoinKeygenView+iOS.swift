@@ -13,6 +13,7 @@ extension JoinKeygenView {
     var content: some View {
         ZStack {
             Background()
+            shadow
             main
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
