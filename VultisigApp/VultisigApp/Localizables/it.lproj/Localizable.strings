@@ -541,3 +541,6 @@
 "youAreInLocalMode" = "Sei in modalità locale";
 "switchBackToInternetMode" = "Torna alla modalità internet";
 "peerDiscoveryScanDeviceDisclaimer" = "Scansiona il QR con un altro dispositivo. Si consiglia un setup con 3 dispositivi, 2 sono sufficienti.";
+"joinKeygenViewTitle" = "In attesa che altri dispositivi si uniscano";
+"joinKeygenViewDescription" = "Il tuo vault inizierà a essere generato non appena completerai la configurazione sul tuo dispositivo principale.";
+"joiningKeygen" = "Unendosi al keygen";
