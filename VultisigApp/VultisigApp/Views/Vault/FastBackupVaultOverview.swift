@@ -10,7 +10,6 @@ import RiveRuntime
 
 struct FastBackupVaultOverview: View {
     let vault: Vault
-    let selectedTab: SetupVaultState?
     let email: String
     @ObservedObject var viewModel: KeygenViewModel
     
@@ -145,7 +144,6 @@ struct FastBackupVaultOverview: View {
 #Preview {
     FastBackupVaultOverview(
         vault: Vault.example,
-        selectedTab: .secure,
         email: "mail@email.com",
         viewModel: KeygenViewModel()
     )

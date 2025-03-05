@@ -47,7 +47,6 @@ struct KeygenView: View {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
                         vault: vault,
-                        selectedTab: selectedTab,
                         email: fastSignConfig.email,
                         viewModel: viewModel
                     )

@@ -146,7 +146,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         
                     }
                 } catch {
-                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                    print("fail to load SUI balances,error:\(error.localizedDescription)")
                 }
                 
                 isLoading = false
@@ -200,7 +200,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     
                     convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
-                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                    print("fail to load ton balances,error:\(error.localizedDescription)")
                 }
                 
                 isLoading = false
@@ -221,7 +221,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     
                     convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
-                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                    print("fail to load ripple balances,error:\(error.localizedDescription)")
                 }
                 
                 isLoading = false
@@ -243,7 +243,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     
                     convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
-                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                    print("fail to load TRON balances,error:\(error.localizedDescription)")
                 }
                 
                 isLoading = false
