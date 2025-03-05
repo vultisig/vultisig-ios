@@ -443,10 +443,3 @@ class SolanaService {
         
     }
 }
-
-extension SolanaService {
-    
-    fileprivate enum Errors: Error {
-        case getSolanaBalanceFailed
-    }
-}

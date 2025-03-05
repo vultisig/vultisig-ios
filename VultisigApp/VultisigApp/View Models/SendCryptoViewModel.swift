@@ -20,26 +20,20 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var showAlert = false
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
-    @Published var priceRate = 0.0
-    @Published var coinBalance: String = "0"
     @Published var errorTitle = ""
     @Published var errorMessage = ""
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
     
-    @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
     @Published var ton: TonService = TonService.shared
-    @Published var cryptoPrice = CryptoPriceService.shared
+
     @Published var utxo = BlockchairService.shared
     @Published var ripple: RippleService = RippleService.shared
     
     @Published var tron: TronService = TronService.shared
     
-    let maya = MayachainService.shared
-    let atom = GaiaService.shared
-    let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
     
     private let mediator = Mediator.shared

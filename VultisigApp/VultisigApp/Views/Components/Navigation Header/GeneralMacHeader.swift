@@ -12,8 +12,6 @@ struct GeneralMacHeader: View {
     
     var showActions: Bool = true
     
-    @Environment(\.dismiss) private var dismiss
-    
     var body: some View {
         HStack {
             if showActions {

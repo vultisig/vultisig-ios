@@ -122,7 +122,7 @@ class KeysignViewModel: ObservableObject {
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               chainPath: keysignPayload?.coin.coinType.derivationPath() ?? derivePath,
                                               isInitiateDevice: self.isInitiateDevice)
-                try await dklsKeysign.DKLSKeysignWithRetry(attempt: 0)
+                try await dklsKeysign.DKLSKeysignWithRetry()
                 self.signatures = dklsKeysign.getSignatures()
                 if self.signatures.count == 0 {
                     throw HelperError.runtimeError("fail to sign transaction")
@@ -136,7 +136,7 @@ class KeysignViewModel: ObservableObject {
                                                     vault: self.vault,
                                                     encryptionKeyHex: self.encryptionKeyHex,
                                                     isInitiateDevice: self.isInitiateDevice)
-                try await schnorrKeysign.KeysignWithRetry(attempt: 0)
+                try await schnorrKeysign.KeysignWithRetry()
                 self.signatures = schnorrKeysign.getSignatures()
                 if self.signatures.count == 0 {
                     throw HelperError.runtimeError("fail to sign transaction")
@@ -357,7 +357,7 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
             
         case .Sui:
-            let transaction = try SuiHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try SuiHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
             
         case .Polkadot:
@@ -396,7 +396,7 @@ class KeysignViewModel: ObservableObject {
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Ripple:
-            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA,keysignPayload: keysignPayload, signatures: signatures, vault: vault)
             return .regular(transaction)
         case .Tron:
             let transaction = try TronHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
@@ -604,23 +604,6 @@ class KeysignViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.status = .KeysignFailed
             self.keysignError = errMessage
-        }
-    }
-}
-
-private extension KeysignViewModel {
-    
-    enum KeysignError: Error, LocalizedError {
-        case noErc20Allowance
-        case networkError
-        
-        var errorDescription: String? {
-            switch self {
-            case .noErc20Allowance:
-                return "ERC20 approve transaction is unconfirmed. Please wait a bit and try again leter"
-            case .networkError:
-                return " Unable to connect. Please check your internet connection and try again."
-            }
         }
     }
 }

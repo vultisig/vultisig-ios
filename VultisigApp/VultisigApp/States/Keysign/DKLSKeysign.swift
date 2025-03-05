@@ -28,7 +28,6 @@ final class DKLSKeysign {
     let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
-    var keyshare:[UInt8] = []
     
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -419,7 +418,7 @@ final class DKLSKeysign {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func DKLSKeysignWithRetry(attempt: UInt8) async throws {
+    func DKLSKeysignWithRetry() async throws {
         for msg in self.messsageToSign {
             try await DKLSKeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)
         }

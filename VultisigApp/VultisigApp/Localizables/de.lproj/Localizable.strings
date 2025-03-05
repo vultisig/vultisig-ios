@@ -320,7 +320,6 @@
 "numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";
 "invalidAddressChain" = "Diese Adresse ist für diese Kette ungültig.";
-"scannedByBlowfish" = "Transaktion von Blowfish verifiziert.";
 "defaultChains" = "Standardketten";
 "search" = "Suche";
 "vaultValue" = "Tresorwert";

@@ -5,7 +5,6 @@
 
 import CryptoKit
 import Foundation
-import Mediator
 import OSLog
 import SwiftData
 import SwiftUI
@@ -29,7 +28,6 @@ struct KeygenView: View {
 
     @StateObject var viewModel = KeygenViewModel()
     
-    let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
@@ -113,11 +111,6 @@ struct KeygenView: View {
         Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
             .foregroundColor(.extraLightGray)
             .font(.body16BrockmannMedium)
-    }
-    
-    var instructions: some View {
-        WifiInstruction()
-            .padding(.vertical, 20)
     }
     
     var preparingVaultText: some View {

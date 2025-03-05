@@ -13,7 +13,7 @@ import WalletCore
 @MainActor
 class TransactionMemoVerifyViewModel: ObservableObject {
     
-    @Published var isAddressCorrect = false
+    @Published var isAddressCorrecxt = false
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
     @Published var showAlert = false

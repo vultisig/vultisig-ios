@@ -2,11 +2,8 @@ import SwiftUI
 
 struct CoinCell: View {
     @ObservedObject var coin: Coin
-    @ObservedObject var group: GroupedChain
-    let vault: Vault
     
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -58,6 +55,6 @@ struct CoinCell: View {
 }
 
 #Preview {
-    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
+    CoinCell(coin: Coin.example)
         .environmentObject(SettingsViewModel())
 }

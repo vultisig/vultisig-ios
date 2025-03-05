@@ -16,8 +16,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
-    private let balanceService = BalanceService.shared
-    private let rateProvider = RateProvider.shared
 
     private var updateQuoteTask: Task<Void, Never>?
     private var updateFeesTask: Task<Void, Never>?

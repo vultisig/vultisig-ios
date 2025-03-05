@@ -3,7 +3,6 @@
 //  VultisigApp
 //
 
-import OSLog
 import SwiftUI
 import RiveRuntime
 
@@ -27,7 +26,6 @@ struct PeerDiscoveryView: View {
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
     @State var showDisclaimer: Bool = true
-    @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
     
@@ -51,8 +49,6 @@ struct PeerDiscoveryView: View {
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
     ]
-    
-    let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
         content

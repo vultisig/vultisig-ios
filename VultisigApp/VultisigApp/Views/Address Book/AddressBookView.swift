@@ -20,7 +20,6 @@ struct AddressBookView: View {
     @State var coin: Coin?
     
     @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
     var body: some View {
         content

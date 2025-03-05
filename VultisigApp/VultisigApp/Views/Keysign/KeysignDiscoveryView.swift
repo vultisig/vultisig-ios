@@ -2,7 +2,6 @@
 //  KeysignDiscovery.swift
 //  VultisigApp
 
-import OSLog
 import SwiftUI
 
 struct KeysignDiscoveryView: View {
@@ -37,11 +36,8 @@ struct KeysignDiscoveryView: View {
 #endif
     
     @Environment(\.displayScale) var displayScale
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let columns = [GridItem(.adaptive(minimum: 160))]
-    
-    let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {
         container
@@ -125,11 +121,11 @@ struct KeysignDiscoveryView: View {
     var lookingForDevices: some View {
         LookingForDevicesLoader(selectedTab: keysignState)
     }
-
+    
     var keysignState: SetupVaultState {
         return fastVaultPassword == nil ? .secure : .fast
     }
-
+    
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $selectedNetwork)
             .onChange(of: selectedNetwork) {
@@ -149,7 +145,7 @@ struct KeysignDiscoveryView: View {
         } else {
             self.selectedNetwork = .Local
         }
-
+        
         viewModel.setData(
             vault: vault,
             keysignPayload: keysignPayload,
@@ -158,7 +154,7 @@ struct KeysignDiscoveryView: View {
             fastVaultPassword: fastVaultPassword,
             onFastKeysign: { startKeysign() }
         )
-
+        
         qrCodeImage = await viewModel.getQrImage(size: 100)
         
         if let qrCodeImage, let keysignPayload {
@@ -184,7 +180,7 @@ struct KeysignDiscoveryView: View {
             return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
-
+    
     func getSwapToAmount() -> String {
         let tx = swapTransaction
         

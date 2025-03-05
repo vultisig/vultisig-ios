@@ -9,7 +9,6 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    @StateObject var blowfishViewModel = BlowfishWarningViewModel()
     
     var body: some View {
         ZStack {
@@ -19,21 +18,11 @@ struct KeysignMessageConfirmView: View {
                 button
             }
             .foregroundColor(.neutral0)
-            .onAppear {
-                viewModel.blowfishTransactionScan()
-                blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
-            }
             .task {
                 await viewModel.loadThorchainID()
                 await viewModel.loadFunctionName()
             }
         }
-    }
-    
-    var blowfishView: some View {
-        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
     }
     
     var title: some View {
@@ -71,9 +60,6 @@ struct KeysignMessageConfirmView: View {
             .cornerRadius(10)
             .padding(16)
             
-            if viewModel.blowfishShow {
-                blowfishView
-            }
         }
     }
     

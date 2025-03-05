@@ -304,7 +304,6 @@
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparelhados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
 "invalidAddressChain" = "Este endereço é inválido para essa cadeia.";
-"scannedByBlowfish" = "Transação verificada pelo Blowfish.";
 "defaultChains" = "Cadeias padrão";
 "search" = "Pesquisar";
 "vaultValue" = "Valor do cofre";
