@@ -367,18 +367,6 @@ private extension BlockChainService {
         }
     }
     
-    func normalizePriorityFee(_ value: BigInt,_ chain: Chain) -> BigInt {
-        if chain == .ethereum || chain == .avalanche {
-            // BSC is very cheap , and layer two is very low priority fee as well
-            //  Just pay 1Gwei priority for ETH and AVAX
-            let oneGwei = BigInt(1000000000)
-            if value < oneGwei {
-                return oneGwei
-            }
-        }
-        return value
-    }
-    
     func estimateERC20GasLimit(
         tx: SendTransaction,
         gasPrice: BigInt,

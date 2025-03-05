@@ -46,11 +46,6 @@ struct VaultCell: View {
             .clipped()
     }
     
-    var folder: some View {
-        Image(systemName: "folder")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
-    }
     
     var title: some View {
         Text(vault.name.capitalized)

@@ -28,7 +28,6 @@ class JoinKeysignViewModel: ObservableObject {
     var serviceDelegate: ServiceDelegate?
     
     private let etherfaceService = EtherfaceService.shared
-    private let fastVaultService = FastVaultService.shared
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -44,10 +43,6 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
     @Published var isCameraPermissionGranted: Bool? = nil
-    
-    @Published var blowfishShow = false
-    @Published var blowfishWarningsShow = false
-    @Published var blowfishWarnings: [String] = []
     
     @Published var decodedMemo: String?
     
@@ -131,11 +126,6 @@ class JoinKeysignViewModel: ObservableObject {
         } catch {
             self.logger.error("Failed to wait for keysign to start.")
         }
-    }
-    
-    private func fastVaultKeysignCommittee() -> [String] {
-        let fastServer = vault.signers.first(where: { $0.starts(with: "Server") })
-        return [localPartyID, fastServer].compactMap { $0 }
     }
     
     private func checkKeysignStarted() {
@@ -291,12 +281,6 @@ class JoinKeysignViewModel: ObservableObject {
             }
         }
         
-    }
-    
-    func blowfishTransactionScan() {
-        blowfishShow = false
-        blowfishWarningsShow = false
-        blowfishWarnings = []
     }
     
     func loadThorchainID() async {

@@ -46,14 +46,6 @@ public struct AddressService {
         return chain.coinType.validate(address: address)
     }
 
-    static func validateAddress(coin: CoinMeta, address: String) -> Bool {
-        if coin.chain == .mayaChain {
-            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-        }
-
-        return coin.coinType.validate(address: address)
-    }
-
     static func validateAddress(address: String, group: GroupedChain) -> Bool {
         let firstCoinOptional = group.coins.first
         if let firstCoin = firstCoinOptional {

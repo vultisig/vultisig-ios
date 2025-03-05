@@ -42,7 +42,6 @@ final class RateProvider {
 
     /// Should be updated manually
     private var rates = Set<Rate>()
-    private var cancallables = Set<AnyCancellable>()
 
     private init() {
         let descriptor = FetchDescriptor<DatabaseRate>()

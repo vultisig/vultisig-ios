@@ -26,15 +26,6 @@ struct FastVaultSetPasswordView: View {
 
     private let fastVaultService: FastVaultService = .shared
 
-    var disclaimerText: String {
-        switch fastVaultExist {
-        case false:
-            return NSLocalizedString("fastVaultSetDisclaimer", comment: "")
-        case true:
-            return NSLocalizedString("fastVaultEnterDisclaimer", comment: "")
-        }
-    }
-
     var body: some View {
         content
             .animation(.easeInOut, value: showTooltip)

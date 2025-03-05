@@ -38,15 +38,6 @@ struct ChainSelectionCell: View {
         cell
     }
     
-    var disabledContent: some View {
-        Button {
-            showAlert = true
-        } label: {
-            cell
-                .disabled(false)
-        }
-    }
-    
     var cell: some View {
         let nativeAsset = assets[0]
         return CoinSelectionCell(asset: nativeAsset)

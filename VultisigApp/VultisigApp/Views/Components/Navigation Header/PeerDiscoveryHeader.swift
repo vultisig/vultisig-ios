@@ -10,7 +10,6 @@ import SwiftUI
 struct PeerDiscoveryHeader: View {
     let title: String
     let vault: Vault
-    let selectedTab: SetupVaultState
     let hideBackButton: Bool
     
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
@@ -57,7 +56,6 @@ struct PeerDiscoveryHeader: View {
     PeerDiscoveryHeader(
         title: "Keygen",
         vault: Vault.example,
-        selectedTab: .fast,
         hideBackButton: false,
         viewModel: KeygenPeerDiscoveryViewModel(),
         shareSheetViewModel: ShareSheetViewModel()

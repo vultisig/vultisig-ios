@@ -173,7 +173,7 @@ struct ChainDetailView: View {
             NavigationLink {
                 CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx, resetActive: $resetActive)
             } label: {
-                CoinCell(coin: coin, group: group, vault: vault)
+                CoinCell(coin: coin)
             }
         }
     }

@@ -13,8 +13,6 @@ enum RpcEvmServiceError: Error {
 }
 
 class RpcEvmService: RpcService {
-    
-    private let oneInchService = OneInchService.shared
 
     func getBalance(coin: Coin) async throws -> String {
         if coin.isNativeToken {

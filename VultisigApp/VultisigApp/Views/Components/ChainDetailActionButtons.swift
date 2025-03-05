@@ -72,9 +72,6 @@ struct ChainDetailActionButtons: View {
         }
     }
     
-    private func depositButton(_ action: CoinAction) -> some View {
-        ActionButton(title: action.title, fontColor: action.color)
-    }
     
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)

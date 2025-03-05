@@ -19,29 +19,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
-    @Published var blowfishShow = false
-    @Published var blowfishWarningsShow = false
-    @Published var blowfishWarnings: [String] = []
-    
-    @Published var thor = ThorchainService.shared
-    @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
-    @Published var eth = EthService.shared
-    var gaia = GaiaService.shared
     let blockChainService = BlockChainService.shared
-    
-    var THORChainAccount: THORChainAccountValue? = nil
-    var CosmosChainAccount: CosmosAccountValue? = nil
     
     var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
-    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws {
-        blowfishShow = false
-        blowfishWarningsShow = false
-        blowfishWarnings = []
-    }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         if !isValidForm {

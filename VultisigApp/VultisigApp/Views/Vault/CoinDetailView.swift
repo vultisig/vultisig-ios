@@ -69,7 +69,7 @@ struct CoinDetailView: View {
     }
     
     var cell: some View {
-        CoinCell(coin: coin, group: group, vault: vault)
+        CoinCell(coin: coin)
     }
     
     func refreshData() async {

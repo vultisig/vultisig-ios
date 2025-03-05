@@ -17,7 +17,6 @@ struct SetupQRCodeView: View {
     @State var shouldJoinKeygen = false
 
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
         content

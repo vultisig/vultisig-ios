@@ -18,8 +18,6 @@ struct NavigationHomeEditButton: View {
     
     var tint: Color = Color.neutral0
     
-    @EnvironmentObject var viewModel: VaultDetailViewModel
-    
     @Query var folders: [Folder]
     
     @Environment(\.modelContext) private var modelContext

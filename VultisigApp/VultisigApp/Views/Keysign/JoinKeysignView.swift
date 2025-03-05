@@ -2,12 +2,11 @@
 //  JoinKeysignView.swift
 //  VultisigApp
 
-import OSLog
 import SwiftUI
 
 struct JoinKeysignView: View {
     let vault: Vault
-       
+    
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
     
@@ -15,8 +14,6 @@ struct JoinKeysignView: View {
     @EnvironmentObject var appViewModel: ApplicationState
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
-    let logger = Logger(subsystem: "join-keysign", category: "communication")
-
     var body: some View {
         content
             .onAppear {
@@ -113,7 +110,7 @@ struct JoinKeysignView: View {
             KeysignMessageConfirmView(viewModel: viewModel)
         }
     }
-
+    
     var waitingForKeySignStart: some View {
         KeysignStartView(viewModel: viewModel)
     }

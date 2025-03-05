@@ -69,15 +69,6 @@ enum BlockChainSpecific: Codable, Hashable {
         }
     }
     
-    var baseFee: BigInt? {
-        switch self {
-        case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
-            return maxFeePerGas - priorityFee
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton, .Ripple, .Tron:
-            return nil
-        }
-    }
-
     var gasLimit: BigInt? {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):

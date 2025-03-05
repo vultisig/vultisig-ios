@@ -11,13 +11,10 @@ import RiveRuntime
 
 struct ServerBackupVerificationView: View {
     let vault: Vault
-    let selectedTab: SetupVaultState?
     let email: String
 
     @Binding var isPresented: Bool
     @Binding var isBackupLinkActive: Bool
-
-    @ObservedObject var viewModel: KeygenViewModel
 
     @FocusState private var focusedField: Int?
 
@@ -224,5 +221,5 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example, selectedTab: .secure, email: "mail@email.com", isPresented: .constant(false), isBackupLinkActive: .constant(false), viewModel: KeygenViewModel())
+    ServerBackupVerificationView(vault: Vault.example,  email: "mail@email.com", isPresented: .constant(false), isBackupLinkActive: .constant(false))
 }

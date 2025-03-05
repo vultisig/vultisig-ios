@@ -405,7 +405,7 @@ final class SchnorrKeysign {
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
     }
     
-    func KeysignWithRetry(attempt: UInt8) async throws {
+    func KeysignWithRetry() async throws {
         // get keyshare
         for msg in self.messsageToSign {
             try await KeysignOneMessageWithRetry(attempt: 0, messageToSign: msg)

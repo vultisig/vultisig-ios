@@ -99,10 +99,6 @@ struct VaultDeletionDetails: View {
         .foregroundColor(.neutral0)
     }
     
-    private func getVaultType() -> String {
-        return "Part \(vault.getThreshold() + 1) of \(vault.signers.count)"
-    }
-    
     private func titlePartText() -> String {
         let part = NSLocalizedString("part", comment: "")
         let of = NSLocalizedString("of", comment: "")

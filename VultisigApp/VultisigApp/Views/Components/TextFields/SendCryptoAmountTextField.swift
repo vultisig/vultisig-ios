@@ -14,7 +14,6 @@ struct SendCryptoAmountTextField: View {
     var onMaxPressed: (() -> Void)?
     
     @Environment(\.isEnabled) private var isEnabled
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         HStack(spacing: 0) {

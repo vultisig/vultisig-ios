@@ -73,24 +73,6 @@ struct TokenSelectorDropdown: View {
         .foregroundColor(.neutral200)
     }
     
-    private func getCell(for coin: Coin) -> some View {
-        HStack(spacing: 12) {
-            AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
-            
-            Text(coin.ticker)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-
-            if let schema = coin.tokenSchema {
-                Text("(\(schema))")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-            }
-
-            Spacer()
-        }
-        .frame(height: 48)
-    }
 }
 
 #Preview {

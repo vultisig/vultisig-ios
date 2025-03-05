@@ -10,7 +10,6 @@ import RiveRuntime
 
 struct FastBackupVaultOverview: View {
     let vault: Vault
-    let selectedTab: SetupVaultState?
     let email: String
     @ObservedObject var viewModel: KeygenViewModel
     
@@ -31,11 +30,9 @@ struct FastBackupVaultOverview: View {
         .sheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
                 vault: vault,
-                selectedTab: selectedTab,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: $isBackupLinkActive,
-                viewModel: viewModel
+                isBackupLinkActive: $isBackupLinkActive
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
@@ -147,7 +144,6 @@ struct FastBackupVaultOverview: View {
 #Preview {
     FastBackupVaultOverview(
         vault: Vault.example,
-        selectedTab: .secure,
         email: "mail@email.com",
         viewModel: KeygenViewModel()
     )

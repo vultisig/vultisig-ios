@@ -12,15 +12,3 @@ import Foundation
     var approveHash: String? { get set }
     func moveToNextView()
 }
-
-class FakeTransferViewModel: ObservableObject, TransferViewModel {
-    var hash: String?
-    
-    var approveHash: String?
-
-    init() { }
-
-    func moveToNextView() {
-
-    }
-}

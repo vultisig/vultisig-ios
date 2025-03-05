@@ -40,8 +40,6 @@ struct QRShareSheetImage: View {
     let cornerRadius: CGFloat = 30
 #endif
     
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
     var body: some View {
         content
     }

@@ -38,11 +38,6 @@ struct SettingVaultRegistrationCell: View {
             .foregroundColor(.neutral900)
     }
     
-    func getSelectionBlock(_ value: String) -> some View {
-        Text(value)
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
-    }
 }
 
 #Preview {

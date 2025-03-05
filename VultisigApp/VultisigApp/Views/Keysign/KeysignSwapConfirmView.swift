@@ -9,8 +9,6 @@ import SwiftUI
 
 struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
 
     var body: some View {
         VStack {
