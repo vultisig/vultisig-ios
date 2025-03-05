@@ -63,11 +63,6 @@ struct AddressBookTextField: View {
             .font(.body14MontserratMedium)
     }
     
-    var placeholder: some View {
-        Text(NSLocalizedString("typeHere", comment: ""))
-            .foregroundColor(Color.neutral0)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
    
     var pasteButton: some View {
         Button {

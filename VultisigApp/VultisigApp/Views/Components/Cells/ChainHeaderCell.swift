@@ -101,16 +101,6 @@ struct ChainHeaderCell: View {
         webLink
     }
     
-    var transactionsViewLink: some View {
-        NavigationLink {
-            TransactionsView(group: group)
-        } label: {
-            Image(systemName: "cube")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        }
-    }
-    
     var webLink: some View {
         ZStack {
             if let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),

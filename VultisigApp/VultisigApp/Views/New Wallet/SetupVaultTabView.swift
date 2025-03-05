@@ -36,7 +36,7 @@ struct SetupVaultTabView: View {
     }
     
     var animation: some View {
-        SetupVaultAnimationManager(animationVM: animationVM, selectedTab: selectedTab)
+        SetupVaultAnimationManager(animationVM: animationVM)
             .opacity(showAnimation ? 1 : 0)
             .blur(radius: showAnimation ? 0 : 10)
             .animation(.easeInOut, value: showAnimation)

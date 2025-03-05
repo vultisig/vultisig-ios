@@ -31,17 +31,6 @@ struct CoinPickerView: View {
                 isSearchFieldFocused = true
             }
     }
-
-    func header(label: String) -> some View {
-        VStack {
-            Spacer()
-            Text(NSLocalizedString(label, comment:"").uppercased())
-                .font(.body14Menlo)
-                .foregroundColor(Color.neutral300)
-                .padding(.horizontal, 12)
-        }
-        .frame(height: 44)
-    }
     
     var searchBar: some View {
         HStack(spacing: 0) {

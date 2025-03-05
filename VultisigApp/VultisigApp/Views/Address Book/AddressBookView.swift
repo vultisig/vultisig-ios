@@ -90,19 +90,6 @@ struct AddressBookView: View {
         try? self.modelContext.save()
     }
     
-    private func moveDown(fromIndex: Int, toIndex: Int) {
-        for index in fromIndex...toIndex {
-            savedAddresses[index].order = savedAddresses[index].order-1
-        }
-        savedAddresses[fromIndex].order = toIndex
-    }
-    
-    private func moveUp(fromIndex: Int, toIndex: Int) {
-        savedAddresses[fromIndex].order = toIndex
-        for index in toIndex...fromIndex {
-            savedAddresses[index].order = savedAddresses[index].order+1
-        }
-    }
 }
 
 #Preview {

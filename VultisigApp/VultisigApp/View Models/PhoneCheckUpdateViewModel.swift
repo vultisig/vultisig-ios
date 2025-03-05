@@ -16,11 +16,6 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     @Published var latestVersionString: String = ""
     @Published var currentVersionString: String = ""
     
-    func resetData() {
-        showError = false
-        showDetails = false
-    }
-    
     func checkForUpdates(isAutoCheck: Bool = false) {
         var currentVersion = currentAppVersion()
         let bundleID = Bundle.main.bundleIdentifier ?? ""

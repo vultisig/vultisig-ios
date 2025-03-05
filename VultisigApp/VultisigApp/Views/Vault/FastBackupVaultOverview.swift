@@ -31,11 +31,9 @@ struct FastBackupVaultOverview: View {
         .sheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
                 vault: vault,
-                selectedTab: selectedTab,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: $isBackupLinkActive,
-                viewModel: viewModel
+                isBackupLinkActive: $isBackupLinkActive
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
