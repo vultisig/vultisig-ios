@@ -23,6 +23,8 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
+    private var tx: SendTransaction
+    
     var addressFields: [String: String] {
         get {
             var fields = ["nodeAddress": nodeAddress]
@@ -41,11 +43,21 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
         }
     }
     
-    required init() {
+    required init(
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+    ) {
+        self.tx = tx
         setupValidation()
     }
     
-    init(nodeAddress: String, amount: Double = 0.0, provider: String = "") {
+    var balance: String {
+        let balance = tx.coin.balanceDecimal.description
+        
+        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+    }
+    
+    init(nodeAddress: String, amount: Double = 0.0, provider: String = "", tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel) {
+        self.tx = tx
         self.nodeAddress = nodeAddress
         self.amount = amount
         self.provider = provider
@@ -98,7 +110,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
             )
 
             StyledFloatingPointField(
-                placeholder: "Amount",
+                placeholder: "Amount \(balance)",
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }

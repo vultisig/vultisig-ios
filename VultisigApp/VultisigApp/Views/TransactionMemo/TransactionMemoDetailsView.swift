@@ -42,7 +42,7 @@ struct TransactionMemoDetailsView: View {
                 case .bond:
                     txMemoInstance = .bond(TransactionMemoBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 case .unbond:
-                    txMemoInstance = .unbond(TransactionMemoUnbond())
+                    txMemoInstance = .unbond(TransactionMemoUnbond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 case .bondMaya:
 
                     DispatchQueue.main.async {
