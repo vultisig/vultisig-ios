@@ -12,8 +12,6 @@ import BigInt
 
 enum SuiHelper {
     
-    static let defaultFeeInSui: BigInt = 1000  // Example fee, adjust as necessary
-    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SUI" else {
             throw HelperError.runtimeError("coin is not SUI")
@@ -130,7 +128,6 @@ enum SuiHelper {
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {

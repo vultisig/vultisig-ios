@@ -18,16 +18,8 @@ struct FastVaultSetHintView: View {
     @State var hint: String = ""
     @State var isLinkActive = false
 
-    private let fastVaultService: FastVaultService = .shared
-
     var body: some View {
         content
-    }
-
-    var title: some View {
-        Text(NSLocalizedString("password", comment: ""))
-            .font(.body34BrockmannMedium)
-            .foregroundColor(.neutral0)
     }
 
     var hintField: some View {

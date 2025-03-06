@@ -303,7 +303,6 @@
 "numberOfPairedDevicesTwoOfThree" = "Broj uređaja uparenih u par %d od 3";
 "numberOfPairedDevicesMOfN" = "Broj uređaja uparenih u par %d od N";
 "invalidAddressChain" = "Ova adresa je nevažeća za ovu lance.";
-"scannedByBlowfish" = "Transakcija provjerena Blowfishom.";
 "defaultChains" = "Zadani lanci";
 "search" = "Pretraži";
 "vaultValue" = "Vrijednost spremišta";
@@ -541,3 +540,6 @@
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
 "switchBackToInternetMode" = "Vrati se na internetski način rada";
 "peerDiscoveryScanDeviceDisclaimer" = "Skenirajte QR kod s drugim uređajem. Preporučena je konfiguracija s 3 uređaja, 2 su dovoljna.";
+"joinKeygenViewTitle" = "Čekanje na pridruživanje drugih uređaja";
+"joinKeygenViewDescription" = "Vaš trezor će se početi generirati čim dovršite postavljanje na svom glavnom uređaju.";
+"joiningKeygen" = "Pridruživanje keygenu";

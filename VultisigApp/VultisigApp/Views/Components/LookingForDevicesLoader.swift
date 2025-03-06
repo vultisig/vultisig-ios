@@ -85,15 +85,6 @@ struct LookingForDevicesLoader: View {
             .frame(width: 24, height: 24)
     }
     
-    var pleaseWait: some View {
-        Text(NSLocalizedString("pleaseWait", comment: ""))
-            .font(.body14Montserrat)
-            .foregroundColor(.neutral0)
-            .bold()
-            .multilineTextAlignment(.center)
-            .padding(.top, 50)
-    }
-    
     private func getTitle() -> String {
         if let tssType, tssType == .Reshare {
             return NSLocalizedString("resharingLoaderTitle", comment: "")

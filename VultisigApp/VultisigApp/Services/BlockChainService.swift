@@ -11,11 +11,11 @@ import VultisigCommonData
 
 final class BlockChainService {
 
-    static func normalizeUTXOFee(_ value: BigInt, action: Action) -> BigInt {
+    static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
         return value * 2 + value / 2 // x2.5 fee
     }
 
-    static func normalizeEVMFee(_ value: BigInt, action: Action) -> BigInt {
+    static func normalizeEVMFee(_ value: BigInt) -> BigInt {
         let normalized = value + value / 2 // x1.5 fee
         return max(normalized, 1) // To avoid 0 miner tips
     }
@@ -85,7 +85,7 @@ final class BlockChainService {
 
     func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
-        let normalized = Self.normalizeUTXOFee(sats, action: action)
+        let normalized = Self.normalizeUTXOFee(sats)
         let prioritized = Float(normalized) * feeMode.utxoMultiplier
         return BigInt(prioritized)
     }
@@ -212,7 +212,7 @@ private extension BlockChainService {
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? 0
             let normalizedPriorityFee = max(priorityFee, defaultPriorityFee)
-            let normalizedBaseFee = Self.normalizeEVMFee(baseFee, action: .transfer)
+            let normalizedBaseFee = Self.normalizeEVMFee(baseFee)
             let maxFeePerGasWei = normalizedBaseFee + normalizedPriorityFee
             return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
             
@@ -365,18 +365,6 @@ private extension BlockChainService {
         case .swap:
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
-    }
-    
-    func normalizePriorityFee(_ value: BigInt,_ chain: Chain) -> BigInt {
-        if chain == .ethereum || chain == .avalanche {
-            // BSC is very cheap , and layer two is very low priority fee as well
-            //  Just pay 1Gwei priority for ETH and AVAX
-            let oneGwei = BigInt(1000000000)
-            if value < oneGwei {
-                return oneGwei
-            }
-        }
-        return value
     }
     
     func estimateERC20GasLimit(

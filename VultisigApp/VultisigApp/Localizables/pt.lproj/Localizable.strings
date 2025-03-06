@@ -304,7 +304,6 @@
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparelhados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
 "invalidAddressChain" = "Este endereço é inválido para essa cadeia.";
-"scannedByBlowfish" = "Transação verificada pelo Blowfish.";
 "defaultChains" = "Cadeias padrão";
 "search" = "Pesquisar";
 "vaultValue" = "Valor do cofre";
@@ -542,3 +541,6 @@
 "youAreInLocalMode" = "Você está no modo local";
 "switchBackToInternetMode" = "Voltar para o modo internet";
 "peerDiscoveryScanDeviceDisclaimer" = "Escaneie o QR com outro dispositivo. Configuração com 3 dispositivos recomendada, 2 são suficientes.";
+"joinKeygenViewTitle" = "Aguardando outros dispositivos para entrar";
+"joinKeygenViewDescription" = "Seu cofre começará a ser gerado assim que você finalizar a configuração no seu dispositivo principal.";
+"joiningKeygen" = "Entrando no keygen";

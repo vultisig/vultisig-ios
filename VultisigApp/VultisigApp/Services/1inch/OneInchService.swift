@@ -21,7 +21,7 @@ struct OneInchService {
     }
     
     func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: OneInchQuote, fee: BigInt?) {
-
+        
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
         
@@ -44,7 +44,7 @@ struct OneInchService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(OneInchQuote.self, from: data)
-
+        
         let gasPrice = BigInt(response.tx.gasPrice) ?? 0
         let gas = BigInt(response.tx.gas)
         let fee = gas * gasPrice
@@ -56,29 +56,6 @@ struct OneInchService {
         let response: OneInchTokensResponse = try await Utils.fetchObject(from: Endpoint.fetchTokens(chain: chain))
         let tokens = Array(arrayLiteral: response.tokens.values).reduce([], +)
         return tokens
-    }
-    
-    func fetchNonZeroBalanceTokens(chainId: Int, walletAddress: String) async throws -> [OneInchToken] {
-        let oneInchChainId = String(describing: chainId)
-        let balanceData = try await Utils.asyncGetRequest(urlString: Endpoint.fetch1InchsTokensBalance(chain: oneInchChainId, address: walletAddress), headers: [:])
-        
-        let balanceDictionary = try JSONDecoder().decode([String: String].self, from: balanceData)
-        
-        let nonZeroBalanceTokenAddresses = balanceDictionary.compactMap { tokenAddress, balance in
-            (Int64(balance) ?? 0) > 0 && tokenAddress != nullAddress ? tokenAddress : nil
-        }
-        
-        guard !nonZeroBalanceTokenAddresses.isEmpty else {
-            return []
-        }
-        
-        let tokenInfoData = try await Utils.asyncGetRequest(
-            urlString: Endpoint.fetch1InchsTokensInfo(chain: oneInchChainId, addresses: nonZeroBalanceTokenAddresses), headers: [:]
-        )
-        
-        return nonZeroBalanceTokenAddresses.compactMap { tokenAddress in
-            Utils.extractResultFromJson(fromData: tokenInfoData, path: tokenAddress, type: OneInchToken.self)
-        }
     }
     
 }

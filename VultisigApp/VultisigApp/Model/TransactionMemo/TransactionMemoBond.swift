@@ -23,6 +23,8 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     
     @Published var isTheFormValid: Bool = false
     
+    private var tx: SendTransaction
+    
     var addressFields: [String: String] {
         get {
             var fields = ["nodeAddress": nodeAddress]
@@ -43,8 +45,17 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    required init() {
+    required init(
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+    ) {
+        self.tx = tx
         setupValidation()
+    }
+    
+    var balance: String {
+        let balance = tx.coin.balanceDecimal.description
+        
+        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     
     private func setupValidation() {
@@ -115,15 +126,19 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                 ),
                 isOptional: true
             )
-            StyledFloatingPointField(placeholder: "Amount", value: Binding(
-                get: { self.amount },
-                set: {
-                    self.amount = $0
-                }
-            ), format: .number, isValid: Binding(
-                get: { self.amountValid },
-                set: { self.amountValid = $0 }
-            ))
+            StyledFloatingPointField(
+                placeholder: "Amount \(balance)",
+                value: Binding(
+                    get: { self.amount },
+                    set: { self.amount = $0 }
+                ),
+                format: .number,
+                isValid: Binding(
+                    get: { self.amountValid },
+                    set: { self.amountValid = $0 }
+                )
+            )
+            
         })
     }
 }

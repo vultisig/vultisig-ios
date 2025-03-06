@@ -11,8 +11,6 @@ struct FolderDetailHeader: View {
     let title: String
     @Binding var isEditing: Bool
     
-    @Environment(\.dismiss) private var dismiss
-    
     var body: some View {
         HStack {
             leadingAction

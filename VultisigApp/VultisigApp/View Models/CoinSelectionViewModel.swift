@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 import WalletCore
 
 @MainActor
@@ -26,9 +25,6 @@ class CoinSelectionViewModel: ObservableObject {
 
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
-    let priceService = CryptoPriceService.shared
-    
-    private let logger = Logger(subsystem: "assets-list", category: "view")
     
     func loadData(coin: Coin) async {
         await balanceService.updateBalance(for: coin)

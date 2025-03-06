@@ -10,7 +10,6 @@ import CommonCrypto
 import CryptoKit
 
 enum AESError: Error {
-    case keyGeneration
     case encryptionFailed
     case decryptionFailed
 }

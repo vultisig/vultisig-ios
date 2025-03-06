@@ -156,10 +156,10 @@ enum TransactionMemoInstance {
         }
     }
 
-    static func getDefault(for coin: Coin) -> TransactionMemoInstance {
+    static func getDefault(for coin: Coin, tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel) -> TransactionMemoInstance {
         switch coin.chain {
         case .thorChain:
-            return .bond(TransactionMemoBond())
+            return .bond(TransactionMemoBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
         case .mayaChain:
             return .bondMaya(TransactionMemoBondMayaChain(assets: nil))
         case .dydx:

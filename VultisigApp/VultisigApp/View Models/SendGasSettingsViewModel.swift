@@ -50,7 +50,7 @@ final class SendGasSettingsViewModel: ObservableObject {
         let baseFeeGwei = Decimal(string: baseFee) ?? .zero
         let baseFeeWei = baseFeeGwei * Decimal(EVMHelper.weiPerGWei)
         let baseFeeWeiValue = BigInt(stringLiteral: baseFeeWei.description)
-        let normalizedBaseFeeWei = BlockChainService.normalizeEVMFee(baseFeeWeiValue, action: .transfer)
+        let normalizedBaseFeeWei = BlockChainService.normalizeEVMFee(baseFeeWeiValue)
         let priorityFee = Decimal(priorityFeesMap[selectedMode] ?? .zero)
         let totalFee = gasLimit * (Decimal(normalizedBaseFeeWei) + priorityFee)
         let totalFeeGwei = totalFee / Decimal(EVMHelper.weiPerGWei)

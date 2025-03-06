@@ -170,6 +170,22 @@ struct MacScannerView: View {
         )
     }
     
+    var background: some View {
+        Image("QRScannerBackgroundImage")
+            .resizable()
+            .scaledToFill()
+            .opacity(0.2)
+    }
+    
+    var overlay: some View {
+        VStack {
+            Spacer()
+            Image("QRScannerOutline")
+            Spacer()
+        }
+        .allowsHitTesting(false)
+    }
+    
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -179,6 +195,11 @@ struct MacScannerView: View {
                 .onDisappear {
                     cameraViewModel.stopSession()
                 }
+                .overlay {
+                    background
+                }
+            
+            overlay
             
             uploadQRCodeButton
                 .padding(40)

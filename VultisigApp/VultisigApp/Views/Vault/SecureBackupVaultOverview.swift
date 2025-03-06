@@ -121,7 +121,7 @@ struct SecureBackupVaultOverview: View {
     }
     
     private func animate(index: Int) {
-        animationVM?.setInput("index", value: Double(index))
+        animationVM?.setInput("Index", value: Double(index))
     }
 }
 

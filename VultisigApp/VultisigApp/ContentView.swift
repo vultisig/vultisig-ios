@@ -14,7 +14,6 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var appViewModel: ApplicationState
 
     var body: some View {
         ZStack {

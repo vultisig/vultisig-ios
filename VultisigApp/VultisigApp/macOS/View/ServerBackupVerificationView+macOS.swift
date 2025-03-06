@@ -42,6 +42,7 @@ extension ServerBackupVerificationView {
     var textField: some View {
         HStack(spacing: 8) {
             field
+                .multilineTextAlignment(.center)
             pasteButton
         }
         .colorScheme(.dark)

@@ -326,7 +326,6 @@
 "saveOrShare" = "Save or Share";
 "shareVaultQR" = "Share Vault QR";
 "invalidAddressChain" = "This address is invalid for this chain.";
-"scannedByBlowfish" = "Transaction verified by Blowfish.";
 "defaultChains" = "Default Chains";
 "search" = "Search";
 "vaultValue" = "Vault Value";
@@ -586,3 +585,6 @@
 "youAreInLocalMode" = "You’re in local mode";
 "switchBackToInternetMode" = " Switch back to internet mode";
 "peerDiscoveryScanDeviceDisclaimer" = "Scan QR with other device. 3-device setup recommended, 2 is sufficient.";
+"joinKeygenViewTitle" = "Waiting for other devices to join";
+"joinKeygenViewDescription" = "Your vault will start generating from the moment you finalize setting up your vault on your main device";
+"joiningKeygen" = "Joining keygen";

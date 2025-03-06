@@ -320,7 +320,6 @@
 "numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";
 "invalidAddressChain" = "Diese Adresse ist für diese Kette ungültig.";
-"scannedByBlowfish" = "Transaktion von Blowfish verifiziert.";
 "defaultChains" = "Standardketten";
 "search" = "Suche";
 "vaultValue" = "Tresorwert";
@@ -558,3 +557,6 @@
 "youAreInLocalMode" = "Du bist im lokalen Modus";
 "switchBackToInternetMode" = "Wechsle zurück in den Internetmodus";
 "peerDiscoveryScanDeviceDisclaimer" = "Scanne den QR-Code mit einem anderen Gerät. 3-Geräte-Setup empfohlen, 2 sind ausreichend.";
+"joinKeygenViewTitle" = "Warten auf den Beitritt weiterer Geräte";
+"joinKeygenViewDescription" = "Dein Vault wird ab dem Moment generiert, in dem du die Einrichtung deines Vaults auf deinem Hauptgerät abschließt.";
+"joiningKeygen" = "Beitritt zum Keygen";

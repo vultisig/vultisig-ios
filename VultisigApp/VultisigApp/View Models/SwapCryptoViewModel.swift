@@ -16,8 +16,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
-    private let balanceService = BalanceService.shared
-    private let rateProvider = RateProvider.shared
 
     private var updateQuoteTask: Task<Void, Never>?
     private var updateFeesTask: Task<Void, Never>?
@@ -337,17 +335,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func fetchQuotes(tx: SwapTransaction, vault: Vault) {
         updateQuoteTask?.cancel()
         updateQuoteTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
+            await updateQuotes(tx: tx)
         }
     }
 
-    func pickerFromCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+    func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
         return tx.fromCoins.sorted(by: {
             Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
         })
     }
 
-    func pickerToCoins(vault: Vault, tx: SwapTransaction) -> [Coin] {
+    func pickerToCoins(tx: SwapTransaction) -> [Coin] {
         return tx.toCoins.sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
@@ -373,7 +371,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction, vault: Vault) async {
+    func updateQuotes(tx: SwapTransaction) async {
         isLoading = true
         defer { isLoading = false }
         

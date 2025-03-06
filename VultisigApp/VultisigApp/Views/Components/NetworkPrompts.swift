@@ -10,10 +10,6 @@ import SwiftUI
 struct NetworkPrompts: View {
     @Binding var selectedNetwork: NetworkPromptType
     
-    private let gridRows = [
-        GridItem(.adaptive(minimum: 150))
-    ]
-    
     var body: some View {
         HStack(spacing: 12) {
             cells

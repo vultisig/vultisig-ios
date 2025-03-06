@@ -15,7 +15,6 @@ struct ChainNavigationCell: View {
     @State var isEditingChains: Bool = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
         ZStack {

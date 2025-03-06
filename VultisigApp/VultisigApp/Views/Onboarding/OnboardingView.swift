@@ -18,8 +18,14 @@ struct OnboardingView: View {
     @State var showStartupText = false
     @State var startupTextOpacity = true
     @State var showSummary = false
+    
+    @State var animationScale: CGFloat = .zero
 
     @State var animationVM: RiveViewModel? = nil
+    
+#if os(iOS)
+    @State var orientation = UIDevice.current.orientation
+#endif
     
     let totalTabCount: Int = 6
     
@@ -52,10 +58,6 @@ struct OnboardingView: View {
                 accountViewModel.showOnboarding = false
             })
         }
-    }
-    
-    var animation: some View {
-        animationVM?.view()
     }
     
     var view: some View {

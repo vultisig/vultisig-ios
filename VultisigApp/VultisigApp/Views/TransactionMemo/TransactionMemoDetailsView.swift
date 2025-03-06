@@ -26,7 +26,7 @@ struct TransactionMemoDetailsView: View {
             initialValue: TransactionMemoContractType.getDefault(
                 for: defaultCoin))
         self._txMemoInstance = State(
-            initialValue: TransactionMemoInstance.getDefault(for: defaultCoin))
+            initialValue: TransactionMemoInstance.getDefault(for: defaultCoin, tx: tx, transactionMemoViewModel: transactionMemoViewModel))
     }
 
     var body: some View {
@@ -40,7 +40,7 @@ struct TransactionMemoDetailsView: View {
             .onChange(of: selectedFunctionMemoType) {
                 switch selectedFunctionMemoType {
                 case .bond:
-                    txMemoInstance = .bond(TransactionMemoBond())
+                    txMemoInstance = .bond(TransactionMemoBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 case .unbond:
                     txMemoInstance = .unbond(TransactionMemoUnbond())
                 case .bondMaya:

@@ -8,77 +8,66 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
-    @Binding var keysignPayload: KeysignPayload?
-    
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
-    @ObservedObject var tx: SendTransaction
-    @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
-    
-    let vault: Vault
-    
-    @State var isButtonDisabled = false
-    @State var fastPasswordPresented = false
-    
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
+@Binding var keysignPayload: KeysignPayload?
 
-    var body: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .gesture(DragGesture())
-        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
-            alert
-        }
-        .onDisappear {
-            sendCryptoVerifyViewModel.isLoading = false
-        }
-        .onAppear {
-            setData()
-        }
+@ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+@ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+@ObservedObject var tx: SendTransaction
+
+let vault: Vault
+
+@State var isButtonDisabled = false
+@State var fastPasswordPresented = false
+
+@EnvironmentObject var settingsViewModel: SettingsViewModel
+
+var body: some View {
+    ZStack {
+        Background()
+        view
     }
-    
-    var blowfishView: some View {
-        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+    .gesture(DragGesture())
+    .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
+        alert
     }
-    
-    var view: some View {
-        container
+    .onDisappear {
+        sendCryptoVerifyViewModel.isLoading = false
     }
-    
-    var content: some View {
-        VStack(spacing: 16) {
-            fields
-            
-            if tx.isFastVault {
-                fastVaultButton
-            }
-            
-            pairedSignButton
+    .onAppear {
+        setData()
+    }
+}
+
+var view: some View {
+    container
+}
+
+var content: some View {
+    VStack(spacing: 16) {
+        fields
+        
+        if tx.isFastVault {
+            fastVaultButton
         }
-        .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
+        
+        pairedSignButton
     }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                summary
-                checkboxes
-                
-                if sendCryptoVerifyViewModel.blowfishShow {
-                    blowfishView
-                }
+    .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
+}
+
+var alert: Alert {
+    Alert(
+        title: Text(NSLocalizedString("error", comment: "")),
+        message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
+        dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+    )
+}
+
+var fields: some View {
+    ScrollView {
+        VStack(spacing: 30) {
+            summary
+            checkboxes
             }
             .padding(.horizontal, 16)
         }
@@ -135,15 +124,6 @@ struct SendCryptoVerifyView: View {
     
     private func setData() {
         isButtonDisabled = false
-        
-        Task {
-            do {
-                try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
-                blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
-            } catch {
-                print("Error scanning transaction: \(error)")
-            }
-        }
     }
 
     func signPressed() {

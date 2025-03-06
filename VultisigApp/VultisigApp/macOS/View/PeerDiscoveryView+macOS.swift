@@ -40,7 +40,6 @@ extension PeerDiscoveryView {
         PeerDiscoveryHeader(
             title: "scanQR",
             vault: vault,
-            selectedTab: selectedTab,
             hideBackButton: hideBackButton,
             viewModel: viewModel,
             shareSheetViewModel: shareSheetViewModel

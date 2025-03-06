@@ -111,7 +111,6 @@ class KeygenViewModel: ObservableObject {
                                         mediatorURL: self.mediatorURL,
                                         sessionID: self.sessionID,
                                         encryptionKeyHex: self.encryptionKeyHex,
-                                        oldResharePrefix: self.oldResharePrefix,
                                         isInitiateDevice: self.isInitiateDevice)
             switch self.tssType {
             case .Keygen:
@@ -130,7 +129,6 @@ class KeygenViewModel: ObservableObject {
                                               mediatorURL: self.mediatorURL,
                                               sessionID: self.sessionID,
                                               encryptionKeyHex: self.encryptionKeyHex,
-                                              oldResharePrefix: self.oldResharePrefix,
                                               isInitiatedDevice: self.isInitiateDevice,
                                               setupMessage: dklsKeygen.getSetupMessage())
             switch self.tssType {

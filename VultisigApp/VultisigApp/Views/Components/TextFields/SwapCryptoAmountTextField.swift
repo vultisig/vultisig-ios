@@ -15,7 +15,6 @@ struct SwapCryptoAmountTextField: View {
     var onChange: (String) async -> Void
     
     @Environment(\.isEnabled) private var isEnabled
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         content

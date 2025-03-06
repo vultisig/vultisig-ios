@@ -27,10 +27,6 @@ class EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
     
-    static func convertEthereumNumber(input: BigInt) -> Data {
-        return input.magnitude.serialize()
-    }
-    
     func getPreSignedInputData(
         signingInput: EthereumSigningInput,
         keysignPayload: KeysignPayload,
