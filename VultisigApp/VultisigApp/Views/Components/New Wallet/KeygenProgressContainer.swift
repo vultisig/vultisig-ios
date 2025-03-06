@@ -34,19 +34,30 @@ struct KeygenProgressContainer: View {
     }
     
     var content: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            getCell(for: "preparingVault", isComplete: progressCounter>1)
-            getCell(for: "generatingECDSA", isComplete: progressCounter>2)
-            getCell(for: "generatingEdDSA", isComplete: progressCounter>3)
+        VStack {
+            Spacer()
+            
+            VStack(alignment: .leading, spacing: 12) {
+                getCell(for: "preparingVault", isComplete: progressCounter>1)
+                
+                if progressCounter>1 {
+                    getCell(for: "generatingECDSA", isComplete: progressCounter>2)
+                }
+                    
+                if progressCounter>2 {
+                    getCell(for: "generatingEdDSA", isComplete: progressCounter>3)
+                }
+            }
+            .padding(.horizontal, 36)
+            .padding(.vertical, 28)
+            .background(Color.blue600)
+            .cornerRadius(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.blue200, lineWidth: 1)
+            )
         }
-        .padding(.horizontal, 36)
-        .padding(.vertical, 28)
-        .background(Color.blue600)
-        .cornerRadius(24)
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
+        .animation(.easeInOut, value: progressCounter)
     }
     
     var progressBar: some View {
