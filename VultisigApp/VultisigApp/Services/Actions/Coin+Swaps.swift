@@ -8,7 +8,7 @@
 import Foundation
 
 extension Coin {
-
+    
     var thorswapMultiplier: Decimal {
         switch chain {
         case .mayaChain:
@@ -17,11 +17,11 @@ extension Coin {
             return 1e8
         }
     }
-
+    
     var isSwapSupported: Bool {
         return !swapProviders.isEmpty
     }
-
+    
     var swapProviders: [SwapProvider] {
         switch chain {
         case .mayaChain, .dash, .kujira:
@@ -31,17 +31,17 @@ extension Coin {
                 .oneinch(chain),
                 .lifi
             ]
-
+            
             var providers: [SwapProvider] = []
-
+            
             if thorEthTokens.contains(ticker) {
                 providers.append(.thorchain)
             }
-
+            
             if mayaEthTokens.contains(ticker) {
                 providers.append(.mayachain)
             }
-
+            
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
@@ -62,11 +62,7 @@ extension Coin {
                 return [.oneinch(chain), .lifi]
             }
         case .base:
-            if thorBaseTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi]
-            } else {
-                return [.oneinch(chain), .lifi]
-            }
+            return [.oneinch(chain), .lifi]
         case .optimism, .polygon, .polygonV2, .zksync:
             return [.oneinch(chain), .lifi]
         case .thorChain:
@@ -81,7 +77,7 @@ extension Coin {
             return []
         }
     }
-
+    
     var isLifiFeesSupported: Bool {
         switch chain.chainType {
         case .EVM:
@@ -93,27 +89,27 @@ extension Coin {
 }
 
 private extension Coin {
-
+    
     var mayaEthTokens: [String] {
         return ["ETH"]
     }
-
+    
     var mayaArbTokens: [String] {
         return ["ETH"]
     }
-
+    
     var thorEthTokens: [String] {
         return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX"]
     }
-
+    
     var thorBscTokens: [String] {
         return ["BNB", "USDT", "USDC"]
     }
-
+    
     var thorBaseTokens: [String] {
         return ["ETH", "USDC", "CBBTC"]
     }
-
+    
     var thorAvaxTokens: [String] {
         return ["AVAX", "USDC", "USDT", "SOL"]
     }
