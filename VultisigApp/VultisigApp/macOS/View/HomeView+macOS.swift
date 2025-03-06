@@ -9,6 +9,16 @@
 import SwiftUI
 
 extension HomeView {
+    var container: some View {
+        ZStack {
+            content
+            
+            if isLoading {
+                Loader()
+            }
+        }
+    }
+    
     var content: some View {
         ZStack {
             Background()

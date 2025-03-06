@@ -35,13 +35,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        ZStack {
-            content
-            
-            if isLoading {
-                Loader()
-            }
-        }
+        container
     }
     
     var navigationTitle: some View {
