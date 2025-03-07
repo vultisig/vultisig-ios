@@ -13,11 +13,11 @@ struct FastBackupVaultOverview: View {
     let email: String
     @ObservedObject var viewModel: KeygenViewModel
     
+    let totalTabCount = 4
+    
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
-
-    let totalTabCount = 4
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
