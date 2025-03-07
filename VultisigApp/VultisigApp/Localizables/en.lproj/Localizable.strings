@@ -266,7 +266,6 @@
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";
-"invalidVaultData" = "Invalid vault data";
 "vaultAlreadyExists" = "Vault already exists";
 "vaultRestoreFailed" = "Failed to restore vault";
 "backupDecryptionFailed" = "Failed to decrypt the backup";
@@ -588,3 +587,7 @@
 "joinKeygenViewTitle" = "Waiting for other devices to join";
 "joinKeygenViewDescription" = "Your vault will start generating from the moment you finalize setting up your vault on your main device";
 "joiningKeygen" = "Joining keygen";
+"importYourVaultShare" = "Import your vault share";
+"unsupportedFileTypeError" = "Unsupported file type, please try again";
+"incorrectPasswordTryAgain" = "Incorrect password, please try again";
+"supportedFileTypesUpload" = "Supported file types: .bak & .vult";
