@@ -543,3 +543,7 @@
 "joinKeygenViewTitle" = "In attesa che altri dispositivi si uniscano";
 "joinKeygenViewDescription" = "Il tuo vault inizierà a essere generato non appena completerai la configurazione sul tuo dispositivo principale.";
 "joiningKeygen" = "Unendosi al keygen";
+"importYourVaultShare" = "Importa la tua quota di vault";
+"unsupportedFileTypeError" = "Tipo di file non supportato, riprova";
+"incorrectPasswordTryAgain" = "Password errata, riprova";
+"supportedFileTypesUpload" = "Tipi di file supportati: .bak & .vult";
