@@ -71,7 +71,6 @@
 		A52FE09D2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */; };
 		A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */; };
 		A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */; };
-		A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F72D57CB43000B82E6 /* quick_summary.riv */; };
 		A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */; };
 		A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */ = {isa = PBXBuildFile; fileRef = A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */; };
 		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
@@ -87,8 +86,6 @@
 		A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74B2C298060007222EB /* SwapCoinsResolver.swift */; };
 		A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74D2C29808D007222EB /* SwapProvider.swift */; };
 		A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */; };
-		A55C62FB2D5C02CF005DBF68 /* fastvault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */; };
-		A55C62FD2D5C02D6005DBF68 /* securevault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */; };
 		A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563867F2C3A213B008B848E /* ProtoMappableError.swift */; };
 		A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386812C3A2148008B848E /* ProtoCoinResolver.swift */; };
 		A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386832C3A2167008B848E /* ProtoSerializer.swift */; };
@@ -300,7 +297,6 @@
 		A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */; };
 		A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */; };
 		A65505152D66918200EDEB8C /* SecureVaultBackupSuccess.riv in Resources */ = {isa = PBXBuildFile; fileRef = A65505142D66918200EDEB8C /* SecureVaultBackupSuccess.riv */; };
-		A65505172D6691BA00EDEB8C /* FastVaultBackupSucces.riv in Resources */ = {isa = PBXBuildFile; fileRef = A65505162D6691BA00EDEB8C /* FastVaultBackupSucces.riv */; };
 		A65518032BF849FC006BB924 /* CoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518022BF849FC006BB924 /* CoverView.swift */; };
 		A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */; };
 		A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F42CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift */; };
@@ -473,6 +469,10 @@
 		A6C3ABCA2C3E5A8700F13ED0 /* NavigationAddButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */; };
 		A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */; };
 		A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */; };
+		A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */; };
+		A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */; };
+		A6C58D802D7AD800000D2833 /* quick_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D7F2D7AD800000D2833 /* quick_summary.riv */; };
+		A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D812D7AD81D000D2833 /* securevault_summary.riv */; };
 		A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */; };
 		A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */; };
 		A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */; };
@@ -904,7 +904,6 @@
 		A52FE09C2D5D59E30016C9A0 /* OnboardingSummaryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+iOS.swift"; sourceTree = "<group>"; };
 		A52FE09E2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingSummaryView+macOS.swift"; sourceTree = "<group>"; };
 		A53065F52D57CAED000B82E6 /* OnboardingSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSummaryView.swift; sourceTree = "<group>"; };
-		A53065F72D57CB43000B82E6 /* quick_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = quick_summary.riv; sourceTree = "<group>"; };
 		A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_overview.riv; sourceTree = "<group>"; };
 		A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_overview.riv; sourceTree = "<group>"; };
 		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
@@ -920,8 +919,6 @@
 		A558D74B2C298060007222EB /* SwapCoinsResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinsResolver.swift; sourceTree = "<group>"; };
 		A558D74D2C29808D007222EB /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadFactory.swift; sourceTree = "<group>"; };
-		A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_summary.riv; sourceTree = "<group>"; };
-		A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_summary.riv; sourceTree = "<group>"; };
 		A563867F2C3A213B008B848E /* ProtoMappableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappableError.swift; sourceTree = "<group>"; };
 		A56386812C3A2148008B848E /* ProtoCoinResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoCoinResolver.swift; sourceTree = "<group>"; };
 		A56386832C3A2167008B848E /* ProtoSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoSerializer.swift; sourceTree = "<group>"; };
@@ -1135,7 +1132,6 @@
 		A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoPairView.swift; sourceTree = "<group>"; };
 		A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyView.swift; sourceTree = "<group>"; };
 		A65505142D66918200EDEB8C /* SecureVaultBackupSuccess.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = SecureVaultBackupSuccess.riv; sourceTree = "<group>"; };
-		A65505162D6691BA00EDEB8C /* FastVaultBackupSucces.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = FastVaultBackupSucces.riv; sourceTree = "<group>"; };
 		A65518022BF849FC006BB924 /* CoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverView.swift; sourceTree = "<group>"; };
 		A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A65617F42CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailSelectedVaultCell.swift; sourceTree = "<group>"; };
@@ -1307,6 +1303,10 @@
 		A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationAddButton.swift; sourceTree = "<group>"; };
 		A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+macOS.swift"; sourceTree = "<group>"; };
 		A6C556F32CE59A4D00E5E44E /* BackupNowDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupNowDisclaimer+iOS.swift"; sourceTree = "<group>"; };
+		A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = FastVaultBackupSucces.riv; sourceTree = "<group>"; };
+		A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_summary.riv; sourceTree = "<group>"; };
+		A6C58D7F2D7AD800000D2833 /* quick_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = quick_summary.riv; sourceTree = "<group>"; };
+		A6C58D812D7AD81D000D2833 /* securevault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_summary.riv; sourceTree = "<group>"; };
 		A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationButton.swift; sourceTree = "<group>"; };
 		A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellViewModel.swift; sourceTree = "<group>"; };
 		A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignView+iOS.swift"; sourceTree = "<group>"; };
@@ -2926,21 +2926,21 @@
 			children = (
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
+				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
-				A55C62FA2D5C02CF005DBF68 /* fastvault_summary.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
 				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
 				A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */,
 				A65505142D66918200EDEB8C /* SecureVaultBackupSuccess.riv */,
-				A55C62FC2D5C02D6005DBF68 /* securevault_summary.riv */,
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
-				A65505162D6691BA00EDEB8C /* FastVaultBackupSucces.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
+				A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */,
 				A6F7B6F72D4C94D700AC8104 /* ConnectingWithServer.riv */,
+				A6C58D812D7AD81D000D2833 /* securevault_summary.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
-				A53065F72D57CB43000B82E6 /* quick_summary.riv */,
+				A6C58D7F2D7AD800000D2833 /* quick_summary.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -3590,14 +3590,12 @@
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
 				A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */,
-				A53065F82D57CB43000B82E6 /* quick_summary.riv in Resources */,
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A65505152D66918200EDEB8C /* SecureVaultBackupSuccess.riv in Resources */,
 				A6F7B6C82D4ABA5A00AC8104 /* WaitingForDevice.riv in Resources */,
 				A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */,
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
-				A65505172D6691BA00EDEB8C /* FastVaultBackupSucces.riv in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
 				A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
@@ -3605,15 +3603,17 @@
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
+				A6C58D672D7A3E4B000D2833 /* FastVaultBackupSucces.riv in Resources */,
+				A6C58D802D7AD800000D2833 /* quick_summary.riv in Resources */,
 				A6F7B6EB2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv in Resources */,
 				A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
-				A55C62FD2D5C02D6005DBF68 /* securevault_summary.riv in Resources */,
-				A55C62FB2D5C02CF005DBF68 /* fastvault_summary.riv in Resources */,
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
+				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
+				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

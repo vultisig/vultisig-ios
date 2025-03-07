@@ -26,7 +26,6 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var isLinkActive: Bool = false
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
-    @Published var alertMessage: String = ""
     @Published var isFileUploaded = false
     @Published var importedFileName: String? = nil
     @Published var selectedVault: Vault? = nil
@@ -47,6 +46,7 @@ class EncryptedBackupViewModel: ObservableObject {
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
+        showAlert = false
     }
     
     // Export
@@ -101,7 +101,7 @@ class EncryptedBackupViewModel: ObservableObject {
         defer { url.stopAccessingSecurityScopedResource() }
         
         guard success else {
-            alertMessage = "Permission denied for accessing the file."
+            alertTitle = "Permission denied for accessing the file."
             showAlert = true
             return
         }
@@ -157,11 +157,9 @@ class EncryptedBackupViewModel: ObservableObject {
             decryptedContent = ""
             isFileUploaded = false
             importedFileName = nil
-            alertTitle = "incorrectPassword"
-            alertMessage = "backupDecryptionFailed"
+            alertTitle = "incorrectPasswordTryAgain"
             showAlert = true
         }
-        
     }
     
     func decryptOrReadData(data: Data, password: String) -> String? {
@@ -189,8 +187,7 @@ class EncryptedBackupViewModel: ObservableObject {
             let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
             if !isVaultUnique(backupVault: vault,vaults:vaults){
-                alertTitle = "error"
-                alertMessage = "vaultAlreadyExists"
+                alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isLinkActive = false
                 return
@@ -204,7 +201,6 @@ class EncryptedBackupViewModel: ObservableObject {
         catch {
             logger.error("fail to restore vault: \(error.localizedDescription)")
             alertTitle = "vaultRestoreFailed"
-            alertMessage = error.localizedDescription
             showAlert = true
             isLinkActive = false
         }
@@ -212,24 +208,24 @@ class EncryptedBackupViewModel: ObservableObject {
     
     func restoreVault(modelContext: ModelContext, vaults: [Vault], defaultChains: [CoinMeta]) {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
-            alertTitle = "error"
-            alertMessage = "invalidVaultData"
+            alertTitle = "invalidVaultData"
             showAlert = true
             isLinkActive = false
             return
         }
+        
         if isBakFile() {
             restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData, defaultChains: defaultChains)
             return
         }
+        
         let decoder = JSONDecoder()
         do {
             let backupVault = try decoder.decode(BackupVault.self,
                                                  from: vaultData)
             // if version get updated , then we can process the migration here
             if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
-                alertTitle = "error"
-                alertMessage = "vaultAlreadyExists"
+                alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isLinkActive = false
                 return
@@ -247,8 +243,7 @@ class EncryptedBackupViewModel: ObservableObject {
                                                from: vaultData)
                 
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
-                    alertTitle = "error"
-                    alertMessage = "vaultAlreadyExists"
+                    alertTitle = "vaultAlreadyExists"
                     showAlert = true
                     isLinkActive = false
                     return
@@ -261,7 +256,6 @@ class EncryptedBackupViewModel: ObservableObject {
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
                 alertTitle = "vaultRestoreFailed"
-                alertMessage = error.localizedDescription
                 showAlert = true
                 isLinkActive = false
             }
@@ -290,12 +284,13 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     private func showInvalidFormatAlert() {
-        alertTitle = "invalidFileFormat"
-        alertMessage = "invalidFileFormatMessage"
+        alertTitle = "unsupportedFileTypeError"
         showAlert = true
     }
     
     func handleFileImporter(_ result: Result<[URL], Error>) {
+        resetData()
+        
         switch result {
         case .success(let urls):
             if let url = urls.first {

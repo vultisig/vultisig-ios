@@ -46,6 +46,7 @@ extension Color {
     static let warningYellow = Color(hex: "F7961B")
     
     static let logoBlue = Color(hex: "0D86BB")
+    static let invalidRed = Color(hex: "FF5C5C")
     
     static let miamiMarmalade = Color(hex: "F7961B")
     
@@ -59,6 +60,7 @@ extension Color {
     static let borderBlue = Color(hex: "1B3F73")
     static let disabledText = Color(hex: "718096")
     static let iconLightBlue = Color(hex: "467FF8")
+    static let disabledButtonBackground = Color(hex: "0B1A3A")
     
     // Background
     static let backgroundBlue = Color(hex: "02122B")

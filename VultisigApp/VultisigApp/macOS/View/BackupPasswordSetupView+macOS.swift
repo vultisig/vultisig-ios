@@ -63,7 +63,6 @@ extension BackupPasswordSetupView {
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
                 backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
         }
@@ -89,7 +88,6 @@ extension BackupPasswordSetupView {
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
                 backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
         }
