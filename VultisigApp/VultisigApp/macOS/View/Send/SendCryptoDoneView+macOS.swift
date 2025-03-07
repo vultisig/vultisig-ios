@@ -13,6 +13,11 @@ extension SendCryptoDoneView {
         VStack {
             cards
             continueButton
+            
+            NavigationLink(destination: HomeView(selectedVault: vault), isActive: $navigateToHome) {
+                EmptyView()
+            }
+            .hidden()
         }
         .padding(.horizontal, 25)
     }
