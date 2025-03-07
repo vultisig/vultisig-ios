@@ -544,3 +544,7 @@
 "joinKeygenViewTitle" = "Aguardando outros dispositivos para entrar";
 "joinKeygenViewDescription" = "Seu cofre começará a ser gerado assim que você finalizar a configuração no seu dispositivo principal.";
 "joiningKeygen" = "Entrando no keygen";
+"importYourVaultShare" = "Importe sua parte do cofre";
+"unsupportedFileTypeError" = "Tipo de arquivo não suportado, tente novamente";
+"incorrectPasswordTryAgain" = "Senha incorreta, tente novamente";
+"supportedFileTypesUpload" = "Tipos de arquivos suportados: .bak & .vult";

@@ -543,3 +543,7 @@
 "joinKeygenViewTitle" = "Čekanje na pridruživanje drugih uređaja";
 "joinKeygenViewDescription" = "Vaš trezor će se početi generirati čim dovršite postavljanje na svom glavnom uređaju.";
 "joiningKeygen" = "Pridruživanje keygenu";
+"importYourVaultShare" = "Uvezi svoj dio trezora";
+"unsupportedFileTypeError" = "Nepodržana vrsta datoteke, pokušajte ponovno";
+"incorrectPasswordTryAgain" = "Neispravna lozinka, pokušajte ponovno";
+"supportedFileTypesUpload" = "Podržane vrste datoteka: .bak & .vult";
