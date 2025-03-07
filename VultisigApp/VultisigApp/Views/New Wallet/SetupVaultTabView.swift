@@ -22,7 +22,7 @@ struct SetupVaultTabView: View {
                 setData()
             }
             .onDisappear {
-                animationVM?.stop()
+                animationVM?.reset()
             }
     }
     
@@ -61,8 +61,11 @@ struct SetupVaultTabView: View {
     }
     
     private func setData() {
-        animationVM = RiveViewModel(fileName: "ChooseVault")
-        
+        if animationVM == nil {
+            animationVM = RiveViewModel(fileName: "ChooseVault")
+        }
+        // set the default selected vault type to secure
+        self.selectedTab = .secure
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             showContent = true
         }
