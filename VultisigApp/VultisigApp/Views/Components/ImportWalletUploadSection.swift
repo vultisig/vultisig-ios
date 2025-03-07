@@ -11,6 +11,8 @@ struct ImportWalletUploadSection: View {
     @ObservedObject var viewModel: EncryptedBackupViewModel
     let isUploading: Bool
     
+    @State var backgroundColor: Color = .borderBlue
+    
     var body: some View {
         uploadSection
     }
@@ -19,7 +21,7 @@ struct ImportWalletUploadSection: View {
         section
             .frame(height: 200)
             .frame(maxWidth: .infinity)
-            .background(Color.turquoise600.opacity(0.15))
+            .background(backgroundColor.opacity(0.15))
             .cornerRadius(10)
             .overlay (
                 ZStack {
@@ -33,26 +35,52 @@ struct ImportWalletUploadSection: View {
     
     var section: some View {
         ZStack {
-            if let vaultText = viewModel.decryptedContent, viewModel.isFileUploaded {
-                textFile(for: vaultText)
+            if isUploading {
+                isUploadingContent
+            } else if viewModel.showAlert {
+                errorContent
+            } else if let filename = viewModel.importedFileName, viewModel.isFileUploaded {
+                getUploadedFileContent(filename)
             } else {
-                uploadFile
+                importFileContent
+            }
+        }
+        .animation(.none, value: isUploading)
+    }
+    
+    var isUploadingContent: some View {
+        VStack(spacing: 16) {
+            getIcon(tint: .persianBlue400)
+            
+            Text(NSLocalizedString("dropFileHere", comment: ""))
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+        }
+    }
+    
+    var errorContent: some View {
+        VStack(spacing: 16) {
+            getIcon(tint: .invalidRed)
+            
+            Text(NSLocalizedString(viewModel.alertTitle, comment: ""))
+                .font(.body14MontserratMedium)
+        }
+        .foregroundColor(.invalidRed)
+        .onAppear {
+            withAnimation {
+                backgroundColor = .invalidRed
             }
         }
     }
     
-    var uploadFile: some View {
-        VStack(spacing: 26) {
-            Image("FileIcon")
-            uploadText
+    var importFileContent: some View {
+        VStack(spacing: 16) {
+            getIcon(tint: .persianBlue400)
+            
+            Text(NSLocalizedString("importYourVaultShare", comment: ""))
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
         }
-    }
-    
-    var uploadText: some View {
-        Text(NSLocalizedString(isUploading ? "dropFileHere" : "uploadBackupFile", comment: "Upload backup file"))
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.neutral0)
-            .animation(.none, value: isUploading)
     }
     
     private func textFile(for text: String) -> some View {
@@ -63,11 +91,42 @@ struct ImportWalletUploadSection: View {
     }
     
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: 10)
-            .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: lineWidth, dash: [10]))
+        ZStack {
+            if backgroundColor == .turquoise600 {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(backgroundColor, lineWidth: 1)
+            } else {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(backgroundColor, style: StrokeStyle(lineWidth: lineWidth, dash: [5]))
+            }
+        }
+    }
+    
+    private func getUploadedFileContent(_ filename: String) -> some View {
+        VStack(spacing: 16) {
+            getIcon(isFileUploaded: true, tint: .alertTurquoise)
+            
+            Text(filename)
+                .font(.body14MontserratMedium)
+        }
+        .foregroundColor(.alertTurquoise)
+        .onAppear {
+            withAnimation {
+                backgroundColor = .turquoise600
+            }
+        }
+    }
+    
+    private func getIcon(isFileUploaded: Bool = false, tint: Color) -> some View {
+        Image(systemName: isFileUploaded ? "text.document" : "icloud.and.arrow.up")
+            .foregroundColor(tint)
+            .font(.body34BrockmannMedium)
     }
 }
 
 #Preview {
-    ImportWalletUploadSection(viewModel: EncryptedBackupViewModel(), isUploading: false)
+    ImportWalletUploadSection(
+        viewModel: EncryptedBackupViewModel(),
+        isUploading: false
+    )
 }

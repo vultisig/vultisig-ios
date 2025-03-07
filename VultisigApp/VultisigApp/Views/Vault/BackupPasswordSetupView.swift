@@ -88,7 +88,6 @@ struct BackupPasswordSetupView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
-            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -117,14 +116,12 @@ struct BackupPasswordSetupView: View {
         
         guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
             backupViewModel.alertTitle = "emptyField"
-            backupViewModel.alertMessage = "checkEmptyField"
             backupViewModel.showAlert = true
             return
         }
         
         guard backupViewModel.encryptionPassword == verifyPassword else {
             backupViewModel.alertTitle = "passwordMismatch"
-            backupViewModel.alertMessage = "verifyPasswordMismatch"
             backupViewModel.showAlert = true
             return
         }
