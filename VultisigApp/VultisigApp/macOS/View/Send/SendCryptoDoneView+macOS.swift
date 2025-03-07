@@ -13,14 +13,14 @@ extension SendCryptoDoneView {
         VStack {
             cards
             continueButton
-            
-            NavigationLink(destination: HomeView(selectedVault: vault), isActive: $navigateToHome) {
-                EmptyView()
-            }
-            .hidden()
+                .navigationDestination(isPresented: $navigateToHome) {
+                    HomeView(selectedVault: vault)
+                }
         }
         .padding(.horizontal, 25)
+        
     }
+    
     
     func copyHash(hash: String) {
         let explorerLink = explorerLink(hash: hash)
