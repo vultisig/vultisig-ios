@@ -20,6 +20,7 @@ struct FastBackupVaultOverview: View {
     let totalTabCount = 4
     
     @State var animationVM: RiveViewModel? = nil
+    @State var backupVaultAnimationVM: RiveViewModel? = nil
     
     var body: some View {
         ZStack {
@@ -32,16 +33,14 @@ struct FastBackupVaultOverview: View {
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                isBackupLinkActive: $isBackupLinkActive
+                tabIndex: $tabIndex
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
             BackupSetupView(vault: vault, isNewVault: true)
         }
         .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                animationVM = RiveViewModel(fileName: "fastvault_overview", autoPlay: true)
-            }
+            setData()
         }
     }
     
@@ -87,10 +86,10 @@ struct FastBackupVaultOverview: View {
     
     var animation: some View {
         ZStack{
-            if let animationVM {
-                animationVM.view()
+            if tabIndex>2 {
+                backupVaultAnimationVM?.view()
             } else {
-                Spacer()
+                animationVM?.view()
             }
         }
         .offset(y: -100)
@@ -103,7 +102,7 @@ struct FastBackupVaultOverview: View {
                     Spacer()
                     OnboardingTextCard(
                         index: index,
-                        textPrefix: "rive",
+                        textPrefix: "FastVaultOverview",
                         deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
                     )
                 }
@@ -123,9 +122,21 @@ struct FastBackupVaultOverview: View {
         .frame(width: 80)
     }
     
+    private func setData() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            animationVM = RiveViewModel(fileName: "fastvault_overview", autoPlay: true)
+            backupVaultAnimationVM = RiveViewModel(fileName: "backup_vault", autoPlay: true)
+        }
+    }
+    
     private func nextTapped() {
-        guard tabIndex < totalTabCount-1 else {
+        if tabIndex == 2 {
             isVerificationLinkActive = true
+            return
+        }
+        
+        if tabIndex == 3 {
+            isBackupLinkActive = true
             return
         }
         
