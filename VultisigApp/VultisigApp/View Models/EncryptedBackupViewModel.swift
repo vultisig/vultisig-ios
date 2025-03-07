@@ -46,6 +46,7 @@ class EncryptedBackupViewModel: ObservableObject {
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
+        showAlert = false
     }
     
     // Export
@@ -159,7 +160,6 @@ class EncryptedBackupViewModel: ObservableObject {
             alertTitle = "incorrectPasswordTryAgain"
             showAlert = true
         }
-        
     }
     
     func decryptOrReadData(data: Data, password: String) -> String? {
@@ -213,10 +213,12 @@ class EncryptedBackupViewModel: ObservableObject {
             isLinkActive = false
             return
         }
+        
         if isBakFile() {
             restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData, defaultChains: defaultChains)
             return
         }
+        
         let decoder = JSONDecoder()
         do {
             let backupVault = try decoder.decode(BackupVault.self,
@@ -287,6 +289,8 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func handleFileImporter(_ result: Result<[URL], Error>) {
+        resetData()
+        
         switch result {
         case .success(let urls):
             if let url = urls.first {

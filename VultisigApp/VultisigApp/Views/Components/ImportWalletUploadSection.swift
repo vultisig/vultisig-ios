@@ -37,10 +37,10 @@ struct ImportWalletUploadSection: View {
         ZStack {
             if isUploading {
                 isUploadingContent
-            } else if let filename = viewModel.importedFileName, viewModel.isFileUploaded {
-                getUploadedFileContent(filename)
             } else if viewModel.showAlert {
                 errorContent
+            } else if let filename = viewModel.importedFileName, viewModel.isFileUploaded {
+                getUploadedFileContent(filename)
             } else {
                 importFileContent
             }

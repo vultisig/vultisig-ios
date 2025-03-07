@@ -18,6 +18,10 @@ struct ImportWalletView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     
+    var isButtonEnabled: Bool {
+        backupViewModel.isFileUploaded && !backupViewModel.showAlert
+    }
+    
     var body: some View {
         content
             .fileImporter(
@@ -84,8 +88,8 @@ struct ImportWalletView: View {
         } label: {
             FilledButton(
                 title: "continue",
-                textColor: backupViewModel.isFileUploaded ? .backgroundBlue : .disabledText,
-                background: backupViewModel.isFileUploaded ? .turquoise600 : .disabledButtonBackground)
+                textColor: isButtonEnabled ? .backgroundBlue : .disabledText,
+                background: isButtonEnabled ? .turquoise600 : .disabledButtonBackground)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
