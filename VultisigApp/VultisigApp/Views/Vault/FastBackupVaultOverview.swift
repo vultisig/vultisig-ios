@@ -17,7 +17,7 @@ struct FastBackupVaultOverview: View {
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
 
-    let totalTabCount = 3
+    let totalTabCount = 4
     
     @State var animationVM: RiveViewModel? = nil
     
@@ -103,7 +103,7 @@ struct FastBackupVaultOverview: View {
                     Spacer()
                     OnboardingTextCard(
                         index: index,
-                        textPrefix: "FastVaultOverview",
+                        textPrefix: "rive",
                         deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
                     )
                 }
