@@ -9,10 +9,14 @@
 import SwiftUI
 
 extension SendCryptoDoneView {
+    
     var view: some View {
         VStack {
             cards
             continueButton
+                .navigationDestination(isPresented: $navigateToHome) {
+                    HomeView(selectedVault: vault)
+                }
         }
     }
     

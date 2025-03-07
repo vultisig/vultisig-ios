@@ -19,6 +19,7 @@ struct SendCryptoDoneView: View {
     let swapTransaction: SwapTransaction?
 
     @State var showAlert = false
+    @State var navigateToHome = false
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -77,15 +78,17 @@ struct SendCryptoDoneView: View {
     }
 
     var continueButton: some View {
-        NavigationLink(destination: {
-            HomeView(selectedVault: vault)
-        }, label: {
+        Button {
+            if let send = sendTransaction {
+                send.reset(coin: send.coin)
+            }
+            navigateToHome = true
+        } label: {
             FilledButton(title: "complete")
-        })
-        .id(UUID())
+        }
         .padding(40)
     }
-    
+
     var summaryCard: some View {
         SendCryptoDoneSummary(
             sendTransaction: sendTransaction,
