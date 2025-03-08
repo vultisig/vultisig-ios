@@ -23,7 +23,7 @@
 "settingsBiometricsTitle" = "Biometrie für schnelles Signieren";
 "settingsBiometricsSubtitle" = "Biometrie für schnelles Signieren aktivieren";
 "wrongPassword" = "Falsches Passwort";
-"wrongPasswordHint" = ". Dein Passwort-Hinweis ist: ";
+"wrongPasswordHint" = "Dein Passwort-Hinweis ist: ";
 "reshareLabelTitle" = "Teile deinen Tresor erneut";
 "reshareLabelSubtitle" = "Das erneute Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer der Schwellenwert der Geräte erforderlich.";

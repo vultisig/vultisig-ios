@@ -54,9 +54,15 @@ struct FastVaultEnterPasswordView: View {
     }
     
     var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("fastVaultEnterDisclaimer", comment: ""))
-            .padding(.horizontal, 16)
-        
+        VStack{
+            OutlinedDisclaimer(text: NSLocalizedString("fastVaultEnterDisclaimer", comment: ""))
+                .padding(.horizontal, 16)
+            
+            if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
+                OutlinedDisclaimer(text: NSLocalizedString("wrongPasswordHint", comment: "") + (hint) )
+                    .padding(.horizontal, 16)
+            }
+        }
     }
     
     var buttons: some View {
@@ -82,9 +88,7 @@ struct FastVaultEnterPasswordView: View {
         .alert(
             isPresented: $isWrongPassword,
             content: {
-                let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA)
-                let message = NSLocalizedString("wrongPassword", comment: "") +
-                (hint != nil ? NSLocalizedString("wrongPasswordHint", comment: "") + (hint ?? "") : "")
+                let message = NSLocalizedString("wrongPassword", comment: "")
                 return Alert(title: Text(message), dismissButton: .default(Text("OK")))
             }
         )

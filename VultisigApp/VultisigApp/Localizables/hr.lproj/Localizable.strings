@@ -23,7 +23,7 @@
 "settingsBiometricsTitle" = "Biometrija za brzo potpisivanje";
 "settingsBiometricsSubtitle" = "Omogući biometriju za brzo potpisivanje";
 "wrongPassword" = "Pogrešna lozinka";
-"wrongPasswordHint" = ". Vaš savjet za lozinku je: ";
+"wrongPasswordHint" = "Vaš savjet za lozinku je: ";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
