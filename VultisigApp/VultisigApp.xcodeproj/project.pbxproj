@@ -473,6 +473,7 @@
 		A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */; };
 		A6C58D802D7AD800000D2833 /* quick_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D7F2D7AD800000D2833 /* quick_summary.riv */; };
 		A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D812D7AD81D000D2833 /* securevault_summary.riv */; };
+		A6C58D842D7B6F3C000D2833 /* backup_vault.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6C58D832D7B6F3C000D2833 /* backup_vault.riv */; };
 		A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */; };
 		A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */; };
 		A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */; };
@@ -1307,6 +1308,7 @@
 		A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = fastvault_summary.riv; sourceTree = "<group>"; };
 		A6C58D7F2D7AD800000D2833 /* quick_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = quick_summary.riv; sourceTree = "<group>"; };
 		A6C58D812D7AD81D000D2833 /* securevault_summary.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = securevault_summary.riv; sourceTree = "<group>"; };
+		A6C58D832D7B6F3C000D2833 /* backup_vault.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backup_vault.riv; sourceTree = "<group>"; };
 		A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationButton.swift; sourceTree = "<group>"; };
 		A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellViewModel.swift; sourceTree = "<group>"; };
 		A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignView+iOS.swift"; sourceTree = "<group>"; };
@@ -2924,6 +2926,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
 				A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */,
 				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
@@ -3589,6 +3592,7 @@
 				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
+				A6C58D842D7B6F3C000D2833 /* backup_vault.riv in Resources */,
 				A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */,
 				A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */,
 				A65505152D66918200EDEB8C /* SecureVaultBackupSuccess.riv in Resources */,

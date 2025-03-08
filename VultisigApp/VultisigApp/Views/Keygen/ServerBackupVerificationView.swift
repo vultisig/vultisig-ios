@@ -14,7 +14,7 @@ struct ServerBackupVerificationView: View {
     let email: String
 
     @Binding var isPresented: Bool
-    @Binding var isBackupLinkActive: Bool
+    @Binding var tabIndex: Int
 
     @FocusState private var focusedField: Int?
 
@@ -196,8 +196,8 @@ struct ServerBackupVerificationView: View {
             )
 
             if isSuccess {
+                tabIndex += 1
                 isPresented = false
-                isBackupLinkActive = true
             } else {
                 showAlert = true
             }
@@ -221,5 +221,10 @@ struct ServerBackupVerificationView: View {
 }
 
 #Preview {
-    ServerBackupVerificationView(vault: Vault.example,  email: "mail@email.com", isPresented: .constant(false), isBackupLinkActive: .constant(false))
+    ServerBackupVerificationView(
+        vault: Vault.example,
+        email: "mail@email.com",
+        isPresented: .constant(false),
+        tabIndex: .constant(2)
+    )
 }
