@@ -52,7 +52,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
         case .Ton(_,_,_):
-            return BigInt(0.001 * 10e9)
+            return BigInt(0.05 * pow(10,9))
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
