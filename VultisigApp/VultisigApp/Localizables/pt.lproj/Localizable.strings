@@ -23,6 +23,7 @@
 "settingsBiometricsTitle" = "Biometria para assinatura rápida";
 "settingsBiometricsSubtitle" = "Ativar biometria para assinatura rápida";
 "wrongPassword" = "Senha incorreta";
+"wrongPasswordHint" = "Sua dica de senha é: ";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
