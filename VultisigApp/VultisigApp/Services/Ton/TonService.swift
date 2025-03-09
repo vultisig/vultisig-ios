@@ -98,8 +98,6 @@ class TonService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        print(String(data: data, encoding: .utf8) ?? "")
-        
         if let balance = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
             return balance
         }
@@ -121,8 +119,6 @@ class TonService {
         let request = URLRequest(url: url)
         
         let (data, _) = try await URLSession.shared.data(for: request)
-        
-        print(String(data: data, encoding: .utf8) ?? "")
         
         var seqno = UInt64(0)
         if let rseqno = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? UInt64 {
