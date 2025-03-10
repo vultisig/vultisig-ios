@@ -69,7 +69,6 @@ struct SendCryptoView: View {
             
             tabView
         }
-        .blur(radius: sendCryptoViewModel.isLoading ? 1 : 0)
     }
     
     var tabView: some View {
