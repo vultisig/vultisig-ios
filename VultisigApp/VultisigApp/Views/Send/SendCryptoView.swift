@@ -32,10 +32,6 @@ struct SendCryptoView: View {
         ZStack {
             Background()
             main
-            
-            if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
-                loader
-            }
         }
         .ignoresSafeArea(.keyboard)
         .onAppear {
@@ -180,10 +176,6 @@ struct SendCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
-    }
-    
-    var loader: some View {
-        Loader()
     }
     
     private func setData() async {
