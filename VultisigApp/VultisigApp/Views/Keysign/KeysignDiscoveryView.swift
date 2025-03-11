@@ -3,6 +3,7 @@
 //  VultisigApp
 
 import SwiftUI
+import RiveRuntime
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
@@ -28,6 +29,7 @@ struct KeysignDiscoveryView: View {
     
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
+    @State var animationVM: RiveViewModel? = nil
     
     var swapTransaction: SwapTransaction = SwapTransaction()
     
@@ -60,6 +62,9 @@ struct KeysignDiscoveryView: View {
             if isLoading {
                 loader
             }
+        }
+        .onAppear {
+            setAnimation()
         }
         .task {
             await setData()
@@ -126,15 +131,12 @@ struct KeysignDiscoveryView: View {
         return fastVaultPassword == nil ? .secure : .fast
     }
     
-    var networkPrompts: some View {
-        NetworkPrompts(selectedNetwork: $selectedNetwork)
-            .onChange(of: selectedNetwork) {
-                print("selected network changed: \(selectedNetwork)")
-                viewModel.restartParticipantDiscovery()
-                Task{
-                    await setData()
-                }
-            }
+    var animation: some View {
+        animationVM?.view()
+    }
+    
+    private func setAnimation() {
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     }
     
     private func setData() async {

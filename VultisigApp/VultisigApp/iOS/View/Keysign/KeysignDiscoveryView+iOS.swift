@@ -57,10 +57,11 @@ extension KeysignDiscoveryView {
     }
     
     var paringQRCode: some View {
-        VStack {
-            networkPrompts
+        ZStack {
+            animation
             qrCode
         }
+        .padding(8)
         .foregroundColor(.neutral0)
         .cornerRadius(10)
     }
@@ -69,17 +70,12 @@ extension KeysignDiscoveryView {
         ZStack {
             qrCodeImage?
                 .resizable()
-                .frame(width: qrSize)
-                .frame(height: qrSize)
-                .scaledToFit()
-                .padding(isiOSAppOnMac ? 20 : 2)
-                .cornerRadius(isiOSAppOnMac ? 40 : 10)
+                .frame(maxWidth: 500, maxHeight: 500)
+                .aspectRatio(contentMode: .fill)
                 .padding(16)
-                .padding(isiOSAppOnMac ? 20 : 0)
                 .background(Color.blue600)
-                .cornerRadius(isiOSAppOnMac ? 60 : 30)
-                .padding(1)
-                .padding(isiOSAppOnMac ? 50 : 0)
+                .cornerRadius(38)
+                .padding(2)
         }
     }
     

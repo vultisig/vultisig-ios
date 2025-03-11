@@ -34,8 +34,6 @@ extension KeysignDiscoveryView {
     
     var list: some View {
         VStack(spacing: 18) {
-            networkPrompts
-            
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
             } else {
