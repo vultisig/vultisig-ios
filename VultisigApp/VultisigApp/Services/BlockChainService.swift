@@ -83,8 +83,9 @@ final class BlockChainService {
                                    toAddress: nil,
                                    feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
+            let cacheSeconds = await getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
-            if localCacheItem.date.addingTimeInterval(60) > Date() {
+            if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific
             }
         }
@@ -127,6 +128,14 @@ final class BlockChainService {
 }
 
 private extension BlockChainService {
+    func getCacheSeconds(chain: Chain) -> TimeInterval {
+        switch chain {
+        case .solana:
+            return 10
+        default:
+            return 60
+        }
+    }
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
         let cacheKey = getCacheKey(for: tx.coin,
                                    action: .transfer,
@@ -138,10 +147,9 @@ private extension BlockChainService {
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
-        
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
-            if localCacheItem.date.addingTimeInterval(30) > Date() {
+            if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
                 return localCacheItem.blockSpecific
             }
         }
@@ -176,7 +184,7 @@ private extension BlockChainService {
         
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
-            if localCacheItem.date.addingTimeInterval(30) > Date() {
+            if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
                 return localCacheItem.blockSpecific
             }
         }
