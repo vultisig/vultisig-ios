@@ -56,6 +56,7 @@ final class BlockChainService {
     private let terraClassic = TerraClassicService.shared
     private let noble = NobleService.shared
     private let akash = AkashService.shared
+    var localCache = ThreadSafeDictionary<String,BlockChainSpecific>()
 
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
@@ -139,7 +140,16 @@ private extension BlockChainService {
         return specific
     }
 
-    func fetchSpecific(for coin: Coin, action: Action, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt?, byteFee: BigInt?, fromAddress: String?, toAddress: String?, feeMode: FeeMode) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin,
+                       action: Action,
+                       sendMaxAmount: Bool,
+                       isDeposit: Bool,
+                       transactionType: VSTransactionType,
+                       gasLimit: BigInt?,
+                       byteFee: BigInt?,
+                       fromAddress: String?,
+                       toAddress: String?,
+                       feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let byteFeeValue: BigInt
