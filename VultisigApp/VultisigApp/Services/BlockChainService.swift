@@ -9,7 +9,7 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
-struct BlockSpecficCacheItem {
+struct BlockSpecificCacheItem {
     let blockSpecific: BlockChainSpecific
     let date: Date
 }
@@ -60,7 +60,7 @@ final class BlockChainService {
     private let terraClassic = TerraClassicService.shared
     private let noble = NobleService.shared
     private let akash = AkashService.shared
-    private var localCache = ThreadSafeDictionary<String,BlockSpecficCacheItem>()
+    private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
@@ -73,15 +73,12 @@ final class BlockChainService {
     
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         let cacheKey =  await getCacheKey(for: tx.fromCoin,
-                                   action: .swap,
-                                   sendMaxAmount: false,
-                                   isDeposit: tx.isDeposit,
-                                   transactionType: .unspecified,
-                                   gasLimit: nil,
-                                   byteFee: nil,
-                                   fromAddress: nil,
-                                   toAddress: nil,
-                                   feeMode: .fast)
+                                          action: .swap,
+                                          sendMaxAmount: false,
+                                          isDeposit: tx.isDeposit,
+                                          transactionType: .unspecified,
+                                          fromAddress: tx.fromCoin.address,
+                                          feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = await getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
@@ -102,7 +99,7 @@ final class BlockChainService {
             toAddress: nil,
             feeMode: .fast
         )
-        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: specific, date: Date()))
+        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
     
@@ -118,12 +115,9 @@ final class BlockChainService {
                      sendMaxAmount: Bool,
                      isDeposit: Bool,
                      transactionType: VSTransactionType,
-                     gasLimit: BigInt?,
-                     byteFee: BigInt?,
                      fromAddress: String?,
-                     toAddress: String?,
                      feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(gasLimit ?? 0)-\(byteFee ?? 0)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(feeMode)"
     }
 }
 
@@ -142,10 +136,7 @@ private extension BlockChainService {
                                    sendMaxAmount: tx.sendMaxAmount,
                                    isDeposit: tx.isDeposit,
                                    transactionType: tx.transactionType,
-                                   gasLimit: tx.gasLimit,
-                                   byteFee: tx.byteFee,
                                    fromAddress: tx.fromAddress,
-                                   toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
@@ -166,7 +157,7 @@ private extension BlockChainService {
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
         )
-        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: blockSpecific, date: Date()))
+        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
         return blockSpecific
     }
     
@@ -176,12 +167,8 @@ private extension BlockChainService {
                                    sendMaxAmount: tx.sendMaxAmount,
                                    isDeposit: tx.isDeposit,
                                    transactionType: tx.transactionType,
-                                   gasLimit: tx.gasLimit,
-                                   byteFee: tx.byteFee,
                                    fromAddress: tx.fromAddress,
-                                   toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
-        
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
@@ -215,7 +202,7 @@ private extension BlockChainService {
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
         )
-        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: specific, date: Date()))
+        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
     
