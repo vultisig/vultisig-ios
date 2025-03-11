@@ -40,7 +40,7 @@ struct AddressBookChainSelector: View {
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(selected?.chain.ticker ?? "")")
+            Text("\(selected?.chain.name ?? "")")
             Spacer()
             Image(systemName: "chevron.down")
         }
@@ -77,7 +77,7 @@ struct AddressBookChainSelector: View {
                 .frame(width: 32, height: 32)
                 .cornerRadius(30)
             
-            Text(coin?.chain.ticker ?? "")
+            Text(coin?.chain.name ?? "")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
 
