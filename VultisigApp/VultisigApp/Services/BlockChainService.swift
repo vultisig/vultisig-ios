@@ -9,17 +9,21 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
+struct BlockSpecficCacheItem {
+    let blockSpecific: BlockChainSpecific
+    let date: Date
+}
 final class BlockChainService {
-
+    
     static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
         return value * 2 + value / 2 // x2.5 fee
     }
-
+    
     static func normalizeEVMFee(_ value: BigInt) -> BigInt {
         let normalized = value + value / 2 // x1.5 fee
         return max(normalized, 1) // To avoid 0 miner tips
     }
-
+    
     enum Action {
         case transfer
         case swap
@@ -51,13 +55,13 @@ final class BlockChainService {
     private let tron = TronService.shared
     
     private let ripple = RippleService.shared
-
+    
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
     private let noble = NobleService.shared
     private let akash = AkashService.shared
-    var localCache = ThreadSafeDictionary<String,BlockChainSpecific>()
-
+    private var localCache = ThreadSafeDictionary<String,BlockSpecficCacheItem>()
+    
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
@@ -68,6 +72,23 @@ final class BlockChainService {
     }
     
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
+        let cacheKey =  await getCacheKey(for: tx.fromCoin,
+                                   action: .swap,
+                                   sendMaxAmount: false,
+                                   isDeposit: tx.isDeposit,
+                                   transactionType: .unspecified,
+                                   gasLimit: nil,
+                                   byteFee: nil,
+                                   fromAddress: nil,
+                                   toAddress: nil,
+                                   feeMode: .fast)
+        if let localCacheItem =  self.localCache.get(cacheKey) {
+            // use the cache item
+            if localCacheItem.date.addingTimeInterval(60) > Date() {
+                return localCacheItem.blockSpecific
+            }
+        }
+        
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
@@ -80,22 +101,52 @@ final class BlockChainService {
             toAddress: nil,
             feeMode: .fast
         )
-
+        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
-
+    
     func fetchUTXOFee(coin: Coin, action: Action, feeMode: FeeMode) async throws -> BigInt {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
         let normalized = Self.normalizeUTXOFee(sats)
         let prioritized = Float(normalized) * feeMode.utxoMultiplier
         return BigInt(prioritized)
     }
+    
+    func getCacheKey(for coin: Coin,
+                     action: Action,
+                     sendMaxAmount: Bool,
+                     isDeposit: Bool,
+                     transactionType: VSTransactionType,
+                     gasLimit: BigInt?,
+                     byteFee: BigInt?,
+                     fromAddress: String?,
+                     toAddress: String?,
+                     feeMode: FeeMode) -> String {
+        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(gasLimit ?? 0)-\(byteFee ?? 0)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+    }
 }
 
 private extension BlockChainService {
-
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
-        return try await fetchSpecific(
+        let cacheKey = getCacheKey(for: tx.coin,
+                                   action: .transfer,
+                                   sendMaxAmount: tx.sendMaxAmount,
+                                   isDeposit: tx.isDeposit,
+                                   transactionType: tx.transactionType,
+                                   gasLimit: tx.gasLimit,
+                                   byteFee: tx.byteFee,
+                                   fromAddress: tx.fromAddress,
+                                   toAddress: tx.toAddress,
+                                   feeMode: tx.feeMode)
+        
+        if let localCacheItem =  self.localCache.get(cacheKey) {
+            // use the cache item
+            if localCacheItem.date.addingTimeInterval(30) > Date() {
+                return localCacheItem.blockSpecific
+            }
+        }
+        
+        let blockSpecific = try await fetchSpecific(
             for: tx.coin,
             action: .transfer,
             sendMaxAmount: tx.sendMaxAmount,
@@ -107,23 +158,43 @@ private extension BlockChainService {
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
         )
+        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: blockSpecific, date: Date()))
+        return blockSpecific
     }
-
+    
     func fetchSpecificForEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
+        let cacheKey = getCacheKey(for: tx.coin,
+                                   action: .transfer,
+                                   sendMaxAmount: tx.sendMaxAmount,
+                                   isDeposit: tx.isDeposit,
+                                   transactionType: tx.transactionType,
+                                   gasLimit: tx.gasLimit,
+                                   byteFee: tx.byteFee,
+                                   fromAddress: tx.fromAddress,
+                                   toAddress: tx.toAddress,
+                                   feeMode: tx.feeMode)
+        
+        if let localCacheItem =  self.localCache.get(cacheKey) {
+            // use the cache item
+            if localCacheItem.date.addingTimeInterval(30) > Date() {
+                return localCacheItem.blockSpecific
+            }
+        }
+        
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-
+        
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
             fromAddress: tx.coin.address,
             mode: tx.feeMode
         )
-
+        
         let estimateGasLimit = tx.coin.isNativeToken ?
-            try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
-            try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
-
+        try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
+        try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+        
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
-
+        
         let specific = try await fetchSpecific(
             for: tx.coin,
             action: .transfer,
@@ -136,10 +207,10 @@ private extension BlockChainService {
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
         )
-
+        self.localCache.set(cacheKey, BlockSpecficCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
-
+    
     func fetchSpecific(for coin: Coin,
                        action: Action,
                        sendMaxAmount: Bool,
@@ -217,7 +288,7 @@ private extension BlockChainService {
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let baseFee = try await service.getBaseFee()
             let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
-
+            
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? 0
@@ -262,7 +333,7 @@ private extension BlockChainService {
             let now = Date()
             let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
             let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-                        
+            
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
@@ -298,7 +369,7 @@ private extension BlockChainService {
             let now = Date()
             let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
             let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-                        
+            
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
@@ -328,7 +399,7 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
-        
+            
         case .noble:
             let account = try await noble.fetchAccountNumber(coin.address)
             
@@ -340,7 +411,7 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 20000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
-        
+            
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
             return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)

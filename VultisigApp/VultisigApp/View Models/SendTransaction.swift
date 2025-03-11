@@ -7,7 +7,7 @@ import BigInt
 import Combine
 import VultisigCommonData
 
-class SendTransaction: ObservableObject, Hashable , CustomStringConvertible {
+class SendTransaction: ObservableObject, Hashable {
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty
@@ -35,9 +35,6 @@ class SendTransaction: ObservableObject, Hashable , CustomStringConvertible {
         return customByteFee ?? gas
     }
     
-    var description: String {
-        return "\(fromAddress)-\(toAddress)-\(coin.chain)-\(coin.ticker)"
-    }
     var isAmountExceeded: Bool {
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
