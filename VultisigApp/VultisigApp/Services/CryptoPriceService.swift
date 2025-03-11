@@ -14,7 +14,6 @@ public class CryptoPriceService: ObservableObject {
     
     func fetchPrices(vault: Vault) async throws {
         try await fetchPrices(coins: vault.coins)
-        
         await refresh(vault: vault)
         await refresh(coins: vault.coins)
     }
@@ -81,11 +80,18 @@ private extension CryptoPriceService {
             ids: idsQuery,
             currencies: currencies
         )
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-        
-        try await RateProvider.shared.save(rates: mapRates(response: response))
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
+            
+            try await RateProvider.shared.save(rates: mapRates(response: response))
+        } catch {
+            if let error = error as? URLError, error.code == .cancelled {
+                print("request cancelled")
+            } else {
+                throw error
+            }
+        }
     }
     
     func fetchPrices(contracts: [String], chain: Chain) async throws {
