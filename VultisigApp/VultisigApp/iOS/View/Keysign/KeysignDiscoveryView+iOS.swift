@@ -106,8 +106,7 @@ extension KeysignDiscoveryView {
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
-            Text("(\(viewModel.selections.count)/3)")
-                .opacity(viewModel.selections.count>3 ? 0 : 1)
+            Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body22BrockmannMedium)
