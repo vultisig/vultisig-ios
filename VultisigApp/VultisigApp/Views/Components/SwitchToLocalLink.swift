@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SwitchToLocalLink: View {
-    @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
+    @Binding var selectedNetwork: NetworkPromptType
     
     var body: some View {
         Button {
@@ -20,7 +20,7 @@ struct SwitchToLocalLink: View {
     
     var label: some View {
         ZStack {
-            if viewModel.selectedNetwork == .Internet {
+            if selectedNetwork == .Internet {
                 switchToLocalLabel
             } else {
                 switchToInternetLabel
@@ -47,15 +47,15 @@ struct SwitchToLocalLink: View {
     
     private func toggleNetwork() {
         withAnimation {
-            if viewModel.selectedNetwork == .Internet {
-                viewModel.selectedNetwork = .Local
+            if selectedNetwork == .Internet {
+                selectedNetwork = .Local
             } else {
-                viewModel.selectedNetwork = .Internet
+                selectedNetwork = .Internet
             }
         }
     }
 }
 
 #Preview {
-    SwitchToLocalLink(viewModel: KeygenPeerDiscoveryViewModel())
+    SwitchToLocalLink(selectedNetwork: .constant(.Internet))
 }

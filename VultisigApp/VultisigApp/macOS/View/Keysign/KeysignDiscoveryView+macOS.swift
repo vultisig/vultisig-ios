@@ -32,83 +32,78 @@ extension KeysignDiscoveryView {
         landscapeContent
     }
     
-    var list: some View {
-        VStack(spacing: 18) {
-            networkPrompts
-            
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
+    var qrCode: some View {
+        qrCodeImage?
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
+            .padding(32)
     }
     
-    var paringQRCode: some View {
-        VStack {
-            Text(NSLocalizedString("scanWithPairedDevice", comment: ""))
-                .font(.body14MontserratMedium)
-                .multilineTextAlignment(.center)
-            
-            qrCodeImage?
-                .resizable()
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
-                .scaledToFit()
-                .padding(2)
-                .cornerRadius(10)
-                .padding(16)
-                .background(Color.blue600)
-                .cornerRadius(20)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 20)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
-                )
-                .padding(1)
-        }
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding(4)
-    }
-    
-    var bottomButtons: some View {
+    var signButton: some View {
         let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
-        return Button {
+        return Button(action: {
             isLoading = true
             startKeysign()
-        } label: {
-            FilledButton(title: "sign")
+        }) {
+            FilledButton(
+                title: isDisabled ? "waitingOnDevices..." : "sign",
+                textColor: isDisabled ? .textDisabled : .blue600,
+                background: isDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.8 : 1)
-        .grayscale(isDisabled ? 1 : 0)
-        .padding(.horizontal, 40)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .padding(.horizontal, 28)
         .edgesIgnoringSafeArea(.bottom)
-        .padding(.bottom, 40)
+        .padding(.bottom, 8)
+    }
+    
+    var QRCodeContent: some View {
+        VStack {
+            paringQRCode
+            disclaimer
+        }
+        .padding(60)
+        .offset(y: -32)
     }
     
     var deviceList: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 32) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                    .onAppear {
-                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                            handleSelection(peer)
-                        }
-                    }
+        VStack {
+            listTitle
+            
+            LazyVGrid(columns: columns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: "Mac")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 120)
+        }
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
                 }
             }
-            .padding(.horizontal, 24)
-            .frame(maxHeight: .infinity)
         }
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
+            .padding(.bottom, 8)
+    }
+    
+    func getMinSize() -> CGFloat {
+        min(screenWidth/2, screenHeight/1.2)
     }
 }
 #endif

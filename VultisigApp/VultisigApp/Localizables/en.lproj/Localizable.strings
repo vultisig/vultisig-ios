@@ -596,3 +596,5 @@
 "FastVaultOverview4Text2" = "this vault share";
 "FastVaultOverview4Text3" = " securely, preferably ";
 "FastVaultOverview4Text4" = "online.";
+"keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
+"keysignDiscoveryDisclaimerDevice" = "-device scan required.";

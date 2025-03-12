@@ -552,3 +552,5 @@
 "FastVaultOverview4Text2" = "ovaj dio trezora";
 "FastVaultOverview4Text3" = " sigurno, po mogućnosti ";
 "FastVaultOverview4Text4" = "online.";
+"keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
+"keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";

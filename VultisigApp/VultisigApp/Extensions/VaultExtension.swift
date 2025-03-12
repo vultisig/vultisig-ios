@@ -41,6 +41,13 @@ extension Vault {
             }
         }
         let cleanVaultName = vaultName.replacingOccurrences(of: "/", with: "-")
-        return "\(cleanVaultName)-\(lastFourOfPubKey)-part\(signersOrder)of\(signersCount)" + ".vult"
+        var partName = ""
+        switch self.libType {
+        case .DKLS:
+            partName = "share"
+        default:
+            partName = "part"
+        }
+        return "\(cleanVaultName)-\(lastFourOfPubKey)-\(partName)\(signersOrder)of\(signersCount)" + ".vult"
     }
 }

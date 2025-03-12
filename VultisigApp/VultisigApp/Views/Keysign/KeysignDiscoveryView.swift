@@ -3,6 +3,7 @@
 //  VultisigApp
 
 import SwiftUI
+import RiveRuntime
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
@@ -26,8 +27,10 @@ struct KeysignDiscoveryView: View {
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
     
+    @State var showDisclaimer: Bool = true
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
+    @State var animationVM: RiveViewModel? = nil
     
     var swapTransaction: SwapTransaction = SwapTransaction()
     
@@ -61,6 +64,9 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
+        .onAppear {
+            setAnimation()
+        }
         .task {
             await setData()
             await viewModel.startDiscovery()
@@ -78,44 +84,74 @@ struct KeysignDiscoveryView: View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
     
+    var list: some View {
+        deviceList
+    }
+    
     var waitingForDevices: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                VStack(spacing: 16) {
-                    orientedContent
-                    bottomButtons
-                }
-            } else {
-                ZStack(alignment: .bottom) {
-                    orientedContent
-                    bottomButtons
-                }
-            }
+        ZStack(alignment: .bottom) {
+            orientedContent
+            button
         }
+    }
+    
+    var button: some View {
+        VStack {
+            signButton
+            switchLink
+        }
+        .background(Color.backgroundBlue)
     }
     
     var landscapeContent: some View {
         HStack(spacing: 8) {
-            paringQRCode
-            list
-                .padding(20)
+            QRCodeContent
+            
+            ScrollView {
+                list
+                    .padding(20)
+            }
         }
     }
     
     var portraitContent: some View {
+        ScrollView(showsIndicators: false) {
+            paringQRCode
+            disclaimer
+            list
+        }
+    }
+    
+    var paringQRCode: some View {
         ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                VStack {
-                    paringQRCode
-                    list
-                }
-            } else {
-                ScrollView {
-                    paringQRCode
-                    list
-                }
+            animation
+            qrCode
+        }
+        .foregroundColor(.neutral0)
+        .padding()
+    }
+    
+    var disclaimer: some View {
+        ZStack {
+            if selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                KeysignDiscoveryDisclaimer(vault: vault, showAlert: $showDisclaimer)
             }
         }
+        .padding(.horizontal)
+    }
+    
+    var listTitle: some View {
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
     }
     
     var lookingForDevices: some View {
@@ -126,15 +162,12 @@ struct KeysignDiscoveryView: View {
         return fastVaultPassword == nil ? .secure : .fast
     }
     
-    var networkPrompts: some View {
-        NetworkPrompts(selectedNetwork: $selectedNetwork)
-            .onChange(of: selectedNetwork) {
-                print("selected network changed: \(selectedNetwork)")
-                viewModel.restartParticipantDiscovery()
-                Task{
-                    await setData()
-                }
-            }
+    var animation: some View {
+        animationVM?.view()
+    }
+    
+    private func setAnimation() {
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     }
     
     private func setData() async {
