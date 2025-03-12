@@ -110,6 +110,8 @@ struct KeysignDiscoveryView: View {
                 paringQRCode
                 disclaimer
             }
+            .padding(60)
+            .offset(y: -32)
             
             ScrollView {
                 list

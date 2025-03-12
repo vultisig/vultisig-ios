@@ -39,10 +39,10 @@ extension KeysignDiscoveryView {
     var qrCode: some View {
         qrCodeImage?
             .resizable()
-            .scaledToFit()
-            .padding(18)
+            .frame(maxWidth: 1024, maxHeight: 1024)
+            .aspectRatio(contentMode: .fill)
             .background(Color.clear)
-            .padding(24)
+            .padding(30)
     }
     
     var signButton: some View {
@@ -68,15 +68,13 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            ScrollView {
-                LazyVGrid(columns: phoneColumns, spacing: 18) {
-                    ThisDevicePeerCell(deviceName: "Mac")
-                    devices
-                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-                }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 120)
+            LazyVGrid(columns: phoneColumns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: "Mac")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 120)
         }
     }
     
@@ -97,7 +95,7 @@ extension KeysignDiscoveryView {
     
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
-            .padding(.bottom, 40)
+            .padding(.bottom, 8)
     }
     
     var paringQRCode: some View {
@@ -105,7 +103,6 @@ extension KeysignDiscoveryView {
             animation
             qrCode
         }
-        .padding(48)
         .foregroundColor(.neutral0)
     }
 }
