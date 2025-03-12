@@ -89,16 +89,6 @@ struct KeysignDiscoveryView: View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
     
-    var paringQRCode: some View {
-        ZStack {
-            animation
-            qrCode
-        }
-        .padding(8)
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
-    }
-    
     var waitingForDevices: some View {
         ZStack(alignment: .bottom) {
             orientedContent
@@ -112,10 +102,6 @@ struct KeysignDiscoveryView: View {
             switchLink
         }
         .background(Color.backgroundBlue)
-    }
-    
-    var switchLink: some View {
-        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
     }
     
     var landscapeContent: some View {

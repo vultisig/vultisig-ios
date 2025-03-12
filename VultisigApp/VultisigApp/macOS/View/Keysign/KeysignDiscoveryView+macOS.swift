@@ -45,37 +45,29 @@ extension KeysignDiscoveryView {
     var qrCode: some View {
         qrCodeImage?
             .resizable()
-            .frame(maxWidth: isPhoneSE ? 250 : nil)
-            .frame(maxHeight: isPhoneSE ? 250 : nil)
             .scaledToFit()
-            .padding(2)
-            .cornerRadius(10)
-            .padding(16)
-            .background(Color.blue600)
-            .cornerRadius(20)
-            .overlay (
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
-            )
-            .padding(1)
+            .padding(18)
+            .background(Color.clear)
+            .padding(24)
     }
     
-    var bottomButtons: some View {
+    var signButton: some View {
         let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
-        return Button {
+        return Button(action: {
             isLoading = true
             startKeysign()
-        } label: {
-            FilledButton(title: "sign")
+        }) {
+            FilledButton(
+                title: isDisabled ? "waitingOnDevices..." : "sign",
+                textColor: isDisabled ? .textDisabled : .blue600,
+                background: isDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.8 : 1)
-        .grayscale(isDisabled ? 1 : 0)
-        .padding(.horizontal, 40)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .padding(.horizontal, 28)
         .edgesIgnoringSafeArea(.bottom)
-        .padding(.bottom, 40)
+        .padding(.bottom, 8)
     }
     
     var deviceList: some View {
@@ -97,6 +89,20 @@ extension KeysignDiscoveryView {
             .padding(.horizontal, 24)
             .frame(maxHeight: .infinity)
         }
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
+            .padding(.bottom, 40)
+    }
+    
+    var paringQRCode: some View {
+        ZStack {
+            animation
+            qrCode
+        }
+        .padding(48)
+        .foregroundColor(.neutral0)
     }
 }
 #endif

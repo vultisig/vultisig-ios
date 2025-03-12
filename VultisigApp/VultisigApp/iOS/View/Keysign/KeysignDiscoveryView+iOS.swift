@@ -122,6 +122,20 @@ extension KeysignDiscoveryView {
         .padding(idiom == .phone ? 0 : 8)
     }
     
+    var switchLink: some View {
+        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
+    }
+    
+    var paringQRCode: some View {
+        ZStack {
+            animation
+            qrCode
+        }
+        .padding(8)
+        .foregroundColor(.neutral0)
+        .cornerRadius(10)
+    }
+    
     private func setSize() {
         getQRSize()
         getQROutline()
