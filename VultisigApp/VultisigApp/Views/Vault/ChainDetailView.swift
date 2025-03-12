@@ -185,10 +185,6 @@ struct ChainDetailView: View {
         guard resetActive else {
             return
         }
-        
-        if let coin = group.coins.first {
-            sendTx.reset(coin: coin)
-        }
     }
 
     private func updateBalances() async {

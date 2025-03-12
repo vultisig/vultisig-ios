@@ -39,6 +39,7 @@ class BalanceService {
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
         } catch {
+            print("error \(error)")
             print("Fetch Rates error: \(error.localizedDescription)")
         }
         

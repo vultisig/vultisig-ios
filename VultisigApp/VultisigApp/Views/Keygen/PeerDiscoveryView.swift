@@ -126,13 +126,6 @@ struct PeerDiscoveryView: View {
         }
     }
     
-    var portraitContent: some View {
-        VStack(spacing: 0) {
-            qrCode
-            list
-        }
-    }
-    
     var qrCode: some View {
         VStack(spacing: 0) {
             paringBarcode
