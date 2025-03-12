@@ -87,7 +87,7 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            LazyVGrid(columns: phoneColumns, spacing: 18) {
+            LazyVGrid(columns: columns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)

@@ -42,11 +42,6 @@ struct KeysignDiscoveryView: View {
     
     let columns = [GridItem(.adaptive(minimum: 160))]
     
-    let phoneColumns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160))
-    ]
-    
     var body: some View {
         container
     }

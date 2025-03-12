@@ -35,10 +35,9 @@ extension KeysignDiscoveryView {
     var qrCode: some View {
         qrCodeImage?
             .resizable()
-            .frame(maxWidth: 1024, maxHeight: 1024)
-            .aspectRatio(contentMode: .fill)
-            .background(Color.clear)
-            .padding(30)
+            .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
+            .padding(32)
     }
     
     var signButton: some View {
@@ -73,7 +72,7 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            LazyVGrid(columns: phoneColumns, spacing: 18) {
+            LazyVGrid(columns: columns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
@@ -101,6 +100,10 @@ extension KeysignDiscoveryView {
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
             .padding(.bottom, 8)
+    }
+    
+    func getMinSize() -> CGFloat {
+        min(screenWidth/2, screenHeight/1.2)
     }
 }
 #endif
