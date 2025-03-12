@@ -27,6 +27,7 @@ struct KeysignDiscoveryView: View {
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
     
+    @State var showDisclaimer: Bool = true
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var animationVM: RiveViewModel? = nil
@@ -88,26 +89,64 @@ struct KeysignDiscoveryView: View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
     
+    var paringQRCode: some View {
+        ZStack {
+            animation
+            qrCode
+        }
+        .padding(8)
+        .foregroundColor(.neutral0)
+        .cornerRadius(10)
+    }
+    
     var waitingForDevices: some View {
         ZStack(alignment: .bottom) {
             orientedContent
-            signButton
+            button
         }
+    }
+    
+    var button: some View {
+        VStack {
+            signButton
+            switchLink
+        }
+        .background(Color.backgroundBlue)
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
     }
     
     var landscapeContent: some View {
         HStack(spacing: 8) {
-            paringQRCode
+            VStack {
+                paringQRCode
+                disclaimer
+            }
+            
             list
                 .padding(20)
         }
     }
     
     var portraitContent: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             paringQRCode
+            disclaimer
             list
         }
+    }
+    
+    var disclaimer: some View {
+        ZStack {
+            if selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                KeysignDiscoveryDisclaimer(vault: vault, showAlert: $showDisclaimer)
+            }
+        }
+        .padding(.horizontal)
     }
     
     var lookingForDevices: some View {

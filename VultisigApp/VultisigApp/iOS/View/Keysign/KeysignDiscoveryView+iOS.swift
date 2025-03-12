@@ -50,16 +50,6 @@ extension KeysignDiscoveryView {
         deviceList
     }
     
-    var paringQRCode: some View {
-        ZStack {
-            animation
-            qrCode
-        }
-        .padding(8)
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
-    }
-    
     var qrCode: some View {
         qrCodeImage?
             .resizable()
@@ -74,19 +64,21 @@ extension KeysignDiscoveryView {
     var signButton: some View {
         let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
-        return Button {
+        return Button(action: {
             isLoading = true
             startKeysign()
-        } label: {
-            FilledButton(title: "sign")
+        }) {
+            FilledButton(
+                title: isDisabled ? "waitingOnDevices..." : "sign",
+                textColor: isDisabled ? .textDisabled : .blue600,
+                background: isDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.8 : 1)
-        .grayscale(isDisabled ? 1 : 0)
-        .padding(.horizontal, 16)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .padding(.horizontal, 32)
         .edgesIgnoringSafeArea(.bottom)
         .padding(.bottom, idiom == .pad ? 30 : 0)
+        .padding(2)
     }
     
     var deviceList: some View {

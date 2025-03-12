@@ -42,32 +42,22 @@ extension KeysignDiscoveryView {
         }
     }
     
-    var paringQRCode: some View {
-        VStack {
-            Text(NSLocalizedString("scanWithPairedDevice", comment: ""))
-                .font(.body14MontserratMedium)
-                .multilineTextAlignment(.center)
-            
-            qrCodeImage?
-                .resizable()
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
-                .scaledToFit()
-                .padding(2)
-                .cornerRadius(10)
-                .padding(16)
-                .background(Color.blue600)
-                .cornerRadius(20)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 20)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
-                )
-                .padding(1)
-        }
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding(4)
+    var qrCode: some View {
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: isPhoneSE ? 250 : nil)
+            .frame(maxHeight: isPhoneSE ? 250 : nil)
+            .scaledToFit()
+            .padding(2)
+            .cornerRadius(10)
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(20)
+            .overlay (
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
+            )
+            .padding(1)
     }
     
     var bottomButtons: some View {
