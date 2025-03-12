@@ -41,6 +41,11 @@ struct KeysignDiscoveryView: View {
     
     let columns = [GridItem(.adaptive(minimum: 160))]
     
+    let phoneColumns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160))
+    ]
+    
     var body: some View {
         container
     }
@@ -84,18 +89,9 @@ struct KeysignDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                VStack(spacing: 16) {
-                    orientedContent
-                    bottomButtons
-                }
-            } else {
-                ZStack(alignment: .bottom) {
-                    orientedContent
-                    bottomButtons
-                }
-            }
+        ZStack(alignment: .bottom) {
+            orientedContent
+            signButton
         }
     }
     
@@ -108,18 +104,9 @@ struct KeysignDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                VStack {
-                    paringQRCode
-                    list
-                }
-            } else {
-                ScrollView {
-                    paringQRCode
-                    list
-                }
-            }
+        ScrollView {
+            paringQRCode
+            list
         }
     }
     

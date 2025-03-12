@@ -47,13 +47,7 @@ extension KeysignDiscoveryView {
     }
     
     var list: some View {
-        VStack(spacing: 4) {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
+        deviceList
     }
     
     var paringQRCode: some View {
@@ -67,19 +61,17 @@ extension KeysignDiscoveryView {
     }
     
     var qrCode: some View {
-        ZStack {
-            qrCodeImage?
-                .resizable()
-                .frame(maxWidth: 500, maxHeight: 500)
-                .aspectRatio(contentMode: .fill)
-                .padding(16)
-                .background(Color.blue600)
-                .cornerRadius(38)
-                .padding(2)
-        }
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: 500, maxHeight: 500)
+            .aspectRatio(contentMode: .fill)
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(38)
+            .padding(2)
     }
     
-    var bottomButtons: some View {
+    var signButton: some View {
         let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
         return Button {
@@ -98,24 +90,46 @@ extension KeysignDiscoveryView {
     }
     
     var deviceList: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 24) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                    .onAppear {
-                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                            handleSelection(peer)
-                        }
-                    }
+        VStack {
+            listTitle
+            
+            LazyVGrid(columns: phoneColumns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 120)
+        }
+    }
+    
+    var listTitle: some View {
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/3)")
+                .opacity(viewModel.selections.count>3 ? 0 : 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
                 }
             }
-            .padding(.horizontal, 24)
-            .frame(maxHeight: .infinity)
         }
+        .padding(idiom == .phone ? 0 : 8)
     }
     
     private func setSize() {
