@@ -137,6 +137,18 @@ struct KeysignDiscoveryView: View {
         .padding(.horizontal)
     }
     
+    var listTitle: some View {
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 24)
+    }
+    
     var lookingForDevices: some View {
         LookingForDevicesLoader(selectedTab: keysignState)
     }

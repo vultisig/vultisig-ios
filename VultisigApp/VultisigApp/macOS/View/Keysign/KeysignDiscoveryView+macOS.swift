@@ -33,13 +33,7 @@ extension KeysignDiscoveryView {
     }
     
     var list: some View {
-        VStack(spacing: 18) {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
+        deviceList
     }
     
     var qrCode: some View {
@@ -71,23 +65,33 @@ extension KeysignDiscoveryView {
     }
     
     var deviceList: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 32) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                    .onAppear {
-                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                            handleSelection(peer)
-                        }
-                    }
+        VStack {
+            listTitle
+            
+            ScrollView {
+                LazyVGrid(columns: phoneColumns, spacing: 18) {
+                    ThisDevicePeerCell(deviceName: "Mac")
+                    devices
+                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                }
+                .padding(.horizontal, 18)
+                .padding(.bottom, 120)
+            }
+        }
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
                 }
             }
-            .padding(.horizontal, 24)
-            .frame(maxHeight: .infinity)
         }
     }
     
