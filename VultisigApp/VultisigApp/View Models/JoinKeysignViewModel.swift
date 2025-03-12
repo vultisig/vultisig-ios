@@ -304,40 +304,40 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func getCalculatedNetworkFee() -> String {
-        guard let payload = keysignPayload else { return "0" }
-        
-        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: { $0.isNativeToken && $0.chain == payload.coin.chain }) else {
-            return "0"
+        guard let payload = keysignPayload else {
+            return .zero
         }
-        
-        let decimalFormatter = NumberFormatter()
-        decimalFormatter.locale = Locale.current
-        decimalFormatter.numberStyle = .decimal
-        decimalFormatter.maximumFractionDigits = nativeToken.decimals
+
+        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
+            $0.isNativeToken && $0.chain == payload.coin.chain
+        }) else {
+            return .zero
+        }
 
         if payload.coin.chainType == .EVM {
-            guard
-                let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
-                let gasDecimal = Decimal(string: payload.chainSpecific.gas.description)
-            else { return .empty }
-            
+            let gas = payload.chainSpecific.gas
+
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
+                  let gasDecimal = Decimal(string: gas.description) else {
+                return .empty
+            }
+
             let gasGwei = gasDecimal / weiPerGWeiDecimal
-            let gasInReadable = decimalFormatter.string(from: NSDecimalNumber(decimal: gasGwei)) ?? gasGwei.description
-            
-            let feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
-            let formattedFee = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
-            
-            return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(formattedFee)"
+            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
+
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
+            feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
+            return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
         }
-        
-        // Non-EVM chains
-        let gasValue = Double(payload.chainSpecific.gas) / pow(10, Double(nativeToken.decimals))
-        
-        let gasInReadable = decimalFormatter.string(from: NSNumber(value: gasValue)) ?? String(format: "%.\(nativeToken.decimals)f", gasValue)
-        let feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
-        let formattedFee = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
-        
-        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(formattedFee)"
+
+        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
+        var gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
+        feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
+        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
