@@ -158,7 +158,7 @@ extension PeerDiscoveryView {
     }
     
     var switchLink: some View {
-        SwitchToLocalLink(viewModel: viewModel)
+        SwitchToLocalLink(selectedNetwork: $viewModel.selectedNetwork)
             .padding(.bottom, 24)
     }
     

@@ -552,3 +552,5 @@
 "FastVaultOverview4Text2" = "questa quota del vault";
 "FastVaultOverview4Text3" = " in modo sicuro, preferibilmente ";
 "FastVaultOverview4Text4" = "online.";
+"keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
+"keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";

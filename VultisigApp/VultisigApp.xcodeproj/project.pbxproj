@@ -338,6 +338,7 @@
 		A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */; };
 		A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = A65F8A132D42224100CF4DDB /* Brockmann-Medium.otf */; };
 		A6621B852D67D98900757B43 /* vaultCreatedAnimation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */; };
+		A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
@@ -1174,6 +1175,7 @@
 		A65F8A142D42224100CF4DDB /* Brockmann-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-Regular.otf"; sourceTree = "<group>"; };
 		A65F8A152D42224100CF4DDB /* Brockmann-SemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Brockmann-SemiBold.otf"; sourceTree = "<group>"; };
 		A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = vaultCreatedAnimation.riv; sourceTree = "<group>"; };
+		A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryDisclaimer.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -1744,6 +1746,7 @@
 				A6A6EFC02D703AF60062F6EA /* SwitchToLocalLink.swift */,
 				A6A6EFC22D703E700062F6EA /* LocalModeDisclaimer.swift */,
 				A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */,
+				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -3702,6 +3705,7 @@
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
 				A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */,
+				A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */,
 				A6505AD02CA668AF0002FBF4 /* InformationNote+iOS.swift in Sources */,
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
