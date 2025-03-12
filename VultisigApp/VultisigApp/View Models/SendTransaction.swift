@@ -26,21 +26,21 @@ class SendTransaction: ObservableObject, Hashable {
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
-
+    
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
     }
-
+    
     var byteFee: BigInt {
         return customByteFee ?? gas
     }
-
+    
     var isAmountExceeded: Bool {
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
-
+        
         let totalTransactionCost = amountInRaw + gas
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         return comparison
@@ -157,9 +157,9 @@ class SendTransaction: ObservableObject, Hashable {
         
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
-
+    
     init() { }
-
+    
     init(coin: Coin) {
         self.reset(coin: coin)
     }

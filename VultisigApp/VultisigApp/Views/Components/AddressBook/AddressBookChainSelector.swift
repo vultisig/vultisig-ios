@@ -40,7 +40,7 @@ struct AddressBookChainSelector: View {
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(selected?.ticker ?? "")")
+            Text("\(selected?.chain.name ?? "")")
             Spacer()
             Image(systemName: "chevron.down")
         }
@@ -50,7 +50,7 @@ struct AddressBookChainSelector: View {
     }
     
     var image: some View {
-        Image(selected?.logo ?? "")
+        Image(selected?.chain.logo ?? "")
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(30)
@@ -70,20 +70,20 @@ struct AddressBookChainSelector: View {
         }
     }
     
-    private func getCell(for chain: CoinMeta?) -> some View {
+    private func getCell(for coin: CoinMeta?) -> some View {
         HStack(spacing: 12) {
-            Image(chain?.logo ?? "")
+            Image(coin?.chain.logo ?? "")
                 .resizable()
                 .frame(width: 32, height: 32)
                 .cornerRadius(30)
             
-            Text(chain?.ticker ?? "")
+            Text(coin?.chain.name ?? "")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
 
             Spacer()
             
-            if selected == chain {
+            if selected == coin {
                 Image(systemName: "checkmark")
                     .font(.body16Menlo)
                     .foregroundColor(.neutral0)
@@ -92,13 +92,13 @@ struct AddressBookChainSelector: View {
         .frame(height: 48)
     }
 
-    private func handleSelection(for chain: CoinMeta?) {
-        guard let chain else {
+    private func handleSelection(for coin: CoinMeta?) {
+        guard let coin else {
             return
         }
         
         isExpanded = false
-        selected = chain
+        selected = coin
     }
 }
 

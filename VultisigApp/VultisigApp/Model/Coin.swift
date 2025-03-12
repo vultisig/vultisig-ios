@@ -180,7 +180,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .polkadot:
             return "250000000" // 0.025
         case .ton:
-            return BigInt(0.001 * 10e9).description
+            return BigInt(0.05 * pow(10, 9)).description
         case .ripple:
             return "180000"
         case .akash:

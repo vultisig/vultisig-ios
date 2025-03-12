@@ -53,6 +53,22 @@ extension PeerDiscoveryView {
         states
     }
     
+    var portraitContent: some View {
+        ZStack {
+            if isPhoneSE {
+                ScrollView {
+                    qrCode
+                    list
+                }
+            } else {
+                VStack(spacing: 0) {
+                    qrCode
+                    list
+                }
+            }
+        }
+    }
+    
     var landscapeContent: some View {
         HStack {
             qrCode
@@ -78,7 +94,7 @@ extension PeerDiscoveryView {
             .frame(maxWidth: 500, maxHeight: 500)
             .aspectRatio(contentMode: .fill)
             .padding(16)
-            .background(Color.blue600)
+            .background(Color.clear)
             .cornerRadius(38)
             .padding(2)
     }
@@ -91,13 +107,27 @@ extension PeerDiscoveryView {
         VStack {
             listTitle
             
-            ScrollView {
-                LazyVGrid(columns: phoneColumns, spacing: 18) {
-                    ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
-                    devices
-                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            ZStack {
+                if isPhoneSE {
+                    VStack {
+                        LazyVGrid(columns: phoneColumns, spacing: 18) {
+                            ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                            devices
+                            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                        }
+                        .padding(.horizontal, 18)
+                    }
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: phoneColumns, spacing: 18) {
+                            ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                            devices
+                            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 24)
+                    }
                 }
-                .padding(.horizontal, 18)
             }
         }
     }
