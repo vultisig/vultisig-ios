@@ -63,14 +63,8 @@ extension String {
 
 extension String {
     func formatCurrency() -> String {
-        let currency = SettingsCurrency.current
         let decimalPoint = getCurrentDecimalPoint()
-        
-        if currency.usesEuropeanFormat || decimalPoint == "," {
-            return self.replacingOccurrences(of: ",", with: ".")
-        } else {
-            return self.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ",", with: ".")
-        }
+        return self.replacingOccurrences(of: ",", with: decimalPoint)
     }
     
     func formatCurrencyWithSeparators() -> String {
@@ -78,21 +72,11 @@ extension String {
             return self
         }
         
-        let currency = SettingsCurrency.current
-        let decimalPoint = getCurrentDecimalPoint()
-        
         let outputFormatter = NumberFormatter()
         outputFormatter.numberStyle = .decimal
+        outputFormatter.locale = Locale.current // Use system locale
         outputFormatter.minimumFractionDigits = 0
         outputFormatter.maximumFractionDigits = 8
-        
-        if (currency.usesEuropeanFormat || decimalPoint == ",") {
-            outputFormatter.decimalSeparator = ","
-            outputFormatter.groupingSeparator = "."
-        } else {
-            outputFormatter.decimalSeparator = "."
-            outputFormatter.groupingSeparator = ","
-        }
         
         return outputFormatter.string(for: number) ?? self
     }
@@ -106,6 +90,7 @@ extension String {
     
     private func getCurrentDecimalPoint() -> String {
         let formatter = NumberFormatter()
+        formatter.locale = Locale.current // Ensure it uses system locale
         return formatter.decimalSeparator ?? "."
     }
 }
@@ -127,17 +112,10 @@ extension String {
         guard let decimalValue = Decimal(string: self) else { return "" }
         
         let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = SettingsCurrency.current.rawValue
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
+        formatter.locale = Locale.current // Use system locale
+        formatter.numberStyle = includeCurrencySymbol ? .currency : .decimal
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
         
         let number = NSDecimalNumber(decimal: decimalValue)
         return formatter.string(from: number) ?? ""
@@ -170,19 +148,11 @@ extension String {
     }
     
     func isValidDecimal() -> Bool {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
         
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.locale = Locale.current // Use the current locale for decimal separator
-        
-        // Check for both dot and comma as decimal separators
-        let dotSeparator = numberFormatter.decimalSeparator == "."
-        let modifiedSelf = dotSeparator ? self : self.replacingOccurrences(of: ".", with: ",")
-        
-        let number = numberFormatter.number(from: modifiedSelf) != nil
-        
-        return number
-        
+        return formatter.number(from: self) != nil
     }
 
     var isValidEmail: Bool {
