@@ -18,7 +18,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
-    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
 
     @State var showSheet = false
     @State var isLoading = true

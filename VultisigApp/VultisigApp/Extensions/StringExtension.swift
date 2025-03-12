@@ -91,6 +91,9 @@ extension String {
 
 extension String {
     func toDecimal() -> Decimal {
+        if self.isEmpty {
+            return .zero
+        }
         let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleaned = trimmed.replacingOccurrences(of: ",", with: "")
         

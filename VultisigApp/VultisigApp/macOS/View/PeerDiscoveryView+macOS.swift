@@ -46,6 +46,13 @@ extension PeerDiscoveryView {
         )
     }
     
+    var portraitContent: some View {
+        VStack(spacing: 0) {
+            qrCode
+            list
+        }
+    }
+    
     var landscapeContent: some View {
         HStack {
             qrCode
