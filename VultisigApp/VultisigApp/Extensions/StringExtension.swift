@@ -72,13 +72,7 @@ extension String {
             return self
         }
         
-        let outputFormatter = NumberFormatter()
-        outputFormatter.numberStyle = .decimal
-        outputFormatter.locale = Locale.current // Use system locale
-        outputFormatter.minimumFractionDigits = 0
-        outputFormatter.maximumFractionDigits = 8
-        
-        return outputFormatter.string(for: number) ?? self
+        return number.formatToFiat(includeCurrencySymbol: false, useAbbreviation: false)
     }
     
     private func parseInput() -> Decimal? {
@@ -109,30 +103,19 @@ extension String {
     }
     
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
-        guard let decimalValue = Decimal(string: self) else { return "" }
+        guard let number = parseInput() else {
+            return self
+        }
         
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current // Use system locale
-        formatter.numberStyle = includeCurrencySymbol ? .currency : .decimal
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        
-        let number = NSDecimalNumber(decimal: decimalValue)
-        return formatter.string(from: number) ?? ""
+        return number.formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false)
     }
     
     func formatToDecimal(digits: Int) -> String {
-        guard let decimalValue = Decimal(string: self) else { return "" }
+        guard let number = parseInput() else {
+            return self
+        }
         
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = digits
-        formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
-        formatter.decimalSeparator = "."
-        
-        let number = NSDecimalNumber(decimal: decimalValue)
-        return formatter.string(from: number) ?? ""
+        return number.formatToDecimal(digits: digits)
     }
     
     func toBigInt() -> BigInt {
