@@ -133,6 +133,7 @@ struct KeysignDiscoveryView: View {
             qrCode
         }
         .foregroundColor(.neutral0)
+        .padding()
     }
     
     var disclaimer: some View {
