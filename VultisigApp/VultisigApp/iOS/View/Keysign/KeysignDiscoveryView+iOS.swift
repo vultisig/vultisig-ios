@@ -56,7 +56,7 @@ extension KeysignDiscoveryView {
             .frame(maxWidth: 500, maxHeight: 500)
             .aspectRatio(contentMode: .fill)
             .padding(16)
-            .background(Color.blue600)
+            .background(Color.clear)
             .cornerRadius(38)
             .padding(2)
     }
@@ -77,7 +77,6 @@ extension KeysignDiscoveryView {
         .disabled(isDisabled)
         .padding(.horizontal, 32)
         .edgesIgnoringSafeArea(.bottom)
-        .padding(.bottom, idiom == .pad ? 30 : 0)
         .padding(2)
     }
     

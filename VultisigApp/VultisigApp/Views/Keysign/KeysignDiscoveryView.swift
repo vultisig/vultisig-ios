@@ -125,8 +125,10 @@ struct KeysignDiscoveryView: View {
                 disclaimer
             }
             
-            list
-                .padding(20)
+            ScrollView {
+                list
+                    .padding(20)
+            }
         }
     }
     
