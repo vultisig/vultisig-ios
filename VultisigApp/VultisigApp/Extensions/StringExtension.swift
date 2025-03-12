@@ -91,18 +91,12 @@ extension String {
 
 extension String {
     func toDecimal() -> Decimal {
-        if self.isEmpty {
-            return .zero
-        }
-        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleaned = trimmed.replacingOccurrences(of: ",", with: "")
-        
-        if let decimal = Decimal(string: cleaned) {
-            return decimal
-        } else {
+        guard let number = parseInput() else {
             print("Failed to convert to Decimal: \(self)")
             return .zero
         }
+        
+        return number
     }
     
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
