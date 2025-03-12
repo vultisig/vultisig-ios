@@ -46,8 +46,11 @@ extension KeysignDiscoveryView {
         }
     }
     
-    var list: some View {
-        deviceList
+    var QRCodeContent: some View {
+        VStack {
+            paringQRCode
+            disclaimer
+        }
     }
     
     var qrCode: some View {
@@ -112,16 +115,6 @@ extension KeysignDiscoveryView {
     
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
-    }
-    
-    var paringQRCode: some View {
-        ZStack {
-            animation
-            qrCode
-        }
-        .padding(8)
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
     }
     
     private func setSize() {

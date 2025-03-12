@@ -32,10 +32,6 @@ extension KeysignDiscoveryView {
         landscapeContent
     }
     
-    var list: some View {
-        deviceList
-    }
-    
     var qrCode: some View {
         qrCodeImage?
             .resizable()
@@ -62,6 +58,15 @@ extension KeysignDiscoveryView {
         .padding(.horizontal, 28)
         .edgesIgnoringSafeArea(.bottom)
         .padding(.bottom, 8)
+    }
+    
+    var QRCodeContent: some View {
+        VStack {
+            paringQRCode
+            disclaimer
+        }
+        .padding(60)
+        .offset(y: -32)
     }
     
     var deviceList: some View {
@@ -96,14 +101,6 @@ extension KeysignDiscoveryView {
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
             .padding(.bottom, 8)
-    }
-    
-    var paringQRCode: some View {
-        ZStack {
-            animation
-            qrCode
-        }
-        .foregroundColor(.neutral0)
     }
 }
 #endif

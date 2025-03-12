@@ -89,6 +89,10 @@ struct KeysignDiscoveryView: View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
     
+    var list: some View {
+        deviceList
+    }
+    
     var waitingForDevices: some View {
         ZStack(alignment: .bottom) {
             orientedContent
@@ -106,12 +110,7 @@ struct KeysignDiscoveryView: View {
     
     var landscapeContent: some View {
         HStack(spacing: 8) {
-            VStack {
-                paringQRCode
-                disclaimer
-            }
-            .padding(60)
-            .offset(y: -32)
+            QRCodeContent
             
             ScrollView {
                 list
@@ -126,6 +125,14 @@ struct KeysignDiscoveryView: View {
             disclaimer
             list
         }
+    }
+    
+    var paringQRCode: some View {
+        ZStack {
+            animation
+            qrCode
+        }
+        .foregroundColor(.neutral0)
     }
     
     var disclaimer: some View {
