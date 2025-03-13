@@ -10,6 +10,7 @@ import BigInt
 import WalletCore
 import Mediator
 
+@MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let titles = ["swap", "verify", "pair", "keysign", "done"]
 
@@ -22,14 +23,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var currentIndex = 1
-    @MainActor @Published var currentTitle = "swap"
-    @MainActor @Published var hash: String?
-    @MainActor @Published var approveHash: String?
+    @Published var currentIndex = 1
+    @Published var currentTitle = "swap"
+    @Published var hash: String?
+    @Published var approveHash: String?
 
-    @MainActor @Published var error: Error?
-    @MainActor @Published var isLoading = false
-    @MainActor @Published var dataLoaded = false
+    @Published var error: Error?
+    @Published var isLoading = false
+    @Published var dataLoaded = false
+    @Published var showTimer = true
+    @Published var timer: Int = 59
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
@@ -349,6 +352,21 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return tx.toCoins.sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
+    }
+    
+    func restartTimer(tx: SwapTransaction, vault: Vault) {
+        fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault)
+        timer = 59
+        showTimer = true
+    }
+    
+    func updateTimer() {
+        timer -= 1
+        
+        if timer < 1 {
+            showTimer = false
+        }
     }
 }
 

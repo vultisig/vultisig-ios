@@ -14,6 +14,8 @@ struct SwapCryptoDetailsView: View {
     @State var buttonRotated = false
     @State var isFromPickerActive = false
     @State var isToPickerActive = false
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     let vault: Vault
 
@@ -37,6 +39,9 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
             }
         }
+        .onReceive(timer) { input in
+            swapViewModel.updateTimer()
+        }
     }
     
     var view: some View {
@@ -46,7 +51,7 @@ struct SwapCryptoDetailsView: View {
     var content: some View {
         VStack {
             fields
-            continueButton
+            button
         }
     }
     
@@ -146,6 +151,35 @@ struct SwapCryptoDetailsView: View {
         SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
     }
     
+    var button: some View {
+        VStack {
+            timerLabel
+            buttons
+        }
+        .padding(40)
+    }
+    
+    var timerLabel: some View {
+        Group {
+            Text(NSLocalizedString("quoteRefreshesIn", comment: "")) +
+            Text("0:\(swapViewModel.timer)")
+        }
+        .font(.body12MenloBold)
+        .foregroundColor(.neutral0)
+        .opacity(swapViewModel.showTimer ? 1 : 0)
+        .animation(.easeInOut, value: swapViewModel.showTimer)
+    }
+    
+    var buttons: some View {
+        ZStack {
+            if swapViewModel.showTimer {
+                continueButton
+            } else {
+                refreshButton
+            }
+        }
+    }
+    
     var continueButton: some View {
         Button {
             Task {
@@ -156,7 +190,16 @@ struct SwapCryptoDetailsView: View {
         }
         .disabled(!swapViewModel.validateForm(tx: tx))
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-        .padding(40)
+    }
+    
+    var refreshButton: some View {
+        Button {
+            Task {
+                swapViewModel.restartTimer(tx: tx, vault: vault)
+            }
+        } label: {
+            FilledButton(title: "refresh")
+        }
     }
 }
 
