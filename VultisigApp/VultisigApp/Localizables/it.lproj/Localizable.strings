@@ -494,7 +494,6 @@
 "wellDone." = "Ben fatto.";
 "readyToUseNewWalletStandard." = "Ora sei pronto per usare un nuovo standard di wallet.";
 "secureVaultSummaryDiscalimer" = "Ho letto e capito cosa fare.";
-"startUsingVault" = "Inizia a usare il vault";
 "secureVaultSecureTextDescription" = "Massima sicurezza con più dispositivi\nSempre accessibile con backup del dispositivo\nProteggi qualsiasi importo di asset";
 "fastVaultSecureTextDescription" = "Solo 1 dispositivo necessario\nConserva piccoli fondi per l'uso quotidiano\nVultiserver firma istantaneamente";
 "fastSetUp" = "Configurazione rapida con 1 dispositivo";
@@ -554,3 +553,4 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
+"startUsingVault" = "Usa il Vault";
