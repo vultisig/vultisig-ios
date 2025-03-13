@@ -63,14 +63,8 @@ extension String {
 
 extension String {
     func formatCurrency() -> String {
-        let currency = SettingsCurrency.current
         let decimalPoint = getCurrentDecimalPoint()
-        
-        if currency.usesEuropeanFormat || decimalPoint == "," {
-            return self.replacingOccurrences(of: ",", with: ".")
-        } else {
-            return self.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ",", with: ".")
-        }
+        return self.replacingOccurrences(of: ",", with: decimalPoint)
     }
     
     func formatCurrencyWithSeparators() -> String {
@@ -78,23 +72,7 @@ extension String {
             return self
         }
         
-        let currency = SettingsCurrency.current
-        let decimalPoint = getCurrentDecimalPoint()
-        
-        let outputFormatter = NumberFormatter()
-        outputFormatter.numberStyle = .decimal
-        outputFormatter.minimumFractionDigits = 0
-        outputFormatter.maximumFractionDigits = 8
-        
-        if (currency.usesEuropeanFormat || decimalPoint == ",") {
-            outputFormatter.decimalSeparator = ","
-            outputFormatter.groupingSeparator = "."
-        } else {
-            outputFormatter.decimalSeparator = "."
-            outputFormatter.groupingSeparator = ","
-        }
-        
-        return outputFormatter.string(for: number) ?? self
+        return number.formatToFiat(includeCurrencySymbol: false, useAbbreviation: false)
     }
     
     private func parseInput() -> Decimal? {
@@ -106,58 +84,35 @@ extension String {
     
     private func getCurrentDecimalPoint() -> String {
         let formatter = NumberFormatter()
+        formatter.locale = Locale.current // Ensure it uses system locale
         return formatter.decimalSeparator ?? "."
     }
 }
 
 extension String {
     func toDecimal() -> Decimal {
-        if self.isEmpty {
-            return .zero
-        }
-        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleaned = trimmed.replacingOccurrences(of: ",", with: "")
-        
-        if let decimal = Decimal(string: cleaned) {
-            return decimal
-        } else {
+        guard let number = parseInput() else {
             print("Failed to convert to Decimal: \(self)")
             return .zero
         }
+        
+        return number
     }
     
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
-        guard let decimalValue = Decimal(string: self) else { return "" }
-        
-        let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = SettingsCurrency.current.rawValue
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
+        guard let number = parseInput() else {
+            return self
         }
         
-        let number = NSDecimalNumber(decimal: decimalValue)
-        return formatter.string(from: number) ?? ""
+        return number.formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false)
     }
     
     func formatToDecimal(digits: Int) -> String {
-        guard let decimalValue = Decimal(string: self) else { return "" }
+        guard let number = parseInput() else {
+            return self
+        }
         
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = digits
-        formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
-        formatter.decimalSeparator = "."
-        
-        let number = NSDecimalNumber(decimal: decimalValue)
-        return formatter.string(from: number) ?? ""
+        return number.formatToDecimal(digits: digits)
     }
     
     func toBigInt() -> BigInt {
@@ -173,19 +128,11 @@ extension String {
     }
     
     func isValidDecimal() -> Bool {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
         
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.locale = Locale.current // Use the current locale for decimal separator
-        
-        // Check for both dot and comma as decimal separators
-        let dotSeparator = numberFormatter.decimalSeparator == "."
-        let modifiedSelf = dotSeparator ? self : self.replacingOccurrences(of: ".", with: ",")
-        
-        let number = numberFormatter.number(from: modifiedSelf) != nil
-        
-        return number
-        
+        return formatter.number(from: self) != nil
     }
 
     var isValidEmail: Bool {

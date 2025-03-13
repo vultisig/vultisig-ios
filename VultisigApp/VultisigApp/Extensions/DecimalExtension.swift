@@ -26,11 +26,11 @@ extension Decimal {
             formatter.currencyCode = SettingsCurrency.current.rawValue
         } else {
             formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ","
         }
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         
         if !useAbbreviation {
             let number = NSDecimalNumber(decimal: self)
@@ -40,9 +40,6 @@ extension Decimal {
         let abbrevation = getAbbrevationValues()
         let value = abbrevation.value
         let prefix = abbrevation.prefix
-        
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
         
         let number = NSDecimalNumber(decimal: value)
         
@@ -58,8 +55,8 @@ extension Decimal {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = digits
         formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ","
-        formatter.decimalSeparator = "."
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         
         let abbrevation = getAbbrevationValues()
         let value = abbrevation.value

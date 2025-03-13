@@ -304,46 +304,39 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func getCalculatedNetworkFee() -> String {
-        
         guard let payload = keysignPayload else {
-            return "0"
+            return .zero
         }
-        
-        let nativeTokenAux = TokensStore.TokenSelectionAssets.first{ $0.isNativeToken && $0.chain == payload.coin.chain }
-        
-        guard let nativeToken = nativeTokenAux else {
-            return "0"
+
+        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
+            $0.isNativeToken && $0.chain == payload.coin.chain
+        }) else {
+            return .zero
         }
-        
+
         if payload.coin.chainType == .EVM {
-            
             let gas = payload.chainSpecific.gas
-            
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
+
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
+                  let gasDecimal = Decimal(string: gas.description) else {
                 return .empty
             }
-            
-            guard let gasDecimal = Decimal(string: gas.description) else {
-                return .empty
-            }
-            
-            let gasGwei = (gasDecimal / weiPerGWeiDecimal)
-            
-            let gasInReadable = gasGwei.description
-            
+
+            let gasGwei = gasDecimal / weiPerGWeiDecimal
+            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
+
             var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
-            feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
+            feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
             return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
-            
         }
-        
-        var gasInReadable = ((Double(payload.chainSpecific.gas)) / pow(10, Double(nativeToken.decimals))).description
-        if gasInReadable.contains("e-") {
-            gasInReadable = String(format: "%.\(nativeToken.decimals)f", ((Double(payload.chainSpecific.gas)) / pow(10, Double(nativeToken.decimals))))
-        }
-        
+
+        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
+        var gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
-        feeInReadable = feeInReadable.isEmpty ? "" : " (~\(feeInReadable))"
+        feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
         return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
     }
     
