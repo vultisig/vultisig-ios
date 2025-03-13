@@ -494,7 +494,6 @@
 "wellDone." = "Dobro napravljeno.";
 "readyToUseNewWalletStandard." = "Spremni ste za korištenje novog standarda novčanika.";
 "secureVaultSummaryDiscalimer" = "Pročitao/la sam i razumijem što trebam učiniti.";
-"startUsingVault" = "Počnite koristiti trezor";
 "secureVaultSecureTextDescription" = "Maksimalna sigurnost s više uređaja\nUvijek dostupan uz sigurnosne kopije uređaja\nOsiguraj bilo koji iznos imovine";
 "fastVaultSecureTextDescription" = "Potreban je samo 1 uređaj\nPohrani manje iznose za svakodnevnu upotrebu\nVultiserver odmah supotpisuje";
 "fastSetUp" = "Brza postavka s 1 uređajem";
@@ -554,3 +553,4 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
+"startUsingVault" = "Koristi trezor";

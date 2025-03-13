@@ -538,7 +538,6 @@
 "secureVaultSummaryText3" = "Keep vault shares in different locations";
 "secureVaultSummaryText4" = "All vault shares ensure secure access to your funds";
 "secureVaultSummaryDiscalimer" = "I have read and understand what to do";
-"startUsingVault" = "Start using vault";
 "secureVaultSecureTextDescription" = "Maximum security with multiple devices\nAlways accessible with device backups\nSecure any amount of assets";
 "fastVaultSecureTextDescription" = "Only 1 device needed\nStore smaller funds for daily use\nVultiserver co-signs instantly";
 "fastSetUp" = "Quick, 1 device setup";
@@ -598,3 +597,4 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
+"startUsingVault" = "Start using your Vault";
