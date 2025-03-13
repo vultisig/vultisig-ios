@@ -555,3 +555,5 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Escaneie o código QR para assinar a transação.";
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
+"refresh" = "Atualizar";
+"quoteRefreshesIn" = "Cotação atualiza em ";

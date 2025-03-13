@@ -598,3 +598,5 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
+"refresh" = "Refresh";
+"quoteRefreshesIn" = "Quote refreshes in ";
