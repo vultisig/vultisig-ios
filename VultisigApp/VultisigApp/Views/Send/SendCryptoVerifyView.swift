@@ -177,7 +177,7 @@ var fields: some View {
     }
     
     private func getAmount() -> String {
-        tx.amount.formatCurrencyWithSeparators() + " " + tx.coin.ticker
+        tx.amount.formatToDecimal(digits: 8) + " " + tx.coin.ticker
     }
     
     private func getFiatAmount() -> String {
