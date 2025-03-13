@@ -41,9 +41,6 @@ extension Decimal {
         let value = abbrevation.value
         let prefix = abbrevation.prefix
         
-//        formatter.maximumFractionDigits = 2
-//        formatter.minimumFractionDigits = 0
-        
         let number = NSDecimalNumber(decimal: value)
         
         if let formattedNumber = formatter.string(from: number) {
