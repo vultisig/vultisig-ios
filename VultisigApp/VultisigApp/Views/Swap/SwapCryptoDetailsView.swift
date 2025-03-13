@@ -162,7 +162,8 @@ struct SwapCryptoDetailsView: View {
     var timerLabel: some View {
         Group {
             Text(NSLocalizedString("quoteRefreshesIn", comment: "")) +
-            Text("0:\(swapViewModel.timer)")
+            Text(String(format: "0:", swapViewModel.timer)) +
+            Text(String(format: "%02d", swapViewModel.timer))
         }
         .font(.body12MenloBold)
         .foregroundColor(.neutral0)

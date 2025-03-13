@@ -554,3 +554,5 @@
 "FastVaultOverview4Text4" = "online.";
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
+"refresh" = "Osvježi";
+"quoteRefreshesIn" = "Ponuda se osvježava za ";
