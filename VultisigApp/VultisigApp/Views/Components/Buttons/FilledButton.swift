@@ -25,7 +25,7 @@ struct FilledButton: View {
             }
             
             if showLoader {
-                ProgressView()
+                loader
             }
         }
         .padding(12)
@@ -38,6 +38,11 @@ struct FilledButton: View {
         Image(systemName: icon)
             .font(.body14BrockmannSemiBold)
             .foregroundColor(.blue600)
+    }
+    
+    var loader: some View {
+        ProgressView()
+            .scaleEffect(0.7)
     }
 }
 
