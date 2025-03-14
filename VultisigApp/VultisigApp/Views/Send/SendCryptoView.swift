@@ -186,9 +186,17 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
+        guard !sendCryptoViewModel.isLoading else { return }
         presetData()
-        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+            }
+            group.addTask {
+                await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+            }
+        }
     }
     
     private func presetData() {

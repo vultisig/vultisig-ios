@@ -45,6 +45,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func loadGasInfoForSending(tx: SendTransaction) async {
+        guard !isLoading else { return }
         isLoading = true
         
         do {
@@ -52,16 +53,16 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             tx.gas = specific.gas
             tx.fee = specific.fee
             tx.estematedGasLimit = specific.gasLimit
-            isLoading = false
         } catch {
             print("error fetching data: \(error.localizedDescription)")
-            isLoading = false
         }
+        isLoading = false
     }
     
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
         let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
         let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        
         tx.isFastVault = isExist && !isLocalBackup
     }
     
