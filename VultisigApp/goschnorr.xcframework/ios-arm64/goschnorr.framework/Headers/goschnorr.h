@@ -13,6 +13,7 @@
 
 typedef enum lib_error {
   LIB_OK,
+  LIB_INVALID_PUBLIC_KEY,
   LIB_INVALID_HANDLE,
   LIB_HANDLE_IN_USE,
   LIB_INVALID_HANDLE_TYPE,
@@ -137,6 +138,35 @@ enum lib_error schnorr_key_refresh_session_from_setup(const struct go_slice *set
                                                       const struct go_slice *id,
                                                       struct Handle old_keyshare,
                                                       struct Handle *hnd);
+
+/*
+ Creates a migration session from a encoded setup message.
+
+ # Arguments
+
+ * `setup` - A reference of encoded setup message. Same as keygen setup msg
+ * `id` - human readable party identifier.
+ * `public_key` - the expected public key from GG20
+ * `root_chain_code` - the root chain code from GG20
+ * `secret_coefficient` - the secret coefficient we need to hardcode as s_i_0 at keyrefresh object
+ * `hnd` - A mutable reference to the handle which will store the allocated session.
+
+ # Returns
+
+ * A `lib_error` indicating success or type of error.
+
+ # Errors
+
+ * `LIB_NULL_PTR` - if one of passed pointers is NULL.
+ * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
+
+ */
+enum lib_error schnorr_key_migration_session_from_setup(const struct go_slice *setup,
+                                                        const struct go_slice *id,
+                                                        const struct go_slice *public_key,
+                                                        const struct go_slice *root_chain_code,
+                                                        const struct go_slice *secret_coefficient,
+                                                        struct Handle *hnd);
 
 /*
  Transition the Schnorr MPC statemachine on an input message
