@@ -571,3 +571,4 @@
 "keysignDiscoveryDisclaimer" = "Scanne den QR-Code, um die Transaktion zu signieren.";
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
 "startUsingVault" = "Tresor nutzen";
+"loadingDetails" = "Lade Details";
