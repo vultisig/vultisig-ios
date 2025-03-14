@@ -33,7 +33,7 @@ struct SendCryptoView: View {
             Background()
             main
             
-            if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
+            if showLoader() {
                 loader
             }
         }
@@ -73,7 +73,6 @@ struct SendCryptoView: View {
             
             tabView
         }
-        .blur(radius: sendCryptoViewModel.isLoading ? 1 : 0)
     }
     
     var tabView: some View {
@@ -215,6 +214,14 @@ struct SendCryptoView: View {
     
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func showLoader() -> Bool {
+        guard sendCryptoViewModel.currentIndex>1 else {
+            return false
+        }
+        
+        return sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading
     }
 }
 

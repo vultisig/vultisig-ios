@@ -12,6 +12,7 @@ struct FilledButton: View {
     var icon: String = ""
     var textColor: Color = Color.blue600
     var background: Color = Color.turquoise600
+    var showLoader: Bool = false
     
     var body: some View {
         HStack(spacing: 10) {
@@ -21,6 +22,10 @@ struct FilledButton: View {
             
             if !title.isEmpty {
                 text
+            }
+            
+            if showLoader {
+                ProgressView()
             }
         }
         .padding(12)

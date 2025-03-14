@@ -43,12 +43,18 @@ extension SendCryptoDetailsView {
                 await validateForm()
             }
         } label: {
-            FilledButton(title: "continue")
+            HStack {
+                FilledButton(
+                    title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
+                    textColor: sendCryptoViewModel.isLoading ? .textDisabled : .blue600,
+                    background: sendCryptoViewModel.isLoading ? .buttonDisabled : .turquoise600,
+                    showLoader: sendCryptoViewModel.isLoading
+                )
+            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 20)
         .padding(.bottom, idiom == .pad ? 30 : 0)
-        .grayscale(sendCryptoViewModel.isLoading ? 1 : 0)
         .disabled(sendCryptoViewModel.isLoading)
     }
     
