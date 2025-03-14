@@ -4,13 +4,9 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>.DS_Store</key>
-		<data>
-		lJ5lFUSg7S9KtzQrfXinFaXupgI=
-		</data>
 		<key>ios-arm64/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
-		kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+		g7knOpvIRhdM1/0HYciU9KN5hZ8=
 		</data>
 		<key>ios-arm64/goschnorr.framework/Info.plist</key>
 		<data>
@@ -22,11 +18,11 @@
 		</data>
 		<key>ios-arm64/goschnorr.framework/goschnorr</key>
 		<data>
-		tV5/F9u4evdp+58P3PxplKMAWD8=
+		c8Wy9AcKbp6NpARw9PxMKDyaxKY=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
-		kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+		g7knOpvIRhdM1/0HYciU9KN5hZ8=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Info.plist</key>
 		<data>
@@ -38,7 +34,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/goschnorr</key>
 		<data>
-		PQqaSpFsPM3NaZlSZLnhtOJTayA=
+		m7Qh9eBCePd71H9ZQMC/DAC2h48=
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -46,7 +42,7 @@
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/Headers/goschnorr.h</key>
 		<data>
-		kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+		g7knOpvIRhdM1/0HYciU9KN5hZ8=
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/Resources/Info.plist</key>
 		<data>
@@ -54,7 +50,7 @@
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/goschnorr</key>
 		<data>
-		BblDLVeKlmV9Am8k9Bq2nNohchU=
+		+4CRpODaZqjJOPtEpOcsxnUjIxc=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -63,11 +59,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+			g7knOpvIRhdM1/0HYciU9KN5hZ8=
 			</data>
 			<key>hash2</key>
 			<data>
-			l+ySlCJyEKjEVf8Yy2VaJ5Cv8/Khc70oSI3Cplni/MA=
+			4+bWkdYxgwvWcW7yRsMtCjPUCkIg46996IntIyv+Zck=
 			</data>
 		</dict>
 		<key>ios-arm64/goschnorr.framework/Info.plist</key>
@@ -96,22 +92,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			tV5/F9u4evdp+58P3PxplKMAWD8=
+			c8Wy9AcKbp6NpARw9PxMKDyaxKY=
 			</data>
 			<key>hash2</key>
 			<data>
-			jw3UKxNkSdUH3kJ69E288EivmTDNVj2rRyJducrNW54=
+			eLMgNnIEqziQNyKx8YExoKIDFmLZzpurhgZCGhJ11Rc=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+			g7knOpvIRhdM1/0HYciU9KN5hZ8=
 			</data>
 			<key>hash2</key>
 			<data>
-			l+ySlCJyEKjEVf8Yy2VaJ5Cv8/Khc70oSI3Cplni/MA=
+			4+bWkdYxgwvWcW7yRsMtCjPUCkIg46996IntIyv+Zck=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Info.plist</key>
@@ -140,11 +136,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			PQqaSpFsPM3NaZlSZLnhtOJTayA=
+			m7Qh9eBCePd71H9ZQMC/DAC2h48=
 			</data>
 			<key>hash2</key>
 			<data>
-			ctxEL4VnTWRn2piUjgHiwy5LhZuZtX7KWoi65o14l24=
+			Hl6pGopcG1BCBwoaHmhpAxdJWJ/HbSgA+bNwgs5neMA=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Headers</key>
@@ -172,11 +168,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			kJ1iDCFAIzidDtMLW0A0h1q6Ov8=
+			g7knOpvIRhdM1/0HYciU9KN5hZ8=
 			</data>
 			<key>hash2</key>
 			<data>
-			l+ySlCJyEKjEVf8Yy2VaJ5Cv8/Khc70oSI3Cplni/MA=
+			4+bWkdYxgwvWcW7yRsMtCjPUCkIg46996IntIyv+Zck=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/Resources/Info.plist</key>
@@ -194,11 +190,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			BblDLVeKlmV9Am8k9Bq2nNohchU=
+			+4CRpODaZqjJOPtEpOcsxnUjIxc=
 			</data>
 			<key>hash2</key>
 			<data>
-			4Ya6yVCZxGkenIs+RILxt2m+UMDhcfSPlYVFSg9PrRo=
+			Z6FPUOSIKHCsEmjHDIIpf9pbR7fM/vIeImjfyAqSgoU=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/Current</key>
