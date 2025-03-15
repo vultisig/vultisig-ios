@@ -100,27 +100,31 @@ class KeygenViewModel: ObservableObject {
             case .Migrate:
                 var localUIECDSA: String?
                 var localUIEdDSA: String?
-                let keyShareEcdsa = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA)
-                if let keyShareEcdsa = keyShareEcdsa {
-                    var nsErr: NSError?
-                    let ecdsaUIResp = TssGetLocalUIEcdsa(keyShareEcdsa, &nsErr)
-                    if let nsErr {
-                        print("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
-                        return
+                do {
+                    let keyShareEcdsa = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA)
+                    if let keyShareEcdsa = keyShareEcdsa {
+                        var nsErr: NSError?
+                        let ecdsaUIResp = TssGetLocalUIEcdsa(keyShareEcdsa, &nsErr)
+                        if let nsErr {
+                            throw HelperError.runtimeError("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
+                        }
+                        localUIECDSA = ecdsaUIResp
                     }
-                    localUIECDSA = ecdsaUIResp
-                }
-                let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
-                if let keyShareEdDSA = keyShareEdDSA {
-                    var nsErr: NSError?
-                    let eddsaUIResp = TssGetLocalUIEddsa(keyShareEdDSA, &nsErr)
-                    if let nsErr {
-                        print("failed to get local ui eddsa: \(nsErr.localizedDescription)")
-                        return
+                    let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
+                    if let keyShareEdDSA = keyShareEdDSA {
+                        var nsErr: NSError?
+                        let eddsaUIResp = TssGetLocalUIEddsa(keyShareEdDSA, &nsErr)
+                        if let nsErr {
+                            throw HelperError.runtimeError("failed to get local ui eddsa: \(nsErr.localizedDescription)")
+                        }
+                        localUIEdDSA = eddsaUIResp
                     }
-                    localUIEdDSA = eddsaUIResp
+                } catch {
+                    self.logger.error("Migration Failed, fail to get local UI: \(error.localizedDescription)")
+                    self.status = .KeygenFailed
+                    self.keygenError = error.localizedDescription
+                    return
                 }
-                
                 await startKeygenDKLS(context: context,
                                       defaultChains: defaultChains,
                                       localUIEcdsa: localUIECDSA,
