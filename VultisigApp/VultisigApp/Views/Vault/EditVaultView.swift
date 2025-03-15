@@ -57,7 +57,7 @@ struct EditVaultView: View {
     
     var backupVault: some View {
         NavigationLink {
-            BackupSetupView(vault: vault)
+            BackupPasswordSetupView(vault: vault)
         } label: {
             EditVaultCell(title: "backup", description: "backupVault", icon: "icloud.and.arrow.up")
         }
