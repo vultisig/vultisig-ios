@@ -132,6 +132,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
+
     func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta], localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,
