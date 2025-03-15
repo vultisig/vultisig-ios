@@ -249,7 +249,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
-            case .Reshare:
+            case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,
@@ -263,22 +263,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
-                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Reshare.rawValue)&jsonData=\(data)"
-            case .Migrate:
-                let reshareMsg = ReshareMessage(
-                    sessionID: sessionID,
-                    hexChainCode: vault.hexChainCode,
-                    serviceName: serviceName,
-                    pubKeyECDSA: vault.pubKeyECDSA,
-                    oldParties: vault.signers,
-                    encryptionKeyHex: encryptionKeyHex,
-                    useVultisigRelay: VultisigRelay.IsRelayEnabled,
-                    oldResharePrefix: vault.resharePrefix ?? "",
-                    vaultName: vault.name,
-                    libType: vault.libType ?? .GG20
-                )
-                let data = try ProtoSerializer.serialize(reshareMsg)
-                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Migrate.rawValue)&jsonData=\(data)"
+                jsonData = "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             }
             return Utils.generateQRCodeImage(from: jsonData)
         } catch {

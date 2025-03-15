@@ -91,7 +91,8 @@ class KeygenViewModel: ObservableObject {
     }
     
     func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
-        switch(self.vault.libType){
+        let vaultLibType = self.vault.libType ?? .GG20
+        switch(vaultLibType){
         case .GG20:
             switch self.tssType{
             case .Keygen,.Reshare:
@@ -102,39 +103,36 @@ class KeygenViewModel: ObservableObject {
                 let keyShareEcdsa = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA)
                 if let keyShareEcdsa = keyShareEcdsa {
                     var nsErr: NSError?
-                    let ecdsaUIResp = TssGetLocalUI(keyShareEcdsa, &nsErr)
+                    let ecdsaUIResp = TssGetLocalUIEcdsa(keyShareEcdsa, &nsErr)
                     if let nsErr {
                         print("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
                         return
                     }
-                    localUIECDSA = ecdsaUIResp?.uiEcdsa
+                    localUIECDSA = ecdsaUIResp
                 }
                 let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
                 if let keyShareEdDSA = keyShareEdDSA {
                     var nsErr: NSError?
-                    let eddsaUIResp = TssGetLocalUI(keyShareEdDSA, &nsErr)
+                    let eddsaUIResp = TssGetLocalUIEddsa(keyShareEdDSA, &nsErr)
                     if let nsErr {
                         print("failed to get local ui eddsa: \(nsErr.localizedDescription)")
                         return
                     }
-                    localUIEdDSA = eddsaUIResp?.uiEddsa
+                    localUIEdDSA = eddsaUIResp
                 }
                 
                 await startKeygenDKLS(context: context,
                                       defaultChains: defaultChains,
                                       localUIEcdsa: localUIECDSA,
-                                      localUIEdDsa: localUIEdDSA)
+                                      localUIEddsa: localUIEdDSA)
             }
             
         case .DKLS:
             await startKeygenDKLS(context: context, defaultChains: defaultChains)
-        default:
-            print("invalid vault lib type")
-            return
         }
     }
     
-    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta], localUIEcdsa: String? = nil, localUIEdDsa: String? = nil) async {
+    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta], localUIEcdsa: String? = nil, localUIEddsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -164,7 +162,7 @@ class KeygenViewModel: ObservableObject {
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               isInitiatedDevice: self.isInitiateDevice,
                                               setupMessage: dklsKeygen.getSetupMessage(),
-                                              localUI: localUIEdDsa)
+                                              localUI: localUIEddsa)
             switch self.tssType {
             case .Keygen,.Migrate:
                 self.status = .KeygenEdDSA

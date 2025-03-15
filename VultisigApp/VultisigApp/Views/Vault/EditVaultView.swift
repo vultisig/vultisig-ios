@@ -95,6 +95,19 @@ struct EditVaultView: View {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }
     }
+    
+    var migrateVault: some View {
+        NavigationLink {
+            PeerDiscoveryView(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastSignConfig: nil
+            )
+        } label: {
+            EditVaultCell(title: "migrate", description: "migrateVault", icon: "tray.and.arrow.up")
+        }
+    }
 
     var biometrySelectionCell: some View {
         NavigationLink {
