@@ -33,7 +33,7 @@ struct SendCryptoView: View {
             Background()
             main
             
-            if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
+            if showLoader() {
                 loader
             }
         }
@@ -73,7 +73,6 @@ struct SendCryptoView: View {
             
             tabView
         }
-        .blur(radius: sendCryptoViewModel.isLoading ? 1 : 0)
     }
     
     var tabView: some View {
@@ -187,9 +186,17 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
+        guard !sendCryptoViewModel.isLoading else { return }
         presetData()
-        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+        
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+            }
+            group.addTask {
+                await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+            }
+        }
     }
     
     private func presetData() {
@@ -215,6 +222,14 @@ struct SendCryptoView: View {
     
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func showLoader() -> Bool {
+        guard sendCryptoViewModel.currentIndex>1 else {
+            return false
+        }
+        
+        return sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading
     }
 }
 
