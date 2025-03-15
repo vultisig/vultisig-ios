@@ -554,3 +554,4 @@
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
 "startUsingVault" = "Koristi trezor";
+"loadingDetails" = "Učitavanje detalja";

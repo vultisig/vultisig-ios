@@ -598,3 +598,4 @@
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
 "startUsingVault" = "Start using your Vault";
+"loadingDetails" = "Loading details";

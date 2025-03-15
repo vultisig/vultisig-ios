@@ -16,25 +16,16 @@ extension SendCryptoDetailsView {
     var view: some View {
         VStack {
             fields
-            button
+            buttonContainer
                 .padding(.horizontal, 8)
                 .padding(.vertical, -12)
         }
     }
     
-    var button: some View {
-        Button {
-            Task{
-                await validateForm()
-            }
-        } label: {
-            FilledButton(title: "continue")
-        }
-        .padding(.horizontal, 40)
-        .padding(.top, 20)
-        .padding(.bottom, 40)
-        .grayscale(sendCryptoViewModel.isLoading ? 1 : 0)
-        .disabled(sendCryptoViewModel.isLoading)
+    var buttonContainer: some View {
+        button
+            .padding(.horizontal, 40)
+            .padding(.bottom, 40)
     }
     
     var fields: some View {

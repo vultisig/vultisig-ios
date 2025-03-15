@@ -554,3 +554,4 @@
 "keysignDiscoveryDisclaimer" = "Escanea el código QR para firmar la transacción.";
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
 "startUsingVault" = "Usar Bóveda";
+"loadingDetails" = "Cargando detalles";
