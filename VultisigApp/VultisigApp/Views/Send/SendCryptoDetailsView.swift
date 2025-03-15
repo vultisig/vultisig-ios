@@ -227,6 +227,25 @@ struct SendCryptoDetailsView: View {
         .id(Field.amountInFiat)
     }
     
+    var button: some View {
+        Button {
+            Task{
+                await validateForm()
+            }
+        } label: {
+            HStack {
+                FilledButton(
+                    title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
+                    textColor: sendCryptoViewModel.isLoading ? .textDisabled : .blue600,
+                    background: sendCryptoViewModel.isLoading ? .buttonDisabled : .turquoise600,
+                    showLoader: sendCryptoViewModel.isLoading
+                )
+            }
+        }
+        .padding(.top, 20)
+        .disabled(sendCryptoViewModel.isLoading)
+    }
+    
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(leadingText)

@@ -12,6 +12,7 @@ struct FilledButton: View {
     var icon: String = ""
     var textColor: Color = Color.blue600
     var background: Color = Color.turquoise600
+    var showLoader: Bool = false
     
     var body: some View {
         HStack(spacing: 10) {
@@ -21,6 +22,10 @@ struct FilledButton: View {
             
             if !title.isEmpty {
                 text
+            }
+            
+            if showLoader {
+                loader
             }
         }
         .padding(12)
@@ -33,6 +38,11 @@ struct FilledButton: View {
         Image(systemName: icon)
             .font(.body14BrockmannSemiBold)
             .foregroundColor(.blue600)
+    }
+    
+    var loader: some View {
+        ProgressView()
+            .scaleEffect(0.7)
     }
 }
 
