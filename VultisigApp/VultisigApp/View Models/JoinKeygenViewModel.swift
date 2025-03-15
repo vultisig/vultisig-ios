@@ -181,7 +181,7 @@ class JoinKeygenViewModel: ObservableObject {
                     status = .FailToStart
                     return
                 }
-            case .Reshare:
+            case .Reshare,.Migrate:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties

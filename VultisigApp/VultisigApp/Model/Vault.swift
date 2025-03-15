@@ -121,7 +121,11 @@ final class Vault: ObservableObject, Codable {
 
         return false
     }
-
+    
+    func getKeyshare(pubKey: String) -> String? {
+        return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
+    }
+    
     static func predicate(searchName: String) -> Predicate<Vault> {
         #Predicate<Vault> { vault in
             searchName.isEmpty || vault.name == searchName

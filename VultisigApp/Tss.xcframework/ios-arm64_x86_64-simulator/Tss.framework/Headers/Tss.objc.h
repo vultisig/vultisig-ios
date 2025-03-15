@@ -16,7 +16,6 @@
 @class TssKeysignRequest;
 @class TssKeysignResponse;
 @class TssLocalState;
-@class TssLocalUIResponse;
 @class TssMessageFromTss;
 @class TssReshareRequest;
 @class TssReshareResponse;
@@ -131,16 +130,6 @@
 @property (nonatomic) NSString* _Nonnull resharePrefix;
 @end
 
-@interface TssLocalUIResponse : NSObject <goSeqRefInterface> {
-}
-@property(strong, readonly) _Nonnull id _ref;
-
-- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
-- (nonnull instancetype)init;
-@property (nonatomic) NSString* _Nonnull uiEcdsa;
-@property (nonatomic) NSString* _Nonnull uiEddsa;
-@end
-
 @interface TssMessageFromTss : NSObject <goSeqRefInterface> {
 }
 @property(strong, readonly) _Nonnull id _ref;
@@ -220,10 +209,9 @@ FOUNDATION_EXPORT NSString* _Nonnull TssGetDerivedPubKey(NSString* _Nullable hex
 // skipped function GetHexEncodedPubKey with unsupported parameter or return types
 
 
-/**
- * GetLocalUIs returns the local UI for the given keyshare in hex format
- */
-FOUNDATION_EXPORT TssLocalUIResponse* _Nullable TssGetLocalUI(NSString* _Nullable keyshare, NSError* _Nullable* _Nullable error);
+FOUNDATION_EXPORT NSString* _Nonnull TssGetLocalUIEcdsa(NSString* _Nullable keyshare, NSError* _Nullable* _Nullable error);
+
+FOUNDATION_EXPORT NSString* _Nonnull TssGetLocalUIEddsa(NSString* _Nullable keyshare, NSError* _Nullable* _Nullable error);
 
 /**
  * GetThreshold calculates the threshold value based on the input value.

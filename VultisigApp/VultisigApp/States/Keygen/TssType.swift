@@ -8,4 +8,5 @@ import Foundation
 enum TssType: String {
     case Keygen
     case Reshare
+    case Migrate
 }
