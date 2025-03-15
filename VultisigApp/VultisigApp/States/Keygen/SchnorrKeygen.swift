@@ -270,7 +270,7 @@ final class SchnorrKeygen {
                 guard let localUI = self.localUI else {
                     throw HelperError.runtimeError("can't migrate , local UI is empty")
                 }
-                let publicKeyArray = self.publicKeyEdDSA.toArray()
+                let publicKeyArray = Array(hex: self.publicKeyEdDSA)
                 var publicKeySlice = publicKeyArray.to_dkls_goslice()
                 let chainCodeArray = Array(hex: self.hexChainCode)
                 var chainCodeSlice = chainCodeArray.to_dkls_goslice()

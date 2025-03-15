@@ -304,7 +304,7 @@ final class DKLSKeygen {
                 guard let localUI = self.localUI else {
                     throw HelperError.runtimeError("can't migrate , local UI is empty")
                 }
-                let publicKeyArray = self.publicKeyECDSA.toArray()
+                let publicKeyArray = Array(hex: self.publicKeyECDSA)
                 var publicKeySlice = publicKeyArray.to_dkls_goslice()
                 let chainCodeArray = Array(hex: self.hexChainCode)
                 var chainCodeSlice = chainCodeArray.to_dkls_goslice()
