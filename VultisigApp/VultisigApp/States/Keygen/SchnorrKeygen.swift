@@ -28,6 +28,8 @@ final class SchnorrKeygen {
     var cache = NSCache<NSString, AnyObject>()
     var keyshare: DKLSKeyshare?
     let publicKeyEdDSA: String
+    let localUI: String?
+    let hexChainCode: String
     
     init(vault: Vault,
          tssType: TssType,
@@ -37,7 +39,8 @@ final class SchnorrKeygen {
          sessionID: String,
          encryptionKeyHex: String,
          isInitiatedDevice: Bool,
-         setupMessage: [UInt8]) {
+         setupMessage: [UInt8],
+         localUI: String?) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -53,6 +56,8 @@ final class SchnorrKeygen {
                                        encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = vault.pubKeyEdDSA
+        self.localUI = localUI
+        self.hexChainCode = vault.hexChainCode
     }
     
     func getKeyshare() -> DKLSKeyshare? {
@@ -66,7 +71,7 @@ final class SchnorrKeygen {
         }
         var result: goschnorr.lib_error
         switch self.tssType {
-        case .Keygen:
+        case .Keygen,.Migrate:
             result = schnorr_keygen_session_output_message(handle,&buf)
         case .Reshare:
             result = schnorr_qc_session_output_message(handle,&buf)
@@ -103,7 +108,7 @@ final class SchnorrKeygen {
         var mutableMessage = message
         var receiverResult: goschnorr.lib_error
         switch self.tssType {
-        case .Keygen:
+        case .Keygen,.Migrate:
             receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = schnorr_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -219,7 +224,7 @@ final class SchnorrKeygen {
             var isFinished:UInt32 = 0
             var result: goschnorr.lib_error
             switch self.tssType {
-            case .Keygen:
+            case .Keygen,.Migrate:
                 result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = schnorr_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
@@ -256,9 +261,30 @@ final class SchnorrKeygen {
             var handler = goschnorr.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            let result = schnorr_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
-            if result != LIB_OK {
-                throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
+            if self.tssType == .Keygen{
+                let result = schnorr_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
+                if result != LIB_OK {
+                    throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
+                }
+            } else {
+                guard let localUI = self.localUI else {
+                    throw HelperError.runtimeError("can't migrate , local UI is empty")
+                }
+                let publicKeyArray = self.publicKeyEdDSA.toArray()
+                var publicKeySlice = publicKeyArray.to_dkls_goslice()
+                let chainCodeArray = Array(hex: self.hexChainCode)
+                var chainCodeSlice = chainCodeArray.to_dkls_goslice()
+                let localUIArray = Array(hex: localUI)
+                var localUISlice = localUIArray.to_dkls_goslice()
+                let result = schnorr_key_migration_session_from_setup(&decodedSetupMsg,
+                                                                   &localPartySlice,
+                                                                   &publicKeySlice,
+                                                                   &chainCodeSlice,
+                                                                   &localUISlice,
+                                                                   &handler)
+                if result != LIB_OK {
+                    throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
+                }
             }
             // free the handler
             defer {

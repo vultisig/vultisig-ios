@@ -93,7 +93,39 @@ class KeygenViewModel: ObservableObject {
     func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
         switch(self.vault.libType){
         case .GG20:
-            await startKeygenGG20(context: context, defaultChains: defaultChains)
+            switch self.tssType{
+            case .Keygen,.Reshare:
+                await startKeygenGG20(context: context, defaultChains: defaultChains)
+            case .Migrate:
+                var localUIECDSA: String?
+                var localUIEdDSA: String?
+                let keyShareEcdsa = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA)
+                if let keyShareEcdsa = keyShareEcdsa {
+                    var nsErr: NSError?
+                    let ecdsaUIResp = TssGetLocalUI(keyShareEcdsa, &nsErr)
+                    if let nsErr {
+                        print("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
+                        return
+                    }
+                    localUIECDSA = ecdsaUIResp?.uiEcdsa
+                }
+                let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
+                if let keyShareEdDSA = keyShareEdDSA {
+                    var nsErr: NSError?
+                    let eddsaUIResp = TssGetLocalUI(keyShareEdDSA, &nsErr)
+                    if let nsErr {
+                        print("failed to get local ui eddsa: \(nsErr.localizedDescription)")
+                        return
+                    }
+                    localUIEdDSA = eddsaUIResp?.uiEddsa
+                }
+                
+                await startKeygenDKLS(context: context,
+                                      defaultChains: defaultChains,
+                                      localUIEcdsa: localUIECDSA,
+                                      localUIEdDsa: localUIEdDSA)
+            }
+            
         case .DKLS:
             await startKeygenDKLS(context: context, defaultChains: defaultChains)
         default:
@@ -102,7 +134,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
-    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta]) async {
+    func startKeygenDKLS(context: ModelContext, defaultChains: [CoinMeta], localUIEcdsa: String? = nil, localUIEdDsa: String? = nil) async {
         do{
             let dklsKeygen = DKLSKeygen(vault: self.vault,
                                         tssType: self.tssType,
@@ -111,9 +143,10 @@ class KeygenViewModel: ObservableObject {
                                         mediatorURL: self.mediatorURL,
                                         sessionID: self.sessionID,
                                         encryptionKeyHex: self.encryptionKeyHex,
-                                        isInitiateDevice: self.isInitiateDevice)
+                                        isInitiateDevice: self.isInitiateDevice,
+                                        localUI: localUIEcdsa)
             switch self.tssType {
-            case .Keygen:
+            case .Keygen,.Migrate:
                 self.status = .KeygenECDSA
                 try await dklsKeygen.DKLSKeygenWithRetry(attempt: 0)
             case .Reshare:
@@ -130,9 +163,10 @@ class KeygenViewModel: ObservableObject {
                                               sessionID: self.sessionID,
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               isInitiatedDevice: self.isInitiateDevice,
-                                              setupMessage: dklsKeygen.getSetupMessage())
+                                              setupMessage: dklsKeygen.getSetupMessage(),
+                                              localUI: localUIEdDsa)
             switch self.tssType {
-            case .Keygen:
+            case .Keygen,.Migrate:
                 self.status = .KeygenEdDSA
                 try await schnorrKeygen.SchnorrKeygenWithRetry(attempt: 0)
             case .Reshare:
@@ -229,6 +263,11 @@ class KeygenViewModel: ObservableObject {
                         .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
                     context.insert(self.vault)
                 }
+            case .Migrate:
+                // this should not happen
+                self.logger.error("Failed to migration vault")
+                self.status = .KeygenFailed
+                return
             }
             try context.save()
         } catch {
@@ -284,6 +323,8 @@ class KeygenViewModel: ObservableObject {
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
                 self.vault.resharePrefix = ecdsaResp.resharePrefix
+            case .Migrate:
+                throw HelperError.runtimeError("Migrate not supported yet")
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state

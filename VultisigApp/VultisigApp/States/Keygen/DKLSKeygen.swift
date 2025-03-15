@@ -33,6 +33,8 @@ final class DKLSKeygen {
     var setupMessage:[UInt8] = []
     var keyshare: DKLSKeyshare?
     let publicKeyECDSA: String
+    let localUI: String?
+    let hexChainCode: String
     
     init(vault: Vault,
          tssType: TssType,
@@ -41,7 +43,9 @@ final class DKLSKeygen {
          mediatorURL: String,
          sessionID: String,
          encryptionKeyHex: String,
-         isInitiateDevice: Bool) {
+         isInitiateDevice: Bool,
+         localUI: String?
+    ) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -53,6 +57,8 @@ final class DKLSKeygen {
         self.messenger = DKLSMessenger(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil, encryptionKeyHex: self.encryptionKeyHex)
         self.localPartyID = vault.localPartyID
         self.publicKeyECDSA = vault.pubKeyECDSA
+        self.localUI = localUI
+        self.hexChainCode = vault.hexChainCode
     }
     
     
@@ -87,7 +93,7 @@ final class DKLSKeygen {
         }
         var result: godkls.lib_error
         switch self.tssType {
-        case .Keygen:
+        case .Keygen,.Migrate:
             result = dkls_keygen_session_output_message(handle,&buf)
         case .Reshare:
             result = dkls_qc_session_output_message(handle,&buf)
@@ -125,7 +131,7 @@ final class DKLSKeygen {
         var mutableMessage = message
         var receiverResult: godkls.lib_error
         switch self.tssType {
-        case .Keygen:
+        case .Keygen,.Migrate:
             receiverResult = dkls_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         case .Reshare:
             receiverResult = dkls_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -242,7 +248,7 @@ final class DKLSKeygen {
             var isFinished:UInt32 = 0
             var result: godkls.lib_error
             switch self.tssType {
-            case .Keygen:
+            case .Keygen,.Migrate:
                 result = dkls_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
             case .Reshare:
                 result = dkls_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
@@ -289,9 +295,30 @@ final class DKLSKeygen {
             var handler = godkls.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
-            let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
-            if result != LIB_OK {
-                throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
+            if self.tssType == .Keygen {
+                let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
+                if result != LIB_OK {
+                    throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
+                }
+            } else {
+                guard let localUI = self.localUI else {
+                    throw HelperError.runtimeError("can't migrate , local UI is empty")
+                }
+                let publicKeyArray = self.publicKeyECDSA.toArray()
+                var publicKeySlice = publicKeyArray.to_dkls_goslice()
+                let chainCodeArray = Array(hex: self.hexChainCode)
+                var chainCodeSlice = chainCodeArray.to_dkls_goslice()
+                let localUIArray = Array(hex: localUI)
+                var localUISlice = localUIArray.to_dkls_goslice()
+                let result = dkls_key_migration_session_from_setup(&decodedSetupMsg,
+                                                                   &localPartySlice,
+                                                                   &publicKeySlice,
+                                                                   &chainCodeSlice,
+                                                                   &localUISlice,
+                                                                   &handler)
+                if result != LIB_OK {
+                    throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
+                }
             }
             // free the handler
             defer {
