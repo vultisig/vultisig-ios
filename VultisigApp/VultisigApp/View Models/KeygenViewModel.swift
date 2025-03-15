@@ -196,6 +196,10 @@ class KeygenViewModel: ObservableObject {
             self.vault.pubKeyECDSA = keyshareECDSA.PubKey
             self.vault.pubKeyEdDSA = keyshareEdDSA.PubKey
             self.vault.hexChainCode = keyshareECDSA.chaincode
+            if self.tssType == .Migrate {
+                // make sure we set the vault's lib type to DKLS , otherwise it won't work
+                self.vault.libType = .DKLS
+            }
             self.vault.keyshares = [KeyShare(pubkey: keyshareECDSA.PubKey, keyshare: keyshareECDSA.Keyshare),
                                     KeyShare(pubkey: keyshareEdDSA.PubKey, keyshare: keyshareEdDSA.Keyshare)]
             
@@ -204,6 +208,7 @@ class KeygenViewModel: ObservableObject {
                     .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
                 context.insert(self.vault)
             }
+            
             try context.save()
             self.status = .KeygenFinished
         } catch{
