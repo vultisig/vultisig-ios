@@ -598,8 +598,6 @@
 "keysignDiscoveryDisclaimer" = "Scan QR code to sign transaction. ";
 "keysignDiscoveryDisclaimerDevice" = "-device scan required.";
 "startUsingVault" = "Start using your Vault";
-"migrationFailed" = "Failed to migration GG20 vault to DKLS";
-"migrateVault" = "Migrate GG20 vault to DKLS";
 "loadingDetails" = "Loading details";
 "migrationFailed" = "Failed to migration GG20 vault to DKLS";
 "migrateVault" = "Migrate GG20 vault to DKLS";
