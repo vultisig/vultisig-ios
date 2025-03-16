@@ -89,7 +89,15 @@ class KeygenViewModel: ObservableObject {
             self.isLinkActive = true
         }
     }
-    
+    func rightPadHexString(_ hexString: String) -> String {
+        let paddedLength = 64
+        if hexString.count < paddedLength {
+            print("right pad hexString \(hexString)")
+            let padding = String(repeating: "0", count: paddedLength - hexString.count)
+            return hexString + padding
+        }
+        return hexString
+    }
     func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
         let vaultLibType = self.vault.libType ?? .GG20
         switch(vaultLibType){
@@ -108,7 +116,7 @@ class KeygenViewModel: ObservableObject {
                         if let nsErr {
                             throw HelperError.runtimeError("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
                         }
-                        localUIECDSA = ecdsaUIResp
+                        localUIECDSA = rightPadHexString(ecdsaUIResp)
                     }
                     let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
                     if let keyShareEdDSA = keyShareEdDSA {
@@ -117,7 +125,8 @@ class KeygenViewModel: ObservableObject {
                         if let nsErr {
                             throw HelperError.runtimeError("failed to get local ui eddsa: \(nsErr.localizedDescription)")
                         }
-                        localUIEdDSA = eddsaUIResp
+                        localUIEdDSA = rightPadHexString(eddsaUIResp)
+                        
                     }
                 } catch {
                     self.logger.error("Migration Failed, fail to get local UI: \(error.localizedDescription)")
