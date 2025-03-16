@@ -194,11 +194,25 @@ struct KeygenView: View {
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
+            case .Migrate:
+                migrateFailedText
             }
         }
         .onAppear {
             hideBackButton = false
             showProgressRing = false
+        }
+    }
+    var migrateFailedText: some View {
+        VStack(spacing: 18) {
+            Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
+                .multilineTextAlignment(.center)
+            Text(viewModel.keygenError)
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
+                .multilineTextAlignment(.center)
         }
     }
     
