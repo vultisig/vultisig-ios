@@ -1,8 +1,8 @@
 //
-//  OneInchSwapPayload.swift
-//  VultisigApp
+//  ElDoritoSwapPayload.swift
+//  VoltixApp
 //
-//  Created by Artur Guseinov on 11.05.2024.
+//  Created by Enrique Souza
 //
 
 import Foundation

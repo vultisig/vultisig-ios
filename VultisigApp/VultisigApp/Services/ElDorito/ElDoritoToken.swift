@@ -1,8 +1,8 @@
 //
-//  OneInchToken.swift
-//  VultisigApp
+//  ElDoritoToken.swift
+//  VoltixApp
 //
-//  Created by Artur Guseinov on 29.05.2024.
+//  Created by Enrique Souza
 //
 
 import Foundation

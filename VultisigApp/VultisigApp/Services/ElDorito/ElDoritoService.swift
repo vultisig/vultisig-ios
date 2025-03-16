@@ -1,8 +1,8 @@
 //
-//  1InchService.swift
+//  ElDoritoService.swift
 //  VoltixApp
 //
-//  Created by Artur Guseinov on 07.05.2024.
+//  Created by Enrique Souza
 //
 
 import Foundation
