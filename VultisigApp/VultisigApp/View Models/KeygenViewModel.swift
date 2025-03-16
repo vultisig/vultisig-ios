@@ -91,6 +91,10 @@ class KeygenViewModel: ObservableObject {
     }
     
     func rightPadHexString(_ hexString: String) -> String {
+        guard hexString.allSatisfy({ $0.isHexDigit }) else {
+            self.logger.error("Invalid hex string: \(hexString)")
+            return hexString
+        }
         let paddedLength = 64
         if hexString.count < paddedLength {
             let padding = String(repeating: "0", count: paddedLength - hexString.count)
@@ -109,27 +113,26 @@ class KeygenViewModel: ObservableObject {
                 var localUIECDSA: String?
                 var localUIEdDSA: String?
                 do {
-                    let keyShareEcdsa = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA)
-                    if let keyShareEcdsa = keyShareEcdsa {
-                        var nsErr: NSError?
-                        let ecdsaUIResp = TssGetLocalUIEcdsa(keyShareEcdsa, &nsErr)
-                        if let nsErr {
-                            throw HelperError.runtimeError("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
-                        }
-                        localUIECDSA = rightPadHexString(ecdsaUIResp)
+                    // Verify both key shares exist before attempting migration
+                    guard let ecdsaShare = self.vault.getKeyshare(pubKey: self.vault.pubKeyECDSA),
+                          let eddsaShare = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA) else {
+                        throw HelperError.runtimeError("Missing key shares required for migration")
                     }
-                    let keyShareEdDSA = self.vault.getKeyshare(pubKey: self.vault.pubKeyEdDSA)
-                    if let keyShareEdDSA = keyShareEdDSA {
-                        var nsErr: NSError?
-                        let eddsaUIResp = TssGetLocalUIEddsa(keyShareEdDSA, &nsErr)
-                        if let nsErr {
-                            throw HelperError.runtimeError("failed to get local ui eddsa: \(nsErr.localizedDescription)")
-                        }
-                        // the local UI sometimes is less than 32 bytes , we need to pad it
-                        // since the library expect the number in little-endian , thus we just add 0 to the end of the hex string
-                        localUIEdDSA = rightPadHexString(eddsaUIResp)
-                        
+                    
+                    var nsErr: NSError?
+                    let ecdsaUIResp = TssGetLocalUIEcdsa(ecdsaShare, &nsErr)
+                    if let nsErr {
+                        throw HelperError.runtimeError("failed to get local ui ecdsa: \(nsErr.localizedDescription)")
                     }
+                    localUIECDSA = rightPadHexString(ecdsaUIResp)
+                    let eddsaUIResp = TssGetLocalUIEddsa(eddsaShare, &nsErr)
+                    if let nsErr {
+                        throw HelperError.runtimeError("failed to get local ui eddsa: \(nsErr.localizedDescription)")
+                    }
+                    // the local UI sometimes is less than 32 bytes , we need to pad it
+                    // since the library expect the number in little-endian , thus we just add 0 to the end of the hex string
+                    localUIEdDSA = rightPadHexString(eddsaUIResp)
+                    
                 } catch {
                     self.logger.error("Migration Failed, fail to get local UI: \(error.localizedDescription)")
                     self.status = .KeygenFailed
