@@ -57,6 +57,8 @@ struct SwapDetailsSummary: View {
             return "Maya Protocol"
         case .none:
             return nil
+        case .elDorito:
+            return "El Dorito"
         }
     }
     
