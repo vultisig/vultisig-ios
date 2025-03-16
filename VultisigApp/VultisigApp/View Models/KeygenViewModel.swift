@@ -89,10 +89,10 @@ class KeygenViewModel: ObservableObject {
             self.isLinkActive = true
         }
     }
+    
     func rightPadHexString(_ hexString: String) -> String {
         let paddedLength = 64
         if hexString.count < paddedLength {
-            print("right pad hexString \(hexString)")
             let padding = String(repeating: "0", count: paddedLength - hexString.count)
             return hexString + padding
         }
@@ -125,6 +125,8 @@ class KeygenViewModel: ObservableObject {
                         if let nsErr {
                             throw HelperError.runtimeError("failed to get local ui eddsa: \(nsErr.localizedDescription)")
                         }
+                        // the local UI sometimes is less than 32 bytes , we need to pad it
+                        // since the library expect the number in little-endian , thus we just add 0 to the end of the hex string
                         localUIEdDSA = rightPadHexString(eddsaUIResp)
                         
                     }
