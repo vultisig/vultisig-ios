@@ -40,4 +40,6 @@ struct ElDoritoQuote: Codable, Hashable {
         }
     }
     let tx: Transaction
+    let expectedBuyAmount: String
+    let expectedBuyAmountMaxSlippage: String
 }

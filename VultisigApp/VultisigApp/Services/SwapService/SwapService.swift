@@ -15,6 +15,7 @@ struct SwapService {
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
     private let lifiService: LiFiService = LiFiService.shared
+    private let eldoritoService: ElDoritoService = ElDoritoService.shared
 
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
@@ -53,6 +54,16 @@ struct SwapService {
             )
         case .lifi:
             return try await fetchLiFiQuote(
+                amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
+        case .eldorito:
+            guard let fromChainID = fromCoin.chain.chainID,
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
+                  throw SwapError.routeUnavailable
+            }
+            return try await fetchElDoritoQuote(
+                chain: fromChainID,
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
@@ -127,6 +138,19 @@ private extension SwapService {
             isAffiliate: isAffiliate
         )
         return .oneinch(response.quote, fee: response.fee)
+    }
+    
+    func fetchElDoritoQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+        let rawAmount = fromCoin.raw(for: amount)
+        let response = try await eldoritoService.fetchQuotes(
+            chain: String(chain),
+            source: fromCoin.contractAddress,
+            destination: toCoin.contractAddress,
+            amount: String(rawAmount),
+            from: fromCoin.address,
+            isAffiliate: isAffiliate
+        )
+        return .elDorito(response.quote, fee: response.fee)
     }
 
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {

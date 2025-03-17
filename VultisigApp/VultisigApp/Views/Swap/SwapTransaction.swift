@@ -42,7 +42,7 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch(_ , let fee), .lifi(_, let fee):
+        case .oneinch(_ , let fee), .lifi(_, let fee), .elDorito(_, let fee):
             return fee ?? 0
         case nil:
             return .zero
@@ -60,6 +60,9 @@ class SwapTransaction: ObservableObject {
         case .oneinch(let quote, _), .lifi(let quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
+        case .elDorito(let quote, _):
+            let amount = BigInt(quote.expectedBuyAmount) ?? BigInt.zero
+                return toCoin.decimal(for: amount)
         }
     }
 
