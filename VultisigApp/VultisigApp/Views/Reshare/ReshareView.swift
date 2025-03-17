@@ -58,9 +58,6 @@ struct ReshareView: View {
     var buttons: some View {
         VStack(spacing: 12) {
             startReshareButton
-            if vault.libType == .GG20 {
-                startReshareVultisignerButton
-            }
             joinReshareButton
         }
     }

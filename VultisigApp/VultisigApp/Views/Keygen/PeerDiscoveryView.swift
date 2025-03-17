@@ -220,8 +220,15 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
             return
         }
+        switch self.tssType {
+        case .Keygen:
+            showInfoSheet = true
+        case .Reshare:
+            showInfoSheet = false
+        case .Migrate:
+            showInfoSheet = false
+        }
         
-        showInfoSheet = true
     }
 }
 
