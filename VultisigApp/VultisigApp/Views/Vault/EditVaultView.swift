@@ -112,7 +112,7 @@ struct EditVaultView: View {
     var migrateFastVault: some View {
         NavigationLink {
             FastVaultEmailView(
-                tssType: .Reshare,
+                tssType: .Migrate,
                 vault: vault,
                 selectedTab: .secure,
                 fastVaultExist: true
