@@ -25,6 +25,22 @@ struct SwapService {
 
         switch provider {
         case .thorchain:
+            
+            if toCoin.chain == Chain.base {
+                
+                print("From Chain Id \(fromCoin.chain.chainID), To Chain Id \(toCoin.chain.chainID)")
+                
+                guard let fromChainID = fromCoin.chain.chainIDElDorito,
+                      let toChainID = toCoin.chain.chainIDElDorito else {
+                      throw SwapError.routeUnavailable
+                }
+                return try await fetchElDoritoQuote(
+                    chain: fromChainID,
+                    amount: amount, fromCoin: fromCoin,
+                    toCoin: toCoin, isAffiliate: isAffiliate
+                )
+            }
+            
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
                 provider: provider,
@@ -58,8 +74,8 @@ struct SwapService {
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
         case .eldorito:
-            guard let fromChainID = fromCoin.chain.chainID,
-                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
+            guard let fromChainID = fromCoin.chain.chainIDElDorito,
+                  let toChainID = toCoin.chain.chainIDElDorito else {
                   throw SwapError.routeUnavailable
             }
             return try await fetchElDoritoQuote(
@@ -140,7 +156,7 @@ private extension SwapService {
         return .oneinch(response.quote, fee: response.fee)
     }
     
-    func fetchElDoritoQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchElDoritoQuote(chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await eldoritoService.fetchQuotes(
             chain: String(chain),
