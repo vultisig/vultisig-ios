@@ -158,12 +158,20 @@ private extension SwapService {
     
     func fetchElDoritoQuote(chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
+        
+        let (fromCoinIdentifier, toCoinIdentifier) = try await eldoritoService.getTokenIdentifier(fromCoin: fromCoin, toCoin: toCoin)
+        
+        guard !fromCoinIdentifier.isEmpty, !toCoinIdentifier.isEmpty else {
+            throw SwapError.routeUnavailable
+        }
+        
         let response = try await eldoritoService.fetchQuotes(
             chain: String(chain),
-            source: fromCoin.contractAddress,
-            destination: toCoin.contractAddress,
+            source: fromCoinIdentifier,
+            destination: toCoinIdentifier,
             amount: String(rawAmount),
             from: fromCoin.address,
+            to: toCoin.address,
             isAffiliate: isAffiliate
         )
         return .elDorito(response.quote, fee: response.fee)
