@@ -28,7 +28,7 @@ extension HomeView {
             NSLocalizedString("newUpdateAvailable", comment: ""),
             isPresented: $macCheckUpdateViewModel.showUpdateAlert
         ) {
-            Link(destination: URL(string: Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase)!) {
+            Link(destination: URL(string: Endpoint.githubMacDownloadBase + macCheckUpdateViewModel.latestVersionBase + macCheckUpdateViewModel.latestPackageName)!) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
             

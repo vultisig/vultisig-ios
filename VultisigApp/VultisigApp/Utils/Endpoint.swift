@@ -31,6 +31,7 @@ class Endpoint {
     
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
+    static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
     
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
     
