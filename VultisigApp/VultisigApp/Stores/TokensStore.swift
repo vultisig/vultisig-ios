@@ -74,6 +74,9 @@ class TokensStore {
             CoinMeta(chain: Chain.ethereum, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         
+        static var vult: CoinMeta {
+            CoinMeta(chain: Chain.ethereum, ticker: "VULT", logo: "vult", decimals: 18, priceProviderId: "", contractAddress: "0xb788144DF611029C60b859DF47e79B7726C4DEBa", isNativeToken: false)
+        }
         static var ethereumUsdc: CoinMeta {
             CoinMeta(chain: Chain.ethereum, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", isNativeToken: false)
         }
@@ -771,6 +774,7 @@ class TokensStore {
         // START EVMS
         // ETHEREUM
         TokensStore.Token.ethereum,
+        TokensStore.Token.vult,
         TokensStore.Token.ethereumUsdc,
         TokensStore.Token.ethereumUsdt,
         TokensStore.Token.ethereumUni,
