@@ -94,7 +94,7 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .oneInch, .elDorito, .none:
+        case .oneInch, .none:
             return nil
         }
     }
@@ -317,10 +317,6 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
-            case .elDorito(let payload):
-                let swaps = ElDoritoSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
-                signedTransactions.append(transaction)
                 
             case .mayachain:
                 break // No op - Regular transaction with memo

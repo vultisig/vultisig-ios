@@ -22,10 +22,7 @@ struct ElDoritoService {
     
     func getTokenIdentifier(fromCoin: Coin, toCoin: Coin) async throws -> (String, String) {
         let tokens = try await fetchTokens()
-        
-        print("From Coin:")
-        print(fromCoin.ticker + " " + fromCoin.chain.swapAsset)
-        
+                
         let fromToken = tokens.first { $0.ticker.uppercased() == fromCoin.ticker.uppercased() && $0.chain.uppercased() == fromCoin.chain.swapAsset.uppercased() }
         
         guard let fromCoinIdentifier = fromToken?.identifier else {
@@ -50,8 +47,6 @@ struct ElDoritoService {
         
         // Fetch data with caching enabled
         let (data, response) = try await URLSession.shared.data(for: request)
-        
-        //print(String(data: data, encoding: .utf8))
         
         if let httpResponse = response as? HTTPURLResponse {
             let headers = httpResponse.allHeaderFields
@@ -125,8 +120,6 @@ struct ElDoritoService {
             body["affiliateFee"] = 50 // Example: 0.5% fee
         }
         
-        print(body)
-        
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         
         var request = URLRequest(url: url)
@@ -136,16 +129,21 @@ struct ElDoritoService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        print(String(data: data, encoding: .utf8) ?? "")
+        let response = try JSONDecoder().decode(ElDoritoResponse.self, from: data)
         
+        var fee = BigInt(0)
+        if let quote = response.routes.first {
+            
+            if let transaction = quote.tx {
+                let gasPrice = BigInt(transaction.gasPrice) ?? 0
+                let gas = BigInt(transaction.gas)
+                fee = gas * gasPrice
+            }
+            
+            return (quote, fee)
+        }
         
-        let response = try JSONDecoder().decode(ElDoritoQuote.self, from: data)
-        
-        let gasPrice = BigInt(response.tx.gasPrice) ?? 0
-        let gas = BigInt(response.tx.gas)
-        let fee = gas * gasPrice
-        
-        return (response, fee)
+        throw SwapError.routeUnavailable
     }
 
 }

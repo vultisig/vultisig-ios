@@ -174,7 +174,14 @@ private extension SwapService {
             to: toCoin.address,
             isAffiliate: isAffiliate
         )
-        return .elDorito(response.quote, fee: response.fee)
+        
+        print ("El Dorito response: \(response)")
+        
+        if fromCoin.chain == .thorChain {
+            return .thorchain(try response.quote.toThorchainSwapQuote())
+        } else {
+            return .oneinch(try response.quote.toOneInchSwapPayload(fromCoin: fromCoin, toCoin: toCoin), fee: response.fee)
+        }
     }
 
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {

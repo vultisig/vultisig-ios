@@ -41,9 +41,6 @@ struct KeysignMessageFactory {
                 }
             case .mayachain:
                 break // No op - Regular transaction with memo
-            case .elDorito(let swapPayload):
-                let swaps = ElDoritoSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             }
         }
 

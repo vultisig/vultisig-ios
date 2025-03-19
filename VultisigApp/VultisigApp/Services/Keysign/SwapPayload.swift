@@ -12,15 +12,12 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchain(THORChainSwapPayload)
     case mayachain(THORChainSwapPayload)
     case oneInch(OneInchSwapPayload)
-    case elDorito(ElDoritoSwapPayload)
-
+    
     var fromCoin: Coin {
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.fromCoin
         case .oneInch(let payload):
-            return payload.fromCoin
-        case .elDorito(let payload):
             return payload.fromCoin
         }
     }
@@ -31,8 +28,6 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.toCoin
         case .oneInch(let payload):
             return payload.toCoin
-        case .elDorito(let payload):
-            return payload.toCoin
         }
     }
 
@@ -41,8 +36,6 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         case .thorchain(let payload), .mayachain(let payload):
             return payload.fromAmount
         case .oneInch(let payload):
-            return payload.fromAmount
-        case .elDorito(let payload):
             return payload.fromAmount
         }
     }
@@ -53,8 +46,6 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.toAmountDecimal
         case .oneInch(let payload):
             return payload.toAmountDecimal
-        case .elDorito(let payload):
-            return payload.toAmountDecimal
         }
     }
 
@@ -64,8 +55,6 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.routerAddress
         case .oneInch(let payload):
             return payload.quote.tx.to
-        case .elDorito(let payload):
-            return payload.quote.tx.to
         }
     }
 
@@ -73,7 +62,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .mayachain(let payload):
             return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
-        case .oneInch, .thorchain, .elDorito:
+        case .oneInch, .thorchain:
             return false
         }
     }

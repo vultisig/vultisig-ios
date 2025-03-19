@@ -72,8 +72,6 @@ struct KeysignSwapConfirmView: View {
             return "Maya protocol"
         case .none:
             return .empty
-        case .elDorito:
-            return "El Dorito"
         }
     }
 

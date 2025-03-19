@@ -220,23 +220,6 @@ extension SwapPayload {
                     }
                 }
             })
-        case .elDorito(let payload):
-            return .oneinchSwapPayload(.with { // Replace by El Dorito
-                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
-                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
-                $0.fromAmount = String(payload.fromAmount)
-                $0.toAmountDecimal = payload.toAmountDecimal.description
-                $0.quote = .with {
-                    $0.tx = .with {
-                        $0.from = payload.quote.tx.from
-                        $0.to = payload.quote.tx.to
-                        $0.data = payload.quote.tx.data
-                        $0.value = payload.quote.tx.value
-                        $0.gasPrice = payload.quote.tx.gasPrice
-                        $0.gas = payload.quote.tx.gas
-                    }
-                }
-            })
         }
     }
 }

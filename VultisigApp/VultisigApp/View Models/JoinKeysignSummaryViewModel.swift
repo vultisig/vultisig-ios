@@ -23,8 +23,6 @@ class JoinKeysignSummaryViewModel {
             return "THORChain"
         case .mayachain:
             return "Maya protocol"
-        case .elDorito:
-            return "El Dorito"
         case .none:
             return .empty
         }

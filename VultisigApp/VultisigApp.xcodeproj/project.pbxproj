@@ -695,7 +695,6 @@
 		B5961B8D2D86B67B00AE6AE9 /* ElDoritoToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B8B2D86B67B00AE6AE9 /* ElDoritoToken.swift */; };
 		B5961B8E2D86B67B00AE6AE9 /* ElDoritoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B8A2D86B67B00AE6AE9 /* ElDoritoService.swift */; };
 		B5961B8F2D86B67B00AE6AE9 /* ElDoritoQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B892D86B67B00AE6AE9 /* ElDoritoQuote.swift */; };
-		B5961B912D86C27B00AE6AE9 /* ElDoritoSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B902D86C27B00AE6AE9 /* ElDoritoSwaps.swift */; };
 		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A80F182D0600BA00DC9069 /* Ripple.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A80F172D0600BA00DC9069 /* Ripple.swift */; };
 		B5A80F1B2D0645E100DC9069 /* RippleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A80F1A2D0645DD00DC9069 /* RippleService.swift */; };
@@ -1533,7 +1532,6 @@
 		B5961B892D86B67B00AE6AE9 /* ElDoritoQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoQuote.swift; sourceTree = "<group>"; };
 		B5961B8A2D86B67B00AE6AE9 /* ElDoritoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoService.swift; sourceTree = "<group>"; };
 		B5961B8B2D86B67B00AE6AE9 /* ElDoritoToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoToken.swift; sourceTree = "<group>"; };
-		B5961B902D86C27B00AE6AE9 /* ElDoritoSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoSwaps.swift; sourceTree = "<group>"; };
 		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A80F172D0600BA00DC9069 /* Ripple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ripple.swift; sourceTree = "<group>"; };
 		B5A80F1A2D0645DD00DC9069 /* RippleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RippleService.swift; sourceTree = "<group>"; };
@@ -3325,7 +3323,6 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */,
 				A5D0C9362BEE778F0022D421 /* OneInchSwaps.swift */,
-				B5961B902D86C27B00AE6AE9 /* ElDoritoSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
@@ -4209,7 +4206,6 @@
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
-				B5961B912D86C27B00AE6AE9 /* ElDoritoSwaps.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
