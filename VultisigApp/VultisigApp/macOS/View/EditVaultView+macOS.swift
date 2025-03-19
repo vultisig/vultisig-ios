@@ -33,7 +33,11 @@ extension EditVaultView {
                 editVault
                 reshareVault
                 if vault.libType == nil || vault.libType == .GG20 {
-                    migrateVault
+                    if vault.isFastVault {
+                        migrateFastVault
+                    } else {
+                        migrateVault
+                    }
                 }
                 if vault.isFastVault {
                     biometrySelectionCell

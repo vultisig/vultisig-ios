@@ -108,6 +108,19 @@ struct EditVaultView: View {
             EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
+    
+    var migrateFastVault: some View {
+        NavigationLink {
+            FastVaultEmailView(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastVaultExist: true
+            )
+        } label: {
+            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+        }
+    }
 
     var biometrySelectionCell: some View {
         NavigationLink {
