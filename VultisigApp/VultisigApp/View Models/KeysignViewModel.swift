@@ -317,6 +317,7 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
+                
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
