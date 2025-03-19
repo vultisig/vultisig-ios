@@ -121,9 +121,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          oldResharePrefix: vault.resharePrefix ?? "",
                                          lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Migrate:
-                self.logger.error("fastvault can't migrate to DKLS")
-                self.status = .Failure
-                return
+                fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
             }
         }
         

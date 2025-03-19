@@ -63,6 +63,7 @@ struct TokenSelectionView: View {
         }
         .background(Color.blue600)
         .cornerRadius(12)
+        .colorScheme(.dark)
     }
     
     func errorView(error: Error) -> some View {
@@ -99,7 +100,11 @@ struct TokenSelectionView: View {
                         }
                 }
 
-                Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                Section(
+                    header:
+                        Text(NSLocalizedString("tokens", comment:"Tokens"))
+                        .foregroundColor(.neutral0)
+                ) {
                     ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
                         TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                             .listRowBackground(Color.clear)

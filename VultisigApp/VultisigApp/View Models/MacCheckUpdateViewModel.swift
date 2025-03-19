@@ -15,6 +15,7 @@ class MacCheckUpdateViewModel: ObservableObject {
     
     @Published var latestVersion: String = ""
     @Published var latestVersionBase: String = ""
+    @Published var latestPackageName: String = ""
     @Published var currentVersion: String = ""
     
     func resetData() {
@@ -99,6 +100,7 @@ class MacCheckUpdateViewModel: ObservableObject {
     func showDetailView(latest: String, current: String, isAutoCheck: Bool) {
         DispatchQueue.main.async {
             self.latestVersionBase = latest
+            self.latestPackageName = "/VultisigApp.\(latest).signed.pkg"
             self.latestVersion = latest.replacingOccurrences(of: "v", with: "Version ")
             self.currentVersion = current.replacingOccurrences(of: "v", with: "Version ")
             
