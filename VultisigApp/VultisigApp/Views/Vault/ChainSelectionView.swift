@@ -79,6 +79,7 @@ struct ChainSelectionView: View {
             .disableAutocorrection(true)
             .padding(.horizontal, 8)
             .borderlessTextFieldStyle()
+            .colorScheme(.dark)
     }
 
     private func setData() {
