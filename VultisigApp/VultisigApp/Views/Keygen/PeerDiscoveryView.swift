@@ -17,11 +17,6 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State var isLandscape: Bool = true
-    @State var isPhoneSE = false
-    
-    @State var screenWidth: CGFloat = .zero
-    @State var screenHeight: CGFloat = .zero
     
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
@@ -34,17 +29,6 @@ struct PeerDiscoveryView: View {
 #endif
     
     @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
-    
-    let columns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-    ]
-    
-    let phoneColumns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160))
-    ]
     
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
@@ -117,13 +101,7 @@ struct PeerDiscoveryView: View {
     }
     
     var views: some View {
-        ZStack {
-            if isLandscape {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
+        portraitContent
     }
     
     var qrCode: some View {
@@ -134,14 +112,8 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
-        ZStack {
-            if isLandscape {
-                gridList
-            } else {
-                scrollList
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        scrollList
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     var lookingForDevices: some View {
@@ -204,15 +176,6 @@ struct PeerDiscoveryView: View {
         .foregroundColor(.neutral0)
         .padding(.bottom, 8)
         .padding(.horizontal, 24)
-    }
-    
-    func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth<380 {
-            isPhoneSE = true
-        }
     }
     
     private func showInfo() {

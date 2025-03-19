@@ -13,13 +13,7 @@ extension PeerDiscoveryView {
     
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-            }
-            
+            Background()
             main
         }
         .navigationTitle("scanQR")
@@ -54,18 +48,9 @@ extension PeerDiscoveryView {
     }
     
     var portraitContent: some View {
-        ZStack {
-            if isPhoneSE {
-                ScrollView {
-                    qrCode
-                    list
-                }
-            } else {
-                VStack(spacing: 0) {
-                    qrCode
-                    list
-                }
-            }
+        ScrollView {
+            qrCode
+            list
         }
     }
     
@@ -107,41 +92,15 @@ extension PeerDiscoveryView {
         VStack {
             listTitle
             
-            ZStack {
-                if isPhoneSE {
-                    VStack {
-                        LazyVGrid(columns: phoneColumns, spacing: 18) {
-                            ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
-                            devices
-                            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-                        }
-                        .padding(.horizontal, 18)
-                    }
-                } else {
-                    ScrollView {
-                        LazyVGrid(columns: phoneColumns, spacing: 18) {
-                            ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
-                            devices
-                            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-                        }
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 24)
-                    }
+            VStack {
+                LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+                    ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                    devices
+                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
                 }
+                .padding(.horizontal, 18)
             }
         }
-    }
-    
-    var gridList: some View {
-        ScrollView {
-            listTitle
-            LazyVGrid(columns: isLandscape ? phoneColumns : columns, spacing: 8) {
-                devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-            }
-            .padding(idiom == .phone ? 0 : 20)
-        }
-        .scrollIndicators(.hidden)
     }
     
     var networkPrompts: some View {
@@ -202,7 +161,6 @@ extension PeerDiscoveryView {
     }
 
     func setData() {
-        updateScreenSize()
         qrCodeImage = viewModel.getQrImage(size: 100)
         
         guard let qrCodeImage else {
@@ -214,16 +172,6 @@ extension PeerDiscoveryView {
             displayScale: displayScale, 
             type: .Keygen
         )
-    }
-    
-    private func updateScreenSize() {
-        screenWidth = UIScreen.main.bounds.size.width
-        
-        if screenWidth>1050 && idiom == .pad {
-            isLandscape = true
-        } else {
-            isLandscape = false
-        }
     }
 }
 #endif
