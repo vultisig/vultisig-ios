@@ -124,13 +124,10 @@ extension ElDoritoQuote {
                 asset: fees?.first?.asset ?? "UNKNOWN",
                 outbound: fees?.first(where: { $0.type == "outbound" })?.amount ?? "0",
                 total: fees?
-                    .compactMap { fee in
-                        if let amount = fee.amount, let intAmount = Int(amount) {
-                            return intAmount
-                        }
-                        return nil
-                    }
-                    .reduce(0, +).description ?? "0"
+                    .filter { $0.type == "outbound" || $0.type == "inbound" || $0.type == "affiliate" }
+                    .compactMap { Int($0.amount ?? "0") }
+                    .reduce(0, +)
+                    .description ?? "0"
             ),
             inboundAddress: inboundAddress,
             inboundConfirmationBlocks: nil, // Not provided in ElDoritoQuote
