@@ -150,6 +150,7 @@ extension PeerDiscoveryView {
                 PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
             }
         }
+        .padding(.horizontal, idiom == .pad ? 24 : 12)
     }
     
     var switchLink: some View {

@@ -31,7 +31,7 @@ struct PeerDiscoveryView: View {
     @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
     let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
     ]
     
     var body: some View {
