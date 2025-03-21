@@ -14,12 +14,6 @@ extension KeysignDiscoveryView {
     var container: some View {
         content
             .detectOrientation($orientation)
-            .onAppear {
-                setSize()
-            }
-            .onChange(of: screenWidth) { oldValue, newValue in
-                setSize()
-            }
     }
     
     var view: some View {
@@ -110,65 +104,6 @@ extension KeysignDiscoveryView {
     
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
-    }
-    
-    private func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth < 380 {
-            isPhoneSE = true
-        }
-    }
-    
-    private func setSize() {
-        getQRSize()
-        getQROutline()
-        maxSize()
-    }
-    
-    private func maxSize() {
-        minWidth = min(screenHeight*0.8, screenWidth/2.5)
-    }
-    
-    private func getQRSize() {
-        guard !isiOSAppOnMac else {
-            let width = screenWidth/2 - 100
-            qrSize = min(width, screenHeight/2)
-            return
-        }
-        
-        guard !isPhoneSE else {
-            qrSize = 250
-            return
-        }
-        
-        guard idiom == .phone else {
-            qrSize = screenWidth-335
-            return
-        }
-        
-        qrSize = screenWidth-80
-    }
-    
-    private func getQROutline() {
-        guard !isiOSAppOnMac else {
-            let width = screenWidth/2 + 10
-            qrOutlineSize = min(width, screenHeight/2 + 110)
-            return
-        }
-        
-        guard !isPhoneSE else {
-            qrOutlineSize = 280
-            return
-        }
-        
-        guard idiom == .phone else {
-            qrOutlineSize = screenWidth-300
-            return
-        }
-        
-        qrOutlineSize = screenWidth-45
     }
 }
 #endif

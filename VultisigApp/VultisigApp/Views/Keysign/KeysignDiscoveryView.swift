@@ -20,7 +20,6 @@ struct KeysignDiscoveryView: View {
     @State var isPhoneSE = false
     @State var isLoading = false
     @State var isiOSAppOnMac = false
-    @State var minWidth: CGFloat = 0
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
@@ -215,7 +214,6 @@ struct KeysignDiscoveryView: View {
             keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
         }
     }
-    
     
     func handleSelection(_ peer: String) {
         isLoading = true
