@@ -601,3 +601,5 @@
 "migrationFailed" = "Failed to migration GG20 vault to DKLS";
 "migrateVault" = "Migrate GG20 vault to DKLS";
 "loadingDetails" = "Loading details";
+"backupPart1" = "Backup Part 1";
+"backupPart2" = "Backup Part 2";
