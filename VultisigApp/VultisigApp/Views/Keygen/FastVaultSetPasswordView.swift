@@ -49,7 +49,7 @@ struct FastVaultSetPasswordView: View {
     }
     
     var title: some View {
-        Text(NSLocalizedString("password", comment: ""))
+        Text(NSLocalizedString("vultiserverPassword", comment: ""))
             .font(.body34BrockmannMedium)
             .foregroundColor(.neutral0)
     }
