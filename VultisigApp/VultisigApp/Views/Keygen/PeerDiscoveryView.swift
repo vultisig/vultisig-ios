@@ -17,15 +17,13 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State var isLandscape: Bool = true
-    @State var isPhoneSE = false
-    
-    @State var screenWidth: CGFloat = .zero
-    @State var screenHeight: CGFloat = .zero
     
     @State var showInfoSheet: Bool = false
     @State var hideBackButton: Bool = false
     @State var showDisclaimer: Bool = true
+    
+    @State var screenWidth: CGFloat = .zero
+    @State var screenHeight: CGFloat = .zero
     
     @Environment(\.displayScale) var displayScale
     
@@ -35,19 +33,12 @@ struct PeerDiscoveryView: View {
     
     @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     
-    let columns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-    ]
-    
-    let phoneColumns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160))
-    ]
-    
     let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 160, maximum: 400), spacing: 16)
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+    ]
+    
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
     ]
     
     var body: some View {
@@ -117,13 +108,7 @@ struct PeerDiscoveryView: View {
     }
     
     var views: some View {
-        ZStack {
-            if isLandscape {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
+        portraitContent
     }
     
     var qrCode: some View {
@@ -134,14 +119,9 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
-        ZStack {
-            if isLandscape {
-                gridList
-            } else {
-                scrollList
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        scrollList
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 24)
     }
     
     var lookingForDevices: some View {
@@ -203,16 +183,7 @@ struct PeerDiscoveryView: View {
         .font(.body22BrockmannMedium)
         .foregroundColor(.neutral0)
         .padding(.bottom, 8)
-        .padding(.horizontal, 24)
-    }
-    
-    func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth<380 {
-            isPhoneSE = true
-        }
+        .padding(.horizontal, 8)
     }
     
     private func showInfo() {

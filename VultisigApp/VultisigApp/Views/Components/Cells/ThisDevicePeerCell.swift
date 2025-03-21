@@ -15,17 +15,18 @@ struct ThisDevicePeerCell: View {
     }
     
     var cell: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        HStack(spacing: 8) {
             check
+            
+            VStack(alignment: .leading, spacing: 2) {
+                deviceId
+                description
+            }
+            
             Spacer()
-            deviceId
-            description
         }
         .padding(16)
-        .frame(
-            width: 150,
-            height: 100
-        )
+        .frame(height: 50)
         .background(Color.blue600)
         .cornerRadius(10)
         .overlay (
@@ -33,6 +34,7 @@ struct ThisDevicePeerCell: View {
                 .stroke(Color.alertTurquoise, lineWidth: 2)
         )
         .padding(1)
+        .padding(.horizontal)
     }
     
     var deviceId: some View {

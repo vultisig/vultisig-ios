@@ -20,14 +20,12 @@ struct KeysignDiscoveryView: View {
     @State var isPhoneSE = false
     @State var isLoading = false
     @State var isiOSAppOnMac = false
-    @State var minWidth: CGFloat = 0
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
     
-    @State var showDisclaimer: Bool = true
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var animationVM: RiveViewModel? = nil
@@ -40,7 +38,13 @@ struct KeysignDiscoveryView: View {
     
     @Environment(\.displayScale) var displayScale
     
-    let columns = [GridItem(.adaptive(minimum: 160))]
+    let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+    ]
+    
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+    ]
     
     var body: some View {
         container
@@ -48,16 +52,7 @@ struct KeysignDiscoveryView: View {
     
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-                    .onChange(of: proxy.size) { oldValue, newValue in
-                        setData(proxy)
-                    }
-            }
-            
+            background
             view
             
             if isLoading {
@@ -103,17 +98,6 @@ struct KeysignDiscoveryView: View {
         .background(Color.backgroundBlue)
     }
     
-    var landscapeContent: some View {
-        HStack(spacing: 8) {
-            QRCodeContent
-            
-            ScrollView {
-                list
-                    .padding(20)
-            }
-        }
-    }
-    
     var portraitContent: some View {
         ScrollView(showsIndicators: false) {
             paringQRCode
@@ -135,8 +119,6 @@ struct KeysignDiscoveryView: View {
         ZStack {
             if selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                KeysignDiscoveryDisclaimer(vault: vault, showAlert: $showDisclaimer)
             }
         }
         .padding(.horizontal)
@@ -170,7 +152,7 @@ struct KeysignDiscoveryView: View {
         animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     }
     
-    private func setData() async {
+    func setData() async {
         isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
         
         if VultisigRelay.IsRelayEnabled {
@@ -230,7 +212,6 @@ struct KeysignDiscoveryView: View {
         }
     }
     
-    
     func handleSelection(_ peer: String) {
         isLoading = true
         
@@ -247,15 +228,6 @@ struct KeysignDiscoveryView: View {
             }
             // startKeysign will determinate whether there is enough signers or not
             startKeysign()
-        }
-    }
-    
-    private func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth < 380 {
-            isPhoneSE = true
         }
     }
 }
