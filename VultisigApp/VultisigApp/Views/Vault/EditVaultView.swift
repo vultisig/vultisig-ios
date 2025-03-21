@@ -105,7 +105,7 @@ struct EditVaultView: View {
                 fastSignConfig: nil
             )
         } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
     
@@ -118,7 +118,7 @@ struct EditVaultView: View {
                 fastVaultExist: true
             )
         } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
 
