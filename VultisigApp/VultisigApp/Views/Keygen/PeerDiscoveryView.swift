@@ -22,6 +22,9 @@ struct PeerDiscoveryView: View {
     @State var hideBackButton: Bool = false
     @State var showDisclaimer: Bool = true
     
+    @State var screenWidth: CGFloat = .zero
+    @State var screenHeight: CGFloat = .zero
+    
     @Environment(\.displayScale) var displayScale
     
 #if os(iOS)
@@ -32,6 +35,10 @@ struct PeerDiscoveryView: View {
     
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+    ]
+    
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
     ]
     
     var body: some View {
@@ -114,6 +121,7 @@ struct PeerDiscoveryView: View {
     var list: some View {
         scrollList
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 24)
     }
     
     var lookingForDevices: some View {
