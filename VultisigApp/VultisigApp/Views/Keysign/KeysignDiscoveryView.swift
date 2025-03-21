@@ -156,7 +156,7 @@ struct KeysignDiscoveryView: View {
         animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     }
     
-    private func setData() async {
+    func setData() async {
         isiOSAppOnMac = ProcessInfo.processInfo.isiOSAppOnMac
         
         if VultisigRelay.IsRelayEnabled {
