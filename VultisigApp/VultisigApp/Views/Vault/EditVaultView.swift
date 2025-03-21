@@ -105,7 +105,20 @@ struct EditVaultView: View {
                 fastSignConfig: nil
             )
         } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
+        }
+    }
+    
+    var migrateFastVault: some View {
+        NavigationLink {
+            FastVaultEmailView(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastVaultExist: true
+            )
+        } label: {
+            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
 

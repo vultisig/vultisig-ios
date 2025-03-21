@@ -141,4 +141,21 @@ final class FastVaultService {
             return false
         }
     }
+    
+    func migrate(
+        publicKeyECDSA: String,
+        sessionID: String,
+        hexEncryptionKey: String,
+        encryptionPassword:String,
+        email: String) {
+        let req = MigrationRequest(public_key: publicKeyECDSA,
+                                 session_id: sessionID,
+                                 hex_encryption_key: hexEncryptionKey,
+                                 encryption_password: encryptionPassword,
+                                 email: email)
+        
+        Utils.sendRequest(urlString: "\(endpoint)/migrate", method: "POST", headers: [:], body: req) { _ in
+            print("Send migration request to Vultiserver successfully")
+        }
+    }
 }
