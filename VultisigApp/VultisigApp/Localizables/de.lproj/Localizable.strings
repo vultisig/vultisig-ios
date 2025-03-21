@@ -5,7 +5,7 @@
 "emailSentTo" = "Gesendet an %@";
 "changeEmailAndRestart" = "E-Mail ändern und Keygen neu starten";
 "setPasswordHintTitle" = "Optionalen Hinweis hinzufügen";
-"setPasswordHintSubtitle" = "Dieser wird angezeigt, falls du dein Passwort vergisst";
+"setPasswordHintSubtitle" = "Dies wird angezeigt, falls Sie Ihr Passwort vergessen.";
 "vaultExistsError" = "Ein Tresor mit demselben Namen existiert bereits.\nBitte versuchen Sie einen anderen Namen.";
 "noGasEstimation" = "Keine Gas-Schätzung möglich. Bitte aktualisieren Sie die Seite.";
 "monthlyBackupTitle" = "Vergessen Sie nicht, Ihre\nTresoranteile zu sichern und die Vollständigkeit zu überprüfen.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Du musst den Bedingungen zustimmen.";
 "confirmToSign" = "Bestätigen, um die Nachricht zu unterschreiben?";
 "unableToStartKeysignProcess" = "Der Prozess der Unterzeichnung der Schlüssel konnte aufgrund fehlender Informationen nicht gestartet werden.";
-"transactionComplete" = "Transaktion abgeschlossen";
+"transactionComplete" = "Erledigt";
 "transactions" = "Transaktionen";
 "cannotFindTransactions" = "Transaktionen können nicht gefunden werden";
 "transactionID" = "Transaktions-ID";
@@ -243,7 +243,7 @@
 "balance" = "Guthaben";
 "provider" = "Anbieter";
 "polkadotExistentialDepositError" = "Stellen Sie sicher, dass genügend Mittel vorhanden sind, um die Gebühren zu decken. Wenn das Guthaben eines Kontos unter 1 DOT (Existenzeinlage) fällt, wird das Konto deaktiviert und verbleibende Gelder werden verloren gehen. Sie können die Adresse jederzeit mit einer neuen Einzahlung über dem Existenzeinlage wieder aktivieren. Dies wird jedoch die verlorenen Gelder nicht wiederherstellen.";
-"rippleExistentialDepositError" = "Stellen Sie sicher, dass Sie genügend Mittel zur Deckung der Gebühren zurücklassen. Wenn der Kontostand unter 1 XRP (Existenzieller Einzahlungsbetrag) fällt, wird das Konto deaktiviert (geerntet) und alle verbleibenden Mittel gehen verloren. Sie können die Adresse jederzeit mit einer neuen Einzahlung, die höher ist als der existenzielle Einzahlungsbetrag, wieder aktivieren. Dies wird jedoch die verlorenen Mittel nicht wiederherstellen.";
+"rippleExistentialDepositError" = "XRP erfordert ein Mindestguthaben von 1 XRP. Die Blockchain blockiert jede Transaktion, die das Guthaben unter diesen Betrag senken würde. Um das gesamte Guthaben zu senden, muss das Konto gelöscht werden.";
 "noCameraPermissionError" = "Kameraberechtigung verweigert.\n\nBitte aktiviere sie in den Einstellungen.";
 "openSettings" = "Einstellungen öffnen";
 "fetchingVaultDetails" = "Tresordetails werden abgerufen";
@@ -259,7 +259,7 @@
 "reviewConditionsMessage" = "Bitte überprüfe und stimme allen aufgeführten Bedingungen zu.";
 "function" = "Funktion";
 "enterPassword" = "Passwort eingeben";
-"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt dein FastSign Share";
+"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihren Tresor.";
 "fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt dein FastSign Share";
 "passwordProtectBackup" = "Sichern Sie Ihre Sicherung mit einem Passwort";
 "errorSavingFile" = "Fehler beim Speichern der Datei";
@@ -488,10 +488,10 @@
 "invalidEmailPleaseCheck" = "Ungültige E-Mail, bitte überprüfen.";
 "emptyEmailPleaseCheck" = "Leere E-Mail, bitte überprüfen.";
 "enterYourEmail" = "Geben Sie Ihre E-Mail ein";
-"enterYourEmailDescription" = "Diese E-Mail wird nur verwendet, um das Server-Backup zu senden";
+"enterYourEmailDescription" = "Diese E-Mail wird nur zum Senden des Server-Backups verwendet.";
 "PasswordCannotBeReset" = "Passwort kann nicht zurückgesetzt oder wiederhergestellt werden";
 "moreInfo" = "Mehr Infos";
-"moreInfoDescription" = "Dies geschieht, weil das Passwort die Backup-Datei lokal verschlüsselt, ähnlich wie eine Festplatte. Im nächsten Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
+"moreInfoDescription" = "Das liegt daran, dass das Passwort die Sicherungsdatei lokal verschlüsselt, ähnlich wie bei der Verschlüsselung einer Festplatte. Im nächsten Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Minute dauern";
 "enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";

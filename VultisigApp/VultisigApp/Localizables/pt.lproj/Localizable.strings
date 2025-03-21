@@ -5,7 +5,7 @@
 "emailSentTo" = "Enviado para %@";
 "changeEmailAndRestart" = "Alterar email e reiniciar o keygen";
 "setPasswordHintTitle" = "Adicionar uma dica opcional";
-"setPasswordHintSubtitle" = "Isso será mostrado caso você esqueça sua senha";
+"setPasswordHintSubtitle" = "Isso será mostrado caso você esqueça sua senha.";
 "vaultExistsError" = "Um cofre com o mesmo nome já existe.\nPor favor, tente um nome diferente.";
 "noGasEstimation" = "Não é possível estimar o gás. Por favor, atualize a página.";
 "monthlyBackupTitle" = "Não se esqueça de fazer backup\ndas partes do seu cofre e verificar sua integridade.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Você deve concordar com os termos.";
 "confirmToSign" = "Confirmar para assinar a mensagem?";
 "unableToStartKeysignProcess" = "Não foi possível iniciar o processo de assinatura de chave devido à falta de informações.";
-"transactionComplete" = "Transação Completa";
+"transactionComplete" = "Feito";
 "transactions" = "Transações";
 "cannotFindTransactions" = "Não é possível Encontrar Transações";
 "transactionID" = "ID de Transação";
@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Carregar da galeria";
 "uploadFromFiles" = "Selecione arquivos";
 "polkadotExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 DOT (Depósito Existencial), a conta será desativada (removida) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
-"rippleExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 XRP (Depósito Existencial), a conta será desativada (ceifada) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
+"rippleExistentialDepositError" = "A XRP exige um saldo mínimo de 1 XRP. A blockchain bloqueará qualquer transação que reduza o saldo abaixo desse valor. Para enviar o saldo completo, a conta precisa ser excluída.";
 "noCameraPermissionError" = "Permissão para a câmera negada.\n\nPor favor, ative-a nas Configurações.";
 "openSettings" = "Abrir Configurações";
 "fetchingVaultDetails" = "Buscando detalhes do cofre";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "function" = "função";
 "enterPassword" = "Digite a senha";
-"fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastSign";
+"fastVaultEnterDisclaimer" = "Esta senha descriptografa seu cofre.";
 "fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastSign Share";
 "passwordProtectBackup" = "Proteja seu backup com uma senha";
 "errorSavingFile" = "Erro ao salvar o arquivo";
@@ -472,10 +472,10 @@
 "invalidEmailPleaseCheck" = "E-mail inválido, verifique.";
 "emptyEmailPleaseCheck" = "E-mail vazio, verifique.";
 "enterYourEmail" = "Digite seu e-mail";
-"enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor";
+"enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor.";
 "PasswordCannotBeReset" = "A senha não pode ser redefinida ou recuperada";
 "moreInfo" = "Mais informações";
-"moreInfoDescription" = "Isso acontece porque a senha criptografa o arquivo de backup localmente, como a criptografia de um disco rígido. Na próxima etapa, você terá a possibilidade de adicionar uma dica.";
+"moreInfoDescription" = "Isso acontece porque a senha criptografa o arquivo de backup localmente, como se estivesse criptografando um disco rígido. Na próxima etapa, você terá a possibilidade de adicionar uma dica.";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um minuto";
 "enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";

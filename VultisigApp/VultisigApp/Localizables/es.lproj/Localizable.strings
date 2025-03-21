@@ -5,7 +5,7 @@
 "emailSentTo" = "Enviado a %@";
 "changeEmailAndRestart" = "Cambiar correo electrónico y reiniciar keygen";
 "setPasswordHintTitle" = "Añadir una pista opcional";
-"setPasswordHintSubtitle" = "Se mostrará en caso de que olvides tu contraseña";
+"setPasswordHintSubtitle" = "Esto se mostrará en caso de que olvides tu contraseña.";
 "vaultExistsError" = "Ya existe una bóveda con el mismo nombre.\nPor favor, intente con un nombre diferente.";
 "noGasEstimation" = "No es posible estimar el gas. Por favor, actualice la página.";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
 "confirmToSign" = "Confirmar para firmar el mensaje?";
 "unableToStartKeysignProcess" = "No se pudo iniciar el proceso de firma de clave debido a información faltante.";
-"transactionComplete" = "Transacción Completa";
+"transactionComplete" = "Hecho";
 "transactions" = "Transacciones";
 "cannotFindTransactions" = "No se Pueden Encontrar Transacciones";
 "transactionID" = "ID de Transacción";
@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Subir desde la galería";
 "uploadFromFiles" = "Seleccionar archivos";
 "polkadotExistentialDepositError" = "Asegúrese de dejar suficientes fondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 DOT (Depósito Existencial), la cuenta será desactivada (eliminada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
-"rippleExistentialDepositError" = "Asegúrese de dejar sufondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 XRP (Depósito Existencial), la cuenta será desactivada (segada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
+"rippleExistentialDepositError" = "XRP requiere un saldo mínimo de 1 XRP. La blockchain bloqueará cualquier transacción que reduzca el saldo por debajo de esa cantidad. Para enviar el saldo completo, la cuenta debe ser eliminada.";
 "noCameraPermissionError" = "Permiso para la cámara denegado.\n\nPor favor, actívalo en la Configuración.";
 "openSettings" = "Abrir Configuración";
 "fetchingVaultDetails" = "Obteniendo detalles del almacén";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "function" = "función";
 "enterPassword" = "Introduce la contraseña";
-"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastSign";
+"fastVaultEnterDisclaimer" = "Esta contraseña descifra tu bóveda.";
 "fastVaultSetDisclaimer" = "Esta contraseña encripta su FastSign Share";
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "errorSavingFile" = "Error al guardar el archivo";
@@ -471,10 +471,10 @@
 "invalidEmailPleaseCheck" = "Correo electrónico no válido, por favor verifique.";
 "emptyEmailPleaseCheck" = "Campo de correo electrónico vacío, por favor verifique.";
 "enterYourEmail" = "Introduce tu correo electrónico";
-"enterYourEmailDescription" = "Este correo solo se usa para enviar la copia de seguridad del servidor";
+"enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";
 "PasswordCannotBeReset" = "La contraseña no se puede restablecer ni recuperar";
 "moreInfo" = "Más información";
-"moreInfoDescription" = "Esto ocurre porque la contraseña cifra el archivo de respaldo localmente, como si cifraras un disco duro. En el siguiente paso, tendrás la posibilidad de agregar una pista.";
+"moreInfoDescription" = "Esto es porque la contraseña cifra el archivo de copia de seguridad localmente, como al cifrar un disco duro. En el siguiente paso, tienes la posibilidad de añadir una pista.";
 "connectingWithServer..." = "Conectando con el servidor...";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
 "enter5DigitVerificationCode" = "Introduce el código de 4 dígitos que te enviamos por correo electrónico";

@@ -14,12 +14,6 @@ extension KeysignDiscoveryView {
     var container: some View {
         content
             .detectOrientation($orientation)
-            .onAppear {
-                setSize()
-            }
-            .onChange(of: screenWidth) { oldValue, newValue in
-                setSize()
-            }
     }
     
     var view: some View {
@@ -36,14 +30,12 @@ extension KeysignDiscoveryView {
         .blur(radius: isLoading ? 1 : 0)
     }
     
+    var background: some View {
+        Background()
+    }
+    
     var orientedContent: some View {
-        ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight || isiOSAppOnMac {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
+        portraitContent
     }
     
     var QRCodeContent: some View {
@@ -58,10 +50,7 @@ extension KeysignDiscoveryView {
             .resizable()
             .frame(maxWidth: 500, maxHeight: 500)
             .aspectRatio(contentMode: .fill)
-            .padding(16)
-            .background(Color.clear)
-            .cornerRadius(38)
-            .padding(2)
+            .padding(24)
     }
     
     var signButton: some View {
@@ -87,7 +76,7 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            LazyVGrid(columns: columns, spacing: 18) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
@@ -115,56 +104,6 @@ extension KeysignDiscoveryView {
     
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
-    }
-    
-    private func setSize() {
-        getQRSize()
-        getQROutline()
-        maxSize()
-    }
-    
-    private func maxSize() {
-        minWidth = min(screenHeight*0.8, screenWidth/2.5)
-    }
-    
-    private func getQRSize() {
-        guard !isiOSAppOnMac else {
-            let width = screenWidth/2 - 100
-            qrSize = min(width, screenHeight/2)
-            return
-        }
-        
-        guard !isPhoneSE else {
-            qrSize = 250
-            return
-        }
-        
-        guard idiom == .phone else {
-            qrSize = screenWidth-335
-            return
-        }
-        
-        qrSize = screenWidth-80
-    }
-    
-    private func getQROutline() {
-        guard !isiOSAppOnMac else {
-            let width = screenWidth/2 + 10
-            qrOutlineSize = min(width, screenHeight/2 + 110)
-            return
-        }
-        
-        guard !isPhoneSE else {
-            qrOutlineSize = 280
-            return
-        }
-        
-        guard idiom == .phone else {
-            qrOutlineSize = screenWidth-300
-            return
-        }
-        
-        qrOutlineSize = screenWidth-45
     }
 }
 #endif

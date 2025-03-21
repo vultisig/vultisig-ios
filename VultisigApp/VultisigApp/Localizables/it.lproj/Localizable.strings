@@ -5,7 +5,7 @@
 "emailSentTo" = "Inviato a %@";
 "changeEmailAndRestart" = "Cambia email e riavvia il keygen";
 "setPasswordHintTitle" = "Aggiungi un suggerimento opzionale";
-"setPasswordHintSubtitle" = "Verrà mostrato nel caso dimentichi la password";
+"setPasswordHintSubtitle" = "Questo verrà mostrato nel caso in cui dimentichi la tua password.";
 "vaultExistsError" = "Un caveau con lo stesso nome esiste già.\nSi prega di provare un nome diverso.";
 "noGasEstimation" = "Nessuna stima del gas possibile. Si prega di aggiornare la pagina.";
 "monthlyBackupTitle" = "Non dimenticare di eseguire il backup delle\nquote del tuo caveau e verificarne la completezza.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Devi accettare i termini.";
 "confirmToSign" = "Conferma per firmare il messaggio?";
 "unableToStartKeysignProcess" = "Impossibile avviare il processo di firma chiave a causa della mancanza di informazioni.";
-"transactionComplete" = "Transazione Completata";
+"transactionComplete" = "Fatto";
 "transactions" = "Transazioni";
 "cannotFindTransactions" = "Impossibile Trovare Transazioni";
 "transactionID" = "ID Transazione";
@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Carica dalla galleria";
 "uploadFromFiles" = "Seleziona i file";
 "polkadotExistentialDepositError" = "Assicurati di lasciare fondi sufficienti per coprire le commissioni. Se il saldo di un conto scende sotto 1 DOT (Deposito Esistenziale), il conto verrà disattivato (cancellato) e eventuali fondi rimanenti saranno persi. Puoi riattivare l'indirizzo con un nuovo deposito maggiore del deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
-"rippleExistentialDepositError" = "Assicurati di lasciare fondi sufficienti a coprire le commissioni. Se il saldo di un conto scende al di sotto di 1 XRP (Deposito Esistenziale), il conto verrà disattivato (falciato) e tutti i fondi rimanenti andranno persi. Puoi riattivare l'indirizzo con un nuovo deposito superiore al deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
+"rippleExistentialDepositError" = "XRP richiede un saldo minimo di 1 XRP. La blockchain bloccherà qualsiasi transazione che riduca il saldo al di sotto di questa soglia. Per inviare l’intero saldo, l’account deve essere eliminato.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
 "openSettings" = "Apri Impostazioni";
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "function" = "funzione";
 "enterPassword" = "Inserisci la password";
-"fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastSign";
+"fastVaultEnterDisclaimer" = "Questa password decifra il tuo caveau.";
 "fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastSign";
 "passwordProtectBackup" = "Proteggi il tuo backup con una password";
 "errorSavingFile" = "Errore nel salvataggio del file";
@@ -471,10 +471,10 @@
 "invalidEmailPleaseCheck" = "E-mail non valida, controlla.";
 "emptyEmailPleaseCheck" = "E-mail vuota, controlla.";
 "enterYourEmail" = "Inserisci la tua e-mail";
-"enterYourEmailDescription" = "Questa e-mail viene utilizzata solo per inviare il backup del server";
+"enterYourEmailDescription" = "Questa email viene utilizzata solo per inviare il backup del server.";
 "PasswordCannotBeReset" = "La password non può essere reimpostata o recuperata";
 "moreInfo" = "Maggiori informazioni";
-"moreInfoDescription" = "Ciò accade perché la password cripta il file di backup localmente, come la crittografia di un disco rigido. Nel passaggio successivo hai la possibilità di aggiungere un suggerimento.";
+"moreInfoDescription" = "Questo perché la password cripta il file di backup localmente, come la crittografia di un disco rigido. Nel passaggio successivo hai la possibilità di aggiungere un suggerimento.";
 "connectingWithServer..." = "Connessione al server in corso...";
 "shouldOnlyTakeAMinute..." = "Dovrebbe richiedere solo un minuto";
 "enter5DigitVerificationCode" = "Inserisci il codice di 4 cifre che ti abbiamo inviato via e-mail";
