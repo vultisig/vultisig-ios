@@ -26,7 +26,6 @@ struct KeysignDiscoveryView: View {
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
     
-    @State var showDisclaimer: Bool = true
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var animationVM: RiveViewModel? = nil
@@ -120,8 +119,6 @@ struct KeysignDiscoveryView: View {
         ZStack {
             if selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                KeysignDiscoveryDisclaimer(vault: vault, showAlert: $showDisclaimer)
             }
         }
         .padding(.horizontal)
