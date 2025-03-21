@@ -27,7 +27,11 @@ extension EditVaultView {
                 backupVault
                 editVault
                 if vault.libType == nil || vault.libType == .GG20 {
-                    migrateVault
+                    if vault.isFastVault {
+                        migrateFastVault
+                    } else {
+                        migrateVault
+                    }
                 }
                 reshareVault
                 if vault.isFastVault {

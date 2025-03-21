@@ -5,7 +5,7 @@
 "emailSentTo" = "Enviado a %@";
 "changeEmailAndRestart" = "Cambiar correo electrónico y reiniciar keygen";
 "setPasswordHintTitle" = "Añadir una pista opcional";
-"setPasswordHintSubtitle" = "Se mostrará en caso de que olvides tu contraseña";
+"setPasswordHintSubtitle" = "Esto se mostrará en caso de que olvides tu contraseña.";
 "vaultExistsError" = "Ya existe una bóveda con el mismo nombre.\nPor favor, intente con un nombre diferente.";
 "noGasEstimation" = "No es posible estimar el gas. Por favor, actualice la página.";
 "monthlyBackupTitle" = "No olvides hacer una copia de seguridad de\nlas partes de tu bóveda y verificar su integridad.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Debes estar de acuerdo con los términos.";
 "confirmToSign" = "Confirmar para firmar el mensaje?";
 "unableToStartKeysignProcess" = "No se pudo iniciar el proceso de firma de clave debido a información faltante.";
-"transactionComplete" = "Transacción Completa";
+"transactionComplete" = "Hecho";
 "transactions" = "Transacciones";
 "cannotFindTransactions" = "No se Pueden Encontrar Transacciones";
 "transactionID" = "ID de Transacción";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "function" = "función";
 "enterPassword" = "Introduce la contraseña";
-"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastSign";
+"fastVaultEnterDisclaimer" = "Esta contraseña descifra tu bóveda.";
 "fastVaultSetDisclaimer" = "Esta contraseña encripta su FastSign Share";
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "errorSavingFile" = "Error al guardar el archivo";
@@ -471,10 +471,10 @@
 "invalidEmailPleaseCheck" = "Correo electrónico no válido, por favor verifique.";
 "emptyEmailPleaseCheck" = "Campo de correo electrónico vacío, por favor verifique.";
 "enterYourEmail" = "Introduce tu correo electrónico";
-"enterYourEmailDescription" = "Este correo solo se usa para enviar la copia de seguridad del servidor";
+"enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";
 "PasswordCannotBeReset" = "La contraseña no se puede restablecer ni recuperar";
 "moreInfo" = "Más información";
-"moreInfoDescription" = "Esto ocurre porque la contraseña cifra el archivo de respaldo localmente, como si cifraras un disco duro. En el siguiente paso, tendrás la posibilidad de agregar una pista.";
+"moreInfoDescription" = "Esto es porque la contraseña cifra el archivo de copia de seguridad localmente, como al cifrar un disco duro. En el siguiente paso, tienes la posibilidad de añadir una pista.";
 "connectingWithServer..." = "Conectando con el servidor...";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
 "enter5DigitVerificationCode" = "Introduce el código de 4 dígitos que te enviamos por correo electrónico";
