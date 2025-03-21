@@ -5,7 +5,7 @@
 "emailSentTo" = "Poslano na %@";
 "changeEmailAndRestart" = "Promijeni email i ponovno pokreni keygen";
 "setPasswordHintTitle" = "Dodajte opcionalni podsjetnik";
-"setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite lozinku";
+"setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite svoju lozinku.";
 "vaultExistsError" = "Sef s istim imenom već postoji.\nPokušajte s drugim imenom.";
 "noGasEstimation" = "Nije moguće procijeniti gas. Molimo osvježite stranicu.";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "confirmToSign" = "Potvrdite za potpis poruke?";
 "unableToStartKeysignProcess" = "Nije moguće pokrenuti proces potpisa ključa zbog nedostatka informacija.";
-"transactionComplete" = "Transakcija završena";
+"transactionComplete" = "Gotovo";
 "transactions" = "Transakcije";
 "cannotFindTransactions" = "Ne mogu pronaći transakcije";
 "transactionID" = "ID transakcije";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
-"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastSign";
+"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš trezor.";
 "fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastSign Share";
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
@@ -471,10 +471,10 @@
 "invalidEmailPleaseCheck" = "Neispravna e-mail adresa, provjerite.";
 "emptyEmailPleaseCheck" = "Prazno polje za e-mail, provjerite.";
 "enterYourEmail" = "Unesite svoju e-mail adresu";
-"enterYourEmailDescription" = "Ova e-mail adresa se koristi samo za slanje sigurnosne kopije servera";
+"enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";
 "PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
 "moreInfo" = "Više informacija";
-"moreInfoDescription" = "Ovo se događa jer lozinka šifrira sigurnosnu kopiju lokalno, slično enkripciji tvrdog diska. U sljedećem koraku imate mogućnost dodavanja savjeta.";
+"moreInfoDescription" = "To je zato što lozinka lokalno šifrira datoteku sigurnosne kopije, slično kao kod šifriranja tvrdog diska. U sljedećem koraku imate mogućnost dodati savjet.";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
 "enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
