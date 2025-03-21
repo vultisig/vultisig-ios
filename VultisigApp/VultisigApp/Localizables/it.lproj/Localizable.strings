@@ -555,3 +555,5 @@
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
 "startUsingVault" = "Usa il Vault";
 "loadingDetails" = "Caricamento dettagli";
+"backupPart1" = "Backup Parte 1";
+"backupPart2" = "Backup Parte 2";
