@@ -30,5 +30,23 @@ extension SendCryptoVerifyView {
         .padding(.horizontal, 16)
         .padding(.bottom, idiom == .pad ? 30 : 0)
     }
+    
+    var fastVaultButton: some View {
+        Button {
+            fastPasswordPresented = true
+        } label: {
+            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
+        }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
+        .padding(.horizontal, 16)
+        .sheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $tx.fastVaultPassword,
+                vault: vault,
+                onSubmit: { signPressed() }
+            )
+        }
+    }
 }
 #endif
