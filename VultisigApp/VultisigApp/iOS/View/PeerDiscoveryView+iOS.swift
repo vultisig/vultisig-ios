@@ -54,17 +54,6 @@ extension PeerDiscoveryView {
         }
     }
     
-    var landscapeContent: some View {
-        HStack {
-            qrCode
-            
-            VStack {
-                list
-                    .padding(20)
-            }
-        }
-    }
-    
     var paringBarcode: some View {
         ZStack {
             animation
@@ -92,15 +81,14 @@ extension PeerDiscoveryView {
         VStack {
             listTitle
             
-            VStack {
-                LazyVGrid(columns: adaptiveColumns, spacing: 18) {
-                    ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
-                    devices
-                    EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-                }
-                .padding(.horizontal, 18)
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
+            .padding(.horizontal, 18)
         }
+        .frame(maxWidth: .infinity)
     }
     
     var networkPrompts: some View {

@@ -183,7 +183,7 @@ struct PeerDiscoveryView: View {
         .font(.body22BrockmannMedium)
         .foregroundColor(.neutral0)
         .padding(.bottom, 8)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 8)
     }
     
     private func showInfo() {

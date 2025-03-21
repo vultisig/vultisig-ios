@@ -17,6 +17,7 @@ extension PeerDiscoveryView {
                     .onAppear {
                         screenWidth = proxy.size.width
                         screenHeight = proxy.size.height
+                        setData()
                     }
                     .onChange(of: proxy.size.width) { oldValue, newValue in
                         screenWidth = proxy.size.width
@@ -84,7 +85,6 @@ extension PeerDiscoveryView {
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
