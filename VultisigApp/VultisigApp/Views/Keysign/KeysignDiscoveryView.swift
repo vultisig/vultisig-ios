@@ -40,7 +40,13 @@ struct KeysignDiscoveryView: View {
     
     @Environment(\.displayScale) var displayScale
     
-    let columns = [GridItem(.adaptive(minimum: 160))]
+    let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+    ]
+    
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+    ]
     
     var body: some View {
         container
@@ -48,16 +54,7 @@ struct KeysignDiscoveryView: View {
     
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-                    .onChange(of: proxy.size) { oldValue, newValue in
-                        setData(proxy)
-                    }
-            }
-            
+            background
             view
             
             if isLoading {
@@ -101,17 +98,6 @@ struct KeysignDiscoveryView: View {
             switchLink
         }
         .background(Color.backgroundBlue)
-    }
-    
-    var landscapeContent: some View {
-        HStack(spacing: 8) {
-            QRCodeContent
-            
-            ScrollView {
-                list
-                    .padding(20)
-            }
-        }
     }
     
     var portraitContent: some View {
@@ -247,15 +233,6 @@ struct KeysignDiscoveryView: View {
             }
             // startKeysign will determinate whether there is enough signers or not
             startKeysign()
-        }
-    }
-    
-    private func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth < 380 {
-            isPhoneSE = true
         }
     }
 }

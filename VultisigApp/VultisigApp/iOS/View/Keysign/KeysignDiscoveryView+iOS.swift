@@ -36,14 +36,12 @@ extension KeysignDiscoveryView {
         .blur(radius: isLoading ? 1 : 0)
     }
     
+    var background: some View {
+        Background()
+    }
+    
     var orientedContent: some View {
-        ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight || isiOSAppOnMac {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
+        portraitContent
     }
     
     var QRCodeContent: some View {
@@ -58,10 +56,7 @@ extension KeysignDiscoveryView {
             .resizable()
             .frame(maxWidth: 500, maxHeight: 500)
             .aspectRatio(contentMode: .fill)
-            .padding(16)
-            .background(Color.clear)
-            .cornerRadius(38)
-            .padding(2)
+            .padding(24)
     }
     
     var signButton: some View {
@@ -87,7 +82,7 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            LazyVGrid(columns: columns, spacing: 18) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
@@ -115,6 +110,15 @@ extension KeysignDiscoveryView {
     
     var switchLink: some View {
         SwitchToLocalLink(selectedNetwork: $selectedNetwork)
+    }
+    
+    private func setData(_ proxy: GeometryProxy) {
+        screenWidth = proxy.size.width
+        screenHeight = proxy.size.height
+        
+        if screenWidth < 380 {
+            isPhoneSE = true
+        }
     }
     
     private func setSize() {

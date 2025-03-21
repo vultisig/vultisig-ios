@@ -13,6 +13,18 @@ extension KeysignDiscoveryView {
         content
     }
     
+    var background: some View {
+        GeometryReader { proxy in
+            Background()
+                .onAppear {
+                    setData(proxy)
+                }
+                .onChange(of: proxy.size) { oldValue, newValue in
+                    setData(proxy)
+                }
+        }
+    }
+    
     var view: some View {
         VStack {
             switch viewModel.status {
@@ -72,7 +84,7 @@ extension KeysignDiscoveryView {
         VStack {
             listTitle
             
-            LazyVGrid(columns: columns, spacing: 18) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
                 ThisDevicePeerCell(deviceName: "Mac")
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
