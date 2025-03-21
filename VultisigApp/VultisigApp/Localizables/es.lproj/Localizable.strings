@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Subir desde la galería";
 "uploadFromFiles" = "Seleccionar archivos";
 "polkadotExistentialDepositError" = "Asegúrese de dejar suficientes fondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 DOT (Depósito Existencial), la cuenta será desactivada (eliminada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
-"rippleExistentialDepositError" = "Asegúrese de dejar sufondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 XRP (Depósito Existencial), la cuenta será desactivada (segada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
+"rippleExistentialDepositError" = "XRP requiere un saldo mínimo de 1 XRP. La blockchain bloqueará cualquier transacción que reduzca el saldo por debajo de esa cantidad. Para enviar el saldo completo, la cuenta debe ser eliminada.";
 "noCameraPermissionError" = "Permiso para la cámara denegado.\n\nPor favor, actívalo en la Configuración.";
 "openSettings" = "Abrir Configuración";
 "fetchingVaultDetails" = "Obteniendo detalles del almacén";

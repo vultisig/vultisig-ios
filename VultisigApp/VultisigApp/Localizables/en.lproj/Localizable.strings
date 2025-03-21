@@ -247,7 +247,7 @@
 "balance" = "Balance";
 "provider" = "Provider";
 "polkadotExistentialDepositError" = "Ensure you leave enough funds to cover the fees. If an account balance falls below 1 DOT (Existential Deposit), the account will be deactivated (reaped) and any remaining funds will be lost. You can reactivate the address with a new deposit larger than the existential deposit at any time. However, this will not recover the lost funds.";
-"rippleExistentialDepositError" = "Ensure you leave enough funds to cover the fees. If an account balance falls below 1 XRP (Existential Deposit), the account will be deactivated (reaped) and any remaining funds will be lost. You can reactivate the address with a new deposit larger than the existential deposit at any time. However, this will not recover the lost funds.";
+"rippleExistentialDepositError" = "XRP requires a minimum balance of 1 XRP. The blockchain will block any transaction that would reduce the account balance below this amount. To send your full balance, the account must be deleted.";
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
 "openSettings" = "Open Settings";
 "fetchingVaultDetails" = "Fetching Vault Details";
