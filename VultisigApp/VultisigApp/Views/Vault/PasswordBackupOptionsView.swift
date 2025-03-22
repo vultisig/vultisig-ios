@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct PasswordBackupOptionsView: View {
+    let vault: Vault
+    var isNewVault = false
+    
     var body: some View {
         ZStack {
             Background()
@@ -66,8 +69,12 @@ struct PasswordBackupOptionsView: View {
     }
     
     var withPasswordButton: some View {
-        Button {
-            
+        NavigationLink {
+            BackupPasswordSetupView(
+                vault: vault,
+                isNewVault: isNewVault,
+                showSkipPasswordButton: false
+            )
         } label: {
             withPasswordLabel
         }
@@ -83,5 +90,5 @@ struct PasswordBackupOptionsView: View {
 }
 
 #Preview {
-    PasswordBackupOptionsView()
+    PasswordBackupOptionsView(vault: Vault.example)
 }
