@@ -12,6 +12,7 @@ struct PasswordBackupOptionsView: View {
     var isNewVault = false
     
     @State var showSkipShareSheet = false
+    @State var homeLinkActive = false
     @State var navigationLinkActive = false
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
@@ -19,6 +20,9 @@ struct PasswordBackupOptionsView: View {
         ZStack {
             Background()
             content
+        }
+        .navigationDestination(isPresented: $homeLinkActive) {
+            HomeView(selectedVault: vault)
         }
         .navigationDestination(isPresented: $navigationLinkActive) {
             BackupVaultSuccessView(vault: vault)
@@ -104,7 +108,11 @@ struct PasswordBackupOptionsView: View {
     }
     
     func dismissView() {
-        navigationLinkActive = true
+        if isNewVault {
+            navigationLinkActive = true
+        } else {
+            homeLinkActive = true
+        }
     }
 }
 
