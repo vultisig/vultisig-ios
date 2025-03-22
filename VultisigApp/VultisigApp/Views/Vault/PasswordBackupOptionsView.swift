@@ -13,7 +13,6 @@ struct PasswordBackupOptionsView: View {
             Background()
             content
         }
-        .padding(24)
     }
     
     var content: some View {
@@ -22,6 +21,7 @@ struct PasswordBackupOptionsView: View {
             textContent
             buttons
         }
+        .padding(24)
     }
     
     var icon: some View {
@@ -29,6 +29,7 @@ struct PasswordBackupOptionsView: View {
             .font(.body28BrockmannMedium)
             .foregroundColor(.neutral0)
             .frame(width: 64, height: 64)
+            .background(Color.blue400)
             .cornerRadius(16)
     }
     
@@ -39,14 +40,16 @@ struct PasswordBackupOptionsView: View {
             
             Text(NSLocalizedString("doYouWantToAddPasswordDescription", comment: ""))
                 .font(.body14BrockmannMedium)
-                .opacity(0.8)
+                .opacity(0.6)
         }
         .foregroundColor(.neutral0)
+        .multilineTextAlignment(.center)
     }
     
     var buttons: some View {
         VStack(spacing: 12) {
             withoutPasswordButton
+            withPasswordButton
         }
     }
     
