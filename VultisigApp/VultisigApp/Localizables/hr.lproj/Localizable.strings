@@ -555,3 +555,5 @@
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
 "startUsingVault" = "Koristi trezor";
 "loadingDetails" = "Učitavanje detalja";
+"backupPart1" = "Sigurnosna kopija Dio 1";
+"backupPart2" = "Sigurnosna kopija Dio 2";
