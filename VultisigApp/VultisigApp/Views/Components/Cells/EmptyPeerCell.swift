@@ -25,16 +25,13 @@ struct EmptyPeerCell: View {
     }
     
     var cell: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        HStack(spacing: 8) {
             animation
-            Spacer()
             text
+            Spacer()
         }
         .padding(16)
-        .frame(
-            width: 150,
-            height: 100
-        )
+        .frame(height: 50)
         .background(Color.blue600)
         .cornerRadius(10)
         .overlay (
@@ -42,6 +39,7 @@ struct EmptyPeerCell: View {
                 .strokeBorder(Color.borderBlue, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
         )
         .padding(1)
+        .padding(.horizontal)
     }
     
     var text: some View {

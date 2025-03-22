@@ -5,7 +5,7 @@
 "emailSentTo" = "Poslano na %@";
 "changeEmailAndRestart" = "Promijeni email i ponovno pokreni keygen";
 "setPasswordHintTitle" = "Dodajte opcionalni podsjetnik";
-"setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite lozinku";
+"setPasswordHintSubtitle" = "Ovo će se prikazati u slučaju da zaboravite svoju lozinku.";
 "vaultExistsError" = "Sef s istim imenom već postoji.\nPokušajte s drugim imenom.";
 "noGasEstimation" = "Nije moguće procijeniti gas. Molimo osvježite stranicu.";
 "monthlyBackupTitle" = "Ne zaboravite napraviti sigurnosnu kopiju\ndijelova svog trezora i provjeriti njihovu cjelovitost.";
@@ -170,7 +170,7 @@
 "mustAgreeTermsError" = "Morate se složiti s uvjetima.";
 "confirmToSign" = "Potvrdite za potpis poruke?";
 "unableToStartKeysignProcess" = "Nije moguće pokrenuti proces potpisa ključa zbog nedostatka informacija.";
-"transactionComplete" = "Transakcija završena";
+"transactionComplete" = "Gotovo";
 "transactions" = "Transakcije";
 "cannotFindTransactions" = "Ne mogu pronaći transakcije";
 "transactionID" = "ID transakcije";
@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Prenesi iz galerije";
 "uploadFromFiles" = "Odaberi iz datoteka";
 "polkadotExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako stanje računa padne ispod 1 DOT (Egzistencijalni Depozit), račun će biti deaktiviran i preostala sredstva će biti izgubljena. Možete ponovno aktivirati adresu s novim depozitom većim od egzistencijalnog depozita u bilo kojem trenutku. Međutim, ovo neće vratiti izgubljena sredstva.";
-"rippleExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako saldo računa padne ispod 1 XRP-a (Egzistencijalni polog), račun će biti deaktiviran (pokošen) i sva preostala sredstva bit će izgubljena. Možete ponovno aktivirati adresu novim uplatama većim od egzistencijalnog pologa u bilo kojem trenutku. Međutim, to neće povratiti izgubljena sredstva.";
+"rippleExistentialDepositError" = "XRP zahtijeva minimalni saldo od 1 XRP. Blockchain će blokirati svaku transakciju koja bi smanjila stanje ispod tog iznosa. Za slanje cijelog iznosa račun mora biti izbrisan.";
 "noCameraPermissionError" = "Dopuštenje za kameru je odbijeno.\n\nMolimo omogućite ga u Postavkama.";
 "openSettings" = "Otvori Postavke";
 "fetchingVaultDetails" = "Dohvaćanje pojedinosti o spremištu";
@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
-"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastSign";
+"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš trezor.";
 "fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastSign Share";
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
@@ -471,10 +471,10 @@
 "invalidEmailPleaseCheck" = "Neispravna e-mail adresa, provjerite.";
 "emptyEmailPleaseCheck" = "Prazno polje za e-mail, provjerite.";
 "enterYourEmail" = "Unesite svoju e-mail adresu";
-"enterYourEmailDescription" = "Ova e-mail adresa se koristi samo za slanje sigurnosne kopije servera";
+"enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";
 "PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
 "moreInfo" = "Više informacija";
-"moreInfoDescription" = "Ovo se događa jer lozinka šifrira sigurnosnu kopiju lokalno, slično enkripciji tvrdog diska. U sljedećem koraku imate mogućnost dodavanja savjeta.";
+"moreInfoDescription" = "To je zato što lozinka lokalno šifrira datoteku sigurnosne kopije, slično kao kod šifriranja tvrdog diska. U sljedećem koraku imate mogućnost dodati savjet.";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
 "enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
@@ -555,3 +555,10 @@
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
 "startUsingVault" = "Koristi trezor";
 "loadingDetails" = "Učitavanje detalja";
+"backupPart1" = "Sigurnosna kopija Dio 1";
+"backupPart2" = "Sigurnosna kopija Dio 2";
+"vultiserverPassword" = "Vultiserver lozinka";
+"doYouWantToAddPassword" = "Želite li dodati lozinku za sigurnosne kopije trezora na uređaju?";
+"doYouWantToAddPasswordDescription" = "Preporučujemo da ne postavljate lozinku za sigurnosne kopije trezora uređaja – vaši podaci su sigurni ako su sigurnosne kopije pravilno pohranjene na različitim mjestima, što već pruža značajnu zaštitu. Zapamtite, lozinke za sigurnosne kopije ne mogu se vratiti ako ih zaboravite. Vaš izbor!";
+"backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
+"usePassword" = "Koristi lozinku";
