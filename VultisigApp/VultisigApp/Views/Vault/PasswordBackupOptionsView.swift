@@ -54,10 +54,26 @@ struct PasswordBackupOptionsView: View {
     }
     
     var withoutPasswordButton: some View {
+        Button {
+            
+        } label: {
+            withoutPasswordLabel
+        }
+    }
+    
+    var withoutPasswordLabel: some View {
         FilledButton(title: "backupWithoutPassword")
     }
     
     var withPasswordButton: some View {
+        Button {
+            
+        } label: {
+            withPasswordLabel
+        }
+    }
+    
+    var withPasswordLabel: some View {
         FilledButton(
             title: "usePassword",
             textColor: .neutral0,
