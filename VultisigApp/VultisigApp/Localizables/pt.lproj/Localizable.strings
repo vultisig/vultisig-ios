@@ -556,3 +556,5 @@
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
 "startUsingVault" = "Usar Cofre";
 "loadingDetails" = "Carregando detalhes";
+"backupPart1" = "Backup Parte 1";
+"backupPart2" = "Backup Parte 2";

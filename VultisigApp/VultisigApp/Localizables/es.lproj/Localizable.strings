@@ -555,3 +555,5 @@
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
 "startUsingVault" = "Usar Bóveda";
 "loadingDetails" = "Cargando detalles";
+"backupPart1" = "Copia de seguridad Parte 1";
+"backupPart2" = "Copia de seguridad Parte 2";

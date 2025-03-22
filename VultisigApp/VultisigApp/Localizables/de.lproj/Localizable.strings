@@ -572,3 +572,5 @@
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
 "startUsingVault" = "Tresor nutzen";
 "loadingDetails" = "Lade Details";
+"backupPart1" = "Backup Teil 1";
+"backupPart2" = "Backup Teil 2";
