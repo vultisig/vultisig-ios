@@ -574,3 +574,8 @@
 "loadingDetails" = "Lade Details";
 "backupPart1" = "Backup Teil 1";
 "backupPart2" = "Backup Teil 2";
+"vultiserverPassword" = "Vultiserver-Passwort";
+"doYouWantToAddPassword" = "Möchten Sie ein Passwort für Ihre Geräte-Tresoranteile hinzufügen?";
+"doYouWantToAddPasswordDescription" = "Wir empfehlen, kein Backup-Passwort für Geräte-Tresoranteile zu setzen – Ihre Daten sind sicher, wenn die Backups an verschiedenen Orten gespeichert werden, was bereits einen hohen Schutz bietet. Denken Sie daran, dass Backup-Passwörter nicht wiederhergestellt werden können, wenn Sie sie vergessen. Ihre Wahl!";
+"backupWithoutPassword" = "Backup ohne Passwort";
+"usePassword" = "Passwort verwenden";
