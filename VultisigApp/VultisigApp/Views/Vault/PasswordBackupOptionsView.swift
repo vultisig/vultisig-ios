@@ -11,10 +11,24 @@ struct PasswordBackupOptionsView: View {
     let vault: Vault
     var isNewVault = false
     
+    @State var showSkipShareSheet = false
+    @State var navigationLinkActive = false
+    @StateObject var backupViewModel = EncryptedBackupViewModel()
+    
     var body: some View {
         ZStack {
             Background()
             content
+        }
+        .navigationDestination(isPresented: $navigationLinkActive) {
+            BackupVaultSuccessView(vault: vault)
+        }
+        .onAppear {
+            backupViewModel.resetData()
+            handleSkipTap()
+        }
+        .onDisappear {
+            backupViewModel.resetData()
         }
     }
     
@@ -56,14 +70,6 @@ struct PasswordBackupOptionsView: View {
         }
     }
     
-    var withoutPasswordButton: some View {
-        Button {
-            
-        } label: {
-            withoutPasswordLabel
-        }
-    }
-    
     var withoutPasswordLabel: some View {
         FilledButton(title: "backupWithoutPassword")
     }
@@ -86,6 +92,19 @@ struct PasswordBackupOptionsView: View {
             textColor: .neutral0,
             background: .blue400
         )
+    }
+    
+    private func handleSkipTap() {
+        backupViewModel.encryptionPassword = ""
+        backupViewModel.exportFile(vault)
+    }
+    
+    func fileSaved() {
+        vault.isBackedUp = true
+    }
+    
+    func dismissView() {
+        navigationLinkActive = true
     }
 }
 
