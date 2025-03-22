@@ -557,3 +557,8 @@
 "loadingDetails" = "Učitavanje detalja";
 "backupPart1" = "Sigurnosna kopija Dio 1";
 "backupPart2" = "Sigurnosna kopija Dio 2";
+"vultiserverPassword" = "Vultiserver lozinka";
+"doYouWantToAddPassword" = "Želite li dodati lozinku za sigurnosne kopije trezora na uređaju?";
+"doYouWantToAddPasswordDescription" = "Preporučujemo da ne postavljate lozinku za sigurnosne kopije trezora uređaja – vaši podaci su sigurni ako su sigurnosne kopije pravilno pohranjene na različitim mjestima, što već pruža značajnu zaštitu. Zapamtite, lozinke za sigurnosne kopije ne mogu se vratiti ako ih zaboravite. Vaš izbor!";
+"backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
+"usePassword" = "Koristi lozinku";

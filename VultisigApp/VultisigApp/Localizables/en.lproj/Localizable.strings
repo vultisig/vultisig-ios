@@ -603,3 +603,8 @@
 "loadingDetails" = "Loading details";
 "backupPart1" = "Backup Part 1";
 "backupPart2" = "Backup Part 2";
+"vultiserverPassword" = "Vultiserver Password";
+"doYouWantToAddPassword" = "Do you want to add a password to your device vault shares? ";
+"doYouWantToAddPasswordDescription" = "We recommend that you do not set a backup password for device vault shares-your data is safe if the backups are properly stored in different locations, which is already a significant protection. Remember, backup passwords can't be recovered if you forget them. Your choice!";
+"backupWithoutPassword" = "Backup without password";
+"usePassword" = "Use password";

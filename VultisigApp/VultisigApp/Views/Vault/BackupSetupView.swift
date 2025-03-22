@@ -24,7 +24,7 @@ struct BackupSetupView: View {
     var body: some View {
         mainContent
             .navigationDestination(isPresented: $navigationLinkActive) {
-                BackupPasswordSetupView(vault: vault, isNewVault: isNewVault)
+                PasswordBackupOptionsView(vault: vault, isNewVault: isNewVault)
             }
             .onAppear {
                 animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
