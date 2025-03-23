@@ -183,9 +183,14 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func isDKLS(filename: String) -> Bool {
-        let regex = try! NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
-        let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
-        return matches.count > 0
+        do{
+            let regex = try NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
+            let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
+            return matches.count > 0
+        } catch {
+            print("Error checking if filename is a DKLS backup: \(error.localizedDescription)")
+            return false
+        }
     }
     
     func restoreVaultBak(modelContext: ModelContext,vaults: [Vault], vaultData: Data, defaultChains: [CoinMeta]) {
