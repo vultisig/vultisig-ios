@@ -57,7 +57,7 @@ class SwapTransaction: ObservableObject {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
             
-            if quote.notes.lowercased().contains("eldorito") || quote.memo.contains("base.") {
+            if toCoin.chain == .base {
                 return expected
             }
             
