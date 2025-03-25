@@ -177,9 +177,9 @@ struct SwapVerifyView: View {
 
     func getToAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
 

@@ -28,10 +28,7 @@ struct SwapService {
             
             if toCoin.chain == Chain.base {
                 
-                print("From Chain Id \(fromCoin.chain.chainID), To Chain Id \(toCoin.chain.chainID)")
-                
-                guard let fromChainID = fromCoin.chain.chainIDElDorito,
-                      let toChainID = toCoin.chain.chainIDElDorito else {
+                guard let fromChainID = fromCoin.chain.chainIDElDorito else {
                       throw SwapError.routeUnavailable
                 }
                 return try await fetchElDoritoQuote(
@@ -172,8 +169,6 @@ private extension SwapService {
             to: toCoin.address,
             isAffiliate: isAffiliate
         )
-        
-        print ("El Dorito response: \(response)")
         
         if fromCoin.chain == .thorChain {
             return .thorchain(try response.quote.toThorchainSwapQuote())

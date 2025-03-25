@@ -251,7 +251,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
-                    memo: tx.quote?.memo,
+                    memo: quote.memo,
                     chainSpecific: chainSpecific,
                     swapPayload: .thorchain(tx.buildThorchainSwapPayload(
                         quote: quote,
@@ -394,6 +394,13 @@ private extension SwapCryptoViewModel {
             )
             
             tx.quote = quote
+            
+            print("SWAP CRYPTO VIEW MODEL UPDATE QUOTE")
+            print(tx)
+            print(tx.fromCoin)
+            print(tx.toCoin)
+            print(tx.toAmountDecimal)
+            print(tx.quote)
             
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds

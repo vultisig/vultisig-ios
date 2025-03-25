@@ -87,6 +87,25 @@ final class BlockChainService {
             }
         }
         
+        if await tx.toCoin.chain == .base {
+            
+            let specific = try await fetchSpecific(
+                for: tx.fromCoin,
+                action: .swap,
+                sendMaxAmount: false,
+                isDeposit: true,
+                transactionType: .unspecified,
+                gasLimit: nil,
+                byteFee: nil,
+                fromAddress: nil,
+                toAddress: nil,
+                feeMode: .fast
+            )
+            self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+            return specific
+            
+        }
+        
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
