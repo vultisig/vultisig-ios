@@ -61,9 +61,33 @@ struct SwapCryptoDetailsView: View {
     
     var amountFields: some View {
         VStack(spacing: 12) {
-            SwapFromField(vault: vault, tx: tx, swapViewModel: swapViewModel)
-            SwapToField(tx: tx)
+            swapFromField
+            swapToField
         }
+    }
+    
+    var swapFromField: some View {
+        SwapFromToField(
+            title: "from",
+            vault: vault,
+            coin: tx.fromCoin,
+            fiatAmount: swapViewModel.fromFiatAmount(tx: tx),
+            amount: $tx.fromAmount,
+            tx: tx,
+            swapViewModel: swapViewModel
+        )
+    }
+    
+    var swapToField: some View {
+        SwapFromToField(
+            title: "to",
+            vault: vault,
+            coin: tx.toCoin,
+            fiatAmount: swapViewModel.toFiatAmount(tx: tx),
+            amount: .constant(tx.toAmountDecimal.description),
+            tx: tx,
+            swapViewModel: swapViewModel
+        )
     }
     
     var swapButton: some View {

@@ -1,5 +1,5 @@
 //
-//  SwapFromField.swift
+//  SwapFromToField.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-03-26.
@@ -7,8 +7,12 @@
 
 import SwiftUI
 
-struct SwapFromField: View {
+struct SwapFromToField: View {
+    let title: String
     let vault: Vault
+    let coin: Coin
+    let fiatAmount: String
+    @Binding var amount: String
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -24,8 +28,8 @@ struct SwapFromField: View {
     
     var header: some View {
         HStack(spacing: 8) {
-            fromLabel
-            fromNetwork
+            fromToLabel
+            fromToNetwork
             Spacer()
             balance
         }
@@ -33,24 +37,27 @@ struct SwapFromField: View {
     
     var content: some View {
         HStack {
-            fromCoin
+            fromToCoin
             Spacer()
-            fromAmountField
+            VStack(spacing: 6) {
+                fromToAmountField
+                fiatBalance
+            }
         }
     }
     
-    var fromLabel: some View {
-        Text(NSLocalizedString("from", comment: ""))
+    var fromToLabel: some View {
+        Text(NSLocalizedString(title, comment: ""))
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
     }
     
-    var fromNetwork: some View {
+    var fromToNetwork: some View {
         Text("From Network")
     }
     
     var balance: some View {
-        Text("\(tx.fromCoin.balanceString) \(tx.fromCoin.ticker)")
+        Text("\(coin.balanceString) \(coin.ticker)")
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
     }
@@ -65,6 +72,7 @@ struct SwapFromField: View {
             )
         )
         .foregroundColor(Color.blue600)
+        .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
     var unevenRectangleBorder: some View {
@@ -77,12 +85,13 @@ struct SwapFromField: View {
             )
         )
         .stroke(Color.blue400, lineWidth: 1)
+        .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
-    var fromCoin: some View {
+    var fromToCoin: some View {
         HStack {
-            fromCoinIcon
-            fromCoinContent
+            fromToCoinIcon
+            fromToCoinContent
             chevron
         }
         .padding(6)
@@ -90,24 +99,24 @@ struct SwapFromField: View {
         .cornerRadius(60)
     }
     
-    var fromCoinIcon: some View {
+    var fromToCoinIcon: some View {
         AsyncImageView(
-            logo: tx.fromCoin.logo,
+            logo: coin.logo,
             size: CGSize(width: 36, height: 36),
-            ticker: tx.fromCoin.ticker,
-            tokenChainLogo: tx.fromCoin.chain.logo
+            ticker: coin.ticker,
+            tokenChainLogo: coin.chain.logo
         )
         .frame(width: 36, height: 36)
         .foregroundColor(.black)
     }
     
-    var fromCoinContent: some View {
+    var fromToCoinContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("\(tx.fromCoin.ticker)")
+            Text("\(coin.ticker)")
                 .font(.body12BrockmannMedium)
                 .foregroundColor(.neutral0)
             
-            if tx.fromCoin.isNativeToken {
+            if coin.isNativeToken {
                 Text("Native")
                     .font(.body10BrockmannMedium)
                     .foregroundColor(.extraLightGray)
@@ -115,9 +124,11 @@ struct SwapFromField: View {
         }
     }
     
-    var fromAmountField: some View {
-        SwapCryptoAmountTextField(amount: $tx.fromAmount) { _ in
-            swapViewModel.updateFromAmount(tx: tx, vault: vault)
+    var fromToAmountField: some View {
+        SwapCryptoAmountTextField(amount: $amount) { _ in
+            if title=="from" {
+                swapViewModel.updateFromAmount(tx: tx, vault: vault)
+            }
         }
     }
     
@@ -128,11 +139,27 @@ struct SwapFromField: View {
             .bold()
             .padding(.trailing, 8)
     }
+    
+    var fiatBalance: some View {
+        Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.extraLightGray)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .opacity(isFiatVisible() ? 1 : 0)
+    }
+    
+    private func isFiatVisible() -> Bool {
+        !amount.isEmpty && amount != "0"
+    }
 }
 
 #Preview {
-    SwapFromField(
+    SwapFromToField(
+        title: "from",
         vault: Vault.example,
+        coin: Coin.example,
+        fiatAmount: "0",
+        amount: .constant("0"),
         tx: SwapTransaction(),
         swapViewModel: SwapCryptoViewModel()
     )

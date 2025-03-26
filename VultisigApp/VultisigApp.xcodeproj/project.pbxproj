@@ -464,8 +464,7 @@
 		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
 		A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */; };
 		A6BFE1B72D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */; };
-		A6BFE1B92D93C5D7000B73C0 /* SwapFromField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B82D93C5D7000B73C0 /* SwapFromField.swift */; };
-		A6BFE1BB2D93DE3D000B73C0 /* SwapToField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BA2D93DE3D000B73C0 /* SwapToField.swift */; };
+		A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -1310,8 +1309,7 @@
 		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
 		A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+iOS.swift"; sourceTree = "<group>"; };
 		A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRefreshQuoteCounter.swift; sourceTree = "<group>"; };
-		A6BFE1B82D93C5D7000B73C0 /* SwapFromField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromField.swift; sourceTree = "<group>"; };
-		A6BFE1BA2D93DE3D000B73C0 /* SwapToField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapToField.swift; sourceTree = "<group>"; };
+		A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToField.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -2130,8 +2128,7 @@
 				A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */,
 				A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */,
 				A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */,
-				A6BFE1B82D93C5D7000B73C0 /* SwapFromField.swift */,
-				A6BFE1BA2D93DE3D000B73C0 /* SwapToField.swift */,
+				A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -3766,7 +3763,6 @@
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
 				A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */,
-				A6BFE1BB2D93DE3D000B73C0 /* SwapToField.swift in Sources */,
 				A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */,
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
@@ -3968,6 +3964,7 @@
 				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
+				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A6386DB02C9025BC00DDD58E /* ChainNavigationCell+macOS.swift in Sources */,
 				A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
@@ -4013,7 +4010,6 @@
 				B5A80F1B2D0645E100DC9069 /* RippleService.swift in Sources */,
 				A6833D952C66A697002029E1 /* SendCryptoHeader.swift in Sources */,
 				A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */,
-				A6BFE1B92D93C5D7000B73C0 /* SwapFromField.swift in Sources */,
 				A622C8502C9BC7D600908332 /* FastVaultEmailView+macOS.swift in Sources */,
 				A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */,
 				A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */,

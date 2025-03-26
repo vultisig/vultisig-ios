@@ -17,10 +17,7 @@ struct SwapCryptoAmountTextField: View {
     var body: some View {
         content
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 20)
             .background(Color.blue600)
-            .cornerRadius(10)
     }
     
     var content: some View {
