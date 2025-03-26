@@ -73,8 +73,13 @@ struct SwapNetworkPickerView: View {
         ScrollView {
             VStack(spacing: 12) {
                 searchBar
-                networkTitle
-                list
+                
+                if filteredChains.count > 0 {
+                    networkTitle
+                    list
+                } else {
+                    emptyMessage
+                }
             }
             .padding(.vertical, 8)
             .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
@@ -100,6 +105,11 @@ struct SwapNetworkPickerView: View {
             }
         }
         .cornerRadius(12)
+    }
+    
+    var emptyMessage: some View {
+        ErrorMessage(text: "noResultFound")
+            .padding(.top, 48)
     }
     
     var views: some View {
