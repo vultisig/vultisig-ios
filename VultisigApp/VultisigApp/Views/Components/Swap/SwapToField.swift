@@ -91,7 +91,7 @@ struct SwapToField: View {
     var toCoinIcon: some View {
         AsyncImageView(
             logo: tx.toCoin.logo,
-            size: CGSize(width: 32, height: 32),
+            size: CGSize(width: 36, height: 36),
             ticker: tx.toCoin.ticker,
             tokenChainLogo: tx.toCoin.chain.logo
         )

@@ -63,6 +63,8 @@ struct SwapDetailsSummary: View {
     private func getSummaryCell(leadingText: String, trailingText: String, image: String? = nil) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))
+                .foregroundColor(.extraLightGray)
+            
             Spacer()
             
             if let image {
@@ -70,9 +72,9 @@ struct SwapDetailsSummary: View {
             }
             
             Text(trailingText)
+                .foregroundColor(.lightText)
         }
         .font(.body12MenloBold)
-        .foregroundColor(.neutral0)
     }
     
     private func getImage(_ image: String) -> some View {
