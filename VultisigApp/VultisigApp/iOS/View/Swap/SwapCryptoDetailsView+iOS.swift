@@ -53,9 +53,7 @@ extension SwapCryptoDetailsView {
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
-                fromCoinField
                 swapContent
-                toCoinField
                 summary
             }
             .padding(.horizontal, 16)

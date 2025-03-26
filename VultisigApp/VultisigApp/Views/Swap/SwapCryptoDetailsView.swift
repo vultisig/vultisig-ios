@@ -38,8 +38,6 @@ struct SwapCryptoDetailsView: View {
     
     var content: some View {
         VStack {
-            SwapFromField(vault: vault, tx: tx, swapViewModel: swapViewModel)
-            
             fields
             continueButton
         }
@@ -52,30 +50,19 @@ struct SwapCryptoDetailsView: View {
         ZStack {
             amountFields
             swapButton
+            
+            filler
+                .offset(x: -28)
+            
+            filler
+                .offset(x: 28)
         }
     }
     
     var amountFields: some View {
-        VStack(spacing: 8) {
-            fromAmountField
-            toAmountField
-        }
-    }
-    
-    var fromCoinField: some View {
-        VStack(spacing: 8) {
-            TokenSelectorDropdown(
-                coin: tx.fromCoin,
-                onPress: {
-                    isFromPickerActive = true
-                }
-            )
-        }
-    }
-    
-    var fromAmountField: some View {
-        SwapCryptoAmountTextField(amount: $tx.fromAmount) { _ in
-            swapViewModel.updateFromAmount(tx: tx, vault: vault)
+        VStack(spacing: 12) {
+            SwapFromField(vault: vault, tx: tx, swapViewModel: swapViewModel)
+            SwapToField(tx: tx)
         }
     }
     
@@ -85,37 +72,35 @@ struct SwapCryptoDetailsView: View {
             swapViewModel.switchCoins(tx: tx, vault: vault)
             swapViewModel.updateCoinLists(tx: tx)
         } label: {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.body16MontserratMedium)
-                .foregroundColor(.neutral0)
-                .frame(width: 38, height: 38)
-                .background(Color.persianBlue400)
-                .cornerRadius(50)
-                .padding(2)
-                .background(Color.black.opacity(0.2))
-                .cornerRadius(50)
-                .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-                .animation(.spring, value: buttonRotated)
+            swapLabel
         }
-    }
-    
-    var toCoinField: some View {
-        VStack(spacing: 8) {
-            TokenSelectorDropdown(
-                coin: tx.toCoin,
-                onPress: {
-                    isToPickerActive = true
-                }
-            )
-        }
-    }
-    
-    var toAmountField: some View {
-        SwapCryptoAmountTextField(
-            amount: .constant(tx.toAmountDecimal.description),
-            onChange: { _ in }
+        .padding(8)
+        .background(Color.backgroundBlue)
+        .cornerRadius(60)
+        .overlay(
+            Circle()
+                .stroke(Color.blue400, lineWidth: 1)
         )
-        .disabled(true)
+    }
+    
+    var swapLabel: some View {
+        Image(systemName: "arrow.up.arrow.down")
+            .font(.body16MontserratMedium)
+            .foregroundColor(.neutral0)
+            .frame(width: 38, height: 38)
+            .background(Color.persianBlue400)
+            .cornerRadius(50)
+            .padding(2)
+            .background(Color.black.opacity(0.2))
+            .cornerRadius(50)
+            .rotationEffect(.degrees(buttonRotated ? 180 : 0))
+            .animation(.spring, value: buttonRotated)
+    }
+    
+    var filler: some View {
+        Rectangle()
+            .frame(width: 12, height: 10)
+            .foregroundColor(Color.backgroundBlue)
     }
     
     var summary: some View {
