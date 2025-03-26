@@ -10,6 +10,7 @@ import BigInt
 import WalletCore
 import Mediator
 
+@MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let titles = ["swap", "verify", "pair", "keysign", "done"]
 
@@ -22,14 +23,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var currentIndex = 1
-    @MainActor @Published var currentTitle = "swap"
-    @MainActor @Published var hash: String?
-    @MainActor @Published var approveHash: String?
+    @Published var currentIndex = 1
+    @Published var currentTitle = "swap"
+    @Published var hash: String?
+    @Published var approveHash: String?
 
-    @MainActor @Published var error: Error?
-    @MainActor @Published var isLoading = false
-    @MainActor @Published var dataLoaded = false
+    @Published var error: Error?
+    @Published var isLoading = false
+    @Published var dataLoaded = false
+    @Published var timer: Int = 59
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
@@ -323,6 +325,24 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func handleBackTap() {
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
+    }
+    
+    func updateTimer(tx: SwapTransaction, vault: Vault) {
+        timer -= 1
+
+        if timer < 1 {
+            restartTimer(tx: tx, vault: vault)
+        }
+    }
+    
+    func restartTimer(tx: SwapTransaction, vault: Vault) {
+        refreshData(tx: tx, vault: vault)
+        timer = 59
+    }
+    
+    func refreshData(tx: SwapTransaction, vault: Vault) {
+        fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {

@@ -24,6 +24,10 @@ extension SwapCryptoDetailsView {
     var view: some View {
        content
             .toolbar {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    refreshCounter
+                }
+                
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     
@@ -57,8 +61,7 @@ extension SwapCryptoDetailsView {
             .padding(.horizontal, 16)
         }
         .refreshable {
-            swapViewModel.fetchFees(tx: tx, vault: vault)
-            swapViewModel.fetchQuotes(tx: tx, vault: vault)
+            swapViewModel.refreshData(tx: tx, vault: vault)
         }
     }
 }

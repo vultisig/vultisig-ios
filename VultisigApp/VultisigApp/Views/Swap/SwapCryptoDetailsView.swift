@@ -16,6 +16,8 @@ struct SwapCryptoDetailsView: View {
     @State var isToPickerActive = false
     
     @StateObject var keyboardObserver = KeyboardObserver()
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     let vault: Vault
 
@@ -38,6 +40,9 @@ struct SwapCryptoDetailsView: View {
         VStack {
             fields
             continueButton
+        }
+        .onReceive(timer) { input in
+            swapViewModel.updateTimer(tx: tx, vault: vault)
         }
     }
     
@@ -140,6 +145,10 @@ struct SwapCryptoDetailsView: View {
             Loader()
             Spacer()
         }
+    }
+    
+    var refreshCounter: some View {
+        SwapRefreshQuoteCounter(timer: $swapViewModel.timer)
     }
 }
 

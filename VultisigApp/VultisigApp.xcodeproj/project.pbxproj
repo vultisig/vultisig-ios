@@ -463,6 +463,7 @@
 		A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */; };
 		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
 		A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */; };
+		A6BFE1B72D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -1303,6 +1304,7 @@
 		A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPercentageButtons.swift; sourceTree = "<group>"; };
 		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
 		A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+iOS.swift"; sourceTree = "<group>"; };
+		A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRefreshQuoteCounter.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -2117,6 +2119,7 @@
 			children = (
 				A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */,
 				A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */,
+				A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -3965,6 +3968,7 @@
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
 				A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */,
 				A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */,
+				A6BFE1B72D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift in Sources */,
 				46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */,
 				A6386DAA2C9024F500DDD58E /* SettingFAQCell+iOS.swift in Sources */,
 				A6B7F4962C493DD9006D83D1 /* NavigationQRCodeButton.swift in Sources */,
