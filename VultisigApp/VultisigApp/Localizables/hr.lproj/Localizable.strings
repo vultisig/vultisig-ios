@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Prenesi iz galerije";
 "uploadFromFiles" = "Odaberi iz datoteka";
 "polkadotExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako stanje računa padne ispod 1 DOT (Egzistencijalni Depozit), račun će biti deaktiviran i preostala sredstva će biti izgubljena. Možete ponovno aktivirati adresu s novim depozitom većim od egzistencijalnog depozita u bilo kojem trenutku. Međutim, ovo neće vratiti izgubljena sredstva.";
-"rippleExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako saldo računa padne ispod 1 XRP-a (Egzistencijalni polog), račun će biti deaktiviran (pokošen) i sva preostala sredstva bit će izgubljena. Možete ponovno aktivirati adresu novim uplatama većim od egzistencijalnog pologa u bilo kojem trenutku. Međutim, to neće povratiti izgubljena sredstva.";
+"rippleExistentialDepositError" = "XRP zahtijeva minimalni saldo od 1 XRP. Blockchain će blokirati svaku transakciju koja bi smanjila stanje ispod tog iznosa. Za slanje cijelog iznosa račun mora biti izbrisan.";
 "noCameraPermissionError" = "Dopuštenje za kameru je odbijeno.\n\nMolimo omogućite ga u Postavkama.";
 "openSettings" = "Otvori Postavke";
 "fetchingVaultDetails" = "Dohvaćanje pojedinosti o spremištu";
@@ -555,3 +555,11 @@
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
 "startUsingVault" = "Koristi trezor";
 "loadingDetails" = "Učitavanje detalja";
+"backupPart1" = "Sigurnosna kopija Dio 1";
+"backupPart2" = "Sigurnosna kopija Dio 2";
+"vultiserverPassword" = "Vultiserver lozinka";
+"doYouWantToAddPassword" = "Želite li dodati lozinku za sigurnosne kopije trezora na uređaju?";
+"doYouWantToAddPasswordDescription" = "Preporučujemo da ne postavljate lozinku za sigurnosne kopije trezora uređaja – vaši podaci su sigurni ako su sigurnosne kopije pravilno pohranjene na različitim mjestima, što već pruža značajnu zaštitu. Zapamtite, lozinke za sigurnosne kopije ne mogu se vratiti ako ih zaboravite. Vaš izbor!";
+"backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
+"usePassword" = "Koristi lozinku";
+"migrate" = "Migrirati";

@@ -226,7 +226,7 @@
 "uploadFromGallery" = "Carica dalla galleria";
 "uploadFromFiles" = "Seleziona i file";
 "polkadotExistentialDepositError" = "Assicurati di lasciare fondi sufficienti per coprire le commissioni. Se il saldo di un conto scende sotto 1 DOT (Deposito Esistenziale), il conto verrà disattivato (cancellato) e eventuali fondi rimanenti saranno persi. Puoi riattivare l'indirizzo con un nuovo deposito maggiore del deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
-"rippleExistentialDepositError" = "Assicurati di lasciare fondi sufficienti a coprire le commissioni. Se il saldo di un conto scende al di sotto di 1 XRP (Deposito Esistenziale), il conto verrà disattivato (falciato) e tutti i fondi rimanenti andranno persi. Puoi riattivare l'indirizzo con un nuovo deposito superiore al deposito esistenziale in qualsiasi momento. Tuttavia, questo non recupererà i fondi persi.";
+"rippleExistentialDepositError" = "XRP richiede un saldo minimo di 1 XRP. La blockchain bloccherà qualsiasi transazione che riduca il saldo al di sotto di questa soglia. Per inviare l’intero saldo, l’account deve essere eliminato.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
 "openSettings" = "Apri Impostazioni";
 "fetchingVaultDetails" = "Recupero dei dettagli del caveau";
@@ -555,3 +555,11 @@
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
 "startUsingVault" = "Usa il Vault";
 "loadingDetails" = "Caricamento dettagli";
+"backupPart1" = "Backup Parte 1";
+"backupPart2" = "Backup Parte 2";
+"vultiserverPassword" = "Password Vultiserver";
+"doYouWantToAddPassword" = "Vuoi aggiungere una password ai tuoi vault share del dispositivo?";
+"doYouWantToAddPasswordDescription" = "Ti consigliamo di non impostare una password di backup per i vault share del dispositivo: i tuoi dati sono sicuri se i backup sono archiviati in posizioni diverse, il che fornisce già una protezione significativa. Ricorda, le password di backup non possono essere recuperate se le dimentichi. A te la scelta!";
+"backupWithoutPassword" = "Backup senza password";
+"usePassword" = "Usa password";
+"migrate" = "Migrare";

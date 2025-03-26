@@ -57,7 +57,7 @@ struct EditVaultView: View {
     
     var backupVault: some View {
         NavigationLink {
-            BackupPasswordSetupView(vault: vault)
+            PasswordBackupOptionsView(vault: vault)
         } label: {
             EditVaultCell(title: "backup", description: "backupVault", icon: "icloud.and.arrow.up")
         }
@@ -105,7 +105,7 @@ struct EditVaultView: View {
                 fastSignConfig: nil
             )
         } label: {
-            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
+            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
     
@@ -118,7 +118,7 @@ struct EditVaultView: View {
                 fastVaultExist: true
             )
         } label: {
-            EditVaultCell(title: "Migrate", description: "migrateVault", icon: "arrow.up.circle")
+            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
         }
     }
 

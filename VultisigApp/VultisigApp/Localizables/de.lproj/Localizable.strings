@@ -243,7 +243,7 @@
 "balance" = "Guthaben";
 "provider" = "Anbieter";
 "polkadotExistentialDepositError" = "Stellen Sie sicher, dass genügend Mittel vorhanden sind, um die Gebühren zu decken. Wenn das Guthaben eines Kontos unter 1 DOT (Existenzeinlage) fällt, wird das Konto deaktiviert und verbleibende Gelder werden verloren gehen. Sie können die Adresse jederzeit mit einer neuen Einzahlung über dem Existenzeinlage wieder aktivieren. Dies wird jedoch die verlorenen Gelder nicht wiederherstellen.";
-"rippleExistentialDepositError" = "Stellen Sie sicher, dass Sie genügend Mittel zur Deckung der Gebühren zurücklassen. Wenn der Kontostand unter 1 XRP (Existenzieller Einzahlungsbetrag) fällt, wird das Konto deaktiviert (geerntet) und alle verbleibenden Mittel gehen verloren. Sie können die Adresse jederzeit mit einer neuen Einzahlung, die höher ist als der existenzielle Einzahlungsbetrag, wieder aktivieren. Dies wird jedoch die verlorenen Mittel nicht wiederherstellen.";
+"rippleExistentialDepositError" = "XRP erfordert ein Mindestguthaben von 1 XRP. Die Blockchain blockiert jede Transaktion, die das Guthaben unter diesen Betrag senken würde. Um das gesamte Guthaben zu senden, muss das Konto gelöscht werden.";
 "noCameraPermissionError" = "Kameraberechtigung verweigert.\n\nBitte aktiviere sie in den Einstellungen.";
 "openSettings" = "Einstellungen öffnen";
 "fetchingVaultDetails" = "Tresordetails werden abgerufen";
@@ -572,3 +572,11 @@
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
 "startUsingVault" = "Tresor nutzen";
 "loadingDetails" = "Lade Details";
+"backupPart1" = "Backup Teil 1";
+"backupPart2" = "Backup Teil 2";
+"vultiserverPassword" = "Vultiserver-Passwort";
+"doYouWantToAddPassword" = "Möchten Sie ein Passwort für Ihre Geräte-Tresoranteile hinzufügen?";
+"doYouWantToAddPasswordDescription" = "Wir empfehlen, kein Backup-Passwort für Geräte-Tresoranteile zu setzen – Ihre Daten sind sicher, wenn die Backups an verschiedenen Orten gespeichert werden, was bereits einen hohen Schutz bietet. Denken Sie daran, dass Backup-Passwörter nicht wiederhergestellt werden können, wenn Sie sie vergessen. Ihre Wahl!";
+"backupWithoutPassword" = "Backup ohne Passwort";
+"usePassword" = "Passwort verwenden";
+"migrate" = "Migrieren";

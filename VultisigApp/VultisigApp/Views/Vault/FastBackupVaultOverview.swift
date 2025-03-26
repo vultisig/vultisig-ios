@@ -66,7 +66,7 @@ struct FastBackupVaultOverview: View {
     }
     
     var headerTitle: some View {
-        Text(NSLocalizedString("vaultOverview", comment: ""))
+        Text(NSLocalizedString(getTitle(), comment: ""))
             .foregroundColor(.neutral0)
             .font(.body18BrockmannMedium)
     }
@@ -149,6 +149,17 @@ struct FastBackupVaultOverview: View {
     
     private func animate(index: Int) {
         animationVM?.setInput("Index", value: Double(index))
+    }
+    
+    private func getTitle() -> String {
+        switch tabIndex {
+        case 2:
+            "backupPart1"
+        case 3:
+            "backupPart2"
+        default:
+            "vaultOverview"
+        }
     }
 }
 

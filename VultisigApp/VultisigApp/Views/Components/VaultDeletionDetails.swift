@@ -100,7 +100,7 @@ struct VaultDeletionDetails: View {
     }
     
     private func titlePartText() -> String {
-        let part = NSLocalizedString("part", comment: "")
+        let part = NSLocalizedString("share", comment: "")
         let of = NSLocalizedString("of", comment: "")
         let space = " "
         let vaultIndex = getDeviceIndex()

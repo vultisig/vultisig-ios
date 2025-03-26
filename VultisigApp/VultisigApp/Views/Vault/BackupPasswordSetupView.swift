@@ -10,6 +10,7 @@ import SwiftUI
 struct BackupPasswordSetupView: View {
     let vault: Vault
     var isNewVault = false
+    var showSkipPasswordButton = true
     
     @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
@@ -78,7 +79,10 @@ struct BackupPasswordSetupView: View {
     var buttons: some View {
         VStack(spacing: 20) {
             saveButton
-            skipButton
+            
+            if showSkipPasswordButton {
+                skipButton
+            }
         }
         .padding(.top, 16)
         .padding(.bottom, 40)

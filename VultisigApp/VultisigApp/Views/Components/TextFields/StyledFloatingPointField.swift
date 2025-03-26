@@ -60,37 +60,28 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
         }
     
     private func formatInitialValue() -> String {
-        // Convert initial value to string using the current locale
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 8 // Adjust as needed
+        formatter.maximumFractionDigits = 8
         return formatter.string(from: NSNumber(value: Double(value))) ?? ""
     }
     
     private func updateValue(_ newValue: String) {
-        // Replace locale-specific decimal separator with standard decimal point
-        let standardizedValue = newValue.replacingOccurrences(of: decimalSeparator, with: ".")
-        
-        // Remove any characters that are not digits or a single decimal point
-        let filteredValue = standardizedValue
-            .components(separatedBy: CharacterSet(charactersIn: "0123456789.").inverted)
-            .joined()
-        
-        // Ensure only one decimal point
-        let parts = filteredValue.components(separatedBy: ".")
-        let processedValue = parts.count > 2
-            ? parts[0] + "." + parts[1..<parts.count].joined(separator: "")
-            : filteredValue
-        
-        // Update text field and value
-        textFieldValue = processedValue.replacingOccurrences(of: ".", with: decimalSeparator)
-        
-        // Convert to numeric value
-        if let doubleValue = Double(processedValue) {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 8
+
+        textFieldValue = newValue
+
+        if let number = formatter.number(from: newValue) {
+            let doubleValue = number.doubleValue
             value = Value(doubleValue)
             validate(value)
-        } else if processedValue.isEmpty || processedValue == decimalSeparator {
-            value = 0
+        } else {
+            if newValue.isEmpty || newValue == decimalSeparator {
+                value = 0
+            }
         }
     }
     

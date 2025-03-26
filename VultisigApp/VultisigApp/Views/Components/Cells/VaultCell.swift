@@ -61,9 +61,14 @@ struct VaultCell: View {
     }
     
     var partAssignedCell: some View {
-        Text("Part \(viewModel.order)of\(viewModel.totalSigners)")
-            .font(.body14Menlo)
-            .foregroundColor(.body)
+        Group {
+            Text(NSLocalizedString("share", comment: "")) +
+            Text(" \(viewModel.order)") +
+            Text(NSLocalizedString("of", comment: "")) +
+            Text("\(viewModel.totalSigners)")
+        }
+        .font(.body14Menlo)
+        .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {

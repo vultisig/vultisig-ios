@@ -15,7 +15,9 @@ extension PeerDiscoveryView {
                 Background()
                     .clipped()
                     .onAppear {
-                        setData(proxy)
+                        screenWidth = proxy.size.width
+                        screenHeight = proxy.size.height
+                        setData()
                     }
                     .onChange(of: proxy.size.width) { oldValue, newValue in
                         screenWidth = proxy.size.width
@@ -47,18 +49,9 @@ extension PeerDiscoveryView {
     }
     
     var portraitContent: some View {
-        VStack(spacing: 0) {
+        ScrollView {
             qrCode
             list
-        }
-    }
-    
-    var landscapeContent: some View {
-        HStack {
-            qrCode
-            
-            list
-                .padding(40)
         }
     }
     
@@ -74,10 +67,7 @@ extension PeerDiscoveryView {
         qrCodeImage?
             .resizable()
             .padding(32)
-            .aspectRatio(contentMode: .fit)
-            .frame(maxWidth: getMinSize(), maxHeight: getMinSize())
-            .cornerRadius(32)
-            .padding(24)
+            .frame(width: getMinSize(), height: getMinSize())
     }
     
     var animation: some View {
@@ -85,32 +75,16 @@ extension PeerDiscoveryView {
     }
     
     var scrollList: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 18) {
-                ThisDevicePeerCell(deviceName: "Mac")
-                devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-            }
-            .padding(.horizontal, 30)
+        LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
+            ThisDevicePeerCell(deviceName: "Mac")
+            devices
+            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
         }
-        .padding(20)
-    }
-    
-    var gridList: some View {
-        ScrollView {
-            LazyVGrid(columns: adaptiveColumns, spacing: 8) {
-                ThisDevicePeerCell(deviceName: "Mac")
-                devices
-                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
-            }
-        }
-        .scrollIndicators(.hidden)
     }
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
@@ -143,7 +117,7 @@ extension PeerDiscoveryView {
         .padding(.top, 20)
         .padding(.bottom, 10)
         .disabled(isButtonDisabled)
-        .padding(.bottom, 30)
+        .padding(.bottom, 10)
     }
     
     var disclaimer: some View {
@@ -155,6 +129,7 @@ extension PeerDiscoveryView {
             }
         }
         .padding(.leading, 24)
+        .padding(.horizontal, 48)
     }
     
     var switchLink: some View {
@@ -177,7 +152,7 @@ extension PeerDiscoveryView {
     }
     
     func getMinSize() -> CGFloat {
-        min(screenWidth/2, screenHeight/1.2)
+        min(screenWidth/2.5, screenHeight/1.5)
     }
 }
 #endif
