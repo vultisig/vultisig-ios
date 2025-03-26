@@ -13,6 +13,7 @@ struct SwapFromToField: View {
     let coin: Coin
     let fiatAmount: String
     @Binding var amount: String
+    @Binding var showNetworkSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -53,6 +54,14 @@ struct SwapFromToField: View {
     }
     
     var fromToNetwork: some View {
+        Button {
+            showNetworkSelectSheet = true
+        } label: {
+            fromToNetworkLabel
+        }
+    }
+    
+    var fromToNetworkLabel: some View {
         Text("From Network")
     }
     
@@ -160,6 +169,7 @@ struct SwapFromToField: View {
         coin: Coin.example,
         fiatAmount: "0",
         amount: .constant("0"),
+        showNetworkSelectSheet: .constant(false),
         tx: SwapTransaction(),
         swapViewModel: SwapCryptoViewModel()
     )

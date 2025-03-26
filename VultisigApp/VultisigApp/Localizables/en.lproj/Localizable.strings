@@ -609,3 +609,4 @@
 "backupWithoutPassword" = "Backup without password";
 "usePassword" = "Use password";
 "migrate" = "Migrate";
+"selectNetwork" = "Select network";

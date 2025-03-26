@@ -23,6 +23,12 @@ struct SwapCryptoDetailsView: View {
 
     var body: some View {
         container
+            .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
+                SwapNetworkPickerView(
+                    showSheet: $swapViewModel.showFromChainSelector,
+                    chain: $swapViewModel.fromChain
+                )
+            })
             .navigationDestination(isPresented: $isFromPickerActive) {
                 CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
                     swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
@@ -73,6 +79,7 @@ struct SwapCryptoDetailsView: View {
             coin: tx.fromCoin,
             fiatAmount: swapViewModel.fromFiatAmount(tx: tx),
             amount: $tx.fromAmount,
+            showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             tx: tx,
             swapViewModel: swapViewModel
         )
@@ -85,6 +92,7 @@ struct SwapCryptoDetailsView: View {
             coin: tx.toCoin,
             fiatAmount: swapViewModel.toFiatAmount(tx: tx),
             amount: .constant(tx.toAmountDecimal.description),
+            showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             tx: tx,
             swapViewModel: swapViewModel
         )

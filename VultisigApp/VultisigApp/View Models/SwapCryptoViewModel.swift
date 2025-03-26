@@ -32,6 +32,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var isLoading = false
     @Published var dataLoaded = false
     @Published var timer: Int = 59
+    
+    @Published var fromChain: Chain? = nil
+    @Published var toChain: Chain? = nil
+    @Published var showFromChainSelector = false
+    @Published var showToChainSelector = false
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
