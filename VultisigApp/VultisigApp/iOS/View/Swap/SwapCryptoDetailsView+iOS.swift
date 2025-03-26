@@ -13,7 +13,7 @@ extension SwapCryptoDetailsView {
         ZStack(alignment: .bottom) {
             Background()
             view
-            percentageButtons
+//            percentageButtons
 
             if swapViewModel.isLoading {
                 loader

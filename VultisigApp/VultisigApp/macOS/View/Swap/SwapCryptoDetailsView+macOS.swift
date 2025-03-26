@@ -38,7 +38,7 @@ extension SwapCryptoDetailsView {
                 fromCoinField
                 swapContent
                 toCoinField
-                percentageButtons
+//                percentageButtons
                 summary
             }
             .padding(.horizontal, 16)
