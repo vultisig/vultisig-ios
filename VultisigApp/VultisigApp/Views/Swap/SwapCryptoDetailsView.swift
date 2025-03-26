@@ -148,7 +148,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var refreshCounter: some View {
-        SwapRefreshQuoteCounter(timer: $swapViewModel.timer)
+        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
 }
 

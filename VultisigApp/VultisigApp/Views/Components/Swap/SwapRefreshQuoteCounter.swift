@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SwapRefreshQuoteCounter: View {
-    @Binding var timer: Int
+    let timer: Int
     
     var body: some View {
         HStack(spacing: 8) {
@@ -52,5 +52,5 @@ struct SwapRefreshQuoteCounter: View {
 }
 
 #Preview {
-    SwapRefreshQuoteCounter(timer: .constant(59))
+    SwapRefreshQuoteCounter(timer: 59)
 }
