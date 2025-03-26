@@ -562,3 +562,4 @@
 "doYouWantToAddPasswordDescription" = "Preporučujemo da ne postavljate lozinku za sigurnosne kopije trezora uređaja – vaši podaci su sigurni ako su sigurnosne kopije pravilno pohranjene na različitim mjestima, što već pruža značajnu zaštitu. Zapamtite, lozinke za sigurnosne kopije ne mogu se vratiti ako ih zaboravite. Vaš izbor!";
 "backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
 "usePassword" = "Koristi lozinku";
+"migrate" = "Migrirati";
