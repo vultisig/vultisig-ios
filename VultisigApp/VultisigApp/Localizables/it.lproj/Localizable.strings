@@ -562,3 +562,4 @@
 "doYouWantToAddPasswordDescription" = "Ti consigliamo di non impostare una password di backup per i vault share del dispositivo: i tuoi dati sono sicuri se i backup sono archiviati in posizioni diverse, il che fornisce già una protezione significativa. Ricorda, le password di backup non possono essere recuperate se le dimentichi. A te la scelta!";
 "backupWithoutPassword" = "Backup senza password";
 "usePassword" = "Usa password";
+"migrate" = "Migrare";

@@ -169,9 +169,9 @@ struct SwapVerifyView: View {
 
     func getFromAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 

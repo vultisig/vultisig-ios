@@ -176,7 +176,7 @@ struct TransactionMemoVerifyView: View {
     
     
     private func getAmount() -> String {
-        tx.amount.formatCurrencyWithSeparators() + " " + tx.coin.ticker
+        tx.amount + " " + tx.coin.ticker
     }
 }
 
