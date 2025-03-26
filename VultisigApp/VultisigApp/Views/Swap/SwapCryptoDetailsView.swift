@@ -38,6 +38,8 @@ struct SwapCryptoDetailsView: View {
     
     var content: some View {
         VStack {
+            SwapFromField(vault: vault, tx: tx, swapViewModel: swapViewModel)
+            
             fields
             continueButton
         }
@@ -72,11 +74,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var fromAmountField: some View {
-        SwapCryptoAmountTextField(
-            title: "from",
-            fiatAmount: swapViewModel.fromFiatAmount(tx: tx),
-            amount: $tx.fromAmount
-        ) { _ in
+        SwapCryptoAmountTextField(amount: $tx.fromAmount) { _ in
             swapViewModel.updateFromAmount(tx: tx, vault: vault)
         }
     }
@@ -114,8 +112,6 @@ struct SwapCryptoDetailsView: View {
     
     var toAmountField: some View {
         SwapCryptoAmountTextField(
-            title: "to",
-            fiatAmount: swapViewModel.toFiatAmount(tx: tx),
             amount: .constant(tx.toAmountDecimal.description),
             onChange: { _ in }
         )

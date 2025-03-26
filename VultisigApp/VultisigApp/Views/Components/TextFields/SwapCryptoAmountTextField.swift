@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct SwapCryptoAmountTextField: View {
-    let title: String
-    let fiatAmount: String
     @Binding var amount: String
     
     var onChange: (String) async -> Void
@@ -26,37 +24,13 @@ struct SwapCryptoAmountTextField: View {
     }
     
     var content: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 8) {
-                titleContent
-                textField
-            }
-            
-            Spacer()
-            
-            if !amount.isEmpty, amount != "0" {
-                fiatBalance
-            }
-        }
-    }
-    
-    var titleContent: some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .font(.body12MenloBold)
-            .foregroundColor(.neutral200)
+        textField
     }
     
     var textField: some View {
-        ZStack(alignment: .trailing) {
-            if amount.isEmpty {
-                Text(NSLocalizedString("enterAmount", comment: ""))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-            field
-        }
-        .font(.body20MenloBold)
-        .foregroundColor(.neutral0)
+        field
+            .font(.body20MenloBold)
+            .foregroundColor(.neutral0)
     }
     
     var field: some View {
@@ -78,28 +52,19 @@ struct SwapCryptoAmountTextField: View {
     }
     
     func content(_ customBiding: Binding<String>) -> some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: customBiding)
-                .maxLength(customBiding)
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .textFieldStyle(TappableTextFieldStyle())
-                .borderlessTextFieldStyle()
-                .foregroundColor(isEnabled ? .neutral0 : .neutral300)
-        }
-    }
-    
-    var fiatBalance: some View {
-        Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral400)
+        TextField(NSLocalizedString("0", comment: "").capitalized, text: customBiding)
+            .maxLength(customBiding)
+            .submitLabel(.next)
+            .disableAutocorrection(true)
+            .textFieldStyle(TappableTextFieldStyle())
+            .borderlessTextFieldStyle()
+            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+            .multilineTextAlignment(.trailing)
     }
 }
 
 #Preview {
     SwapCryptoAmountTextField(
-        title: "to",
-        fiatAmount: "$1000",
         amount: .constant(.empty),
         onChange: { _ in }
     )
