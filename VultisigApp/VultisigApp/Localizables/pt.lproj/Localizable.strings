@@ -563,3 +563,4 @@
 "doYouWantToAddPasswordDescription" = "Recomendamos que você não defina uma senha de backup para os compartilhamentos de cofre do dispositivo – seus dados estão seguros se os backups forem armazenados corretamente em locais diferentes, o que já fornece uma proteção significativa. Lembre-se de que senhas de backup não podem ser recuperadas se forem esquecidas. Sua escolha!";
 "backupWithoutPassword" = "Backup sem senha";
 "usePassword" = "Usar senha";
+"migrate" = "Migrar";
