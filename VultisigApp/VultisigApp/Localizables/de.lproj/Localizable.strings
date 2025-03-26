@@ -579,3 +579,4 @@
 "doYouWantToAddPasswordDescription" = "Wir empfehlen, kein Backup-Passwort für Geräte-Tresoranteile zu setzen – Ihre Daten sind sicher, wenn die Backups an verschiedenen Orten gespeichert werden, was bereits einen hohen Schutz bietet. Denken Sie daran, dass Backup-Passwörter nicht wiederhergestellt werden können, wenn Sie sie vergessen. Ihre Wahl!";
 "backupWithoutPassword" = "Backup ohne Passwort";
 "usePassword" = "Passwort verwenden";
+"migrate" = "Migrieren";

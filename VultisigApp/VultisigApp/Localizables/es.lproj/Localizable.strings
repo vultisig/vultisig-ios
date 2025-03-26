@@ -562,3 +562,4 @@
 "doYouWantToAddPasswordDescription" = "Recomendamos no establecer una contraseña de respaldo para las copias de seguridad del dispositivo: tus datos están seguros si los respaldos se almacenan en diferentes ubicaciones, lo que ya brinda una protección significativa. Recuerda, las contraseñas de respaldo no se pueden recuperar si las olvidas. ¡Tú decides!";
 "backupWithoutPassword" = "Copia de seguridad sin contraseña";
 "usePassword" = "Usar contraseña";
+"migrate" = "Migrar";
