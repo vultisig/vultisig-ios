@@ -14,55 +14,30 @@ struct SwapCryptoDetailsView: View {
     @State var buttonRotated = false
     @State var isFromPickerActive = false
     @State var isToPickerActive = false
+    
+    @StateObject var keyboardObserver = KeyboardObserver()
 
     let vault: Vault
 
     var body: some View {
-        ZStack {
-            Background()
-            view
-
-            if swapViewModel.isLoading {
-                Loader()
+        container
+            .navigationDestination(isPresented: $isFromPickerActive) {
+                CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
+                    swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
+                    swapViewModel.updateCoinLists(tx: tx)
+                }
             }
-        }
-        .navigationDestination(isPresented: $isFromPickerActive) {
-            CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
-                swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
-                swapViewModel.updateCoinLists(tx: tx)
+            .navigationDestination(isPresented: $isToPickerActive) {
+                CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
+                    swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
+                }
             }
-        }
-        .navigationDestination(isPresented: $isToPickerActive) {
-            CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
-                swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
-            }
-        }
-    }
-    
-    var view: some View {
-       container
     }
     
     var content: some View {
         VStack {
             fields
             continueButton
-        }
-    }
-    
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                fromCoinField
-                swapContent
-                toCoinField
-                summary
-            }
-            .padding(.horizontal, 16)
-        }
-        .refreshable {
-            swapViewModel.fetchFees(tx: tx, vault: vault)
-            swapViewModel.fetchQuotes(tx: tx, vault: vault)
         }
     }
     
@@ -157,6 +132,14 @@ struct SwapCryptoDetailsView: View {
         .disabled(!swapViewModel.validateForm(tx: tx))
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
+    }
+    
+    var loader: some View {
+        VStack {
+            Spacer()
+            Loader()
+            Spacer()
+        }
     }
 }
 

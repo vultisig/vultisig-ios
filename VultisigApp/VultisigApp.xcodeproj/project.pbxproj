@@ -460,6 +460,9 @@
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
+		A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */; };
+		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
+		A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -1297,6 +1300,9 @@
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
+		A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPercentageButtons.swift; sourceTree = "<group>"; };
+		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
+		A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+iOS.swift"; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -2110,6 +2116,7 @@
 			isa = PBXGroup;
 			children = (
 				A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */,
+				A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -2275,6 +2282,7 @@
 				A6505ACF2CA668AF0002FBF4 /* InformationNote+iOS.swift */,
 				A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */,
 				A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */,
+				A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2318,6 +2326,7 @@
 				A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */,
 				A6A8163F2CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift */,
 				A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */,
+				A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -3904,6 +3913,7 @@
 				DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
+				A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */,
 				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,
 				A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */,
 				A6ECA1AC2C9410EA00456110 /* ShareSheetViewModel+macOS.swift in Sources */,
@@ -4039,6 +4049,7 @@
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
+				A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */,
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
 				A6C670B12C9D12C700F59B6A /* VaultPairDetailView+iOS.swift in Sources */,
 				A6C670C32C9D16C600F59B6A /* CustomTokenView+macOS.swift in Sources */,
@@ -4094,6 +4105,7 @@
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
 				461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */,
+				A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */,
 				A6521C5A2C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift in Sources */,
 				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
