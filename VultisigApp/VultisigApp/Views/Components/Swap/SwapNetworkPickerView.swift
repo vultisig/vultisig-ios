@@ -9,9 +9,19 @@ import SwiftUI
 
 struct SwapNetworkPickerView: View {
     @Binding var showSheet: Bool
-    @Binding var chain: Chain?
+    @Binding var selectedChain: Chain?
 
+    @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    var filteredChains: [String] {
+        let groupedKeys = viewModel.groupedAssets.keys
+        return searchText.isEmpty
+            ? groupedKeys.sorted()
+            : groupedKeys
+                .filter { $0.lowercased().contains(searchText.lowercased()) }
+                .sorted()
+    }
 
     var body: some View {
         content
@@ -42,7 +52,7 @@ struct SwapNetworkPickerView: View {
             backButton
                 .opacity(0)
         }
-        .padding(.horizontal, 16)
+        .padding(16)
     }
     
     var backButton: some View {
@@ -61,20 +71,34 @@ struct SwapNetworkPickerView: View {
     
     var view: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 12) {
                 searchBar
-
-                ForEach(viewModel.filteredChains, id: \.self) { key in
-                    ChainSelectionCell(
-                        assets: viewModel.groupedAssets[key] ?? [],
-                        showAlert: $showAlert
-                    )
-                }
+                networkTitle
+                list
             }
             .padding(.vertical, 8)
             .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
             .padding(.horizontal, 16)
         }
+    }
+    
+    var networkTitle: some View {
+        Text(NSLocalizedString("network", comment: ""))
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.extraLightGray)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var list: some View {
+        VStack(spacing: 0) {
+            ForEach(filteredChains, id: \.self) { chain in
+                SwapNetworkCell(
+                    chain: viewModel.groupedAssets[chain]?.first,
+                    selectedChain: $selectedChain
+                )
+            }
+        }
+        .cornerRadius(12)
     }
     
     var views: some View {
@@ -93,10 +117,11 @@ struct SwapNetworkPickerView: View {
             .listRowSeparator(.hidden)
             .background(Color.blue600)
             .cornerRadius(12)
+            .padding(.bottom, 12)
     }
 
     var searchField: some View {
-        TextField(NSLocalizedString("Search", comment: "Search"), text: $viewModel.searchText)
+        TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .disableAutocorrection(true)
@@ -107,5 +132,5 @@ struct SwapNetworkPickerView: View {
 }
 
 #Preview {
-    SwapNetworkPickerView(showSheet: .constant(true), chain: .constant(nil))
+    SwapNetworkPickerView(showSheet: .constant(true), selectedChain: .constant(Chain.example))
 }

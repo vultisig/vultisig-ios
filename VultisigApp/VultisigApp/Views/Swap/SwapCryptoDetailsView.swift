@@ -26,7 +26,7 @@ struct SwapCryptoDetailsView: View {
             .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
                 SwapNetworkPickerView(
                     showSheet: $swapViewModel.showFromChainSelector,
-                    chain: $swapViewModel.fromChain
+                    selectedChain: $swapViewModel.fromChain
                 )
             })
             .navigationDestination(isPresented: $isFromPickerActive) {
