@@ -47,6 +47,9 @@ struct SwapCryptoDetailsView: View {
             fields
             continueButton
         }
+        .onAppear {
+            setData()
+        }
         .onReceive(timer) { input in
             swapViewModel.updateTimer(tx: tx, vault: vault)
         }
@@ -79,6 +82,7 @@ struct SwapCryptoDetailsView: View {
             coin: tx.fromCoin,
             fiatAmount: swapViewModel.fromFiatAmount(tx: tx),
             amount: $tx.fromAmount,
+            selectedChain: $swapViewModel.fromChain,
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             tx: tx,
             swapViewModel: swapViewModel
@@ -92,6 +96,7 @@ struct SwapCryptoDetailsView: View {
             coin: tx.toCoin,
             fiatAmount: swapViewModel.toFiatAmount(tx: tx),
             amount: .constant(tx.toAmountDecimal.description),
+            selectedChain: $swapViewModel.toChain,
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             tx: tx,
             swapViewModel: swapViewModel
@@ -162,6 +167,11 @@ struct SwapCryptoDetailsView: View {
     
     var refreshCounter: some View {
         SwapRefreshQuoteCounter(timer: swapViewModel.timer)
+    }
+    
+    private func setData() {
+        swapViewModel.fromChain = tx.fromCoin.chain
+        swapViewModel.toChain = tx.toCoin.chain
     }
 }
 

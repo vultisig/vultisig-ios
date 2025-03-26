@@ -13,6 +13,7 @@ struct SwapFromToField: View {
     let coin: Coin
     let fiatAmount: String
     @Binding var amount: String
+    @Binding var selectedChain: Chain?
     @Binding var showNetworkSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
@@ -30,7 +31,7 @@ struct SwapFromToField: View {
     var header: some View {
         HStack(spacing: 8) {
             fromToLabel
-            fromToNetwork
+            fromToChain
             Spacer()
             balance
         }
@@ -51,14 +52,6 @@ struct SwapFromToField: View {
         Text(NSLocalizedString(title, comment: ""))
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
-    }
-    
-    var fromToNetwork: some View {
-        Button {
-            showNetworkSelectSheet = true
-        } label: {
-            fromToNetworkLabel
-        }
     }
     
     var fromToNetworkLabel: some View {
@@ -97,40 +90,16 @@ struct SwapFromToField: View {
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
+    var fromToChain: some View {
+        Button {
+            showNetworkSelectSheet = true
+        } label: {
+            SwapFromToChain(chain: selectedChain)
+        }
+    }
+    
     var fromToCoin: some View {
-        HStack {
-            fromToCoinIcon
-            fromToCoinContent
-            chevron
-        }
-        .padding(6)
-        .background(Color.blue400)
-        .cornerRadius(60)
-    }
-    
-    var fromToCoinIcon: some View {
-        AsyncImageView(
-            logo: coin.logo,
-            size: CGSize(width: 36, height: 36),
-            ticker: coin.ticker,
-            tokenChainLogo: coin.chain.logo
-        )
-        .frame(width: 36, height: 36)
-        .foregroundColor(.black)
-    }
-    
-    var fromToCoinContent: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("\(coin.ticker)")
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.neutral0)
-            
-            if coin.isNativeToken {
-                Text("Native")
-                    .font(.body10BrockmannMedium)
-                    .foregroundColor(.extraLightGray)
-            }
-        }
+        SwapFromToCoin(coin: coin)
     }
     
     var fromToAmountField: some View {
@@ -139,14 +108,6 @@ struct SwapFromToField: View {
                 swapViewModel.updateFromAmount(tx: tx, vault: vault)
             }
         }
-    }
-    
-    var chevron: some View {
-        Image(systemName: "chevron.right")
-            .foregroundColor(.neutral0)
-            .font(.body12BrockmannMedium)
-            .bold()
-            .padding(.trailing, 8)
     }
     
     var fiatBalance: some View {
@@ -169,6 +130,7 @@ struct SwapFromToField: View {
         coin: Coin.example,
         fiatAmount: "0",
         amount: .constant("0"),
+        selectedChain: .constant(Chain.example),
         showNetworkSelectSheet: .constant(false),
         tx: SwapTransaction(),
         swapViewModel: SwapCryptoViewModel()

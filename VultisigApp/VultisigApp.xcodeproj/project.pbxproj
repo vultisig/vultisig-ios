@@ -467,6 +467,8 @@
 		A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */; };
 		A6BFE1BF2D94663E000B73C0 /* SwapNetworkPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */; };
 		A6BFE1C12D946A63000B73C0 /* SwapNetworkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C02D946A63000B73C0 /* SwapNetworkCell.swift */; };
+		A6BFE1C32D94902A000B73C0 /* SwapFromToCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C22D94902A000B73C0 /* SwapFromToCoin.swift */; };
+		A6BFE1C52D9490DF000B73C0 /* SwapFromToChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -1314,6 +1316,8 @@
 		A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToField.swift; sourceTree = "<group>"; };
 		A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapNetworkPickerView.swift; sourceTree = "<group>"; };
 		A6BFE1C02D946A63000B73C0 /* SwapNetworkCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapNetworkCell.swift; sourceTree = "<group>"; };
+		A6BFE1C22D94902A000B73C0 /* SwapFromToCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToCoin.swift; sourceTree = "<group>"; };
+		A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToChain.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -2134,6 +2138,8 @@
 				A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */,
 				A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */,
 				A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */,
+				A6BFE1C22D94902A000B73C0 /* SwapFromToCoin.swift */,
+				A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -3928,6 +3934,7 @@
 				B58BE8E82CD1C36E00FFD98F /* osmosis.swift in Sources */,
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
 				A51AE8C62C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift in Sources */,
+				A6BFE1C32D94902A000B73C0 /* SwapFromToCoin.swift in Sources */,
 				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */,
@@ -4166,6 +4173,7 @@
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A6A6EFC12D703AF60062F6EA /* SwitchToLocalLink.swift in Sources */,
 				A66A1DF82C268D6400C3EAF7 /* FontStyle.swift in Sources */,
+				A6BFE1C52D9490DF000B73C0 /* SwapFromToChain.swift in Sources */,
 				A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				A6F7B73D2D4EF8F700AC8104 /* FastBackupVaultOverview+iOS.swift in Sources */,

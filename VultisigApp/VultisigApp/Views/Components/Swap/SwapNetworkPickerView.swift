@@ -94,7 +94,8 @@ struct SwapNetworkPickerView: View {
             ForEach(filteredChains, id: \.self) { chain in
                 SwapNetworkCell(
                     chain: viewModel.groupedAssets[chain]?.first,
-                    selectedChain: $selectedChain
+                    selectedChain: $selectedChain,
+                    showSheet: $showSheet
                 )
             }
         }
