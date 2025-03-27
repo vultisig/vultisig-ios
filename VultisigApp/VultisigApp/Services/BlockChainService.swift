@@ -87,7 +87,12 @@ final class BlockChainService {
             }
         }
         
-        if await tx.toCoin.chain == .base {
+        let fromCoin = await tx.fromCoin
+        let toCoin = await tx.toCoin
+        
+        
+        if (fromCoin.chain == .thorChain && toCoin.chain == .base) ||
+            (fromCoin.chain == .base && toCoin.chain == .thorChain) {
             
             let specific = try await fetchSpecific(
                 for: tx.fromCoin,

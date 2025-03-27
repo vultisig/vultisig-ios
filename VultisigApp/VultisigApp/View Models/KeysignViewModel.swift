@@ -303,7 +303,9 @@ class KeysignViewModel: ObservableObject {
             switch swapPayload {
             case .thorchain(let payload):
                 
-                if payload.toCoin.chain == .base {
+                
+                if (payload.fromCoin.chain == .thorChain && payload.toCoin.chain == .base) ||
+                    (payload.fromCoin.chain == .base && payload.toCoin.chain == .thorChain) {
                     break
                 }
                 

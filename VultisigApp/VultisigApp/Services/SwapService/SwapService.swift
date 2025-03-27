@@ -26,7 +26,9 @@ struct SwapService {
         switch provider {
         case .thorchain:
             
-            if toCoin.chain == Chain.base {
+            if (fromCoin.chain == Chain.thorChain && toCoin.chain == Chain.base) ||
+                (fromCoin.chain == Chain.base && toCoin.chain == Chain.thorChain)
+            {
                 
                 guard let fromChainID = fromCoin.chain.chainIDElDorito else {
                       throw SwapError.routeUnavailable

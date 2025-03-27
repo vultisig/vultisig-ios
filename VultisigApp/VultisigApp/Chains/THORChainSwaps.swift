@@ -28,7 +28,8 @@ class THORChainSwaps {
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         
-        if swapPayload.toCoin.chain == .base {
+        if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) ||
+            (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
             return try THORChainHelper.getPreSignedInputData(keysignPayload: keysignPayload)
         }
         

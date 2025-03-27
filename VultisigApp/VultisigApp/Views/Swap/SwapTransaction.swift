@@ -57,7 +57,8 @@ class SwapTransaction: ObservableObject {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
             
-            if toCoin.chain == .base {
+            if (fromCoin.chain == .thorChain && toCoin.chain == .base) ||
+                (fromCoin.chain == .base && toCoin.chain == .thorChain) {
                 return expected
             }
             
