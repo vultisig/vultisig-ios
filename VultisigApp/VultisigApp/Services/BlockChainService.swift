@@ -448,15 +448,20 @@ private extension BlockChainService {
         gasPrice: BigInt,
         priorityFee: BigInt,
         nonce: Int64
-    ) async throws -> BigInt {
-        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        let gas = try await service.estimateGasForERC20Transfer(
-            senderAddress: tx.coin.address,
-            contractAddress: tx.coin.contractAddress,
-            recipientAddress: .anyAddress,
-            value: BigInt(stringLiteral: tx.coin.rawBalance)
-        )
-        return gas
+    ) async  -> BigInt {
+        do{
+            let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+            let gas = try await service.estimateGasForERC20Transfer(
+                senderAddress: tx.coin.address,
+                contractAddress: tx.coin.contractAddress,
+                recipientAddress: .anyAddress,
+                value: BigInt(stringLiteral: tx.coin.rawBalance)
+            )
+            return gas
+        } catch {
+            print("failed to estimate ERC20 transfer gas limit : \(error)")
+            return 0
+        }
     }
     
     func estimateGasLimit(
