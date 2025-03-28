@@ -1,5 +1,5 @@
 //
-//  SwapNetworkPickerView.swift
+//  SwapChainPickerView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-03-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SwapNetworkPickerView: View {
+struct SwapChainPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
@@ -105,7 +105,7 @@ struct SwapNetworkPickerView: View {
     var list: some View {
         VStack(spacing: 0) {
             ForEach(filteredChains, id: \.self) { chain in
-                SwapNetworkCell(
+                SwapChainCell(
                     coins: vault.coins,
                     chain: chain,
                     selectedCoin: $selectedCoin,
@@ -153,7 +153,7 @@ struct SwapNetworkPickerView: View {
 }
 
 #Preview {
-    SwapNetworkPickerView(
+    SwapChainPickerView(
         vault: Vault.example,
         showSheet: .constant(true),
         selectedChain: .constant(Chain.example),

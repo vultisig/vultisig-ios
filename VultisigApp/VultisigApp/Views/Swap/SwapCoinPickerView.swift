@@ -21,7 +21,7 @@ struct SwapCoinPickerView: View {
     var body: some View {
         content
             .sheet(isPresented: $showChainPickerSheet, content: {
-                SwapNetworkPickerView(
+                SwapChainPickerView(
                     vault: vault,
                     showSheet: $showChainPickerSheet,
                     selectedChain: $selectedChain,

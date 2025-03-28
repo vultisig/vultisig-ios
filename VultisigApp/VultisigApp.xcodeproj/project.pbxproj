@@ -465,8 +465,8 @@
 		A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */; };
 		A6BFE1B72D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */; };
 		A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */; };
-		A6BFE1BF2D94663E000B73C0 /* SwapNetworkPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */; };
-		A6BFE1C12D946A63000B73C0 /* SwapNetworkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C02D946A63000B73C0 /* SwapNetworkCell.swift */; };
+		A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1BE2D94663E000B73C0 /* SwapChainPickerView.swift */; };
+		A6BFE1C12D946A63000B73C0 /* SwapChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C02D946A63000B73C0 /* SwapChainCell.swift */; };
 		A6BFE1C32D94902A000B73C0 /* SwapFromToCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C22D94902A000B73C0 /* SwapFromToCoin.swift */; };
 		A6BFE1C52D9490DF000B73C0 /* SwapFromToChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */; };
 		A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */; };
@@ -1316,8 +1316,8 @@
 		A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+iOS.swift"; sourceTree = "<group>"; };
 		A6BFE1B62D93B1D8000B73C0 /* SwapRefreshQuoteCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRefreshQuoteCounter.swift; sourceTree = "<group>"; };
 		A6BFE1BC2D945AA5000B73C0 /* SwapFromToField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToField.swift; sourceTree = "<group>"; };
-		A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapNetworkPickerView.swift; sourceTree = "<group>"; };
-		A6BFE1C02D946A63000B73C0 /* SwapNetworkCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapNetworkCell.swift; sourceTree = "<group>"; };
+		A6BFE1BE2D94663E000B73C0 /* SwapChainPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapChainPickerView.swift; sourceTree = "<group>"; };
+		A6BFE1C02D946A63000B73C0 /* SwapChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapChainCell.swift; sourceTree = "<group>"; };
 		A6BFE1C22D94902A000B73C0 /* SwapFromToCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToCoin.swift; sourceTree = "<group>"; };
 		A6BFE1C42D9490DF000B73C0 /* SwapFromToChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFromToChain.swift; sourceTree = "<group>"; };
 		A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinPickerView.swift; sourceTree = "<group>"; };
@@ -3035,7 +3035,7 @@
 				A6ACAD642D110B6000432CC4 /* SettingToggleCell.swift */,
 				A6F7B6C52D4AB86900AC8104 /* EmptyPeerCell.swift */,
 				A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */,
-				A6BFE1C02D946A63000B73C0 /* SwapNetworkCell.swift */,
+				A6BFE1C02D946A63000B73C0 /* SwapChainCell.swift */,
 				A6BFE1C82D95F538000B73C0 /* SwapCoinCell.swift */,
 			);
 			path = Cells;
@@ -3238,7 +3238,7 @@
 				A543B3A12BEA93D4003FB989 /* SwapQuote.swift */,
 				A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */,
 				A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */,
-				A6BFE1BE2D94663E000B73C0 /* SwapNetworkPickerView.swift */,
+				A6BFE1BE2D94663E000B73C0 /* SwapChainPickerView.swift */,
 				A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */,
 			);
 			path = Swap;
@@ -3723,7 +3723,7 @@
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
-				A6BFE1C12D946A63000B73C0 /* SwapNetworkCell.swift in Sources */,
+				A6BFE1C12D946A63000B73C0 /* SwapChainCell.swift in Sources */,
 				A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */,
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
@@ -4321,7 +4321,7 @@
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
 				A6C670F52CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift in Sources */,
 				B55246CB2CF5643800E3532C /* noble.swift in Sources */,
-				A6BFE1BF2D94663E000B73C0 /* SwapNetworkPickerView.swift in Sources */,
+				A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A6C670CF2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,

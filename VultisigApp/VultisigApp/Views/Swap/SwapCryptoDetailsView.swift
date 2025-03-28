@@ -54,7 +54,7 @@ struct SwapCryptoDetailsView: View {
             continueButton
         }
         .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
-            SwapNetworkPickerView(
+            SwapChainPickerView(
                 vault: vault,
                 showSheet: $swapViewModel.showFromChainSelector,
                 selectedChain: $swapViewModel.fromChain,
@@ -62,7 +62,7 @@ struct SwapCryptoDetailsView: View {
             )
         })
         .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
-            SwapNetworkPickerView(
+            SwapChainPickerView(
                 vault: vault,
                 showSheet: $swapViewModel.showToChainSelector,
                 selectedChain: $swapViewModel.toChain,

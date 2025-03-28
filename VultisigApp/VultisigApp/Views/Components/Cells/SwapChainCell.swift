@@ -1,5 +1,5 @@
 //
-//  SwapNetworkCell.swift
+//  SwapChainCell.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-03-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SwapNetworkCell: View {
+struct SwapChainCell: View {
     let coins: [Coin]
     let chain: Chain
     @Binding var selectedCoin: Coin
@@ -94,7 +94,7 @@ struct SwapNetworkCell: View {
 }
 
 #Preview {
-    SwapNetworkCell(
+    SwapChainCell(
         coins: [],
         chain: Chain.example,
         selectedCoin: .constant(Coin.example),
