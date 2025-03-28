@@ -29,6 +29,12 @@ struct SwapCryptoDetailsView: View {
             .onReceive(timer) { input in
                 swapViewModel.updateTimer(tx: tx, vault: vault)
             }
+            .onChange(of: tx.fromCoin, { oldValue, newValue in
+                handleFromCoinUpdate()
+            })
+            .onChange(of: tx.toCoin, { oldValue, newValue in
+                handleToCoinUpdate()
+            })
             .navigationDestination(isPresented: $isFromPickerActive) {
                 CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
                     swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
@@ -200,6 +206,14 @@ struct SwapCryptoDetailsView: View {
     private func setData() {
         swapViewModel.fromChain = tx.fromCoin.chain
         swapViewModel.toChain = tx.toCoin.chain
+    }
+    
+    private func handleFromCoinUpdate() {
+        swapViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault)
+    }
+    
+    private func handleToCoinUpdate() {
+        swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault)
     }
 }
 

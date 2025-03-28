@@ -113,6 +113,7 @@ struct SwapFromToField: View {
                 swapViewModel.updateFromAmount(tx: tx, vault: vault)
             }
         }
+        .disabled(title=="to")
     }
     
     var fiatBalance: some View {
