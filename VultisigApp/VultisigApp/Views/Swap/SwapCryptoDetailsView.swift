@@ -141,9 +141,7 @@ struct SwapCryptoDetailsView: View {
     
     var swapButton: some View {
         Button {
-            buttonRotated.toggle()
-            swapViewModel.switchCoins(tx: tx, vault: vault)
-            swapViewModel.updateCoinLists(tx: tx)
+            handleSwapTap()
         } label: {
             swapLabel
         }
@@ -216,6 +214,15 @@ struct SwapCryptoDetailsView: View {
     
     private func handleToCoinUpdate() {
         swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault)
+    }
+    
+    private func handleSwapTap() {
+        buttonRotated.toggle()
+        swapViewModel.switchCoins(tx: tx, vault: vault)
+        swapViewModel.updateCoinLists(tx: tx)
+        let fromChain = swapViewModel.fromChain
+        swapViewModel.fromChain = swapViewModel.toChain
+        swapViewModel.toChain = fromChain
     }
 }
 
