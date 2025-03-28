@@ -345,7 +345,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
 "editAddress" = "Uredi adresu";
-"validAddressDomainError" = "Nismo mogli razrijesti adresu ovog domena usluge u ovom lancu.";
+"validAddressDomainError" = "Unesite valjanu adresu za odabrani blockchain.";
 "privacyPolicy" = "Pravila o privatnosti";
 "termsOfService" = "Uvjeti korištenja";
 "legal" = "Pravno";
