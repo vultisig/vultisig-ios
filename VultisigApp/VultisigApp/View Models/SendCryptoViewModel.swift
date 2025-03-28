@@ -328,7 +328,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "validAddressDomainError"
             showAlert = true
-            logger.log("We were unable to resolve the address of this domain service on this chain.")
+            logger.log("Please enter a valid address for the selected blockchain.")
             isValidForm = false
             isLoading = false
             return false

@@ -346,7 +346,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", aumentando a flexibilidade sem comprometer a segurança.";
 "noSavedAddressesForChain" = "Nenhum endereço salvo encontrado para esta cadeia.";
 "editAddress" = "Editar endereço";
-"validAddressDomainError" = "Não foi possível resolver o endereço deste domínio de serviço nesta cadeia.";
+"validAddressDomainError" = "Por favor, insira um endereço válido para o blockchain selecionado.";
 "privacyPolicy" = "Política de Privacidade";
 "termsOfService" = "Termos de Serviço";
 "legal" = "Legal";
