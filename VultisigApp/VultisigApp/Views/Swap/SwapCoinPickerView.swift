@@ -8,16 +8,26 @@
 import SwiftUI
 
 struct SwapCoinPickerView: View {
-    let coins: [Coin]
+    let vault: Vault
     let selectedNetwork: Chain?
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
+    @Binding var selectedChain: Chain?
 
     @State var searchText = ""
+    @State var showChainPickerSheet: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
 
     var body: some View {
         content
+            .sheet(isPresented: $showChainPickerSheet, content: {
+                SwapNetworkPickerView(
+                    vault: vault,
+                    showSheet: $showChainPickerSheet,
+                    selectedChain: $selectedChain,
+                    selectedCoin: $selectedCoin
+                )
+            })
     }
     
     var content: some View {
@@ -66,6 +76,7 @@ struct SwapCoinPickerView: View {
         ScrollView {
             VStack(spacing: 12) {
                 searchBar
+                chainSelector
                 
                 if getCoins().count > 0 {
                     networkTitle
@@ -123,6 +134,37 @@ struct SwapCoinPickerView: View {
             .cornerRadius(12)
             .padding(.bottom, 12)
     }
+    
+    var chainSelector: some View {
+        HStack {
+            Text(NSLocalizedString("chain", comment: ""))
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+            
+            chainSelectorButton
+        }
+    }
+    
+    var chainSelectorButton: some View {
+        Button {
+            showChainPickerSheet = true
+        } label: {
+            chainSelectorLabel
+        }
+    }
+    
+    var chainSelectorLabel: some View {
+        HStack {
+            Image(selectedNetwork?.logo ?? "")
+                .resizable()
+                .frame(width: 16, height: 16)
+            
+            Text(selectedNetwork?.name ?? "")
+            
+            Image(systemName: "chevron.down")
+        }
+        .foregroundColor(.neutral0)
+    }
 
     var searchField: some View {
         TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
@@ -135,7 +177,7 @@ struct SwapCoinPickerView: View {
     }
     
     private func getCoins() -> [Coin] {
-        let availableCoins = coins.filter { coin in
+        let availableCoins = vault.coins.filter { coin in
             coin.chain == selectedNetwork
         }.sorted {
             $0.ticker < $1.ticker
@@ -149,5 +191,5 @@ struct SwapCoinPickerView: View {
 }
 
 #Preview {
-    SwapCoinPickerView(coins: [], selectedNetwork: Chain.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example))
+    SwapCoinPickerView(vault: Vault.example, selectedNetwork: Chain.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example))
 }
