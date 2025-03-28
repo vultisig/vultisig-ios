@@ -110,15 +110,14 @@ struct ElDoritoQuote: Codable, Hashable {
 extension ElDoritoQuote {
     func toThorchainSwapQuote() throws -> ThorchainSwapQuote {
         guard let expectedBuyAmount = expectedBuyAmount,
-              let expiration = expiration,
               let memo = memo else {
             throw SwapError.serverError(message: "ElDoritoQuote :: We need the expectedBuyAmount, expiration and memo for this ThorchainSwapQuote")
         }
         
-        return ThorchainSwapQuote(
+        let quote = ThorchainSwapQuote(
             dustThreshold: nil, // No direct mapping, setting as nil
             expectedAmountOut: expectedBuyAmount,
-            expiry: Int(expiration) ?? 0,
+            expiry: Int(expiration ?? "0") ?? 0,
             fees: Fees(
                 affiliate: fees?.first(where: { $0.type == "affiliate" })?.amount ?? "0",
                 asset: fees?.first?.asset ?? "UNKNOWN",
@@ -142,27 +141,7 @@ extension ElDoritoQuote {
             warning: warnings?.first ?? "",
             router: nil // Not provided in ElDoritoQuote
         )
-    }
-}
-
-extension ElDoritoQuote {
-    func toOneInchSwapPayload(fromCoin: Coin, toCoin: Coin) throws -> OneInchQuote {
-        guard
-            let expectedBuyAmount = expectedBuyAmount,
-            let tx = tx else {
-            throw SwapError.serverError(message: "ElDoritoQuote :: Missing required fields (sellAmount, expectedBuyAmount, tx) for OneInchSwapPayload")
-        }
         
-        return OneInchQuote(
-            dstAmount: expectedBuyAmount,
-            tx: OneInchQuote.Transaction(
-                from: tx.from,
-                to: tx.to,
-                data: tx.data,
-                value: tx.value,
-                gasPrice: tx.gasPrice,
-                gas: tx.gas
-            )
-        )
+        return quote
     }
 }

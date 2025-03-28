@@ -395,12 +395,12 @@ private extension SwapCryptoViewModel {
             
             tx.quote = quote
             
-            print("SWAP CRYPTO VIEW MODEL UPDATE QUOTE")
-            print(tx)
-            print(tx.fromCoin)
-            print(tx.toCoin)
-            print(tx.toAmountDecimal)
-            print(tx.quote)
+//            print("SWAP CRYPTO VIEW MODEL UPDATE QUOTE")
+//            print(tx)
+//            print(tx.fromCoin)
+//            print(tx.toCoin)
+//            print(tx.toAmountDecimal)
+//            print(tx.quote)
             
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds

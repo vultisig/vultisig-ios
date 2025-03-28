@@ -73,8 +73,7 @@ struct SwapService {
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
         case .eldorito:
-            guard let fromChainID = fromCoin.chain.chainIDElDorito,
-                  let toChainID = toCoin.chain.chainIDElDorito else {
+            guard let fromChainID = fromCoin.chain.chainIDElDorito else {
                   throw SwapError.routeUnavailable
             }
             return try await fetchElDoritoQuote(
@@ -172,11 +171,7 @@ private extension SwapService {
             isAffiliate: isAffiliate
         )
         
-        if fromCoin.chain == .thorChain {
-            return .thorchain(try response.quote.toThorchainSwapQuote())
-        } else {
-            return .oneinch(try response.quote.toOneInchSwapPayload(fromCoin: fromCoin, toCoin: toCoin), fee: response.fee)
-        }
+        return .thorchain(try response.quote.toThorchainSwapQuote())
     }
 
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
