@@ -362,7 +362,7 @@
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessere so die Flexibilität, ohne die Sicherheit zu vernachlässigen.";
 "noSavedAddressesForChain" = "Keine gespeicherten Adressen für diese Kette gefunden.";
 "editAddress" = "Adresse bearbeiten";
-"validAddressDomainError" = "Wir konnten die Adresse dieses Domain-Dienstes in dieser Kette nicht auflösen.";
+"validAddressDomainError" = "Bitte gib eine gültige Adresse für die ausgewählte Blockchain ein.";
 "privacyPolicy" = "Datenschutzerklärung";
 "termsOfService" = "Nutzungsbedingungen";
 "legal" = "Rechtliches";
