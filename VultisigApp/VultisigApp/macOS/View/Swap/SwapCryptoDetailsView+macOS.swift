@@ -35,9 +35,7 @@ extension SwapCryptoDetailsView {
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
-                fromCoinField
                 swapContent
-                toCoinField
 //                percentageButtons
                 summary
             }

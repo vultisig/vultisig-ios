@@ -42,6 +42,7 @@ struct SwapChainPickerView: View {
                 main
             }
         }
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var main: some View {
@@ -90,7 +91,7 @@ struct SwapChainPickerView: View {
                 }
             }
             .padding(.vertical, 8)
-            .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
+            .padding(.bottom, 50)
             .padding(.horizontal, 16)
         }
     }
