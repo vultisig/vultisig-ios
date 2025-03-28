@@ -81,11 +81,14 @@ struct SwapNetworkCell: View {
         
         let availableCoins = coins.filter { coin in
             coin.chain == selectedChain
-        }.sorted()
+        }.sorted {
+            $0.ticker < $1.ticker
+        }
         
         if let firstCoin = availableCoins.first {
             selectedCoin = firstCoin
         }
+        
         showSheet = false
     }
 }

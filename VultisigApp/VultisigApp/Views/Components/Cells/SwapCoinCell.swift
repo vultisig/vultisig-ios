@@ -43,6 +43,8 @@ struct SwapCoinCell: View {
             
             if isSelected {
                 check
+            } else {
+                balance
             }
         }
         .padding(.horizontal, 22)
@@ -84,6 +86,17 @@ struct SwapCoinCell: View {
             .background(Color.blue600)
             .cornerRadius(32)
             .bold()
+    }
+    
+    var balance: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            Text(coin.balanceString)
+                .foregroundColor(.neutral0)
+            
+            Text(coin.balanceInFiat)
+                .foregroundColor(.extraLightGray)
+        }
+        .font(.body12BrockmannMedium)
     }
     
     private func setData() {
