@@ -580,3 +580,7 @@
 "backupWithoutPassword" = "Backup ohne Passwort";
 "usePassword" = "Passwort verwenden";
 "migrate" = "Migrieren";
+"selectNetwork" = "Netzwerk auswählen";
+"network" = "Netzwerk";
+"selectAsset" = "Asset auswählen";
+"chain" = "Blockchain";

@@ -563,3 +563,7 @@
 "backupWithoutPassword" = "Sigurnosna kopija bez lozinke";
 "usePassword" = "Koristi lozinku";
 "migrate" = "Migrirati";
+"selectNetwork" = "Odaberi mrežu";
+"network" = "Mreža";
+"selectAsset" = "Odaberi imovinu";
+"chain" = "Lanac";

@@ -564,3 +564,7 @@
 "backupWithoutPassword" = "Backup sem senha";
 "usePassword" = "Usar senha";
 "migrate" = "Migrar";
+"selectNetwork" = "Selecionar rede";
+"network" = "Rede";
+"selectAsset" = "Selecionar ativo";
+"chain" = "Cadeia";
