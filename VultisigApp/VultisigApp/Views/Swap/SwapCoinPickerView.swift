@@ -136,12 +136,14 @@ struct SwapCoinPickerView: View {
     }
     
     var chainSelector: some View {
-        HStack {
+        HStack(spacing: 6) {
             Text(NSLocalizedString("chain", comment: ""))
                 .font(.body12BrockmannMedium)
                 .foregroundColor(.extraLightGray)
             
             chainSelectorButton
+            
+            Spacer()
         }
     }
     
@@ -154,7 +156,7 @@ struct SwapCoinPickerView: View {
     }
     
     var chainSelectorLabel: some View {
-        HStack {
+        HStack(spacing: 4) {
             Image(selectedNetwork?.logo ?? "")
                 .resizable()
                 .frame(width: 16, height: 16)
@@ -164,6 +166,7 @@ struct SwapCoinPickerView: View {
             Image(systemName: "chevron.down")
         }
         .foregroundColor(.neutral0)
+        .font(.body12BrockmannMedium)
     }
 
     var searchField: some View {
