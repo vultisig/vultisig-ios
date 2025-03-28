@@ -412,7 +412,7 @@
 "invalidAddress" = "Ungültige Adresse";
 "emptyAddressField" = "Leeres Adressfeld.";
 "nonNegativeFeeError" = "Nicht genug Gas, um die Transaktion abzudecken.";
-"part" = "Teil";
+"part" = "Anteil";
 "devices" = "Geräte";
 "signers" = "Unterzeichner";
 "vaultPart" = "Tresorteil";
@@ -556,7 +556,7 @@
 "FastVaultOverview1Text2" = "";
 "FastVaultOverview1Text3" = " Anteile, ";
 "FastVaultOverview1Text4" = "sichere sie jetzt";
-"FastVaultOverview2Text1" = "Teil 1 der Vault-Anteile wird ";
+"FastVaultOverview2Text1" = "Anteil 1 der Tresoranteile wird ";
 "FastVaultOverview2Text2" = "vom Server gespeichert.";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
@@ -572,8 +572,8 @@
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
 "startUsingVault" = "Tresor nutzen";
 "loadingDetails" = "Lade Details";
-"backupPart1" = "Backup Teil 1";
-"backupPart2" = "Backup Teil 2";
+"backupPart1" = "Sicherungsanteil 1";
+"backupPart2" = "Sicherungsanteil 2";
 "vultiserverPassword" = "Vultiserver-Passwort";
 "doYouWantToAddPassword" = "Möchten Sie ein Passwort für Ihre Geräte-Tresoranteile hinzufügen?";
 "doYouWantToAddPasswordDescription" = "Wir empfehlen, kein Backup-Passwort für Geräte-Tresoranteile zu setzen – Ihre Daten sind sicher, wenn die Backups an verschiedenen Orten gespeichert werden, was bereits einen hohen Schutz bietet. Denken Sie daran, dass Backup-Passwörter nicht wiederhergestellt werden können, wenn Sie sie vergessen. Ihre Wahl!";
