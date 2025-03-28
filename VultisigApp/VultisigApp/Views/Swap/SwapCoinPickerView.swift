@@ -171,13 +171,18 @@ struct SwapCoinPickerView: View {
     }
 
     var searchField: some View {
-        TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .disableAutocorrection(true)
-            .padding(.horizontal, 8)
-            .borderlessTextFieldStyle()
-            .colorScheme(.dark)
+        HStack(spacing: 0) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.extraLightGray)
+            
+            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
+                .foregroundColor(.neutral0)
+                .disableAutocorrection(true)
+                .padding(.horizontal, 8)
+                .borderlessTextFieldStyle()
+                .colorScheme(.dark)
+        }
+        .font(.body16Menlo)
     }
     
     private func getCoins() -> [Coin] {
