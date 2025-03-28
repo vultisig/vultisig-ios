@@ -40,7 +40,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case akash
     case tron
     
-    
     enum MigrationKeys: String, CodingKey {
         case ticker
     }
@@ -392,4 +391,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     var index: Int {
         return Chain.allCases.firstIndex(of: self) ?? 0
     }
+    
+    static let example = Chain(name: "Bitcoin")!
 }

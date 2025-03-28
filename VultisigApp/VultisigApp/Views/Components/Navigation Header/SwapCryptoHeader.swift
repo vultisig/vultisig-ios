@@ -15,16 +15,23 @@ struct SwapCryptoHeader: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        ZStack {
+            content
+            actions
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 40)
+        .padding(.top, 8)
+    }
+    
+    var content: some View {
         HStack {
             leadingAction
             Spacer()
             text
             Spacer()
-            trailingAction
+            trailingAction.opacity(0)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 40)
-        .padding(.top, 8)
     }
     
     var leadingAction: some View {
@@ -44,7 +51,6 @@ struct SwapCryptoHeader: View {
                 type: .Keysign,
                 renderedImage: shareSheetViewModel.renderedImage
             )
-            .opacity(swapViewModel.currentIndex==3 ? 1 : 0)
             .disabled(swapViewModel.currentIndex != 3)
         }
     }
@@ -59,6 +65,22 @@ struct SwapCryptoHeader: View {
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
+    }
+    
+    var refreshCounter: some View {
+        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
+    }
+    
+    var actions: some View {
+        HStack {
+            Spacer()
+            
+            if swapViewModel.currentIndex==1 {
+                refreshCounter
+            } else if swapViewModel.currentIndex==3 {
+                trailingAction
+            }
+        }
     }
     
     private func handleBackTap() {

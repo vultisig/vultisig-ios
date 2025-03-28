@@ -609,3 +609,7 @@
 "backupWithoutPassword" = "Backup without password";
 "usePassword" = "Use password";
 "migrate" = "Migrate";
+"selectNetwork" = "Select network";
+"network" = "Network";
+"selectAsset" = "Select asset";
+"chain" = "Chain";
