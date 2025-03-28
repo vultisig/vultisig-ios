@@ -185,7 +185,7 @@ private extension BlockChainService {
         
         let estimateGasLimit = tx.coin.isNativeToken ?
         try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
-        try await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+        await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
         
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
