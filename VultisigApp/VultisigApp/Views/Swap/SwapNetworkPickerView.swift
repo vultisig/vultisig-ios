@@ -11,6 +11,7 @@ struct SwapNetworkPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
+    @Binding var selectedCoin: Coin
 
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
@@ -105,7 +106,9 @@ struct SwapNetworkPickerView: View {
         VStack(spacing: 0) {
             ForEach(filteredChains, id: \.self) { chain in
                 SwapNetworkCell(
+                    coins: vault.coins,
                     chain: chain,
+                    selectedCoin: $selectedCoin,
                     selectedChain: $selectedChain,
                     showSheet: $showSheet
                 )
@@ -150,5 +153,10 @@ struct SwapNetworkPickerView: View {
 }
 
 #Preview {
-    SwapNetworkPickerView(vault: Vault.example, showSheet: .constant(true), selectedChain: .constant(Chain.example))
+    SwapNetworkPickerView(
+        vault: Vault.example,
+        showSheet: .constant(true),
+        selectedChain: .constant(Chain.example),
+        selectedCoin: .constant(Coin.example)
+    )
 }

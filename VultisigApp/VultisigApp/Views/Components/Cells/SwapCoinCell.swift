@@ -50,9 +50,12 @@ struct SwapCoinCell: View {
     }
     
     var icon: some View {
-        Image(coin.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
+        AsyncImageView(
+            logo: coin.logo,
+            size: CGSize(width: 32, height: 32),
+            ticker: coin.ticker,
+            tokenChainLogo: coin.chain.logo
+        )
     }
     
     var title: some View {
@@ -94,9 +97,9 @@ struct SwapCoinCell: View {
 }
 
 #Preview {
-    SwapNetworkCell(
-        chain: Chain.example,
-        selectedChain: .constant(Chain.example),
+    SwapCoinCell(
+        coin: Coin.example,
+        selectedCoin: .constant(Coin.example),
         showSheet: .constant(true)
     )
 }

@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct SwapNetworkCell: View {
+    let coins: [Coin]
     let chain: Chain
+    @Binding var selectedCoin: Coin
     @Binding var selectedChain: Chain?
     @Binding var showSheet: Bool
     
@@ -76,13 +78,23 @@ struct SwapNetworkCell: View {
     
     private func handleTap() {
         selectedChain = chain
+        
+        let availableCoins = coins.filter { coin in
+            coin.chain == selectedChain
+        }.sorted()
+        
+        if let firstCoin = availableCoins.first {
+            selectedCoin = firstCoin
+        }
         showSheet = false
     }
 }
 
 #Preview {
     SwapNetworkCell(
+        coins: [],
         chain: Chain.example,
+        selectedCoin: .constant(Coin.example),
         selectedChain: .constant(Chain.example),
         showSheet: .constant(true)
     )

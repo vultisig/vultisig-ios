@@ -137,7 +137,7 @@ struct SwapCoinPickerView: View {
     private func getCoins() -> [Coin] {
         let availableCoins = coins.filter { coin in
             coin.chain == selectedNetwork
-        }
+        }.sorted()
         
         return searchText.isEmpty
             ? availableCoins

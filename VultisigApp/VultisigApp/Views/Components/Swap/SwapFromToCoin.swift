@@ -28,8 +28,6 @@ struct SwapFromToCoin: View {
             ticker: coin.ticker,
             tokenChainLogo: coin.chain.logo
         )
-        .frame(width: 36, height: 36)
-        .foregroundColor(.black)
     }
     
     var fromToCoinContent: some View {
