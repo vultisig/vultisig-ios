@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SwapPercentageButtons: View {
-    @ObservedObject var tx: SwapTransaction
-    @ObservedObject var swapViewModel: SwapCryptoViewModel
+    
+    let buttonOptions = [25, 50, 75, 100]
     
     var body: some View {
         container
@@ -24,43 +24,14 @@ struct SwapPercentageButtons: View {
     
     var buttons: some View {
         HStack(spacing: 8) {
-            button1
-            button2
-            button3
-            button4
+            ForEach(buttonOptions, id: \.self) { option in
+                getPercentageButton(for: option)
+            }
         }
     }
     
-    var button1: some View {
-        Button {
-            
-        } label: {
-            getPercentageCell(for: "25")
-        }
-    }
-    
-    var button2: some View {
-        Button {
-            
-        } label: {
-            getPercentageCell(for: "50")
-        }
-    }
-    
-    var button3: some View {
-        Button {
-            
-        } label: {
-            getPercentageCell(for: "75")
-        }
-    }
-    
-    var button4: some View {
-        Button {
-            
-        } label: {
-            getPercentageCell(for: "100")
-        }
+    private func getPercentageButton(for option: Int) -> some View {
+        getPercentageCell(for: "\(option)")
     }
     
     private func getPercentageCell(for text: String) -> some View {
@@ -75,8 +46,5 @@ struct SwapPercentageButtons: View {
 }
 
 #Preview {
-    SwapPercentageButtons(
-        tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel()
-    )
+    SwapPercentageButtons()
 }

@@ -41,13 +41,10 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons(
-            tx: tx,
-            swapViewModel: swapViewModel
-        )
-        .opacity(keyboardObserver.keyboardHeight==0 ? 0 : 1)
-        .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
-        .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
+        SwapPercentageButtons()
+            .opacity(keyboardObserver.keyboardHeight==0 ? 0 : 1)
+            .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
+            .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
     }
     
     var fields: some View {

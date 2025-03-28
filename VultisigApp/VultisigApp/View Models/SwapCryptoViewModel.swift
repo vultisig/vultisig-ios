@@ -376,7 +376,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func pickerToCoins(tx: SwapTransaction) -> [Coin] {
         return tx.toCoins.filter({ coin in
-            coin.chain == fromChain
+            coin.chain == toChain
         }).sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
