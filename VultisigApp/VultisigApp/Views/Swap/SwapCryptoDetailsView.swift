@@ -23,18 +23,12 @@ struct SwapCryptoDetailsView: View {
 
     var body: some View {
         container
-            .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
-                SwapNetworkPickerView(
-                    showSheet: $swapViewModel.showFromChainSelector,
-                    selectedChain: $swapViewModel.fromChain
-                )
-            })
-            .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
-                SwapNetworkPickerView(
-                    showSheet: $swapViewModel.showToChainSelector,
-                    selectedChain: $swapViewModel.toChain
-                )
-            })
+            .onAppear {
+                setData()
+            }
+            .onReceive(timer) { input in
+                swapViewModel.updateTimer(tx: tx, vault: vault)
+            }
             .navigationDestination(isPresented: $isFromPickerActive) {
                 CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
                     swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
@@ -53,12 +47,28 @@ struct SwapCryptoDetailsView: View {
             fields
             continueButton
         }
-        .onAppear {
-            setData()
-        }
-        .onReceive(timer) { input in
-            swapViewModel.updateTimer(tx: tx, vault: vault)
-        }
+        .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
+            SwapNetworkPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showFromChainSelector,
+                selectedChain: $swapViewModel.fromChain
+            )
+        })
+        .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
+            SwapNetworkPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showToChainSelector,
+                selectedChain: $swapViewModel.toChain
+            )
+        })
+        .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
+            SwapCoinPickerView(
+                coins: vault.coins,
+                selectedNetwork: swapViewModel.fromChain,
+                showSheet: $swapViewModel.showFromCoinSelector,
+                selectedCoin: $tx.fromCoin
+            )
+        })
     }
     
     var swapContent: some View {
@@ -90,6 +100,7 @@ struct SwapCryptoDetailsView: View {
             amount: $tx.fromAmount,
             selectedChain: $swapViewModel.fromChain,
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
+            showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
             tx: tx,
             swapViewModel: swapViewModel
         )
@@ -104,6 +115,7 @@ struct SwapCryptoDetailsView: View {
             amount: .constant(tx.toAmountDecimal.description),
             selectedChain: $swapViewModel.toChain,
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
+            showCoinSelectSheet: $swapViewModel.showToCoinSelector,
             tx: tx,
             swapViewModel: swapViewModel
         )

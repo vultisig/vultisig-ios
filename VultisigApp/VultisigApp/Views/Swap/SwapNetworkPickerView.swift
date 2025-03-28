@@ -8,19 +8,26 @@
 import SwiftUI
 
 struct SwapNetworkPickerView: View {
+    let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
 
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
-    var filteredChains: [String] {
-        let groupedKeys = viewModel.groupedAssets.keys
+    var filteredChains: [Chain] {
+        let chains = vault.coins.map { coin in
+            coin.chain
+        }
+        
+        let chainsArray = Array(Set(chains)).sorted {
+            $0.name < $1.name
+        }
+        
         return searchText.isEmpty
-            ? groupedKeys.sorted()
-            : groupedKeys
-                .filter { $0.lowercased().contains(searchText.lowercased()) }
-                .sorted()
+            ? chainsArray
+            : chainsArray
+            .filter { $0.name.lowercased().contains(searchText.lowercased()) }
     }
 
     var body: some View {
@@ -98,7 +105,7 @@ struct SwapNetworkPickerView: View {
         VStack(spacing: 0) {
             ForEach(filteredChains, id: \.self) { chain in
                 SwapNetworkCell(
-                    chain: viewModel.groupedAssets[chain]?.first,
+                    chain: chain,
                     selectedChain: $selectedChain,
                     showSheet: $showSheet
                 )
@@ -143,5 +150,5 @@ struct SwapNetworkPickerView: View {
 }
 
 #Preview {
-    SwapNetworkPickerView(showSheet: .constant(true), selectedChain: .constant(Chain.example))
+    SwapNetworkPickerView(vault: Vault.example, showSheet: .constant(true), selectedChain: .constant(Chain.example))
 }

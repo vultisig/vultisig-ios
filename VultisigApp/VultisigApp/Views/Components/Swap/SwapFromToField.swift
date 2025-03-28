@@ -15,6 +15,7 @@ struct SwapFromToField: View {
     @Binding var amount: String
     @Binding var selectedChain: Chain?
     @Binding var showNetworkSelectSheet: Bool
+    @Binding var showCoinSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -52,10 +53,6 @@ struct SwapFromToField: View {
         Text(NSLocalizedString(title, comment: ""))
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
-    }
-    
-    var fromToNetworkLabel: some View {
-        Text("From Network")
     }
     
     var balance: some View {
@@ -99,6 +96,14 @@ struct SwapFromToField: View {
     }
     
     var fromToCoin: some View {
+        Button {
+            showCoinSelectSheet = true
+        } label: {
+            fromToCoinLabel
+        }
+    }
+    
+    var fromToCoinLabel: some View {
         SwapFromToCoin(coin: coin)
     }
     
@@ -132,6 +137,7 @@ struct SwapFromToField: View {
         amount: .constant("0"),
         selectedChain: .constant(Chain.example),
         showNetworkSelectSheet: .constant(false),
+        showCoinSelectSheet: .constant(false),
         tx: SwapTransaction(),
         swapViewModel: SwapCryptoViewModel()
     )

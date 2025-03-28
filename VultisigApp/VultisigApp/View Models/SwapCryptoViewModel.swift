@@ -37,6 +37,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var toChain: Chain? = nil
     @Published var showFromChainSelector = false
     @Published var showToChainSelector = false
+    @Published var showFromCoinSelector = false
+    @Published var showToCoinSelector = false
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
@@ -365,13 +367,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.fromCoins.sorted(by: {
+        return tx.fromCoins.filter({ coin in
+            coin.chain == fromChain
+        }).sorted(by: {
             Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
         })
     }
 
     func pickerToCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.toCoins.sorted(by: {
+        return tx.toCoins.filter({ coin in
+            coin.chain == fromChain
+        }).sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
     }

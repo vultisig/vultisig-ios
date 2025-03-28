@@ -1,15 +1,15 @@
 //
-//  SwapNetworkCell.swift
+//  SwapCoinCell.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-03-26.
+//  Created by Amol Kumar on 2025-03-27.
 //
 
 import SwiftUI
 
-struct SwapNetworkCell: View {
-    let chain: Chain
-    @Binding var selectedChain: Chain?
+struct SwapCoinCell: View {
+    let coin: Coin
+    @Binding var selectedCoin: Coin
     @Binding var showSheet: Bool
     
     @State var isSelected = false
@@ -38,6 +38,7 @@ struct SwapNetworkCell: View {
         HStack {
             icon
             title
+            chain
             Spacer()
             
             if isSelected {
@@ -49,15 +50,27 @@ struct SwapNetworkCell: View {
     }
     
     var icon: some View {
-        Image(chain.logo)
+        Image(coin.logo)
             .resizable()
             .frame(width: 32, height: 32)
     }
     
     var title: some View {
-        Text(chain.name)
+        Text(coin.ticker)
             .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
+    }
+    
+    var chain: some View {
+        Text(coin.chain.name)
+            .foregroundColor(.lightText)
+            .font(.body10BrockmannMedium)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.blue400, lineWidth: 1)
+            )
     }
     
     var check: some View {
@@ -71,11 +84,11 @@ struct SwapNetworkCell: View {
     }
     
     private func setData() {
-        isSelected = chain == selectedChain
+        isSelected = coin == selectedCoin
     }
     
     private func handleTap() {
-        selectedChain = chain
+        selectedCoin = coin
         showSheet = false
     }
 }
