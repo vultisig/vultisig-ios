@@ -100,7 +100,7 @@ struct SwapCoinPickerView: View {
     }
     
     var list: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             ForEach(getCoins(), id: \.self) { coin in
                 SwapCoinCell(
                     coin: coin,

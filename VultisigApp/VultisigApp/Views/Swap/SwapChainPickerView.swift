@@ -104,7 +104,7 @@ struct SwapChainPickerView: View {
     }
     
     var list: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             ForEach(filteredChains, id: \.self) { chain in
                 SwapChainCell(
                     coins: vault.coins,
