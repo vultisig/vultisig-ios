@@ -98,7 +98,7 @@ final class BlockChainService {
                 for: tx.fromCoin,
                 action: .swap,
                 sendMaxAmount: false,
-                isDeposit: true,
+                isDeposit: (fromCoin.chain == .thorChain && toCoin.chain == .base) ? true : false,
                 transactionType: .unspecified,
                 gasLimit: nil,
                 byteFee: nil,
