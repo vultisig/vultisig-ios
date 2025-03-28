@@ -71,6 +71,14 @@ struct SwapCryptoDetailsView: View {
                 selectedCoin: $tx.fromCoin
             )
         })
+        .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
+            SwapCoinPickerView(
+                coins: vault.coins,
+                selectedNetwork: swapViewModel.toChain,
+                showSheet: $swapViewModel.showToCoinSelector,
+                selectedCoin: $tx.toCoin
+            )
+        })
     }
     
     var swapContent: some View {
