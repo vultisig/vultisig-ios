@@ -26,10 +26,7 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons(
-            tx: tx,
-            swapViewModel: swapViewModel
-        )
+        SwapPercentageButtons()
     }
     
     var fields: some View {
