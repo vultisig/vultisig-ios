@@ -80,6 +80,10 @@ class EVMHelper {
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
+        
+        print("EVM transfer TO: \(keysignPayload.toAddress.description)")
+        
+        
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
@@ -93,6 +97,8 @@ class EVMHelper {
                     print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
+                        print("EVM MEMO: \(memo)")
+                        
                         if memo.hasPrefix("0x") {
                             // if memo start with 0x , meaning it is hex encoded string , then let's hex decode it first
                             $0.data = Data(hex: memo)
