@@ -30,9 +30,6 @@ class THORChainSwaps {
         
         if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) ||
             (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
-            
-            print(keysignPayload)
-            
             return try THORChainHelper.getPreSignedInputData(keysignPayload: keysignPayload)
         }
         

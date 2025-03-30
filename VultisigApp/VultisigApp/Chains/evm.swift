@@ -81,9 +81,6 @@ class EVMHelper {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
         
-        print("EVM transfer TO: \(keysignPayload.toAddress.description)")
-        
-        
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!

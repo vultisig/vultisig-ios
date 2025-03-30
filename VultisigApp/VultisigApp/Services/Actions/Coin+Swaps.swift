@@ -106,10 +106,6 @@ private extension Coin {
         return ["BNB", "USDT", "USDC"]
     }
     
-//    var thorBaseTokens: [String] {
-//        return ["ETH", "USDC", "CBBTC"]
-//    }
-    
     var thorAvaxTokens: [String] {
         return ["AVAX", "USDC", "USDT", "SOL"]
     }

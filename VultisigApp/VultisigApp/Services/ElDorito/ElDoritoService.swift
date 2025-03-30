@@ -129,8 +129,6 @@ struct ElDoritoService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        print(String(data: data, encoding: .utf8) ?? "No data")
-        
         let response = try JSONDecoder().decode(ElDoritoResponse.self, from: data)
         
         var fee = BigInt(0)
