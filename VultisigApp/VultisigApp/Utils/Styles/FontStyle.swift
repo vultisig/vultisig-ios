@@ -40,6 +40,7 @@ extension Font {
     static let body18MenloMedium = Font.custom("Menlo", size: 18).weight(.medium)
     static let body20MenloMedium = Font.custom("Menlo", size: 20).weight(.medium)
     
+    static let body10BrockmannMedium = Font.custom("Brockmann-Medium", size: 10)
     static let body12BrockmannMedium = Font.custom("Brockmann-Medium", size: 12)
     static let body14BrockmannMedium = Font.custom("Brockmann-Medium", size: 14)
     static let body16BrockmannMedium = Font.custom("Brockmann-Medium", size: 16)
