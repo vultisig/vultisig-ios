@@ -556,8 +556,8 @@
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
 "startUsingVault" = "Usar Cofre";
 "loadingDetails" = "Carregando detalhes";
-"backupPart1" = "Backup Parte 1";
-"backupPart2" = "Backup Parte 2";
+"backupPart1" = "Cópia de Segurança 1";
+"backupPart2" = "Cópia de Segurança 2";
 "vultiserverPassword" = "Senha do Vultiserver";
 "doYouWantToAddPassword" = "Deseja adicionar uma senha aos seus compartilhamentos de cofre do dispositivo?";
 "doYouWantToAddPasswordDescription" = "Recomendamos que você não defina uma senha de backup para os compartilhamentos de cofre do dispositivo – seus dados estão seguros se os backups forem armazenados corretamente em locais diferentes, o que já fornece uma proteção significativa. Lembre-se de que senhas de backup não podem ser recuperadas se forem esquecidas. Sua escolha!";

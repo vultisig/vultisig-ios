@@ -254,7 +254,7 @@
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
 "customToken" = "Token Personalizado";
 "details" = "Detalles";
-"vaultType" = "Parte del Cofre";
+"vaultType" = "Participación del Bóveda";
 "ECDSAKey" = "Clave ECDSA";
 "EdDSAKey" = "Clave EdDSA";
 "Selected" = "Seleccionado";
@@ -395,7 +395,7 @@
 "invalidAddress" = "Dirección no válida";
 "emptyAddressField" = "Campo de dirección vacío.";
 "nonNegativeFeeError" = "No hay suficiente gas para cubrir la transacción.";
-"part" = "Parte";
+"part" = "Participación";
 "devices" = "Dispositivos";
 "signers" = "Firmantes";
 "vaultPart" = "Parte del cofre";
@@ -539,7 +539,7 @@
 "FastVaultOverview1Text2" = "";
 "FastVaultOverview1Text3" = " partes, ";
 "FastVaultOverview1Text4" = "haz una copia de seguridad ahora";
-"FastVaultOverview2Text1" = "La parte 1 de las partes del vault será ";
+"FastVaultOverview2Text1" = "La participación 1 de las participaciones del bóveda será ";
 "FastVaultOverview2Text2" = "almacenada por el servidor.";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
@@ -555,8 +555,8 @@
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
 "startUsingVault" = "Usar Bóveda";
 "loadingDetails" = "Cargando detalles";
-"backupPart1" = "Copia de seguridad Parte 1";
-"backupPart2" = "Copia de seguridad Parte 2";
+"backupPart1" = "Copia de Seguridad 1";
+"backupPart2" = "Copia de Seguridad 2";
 "vultiserverPassword" = "Contraseña de Vultiserver";
 "doYouWantToAddPassword" = "¿Quieres agregar una contraseña a las copias de seguridad de tu dispositivo?";
 "doYouWantToAddPasswordDescription" = "Recomendamos no establecer una contraseña de respaldo para las copias de seguridad del dispositivo: tus datos están seguros si los respaldos se almacenan en diferentes ubicaciones, lo que ya brinda una protección significativa. Recuerda, las contraseñas de respaldo no se pueden recuperar si las olvidas. ¡Tú decides!";
