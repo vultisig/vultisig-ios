@@ -22,9 +22,12 @@ struct SwapFromToCoin: View {
     }
     
     var fromToCoinIcon: some View {
-        Image(coin.logo)
-            .resizable()
-            .frame(width: 36, height: 36)
+        AsyncImageView(
+            logo: coin.logo,
+            size: CGSize(width: 36, height: 36),
+            ticker: coin.ticker,
+            tokenChainLogo: coin.tokenChainLogo
+        )
     }
     
     var fromToCoinContent: some View {
