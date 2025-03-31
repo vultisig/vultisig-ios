@@ -254,7 +254,7 @@
 "findCustomTokens" = "Trova Il Tuo Token Personalizzato";
 "customToken" = "Token Personalizzato";
 "details" = "Dettagli";
-"vaultType" = "Parte della Cassaforte";
+"vaultType" = "Quota della Cassaforte";
 "ECDSAKey" = "Chiave ECDSA";
 "EdDSAKey" = "Chiave EdDSA";
 "Selected" = "Selezionato";
@@ -395,7 +395,7 @@
 "invalidAddress" = "Indirizzo non valido";
 "emptyAddressField" = "Campo indirizzo vuoto.";
 "nonNegativeFeeError" = "Non abbastanza gas per coprire la transazione.";
-"part" = "Parte";
+"part" = "Quota";
 "devices" = "Dispositivi";
 "signers" = "Firmatari";
 "vaultPart" = "Parte della cassaforte";
@@ -539,7 +539,7 @@
 "FastVaultOverview1Text2" = "";
 "FastVaultOverview1Text3" = " quote, ";
 "FastVaultOverview1Text4" = "esegui il backup ora";
-"FastVaultOverview2Text1" = "La parte 1 delle quote del vault sarà ";
+"FastVaultOverview2Text1" = "La quota 1 delle quote della cassaforte sarà ";
 "FastVaultOverview2Text2" = "conservata dal server.";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
@@ -555,8 +555,8 @@
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
 "startUsingVault" = "Usa il Vault";
 "loadingDetails" = "Caricamento dettagli";
-"backupPart1" = "Backup Parte 1";
-"backupPart2" = "Backup Parte 2";
+"backupPart1" = "Copia di Backup 1";
+"backupPart2" = "Copia di Backup 2";
 "vultiserverPassword" = "Password Vultiserver";
 "doYouWantToAddPassword" = "Vuoi aggiungere una password ai tuoi vault share del dispositivo?";
 "doYouWantToAddPasswordDescription" = "Ti consigliamo di non impostare una password di backup per i vault share del dispositivo: i tuoi dati sono sicuri se i backup sono archiviati in posizioni diverse, il che fornisce già una protezione significativa. Ricorda, le password di backup non possono essere recuperate se le dimentichi. A te la scelta!";

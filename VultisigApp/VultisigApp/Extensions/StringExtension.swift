@@ -128,11 +128,23 @@ extension String {
     }
     
     func isValidDecimal() -> Bool {
+        if self.isEmpty {
+            return false
+        }
+        
+        let currentLocale = Locale.current
+        let localeDecimalSeparator = currentLocale.decimalSeparator ?? "."
+        
+        var normalizedString = self
+        if localeDecimalSeparator != "." && self.contains(".") && !self.contains(localeDecimalSeparator) {
+            normalizedString = self.replacingOccurrences(of: ".", with: localeDecimalSeparator)
+        }
+        
         let formatter = NumberFormatter()
-        formatter.locale = Locale.current
+        formatter.locale = currentLocale
         formatter.numberStyle = .decimal
         
-        return formatter.number(from: self) != nil
+        return formatter.number(from: normalizedString) != nil
     }
 
     var isValidEmail: Bool {

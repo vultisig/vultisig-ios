@@ -91,7 +91,7 @@ struct FolderDetailSelectedVaultCell: View {
     }
     
     var partAssignedCell: some View {
-        Text("Part \(viewModel.order)of\(viewModel.totalSigners)")
+        Text("Share \(viewModel.order)of\(viewModel.totalSigners)")
             .font(.body14Menlo)
             .foregroundColor(.body)
     }

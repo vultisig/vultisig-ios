@@ -274,7 +274,7 @@
 "findCustomTokens" = "Find Your Custom Token";
 "customToken" = "Custom Token";
 "details" = "Details";
-"vaultType" = "Vault Part";
+"vaultType" = "Vault Share";
 "ECDSAKey" = "ECDSA Key";
 "EdDSAKey" = "EdDSA Key";
 "Selected" = "Selected";
@@ -422,10 +422,10 @@
 "invalidAddress" = "Invalid Address";
 "emptyAddressField" = "Empty address field.";
 "nonNegativeFeeError" = "Not enough gas to cover transaction.";
-"part" = "Part";
+"part" = "Share";
 "devices" = "Devices";
 "signers" = "Signers";
-"vaultPart" = "Vault Part";
+"vaultPart" = "Vault Share";
 "name" = "Name";
 "fastVaultSetDisclaimer" = "This Password encrypts your Vault Share received via email";
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
@@ -583,7 +583,7 @@
 "FastVaultOverview1Text2" = "";
 "FastVaultOverview1Text3" = " shares, ";
 "FastVaultOverview1Text4" = "back them up  now";
-"FastVaultOverview2Text1" = "Part 1 of the vault shares will be ";
+"FastVaultOverview2Text1" = "Share 1 of the vault shares will be ";
 "FastVaultOverview2Text2" = "held by the server.";
 "FastVaultOverview2Text3" = "";
 "FastVaultOverview2Text4" = "";
@@ -601,8 +601,8 @@
 "migrationFailed" = "Failed to migration GG20 vault to DKLS";
 "migrateVault" = "Migrate GG20 vault to DKLS";
 "loadingDetails" = "Loading details";
-"backupPart1" = "Backup Part 1";
-"backupPart2" = "Backup Part 2";
+"backupPart1" = "Backup Share 1";
+"backupPart2" = "Backup Share 2";
 "vultiserverPassword" = "Vultiserver Password";
 "doYouWantToAddPassword" = "Do you want to add a password to your device vault shares? ";
 "doYouWantToAddPasswordDescription" = "We recommend that you do not set a backup password for device vault shares-your data is safe if the backups are properly stored in different locations, which is already a significant protection. Remember, backup passwords can't be recovered if you forget them. Your choice!";
