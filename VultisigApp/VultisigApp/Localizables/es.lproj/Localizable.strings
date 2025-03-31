@@ -474,7 +474,7 @@
 "enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";
 "PasswordCannotBeReset" = "La contraseña no se puede restablecer ni recuperar";
 "moreInfo" = "Más información";
-"moreInfoDescription" = "Esto es porque la contraseña cifra el archivo de copia de seguridad localmente, como al cifrar un disco duro. En el siguiente paso, tienes la posibilidad de añadir una pista.";
+"moreInfoDescription" = "Esto ocurre porque la contraseña se utiliza para cifrar localmente el archivo de copia de seguridad, de forma similar a cómo se cifra un disco duro. En el siguiente paso, tienes la opción de añadir una pista.";
 "connectingWithServer..." = "Conectando con el servidor...";
 "shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
 "enter5DigitVerificationCode" = "Introduce el código de 4 dígitos que te enviamos por correo electrónico";
