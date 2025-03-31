@@ -563,3 +563,7 @@
 "backupWithoutPassword" = "Copia de seguridad sin contraseña";
 "usePassword" = "Usar contraseña";
 "migrate" = "Migrar";
+"selectNetwork" = "Seleccionar red";
+"network" = "Red";
+"selectAsset" = "Seleccionar activo";
+"chain" = "Cadena";

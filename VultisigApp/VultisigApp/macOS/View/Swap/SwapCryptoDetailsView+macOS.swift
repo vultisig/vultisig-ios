@@ -10,8 +10,34 @@ import SwiftUI
 
 extension SwapCryptoDetailsView {
     var container: some View {
+        ZStack(alignment: .bottom) {
+            Background()
+            view
+            
+            if swapViewModel.isLoading {
+                loader
+            }
+        }
+    }
+    
+    var view: some View {
        content
             .padding(.horizontal, 25)
+    }
+    
+    var percentageButtons: some View {
+        SwapPercentageButtons()
+    }
+    
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                swapContent
+//                percentageButtons
+                summary
+            }
+            .padding(.horizontal, 16)
+        }
     }
 }
 #endif
