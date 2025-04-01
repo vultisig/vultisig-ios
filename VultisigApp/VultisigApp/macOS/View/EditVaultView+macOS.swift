@@ -17,7 +17,7 @@ extension EditVaultView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "editVault")
+        GeneralMacHeader(title: "vaultSettings")
     }
     
     var navigation: some View {
