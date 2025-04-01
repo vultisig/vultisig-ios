@@ -36,15 +36,6 @@ struct PasswordBackupOptionsView: View {
         }
     }
     
-    var content: some View {
-        VStack(spacing: 36) {
-            icon
-            textContent
-            buttons
-        }
-        .padding(24)
-    }
-    
     var icon: some View {
         Image(systemName: "person.badge.key")
             .font(.body28BrockmannMedium)
