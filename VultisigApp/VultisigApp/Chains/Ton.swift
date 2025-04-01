@@ -12,13 +12,16 @@ import BigInt
 
 enum TonHelper {
     
+    // The official Telegram Wallet chages a transaction fee of 0.05 TON. So we do it as well.
+    static let defaultFee: BigInt = BigInt(0.05 * pow(10, 9))
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
         guard keysignPayload.coin.chain.ticker == "TON" else {
             throw HelperError.runtimeError("coin is not TON")
         }
         
-        guard case .Ton(let sequenceNumber, let expireAt, _) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, _, let sendMaxAmount) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
@@ -30,10 +33,15 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
+        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+        if sendMaxAmount {
+            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue)
+        }
+        
         let transfer = TheOpenNetworkTransfer.with {
             $0.dest = toAddress.description
             $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
-            $0.mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+            $0.mode = sendMode
             
             if let memo = keysignPayload.memo  {
                 $0.comment = memo

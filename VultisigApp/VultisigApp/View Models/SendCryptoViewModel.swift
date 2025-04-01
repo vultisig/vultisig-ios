@@ -188,6 +188,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .ton:
             Task {
                 do {
+                    tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
                     let rawBalance = try await ton.getBalance(tx.coin)
                     tx.coin.rawBalance = rawBalance
                     
@@ -199,7 +200,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
-                    convertToFiat(newValue: tx.amount, tx: tx)
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
                     print("fail to load ton balances,error:\(error.localizedDescription)")
                 }
