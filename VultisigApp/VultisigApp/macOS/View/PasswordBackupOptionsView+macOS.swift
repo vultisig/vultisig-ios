@@ -9,6 +9,26 @@
 import SwiftUI
 
 extension PasswordBackupOptionsView {
+    var content: some View {
+        VStack(spacing: 36) {
+            header
+            Spacer()
+            
+            VStack(spacing: 36) {
+                icon
+                textContent
+                buttons
+            }
+            .padding(24)
+            
+            Spacer()
+        }
+    }
+    
+    var header: some View {
+        GeneralMacHeader(title: "")
+    }
+    
     var withoutPasswordButton: some View {
         Button {
             showSkipShareSheet = true

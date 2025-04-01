@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "function" = "função";
 "enterPassword" = "Digite a senha";
-"fastVaultEnterDisclaimer" = "Esta senha descriptografa seu cofre.";
+"fastVaultEnterDisclaimer" = "Esta senha descriptografa seu Cofre para assinatura.";
 "fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastSign Share";
 "passwordProtectBackup" = "Proteja seu backup com uma senha";
 "errorSavingFile" = "Erro ao salvar o arquivo";
