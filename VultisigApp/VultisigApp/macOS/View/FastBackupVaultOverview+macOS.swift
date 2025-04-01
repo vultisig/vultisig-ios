@@ -19,7 +19,7 @@ extension FastBackupVaultOverview {
     
     var button: some View {
         HStack {
-            if tabIndex != 0 {
+            if tabIndex > 0 && tabIndex < 3 {
                 prevButton
             }
             
@@ -38,6 +38,18 @@ extension FastBackupVaultOverview {
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
         .frame(width: 80)
+    }
+    
+    var text: some View {
+        VStack {
+            Spacer()
+            OnboardingTextCard(
+                index: tabIndex,
+                textPrefix: "FastVaultOverview",
+                deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
+            )
+        }
+        .frame(maxWidth: .infinity)
     }
     
     private func prevTapped() {
