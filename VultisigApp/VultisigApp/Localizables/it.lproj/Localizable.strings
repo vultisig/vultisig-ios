@@ -242,7 +242,7 @@
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "function" = "funzione";
 "enterPassword" = "Inserisci la password";
-"fastVaultEnterDisclaimer" = "Questa password decifra il tuo caveau.";
+"fastVaultEnterDisclaimer" = "Questa password decritta il tuo Vault per la firma.";
 "fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastSign";
 "passwordProtectBackup" = "Proteggi il tuo backup con una password";
 "errorSavingFile" = "Errore nel salvataggio del file";
