@@ -95,22 +95,6 @@ struct FastBackupVaultOverview: View {
         .offset(y: -100)
     }
     
-    var text: some View {
-        TabView(selection: $tabIndex) {
-            ForEach(0..<totalTabCount, id: \.self) { index in
-                VStack {
-                    Spacer()
-                    OnboardingTextCard(
-                        index: index,
-                        textPrefix: "FastVaultOverview",
-                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
-                    )
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
     var nextButton: some View {
         Button {
             nextTapped()
