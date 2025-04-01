@@ -100,7 +100,7 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.amount
         case .removePool(let memo):
-            return memo.amount
+            return .zero
         }
     }
 

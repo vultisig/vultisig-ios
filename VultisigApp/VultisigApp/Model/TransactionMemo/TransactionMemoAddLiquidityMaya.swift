@@ -9,39 +9,23 @@ import Combine
 import Foundation
 import SwiftUI
 
-class TransactionMemoAddLiquidityMaya: TransactionMemoAddressable, ObservableObject
+class TransactionMemoAddLiquidityMaya: ObservableObject
 {
-    @Published var amount: Double = 1
-    @Published var nodeAddress: String = ""
-    @Published var fee: Int64 = .zero
-
+    @Published var amount: Double = 0.0
+    
     // Internal
-    @Published var nodeAddressValid: Bool = false
-    @Published var feeValid: Bool = true
+    @Published var amountValid: Bool = false
     
     @Published var isTheFormValid: Bool = false
-
-    var addressFields: [String: String] {
-        get {
-            let fields = ["nodeAddress": nodeAddress]
-            return fields
-        }
-        set {
-            if let value = newValue["nodeAddress"] {
-                nodeAddress = value
-            }
-        }
-    }
 
     private var cancellables = Set<AnyCancellable>()
 
     required init() {
         setupValidation()
     }
-
+    
     private func setupValidation() {
-        Publishers.CombineLatest($nodeAddressValid, $feeValid)
-            .map { $0 && $1  }
+        $amountValid
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -52,14 +36,12 @@ class TransactionMemoAddLiquidityMaya: TransactionMemoAddressable, ObservableObj
 
     func toString() -> String {
         let memo =
-            "POOL+:\(self.nodeAddress)"
+            "pool+"
         return memo
     }
 
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        // dict.set("LPUNITS", "\(self.fee)")
-        dict.set("nodeAddress", self.nodeAddress)
         dict.set("memo", self.toString())
         return dict
     }
@@ -67,26 +49,16 @@ class TransactionMemoAddLiquidityMaya: TransactionMemoAddressable, ObservableObj
     func getView() -> AnyView {
         AnyView(
             VStack {
-
-//                StyledIntegerField(
-//                    placeholder: "LPUNITS",
-//                    value: Binding(
-//                        get: { self.fee },
-//                        set: { self.fee = $0 }
-//                    ),
-//                    format: .number,
-//                    isValid: Binding(
-//                        get: { self.feeValid },
-//                        set: { self.feeValid = $0 }
-//                    )
-//                )
-
-                TransactionMemoAddressTextField(
-                    memo: self,
-                    addressKey: "nodeAddress",
-                    isAddressValid: Binding(
-                        get: { self.nodeAddressValid },
-                        set: { self.nodeAddressValid = $0 }
+                StyledFloatingPointField(
+                    placeholder: "Amount",
+                    value: Binding(
+                        get: { self.amount },
+                        set: { self.amount = $0 }
+                    ),
+                    format: .number,
+                    isValid: Binding(
+                        get: { self.amountValid },
+                        set: { self.amountValid = $0 }
                     )
                 )
             })
