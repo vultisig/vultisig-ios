@@ -474,7 +474,7 @@
 "enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";
 "PasswordCannotBeReset" = "Lozinka se ne može resetirati ili oporaviti";
 "moreInfo" = "Više informacija";
-"moreInfoDescription" = "To je zato što lozinka lokalno šifrira datoteku sigurnosne kopije, slično kao kod šifriranja tvrdog diska. U sljedećem koraku imate mogućnost dodati savjet.";
+"moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
 "connectingWithServer..." = "Povezivanje sa serverom...";
 "shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
 "enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
