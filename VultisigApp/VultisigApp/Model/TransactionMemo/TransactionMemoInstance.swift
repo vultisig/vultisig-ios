@@ -20,7 +20,9 @@ enum TransactionMemoInstance {
     case vote(TransactionMemoVote)
     case stake(TransactionMemoStake)
     case unstake(TransactionMemoUnstake)
-
+    case addPool(TransactionMemoAddLiquidityMaya)
+    case removePool(TransactionMemoRemoveLiquidityMaya)
+    
     var view: AnyView {
         switch self {
         case .bond(let memo):
@@ -40,6 +42,10 @@ enum TransactionMemoInstance {
         case .stake(let memo):
             return memo.getView()
         case .unstake(let memo):
+            return memo.getView()
+        case .addPool(let memo):
+            return memo.getView()
+        case .removePool(let memo):
             return memo.getView()
         }
     }
@@ -64,6 +70,10 @@ enum TransactionMemoInstance {
             return memo.description
         case .unstake(let memo):
             return memo.description
+        case .addPool(let memo):
+            return memo.description
+        case .removePool(let memo):
+            return memo.description
         }
     }
 
@@ -87,6 +97,10 @@ enum TransactionMemoInstance {
             return memo.amount
         case .unstake(let memo):
             return memo.amount  // You must send 1 TON to unstake with a "w" memo
+        case .addPool(let memo):
+            return memo.amount
+        case .removePool(let memo):
+            return memo.amount
         }
     }
 
@@ -121,6 +135,10 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         case .unstake(let memo):
             return memo.toDictionary()
+        case .addPool(let memo):
+            return memo.toDictionary()
+        case .removePool(let memo):
+            return memo.toDictionary()
         }
     }
 
@@ -152,6 +170,10 @@ enum TransactionMemoInstance {
         case .stake(let memo):
             return memo.isTheFormValid
         case .unstake(let memo):
+            return memo.isTheFormValid
+        case .addPool(let memo):
+            return memo.isTheFormValid
+        case .removePool(let memo):
             return memo.isTheFormValid
         }
     }

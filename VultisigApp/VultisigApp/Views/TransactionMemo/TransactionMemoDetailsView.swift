@@ -85,6 +85,15 @@ struct TransactionMemoDetailsView: View {
                     txMemoInstance = .stake(TransactionMemoStake())
                 case .unstake:
                     txMemoInstance = .unstake(TransactionMemoUnstake())
+                case .addPool:
+                    txMemoInstance = .addPool(
+                        TransactionMemoAddLiquidityMaya()
+                    )
+                case .removePool:
+                    txMemoInstance = .removePool(
+                        TransactionMemoRemoveLiquidityMaya()
+                    )
+                    
                 }
             }
     }
