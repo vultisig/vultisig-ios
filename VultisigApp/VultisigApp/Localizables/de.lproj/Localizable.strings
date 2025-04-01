@@ -259,7 +259,7 @@
 "reviewConditionsMessage" = "Bitte überprüfe und stimme allen aufgeführten Bedingungen zu.";
 "function" = "Funktion";
 "enterPassword" = "Passwort eingeben";
-"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihren Tresor.";
+"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt deinen Tresor zum Signieren.";
 "fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt dein FastSign Share";
 "passwordProtectBackup" = "Sichern Sie Ihre Sicherung mit einem Passwort";
 "errorSavingFile" = "Fehler beim Speichern der Datei";
