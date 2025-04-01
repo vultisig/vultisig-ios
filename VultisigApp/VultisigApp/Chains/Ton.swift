@@ -21,7 +21,7 @@ enum TonHelper {
             throw HelperError.runtimeError("coin is not TON")
         }
         
-        guard case .Ton(let sequenceNumber, let expireAt, _) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, _, let sendMaxAmount) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
@@ -33,12 +33,8 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        let amountTo = keysignPayload.toAmount
-        let balance = keysignPayload.coin.rawBalance.toBigInt()
-        let balanceDiff = balance - amountTo
-        
         var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
-        if balanceDiff <= TonHelper.defaultFee {
+        if sendMaxAmount {
             sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue)
         }
         
