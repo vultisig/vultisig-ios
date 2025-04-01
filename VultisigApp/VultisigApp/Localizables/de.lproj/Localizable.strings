@@ -491,7 +491,7 @@
 "enterYourEmailDescription" = "Diese E-Mail wird nur zum Senden des Server-Backups verwendet.";
 "PasswordCannotBeReset" = "Passwort kann nicht zurückgesetzt oder wiederhergestellt werden";
 "moreInfo" = "Mehr Infos";
-"moreInfoDescription" = "Das liegt daran, dass das Passwort die Sicherungsdatei lokal verschlüsselt, ähnlich wie bei der Verschlüsselung einer Festplatte. Im nächsten Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
+"moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
 "shouldOnlyTakeAMinute..." = "Das sollte nur eine Minute dauern";
 "enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
@@ -580,3 +580,7 @@
 "backupWithoutPassword" = "Backup ohne Passwort";
 "usePassword" = "Passwort verwenden";
 "migrate" = "Migrieren";
+"selectNetwork" = "Netzwerk auswählen";
+"network" = "Netzwerk";
+"selectAsset" = "Asset auswählen";
+"chain" = "Blockchain";

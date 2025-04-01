@@ -18,7 +18,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
-    case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
+    case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool)
     case Ripple(sequence: UInt64, gas: UInt64)
     
     case Tron(
@@ -51,8 +51,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return referenceGasPrice
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
-        case .Ton(_,_,_):
-            return BigInt(0.05 * pow(10,9))
+        case .Ton(_,_,_,_):
+            return TonHelper.defaultFee
         case .Ripple(_, let gas):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):

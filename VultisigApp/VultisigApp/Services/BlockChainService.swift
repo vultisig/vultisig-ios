@@ -433,7 +433,7 @@ private extension BlockChainService {
             
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
-            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false, sendMaxAmount: sendMaxAmount)
         case .ripple:
             
             let account = try await ripple.fetchAccountsInfo(for: coin.address)

@@ -10,6 +10,7 @@ import BigInt
 import WalletCore
 import Mediator
 
+@MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let titles = ["swap", "verify", "pair", "keysign", "done"]
     
@@ -22,15 +23,23 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var currentIndex = 1
-    @MainActor @Published var currentTitle = "swap"
-    @MainActor @Published var hash: String?
-    @MainActor @Published var approveHash: String?
+    @Published var currentIndex = 1
+    @Published var currentTitle = "swap"
+    @Published var hash: String?
+    @Published var approveHash: String?
+
+    @Published var error: Error?
+    @Published var isLoading = false
+    @Published var dataLoaded = false
+    @Published var timer: Int = 59
     
-    @MainActor @Published var error: Error?
-    @MainActor @Published var isLoading = false
-    @MainActor @Published var dataLoaded = false
-    
+    @Published var fromChain: Chain? = nil
+    @Published var toChain: Chain? = nil
+    @Published var showFromChainSelector = false
+    @Published var showToChainSelector = false
+    @Published var showFromCoinSelector = false
+    @Published var showToCoinSelector = false
+
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }
@@ -325,6 +334,24 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
+    func updateTimer(tx: SwapTransaction, vault: Vault) {
+        timer -= 1
+
+        if timer < 1 {
+            restartTimer(tx: tx, vault: vault)
+        }
+    }
+    
+    func restartTimer(tx: SwapTransaction, vault: Vault) {
+        refreshData(tx: tx, vault: vault)
+        timer = 59
+    }
+    
+    func refreshData(tx: SwapTransaction, vault: Vault) {
+        fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault)
+    }
+    
     func fetchFees(tx: SwapTransaction, vault: Vault) {
         updateFeesTask?.cancel()
         updateFeesTask = Task {
@@ -340,13 +367,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func pickerFromCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.fromCoins.sorted(by: {
+        return tx.fromCoins.filter({ coin in
+            coin.chain == fromChain
+        }).sorted(by: {
             Int($0.chain == tx.fromCoin.chain) > Int($1.chain == tx.fromCoin.chain)
         })
     }
     
     func pickerToCoins(tx: SwapTransaction) -> [Coin] {
-        return tx.toCoins.sorted(by: {
+        return tx.toCoins.filter({ coin in
+            coin.chain == toChain
+        }).sorted(by: {
             Int($0.chain == tx.toCoin.chain) > Int($1.chain == tx.toCoin.chain)
         })
     }

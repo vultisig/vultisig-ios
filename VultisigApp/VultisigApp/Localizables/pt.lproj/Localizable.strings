@@ -475,7 +475,7 @@
 "enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor.";
 "PasswordCannotBeReset" = "A senha não pode ser redefinida ou recuperada";
 "moreInfo" = "Mais informações";
-"moreInfoDescription" = "Isso acontece porque a senha criptografa o arquivo de backup localmente, como se estivesse criptografando um disco rígido. Na próxima etapa, você terá a possibilidade de adicionar uma dica.";
+"moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
 "connectingWithServer..." = "Conectando-se ao servidor...";
 "shouldOnlyTakeAMinute..." = "Isso deve levar apenas um minuto";
 "enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";
@@ -564,3 +564,7 @@
 "backupWithoutPassword" = "Backup sem senha";
 "usePassword" = "Usar senha";
 "migrate" = "Migrar";
+"selectNetwork" = "Selecionar rede";
+"network" = "Rede";
+"selectAsset" = "Selecionar ativo";
+"chain" = "Cadeia";
