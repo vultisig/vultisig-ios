@@ -509,7 +509,7 @@
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
 "PasswordCannotBeReset" = "Password cannot be reset or recovered";
 "moreInfo" = "More info";
-"moreInfoDescription" = "This is because the password encrypts the backup file locally, like encrypting a hard drive. In the next step you have the possibility to add a hint.";
+"moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted, In the following step, you have the option to add a hint";
 "connectingWithServer..." = "Connecting with server...";
 "shouldOnlyTakeAMinute..." = "This should only take a minute";
 "enter5DigitVerificationCode" = "Enter the 4 digit code we emailed you";
