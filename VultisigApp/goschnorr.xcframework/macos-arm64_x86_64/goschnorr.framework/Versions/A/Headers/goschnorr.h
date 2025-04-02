@@ -11,7 +11,7 @@
 
 #define DEFAULT_TTL (60 * 10)
 
-typedef enum lib_error {
+typedef enum schnorr_lib_error {
   LIB_OK,
   LIB_INVALID_PUBLIC_KEY,
   LIB_INVALID_HANDLE,
@@ -44,7 +44,7 @@ typedef enum lib_error {
   LIB_ABORT_PROTOCOL_PARTY_8,
   LIB_ABORT_PROTOCOL_PARTY_9,
   LIB_ABORT_PROTOCOL_PARTY_10,
-} lib_error;
+} schnorr_lib_error;
 
 typedef struct tss_buffer {
   const uint8_t *ptr;
@@ -86,10 +86,10 @@ void tss_buffer_free(struct tss_buffer *buf);
  * `LIB_NULL_PTR` - if one of passed pointers is NULL.
  * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
  */
-enum lib_error schnorr_keygen_setupmsg_new(uint32_t threshold,
-                                           const struct go_slice *key_id,
-                                           const struct go_slice *ids,
-                                           struct tss_buffer *setup_msg);
+enum schnorr_lib_error schnorr_keygen_setupmsg_new(uint32_t threshold,
+                                                   const struct go_slice *key_id,
+                                                   const struct go_slice *ids,
+                                                   struct tss_buffer *setup_msg);
 
 /*
  Creates a key generation session from an encoded setup message for Schnorr
@@ -110,9 +110,9 @@ enum lib_error schnorr_keygen_setupmsg_new(uint32_t threshold,
  * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
 
  */
-enum lib_error schnorr_keygen_session_from_setup(const struct go_slice *setup,
-                                                 const struct go_slice *id,
-                                                 struct Handle *hnd);
+enum schnorr_lib_error schnorr_keygen_session_from_setup(const struct go_slice *setup,
+                                                         const struct go_slice *id,
+                                                         struct Handle *hnd);
 
 /*
  Creates a key refresh session from a encoded setup message.
@@ -134,10 +134,10 @@ enum lib_error schnorr_keygen_session_from_setup(const struct go_slice *setup,
  * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
 
  */
-enum lib_error schnorr_key_refresh_session_from_setup(const struct go_slice *setup,
-                                                      const struct go_slice *id,
-                                                      struct Handle old_keyshare,
-                                                      struct Handle *hnd);
+enum schnorr_lib_error schnorr_key_refresh_session_from_setup(const struct go_slice *setup,
+                                                              const struct go_slice *id,
+                                                              struct Handle old_keyshare,
+                                                              struct Handle *hnd);
 
 /*
  Creates a migration session from a encoded setup message.
@@ -161,12 +161,12 @@ enum lib_error schnorr_key_refresh_session_from_setup(const struct go_slice *set
  * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
 
  */
-enum lib_error schnorr_key_migration_session_from_setup(const struct go_slice *setup,
-                                                        const struct go_slice *id,
-                                                        const struct go_slice *public_key,
-                                                        const struct go_slice *root_chain_code,
-                                                        const struct go_slice *secret_coefficient,
-                                                        struct Handle *hnd);
+enum schnorr_lib_error schnorr_key_migration_session_from_setup(const struct go_slice *setup,
+                                                                const struct go_slice *id,
+                                                                const struct go_slice *public_key,
+                                                                const struct go_slice *root_chain_code,
+                                                                const struct go_slice *secret_coefficient,
+                                                                struct Handle *hnd);
 
 /*
  Transition the Schnorr MPC statemachine on an input message
@@ -184,9 +184,9 @@ enum lib_error schnorr_key_migration_session_from_setup(const struct go_slice *s
 
  * `LIB_NULL_PTR` - if one of passed pointers is NULL.
  */
-enum lib_error schnorr_keygen_session_input_message(struct Handle session,
-                                                    const struct go_slice *message,
-                                                    int32_t *finished);
+enum schnorr_lib_error schnorr_keygen_session_input_message(struct Handle session,
+                                                            const struct go_slice *message,
+                                                            int32_t *finished);
 
 /*
  Receive an output message for the Schnorr MPC statemachine
@@ -204,16 +204,16 @@ enum lib_error schnorr_keygen_session_input_message(struct Handle session,
  * `LIB_NON_EMPTY_OUTPUT_BUFFER`: passed `message is not empty buffer
 
  */
-enum lib_error schnorr_keygen_session_output_message(struct Handle session,
-                                                     struct tss_buffer *message);
+enum schnorr_lib_error schnorr_keygen_session_output_message(struct Handle session,
+                                                             struct tss_buffer *message);
 
 /*
  Returns a receiver of a message. Tailored for Vultisig
  */
-enum lib_error schnorr_keygen_session_message_receiver(struct Handle session,
-                                                       const struct go_slice *message,
-                                                       uint32_t index,
-                                                       struct tss_buffer *receiver);
+enum schnorr_lib_error schnorr_keygen_session_message_receiver(struct Handle session,
+                                                               const struct go_slice *message,
+                                                               uint32_t index,
+                                                               struct tss_buffer *receiver);
 
 /*
  Finish the session and collect the generated key share for Schnorr.
@@ -244,7 +244,8 @@ enum lib_error schnorr_keygen_session_message_receiver(struct Handle session,
  * `LIB_KEYGEN_ERROR`: An key generation protocol error.
 
  */
-enum lib_error schnorr_keygen_session_finish(struct Handle session, struct Handle *keyshare);
+enum schnorr_lib_error schnorr_keygen_session_finish(struct Handle session,
+                                                     struct Handle *keyshare);
 
 /*
  Deallocate session handler and associated memory.
@@ -260,7 +261,7 @@ enum lib_error schnorr_keygen_session_finish(struct Handle session, struct Handl
  * `LIB_INVALID_HANDLE`: passed an invalid session handle
 
  */
-enum lib_error schnorr_keygen_session_free(const struct Handle *session);
+enum schnorr_lib_error schnorr_keygen_session_free(const struct Handle *session);
 
 /*
  Generates a new QC setup message.
@@ -301,12 +302,12 @@ enum lib_error schnorr_keygen_session_free(const struct Handle *session);
    duplicating or out of range indices.
 
  */
-enum lib_error schnorr_qc_setupmsg_new(struct Handle keyshare,
-                                       const struct go_slice *ids,
-                                       const struct go_slice *old_parties,
-                                       uint32_t new_threshold,
-                                       const struct go_slice *new_parties,
-                                       struct tss_buffer *setup_msg);
+enum schnorr_lib_error schnorr_qc_setupmsg_new(struct Handle keyshare,
+                                               const struct go_slice *ids,
+                                               const struct go_slice *old_parties,
+                                               uint32_t new_threshold,
+                                               const struct go_slice *new_parties,
+                                               struct tss_buffer *setup_msg);
 
 /*
  Creates a QC session from a encoded setup message.
@@ -331,10 +332,10 @@ enum lib_error schnorr_qc_setupmsg_new(struct Handle keyshare,
  * `LIB_SETUP_MESSAGE_VALIDATION` - if setup message validation failed.
 
  */
-enum lib_error schnorr_qc_session_from_setup(const struct go_slice *setup,
-                                             const struct go_slice *id,
-                                             struct Handle keyshare,
-                                             struct Handle *hnd);
+enum schnorr_lib_error schnorr_qc_session_from_setup(const struct go_slice *setup,
+                                                     const struct go_slice *id,
+                                                     struct Handle keyshare,
+                                                     struct Handle *hnd);
 
 /*
  Transition the MPC statemachine on an input message
@@ -358,9 +359,9 @@ enum lib_error schnorr_qc_session_from_setup(const struct go_slice *setup,
  * `LIB_NULL_PTR` - if one of passed pointers is NULL.
 
  */
-enum lib_error schnorr_qc_session_input_message(struct Handle session,
-                                                const struct go_slice *message,
-                                                int32_t *finished);
+enum schnorr_lib_error schnorr_qc_session_input_message(struct Handle session,
+                                                        const struct go_slice *message,
+                                                        int32_t *finished);
 
 /*
  Receive an output message.
@@ -378,16 +379,17 @@ enum lib_error schnorr_qc_session_input_message(struct Handle session,
  * `LIB_NON_EMPTY_OUTPUT_BUFFER`: passed `message is not empty buffer
 
  */
-enum lib_error schnorr_qc_session_output_message(struct Handle session, struct tss_buffer *message);
+enum schnorr_lib_error schnorr_qc_session_output_message(struct Handle session,
+                                                         struct tss_buffer *message);
 
 /*
  Returns a receiver of a message.
 
  */
-enum lib_error schnorr_qc_session_message_receiver(struct Handle session,
-                                                   const struct go_slice *message,
-                                                   uint32_t index,
-                                                   struct tss_buffer *receiver);
+enum schnorr_lib_error schnorr_qc_session_message_receiver(struct Handle session,
+                                                           const struct go_slice *message,
+                                                           uint32_t index,
+                                                           struct tss_buffer *receiver);
 
 /*
  Finish the session and collect the generated key share.
@@ -419,7 +421,7 @@ enum lib_error schnorr_qc_session_message_receiver(struct Handle session,
  * `LIB_QC_ERROR`: An key generation protocol error.
 
  */
-enum lib_error schnorr_qc_session_finish(struct Handle session, struct Handle *keyshare);
+enum schnorr_lib_error schnorr_qc_session_finish(struct Handle session, struct Handle *keyshare);
 
 /*
  Deallocate session handler and associated memory.
@@ -435,17 +437,17 @@ enum lib_error schnorr_qc_session_finish(struct Handle session, struct Handle *k
  * `LIB_INVALID_HANDLE`: passed an invalid session handle
 
  */
-enum lib_error schnorr_qc_session_free(const struct Handle *session);
+enum schnorr_lib_error schnorr_qc_session_free(const struct Handle *session);
 
-enum lib_error schnorr_keyshare_from_bytes(const struct go_slice *buf, struct Handle *hnd);
+enum schnorr_lib_error schnorr_keyshare_from_bytes(const struct go_slice *buf, struct Handle *hnd);
 
-enum lib_error schnorr_keyshare_to_bytes(struct Handle share, struct tss_buffer *buf);
+enum schnorr_lib_error schnorr_keyshare_to_bytes(struct Handle share, struct tss_buffer *buf);
 
-enum lib_error schnorr_keyshare_public_key(struct Handle share, struct tss_buffer *buf);
+enum schnorr_lib_error schnorr_keyshare_public_key(struct Handle share, struct tss_buffer *buf);
 
-enum lib_error schnorr_keyshare_key_id(struct Handle share, struct tss_buffer *buf);
+enum schnorr_lib_error schnorr_keyshare_key_id(struct Handle share, struct tss_buffer *buf);
 
-enum lib_error schnorr_keyshare_chaincode(struct Handle share, struct tss_buffer *buf);
+enum schnorr_lib_error schnorr_keyshare_chaincode(struct Handle share, struct tss_buffer *buf);
 
 /*
  Returns key_id from encoded setup message.
@@ -464,24 +466,27 @@ enum lib_error schnorr_keyshare_chaincode(struct Handle share, struct tss_buffer
  * `LIB_NULL_PTR` if `key_id` is `None`.
  * `LIB_INVALID_HANDLE` if `setup` is invalid handle.
  */
-enum lib_error schnorr_decode_key_id(const struct go_slice *setup, struct tss_buffer *key_id);
+enum schnorr_lib_error schnorr_decode_key_id(const struct go_slice *setup,
+                                             struct tss_buffer *key_id);
 
-enum lib_error schnorr_decode_session_id(const struct go_slice *setup, struct tss_buffer *message);
+enum schnorr_lib_error schnorr_decode_session_id(const struct go_slice *setup,
+                                                 struct tss_buffer *message);
 
-enum lib_error schnorr_decode_message(const struct go_slice *setup, struct tss_buffer *message);
+enum schnorr_lib_error schnorr_decode_message(const struct go_slice *setup,
+                                              struct tss_buffer *message);
 
-enum lib_error schnorr_decode_party_name(const struct go_slice *setup,
-                                         uint32_t index,
-                                         struct tss_buffer *message);
+enum schnorr_lib_error schnorr_decode_party_name(const struct go_slice *setup,
+                                                 uint32_t index,
+                                                 struct tss_buffer *message);
 
 /*
  Generate new DSG setup message.
  */
-enum lib_error schnorr_sign_setupmsg_new(const struct go_slice *key_id,
-                                         const struct go_slice *chain_path,
-                                         const struct go_slice *message,
-                                         const struct go_slice *ids,
-                                         struct tss_buffer *setup_msg);
+enum schnorr_lib_error schnorr_sign_setupmsg_new(const struct go_slice *key_id,
+                                                 const struct go_slice *chain_path,
+                                                 const struct go_slice *message,
+                                                 const struct go_slice *ids,
+                                                 struct tss_buffer *setup_msg);
 
 /*
  Create a full sign session from the decoded setup message.
@@ -507,17 +512,17 @@ enum lib_error schnorr_sign_setupmsg_new(const struct go_slice *key_id,
  * `LIB_SETUP_MESSAGE_VALIDATION`: Setup message validation failed.
 
  */
-enum lib_error schnorr_sign_session_from_setup(const struct go_slice *setup,
-                                               const struct go_slice *id,
-                                               struct Handle share,
-                                               struct Handle *hnd);
+enum schnorr_lib_error schnorr_sign_session_from_setup(const struct go_slice *setup,
+                                                       const struct go_slice *id,
+                                                       struct Handle share,
+                                                       struct Handle *hnd);
 
 /*
  Process an input message
  */
-enum lib_error schnorr_sign_session_input_message(struct Handle session,
-                                                  const struct go_slice *message,
-                                                  uint32_t *finished);
+enum schnorr_lib_error schnorr_sign_session_input_message(struct Handle session,
+                                                          const struct go_slice *message,
+                                                          uint32_t *finished);
 
 /*
  Receive an output message.
@@ -535,16 +540,16 @@ enum lib_error schnorr_sign_session_input_message(struct Handle session,
  * LIB_NON_EMPTY_OUTPUT_BUFFER: passed `message is not empty buffer
 
  */
-enum lib_error schnorr_sign_session_output_message(struct Handle session,
-                                                   struct tss_buffer *message);
+enum schnorr_lib_error schnorr_sign_session_output_message(struct Handle session,
+                                                           struct tss_buffer *message);
 
 /*
  Returns a receiver of a message.
  */
-enum lib_error schnorr_sign_session_message_receiver(struct Handle session,
-                                                     const struct go_slice *message,
-                                                     uint32_t index,
-                                                     struct tss_buffer *receiver);
+enum schnorr_lib_error schnorr_sign_session_message_receiver(struct Handle session,
+                                                             const struct go_slice *message,
+                                                             uint32_t index,
+                                                             struct tss_buffer *receiver);
 
 /*
  Finish the session and collect the generated value.
@@ -575,7 +580,8 @@ enum lib_error schnorr_sign_session_message_receiver(struct Handle session,
  * `LIB_SIGNGEN_ERROR`: An MPC protocol error.
 
  */
-enum lib_error schnorr_sign_session_finish(struct Handle session, struct tss_buffer *output);
+enum schnorr_lib_error schnorr_sign_session_finish(struct Handle session,
+                                                   struct tss_buffer *output);
 
 /*
  Deallocate session handle and associated memory.
@@ -591,7 +597,7 @@ enum lib_error schnorr_sign_session_finish(struct Handle session, struct tss_buf
  * `LIB_INVALID_HANDLE`: passed an invalid session handle
 
  */
-enum lib_error schnorr_sign_session_free(const struct Handle *session);
+enum schnorr_lib_error schnorr_sign_session_free(const struct Handle *session);
 
 /*
  Creates a key export receiver session and generate setup message for
@@ -616,10 +622,10 @@ enum lib_error schnorr_sign_session_free(const struct Handle *session);
  * `LIB_NULL_PTR` - passed a null pointer
 
  */
-enum lib_error schnorr_key_export_receiver_new(struct Handle share,
-                                               const struct go_slice *ids,
-                                               struct tss_buffer *setup_msg,
-                                               struct Handle *session);
+enum schnorr_lib_error schnorr_key_export_receiver_new(struct Handle share,
+                                                       const struct go_slice *ids,
+                                                       struct tss_buffer *setup_msg,
+                                                       struct Handle *session);
 
 /*
  Handle input message from a key exporter.
@@ -635,9 +641,9 @@ enum lib_error schnorr_key_export_receiver_new(struct Handle share,
  * `finished` - pointer to a finished flag
 
  */
-enum lib_error schnorr_key_export_receiver_input_message(struct Handle session,
-                                                         const struct go_slice *message,
-                                                         int32_t *finished);
+enum schnorr_lib_error schnorr_key_export_receiver_input_message(struct Handle session,
+                                                                 const struct go_slice *message,
+                                                                 int32_t *finished);
 
 /*
  Finish key export receiver session.
@@ -649,7 +655,8 @@ enum lib_error schnorr_key_export_receiver_input_message(struct Handle session,
  * `secret` - pointer to buffer for a exported private key
 
  */
-enum lib_error schnorr_key_export_receiver_finish(struct Handle session, struct tss_buffer *secret);
+enum schnorr_lib_error schnorr_key_export_receiver_finish(struct Handle session,
+                                                          struct tss_buffer *secret);
 
 /*
  Key share export.
@@ -670,11 +677,11 @@ enum lib_error schnorr_key_export_receiver_finish(struct Handle session, struct 
  * `receiver` - key export receiver session handle
 
  */
-enum lib_error schnorr_key_exporter(struct Handle share,
-                                    const struct go_slice *id,
-                                    const struct go_slice *setup,
-                                    struct tss_buffer *message,
-                                    struct tss_buffer *receiver);
+enum schnorr_lib_error schnorr_key_exporter(struct Handle share,
+                                            const struct go_slice *id,
+                                            const struct go_slice *setup,
+                                            struct tss_buffer *message,
+                                            struct tss_buffer *receiver);
 
 /*
  Creates a key import receiver session and generate setup message for
@@ -683,6 +690,8 @@ enum lib_error schnorr_key_exporter(struct Handle share,
  # Arguments
 
  * `private_key`
+
+ * `root_chain` - optional root chain code
 
  * `threshold`
 
@@ -701,15 +710,16 @@ enum lib_error schnorr_key_exporter(struct Handle share,
  * `LIB_NULL_PTR` - passed a null pointer
 
  */
-enum lib_error schnorr_key_import_initiator_new(const struct go_slice *private_key,
-                                                uint8_t threshold,
-                                                const struct go_slice *ids,
-                                                struct tss_buffer *setup_msg,
-                                                struct Handle *session);
+enum schnorr_lib_error schnorr_key_import_initiator_new(const struct go_slice *private_key,
+                                                        const struct go_slice *root_chain,
+                                                        uint8_t threshold,
+                                                        const struct go_slice *ids,
+                                                        struct tss_buffer *setup_msg,
+                                                        struct Handle *session);
 
-enum lib_error schnorr_key_importer_new(const struct go_slice *setup,
-                                        const struct go_slice *id,
-                                        struct Handle *session);
+enum schnorr_lib_error schnorr_key_importer_new(const struct go_slice *setup,
+                                                const struct go_slice *id,
+                                                struct Handle *session);
 
 #ifdef __cplusplus
 }  // extern "C"

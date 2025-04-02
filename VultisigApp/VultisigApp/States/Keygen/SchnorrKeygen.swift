@@ -64,12 +64,12 @@ final class SchnorrKeygen {
         return self.keyshare
     }
     
-    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.lib_error,[UInt8]) {
+    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.schnorr_lib_error,[UInt8]) {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
-        var result: goschnorr.lib_error
+        var result: goschnorr.schnorr_lib_error
         switch self.tssType {
         case .Keygen,.Migrate:
             result = schnorr_keygen_session_output_message(handle,&buf)
@@ -106,7 +106,7 @@ final class SchnorrKeygen {
             goschnorr.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
-        var receiverResult: goschnorr.lib_error
+        var receiverResult: goschnorr.schnorr_lib_error
         switch self.tssType {
         case .Keygen,.Migrate:
             receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -222,7 +222,7 @@ final class SchnorrKeygen {
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
-            var result: goschnorr.lib_error
+            var result: goschnorr.schnorr_lib_error
             switch self.tssType {
             case .Keygen,.Migrate:
                 result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
