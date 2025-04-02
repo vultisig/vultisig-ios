@@ -48,13 +48,15 @@ struct SwapVerifyView: View {
     }
 
     var fields: some View {
-        VStack(spacing: 30) {
-            Spacer()
-            summary
-            checkboxes
-            Spacer()
+        ScrollView {
+            VStack(spacing: 30) {
+                Spacer()
+                summary
+                checkboxes
+                Spacer()
+            }
+            .padding(.horizontal, 16)
         }
-        .padding(.horizontal, 16)
     }
 
     var summary: some View {
@@ -71,6 +73,15 @@ struct SwapVerifyView: View {
                 for: "toAsset",
                 with: getToAmount()
             )
+            
+            if let providerName = tx.quote?.displayName {
+                separator
+                getValueCell(
+                    for: "provider",
+                    with: providerName,
+                    showIcon: true
+                )
+            }
             
             if swapViewModel.showAllowance(tx: tx) {
                 separator
@@ -195,12 +206,23 @@ struct SwapVerifyView: View {
         }
     }
 
-    func getValueCell(for title: String, with value: String, bracketValue: String? = nil) -> some View {
+    func getValueCell(
+        for title: String,
+        with value: String,
+        bracketValue: String? = nil,
+        showIcon: Bool = false
+    ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
             
             Spacer()
+            
+            if showIcon {
+                Image(value)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+            }
             
             Text(value)
                 .foregroundColor(.neutral0)
@@ -208,7 +230,7 @@ struct SwapVerifyView: View {
             if let bracketValue {
                 Group {
                     Text("(") +
-                    Text(value) +
+                    Text(bracketValue) +
                     Text(")")
                 }
                 .foregroundColor(.extraLightGray)
