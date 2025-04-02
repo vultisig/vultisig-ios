@@ -84,17 +84,6 @@ struct FastBackupVaultOverview: View {
         .padding(.horizontal, 16)
     }
     
-    var animation: some View {
-        ZStack{
-            if tabIndex>2 {
-                backupVaultAnimationVM?.view()
-            } else {
-                animationVM?.view()
-            }
-        }
-        .offset(y: -100)
-    }
-    
     var nextButton: some View {
         Button {
             nextTapped()

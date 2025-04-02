@@ -34,5 +34,15 @@ extension FastBackupVaultOverview {
         }
         .frame(maxWidth: .infinity)
     }
+    
+    var animation: some View {
+        ZStack{
+            if tabIndex>2 {
+                backupVaultAnimationVM?.view()
+            } else {
+                animationVM?.view()
+            }
+        }
+    }
 }
 #endif
