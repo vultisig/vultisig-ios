@@ -186,7 +186,7 @@ struct SwapCryptoDetailsView: View {
         } label: {
             FilledButton(title: "continue")
         }
-        .disabled(!swapViewModel.validateForm(tx: tx))
+//        .disabled(!swapViewModel.validateForm(tx: tx))
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
     }

@@ -59,55 +59,61 @@ struct SwapVerifyView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
+            summaryTitle
+            
             getValueCell(
                 for: "fromAsset",
                 with: getFromAmount()
             )
             
-            Separator()
+            separator
             getValueCell(
                 for: "toAsset",
                 with: getToAmount()
             )
             
             if swapViewModel.showAllowance(tx: tx) {
-                Separator()
+                separator
                 getValueCell(
-                    for: "Allowance",
+                    for: "allowance",
                     with: getFromAmount()
                 )
             }
             
-            if swapViewModel.showFees(tx: tx) {
-                Separator()
+            if swapViewModel.showGas(tx: tx) {
+                separator
                 getValueCell(
-                    for: "swapFee",
-                    with: swapViewModel.swapFeeString(tx: tx),
-                    isVertical: false
+                    for: "networkFee",
+                    with: swapViewModel.swapGasString(tx: tx),
+                    bracketValue: swapViewModel.approveFeeString(tx: tx)
                 )
             }
             
-            if swapViewModel.showGas(tx: tx) {
-                Separator()
+            if swapViewModel.showFees(tx: tx) {
+                separator
                 getValueCell(
-                    for: "networkFee",
-                    with: "\(swapViewModel.swapGasString(tx: tx))(~\(swapViewModel.approveFeeString(tx: tx)))",
-                    isVertical: false
+                    for: "swapFee",
+                    with: swapViewModel.swapFeeString(tx: tx)
                 )
             }
             
             if swapViewModel.showTotalFees(tx: tx) {
-                Separator()
+                separator
                 getValueCell(
-                    for: "totalFee",
-                    with: "\(swapViewModel.totalFeeString(tx: tx))",
-                    isVertical: false
+                    for: "maxTotalFee",
+                    with: swapViewModel.totalFeeString(tx: tx)
                 )
             }
         }
         .padding(16)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var summaryTitle: some View {
+        Text(NSLocalizedString("youreWwapping", comment: ""))
+            .font(.body16BrockmannMedium)
+            .foregroundColor(.lightText)
     }
 
     var checkboxes: some View {
@@ -166,6 +172,11 @@ struct SwapVerifyView: View {
     var showApproveCheckmark: Bool {
         return tx.isApproveRequired
     }
+    
+    var separator: some View {
+        Separator()
+            .opacity(0.2)
+    }
 
     func getFromAmount() -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
@@ -183,29 +194,27 @@ struct SwapVerifyView: View {
         }
     }
 
-    func getValueCell(for title: String, with value: String, isVertical: Bool = true) -> some View {
-        ZStack {
-            if isVertical {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString(title, comment: ""))
-                        .font(.body20MontserratSemiBold)
-                        .foregroundColor(.neutral0)
-
-                    Text(value)
-                        .font(.body13MenloBold)
-                        .foregroundColor(.turquoise600)
-                }
-            } else {
-                HStack {
-                    Text(NSLocalizedString(title, comment: ""))
-                    Spacer()
-                    Text(value)
-                    
-                }
-                .font(.body16MontserratBold)
+    func getValueCell(for title: String, with value: String, bracketValue: String? = nil) -> some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(.extraLightGray)
+            
+            Spacer()
+            
+            Text(value)
                 .foregroundColor(.neutral0)
+            
+            if let bracketValue {
+                Group {
+                    Text("(") +
+                    Text(value) +
+                    Text(")")
+                }
+                .foregroundColor(.extraLightGray)
             }
+            
         }
+        .font(.body14BrockmannMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 

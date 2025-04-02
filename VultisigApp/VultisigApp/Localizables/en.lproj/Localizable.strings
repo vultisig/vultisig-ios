@@ -613,3 +613,7 @@
 "network" = "Network";
 "selectAsset" = "Select asset";
 "chain" = "Chain";
+"swapOverview" = "Swap overview";
+"youreWwapping" = "You’re swapping";
+"maxTotalFee" = "Max. Total Fee";
+"allowance" = "Allowance";
