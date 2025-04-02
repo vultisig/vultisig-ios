@@ -48,13 +48,13 @@ struct SwapVerifyView: View {
     }
 
     var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                summary
-                checkboxes
-            }
-            .padding(.horizontal, 16)
+        VStack(spacing: 30) {
+            Spacer()
+            summary
+            checkboxes
+            Spacer()
         }
+        .padding(.horizontal, 16)
     }
 
     var summary: some View {
@@ -114,14 +114,15 @@ struct SwapVerifyView: View {
         Text(NSLocalizedString("youreWwapping", comment: ""))
             .font(.body16BrockmannMedium)
             .foregroundColor(.lightText)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     var checkboxes: some View {
         VStack(spacing: 16) {
-            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "The swap amount is correct")
-            Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "I agree with the amount I will receive after the swap.")
+            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "swapVerifyCheckbox1Description")
+            Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "swapVerifyCheckbox2Description")
             if showApproveCheckmark {
-                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "I agree with providing ERC20 allowance for exact swap amount")
+                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "swapVerifyCheckbox3Description")
             }
         }
     }
@@ -134,7 +135,7 @@ struct SwapVerifyView: View {
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 24)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
@@ -157,7 +158,7 @@ struct SwapVerifyView: View {
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 24)
         .padding(.bottom, 24)
     }
 
