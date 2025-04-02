@@ -162,7 +162,7 @@ final class SchnorrKeysign {
         return Array(UnsafeBufferPointer(start: buf_receiver.ptr, count: Int(buf_receiver.len)))
     }
     
-    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.lib_error,[UInt8]) {
+    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.schnorr_lib_error,[UInt8]) {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
