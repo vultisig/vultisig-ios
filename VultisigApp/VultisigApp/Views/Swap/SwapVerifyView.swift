@@ -63,15 +63,17 @@ struct SwapVerifyView: View {
         VStack(spacing: 16) {
             summaryTitle
             
-            getValueCell(
-                for: "fromAsset",
-                with: getFromAmount()
+            getSwapAssetCell(
+                for: tx.fromAmount,
+                with: tx.fromCoin.ticker,
+                on: tx.fromCoin.chain
             )
             
             separator
-            getValueCell(
-                for: "toAsset",
-                with: getToAmount()
+            getSwapAssetCell(
+                for: tx.toAmountDecimal.description,
+                with: tx.toCoin.ticker,
+                on: tx.toCoin.chain
             )
             
             if let providerName = tx.quote?.displayName {
@@ -80,14 +82,6 @@ struct SwapVerifyView: View {
                     for: "provider",
                     with: providerName,
                     showIcon: true
-                )
-            }
-            
-            if swapViewModel.showAllowance(tx: tx) {
-                separator
-                getValueCell(
-                    for: "allowance",
-                    with: getFromAmount()
                 )
             }
             
@@ -190,22 +184,6 @@ struct SwapVerifyView: View {
             .opacity(0.2)
     }
 
-    func getFromAmount() -> String {
-        if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
-        } else {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
-        }
-    }
-
-    func getToAmount() -> String {
-        if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
-        } else {
-            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
-        }
-    }
-
     func getValueCell(
         for title: String,
         with value: String,
@@ -252,6 +230,40 @@ struct SwapVerifyView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
+    }
+    
+    private func getSwapAssetCell(
+        for amount: String,
+        with ticker: String,
+        on chain: Chain? = nil
+    ) -> some View {
+        VStack(spacing: 4) {
+            Group {
+                Text(amount)
+                    .foregroundColor(.neutral0) +
+                Text(" ") +
+                Text(ticker)
+                    .foregroundColor(.extraLightGray)
+            }
+            .font(.body18BrockmannMedium)
+            
+            if let chain {
+                HStack(spacing: 2) {
+                    Text(NSLocalizedString("on", comment: ""))
+                        .foregroundColor(.extraLightGray)
+                        .padding(.trailing, 4)
+                    
+                    Image(chain.logo)
+                        .resizable()
+                        .frame(width: 12, height: 12)
+                    
+                    Text(chain.name)
+                        .foregroundColor(.neutral0)
+                }
+                .font(.body10BrockmannMedium)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

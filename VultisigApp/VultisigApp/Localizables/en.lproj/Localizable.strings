@@ -620,3 +620,4 @@
 "swapVerifyCheckbox1Description" = "The swap amount is correct";
 "swapVerifyCheckbox2Description" = "I agree with the min. amount I’ll receive";
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
+"on" = "on";
