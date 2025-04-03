@@ -62,19 +62,7 @@ struct SwapVerifyView: View {
     var summary: some View {
         VStack(spacing: 16) {
             summaryTitle
-            
-            getSwapAssetCell(
-                for: tx.fromAmount,
-                with: tx.fromCoin.ticker,
-                on: tx.fromCoin.chain
-            )
-            
-            separator
-            getSwapAssetCell(
-                for: tx.toAmountDecimal.description,
-                with: tx.toCoin.ticker,
-                on: tx.toCoin.chain
-            )
+            summaryFromToContent
             
             if let providerName = tx.quote?.displayName {
                 separator
@@ -113,6 +101,58 @@ struct SwapVerifyView: View {
         .padding(16)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var summaryFromToContent: some View {
+        HStack {
+            summaryFromToIcons
+            summaryFromTo
+        }
+    }
+    
+    var summaryFromToIcons: some View {
+        VStack(spacing: 0) {
+            getCoinIcon(for: tx.fromCoin)
+            verticalSeparator
+            chevronIcon
+            verticalSeparator
+            getCoinIcon(for: tx.fromCoin)
+        }
+    }
+    
+    var verticalSeparator: some View {
+        Rectangle()
+            .frame(width: 1, height: 12)
+            .foregroundColor(.blue400)
+    }
+    
+    var summaryFromTo: some View {
+        VStack(spacing: 16) {
+            getSwapAssetCell(
+                for: tx.fromAmount,
+                with: tx.fromCoin.ticker,
+                on: tx.fromCoin.chain
+            )
+            
+            separator
+                .padding(.leading, 12)
+            
+            getSwapAssetCell(
+                for: tx.toAmountDecimal.description,
+                with: tx.toCoin.ticker,
+                on: tx.toCoin.chain
+            )
+        }
+    }
+    
+    var chevronIcon: some View {
+        Image(systemName: "arrow.down")
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.persianBlue200)
+            .padding(6)
+            .background(Color.blue400)
+            .cornerRadius(32)
+            .bold()
     }
     
     var summaryTitle: some View {
@@ -237,7 +277,7 @@ struct SwapVerifyView: View {
         with ticker: String,
         on chain: Chain? = nil
     ) -> some View {
-        VStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 4) {
             Group {
                 Text(amount)
                     .foregroundColor(.neutral0) +
@@ -259,11 +299,23 @@ struct SwapVerifyView: View {
                     
                     Text(chain.name)
                         .foregroundColor(.neutral0)
+                    
+                    Spacer()
                 }
                 .font(.body10BrockmannMedium)
+                .offset(x: 2)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func getCoinIcon(for coin: Coin) -> some View {
+        AsyncImageView(
+            logo: coin.logo,
+            size: CGSize(width: 28, height: 28),
+            ticker: coin.ticker,
+            tokenChainLogo: nil
+        )
     }
 }
 
