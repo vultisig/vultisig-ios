@@ -154,6 +154,7 @@
 		A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */; };
 		A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */; };
 		A60F29AB2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */; };
+		A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */; };
 		A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */; };
 		A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611735A2BC8B7AB00D616F9 /* ChainNavigationCell.swift */; };
 		A611CCC22C765F3000D64C9D /* OutlinedDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */; };
@@ -1006,6 +1007,7 @@
 		A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtension.swift; sourceTree = "<group>"; };
 		A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectOrientation.swift; sourceTree = "<group>"; };
 		A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryScanDeviceDisclaimer.swift; sourceTree = "<group>"; };
+		A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDoneView.swift; sourceTree = "<group>"; };
 		A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainCellViewModel.swift; sourceTree = "<group>"; };
 		A611735A2BC8B7AB00D616F9 /* ChainNavigationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNavigationCell.swift; sourceTree = "<group>"; };
 		A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlinedDisclaimer.swift; sourceTree = "<group>"; };
@@ -3249,6 +3251,7 @@
 				A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */,
 				A6BFE1BE2D94663E000B73C0 /* SwapChainPickerView.swift */,
 				A6BFE1C62D95F3C9000B73C0 /* SwapCoinPickerView.swift */,
+				A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -4006,6 +4009,7 @@
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
 				DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */,
+				A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */,
 				A6C6708A2C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift in Sources */,
 				A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
