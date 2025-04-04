@@ -12,7 +12,7 @@ import Mediator
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-    private let titles = ["swap", "verify", "pair", "keysign", "done"]
+    private let titles = ["swap", "swapOverview", "pair", "keysign", "done"]
 
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared

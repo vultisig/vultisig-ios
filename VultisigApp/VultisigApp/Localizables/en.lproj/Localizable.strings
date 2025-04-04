@@ -613,3 +613,13 @@
 "network" = "Network";
 "selectAsset" = "Select asset";
 "chain" = "Chain";
+"swapOverview" = "Swap overview";
+"youreWwapping" = "You’re swapping";
+"maxTotalFee" = "Max. Total Fee";
+"allowance" = "Allowance";
+"swapVerifyCheckbox1Description" = "The swap amount is correct";
+"swapVerifyCheckbox2Description" = "I agree with the min. amount I’ll receive";
+"swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
+"on" = "on";
+"keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction";
+"startTransaction" = "Start transaction";
