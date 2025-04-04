@@ -79,7 +79,8 @@ struct SwapVerifyView: View {
                 separator
                 getValueCell(
                     for: "swapFee",
-                    with: swapViewModel.swapFeeString(tx: tx)
+                    with: swapViewModel.swapGasString(tx: tx),
+                    bracketValue: swapViewModel.swapFeeString(tx: tx)
                 )
             }
             
