@@ -185,18 +185,23 @@ struct SwapVerifyView: View {
     }
 
     var pairedSignButton: some View {
-        Button {
+        let isDisabled = !verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired)
+        
+        return Button {
             signPressed()
         } label: {
             if tx.isFastVault {
                 OutlineButton(title: "Paired sign")
+                    .opacity(!isDisabled ? 1 : 0.5)
             } else {
-                FilledButton(title: "sign")
+                FilledButton(
+                    title: "startTransaction",
+                    textColor: isDisabled ? .textDisabled : .blue600,
+                    background: isDisabled ? .buttonDisabled : .turquoise600
+                )
             }
-            
         }
-        .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
-        .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
+        .disabled(isDisabled)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
     }

@@ -622,3 +622,4 @@
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact swap amount";
 "on" = "on";
 "keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction";
+"startTransaction" = "Start transaction";
