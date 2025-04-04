@@ -52,18 +52,6 @@ struct SwapVerifyView: View {
         }
     }
 
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                Spacer()
-                summary
-                checkboxes
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-
     var summary: some View {
         VStack(spacing: 16) {
             summaryTitle

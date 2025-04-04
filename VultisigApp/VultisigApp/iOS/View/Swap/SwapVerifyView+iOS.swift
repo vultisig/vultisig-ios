@@ -17,5 +17,17 @@ extension SwapVerifyView {
                 }
             }
     }
+    
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                Spacer()
+                summary
+                checkboxes
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+        }
+    }
 }
 #endif
