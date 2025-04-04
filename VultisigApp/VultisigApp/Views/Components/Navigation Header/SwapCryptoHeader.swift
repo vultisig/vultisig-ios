@@ -75,7 +75,7 @@ struct SwapCryptoHeader: View {
         HStack {
             Spacer()
             
-            if swapViewModel.currentIndex==1 {
+            if swapViewModel.currentIndex>0 && swapViewModel.currentIndex<3 {
                 refreshCounter
             } else if swapViewModel.currentIndex==3 {
                 trailingAction

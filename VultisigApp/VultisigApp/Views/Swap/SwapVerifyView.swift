@@ -109,7 +109,7 @@ struct SwapVerifyView: View {
             verticalSeparator
             chevronIcon
             verticalSeparator
-            getCoinIcon(for: tx.fromCoin)
+            getCoinIcon(for: tx.toCoin)
         }
     }
     
