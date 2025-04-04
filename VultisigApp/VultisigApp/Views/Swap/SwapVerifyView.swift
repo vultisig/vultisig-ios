@@ -316,6 +316,10 @@ struct SwapVerifyView: View {
             ticker: coin.ticker,
             tokenChainLogo: nil
         )
+        .overlay(
+            Circle()
+                .stroke(Color.blue400, lineWidth: 2)
+        )
     }
 }
 

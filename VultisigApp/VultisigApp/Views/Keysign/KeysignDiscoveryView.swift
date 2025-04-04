@@ -29,6 +29,7 @@ struct KeysignDiscoveryView: View {
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var animationVM: RiveViewModel? = nil
+    @State var showDisclaimer: Bool = true
     
     var swapTransaction: SwapTransaction = SwapTransaction()
     
@@ -119,6 +120,8 @@ struct KeysignDiscoveryView: View {
         ZStack {
             if selectedNetwork == .Local {
                 LocalModeDisclaimer()
+            } else if showDisclaimer {
+                KeysignDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
             }
         }
         .padding(.horizontal)
