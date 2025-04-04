@@ -18,6 +18,8 @@ struct SwapVerifyView: View {
     @State var fastPasswordPresented = false
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ZStack {
@@ -27,6 +29,9 @@ struct SwapVerifyView: View {
             if swapViewModel.isLoading {
                 Loader()
             }
+        }
+        .onReceive(timer) { input in
+            swapViewModel.updateTimer(tx: tx, vault: vault)
         }
         .onDisappear {
             swapViewModel.isLoading = false
@@ -157,7 +162,7 @@ struct SwapVerifyView: View {
     
     var summaryTitle: some View {
         Text(NSLocalizedString("youreWwapping", comment: ""))
-            .font(.body16BrockmannMedium)
+            .font(.body14BrockmannMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -222,6 +227,10 @@ struct SwapVerifyView: View {
     var separator: some View {
         Separator()
             .opacity(0.2)
+    }
+    
+    var refreshCounter: some View {
+        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
 
     func getValueCell(
