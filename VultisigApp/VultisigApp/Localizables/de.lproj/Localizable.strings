@@ -584,3 +584,13 @@
 "network" = "Netzwerk";
 "selectAsset" = "Asset auswählen";
 "chain" = "Blockchain";
+"swapOverview" = "Swap-Übersicht";
+"youreWwapping" = "Du tauschst";
+"maxTotalFee" = "Max. Gesamtgebühr";
+"allowance" = "Freigabe";
+"swapVerifyCheckbox1Description" = "Der Swap-Betrag ist korrekt";
+"swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalte";
+"swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Freigabe für den genauen Swap-Betrag zu erteilen";
+"on" = "auf";
+"keysignDiscoveryScanDeviceDisclaimer" = "Halte die Geräte im selben Netzwerk, während die Transaktion signiert wird";
+"startTransaction" = "Transaktion starten";

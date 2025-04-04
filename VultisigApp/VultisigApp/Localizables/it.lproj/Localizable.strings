@@ -567,3 +567,13 @@
 "network" = "Rete";
 "selectAsset" = "Seleziona asset";
 "chain" = "Catena";
+"swapOverview" = "Panoramica dello swap";
+"youreWwapping" = "Stai effettuando uno swap";
+"maxTotalFee" = "Commissione totale max.";
+"allowance" = "Autorizzazione";
+"swapVerifyCheckbox1Description" = "L'importo dello swap è corretto";
+"swapVerifyCheckbox2Description" = "Accetto l'importo minimo che riceverò";
+"swapVerifyCheckbox3Description" = "Accetto di fornire l'autorizzazione ERC20 per l'importo esatto dello swap";
+"on" = "su";
+"keysignDiscoveryScanDeviceDisclaimer" = "Mantieni i dispositivi sulla stessa rete durante la firma della transazione";
+"startTransaction" = "Avvia transazione";

@@ -567,3 +567,13 @@
 "network" = "Mreža";
 "selectAsset" = "Odaberi imovinu";
 "chain" = "Lanac";
+"swapOverview" = "Pregled zamjene";
+"youreWwapping" = "Zamjenjujete";
+"maxTotalFee" = "Maks. ukupna naknada";
+"allowance" = "Dozvola";
+"swapVerifyCheckbox1Description" = "Iznos za zamjenu je točan";
+"swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
+"swapVerifyCheckbox3Description" = "Slažem se dati ERC20 dozvolu za točan iznos zamjene";
+"on" = "na";
+"keysignDiscoveryScanDeviceDisclaimer" = "Držite uređaje na istoj mreži tijekom potpisivanja transakcije";
+"startTransaction" = "Pokreni transakciju";
