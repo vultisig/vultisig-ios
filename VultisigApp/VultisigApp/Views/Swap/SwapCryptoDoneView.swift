@@ -33,9 +33,12 @@ struct SwapCryptoDoneView: View {
     
     var cards: some View {
         ScrollView {
-            animation
-            fromToCards
-            summary
+            VStack {
+                animation
+                fromToCards
+                summary
+            }
+            .padding(.horizontal)
         }
     }
     
@@ -155,7 +158,7 @@ struct SwapCryptoDoneView: View {
     
     var filler: some View {
         Rectangle()
-            .frame(width: 8, height: 18)
+            .frame(width: 6, height: 18)
             .foregroundColor(Color.backgroundBlue)
     }
     
@@ -346,13 +349,13 @@ struct SwapCryptoDoneView: View {
     }
     
     private func getCopyButton(for value: String) -> some View {
-//        Button {
-//            
-//        } label: {
+        Button {
+            
+        } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(.neutral0)
                 .font(.body14BrockmannMedium)
-//        }
+        }
     }
 }
 

@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension SendCryptoDoneView {
-    var view: some View {
+    var sendView: some View {
         VStack {
             cards
             continueButton
@@ -17,10 +17,7 @@ extension SendCryptoDoneView {
                     HomeView(selectedVault: vault)
                 }
         }
-        .padding(.horizontal, 25)
-        
     }
-    
     
     func copyHash(hash: String) {
         let explorerLink = explorerLink(hash: hash)

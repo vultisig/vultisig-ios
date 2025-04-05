@@ -9,8 +9,7 @@
 import SwiftUI
 
 extension SendCryptoDoneView {
-    
-    var view: some View {
+    var sendView: some View {
         VStack {
             cards
             continueButton

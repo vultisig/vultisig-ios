@@ -17,6 +17,9 @@ struct SendCryptoDoneView: View {
     
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
+    
+    let sendSummaryViewModel = SendSummaryViewModel()
+    let swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
     @State var navigateToHome = false
@@ -92,7 +95,33 @@ struct SendCryptoDoneView: View {
     var summaryCard: some View {
         SendCryptoDoneSummary(
             sendTransaction: sendTransaction,
-            swapTransaction: swapTransaction
+            swapTransaction: swapTransaction,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel
+        )
+    }
+    
+    var view: some View {
+        ZStack {
+            if let tx = swapTransaction {
+                getSwapDoneView(tx)
+            } else {
+                sendView
+            }
+        }
+    }
+    
+    private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
+        SwapCryptoDoneView(
+            tx: tx,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel
         )
     }
     

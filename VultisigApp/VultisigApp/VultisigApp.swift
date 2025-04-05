@@ -26,25 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-//            SendCryptoDoneView(
-//                vault:Vault.example,
-//                hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-//                approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-//                chain: .thorChain,
-//                progressLink: "https://blockstream.info/tx/",
-//                sendTransaction: nil,
-//                swapTransaction: SwapTransaction()
-//            )
-//            .environmentObject(SettingsViewModel())
-            SwapCryptoDoneView(
-                tx: SwapTransaction(),
-                vault:Vault.example,
-                hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-                approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-                sendSummaryViewModel: SendSummaryViewModel(),
-                swapSummaryViewModel: SwapCryptoViewModel()
-            )
-            .environmentObject(SettingsViewModel())
+            content
         }
         .modelContainer(sharedModelContainer)
         
