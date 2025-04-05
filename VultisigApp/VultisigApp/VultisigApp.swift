@@ -36,7 +36,15 @@ struct VultisigApp: App {
 //                swapTransaction: SwapTransaction()
 //            )
 //            .environmentObject(SettingsViewModel())
-            SwapCryptoDoneView()
+            SwapCryptoDoneView(
+                tx: SwapTransaction(),
+                vault:Vault.example,
+                hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+                approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+                sendSummaryViewModel: SendSummaryViewModel(),
+                swapSummaryViewModel: SwapCryptoViewModel()
+            )
+            .environmentObject(SettingsViewModel())
         }
         .modelContainer(sharedModelContainer)
         

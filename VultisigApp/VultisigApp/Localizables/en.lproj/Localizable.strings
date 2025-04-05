@@ -625,3 +625,5 @@
 "startTransaction" = "Start transaction";
 "transactionSuccesful" = "Transaction succesful";
 "track" = "Track";
+"swapTXHash" = "Swap Tx Hash";
+"approvalTXHash" = "Approval Tx Hash";
