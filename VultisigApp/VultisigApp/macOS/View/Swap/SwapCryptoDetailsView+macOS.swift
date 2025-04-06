@@ -26,14 +26,16 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons()
+        SwapPercentageButtons { percentage in
+            handlePercentageSelection(percentage)
+        }
     }
     
     var fields: some View {
         ScrollView {
             VStack(spacing: 8) {
                 swapContent
-//                percentageButtons
+                percentageButtons
                 summary
             }
             .padding(.horizontal, 16)

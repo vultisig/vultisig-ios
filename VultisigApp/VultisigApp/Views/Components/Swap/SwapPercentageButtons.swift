@@ -8,12 +8,16 @@
 import SwiftUI
 
 struct SwapPercentageButtons: View {
-    
     let buttonOptions = [25, 50, 75, 100]
     
+    let onTap: (Int) -> Void
+    
     var body: some View {
-        container
-            .frame(maxWidth: .infinity)
+        VStack(spacing: 8) {
+            buttons
+            separator
+        }
+        .frame(maxWidth: .infinity)
     }
     
     var separator: some View {
@@ -31,7 +35,11 @@ struct SwapPercentageButtons: View {
     }
     
     private func getPercentageButton(for option: Int) -> some View {
-        getPercentageCell(for: "\(option)")
+        Button(action: {
+            onTap(option)
+        }) {
+            getPercentageCell(for: "\(option)")
+        }
     }
     
     private func getPercentageCell(for text: String) -> some View {
@@ -43,8 +51,4 @@ struct SwapPercentageButtons: View {
             .background(Color.blue600)
             .cornerRadius(32)
     }
-}
-
-#Preview {
-    SwapPercentageButtons()
 }
