@@ -7,7 +7,6 @@
 
 import Foundation
 import goschnorr
-import godkls
 import OSLog
 import Mediator
 
@@ -416,7 +415,7 @@ final class SchnorrKeygen {
         self.setKeygenDone(status: false)
         var task: Task<(), any Error>? = nil
         do {
-            var keyshareHandle = godkls.Handle()
+            var keyshareHandle = goschnorr.Handle()
             if !self.publicKeyEdDSA.isEmpty {
                 // we are part of the old keygen committee, let's load existing keyshare
                 let keyshare = try getKeyshareBytesFromVault()
@@ -443,7 +442,7 @@ final class SchnorrKeygen {
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
-            var handler = godkls.Handle()
+            var handler = goschnorr.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             
