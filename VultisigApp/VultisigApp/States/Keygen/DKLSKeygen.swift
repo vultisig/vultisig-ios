@@ -78,7 +78,7 @@ final class DKLSKeygen {
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
         let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, &buf)
-        if err != lib_error(0) {
+        if err != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
