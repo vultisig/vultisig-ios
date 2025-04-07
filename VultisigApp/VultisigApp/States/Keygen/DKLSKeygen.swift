@@ -6,7 +6,6 @@
 //
 import Foundation
 import godkls
-import goschnorr
 import OSLog
 import Mediator
 
@@ -35,7 +34,7 @@ final class DKLSKeygen {
     let publicKeyECDSA: String
     let localUI: String?
     let hexChainCode: String
-    
+    let DKLS_LIB_OK: godkls.lib_error = .init(0)
     init(vault: Vault,
          tssType: TssType,
          keygenCommittee: [String],
@@ -79,7 +78,7 @@ final class DKLSKeygen {
         let byteArray = DKLSHelper.arrayToBytes(parties: self.keygenCommittee)
         var ids = byteArray.to_dkls_goslice()
         let err = dkls_keygen_setupmsg_new(threshold, nil, &ids, &buf)
-        if err != LIB_OK {
+        if err != lib_error(0) {
             throw HelperError.runtimeError("fail to setup keygen message, dkls error:\(err)")
         }
         self.setupMessage = Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -99,7 +98,7 @@ final class DKLSKeygen {
             result = dkls_qc_session_output_message(handle,&buf)
         }
         
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
         }
@@ -137,7 +136,7 @@ final class DKLSKeygen {
             receiverResult = dkls_qc_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
         }
         
-        if receiverResult != LIB_OK {
+        if receiverResult != DKLS_LIB_OK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
         }
@@ -147,7 +146,7 @@ final class DKLSKeygen {
     func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
@@ -254,7 +253,7 @@ final class DKLSKeygen {
                 result = dkls_qc_session_input_message(handle, &decryptedBodySlice, &isFinished)
             }
             
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
             self.cache.setObject(NSObject(), forKey: key)
@@ -297,7 +296,7 @@ final class DKLSKeygen {
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             if self.tssType == .Keygen {
                 let result = dkls_keygen_session_from_setup(&decodedSetupMsg,&localPartySlice, &handler)
-                if result != LIB_OK {
+                if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to create session from setup message,error:\(result)")
                 }
             } else {
@@ -316,14 +315,14 @@ final class DKLSKeygen {
                                                                    &chainCodeSlice,
                                                                    &localUISlice,
                                                                    &handler)
-                if result != LIB_OK {
+                if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to create migration session from setup message,error:\(result)")
                 }
             }
             // free the handler
             defer {
                 let sessionFreeResult = dkls_keygen_session_free(&handler)
-                if sessionFreeResult != LIB_OK {
+                if sessionFreeResult != DKLS_LIB_OK {
                     print("fail to free keygen session \(sessionFreeResult)")
                 }
             }
@@ -339,12 +338,12 @@ final class DKLSKeygen {
                 self.setKeygenDone(status: true)
                 var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
-                if keyShareResult != LIB_OK {
+                if keyShareResult != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare,\(keyShareResult)")
                 }
                 defer {
                     let freeResult = dkls_keyshare_free(&keyshareHandler)
-                    if freeResult != LIB_OK {
+                    if freeResult != DKLS_LIB_OK {
                         print("fail to free keyshare \(freeResult)")
                     }
                 }
@@ -377,7 +376,7 @@ final class DKLSKeygen {
             godkls.tss_buffer_free(&buf)
         }
         let result = dkls_keyshare_to_bytes(handle,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get keyshare from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -389,7 +388,7 @@ final class DKLSKeygen {
             godkls.tss_buffer_free(&buf)
         }
         let result =  dkls_keyshare_public_key(handle,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get ECDSA public key from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -401,7 +400,7 @@ final class DKLSKeygen {
             godkls.tss_buffer_free(&buf)
         }
         let result =  dkls_keyshare_chaincode(handle,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get ECDSA chaincode from handler, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -462,7 +461,7 @@ final class DKLSKeygen {
         var newPartiesIdxSlice = newPartiesIdx.to_dkls_goslice()
         var oldPartiesIdxSlice = oldPartiesIdx.to_dkls_goslice()
         let result = dkls_qc_setupmsg_new(keyshareHandle, &ids, &oldPartiesIdxSlice,threshold,&newPartiesIdxSlice,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get qc setup message, \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr,count: Int(buf.len)))
@@ -478,7 +477,7 @@ final class DKLSKeygen {
                 let keyshare = try getKeyshareBytesFromVault()
                 var keyshareSlice = keyshare.to_dkls_goslice()
                 let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
-                if result != LIB_OK {
+                if result != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get keyshare, \(result)")
                 }
             }
@@ -499,13 +498,13 @@ final class DKLSKeygen {
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             
             let result = dkls_qc_session_from_setup(&decodedSetupMsg,&localPartySlice, keyshareHandle,&handler)
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create session from reshare setup message,error:\(result)")
             }
             // free the handler
             defer {
                 let sessionFreeResult = dkls_qc_session_free(&handler)
-                if sessionFreeResult != LIB_OK {
+                if sessionFreeResult != DKLS_LIB_OK {
                     print("fail to free reshare session \(sessionFreeResult)")
                 }
             }
@@ -520,12 +519,12 @@ final class DKLSKeygen {
             if isFinished {
                 var newKeyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_qc_session_finish(handler,&newKeyshareHandler)
-                if keyShareResult != LIB_OK {
+                if keyShareResult != DKLS_LIB_OK {
                     throw HelperError.runtimeError("fail to get new keyshare,\(keyShareResult)")
                 }
                 defer {
                     let freeResult = dkls_keyshare_free(&newKeyshareHandler)
-                    if freeResult != LIB_OK {
+                    if freeResult != DKLS_LIB_OK {
                         print("fail to free keyshare \(freeResult)")
                     }
                 }
