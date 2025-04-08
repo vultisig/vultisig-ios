@@ -34,6 +34,16 @@ struct SendCryptoDoneView: View {
             view
             PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomeView(selectedVault: vault)
+        }
+    }
+    
+    var sendView: some View {
+        VStack {
+            cards
+            continueButton
+        }
     }
     
     var cards: some View {
@@ -121,10 +131,12 @@ struct SendCryptoDoneView: View {
             vault: vault,
             hash: hash,
             approveHash: approveHash,
+            progressLink: progressLink,
             sendSummaryViewModel: sendSummaryViewModel,
             swapSummaryViewModel: swapSummaryViewModel,
             showAlert: $showAlert,
-            alertTitle: $alertTitle
+            alertTitle: $alertTitle,
+            navigateToHome: $navigateToHome
         )
     }
     

@@ -9,16 +9,6 @@
 import SwiftUI
 
 extension SendCryptoDoneView {
-    var sendView: some View {
-        VStack {
-            cards
-            continueButton
-                .navigationDestination(isPresented: $navigateToHome) {
-                    HomeView(selectedVault: vault)
-                }
-        }
-    }
-    
     func copyHash(hash: String) {
         let explorerLink = explorerLink(hash: hash)
         if !explorerLink.isEmpty {

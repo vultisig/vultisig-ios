@@ -13,14 +13,17 @@ struct SwapCryptoDoneView: View {
     let vault: Vault
     let hash: String
     let approveHash: String?
+    let progressLink: String?
     let sendSummaryViewModel: SendSummaryViewModel
     let swapSummaryViewModel: SwapCryptoViewModel
     @Binding var showAlert: Bool
     @Binding var alertTitle: String
+    @Binding var navigateToHome: Bool
     
     @State var showFees: Bool = false
     @State var animationVM: RiveViewModel? = nil
     
+    @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
@@ -57,7 +60,9 @@ struct SwapCryptoDoneView: View {
     
     var trackButton: some View {
         Button {
-            
+            if let progressLink, let url = URL(string: progressLink) {
+                openURL(url)
+            }
         } label: {
             trackLabel
         }
@@ -73,7 +78,7 @@ struct SwapCryptoDoneView: View {
     
     var doneButton: some View {
         Button {
-            
+            navigateToHome = true
         } label: {
             doneLabel
         }
@@ -369,10 +374,12 @@ struct SwapCryptoDoneView: View {
         vault:Vault.example,
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+        progressLink: nil,
         sendSummaryViewModel: SendSummaryViewModel(),
         swapSummaryViewModel: SwapCryptoViewModel(),
         showAlert: .constant(false),
-        alertTitle: .constant("")
+        alertTitle: .constant(""),
+        navigateToHome: .constant(false)
     )
     .environmentObject(SettingsViewModel())
 }
