@@ -70,9 +70,9 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
-    
+    @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        let cacheKey =  await getCacheKey(for: tx.fromCoin,
+        let cacheKey =  getCacheKey(for: tx.fromCoin,
                                           action: .swap,
                                           sendMaxAmount: false,
                                           isDeposit: tx.isDeposit,
@@ -80,7 +80,7 @@ final class BlockChainService {
                                           fromAddress: tx.fromCoin.address,
                                           feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
-            let cacheSeconds = await getCacheSeconds(chain: tx.fromCoin.chain)
+            let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific

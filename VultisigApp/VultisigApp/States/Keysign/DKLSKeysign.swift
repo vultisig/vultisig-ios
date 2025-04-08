@@ -7,7 +7,6 @@
 
 import Foundation
 import godkls
-import goschnorr
 import OSLog
 import Mediator
 import Tss
@@ -28,6 +27,7 @@ final class DKLSKeysign {
     let keySignLock = NSLock()
     var cache = NSCache<NSString, AnyObject>()
     var signatures = [String: TssKeysignResponse]()
+    let DKLS_LIB_OK: godkls.lib_error = .init(0)
     
     init(keysignCommittee: [String],
          mediatorURL: String,
@@ -98,18 +98,18 @@ final class DKLSKeysign {
         var keyshareSlice = keyShareBytes.to_dkls_goslice()
         var h = godkls.Handle()
         let result = dkls_keyshare_from_bytes(&keyshareSlice,&h)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
         }
         
         defer {
             let freeResult = dkls_keyshare_free(&h)
-            if freeResult != LIB_OK {
+            if freeResult != DKLS_LIB_OK {
                 print("fail to free keyshare \(freeResult)")
             }
         }
         let keyIDResult = dkls_keyshare_key_id(h, &buf)
-        if keyIDResult != LIB_OK {
+        if keyIDResult != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get key id from keyshare: \(keyIDResult)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))
@@ -138,7 +138,7 @@ final class DKLSKeysign {
         var msgSlice = msgArr.to_dkls_goslice()
         
         let err = dkls_sign_setupmsg_new(&keyIdSlice,&chainPathSlice,&msgSlice,&ids,&buf)
-        if err != LIB_OK {
+        if err != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, dkls error:\(err)")
         }
         
@@ -153,7 +153,7 @@ final class DKLSKeysign {
         }
         var setupMsgSlice = setupMsg.to_dkls_goslice()
         let result = dkls_decode_message(&setupMsgSlice,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to extract message from setup message:\(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len))).toHexString()
@@ -167,7 +167,7 @@ final class DKLSKeysign {
         }
         var mutableMessage = message
         let receiverResult = dkls_sign_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
-        if receiverResult != LIB_OK {
+        if receiverResult != DKLS_LIB_OK {
             print("fail to get receiver message,error: \(receiverResult)")
             return []
         }
@@ -180,7 +180,7 @@ final class DKLSKeysign {
             godkls.tss_buffer_free(&buf)
         }
         let result = dkls_sign_session_output_message(handle,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             print("fail to get outbound message: \(result)")
             return (result,[])
         }
@@ -190,7 +190,7 @@ final class DKLSKeysign {
     func processDKLSOutboundMessage(handle: godkls.Handle) async throws  {
         repeat {
             let (result,outboundMessage) = GetDKLSOutboundMessage(handle: handle)
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 print("fail to get outbound message,\(result)")
             }
             if outboundMessage.count == 0 {
@@ -293,7 +293,7 @@ final class DKLSKeysign {
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
             let result = dkls_sign_session_input_message(handle, &decryptedBodySlice, &isFinished)
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to apply message to dkls,\(result)")
             }
             
@@ -354,7 +354,7 @@ final class DKLSKeysign {
             var keyshareSlice = keyShareBytes.to_dkls_goslice()
             var keyshareHandle = godkls.Handle()
             let result = dkls_keyshare_from_bytes(&keyshareSlice,&keyshareHandle)
-            if result != LIB_OK {
+            if result != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create keyshare handle from bytes, \(result)")
             }
 
@@ -365,7 +365,7 @@ final class DKLSKeysign {
                                                              &localPartySlice,
                                                              keyshareHandle,
                                                              &handler)
-            if sessionResult != LIB_OK {
+            if sessionResult != DKLS_LIB_OK {
                 throw HelperError.runtimeError("fail to create sign session from setup message,error:\(sessionResult)")
             }
             // free the handler
@@ -412,7 +412,7 @@ final class DKLSKeysign {
             godkls.tss_buffer_free(&buf)
         }
         let result = dkls_sign_session_finish(handle,&buf)
-        if result != LIB_OK {
+        if result != DKLS_LIB_OK {
             throw HelperError.runtimeError("fail to get keysign signature \(result)")
         }
         return Array(UnsafeBufferPointer(start: buf.ptr, count: Int(buf.len)))

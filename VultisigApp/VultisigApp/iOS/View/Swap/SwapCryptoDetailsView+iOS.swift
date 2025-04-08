@@ -13,7 +13,7 @@ extension SwapCryptoDetailsView {
         ZStack(alignment: .bottom) {
             Background()
             view
-//            percentageButtons
+            percentageButtons
 
             if swapViewModel.isLoading {
                 loader
@@ -41,10 +41,12 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons()
-            .opacity(keyboardObserver.keyboardHeight==0 ? 0 : 1)
-            .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
-            .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
+        SwapPercentageButtons { percentage in
+            handlePercentageSelection(percentage)
+        }
+        .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)
+        .offset(y: -0.9 * CGFloat(keyboardObserver.keyboardHeight))
+        .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
     }
     
     var fields: some View {
