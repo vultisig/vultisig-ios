@@ -6,32 +6,41 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SendCryptoKeysignView: View {
     let title: String
     var showError = false
-    @State var didSwitch = false
     
     @Environment(\.dismiss) var dismiss
+    
+    @State var loadingAnimationVM: RiveViewModel? = nil
     
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     var body: some View {
-        if showError {
-            errorView
-        } else {
-            signingView
+        ZStack {
+            shadow
+            
+            if showError {
+                errorView
+            } else {
+                signingView
+            }
+        }
+        .onAppear {
+            setData()
         }
     }
     
     var signingView: some View {
         VStack {
+            disclaimer
             Spacer()
             signingAnimation
             Spacer()
             appVersion
-            wifiInstructions
         }
     }
     
@@ -46,38 +55,28 @@ struct SendCryptoKeysignView: View {
     
     var signingAnimation: some View {
         VStack(spacing: 32) {
+            animation
             Text(NSLocalizedString(title, comment: "Signing"))
                 .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
-            animation
         }
     }
     
     var animation: some View {
-        HStack {
-            Circle()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.loadingBlue)
-                .offset(x: didSwitch ? 0 : 28)
-            
-            Circle()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.loadingGreen)
-                .offset(x: didSwitch ? 0 : -28)
-        }
-        .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: didSwitch)
-        .onAppear {
-            didSwitch.toggle()
-        }
-    }
-    
-    var wifiInstructions: some View {
-        WifiInstruction()
-            .frame(maxHeight: 80)
+        loadingAnimationVM?.view()
+            .frame(width: 28, height: 28)
     }
     
     var errorMessage: some View {
         ErrorMessage(text: "signInErrorTryAgain")
+    }
+    
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.05)
+            .blur(radius: 20)
     }
     
     var bottomBar: some View {
@@ -99,14 +98,43 @@ struct SendCryptoKeysignView: View {
     }
     
     var appVersion: some View {
-        return VStack {
-            Text("Vultisig APP V\(version ?? "1")")
-            Text("(Build \(build ?? "1"))")
+        Text("Version \(version ?? "1").\(build ?? "1")")
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.extraLightGray)
+            .padding(.bottom, 30)
+    }
+    
+    var disclaimer: some View {
+        HStack(spacing: 12) {
+            infoIcon
+            text
         }
-        .textCase(.uppercase)
-        .font(.body14Menlo)
-        .foregroundColor(.turquoise600)
-        .padding(.bottom, 30)
+        .foregroundColor(.neutral0)
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue200, lineWidth: 1)
+        )
+        .padding(.horizontal, 8)
+        .padding(.vertical, 12)
+    }
+    
+    var infoIcon: some View {
+        Image(systemName: "info.circle")
+            .resizable()
+            .frame(width: 16, height: 16)
+    }
+    
+    var text: some View {
+        Text(NSLocalizedString("sendCryptoKeysignViewDisclaimer", comment: ""))
+            .font(.body14BrockmannMedium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func setData() {
+        loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
     }
 }
 

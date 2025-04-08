@@ -577,3 +577,8 @@
 "on" = "na";
 "keysignDiscoveryScanDeviceDisclaimer" = "Držite uređaje na istoj mreži tijekom potpisivanja transakcije";
 "startTransaction" = "Pokreni transakciju";
+"transactionSuccessful" = "Transakcija uspješna";
+"track" = "Prati";
+"swapTXHash" = "Zamjenski TX hash";
+"approvalTXHash" = "Hash odobrenja transakcije";
+"sendCryptoKeysignViewDisclaimer" = "Provjerite jesu li uređaji na istoj mreži";

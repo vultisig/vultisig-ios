@@ -50,14 +50,14 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
-            .onChange(of: textFieldValue) { newValue in
+            .onChange(of: textFieldValue) { oldValue, newValue in
                 updateValue(newValue)
             }
             .onAppear {
                 textFieldValue = formatInitialValue()
                 localIsValid = isValid
             }
-        }
+    }
     
     private func formatInitialValue() -> String {
         let formatter = NumberFormatter()
