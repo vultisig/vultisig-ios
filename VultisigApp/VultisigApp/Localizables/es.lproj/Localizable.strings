@@ -577,7 +577,7 @@
 "on" = "en";
 "keysignDiscoveryScanDeviceDisclaimer" = "Mantén los dispositivos en la misma red mientras firmas la transacción";
 "startTransaction" = "Iniciar transacción";
-"transactionSuccesful" = "Transacción exitosa";
+"transactionSuccessful" = "Transacción exitosa";
 "track" = "Rastrear";
 "swapTXHash" = "Hash de la transacción de swap";
 "approvalTXHash" = "Hash de la transacción de aprobación";

@@ -103,7 +103,7 @@ struct SwapCryptoDoneView: View {
     }
     
     var animationText: some View {
-        Text(NSLocalizedString("transactionSuccesful", comment: ""))
+        Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(.body18BrockmannMedium)
     }
