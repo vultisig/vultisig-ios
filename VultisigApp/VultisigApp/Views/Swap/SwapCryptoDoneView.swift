@@ -197,6 +197,7 @@ struct SwapCryptoDoneView: View {
             )
             
             if swapSummaryViewModel.showTotalFees(tx: tx) {
+                separator
                 totalFees
             }
             
@@ -255,7 +256,7 @@ struct SwapCryptoDoneView: View {
     }
     
     var expandableFees: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 4) {
             if swapSummaryViewModel.showFees(tx: tx) {
                 swapFees
             }
@@ -294,7 +295,7 @@ struct SwapCryptoDoneView: View {
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
             
-            Text(description)
+            Text(description.formatToFiat(includeCurrencySymbol: true))
                 .font(.body10BrockmannMedium)
                 .foregroundColor(.extraLightGray)
         }
