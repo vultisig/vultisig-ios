@@ -22,6 +22,7 @@ extension SendCryptoDoneView {
     func copyHash(hash: String) {
         let explorerLink = explorerLink(hash: hash)
         if !explorerLink.isEmpty {
+            alertTitle = "urlCopied"
             showAlert = true
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()

@@ -15,6 +15,8 @@ struct SwapCryptoDoneView: View {
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
     let swapSummaryViewModel: SwapCryptoViewModel
+    @Binding var showAlert: Bool
+    @Binding var alertTitle: String
     
     @State var showFees: Bool = false
     @State var animationVM: RiveViewModel? = nil
@@ -351,7 +353,7 @@ struct SwapCryptoDoneView: View {
     
     private func getCopyButton(for value: String) -> some View {
         Button {
-            
+            copyValue(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(.neutral0)
@@ -367,7 +369,9 @@ struct SwapCryptoDoneView: View {
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         sendSummaryViewModel: SendSummaryViewModel(),
-        swapSummaryViewModel: SwapCryptoViewModel()
+        swapSummaryViewModel: SwapCryptoViewModel(),
+        showAlert: .constant(false),
+        alertTitle: .constant("")
     )
     .environmentObject(SettingsViewModel())
 }

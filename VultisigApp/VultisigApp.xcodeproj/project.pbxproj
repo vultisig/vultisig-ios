@@ -155,6 +155,8 @@
 		A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */; };
 		A60F29AB2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */; };
 		A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */; };
+		A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29E22DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift */; };
+		A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60F29E42DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift */; };
 		A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */; };
 		A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611735A2BC8B7AB00D616F9 /* ChainNavigationCell.swift */; };
 		A611CCC22C765F3000D64C9D /* OutlinedDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */; };
@@ -1008,6 +1010,8 @@
 		A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectOrientation.swift; sourceTree = "<group>"; };
 		A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryScanDeviceDisclaimer.swift; sourceTree = "<group>"; };
 		A60F29AC2DA08C5300C24765 /* SwapCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDoneView.swift; sourceTree = "<group>"; };
+		A60F29E22DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCryptoDoneView+iOS.swift"; sourceTree = "<group>"; };
+		A60F29E42DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCryptoDoneView+macOS.swift"; sourceTree = "<group>"; };
 		A61173582BC8A10D00D616F9 /* ChainCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainCellViewModel.swift; sourceTree = "<group>"; };
 		A611735A2BC8B7AB00D616F9 /* ChainNavigationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainNavigationCell.swift; sourceTree = "<group>"; };
 		A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlinedDisclaimer.swift; sourceTree = "<group>"; };
@@ -2828,6 +2832,7 @@
 				A6F7B7162D4EC24700AC8104 /* BackupVaultSuccessView+iOS.swift */,
 				A6F7B73C2D4EF8F700AC8104 /* FastBackupVaultOverview+iOS.swift */,
 				A6CEFE772D8E43BD005AB80C /* PasswordBackupOptionsView+iOS.swift */,
+				A60F29E22DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* Transaction */,
@@ -2890,6 +2895,7 @@
 				A6F7B7202D4ED2F100AC8104 /* SecureBackupVaultOverview+macOS.swift */,
 				A6F7B73E2D4EF93400AC8104 /* FastBackupVaultOverview+macOS.swift */,
 				A6CEFE792D8E6A03005AB80C /* PasswordBackupOptionsView+macOS.swift */,
+				A60F29E42DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3816,6 +3822,7 @@
 				A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */,
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
+				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
@@ -4288,6 +4295,7 @@
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
+				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
 				A6ECA1A72C94106700456110 /* JoinKeysignViewModel+iOS.swift in Sources */,

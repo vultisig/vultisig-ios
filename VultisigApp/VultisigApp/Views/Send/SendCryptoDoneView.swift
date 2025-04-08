@@ -22,6 +22,7 @@ struct SendCryptoDoneView: View {
     let swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
+    @State var alertTitle = "urlCopied"
     @State var navigateToHome = false
     
     @Environment(\.openURL) var openURL
@@ -31,7 +32,7 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
+            PopupCapsule(text: alertTitle, showPopup: $showAlert)
         }
     }
     
@@ -121,7 +122,9 @@ struct SendCryptoDoneView: View {
             hash: hash,
             approveHash: approveHash,
             sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
+            swapSummaryViewModel: swapSummaryViewModel,
+            showAlert: $showAlert,
+            alertTitle: $alertTitle
         )
     }
     
