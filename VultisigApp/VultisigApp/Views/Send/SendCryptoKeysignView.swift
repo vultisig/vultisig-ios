@@ -64,6 +64,7 @@ struct SendCryptoKeysignView: View {
     
     var animation: some View {
         loadingAnimationVM?.view()
+            .frame(width: 28, height: 28)
     }
     
     var errorMessage: some View {
