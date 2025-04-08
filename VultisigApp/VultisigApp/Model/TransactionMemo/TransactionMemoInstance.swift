@@ -99,7 +99,7 @@ enum TransactionMemoInstance {
             return memo.amount  // You must send 1 TON to unstake with a "w" memo
         case .addPool(let memo):
             return memo.amount
-        case .removePool(let memo):
+        case .removePool(_):
             return .zero
         }
     }
