@@ -18,8 +18,8 @@ struct SendCryptoDoneView: View {
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
     
-    let sendSummaryViewModel = SendSummaryViewModel()
-    let swapSummaryViewModel = SwapCryptoViewModel()
+    @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
+    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
     @State var alertTitle = "urlCopied"
