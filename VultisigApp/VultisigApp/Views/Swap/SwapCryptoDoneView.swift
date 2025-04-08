@@ -28,6 +28,7 @@ struct SwapCryptoDoneView: View {
             cards
             buttons
         }
+        .buttonStyle(BorderlessButtonStyle())
         .onAppear {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
@@ -287,7 +288,7 @@ struct SwapCryptoDoneView: View {
         VStack(spacing: 4) {
             AsyncImageView(
                 logo: coin.logo,
-                size: CGSize(width: 36, height: 36),
+                size: CGSize(width: 32, height: 32),
                 ticker: coin.ticker,
                 tokenChainLogo: coin.tokenChainLogo
             )
