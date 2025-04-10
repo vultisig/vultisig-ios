@@ -81,7 +81,7 @@ enum THORChainHelper {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "rune"
+                        $0.denom = keysignPayload.coin.isNativeToken ? "rune" : keysignPayload.coin.contractAddress
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = toAddress.data
