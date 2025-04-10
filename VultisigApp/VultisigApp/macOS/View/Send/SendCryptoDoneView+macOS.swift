@@ -9,22 +9,10 @@
 import SwiftUI
 
 extension SendCryptoDoneView {
-    var view: some View {
-        VStack {
-            cards
-            continueButton
-                .navigationDestination(isPresented: $navigateToHome) {
-                    HomeView(selectedVault: vault)
-                }
-        }
-        .padding(.horizontal, 25)
-        
-    }
-    
-    
     func copyHash(hash: String) {
         let explorerLink = explorerLink(hash: hash)
         if !explorerLink.isEmpty {
+            alertTitle = "urlCopied"
             showAlert = true
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()

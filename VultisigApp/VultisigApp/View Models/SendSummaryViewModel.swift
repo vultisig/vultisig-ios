@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-class SendSummaryViewModel {
+class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker)"

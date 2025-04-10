@@ -623,3 +623,8 @@
 "on" = "on";
 "keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction";
 "startTransaction" = "Start transaction";
+"transactionSuccessful" = "Transaction successful";
+"track" = "Track";
+"swapTXHash" = "Swap Tx Hash";
+"approvalTXHash" = "Approval Tx Hash";
+"sendCryptoKeysignViewDisclaimer" = "Make sure devices are on the same network";

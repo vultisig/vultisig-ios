@@ -594,3 +594,8 @@
 "on" = "auf";
 "keysignDiscoveryScanDeviceDisclaimer" = "Halte die Geräte im selben Netzwerk, während die Transaktion signiert wird";
 "startTransaction" = "Transaktion starten";
+"transactionSuccessful" = "Transaktion erfolgreich";
+"track" = "Verfolgen";
+"swapTXHash" = "Swap-Transaktions-Hash";
+"approvalTXHash" = "Genehmigungs-Transaktions-Hash";
+"sendCryptoKeysignViewDisclaimer" = "Stellen Sie sicher, dass sich die Geräte im selben Netzwerk befinden";

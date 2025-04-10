@@ -332,7 +332,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
 
         let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
-        var gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""

@@ -577,3 +577,8 @@
 "on" = "su";
 "keysignDiscoveryScanDeviceDisclaimer" = "Mantieni i dispositivi sulla stessa rete durante la firma della transazione";
 "startTransaction" = "Avvia transazione";
+"transactionSuccessful" = "Transazione riuscita";
+"track" = "Traccia";
+"swapTXHash" = "Hash transazione swap";
+"approvalTXHash" = "Hash transazione di approvazione";
+"sendCryptoKeysignViewDisclaimer" = "Assicurati che i dispositivi siano sulla stessa rete";

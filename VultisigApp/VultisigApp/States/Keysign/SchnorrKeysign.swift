@@ -7,7 +7,6 @@
 
 
 import Foundation
-import godkls
 import goschnorr
 import OSLog
 import Mediator
@@ -332,7 +331,7 @@ final class SchnorrKeysign {
             let finalSetupMsgArr = keysignSetupMsg
             var decodedSetupMsg = finalSetupMsgArr.to_dkls_goslice()
             
-            var handler = godkls.Handle()
+            var handler = goschnorr.Handle()
             
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()

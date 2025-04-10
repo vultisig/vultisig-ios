@@ -254,8 +254,6 @@ class SolanaService {
             let tokenAddresses = accounts.map {
                 $0.account.data.parsed.info.mint
             }
-            let tokenInfos = try await fetchSolanaTokenInfoList(
-                contractAddresses: tokenAddresses)
             
             var coinMetaList = [CoinMeta]()
             for tokenAddress in tokenAddresses {

@@ -231,6 +231,30 @@ struct SwapCryptoDetailsView: View {
     }
 }
 
+extension SwapCryptoDetailsView {
+    public func handlePercentageSelection(_ percentage: Int) {
+        switch percentage {
+        case 25:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 8)
+            handleFromCoinUpdate()
+        case 50:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 8)
+            handleFromCoinUpdate()
+        case 75:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 8)
+            handleFromCoinUpdate()
+        case 100:
+            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 8)
+            handleFromCoinUpdate()
+            let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
+            let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
+            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 8)
+        default:
+            break
+        }
+    }
+}
+
 #Preview {
     SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), vault: .example)
 }

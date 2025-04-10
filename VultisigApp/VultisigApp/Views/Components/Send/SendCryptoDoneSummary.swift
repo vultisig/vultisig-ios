@@ -10,9 +10,11 @@ import SwiftUI
 struct SendCryptoDoneSummary: View {
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
-    
-    let sendSummaryViewModel = SendSummaryViewModel()
-    let swapSummaryViewModel = SwapCryptoViewModel()
+    let vault: Vault
+    let hash: String
+    let approveHash: String?
+    let sendSummaryViewModel: SendSummaryViewModel
+    let swapSummaryViewModel: SwapCryptoViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -161,7 +163,12 @@ struct SendCryptoDoneSummary: View {
         Background()
         SendCryptoDoneSummary(
             sendTransaction: nil,
-            swapTransaction: SwapTransaction()
+            swapTransaction: SwapTransaction(),
+            vault: Vault.example,
+            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+            sendSummaryViewModel: SendSummaryViewModel(),
+            swapSummaryViewModel: SwapCryptoViewModel()
         )
     }
     .environmentObject(SettingsViewModel())
