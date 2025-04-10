@@ -96,7 +96,7 @@ struct CoinService {
             case .Sui:
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
             case .THORChain:
-                tokens = try await ThorchainService.shared.fetchTokens(coin: nativeToken)
+                tokens = try await ThorchainService.shared.fetchTokens(nativeToken.address)
             default:
                 tokens = []
             }
