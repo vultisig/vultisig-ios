@@ -14,6 +14,7 @@ extension FastVaultEmailView {
             Background()
             main
         }
+        .navigationBarBackButtonHidden(backButtonHidden)
         .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
