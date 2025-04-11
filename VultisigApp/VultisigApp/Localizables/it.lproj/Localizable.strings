@@ -196,7 +196,6 @@
 "vaultSecurityFAQQuestion" = "Come fa l'app della cassaforte cripto a proteggere le mie criptovalute?";
 "vaultSecurityFAQAnswer" = "Vultisig è auditato, open-source e utilizza una libreria TSS molto collaudata.";
 "moneyFAQQuestion" = "Come guadagna Vultisig?";
-"moneyFAQAnswer" = "Vultisig applica solo una tariffa fissa su scambio e ponte. Non ci sono altre commissioni nascoste.";
 "assetRecoveryFAQQuestion" = "Posso recuperare i miei asset se perdo un dispositivo?";
 "assetRecoveryFAQAnswer" = "Puoi fare un backup della tua cassaforte esportando le quote della cassaforte.";
 "registerFAQQuestion" = "Devo registrarmi?";
@@ -459,7 +458,6 @@
 "generatingECDSAText1" = "Autocustodia, ";
 "generatingECDSAText2" = "dandoti il pieno controllo dei tuoi beni";
 "generatingEdDSAText1" = "Cross-chain. ";
-"generatingEdDSAText2" = "Scambia i tuoi token preferiti tutti in un unico vault";
 "creatingVault" = "Creazione del Vault";
 "invalidEmailPleaseCheck" = "E-mail non valida, controlla.";
 "emptyEmailPleaseCheck" = "E-mail vuota, controlla.";
