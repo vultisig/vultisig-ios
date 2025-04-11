@@ -463,6 +463,7 @@
 		A6B84B102CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
+		A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
 		A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */; };
 		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
@@ -1320,6 +1321,7 @@
 		A6B84B0F2CE580DB006929A0 /* ServerBackupVerificationView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ServerBackupVerificationView+macOS.swift"; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
+		A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeFromGG20HomeBanner.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
 		A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPercentageButtons.swift; sourceTree = "<group>"; };
 		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
@@ -1790,6 +1792,7 @@
 				A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */,
 				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 				A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */,
+				A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -4149,6 +4152,7 @@
 				B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */,
 				A6C671112CA27F8C00F59B6A /* OnboardingView4+iOS.swift in Sources */,
 				A6C671292CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift in Sources */,
+				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,

@@ -628,3 +628,4 @@
 "swapTXHash" = "Swap Tx Hash";
 "approvalTXHash" = "Approval Tx Hash";
 "sendCryptoKeysignViewDisclaimer" = "Make sure devices are on the same network";
+"upgradeYourVaultNow" = "Upgrade your vault now";
