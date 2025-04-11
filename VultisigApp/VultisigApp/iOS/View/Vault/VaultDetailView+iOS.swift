@@ -72,7 +72,7 @@ extension VaultDetailView {
             } else if viewModel.groups.count >= 1 {
                 
                 if vault.libType == .GG20 {
-                    UpgradeFromGG20HomeBanner()
+                    upgradeVaultBanner
                 } else if !vault.isBackedUp {
                     backupNowWidget
                 }

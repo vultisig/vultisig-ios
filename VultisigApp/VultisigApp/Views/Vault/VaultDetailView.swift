@@ -32,6 +32,8 @@ struct VaultDetailView: View {
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
     @State var isBackupLinkActive = false
+    @State var showUpgradeYourVaultSheet = false
+    @State var upgradeYourVaultLinkActive = false
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -88,7 +90,12 @@ struct VaultDetailView: View {
             MonthlyBackupView(isPresented: $isMonthlyBackupWarningLinkActive, isBackupPresented: $isBackupLinkActive)
                 .presentationDetents([.height(224)])
         }
-
+        .sheet(isPresented: $showUpgradeYourVaultSheet) {
+            UpgradeYourVaultView(
+                showSheet: $showUpgradeYourVaultSheet,
+                navigationLinkActive: $upgradeYourVaultLinkActive
+            )
+        }
     }
 
     var shadowView: some View {
@@ -165,6 +172,13 @@ struct VaultDetailView: View {
             text: homeViewModel.alertTitle,
             showPopup: $homeViewModel.showAlert
         )
+    }
+    
+    var upgradeVaultBanner: some View {
+        UpgradeFromGG20HomeBanner()
+            .onTapGesture {
+                showUpgradeYourVaultSheet = true
+            }
     }
     
     private func onAppear() {

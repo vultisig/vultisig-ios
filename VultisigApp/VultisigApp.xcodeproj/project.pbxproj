@@ -464,6 +464,10 @@
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */; };
+		A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */; };
+		A6BB9BC32DA9AA320085E117 /* all_devices_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */; };
+		A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */; };
+		A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
 		A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */; };
 		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
@@ -1322,6 +1326,10 @@
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeFromGG20HomeBanner.swift; sourceTree = "<group>"; };
+		A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeYourVaultView.swift; sourceTree = "<group>"; };
+		A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = all_devices_animation.riv; sourceTree = "<group>"; };
+		A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_animation.riv; sourceTree = "<group>"; };
+		A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_succes.riv; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
 		A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPercentageButtons.swift; sourceTree = "<group>"; };
 		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
@@ -2939,6 +2947,14 @@
 			path = Keygen;
 			sourceTree = "<group>";
 		};
+		A6BB9BBD2DA9A9870085E117 /* UpgradeFromGG20 */ = {
+			isa = PBXGroup;
+			children = (
+				A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */,
+			);
+			path = UpgradeFromGG20;
+			sourceTree = "<group>";
+		};
 		A6C0D55D2BB3B71300156689 /* Transactions */ = {
 			isa = PBXGroup;
 			children = (
@@ -3004,6 +3020,9 @@
 				A6C58D812D7AD81D000D2833 /* securevault_summary.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
 				A6C58D7F2D7AD800000D2833 /* quick_summary.riv */,
+				A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */,
+				A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */,
+				A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -3183,6 +3202,7 @@
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
 				A6182F232C9224D10059BFDD /* Update Check */,
+				A6BB9BBD2DA9A9870085E117 /* UpgradeFromGG20 */,
 				049BBB4E2B71E37B004C231F /* Components */,
 			);
 			path = Views;
@@ -3687,6 +3707,9 @@
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
+				A6BB9BC32DA9AA320085E117 /* all_devices_animation.riv in Resources */,
+				A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */,
+				A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4156,6 +4179,7 @@
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,
+				A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */,
 				A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */,
 				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
 				B5A54E002D9C1ECD001AF096 /* TransactionMemoAddLiquidityMaya.swift in Sources */,

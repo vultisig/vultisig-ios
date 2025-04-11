@@ -629,3 +629,8 @@
 "approvalTXHash" = "Approval Tx Hash";
 "sendCryptoKeysignViewDisclaimer" = "Make sure devices are on the same network";
 "upgradeYourVaultNow" = "Upgrade your vault now";
+"upgradeNow" = "Upgrade now";
+"upgradeYourVaultTitle1" = "Upgrade this vault to the";
+"upgradeYourVaultTitle2" = " world’s fastest MPC protocol ";
+"upgradeYourVaultTitle3" = "and sign faster than ever before";
+"upgradeYourVault" = "Upgrade your vault";

@@ -16,6 +16,7 @@ struct UpgradeFromGG20HomeBanner: View {
             Spacer()
         }
         .padding(.vertical)
+        .frame(height: 48)
         .foregroundColor(.alertTurquoise)
         .background(Color.checkboxBlue)
         .cornerRadius(12)
@@ -23,7 +24,7 @@ struct UpgradeFromGG20HomeBanner: View {
         .listRowSeparator(.hidden)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.alertTurquoise, lineWidth: 2)
+                .stroke(Color.alertTurquoise, lineWidth: 1)
                 .opacity(0.25)
         )
         .padding(16)
@@ -32,7 +33,7 @@ struct UpgradeFromGG20HomeBanner: View {
     
     var icon: some View {
         Image(systemName: "arrow.up.circle.dotted")
-            .font(.body24MontserratMedium)
+            .font(.body20MontserratMedium)
     }
     
     var title: some View {
