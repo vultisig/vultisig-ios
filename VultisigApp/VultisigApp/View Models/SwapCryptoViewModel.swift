@@ -397,7 +397,7 @@ private extension SwapCryptoViewModel {
             case .insufficientFunds:
                 return "Insufficient funds"
             case .swapAmountTooSmall:
-                return "Swap amount too small"
+                return "Bridge amount too small"
             }
         }
     }

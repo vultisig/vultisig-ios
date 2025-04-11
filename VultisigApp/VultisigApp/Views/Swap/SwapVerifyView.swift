@@ -150,7 +150,7 @@ struct SwapVerifyView: View {
     }
     
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreWwapping", comment: ""))
+        Text(NSLocalizedString("youreBridging", comment: ""))
             .font(.body14BrockmannMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity, alignment: .leading)
