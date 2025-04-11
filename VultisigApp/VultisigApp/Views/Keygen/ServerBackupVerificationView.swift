@@ -15,13 +15,13 @@ struct ServerBackupVerificationView: View {
 
     @Binding var isPresented: Bool
     @Binding var tabIndex: Int
+    @Binding var goBackToEmailSetup: Bool
 
     @FocusState private var focusedField: Int?
 
     @State var otp: [String] = Array(repeating: "", count: codeLength)
 
     @State var isLoading: Bool = false
-    @State var isCancelLinkActive: Bool = false
 
     @State var alertDescription = "verificationCodeTryAgain"
     @State var showAlert: Bool = false
@@ -50,9 +50,6 @@ struct ServerBackupVerificationView: View {
             cancelButton
         }
         .animation(.easeInOut, value: showAlert)
-        .navigationDestination(isPresented: $isCancelLinkActive) {
-            HomeView()
-        }
         .onDisappear {
             animationVM?.stop()
         }
@@ -214,6 +211,7 @@ struct ServerBackupVerificationView: View {
             try modelContext.save()
             isLoading = false
             isPresented = false
+            goBackToEmailSetup = true
         } catch {
             print("Error: \(error)")
         }
@@ -225,6 +223,7 @@ struct ServerBackupVerificationView: View {
         vault: Vault.example,
         email: "mail@email.com",
         isPresented: .constant(false),
-        tabIndex: .constant(2)
+        tabIndex: .constant(2),
+        goBackToEmailSetup: .constant(false)
     )
 }
