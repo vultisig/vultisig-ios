@@ -200,7 +200,6 @@
 "vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";
 "vaultSecurityFAQAnswer" = "Vultisig is audited, open-source and uses a very well-proven TSS libarary.";
 "moneyFAQQuestion" = "How does Vultisig make money?";
-"moneyFAQAnswer" = "Vultisig only charges a flat fee on bridging. There are no other hidden fees.";
 "assetRecoveryFAQQuestion" = "Can I recover my assets if I lose a device?";
 "assetRecoveryFAQAnswer" = "You can backup your vault by exporting the vault shares of every device.";
 "registerFAQQuestion" = "Do I need to register?";
@@ -614,7 +613,6 @@
 "approvalTXHash" = "Approval Tx Hash";
 "sendCryptoKeysignViewDisclaimer" = "Make sure devices are on the same network";
 "swap" = "Bridge";
-"moneyFAQAnswer" = "Vultisig only charges a flat fee on bridging. There are no other hidden fees.";
 "swapProgress" = "Bridging progress";
 "JoinSwap" = "Join Bridge";
 "swapTrackingLink" = "Bridge tracking link";

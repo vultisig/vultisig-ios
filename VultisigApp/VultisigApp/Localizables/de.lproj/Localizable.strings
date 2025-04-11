@@ -585,7 +585,6 @@
 "approvalTXHash" = "Genehmigungs-Transaktions-Hash";
 "sendCryptoKeysignViewDisclaimer" = "Stellen Sie sicher, dass sich die Geräte im selben Netzwerk befinden";
 "swap" = "Bridge";
-"moneyFAQAnswer" = "Vultisig erhebt nur eine Pauschalgebühr für das Bridging. Es gibt keine versteckten Gebühren.";
 "swapProgress" = "Bridge-Fortschritt";
 "JoinSwap" = "Bridge beitreten";
 "swapTrackingLink" = "Bridge-Tracking-Link";

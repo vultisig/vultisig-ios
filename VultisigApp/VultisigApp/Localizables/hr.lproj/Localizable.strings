@@ -568,7 +568,6 @@
 "approvalTXHash" = "Hash odobrenja transakcije";
 "sendCryptoKeysignViewDisclaimer" = "Provjerite jesu li uređaji na istoj mreži";
 "swap" = "Bridge";
-"moneyFAQAnswer" = "Vultisig naplaćuje samo fiksnu naknadu za bridge. Nema skrivenih naknada.";
 "swapProgress" = "Napredak bridge-a";
 "JoinSwap" = "Pridruži se bridge-u";
 "swapTrackingLink" = "Poveznica za praćenje bridge-a";

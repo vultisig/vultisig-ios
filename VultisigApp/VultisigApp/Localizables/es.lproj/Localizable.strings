@@ -568,7 +568,6 @@
 "approvalTXHash" = "Hash de la transacción de aprobación";
 "sendCryptoKeysignViewDisclaimer" = "Asegúrate de que los dispositivos estén en la misma red";
 "swap" = "Bridge";
-"moneyFAQAnswer" = "Vultisig solo cobra una tarifa fija por hacer bridge. No hay comisiones ocultas.";
 "swapProgress" = "Progreso del bridge";
 "JoinSwap" = "Unirse al bridge";
 "swapTrackingLink" = "Enlace de seguimiento del bridge";
