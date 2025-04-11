@@ -99,7 +99,9 @@ extension TransactionMemoAddressTextField {
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             memo.addressFields[addressKey] = clipboardContent
-            validateAddress(memo.addressFields[addressKey] ?? "")
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
         }
     }
 }

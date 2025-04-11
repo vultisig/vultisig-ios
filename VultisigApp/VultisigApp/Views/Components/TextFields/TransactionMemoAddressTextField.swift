@@ -147,7 +147,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         AddressService.validateAddress(address: newValue, chain: .mayaChain) ||
         AddressService.validateAddress(address: newValue, chain: .ton)
         
-        if let type = chain?.chainType, type == .Cosmos, let chain = chain {
+        if let chain = chain, chain.chainType == .Cosmos {
             isAddressValid = AddressService.validateAddress(address: newValue, chain: chain)
         }
     }

@@ -29,11 +29,11 @@ import Combine
 class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     @Published var amount: Double = 0.0
     @Published var destinationAddress: String = ""
-    @Published var custom: String = ""
+    @Published var txMemo: String = ""
 
     @Published var amountValid: Bool = false
     @Published var destinationAddressValid: Bool = false
-    @Published var customValid: Bool = true
+    @Published var txMemoValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
     
@@ -90,13 +90,19 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "IBC:\(self.destinationAddress)"
+        var memo = "IBC:\(self.selectedChainObject?.name ?? ""):\(self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? ""):\(self.destinationAddress)"
+        if txMemo.isEmpty == false {
+            memo += ":\(self.txMemo)"
+        }
         return memo
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
+        dict.set("destinationChain", self.selectedChainObject?.name ?? "")
+        dict.set("destinationChannel", self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? "")
         dict.set("destinationAddress", self.destinationAddress)
+        dict.set("transferMemo", self.txMemo)
         dict.set("memo", self.toString())
         return dict
     }
@@ -119,8 +125,8 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                     let chainInfos = asset.value.split(separator: " ")
                     let chainName = chainInfos[0]
                     let chainTicker = chainInfos[1]
-                    
-                    self.selectedChainObject = Chain.allCases.first { $0.name == chainName && $0.ticker == chainTicker && $0.chainType == .Cosmos }
+                  
+                    self.selectedChainObject = Chain(name: chainName.description)
                 }
             )
             
@@ -130,8 +136,9 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                 isAddressValid: Binding(
                     get: { self.destinationAddressValid },
                     set: { self.destinationAddressValid = $0 }
-                )
-            )
+                ),
+                chain: self.selectedChainObject
+            ).id(self.selectedChainObject?.name ?? UUID().uuidString)
             
             StyledFloatingPointField(
                 placeholder: "Amount \(balance)",
@@ -148,13 +155,13 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
             StyledTextField(
                 placeholder: "Memo",
                 text: Binding(
-                    get: { self.custom },
-                    set: { self.custom = $0 }
+                    get: { self.txMemo },
+                    set: { self.txMemo = $0 }
                 ),
                 maxLengthSize: Int.max,
                 isValid: Binding(
-                    get: { self.customValid },
-                    set: { self.customValid = $0 }
+                    get: { self.txMemoValid },
+                    set: { self.txMemoValid = $0 }
                 ),
                 isOptional: true
             )
