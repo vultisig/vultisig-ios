@@ -18,6 +18,7 @@ struct FastBackupVaultOverview: View {
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
+    @State var goBackToEmailSetup = false
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
@@ -33,12 +34,22 @@ struct FastBackupVaultOverview: View {
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                tabIndex: $tabIndex
+                tabIndex: $tabIndex,
+                goBackToEmailSetup: $goBackToEmailSetup
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
             BackupSetupView(vault: vault, isNewVault: true)
         }
+        .navigationDestination(isPresented: $goBackToEmailSetup, destination: { 
+            FastVaultEmailView(
+                tssType: .Keygen,
+                vault: vault,
+                selectedTab: .fast,
+                backButtonHidden: true,
+                email: email
+            )
+        })
         .onAppear {
             setData()
         }

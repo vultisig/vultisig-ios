@@ -13,6 +13,7 @@ struct FastVaultEmailView: View {
     let selectedTab: SetupVaultState
 
     var fastVaultExist: Bool = false
+    var backButtonHidden: Bool = false
 
     @State var email: String = ""
     @State var isLinkActive = false
