@@ -577,7 +577,7 @@
 "approveAndSwap" = "Odobri i izvrši bridge";
 "generatingEdDSAText2" = "Bridge-ajte svoje omiljene tokene u jednom trezoru";
 "swapOverview" = "Pregled bridge-a";
-"youreWrapping" = "Izvršavate bridge";
+"youreBridging" = "Izvršavate bridge";
 "swapVerifyCheckbox1Description" = "Iznos za bridge je točan";
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se s dodjelom ERC20 dozvole za točan iznos bridge-a";

@@ -623,7 +623,7 @@
 "approveAndSwap" = "Approve and Bridge";
 "generatingEdDSAText2" = "Bridge your favourite tokens all in one vault";
 "swapOverview" = "Bridge overview";
-"youreWrapping" = "You’re bridging";
+"youreBridging" = "You’re bridging";
 "swapVerifyCheckbox1Description" = "The bridge amount is correct";
 "swapVerifyCheckbox2Description" = "I agree with the min. amount I’ll receive";
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact bridge amount";

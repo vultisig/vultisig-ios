@@ -578,7 +578,7 @@
 "approveAndSwap" = "Aprovar e fazer bridge";
 "generatingEdDSAText2" = "Faça bridge dos seus tokens favoritos em um único cofre";
 "swapOverview" = "Resumo do bridge";
-"youreWrapping" = "Você está fazendo bridge";
+"youreBridging" = "Você está fazendo bridge";
 "swapVerifyCheckbox1Description" = "O valor do bridge está correto";
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
 "swapVerifyCheckbox3Description" = "Concordo em fornecer autorização ERC20 para o valor exato do bridge";

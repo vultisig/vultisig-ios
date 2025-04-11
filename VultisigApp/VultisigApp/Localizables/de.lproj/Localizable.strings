@@ -594,7 +594,7 @@
 "approveAndSwap" = "Genehmigen und bridgen";
 "generatingEdDSAText2" = "Bridge deine Lieblingstoken in einem einzigen Tresor";
 "swapOverview" = "Bridge-Übersicht";
-"youreWrapping" = "Du bridgest";
+"youreBridging" = "Du bridgest";
 "swapVerifyCheckbox1Description" = "Der Bridge-Betrag ist korrekt";
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalte";
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Freigabe für den genauen Bridge-Betrag zu erteilen";
