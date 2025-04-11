@@ -568,7 +568,7 @@
 "selectAsset" = "Seleziona asset";
 "chain" = "Catena";
 "swapOverview" = "Panoramica dello swap";
-"youreWwapping" = "Stai effettuando uno swap";
+"youreWrapping" = "Stai effettuando uno swap";
 "maxTotalFee" = "Commissione totale max.";
 "allowance" = "Autorizzazione";
 "swapVerifyCheckbox1Description" = "L'importo dello swap è corretto";

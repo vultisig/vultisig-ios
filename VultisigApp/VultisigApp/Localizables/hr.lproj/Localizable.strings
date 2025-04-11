@@ -568,7 +568,7 @@
 "selectAsset" = "Odaberi imovinu";
 "chain" = "Lanac";
 "swapOverview" = "Pregled zamjene";
-"youreWwapping" = "Zamjenjujete";
+"youreWrapping" = "Zamjenjujete";
 "maxTotalFee" = "Maks. ukupna naknada";
 "allowance" = "Dozvola";
 "swapVerifyCheckbox1Description" = "Iznos za zamjenu je točan";

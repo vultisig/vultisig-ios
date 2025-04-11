@@ -569,7 +569,7 @@
 "selectAsset" = "Selecionar ativo";
 "chain" = "Cadeia";
 "swapOverview" = "Resumo da troca";
-"youreWwapping" = "Você está trocando";
+"youreWrapping" = "Você está trocando";
 "maxTotalFee" = "Taxa total máx.";
 "allowance" = "Permissão";
 "swapVerifyCheckbox1Description" = "O valor da troca está correto";

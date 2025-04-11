@@ -585,7 +585,7 @@
 "selectAsset" = "Asset auswählen";
 "chain" = "Blockchain";
 "swapOverview" = "Swap-Übersicht";
-"youreWwapping" = "Du tauschst";
+"youreWrapping" = "Du tauschst";
 "maxTotalFee" = "Max. Gesamtgebühr";
 "allowance" = "Freigabe";
 "swapVerifyCheckbox1Description" = "Der Swap-Betrag ist korrekt";
