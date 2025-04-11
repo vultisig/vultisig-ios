@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 enum TransactionMemoType: String, CaseIterable, Identifiable {
-    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, unstake, addPool, removePool
+    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, unstake, addPool, removePool, cosmosIBC
     
     var id: String { self.rawValue }
     
@@ -44,6 +44,8 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
             return "Stake"
         case .unstake:
             return "Unstake"
+        case .cosmosIBC:
+            return "Cosmos IBC"
         }
     }
     
@@ -57,6 +59,8 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
             return [.vote]
         case .ton:
             return [.stake, .unstake]
+        case .gaiaChain, .kujira, .osmosis, .noble, .akash:
+            return [.cosmosIBC]
         default:
             return []
         }

@@ -94,6 +94,8 @@ struct TransactionMemoDetailsView: View {
                         TransactionMemoRemoveLiquidityMaya()
                     )
                     
+                case .cosmosIBC:
+                    txMemoInstance = .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 }
             }
     }

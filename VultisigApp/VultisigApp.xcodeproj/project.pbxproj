@@ -703,6 +703,7 @@
 		B57138502CC5713E000E925B /* TonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384F2CC5713A000E925B /* TonService.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
+		B585A1FE2DA9779900ED0D5B /* TransactionMemoCosmosIBC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B585A1FD2DA9779900ED0D5B /* TransactionMemoCosmosIBC.swift */; };
 		B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58BE8E52CD1BD5D00FFD98F /* OsmosisService.swift */; };
 		B58BE8E82CD1C36E00FFD98F /* osmosis.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58BE8E72CD1C36E00FFD98F /* osmosis.swift */; };
 		B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */; };
@@ -1557,6 +1558,7 @@
 		B571384F2CC5713A000E925B /* TonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonService.swift; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
+		B585A1FD2DA9779900ED0D5B /* TransactionMemoCosmosIBC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoCosmosIBC.swift; sourceTree = "<group>"; };
 		B58BE8E52CD1BD5D00FFD98F /* OsmosisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OsmosisService.swift; sourceTree = "<group>"; };
 		B58BE8E72CD1C36E00FFD98F /* osmosis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = osmosis.swift; sourceTree = "<group>"; };
 		B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVote.swift; sourceTree = "<group>"; };
@@ -3106,6 +3108,7 @@
 				B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */,
 				B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */,
 				B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */,
+				B585A1FD2DA9779900ED0D5B /* TransactionMemoCosmosIBC.swift */,
 				B524F55A2CF049F600D5B19D /* TransactionMemoBondMayaChain.swift */,
 				B5A54DFF2D9C1ECD001AF096 /* TransactionMemoAddLiquidityMaya.swift */,
 				B5A54E012D9C5CCD001AF096 /* TransactionMemoRemoveLiquidityMaya.swift */,
@@ -4375,6 +4378,7 @@
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
 				A6C671372CA3C7E500F59B6A /* VaultDeletionDetails+iOS.swift in Sources */,
 				A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */,
+				B585A1FE2DA9779900ED0D5B /* TransactionMemoCosmosIBC.swift in Sources */,
 				A6C670B92C9D14B800F59B6A /* VaultDeletionConfirmView+iOS.swift in Sources */,
 				A6C670E12C9E93A600F59B6A /* SendGasSettingsView+iOS.swift in Sources */,
 				B52243412D2398D5003C734A /* AkashService.swift in Sources */,

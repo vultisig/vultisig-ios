@@ -20,6 +20,8 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     @State var showImagePicker = false
     @State var isUploading: Bool = false
     
+    @State var chain: Chain? = nil
+    
 #if os(iOS)
     @State var selectedImage: UIImage?
 #elseif os(macOS)
@@ -144,5 +146,9 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         isAddressValid = AddressService.validateAddress(address: newValue, chain: .thorChain) ||
         AddressService.validateAddress(address: newValue, chain: .mayaChain) ||
         AddressService.validateAddress(address: newValue, chain: .ton)
+        
+        if let type = chain?.chainType, type == .Cosmos, let chain = chain {
+            isAddressValid = AddressService.validateAddress(address: newValue, chain: chain)
+        }
     }
 }

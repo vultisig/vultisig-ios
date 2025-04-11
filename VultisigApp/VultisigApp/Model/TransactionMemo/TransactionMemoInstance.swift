@@ -22,6 +22,7 @@ enum TransactionMemoInstance {
     case unstake(TransactionMemoUnstake)
     case addPool(TransactionMemoAddLiquidityMaya)
     case removePool(TransactionMemoRemoveLiquidityMaya)
+    case cosmosIBC(TransactionMemoCosmosIBC)
     
     var view: AnyView {
         switch self {
@@ -46,6 +47,8 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.getView()
         case .removePool(let memo):
+            return memo.getView()
+        case .cosmosIBC(let memo):
             return memo.getView()
         }
     }
@@ -74,6 +77,8 @@ enum TransactionMemoInstance {
             return memo.description
         case .removePool(let memo):
             return memo.description
+        case .cosmosIBC(let memo):
+            return memo.description
         }
     }
 
@@ -101,6 +106,8 @@ enum TransactionMemoInstance {
             return memo.amount
         case .removePool(_):
             return .zero
+        case .cosmosIBC(let memo):
+            return memo.amount
         }
     }
 
@@ -139,6 +146,8 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         case .removePool(let memo):
             return memo.toDictionary()
+        case .cosmosIBC(let memo):
+            return memo.toDictionary()
         }
     }
 
@@ -174,6 +183,8 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.isTheFormValid
         case .removePool(let memo):
+            return memo.isTheFormValid
+        case .cosmosIBC(let memo):
             return memo.isTheFormValid
         }
     }
