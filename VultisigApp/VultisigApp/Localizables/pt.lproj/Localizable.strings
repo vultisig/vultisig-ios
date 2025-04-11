@@ -196,7 +196,6 @@
 "vaultSecurityFAQQuestion" = "Como o aplicativo de cofre cripto protege minhas criptomoedas?";
 "vaultSecurityFAQAnswer" = "Vultisig é auditado, de código aberto e usa uma biblioteca TSS muito bem comprovada.";
 "moneyFAQQuestion" = "Como o Vultisig ganha dinheiro?";
-"moneyFAQAnswer" = "Vultisig cobra apenas uma taxa fixa sobre troca e ponte. Não há outras taxas ocultas.";
 "assetRecoveryFAQQuestion" = "Posso recuperar meus ativos se perder um dispositivo?";
 "assetRecoveryFAQAnswer" = "Você pode fazer backup do seu cofre exportando as cotas do cofre.";
 "registerFAQQuestion" = "Preciso me registrar?";
