@@ -61,8 +61,9 @@ enum THORChainHelper {
             
             // This should invoke the wasm contract for RUJI merge
             //if keysignPayload.toAddress == "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy" {
-            if keysignPayload.memo?.lowercased() == "merge" {
+            if ((keysignPayload.memo?.lowercased().starts(with: "merge:")) != nil) {
                 
+                let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
             
                 // This is for WASM tokens
                 
@@ -79,7 +80,7 @@ enum THORChainHelper {
                     """
                     $0.coins = [
                         TW_Cosmos_Proto_Amount.with {
-                            $0.denom = "THOR.KUJI".lowercased()
+                            $0.denom = mergeToken.lowercased() // "THOR.KUJI".lowercased()
                             $0.amount = String(keysignPayload.toAmount)
                         }
                     ]
