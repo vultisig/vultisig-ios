@@ -22,7 +22,79 @@ class ThorchainService: ThorchainSwapProvider {
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
+        
         return balanceResponse.balances
+    }
+    
+    func fetchTokens(_ address: String) async throws -> [CoinMeta] {
+        do {
+            let balances: [CosmosBalance] =  try await fetchBalances(address)
+            
+            var coinMetaList = [CoinMeta]()
+            for balance in balances {
+                
+                let info = getTokenMetadata(for: balance.denom)
+                
+                let coinMeta = CoinMeta(
+                    chain: .thorChain,
+                    ticker: info.symbol,
+                    logo: info.logo, // We will have to move this logo to another storage
+                    decimals: 8,
+                    priceProviderId: "", // we don't know the provider ID
+                    contractAddress: balance.denom,
+                    isNativeToken: false
+                )
+                coinMetaList.append(coinMeta)
+                
+            }
+            
+            return coinMetaList
+        } catch {
+            print("Error in fetchTokens: \(error)")
+            throw error
+        }
+    }
+    
+    struct TokenMetadata {
+        let chain: String
+        let ticker: String
+        let symbol: String
+        let decimals: Int
+        let logo: String
+    }
+
+    func getTokenMetadata(for denom: String) -> TokenMetadata {
+        let decimals = 8
+        var chain = ""
+        var symbol = ""
+        var ticker = ""
+        var logo = ""
+
+        if denom.contains(".") {
+            // Switch asset: thor.fuzn
+            let parts = denom.split(separator: ".")
+            if parts.count >= 2 {
+                chain = parts[0].uppercased()
+                symbol = parts[1].uppercased()
+                ticker = parts[1].lowercased()
+            }
+        } else if denom.contains("-") {
+            let parts = denom.split(separator: "-")
+            if parts.count >= 2 {
+                chain = parts[0].uppercased()
+                symbol = parts[1].uppercased()
+                ticker = parts[1].lowercased()
+            }
+        } else {
+            // Native THORChain asset (e.g., rune)
+            chain = "THOR"
+            symbol = denom.uppercased()
+            ticker = denom.lowercased()
+        }
+
+        logo = ticker // It will use whatever is in our asset list
+
+        return TokenMetadata(chain: chain, ticker: ticker, symbol: symbol, decimals: decimals, logo: logo)
     }
     
     func resolveTNS(name: String, chain: Chain) async throws -> String {
