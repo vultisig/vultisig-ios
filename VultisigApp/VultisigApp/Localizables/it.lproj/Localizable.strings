@@ -582,3 +582,14 @@
 "swapTXHash" = "Hash transazione swap";
 "approvalTXHash" = "Hash transazione di approvazione";
 "sendCryptoKeysignViewDisclaimer" = "Assicurati che i dispositivi siano sulla stessa rete";
+"upgradeYourVaultNow" = "Aggiorna il tuo vault ora";
+"upgradeNow" = "Aggiorna ora";
+"upgradeYourVaultTitle1" = "Aggiorna questo vault al";
+"upgradeYourVaultTitle2" = " protocollo MPC più veloce al mondo ";
+"upgradeYourVaultTitle3" = "e firma più velocemente che mai";
+"upgradeYourVault" = "Aggiorna il tuo vault";
+"allDevicesUpgradeTitle1" = "Assicurati che";
+"allDevicesUpgradeTitle2" = " tutti i dispositivi iniziali siano presenti ";
+"allDevicesUpgradeTitle3" = "durante l’aggiornamento";
+"vaultShareBackupsViewTitle1" = "Creerai nuovi backup delle quote del vault";
+"vaultShareBackupsViewTitle2" = ", conservali come fatto in precedenza";

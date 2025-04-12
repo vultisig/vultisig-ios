@@ -582,3 +582,14 @@
 "swapTXHash" = "Zamjenski TX hash";
 "approvalTXHash" = "Hash odobrenja transakcije";
 "sendCryptoKeysignViewDisclaimer" = "Provjerite jesu li uređaji na istoj mreži";
+"upgradeYourVaultNow" = "Nadogradi svoj trezor sada";
+"upgradeNow" = "Nadogradi sada";
+"upgradeYourVaultTitle1" = "Nadogradi ovaj trezor na";
+"upgradeYourVaultTitle2" = " najbrži MPC protokol na svijetu ";
+"upgradeYourVaultTitle3" = "i potpisuj brže nego ikad";
+"upgradeYourVault" = "Nadogradi trezor";
+"allDevicesUpgradeTitle1" = "Provjeri da su";
+"allDevicesUpgradeTitle2" = " svi početni uređaji prisutni ";
+"allDevicesUpgradeTitle3" = "tijekom nadogradnje";
+"vaultShareBackupsViewTitle1" = "Stvorit ćeš nove sigurnosne kopije dijelova trezora";
+"vaultShareBackupsViewTitle2" = ", pohrani ih kao i prije";

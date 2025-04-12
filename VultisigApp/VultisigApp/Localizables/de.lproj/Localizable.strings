@@ -599,3 +599,14 @@
 "swapTXHash" = "Swap-Transaktions-Hash";
 "approvalTXHash" = "Genehmigungs-Transaktions-Hash";
 "sendCryptoKeysignViewDisclaimer" = "Stellen Sie sicher, dass sich die Geräte im selben Netzwerk befinden";
+"upgradeYourVaultNow" = "Aktualisiere deinen Tresor jetzt";
+"upgradeNow" = "Jetzt aktualisieren";
+"upgradeYourVaultTitle1" = "Aktualisiere diesen Tresor auf das";
+"upgradeYourVaultTitle2" = " schnellste MPC-Protokoll der Welt ";
+"upgradeYourVaultTitle3" = "und signiere schneller als je zuvor";
+"upgradeYourVault" = "Tresor aktualisieren";
+"allDevicesUpgradeTitle1" = "Stelle sicher, dass";
+"allDevicesUpgradeTitle2" = " alle ursprünglichen Geräte vorhanden sind ";
+"allDevicesUpgradeTitle3" = "beim Upgrade";
+"vaultShareBackupsViewTitle1" = "Du wirst neue Tresor-Backups erstellen";
+"vaultShareBackupsViewTitle2" = ", speichere sie wie zuvor";
