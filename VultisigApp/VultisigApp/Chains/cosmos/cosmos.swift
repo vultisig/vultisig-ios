@@ -9,6 +9,7 @@ import Foundation
 import WalletCore
 import Tss
 import CryptoSwift
+import VultisigCommonData
 
 class CosmosHelper {
     var coinType: CoinType
@@ -48,13 +49,105 @@ class CosmosHelper {
         
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, let ibcDenomTrace) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("getPreSignedInputData: fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("getPreSignedInputData: invalid hex public key")
         }
         let coin = self.coinType
+        
+        
+        var transactionType: VSTransactionType = .unspecified
+        if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
+            transactionType = vsTransactionType
+        }
+        
+        if transactionType == .ibcTransfer {
+            
+            var memo = ""
+            let splitedMemo = keysignPayload.memo?.split(separator: ":");
+            if splitedMemo?.count == 0 {
+                throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
+            }
+            
+            let destinationChainName = splitedMemo?[0] ?? ""
+            let sourceChannel = splitedMemo?[1] ?? ""
+            let destinationAddress = splitedMemo?[2] ?? ""
+            
+            print ("destinationChainName: \(destinationChainName)")
+            print ("sourceChannel: \(sourceChannel)")
+            print  ("destinationAddress: \(destinationAddress)")
+            
+            let destinationChain = Chain(name: String(destinationChainName))
+            
+            print ("destinationChain: \(destinationChain?.name ?? "")")
+            
+            print ("destinationChain?.coinType.chainId.description: \(destinationChain?.coinType.chainId.description ?? "")")
+            
+            let revisionNumberFromDestination = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
+            
+            if splitedMemo?.count == 4 {
+                memo = String(splitedMemo?[3] ?? "")
+            }
+            
+            print ("memo: \(memo)")
+            
+            let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
+            
+            let height = UInt64(timeouts.first ?? "0") ?? 0
+            let timeout = UInt64(timeouts.last ?? "0") ?? 0
+            
+            
+            
+            print ("timeout: \(timeout)")
+            print ("height: \(height)")
+            
+            if height == 0 {
+                throw HelperError.runtimeError("The height of the last block should be specified")
+            }
+            
+            let transferMessage = CosmosMessage.Transfer.with {
+                $0.sourcePort = "transfer"
+                $0.sourceChannel = String(sourceChannel)
+                $0.sender = keysignPayload.coin.address
+                $0.receiver = String(keysignPayload.toAddress)
+                $0.token = CosmosAmount.with {
+                    $0.denom = keysignPayload.coin.isNativeToken ? self.denom : keysignPayload.coin.contractAddress
+                    $0.amount = String(keysignPayload.toAmount)
+                }
+                $0.timeoutHeight = CosmosHeight.with {
+                    $0.revisionNumber = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
+                    $0.revisionHeight = height + 10_000
+                }
+                $0.timeoutTimestamp = timeout
+            }
+            
+            
+            let input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = coin.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if !memo.isEmpty {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with { $0.transferTokensMessage = transferMessage }]
+                
+                $0.fee = CosmosFee.with {
+                    $0.gas = self.gasLimit
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = self.denom
+                        $0.amount = String(gas)
+                    }]
+                }
+            }
+            
+            return try input.serializedData()
+            
+        }
         
         if keysignPayload.coin.isNativeToken
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")

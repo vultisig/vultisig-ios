@@ -45,7 +45,7 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
         case .unstake:
             return "Unstake"
         case .cosmosIBC:
-            return "Cosmos IBC"
+            return "IBC Transfer"
         }
     }
     

@@ -90,7 +90,7 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "IBC:\(self.selectedChainObject?.name ?? ""):\(self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? ""):\(self.destinationAddress)"
+        var memo = "\(self.selectedChainObject?.name ?? ""):\(self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? ""):\(self.destinationAddress)"
         if txMemo.isEmpty == false {
             memo += ":\(self.txMemo)"
         }

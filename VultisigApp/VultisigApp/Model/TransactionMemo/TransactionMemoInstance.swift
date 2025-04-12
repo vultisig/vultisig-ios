@@ -117,6 +117,8 @@ enum TransactionMemoInstance {
             return memo.nodeAddress
         case .unstake(let memo):
             return memo.nodeAddress
+        case .cosmosIBC(let memo):
+            return memo.destinationAddress
         default:
             return nil
         }
@@ -155,6 +157,8 @@ enum TransactionMemoInstance {
         switch self {
         case .vote(_):
             return VSTransactionType.vote
+        case .cosmosIBC(_):
+            return VSTransactionType.ibcTransfer
         default:
             return .unspecified
         }
