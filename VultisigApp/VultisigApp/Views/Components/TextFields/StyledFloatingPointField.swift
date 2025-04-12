@@ -74,7 +74,12 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
 
         textFieldValue = newValue
 
-        if let number = formatter.number(from: newValue) {
+        let decimalSeparator = formatter.decimalSeparator ?? "."
+        let wrongSeparator = decimalSeparator == "." ? "," : "."
+
+        let sanitizedValue = newValue.replacingOccurrences(of: wrongSeparator, with: decimalSeparator)
+
+        if let number = formatter.number(from: sanitizedValue) {
             let doubleValue = number.doubleValue
             value = Value(doubleValue)
             validate(value)
