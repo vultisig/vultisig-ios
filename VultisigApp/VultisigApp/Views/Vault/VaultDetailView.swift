@@ -82,7 +82,11 @@ struct VaultDetailView: View {
             BackupSetupView(vault: vault)
         }
         .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
-            AllDevicesUpgradeView()
+            if vault.isFastVault {
+                VaultShareBackupsView()
+            } else {
+                AllDevicesUpgradeView()
+            }
         })
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
