@@ -71,41 +71,15 @@ class CosmosHelper {
                 throw HelperError.runtimeError("To send IBC transaction, memo should be specified")
             }
             
-            let destinationChainName = splitedMemo?[0] ?? ""
             let sourceChannel = splitedMemo?[1] ?? ""
-            let destinationAddress = splitedMemo?[2] ?? ""
             
-//            print ("destinationChainName: \(destinationChainName)")
-//            print ("sourceChannel: \(sourceChannel)")
-//            print  ("destinationAddress: \(destinationAddress)")
-            
-            let destinationChain = Chain(name: String(destinationChainName))
-            
-//            print ("destinationChain: \(destinationChain?.name ?? "")")
-//            
-//            print ("destinationChain?.coinType.chainId.description: \(destinationChain?.coinType.chainId.description ?? "")")
-//            
-//            let revisionNumberFromDestination = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
-//            
-            
-            memo = String(splitedMemo?[3] ?? "")
-            //
-            //
-            //            print ("memo: \(memo)")
+            if splitedMemo?.count == 4 {
+                memo = String(splitedMemo?[3] ?? "")
+            }
             
             let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
             
-            let height = UInt64(timeouts.first ?? "0") ?? 0
             let timeout = UInt64(timeouts.last ?? "0") ?? 0
-            
-            
-            
-            //            print ("timeout: \(timeout)")
-            //            print ("height: \(height)")
-            //
-            if height == 0 {
-                throw HelperError.runtimeError("The height of the last block should be specified")
-            }
             
             let transferMessage = CosmosMessage.Transfer.with {
                 $0.sourcePort = "transfer"
@@ -117,9 +91,6 @@ class CosmosHelper {
                     $0.amount = String(keysignPayload.toAmount)
                 }
                 $0.timeoutHeight = CosmosHeight.with {
-                    //                    $0.revisionNumber = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
-                    //                    $0.revisionHeight = height + 10_000
-                    
                     $0.revisionNumber = 0
                     $0.revisionHeight = 0
                 }
@@ -191,7 +162,6 @@ class CosmosHelper {
             return try input.serializedData()
             
         }
-        // https://github.com/vultisig/vultisig-ios/issues/1570 to implement the send from one chain to another.
         
         throw HelperError.runtimeError("It must be a native token or a valid IBC token")
     }
