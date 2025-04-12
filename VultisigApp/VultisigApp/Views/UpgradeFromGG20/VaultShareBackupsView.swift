@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct VaultShareBackupsView: View {
+    let vault: Vault
+    
     var body: some View {
         ZStack {
             Background()
@@ -36,10 +38,12 @@ struct VaultShareBackupsView: View {
     }
     
     var button: some View {
-        Button {
-            
-        } label: {
-            label
+        ZStack {
+            if vault.isFastVault {
+                migrateFastVault
+            } else {
+                migrateSecureVault
+            }
         }
         .padding(.vertical, 36)
     }
@@ -48,8 +52,34 @@ struct VaultShareBackupsView: View {
         FilledButton(title: "next")
             .frame(width: 100)
     }
+    
+    var migrateSecureVault: some View {
+        NavigationLink {
+            PeerDiscoveryView(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastSignConfig: nil
+            )
+        } label: {
+            label
+        }
+    }
+    
+    var migrateFastVault: some View {
+        NavigationLink {
+            FastVaultEmailView(
+                tssType: .Migrate,
+                vault: vault,
+                selectedTab: .secure,
+                fastVaultExist: true
+            )
+        } label: {
+            label
+        }
+    }
 }
 
 #Preview {
-    VaultShareBackupsView()
+    VaultShareBackupsView(vault: Vault.example)
 }

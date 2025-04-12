@@ -9,6 +9,8 @@ import SwiftUI
 import RiveRuntime
 
 struct AllDevicesUpgradeView: View {
+    let vault: Vault
+    
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
@@ -40,7 +42,7 @@ struct AllDevicesUpgradeView: View {
     
     var button: some View {
         NavigationLink(destination: {
-            VaultShareBackupsView()
+            VaultShareBackupsView(vault: vault)
         }, label: {
             label
         })
@@ -58,5 +60,5 @@ struct AllDevicesUpgradeView: View {
 }
 
 #Preview {
-    AllDevicesUpgradeView()
+    AllDevicesUpgradeView(vault: Vault.example)
 }

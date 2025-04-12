@@ -95,32 +95,6 @@ struct EditVaultView: View {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }
     }
-    
-    var migrateVault: some View {
-        NavigationLink {
-            PeerDiscoveryView(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: nil
-            )
-        } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
-        }
-    }
-    
-    var migrateFastVault: some View {
-        NavigationLink {
-            FastVaultEmailView(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastVaultExist: true
-            )
-        } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
-        }
-    }
 
     var biometrySelectionCell: some View {
         NavigationLink {
