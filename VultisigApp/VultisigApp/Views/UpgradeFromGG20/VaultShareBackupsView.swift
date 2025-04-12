@@ -71,7 +71,7 @@ struct VaultShareBackupsView: View {
             FastVaultEmailView(
                 tssType: .Migrate,
                 vault: vault,
-                selectedTab: .secure,
+                selectedTab: .fast,
                 fastVaultExist: true
             )
         } label: {

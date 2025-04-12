@@ -39,7 +39,6 @@ struct EmptyPeerCell: View {
                 .strokeBorder(Color.borderBlue, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
         )
         .padding(1)
-        .padding(.horizontal)
     }
     
     var text: some View {
