@@ -465,9 +465,15 @@
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */; };
 		A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */; };
-		A6BB9BC32DA9AA320085E117 /* all_devices_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */; };
 		A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */; };
 		A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */; };
+		A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */; };
+		A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */; };
+		A6BB9BCB2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BCA2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift */; };
+		A6BB9BCD2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BCC2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift */; };
+		A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BCE2DA9E43B0085E117 /* all_devices_animation.riv */; };
+		A6BB9BD12DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BD02DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift */; };
+		A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BD22DA9E5750085E117 /* VaultShareBackupsView+macOS.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
 		A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */; };
 		A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */; };
@@ -1327,9 +1333,15 @@
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeFromGG20HomeBanner.swift; sourceTree = "<group>"; };
 		A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeYourVaultView.swift; sourceTree = "<group>"; };
-		A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = all_devices_animation.riv; sourceTree = "<group>"; };
 		A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_animation.riv; sourceTree = "<group>"; };
 		A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_succes.riv; sourceTree = "<group>"; };
+		A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllDevicesUpgradeView.swift; sourceTree = "<group>"; };
+		A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultShareBackupsView.swift; sourceTree = "<group>"; };
+		A6BB9BCA2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AllDevicesUpgradeView+iOS.swift"; sourceTree = "<group>"; };
+		A6BB9BCC2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AllDevicesUpgradeView+macOS.swift"; sourceTree = "<group>"; };
+		A6BB9BCE2DA9E43B0085E117 /* all_devices_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = all_devices_animation.riv; sourceTree = "<group>"; };
+		A6BB9BD02DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultShareBackupsView+iOS.swift"; sourceTree = "<group>"; };
+		A6BB9BD22DA9E5750085E117 /* VaultShareBackupsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultShareBackupsView+macOS.swift"; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
 		A6BFE1B02D93A55E000B73C0 /* SwapPercentageButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPercentageButtons.swift; sourceTree = "<group>"; };
 		A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapPercentageButtons+macOS.swift"; sourceTree = "<group>"; };
@@ -2844,6 +2856,8 @@
 				A6F7B73C2D4EF8F700AC8104 /* FastBackupVaultOverview+iOS.swift */,
 				A6CEFE772D8E43BD005AB80C /* PasswordBackupOptionsView+iOS.swift */,
 				A60F29E22DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift */,
+				A6BB9BCA2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift */,
+				A6BB9BD02DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* Transaction */,
@@ -2890,6 +2904,7 @@
 				A6C670CE2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift */,
 				A6C670D22C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift */,
 				A6ACAD602D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift */,
+				A6BB9BD22DA9E5750085E117 /* VaultShareBackupsView+macOS.swift */,
 				A6505B082CA67C080002FBF4 /* Settings */,
 				A6505B072CA67C030002FBF4 /* Send */,
 				A6505B062CA67BFF0002FBF4 /* Swap */,
@@ -2907,6 +2922,7 @@
 				A6F7B73E2D4EF93400AC8104 /* FastBackupVaultOverview+macOS.swift */,
 				A6CEFE792D8E6A03005AB80C /* PasswordBackupOptionsView+macOS.swift */,
 				A60F29E42DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift */,
+				A6BB9BCC2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2951,6 +2967,8 @@
 			isa = PBXGroup;
 			children = (
 				A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */,
+				A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */,
+				A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */,
 			);
 			path = UpgradeFromGG20;
 			sourceTree = "<group>";
@@ -3020,9 +3038,9 @@
 				A6C58D812D7AD81D000D2833 /* securevault_summary.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
 				A6C58D7F2D7AD800000D2833 /* quick_summary.riv */,
-				A6BB9BC02DA9AA320085E117 /* all_devices_animation.riv */,
 				A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */,
 				A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */,
+				A6BB9BCE2DA9E43B0085E117 /* all_devices_animation.riv */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -3703,11 +3721,11 @@
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
 				A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
+				A6BB9BCF2DA9E43B0085E117 /* all_devices_animation.riv in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
-				A6BB9BC32DA9AA320085E117 /* all_devices_animation.riv in Resources */,
 				A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */,
 				A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */,
 			);
@@ -3802,6 +3820,7 @@
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
+				A6BB9BCD2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift in Sources */,
 				A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
@@ -4028,6 +4047,7 @@
 				A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
+				A6BB9BD12DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift in Sources */,
 				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
@@ -4063,6 +4083,7 @@
 				A6C6712B2CA3C24600F59B6A /* AddressTextField+iOS.swift in Sources */,
 				B541C9262CF04C4700335933 /* TransactionMemoUnbondMayaChain.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
+				A6BB9BCB2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift in Sources */,
 				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
@@ -4155,6 +4176,7 @@
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,
 				B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */,
 				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
+				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
 				A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */,
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,
@@ -4336,6 +4358,7 @@
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
+				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A5AB69C32D63E07D00E54DEB /* BackupSetupView+macOS.swift in Sources */,
 				A5AB69C42D63E07D00E54DEB /* BackupSetupView.swift in Sources */,
 				A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */,
@@ -4513,6 +4536,7 @@
 				A6C671272CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift in Sources */,
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
+				A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */,
 				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,
 				DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */,
 				DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */,

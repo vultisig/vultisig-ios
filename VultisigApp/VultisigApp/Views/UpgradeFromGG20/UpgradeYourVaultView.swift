@@ -61,7 +61,8 @@ struct UpgradeYourVaultView: View {
     
     var button: some View {
         Button {
-            
+            showSheet = false
+            navigationLinkActive = true
         } label: {
             label
         }

@@ -81,6 +81,9 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isBackupLinkActive) {
             BackupSetupView(vault: vault)
         }
+        .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
+            AllDevicesUpgradeView()
+        })
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
