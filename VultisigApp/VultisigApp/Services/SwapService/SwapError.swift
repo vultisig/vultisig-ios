@@ -16,11 +16,11 @@ enum SwapError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .routeUnavailable:
-            return "Swap route not available"
+            return "Bridge route not available"
         case .swapAmountTooSmall:
-            return "Swap amount too small"
+            return "Bridge amount too small"
         case .lessThenMinSwapAmount(let amount):
-            return "Swap amount too small. Recommended amount \(amount)"
+            return "Bridge amount too small. Recommended amount \(amount)"
         case .serverError(let msg):
             return msg
         }
