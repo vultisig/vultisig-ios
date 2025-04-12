@@ -19,6 +19,7 @@ struct VaultShareBackupsView: View {
         Image("VaultShareBackupsImage")
             .resizable()
             .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: 512, maxHeight: 512)
             .scaleEffect(1.1)
             .padding(-36)
     }

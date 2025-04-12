@@ -17,7 +17,7 @@ struct UpgradeYourVaultView: View {
     var body: some View {
         ZStack {
             Background()
-            content
+            container
         }
         .onAppear {
             setData()
@@ -67,6 +67,7 @@ struct UpgradeYourVaultView: View {
             label
         }
         .padding(.vertical, 36)
+        .buttonStyle(.plain)
     }
     
     var label: some View {
@@ -75,7 +76,9 @@ struct UpgradeYourVaultView: View {
     }
     
     private func setData() {
-        animationVM = RiveViewModel(fileName: "upgrade_animation", autoPlay: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            animationVM = RiveViewModel(fileName: "upgrade_animation", autoPlay: true)
+        }
     }
 }
 
