@@ -16,7 +16,7 @@ import Combine
  UI Elements:
      •    Dropdown: Select destination chain (IBC compatible)
      •    Address Field:
-     •    Prefilled with the user’s destination chain address
+     •    Prefilled with the user’s destination chain address :: TODO
      •    Allow manual override
      •    Amount Field: Enter amount to send
      •    Memo Field (Optional): Enter memo if needed
@@ -124,7 +124,6 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                     
                     let chainInfos = asset.value.split(separator: " ")
                     let chainName = chainInfos[0]
-                    let chainTicker = chainInfos[1]
                   
                     self.selectedChainObject = Chain(name: chainName.description)
                 }

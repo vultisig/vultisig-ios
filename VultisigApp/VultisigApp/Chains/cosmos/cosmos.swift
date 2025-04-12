@@ -24,29 +24,29 @@ class CosmosHelper {
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence,let gas, _, _) = keysignPayload.chainSpecific else {
-                throw HelperError.runtimeError("fail to get account number and sequence")
-            }
-            guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-                throw HelperError.runtimeError("invalid hex public key")
-            }
-            var input = signingInput
-            input.publicKey = pubKeyData
-            input.accountNumber = accountNumber
-            input.sequence = sequence
-            input.mode = .sync
-            
-            input.fee = CosmosFee.with {
-                $0.gas = self.gasLimit
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = self.denom
-                    $0.amount = String(gas)
-                }]
-            }
-            // memo has been set
-            // deposit message has been set
-            return try input.serializedData()
+            throw HelperError.runtimeError("fail to get account number and sequence")
         }
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            throw HelperError.runtimeError("invalid hex public key")
+        }
+        var input = signingInput
+        input.publicKey = pubKeyData
+        input.accountNumber = accountNumber
+        input.sequence = sequence
+        input.mode = .sync
         
+        input.fee = CosmosFee.with {
+            $0.gas = self.gasLimit
+            $0.amounts = [CosmosAmount.with {
+                $0.denom = self.denom
+                $0.amount = String(gas)
+            }]
+        }
+        // memo has been set
+        // deposit message has been set
+        return try input.serializedData()
+    }
+    
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, let ibcDenomTrace) = keysignPayload.chainSpecific else {
@@ -75,23 +75,23 @@ class CosmosHelper {
             let sourceChannel = splitedMemo?[1] ?? ""
             let destinationAddress = splitedMemo?[2] ?? ""
             
-            print ("destinationChainName: \(destinationChainName)")
-            print ("sourceChannel: \(sourceChannel)")
-            print  ("destinationAddress: \(destinationAddress)")
+//            print ("destinationChainName: \(destinationChainName)")
+//            print ("sourceChannel: \(sourceChannel)")
+//            print  ("destinationAddress: \(destinationAddress)")
             
             let destinationChain = Chain(name: String(destinationChainName))
             
-            print ("destinationChain: \(destinationChain?.name ?? "")")
+//            print ("destinationChain: \(destinationChain?.name ?? "")")
+//            
+//            print ("destinationChain?.coinType.chainId.description: \(destinationChain?.coinType.chainId.description ?? "")")
+//            
+//            let revisionNumberFromDestination = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
+//            
             
-            print ("destinationChain?.coinType.chainId.description: \(destinationChain?.coinType.chainId.description ?? "")")
-            
-            let revisionNumberFromDestination = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
-            
-            if splitedMemo?.count == 4 {
-                memo = String(splitedMemo?[3] ?? "")
-            }
-            
-            print ("memo: \(memo)")
+            memo = String(splitedMemo?[3] ?? "")
+            //
+            //
+            //            print ("memo: \(memo)")
             
             let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
             
@@ -100,9 +100,9 @@ class CosmosHelper {
             
             
             
-            print ("timeout: \(timeout)")
-            print ("height: \(height)")
-            
+            //            print ("timeout: \(timeout)")
+            //            print ("height: \(height)")
+            //
             if height == 0 {
                 throw HelperError.runtimeError("The height of the last block should be specified")
             }
@@ -117,8 +117,11 @@ class CosmosHelper {
                     $0.amount = String(keysignPayload.toAmount)
                 }
                 $0.timeoutHeight = CosmosHeight.with {
-                    $0.revisionNumber = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
-                    $0.revisionHeight = height + 10_000
+                    //                    $0.revisionNumber = UInt64(destinationChain?.coinType.chainId.description.split(separator: "-").last ?? "1") ?? 1
+                    //                    $0.revisionHeight = height + 10_000
+                    
+                    $0.revisionNumber = 0
+                    $0.revisionHeight = 0
                 }
                 $0.timeoutTimestamp = timeout
             }
@@ -201,7 +204,7 @@ class CosmosHelper {
             print("Error getPreSignedImageHash: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-                
+        
         return [preSigningOutput.dataHash.hexString]
     }
     
