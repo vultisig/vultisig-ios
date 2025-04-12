@@ -52,7 +52,62 @@ enum THORChainHelper {
         var thorChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
         
+        var chainID = coin.chainId
+        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
+            chainID = ThorchainService.shared.network
+        }
+        
         if isDeposit {
+            
+            // This should invoke the wasm contract for RUJI merge
+            if keysignPayload.toAddress == "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy" {
+                // This is for WASM tokens
+                
+                guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
+                    throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
+                }
+                
+                let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
+                    $0.senderAddress = fromAddr.description
+                    $0.contractAddress = keysignPayload.coin.contractAddress.description
+                    $0.executeMsg = """
+                    { "deposit": {} }
+                    """
+                    $0.coins = [
+                        TW_Cosmos_Proto_Amount.with {
+                            $0.denom = "THOR.KUJI"
+                            $0.amount = String(keysignPayload.toAmount)
+                        }
+                    ]
+                }
+
+                let message = CosmosMessage.with {
+                    $0.wasmExecuteContractGeneric = wasmGenericMessage
+                }
+                               
+                let fee = CosmosFee.with {
+                    $0.gas = 20000000
+                }
+                
+                let input = CosmosSigningInput.with {
+                    $0.signingMode = .protobuf;
+                    $0.accountNumber = accountNumber
+                    $0.chainID = chainID
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                    $0.sequence = sequence
+                    $0.messages = [message]
+                    $0.fee = fee
+                    $0.publicKey = pubKeyData
+                    $0.mode = .sync
+                }
+                
+                return try input.serializedData()
+
+            }
+            
+            
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
@@ -88,10 +143,7 @@ enum THORChainHelper {
                 }
             }]
         }
-        var chainID = coin.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
-        }
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
