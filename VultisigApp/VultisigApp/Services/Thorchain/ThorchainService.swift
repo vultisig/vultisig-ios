@@ -15,8 +15,8 @@ class ThorchainService: ThorchainSwapProvider {
     
     private init() {}
     
-    func fetchBalances(coin: Coin) async throws -> [CosmosBalance] {
-        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: coin.address)) else        {
+    func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
+        guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else        {
             return [CosmosBalance]()
         }
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
@@ -26,9 +26,9 @@ class ThorchainService: ThorchainSwapProvider {
         return balanceResponse.balances
     }
     
-    func fetchTokens(coin: Coin) async throws -> [CoinMeta] {
+    func fetchTokens(_ address: String) async throws -> [CoinMeta] {
         do {
-            let balances: [CosmosBalance] =  try await fetchBalances(coin: coin)
+            let balances: [CosmosBalance] =  try await fetchBalances(address)
             
             var coinMetaList = [CoinMeta]()
             for balance in balances {
@@ -92,7 +92,7 @@ class ThorchainService: ThorchainSwapProvider {
             ticker = denom.lowercased()
         }
 
-        logo = "https://gitlab.com/rujira/ui/-/raw/main/assets/icons/\(denom).png"
+        logo = ticker // It will use whatever is in our asset list
 
         return TokenMetadata(chain: chain, ticker: ticker, symbol: symbol, decimals: decimals, logo: logo)
     }

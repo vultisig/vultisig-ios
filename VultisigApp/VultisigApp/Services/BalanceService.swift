@@ -90,7 +90,7 @@ private extension BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
             
         case .thorChain:
-            let thorBalances = try await thor.fetchBalances(coin: coin)
+            let thorBalances = try await thor.fetchBalances(coin.address)
             return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased(), coin: coin)
             
         case .solana:
