@@ -96,6 +96,8 @@ struct TransactionMemoDetailsView: View {
                     
                 case .cosmosIBC:
                     txMemoInstance = .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                case .merge:
+                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 }
             }
     }

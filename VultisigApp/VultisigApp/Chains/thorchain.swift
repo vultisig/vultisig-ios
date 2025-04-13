@@ -73,8 +73,7 @@ enum THORChainHelper {
                 
                 let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
-                    //$0.contractAddress = keysignPayload.coin.contractAddress.description
-                    $0.contractAddress = "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+                    $0.contractAddress = keysignPayload.toAddress.description
                     $0.executeMsg = """
                     { "deposit": {} }
                     """
