@@ -34,7 +34,6 @@ struct ThisDevicePeerCell: View {
                 .stroke(Color.alertTurquoise, lineWidth: 2)
         )
         .padding(1)
-        .padding(.horizontal)
     }
     
     var deviceId: some View {
