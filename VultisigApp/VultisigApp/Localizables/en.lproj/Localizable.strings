@@ -612,6 +612,17 @@
 "track" = "Track";
 "approvalTXHash" = "Approval Tx Hash";
 "sendCryptoKeysignViewDisclaimer" = "Make sure devices are on the same network";
+"upgradeYourVaultNow" = "Upgrade your vault now";
+"upgradeNow" = "Upgrade now";
+"upgradeYourVaultTitle1" = "Upgrade this vault to the";
+"upgradeYourVaultTitle2" = " world’s fastest MPC protocol ";
+"upgradeYourVaultTitle3" = "and sign faster than ever before";
+"upgradeYourVault" = "Upgrade your vault";
+"allDevicesUpgradeTitle1" = "Make sure that";
+"allDevicesUpgradeTitle2" = " all initial devices are present ";
+"allDevicesUpgradeTitle3" = "when upgrading";
+"vaultShareBackupsViewTitle1" = "You’ll create new Vault Share backups";
+"vaultShareBackupsViewTitle2" = ", store them as you did before";
 "swap" = "Bridge";
 "swapProgress" = "Bridging progress";
 "JoinSwap" = "Join Bridge";

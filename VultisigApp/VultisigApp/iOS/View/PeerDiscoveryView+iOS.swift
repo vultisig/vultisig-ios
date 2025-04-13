@@ -86,7 +86,7 @@ extension PeerDiscoveryView {
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 12)
         }
         .frame(maxWidth: .infinity)
     }
