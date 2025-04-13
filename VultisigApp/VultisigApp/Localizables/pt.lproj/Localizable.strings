@@ -568,6 +568,17 @@
 "track" = "Acompanhar";
 "approvalTXHash" = "Hash da transação de aprovação";
 "sendCryptoKeysignViewDisclaimer" = "Certifique-se de que os dispositivos estão na mesma rede";
+"upgradeYourVaultNow" = "Atualize seu cofre agora";
+"upgradeNow" = "Atualizar agora";
+"upgradeYourVaultTitle1" = "Atualize este cofre para o";
+"upgradeYourVaultTitle2" = " protocolo MPC mais rápido do mundo ";
+"upgradeYourVaultTitle3" = "e assine mais rápido do que nunca";
+"upgradeYourVault" = "Atualizar cofre";
+"allDevicesUpgradeTitle1" = "Certifique-se de que";
+"allDevicesUpgradeTitle2" = " todos os dispositivos iniciais estejam presentes ";
+"allDevicesUpgradeTitle3" = "ao fazer a atualização";
+"vaultShareBackupsViewTitle1" = "Você criará novos backups das partes do cofre";
+"vaultShareBackupsViewTitle2" = ", armazene-os como antes";
 "swap" = "Bridge";
 "swapProgress" = "Progresso do bridge";
 "JoinSwap" = "Participar do bridge";

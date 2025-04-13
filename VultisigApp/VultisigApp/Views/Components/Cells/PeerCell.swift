@@ -38,7 +38,6 @@ struct PeerCell: View {
                 .opacity(isSelected ? 1 : 0)
         )
         .padding(1)
-        .padding(.horizontal)
     }
     
     var deviceId: some View {
