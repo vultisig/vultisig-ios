@@ -112,7 +112,7 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
                 isAddressValid: Binding(
                     get: { self.destinationAddressValid },
                     set: { self.destinationAddressValid = $0 }
-                ),
+                )
             )
             
             TransactionMemoAddressTextField(
@@ -121,7 +121,7 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
                 isAddressValid: Binding(
                     get: { self.thorchainAddressValid },
                     set: { self.thorchainAddressValid = $0 }
-                ),
+                )
             )
             
             StyledFloatingPointField(
