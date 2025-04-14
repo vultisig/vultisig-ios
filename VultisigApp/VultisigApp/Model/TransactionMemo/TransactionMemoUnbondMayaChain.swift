@@ -1,5 +1,5 @@
 //
-//  TransactionMemoBond.swift
+//  TransactionMemoUnbondMayaChain.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.

@@ -94,6 +94,10 @@ struct TransactionMemoDetailsView: View {
                         TransactionMemoRemoveLiquidityMaya()
                     )
                     
+                case .cosmosIBC:
+                    txMemoInstance = .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                case .merge:
+                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 }
             }
     }
@@ -136,7 +140,7 @@ struct TransactionMemoDetailsView: View {
             Task {
                 if txMemoInstance.isTheFormValid {
                     tx.amount = txMemoInstance.amount.description
-                        .formatToDecimal(digits: tx.coin.decimals)
+                        //.formatToDecimal(digits: tx.coin.decimals)
                     tx.memo = txMemoInstance.description
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
                     tx.transactionType = txMemoInstance.getTransactionType()

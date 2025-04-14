@@ -36,7 +36,7 @@ extension SendCryptoDetailsView {
                     fromField
                     toField
                     
-                    if tx.coin.isNativeToken {
+                    if tx.coin.isNativeToken || tx.coin.chainType == .Cosmos {
                         memoField
                     }
                     

@@ -332,6 +332,10 @@ private extension BlockChainService {
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .osmosis:
             let account = try await osmo.fetchAccountNumber(coin.address)

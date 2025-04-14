@@ -591,6 +591,10 @@ class TokensStore {
             CoinMeta(chain: Chain.gaiaChain, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "usd-coin", contractAddress: "ibc/F663521BF1836B00F5F177680F74BFB9A8B5654A694D0D2BC249E03CF2509013", isNativeToken: false)
         }
         
+        static var gaiaChainKujira: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "ibc/4CC44260793F84006656DD868E017578F827A492978161DA31D7572BCB3F4289", isNativeToken: false)
+        }
+        
         static var osmosis: CoinMeta {
             CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
         }
@@ -740,6 +744,7 @@ class TokensStore {
         
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.gaiaChainUsdc,
+        TokensStore.Token.gaiaChainKujira,
         
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
