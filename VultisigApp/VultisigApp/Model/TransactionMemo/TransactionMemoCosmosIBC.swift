@@ -32,7 +32,6 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     @Published var txMemo: String = ""
     
     @Published var amountValid: Bool = false
-    @Published var destinationAddressValid: Bool = true
     @Published var txMemoValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
@@ -72,8 +71,10 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
         for chain in cosmosChains {
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
-        
+                
         getChainAddress()
+        
+        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
         
     }
     
@@ -83,10 +84,8 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
             let chainAddress = self.vault.coins.first { $0.chain == selectedChainObject && $0.isNativeToken }
             if let chainAddress = chainAddress {
                 self.destinationAddress = chainAddress.address
-                self.destinationAddressValid = true
             } else {
                 self.destinationAddress = ""
-                self.destinationAddressValid = false
             }
         }
         
@@ -94,9 +93,6 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
-        
-        self.amount = Double(balance) ?? 0.0
-        
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     
@@ -156,10 +152,7 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
-                isAddressValid: Binding(
-                    get: { true },
-                    set: { self.destinationAddressValid = $0 }
-                ),
+                isAddressValid: .constant(true),
                 chain: self.selectedChainObject
             ).id(self.selectedChainObject?.name ?? UUID().uuidString)
             

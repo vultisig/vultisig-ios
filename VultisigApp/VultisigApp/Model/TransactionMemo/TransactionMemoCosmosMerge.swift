@@ -52,10 +52,10 @@ class TransactionMemoCosmosMerge: ObservableObject {
     }
     
     //The balance is not correct since it should be the balance of the token not the RUNE balance
-    //    var balance: String {
-    //        let balance = tx.coin.balanceDecimal.description
-    //        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
-    //    }
+    var balance: String {
+        let balance = tx.coin.balanceDecimal.description
+        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+    }
     
     private func setupValidation() {
         Publishers.CombineLatest($amountValid, $tokenValid)

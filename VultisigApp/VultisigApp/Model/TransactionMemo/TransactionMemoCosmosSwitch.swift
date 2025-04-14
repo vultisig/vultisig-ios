@@ -70,13 +70,12 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
         }
         
         setupValidation()
+        
+        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
     }
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
-        
-        self.amount = Double(balance) ?? 0.0
-        
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     

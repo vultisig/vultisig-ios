@@ -231,6 +231,8 @@ enum TransactionMemoInstance {
             return .stake(TransactionMemoStake())
         case .gaiaChain:
             return .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+        case .kujira:
+            return .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
         default:
             return .custom(TransactionMemoCustom())
         }

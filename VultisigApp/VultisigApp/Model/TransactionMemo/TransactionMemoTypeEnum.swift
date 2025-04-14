@@ -82,6 +82,8 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
             return .stake
         case .gaiaChain:
             return .theSwitch
+        case .kujira:
+            return .cosmosIBC
         default:
             return .custom
         }
