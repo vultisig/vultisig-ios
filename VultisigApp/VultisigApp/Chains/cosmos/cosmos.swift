@@ -127,6 +127,7 @@ class CosmosHelper {
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "ibc/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "factory/")
             || keysignPayload.coin.contractAddress.lowercased().starts(with: "u")
+            || ((keysignPayload.memo?.lowercased().starts(with: "SWITCH:")) != nil)
         {
             
             let input = CosmosSigningInput.with {

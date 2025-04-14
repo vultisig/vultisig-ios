@@ -24,6 +24,7 @@ enum TransactionMemoInstance {
     case removePool(TransactionMemoRemoveLiquidityMaya)
     case cosmosIBC(TransactionMemoCosmosIBC)
     case merge(TransactionMemoCosmosMerge)
+    case theSwitch(TransactionMemoCosmosSwitch)
     
     var view: AnyView {
         switch self {
@@ -52,6 +53,8 @@ enum TransactionMemoInstance {
         case .cosmosIBC(let memo):
             return memo.getView()
         case .merge(let memo):
+            return memo.getView()
+        case .theSwitch(let memo):
             return memo.getView()
         }
     }
@@ -84,6 +87,8 @@ enum TransactionMemoInstance {
             return memo.description
         case .merge(let memo):
             return memo.description
+        case .theSwitch(let memo):
+            return memo.description
         }
     }
 
@@ -115,6 +120,8 @@ enum TransactionMemoInstance {
             return memo.amount
         case .merge(let memo):
             return memo.amount
+        case .theSwitch(let memo):
+            return memo.amount
         }
     }
 
@@ -127,6 +134,8 @@ enum TransactionMemoInstance {
         case .cosmosIBC(let memo):
             return memo.destinationAddress
         case .merge(let memo):
+            return memo.destinationAddress
+        case .theSwitch(let memo):
             return memo.destinationAddress
         default:
             return nil
@@ -160,6 +169,8 @@ enum TransactionMemoInstance {
         case .cosmosIBC(let memo):
             return memo.toDictionary()
         case .merge(let memo):
+            return memo.toDictionary()
+        case .theSwitch(let memo):
             return memo.toDictionary()
         }
     }
@@ -203,6 +214,8 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         case .merge(let memo):
             return memo.isTheFormValid
+        case .theSwitch(let memo):
+            return memo.isTheFormValid
         }
     }
 
@@ -216,6 +229,8 @@ enum TransactionMemoInstance {
             return .vote(TransactionMemoVote())
         case .ton:
             return .stake(TransactionMemoStake())
+        case .gaiaChain:
+            return .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
         default:
             return .custom(TransactionMemoCustom())
         }
