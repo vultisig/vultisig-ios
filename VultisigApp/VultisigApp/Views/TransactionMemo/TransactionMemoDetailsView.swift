@@ -5,6 +5,7 @@ import SwiftUI
 struct TransactionMemoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var transactionMemoViewModel: TransactionMemoViewModel
+    @ObservedObject var vault: Vault
 
     @State private var selectedFunctionMemoType: TransactionMemoType
     @State private var selectedContractMemoType: TransactionMemoContractType
@@ -15,10 +16,11 @@ struct TransactionMemoDetailsView: View {
     @StateObject var keyboardObserver = KeyboardObserver()
 
     init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
     ) {
         self.tx = tx
         self.transactionMemoViewModel = transactionMemoViewModel
+        self.vault = vault
         let defaultCoin = tx.coin
         self._selectedFunctionMemoType = State(
             initialValue: TransactionMemoType.getDefault(for: defaultCoin))
@@ -26,7 +28,7 @@ struct TransactionMemoDetailsView: View {
             initialValue: TransactionMemoContractType.getDefault(
                 for: defaultCoin))
         self._txMemoInstance = State(
-            initialValue: TransactionMemoInstance.getDefault(for: defaultCoin, tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+            initialValue: TransactionMemoInstance.getDefault(for: defaultCoin, tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
     }
 
     var body: some View {
@@ -99,7 +101,7 @@ struct TransactionMemoDetailsView: View {
                 case .merge:
                     txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
                 case .theSwitch:
-                    txMemoInstance = .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                    txMemoInstance = .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 }
             }
     }
@@ -161,11 +163,4 @@ struct TransactionMemoDetailsView: View {
         }
         .padding(40)
     }
-}
-
-#Preview {
-    TransactionMemoDetailsView(
-        tx: SendTransaction(),
-        transactionMemoViewModel: TransactionMemoViewModel()
-    )
 }

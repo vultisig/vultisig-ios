@@ -63,7 +63,8 @@ struct TransactionMemoView: View {
     var detailsView: some View {
         TransactionMemoDetailsView(
             tx: tx,
-            transactionMemoViewModel: transactionMemoViewModel
+            transactionMemoViewModel: transactionMemoViewModel,
+            vault: vault
         )
     }
     

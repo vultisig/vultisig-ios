@@ -219,7 +219,7 @@ enum TransactionMemoInstance {
         }
     }
 
-    static func getDefault(for coin: Coin, tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel) -> TransactionMemoInstance {
+    static func getDefault(for coin: Coin, tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault) -> TransactionMemoInstance {
         switch coin.chain {
         case .thorChain:
             return .bond(TransactionMemoBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
@@ -230,7 +230,7 @@ enum TransactionMemoInstance {
         case .ton:
             return .stake(TransactionMemoStake())
         case .gaiaChain:
-            return .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+            return .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
         default:
             return .custom(TransactionMemoCustom())
         }

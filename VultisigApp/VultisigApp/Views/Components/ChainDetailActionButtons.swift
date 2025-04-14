@@ -49,11 +49,19 @@ struct ChainDetailActionButtons: View {
     
     var memoButton: some View {
         Button {
+            if let selected = viewModel.selection.first(where: { $0.chain == group.chain }),
+               let selectedCoin = group.coins.first(where: { $0.ticker.lowercased() == selected.ticker.lowercased() }) {
+                sendTx.reset(coin: selectedCoin)
+            }
+            // Fallback to native token
+            else if let nativeCoin = group.coins.first(where: { $0.isNativeToken }) {
+                sendTx.reset(coin: nativeCoin)
+            }
+
             isMemoLinkActive = true
         } label: {
             ActionButton(title: "function", fontColor: .turquoise600)
         }
-
     }
     
     var sendButton: some View {

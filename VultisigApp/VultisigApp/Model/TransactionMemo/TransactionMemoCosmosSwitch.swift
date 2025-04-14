@@ -38,6 +38,7 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
     
     
     private var tx: SendTransaction
+    private var vault: Vault
     
     var addressFields: [String: String] {
         get {
@@ -57,14 +58,24 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
     ) {
         self.tx = tx
+        self.vault = vault
+        
+        let thorchainCoin = self.vault.coins.first { $0.chain == .thorChain && $0.isNativeToken }
+        if let thorchainCoin = thorchainCoin {
+            self.thorAddress = thorchainCoin.address
+            self.thorchainAddressValid = true
+        }
+        
         setupValidation()
     }
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
+        
+        self.amount = Double(balance) ?? 0.0
         
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
