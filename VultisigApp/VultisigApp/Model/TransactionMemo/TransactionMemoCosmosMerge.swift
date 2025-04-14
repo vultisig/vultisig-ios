@@ -46,9 +46,22 @@ class TransactionMemoCosmosMerge: ObservableObject {
         self.tx = tx
         setupValidation()
         
+        // Prepare tokens
         for token in tokensToMerge {
-            tokens.append(.init(value: "\(token.denom.uppercased())"))
+            let tokenValue = token.denom.uppercased()
+            tokens.append(.init(value: tokenValue))
         }
+        
+        // Set default selection if tx.coin.ticker matches any token.denom
+        if let match = tokensToMerge.first(where: { $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())".lowercased() }) {
+            let matchValue = match.denom.uppercased()
+            selectedToken = .init(value: matchValue)
+            tokenValid = true
+            destinationAddress = match.wasmContractAddress
+        }
+        
+        
+        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
     }
     
     //The balance is not correct since it should be the balance of the token not the RUNE balance
@@ -99,8 +112,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
             )
             
             StyledFloatingPointField(
-                //placeholder: "Amount \(balance)",
-                placeholder: "Amount",
+                placeholder: "Amount \(balance)",
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }
