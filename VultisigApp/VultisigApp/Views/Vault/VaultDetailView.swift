@@ -75,7 +75,8 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {

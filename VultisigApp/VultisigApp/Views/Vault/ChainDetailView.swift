@@ -55,7 +55,8 @@ struct ChainDetailView: View {
             .navigationDestination(isPresented: $isMemoLinkActive) {
                 TransactionMemoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: group.nativeCoin
                 )
             }
             .refreshable {
