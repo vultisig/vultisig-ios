@@ -27,7 +27,7 @@ import Combine
 
 class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject {
     @Published var amount: Double = 0.0
-    @Published var destinationAddress: String = "cosmos144za3huzmfl3k6hge487a6gnu06vwk6t2hfk53"
+    @Published var destinationAddress: String = ""
     @Published var thorAddress: String = ""
     
     @Published var amountValid: Bool = false
@@ -72,6 +72,14 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
         setupValidation()
         
         self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        
+        Task {
+            let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+            
+            if let match = addresses.first(where: { ($0["chain"] as? String)?.uppercased() == "GAIA" }) {
+                self.destinationAddress = match["address"] as? String ?? ""
+            }
+        }
     }
     
     var balance: String {

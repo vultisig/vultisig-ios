@@ -12,6 +12,7 @@ class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     
     private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
+    private var cacheInboundAddresses: [String: (data: [[String: Any]], timestamp: Date)] = [:]
     
     private init() {}
     
@@ -175,6 +176,34 @@ class ThorchainService: ThorchainSwapProvider {
         }
         
         return .zero
+    }
+    
+    func fetchThorchainInboundAddress() async -> [[String: Any]] {
+        do {
+            let cacheKey = "thorchain-inbound-address"
+            
+            if let cachedData: [[String: Any]] = await Utils.getCachedData(
+                cacheKey: cacheKey,
+                cache: cacheInboundAddresses,
+                timeInSeconds: 60 * 5
+            ) {
+                return cachedData
+            }
+            
+            let urlString = Endpoint.fetchThorchainInboundAddressesNineRealms
+            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                self.cacheInboundAddresses[cacheKey] = (data: json, timestamp: Date())
+                return json
+            } else {
+                print("Failed to cast JSON to [[String: Any]]")
+                return []
+            }
+        } catch {
+            print("JSON decoding error: \(error.localizedDescription)")
+            return []
+        }
     }
     
     func getTHORChainChainID() async throws -> String  {
