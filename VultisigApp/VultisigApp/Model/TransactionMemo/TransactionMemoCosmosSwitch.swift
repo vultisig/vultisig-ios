@@ -10,15 +10,15 @@ import Foundation
 import Combine
 
 /**
-
+ 
  2) COSMOS - FUNCTION: “SWITCH THORCHAIN”
-
+ 
  UI Elements:
-     •    Address Field:
-     •    Prefilled with the user’s THORChain address
-     •    Allow manual override
-     •    Amount Field: Enter amount to switch
-
+ •    Address Field:
+ •    Prefilled with the user’s THORChain address
+ •    Allow manual override
+ •    Amount Field: Enter amount to switch
+ 
  Action:
  → Send MsgSend from COSMOS to THORChain vault
  → Include memo: SWITCH:<thorAddress>
@@ -31,7 +31,7 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
     @Published var thorAddress: String = ""
     
     @Published var amountValid: Bool = false
-    @Published var destinationAddressValid: Bool = true
+    @Published var destinationAddressValid: Bool = false
     @Published var thorchainAddressValid: Bool = false
     
     @Published var isTheFormValid: Bool = false
@@ -73,11 +73,22 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
         
         self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
         
-        Task {
+        Task { @MainActor in
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
             
             if let match = addresses.first(where: { ($0["chain"] as? String)?.uppercased() == "GAIA" }) {
+                let halted = match["halted"] as? Bool ?? false
+                let globalPaused = match["global_trading_paused"] as? Bool ?? false
+                let chainPaused = match["chain_trading_paused"] as? Bool ?? false
+                
+                if halted || globalPaused || chainPaused {
+                    print("Chain is halted or paused. Cannot proceed with switch.")
+                    return
+                }
+                
                 self.destinationAddress = match["address"] as? String ?? ""
+                self.destinationAddressValid = true
+                
             }
         }
     }
@@ -113,14 +124,15 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
     
     func getView() -> AnyView {
         AnyView(VStack {
-                        
+            
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
                 isAddressValid: Binding(
                     get: { self.destinationAddressValid },
                     set: { self.destinationAddressValid = $0 }
-                )
+                ),
+                chain: tx.coin.chain
             )
             
             TransactionMemoAddressTextField(
