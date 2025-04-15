@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/krzyzanowskim/CryptoSwift.git",
       "state" : {
-        "revision" : "678d442c6f7828def400a70ae15968aef67ef52d",
-        "version" : "1.8.3"
+        "revision" : "729e01bc9b9dab466ac85f21fb9ee2bc1c61b258",
+        "version" : "1.8.4"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
       "state" : {
-        "revision" : "635cdbdc47c31154d9409ab4b9d4ed14bedb48f4",
-        "version" : "6.7.1"
+        "revision" : "f6ddbd9b5c59ddd3322c7aedcbce5d30ed19929f",
+        "version" : "6.7.5"
       }
     },
     {
