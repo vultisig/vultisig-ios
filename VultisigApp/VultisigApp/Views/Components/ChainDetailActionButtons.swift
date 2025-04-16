@@ -11,10 +11,12 @@ struct ChainDetailActionButtons: View {
     @ObservedObject var group: GroupedChain
     @ObservedObject var sendTx: SendTransaction
     
-    @State var actions: [CoinAction] = []
+    @Binding var isLoading: Bool
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
     @Binding var isMemoLinkActive: Bool
+    
+    @State var actions: [CoinAction] = []
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -33,6 +35,8 @@ struct ChainDetailActionButtons: View {
                 }
             }
         }
+        .redacted(reason: isLoading ? .placeholder : [])
+        .disabled(isLoading)
         .frame(height: 28)
         .frame(maxWidth: .infinity)
         .onAppear {
@@ -93,6 +97,13 @@ struct ChainDetailActionButtons: View {
 }
 
 #Preview {
-    ChainDetailActionButtons(group: GroupedChain.example, sendTx: SendTransaction(), isSendLinkActive: .constant(false),isSwapLinkActive: .constant(false), isMemoLinkActive: .constant(false))
-        .environmentObject(CoinSelectionViewModel())
+    ChainDetailActionButtons(
+        group: GroupedChain.example,
+        sendTx: SendTransaction(),
+        isLoading: .constant(false),
+        isSendLinkActive: .constant(false),
+        isSwapLinkActive: .constant(false),
+        isMemoLinkActive: .constant(false)
+    )
+    .environmentObject(CoinSelectionViewModel())
 }

@@ -14,10 +14,6 @@ extension ChainDetailView {
             Background()
             main
             
-            if isLoading {
-                Loader()
-            }
-            
             PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
         .safeAreaInset(edge: .bottom) {
