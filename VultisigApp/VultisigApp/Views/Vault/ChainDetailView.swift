@@ -92,11 +92,7 @@ struct ChainDetailView: View {
                 }
             }
             .onAppear {
-                Task {
-                    await updateBalances()
-                    await setData()
-                }
-                resetActive = true
+                setupView()
             }
             .onDisappear {
                 resetActive = false
@@ -180,9 +176,21 @@ struct ChainDetailView: View {
         }
     }
     
+    private func setupView() {
+        Task {
+            await updateBalances()
+            await setData()
+            await MainActor.run {
+                resetActive = true
+            }
+        }
+    }
+    
     private func setData() async {
-        isLoading = false
-        viewModel.setData(for: vault)
+        await MainActor.run {
+            isLoading = false
+            viewModel.setData(for: vault)
+        }
         
         guard resetActive else {
             return
@@ -190,21 +198,23 @@ struct ChainDetailView: View {
     }
 
     private func updateBalances() async {
-        for coin in group.coins {
-            await viewModel.loadData(coin: coin)
+        await withTaskGroup(of: Void.self) { taskGroup in
+            for coin in group.coins {
+                taskGroup.addTask {
+                    await viewModel.loadData(coin: coin)
+                }
+            }
         }
     }
 
-    func refreshAction(){
+    func refreshAction() {
         Task {
             isLoading = true
-
             await updateBalances()
-
-            for coin in group.coins where coin.isNativeToken {
-                await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+            await setData()
+            await MainActor.run {
+                isLoading = false
             }
-            isLoading = false
         }
     }
 }
