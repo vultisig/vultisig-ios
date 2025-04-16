@@ -34,7 +34,8 @@ struct CoinDetailView: View {
             .navigationDestination(isPresented: $isMemoLinkActive) {
                 TransactionMemoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: coin
                 )
             }
             .onAppear {
@@ -43,6 +44,11 @@ struct CoinDetailView: View {
             .onChange(of: isSendLinkActive) { oldValue, newValue in
                 if newValue {
                     sendTx.reset(coin: coin)
+                }
+            }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    sendTx.coin = coin
                 }
             }
     }
