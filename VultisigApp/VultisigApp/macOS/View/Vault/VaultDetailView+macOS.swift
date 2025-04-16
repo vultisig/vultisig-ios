@@ -62,9 +62,7 @@ extension VaultDetailView {
     var list: some View {
         ScrollView {
             VStack(spacing: 4) {
-                if isLoading {
-                    loader
-                } else if viewModel.groups.count >= 1 {
+                if viewModel.groups.count >= 1 {
                     
                     if vault.libType == .GG20 {
                         upgradeVaultBanner

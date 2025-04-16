@@ -67,9 +67,7 @@ extension VaultDetailView {
     
     var list: some View {
         List {
-            if isLoading {
-                loader
-            } else if viewModel.groups.count >= 1 {
+            if viewModel.groups.count >= 1 {
                 
                 if vault.libType == .GG20 {
                     upgradeVaultBanner
