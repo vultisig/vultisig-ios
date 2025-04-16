@@ -60,8 +60,8 @@ enum THORChainHelper {
         if isDeposit {
             
             // This should invoke the wasm contract for RUJI merge
-            //if keysignPayload.toAddress == "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy" {
-            if ((keysignPayload.memo?.lowercased().starts(with: "merge:")) != nil) {
+            if keysignPayload.memo?.lowercased().hasPrefix("merge:") == true {
+                // it's a merge
                 
                 let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
             

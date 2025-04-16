@@ -42,6 +42,8 @@ class Endpoint {
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
     static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
     
+    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
+    
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
     }
