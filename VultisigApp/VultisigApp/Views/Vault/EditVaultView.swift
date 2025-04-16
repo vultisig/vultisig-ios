@@ -17,11 +17,26 @@ struct EditVaultView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var devicesInfo: [DeviceInfo] = []
+    @State var showUpgradeYourVaultSheet = false
+    @State var upgradeYourVaultLinkActive = false
 
     var body: some View {
         exporter
             .onAppear {
                 setData()
+            }
+            .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
+                if vault.isFastVault {
+                    VaultShareBackupsView(vault: vault)
+                } else {
+                    AllDevicesUpgradeView(vault: vault)
+                }
+            })
+            .sheet(isPresented: $showUpgradeYourVaultSheet) {
+                UpgradeYourVaultView(
+                    showSheet: $showUpgradeYourVaultSheet,
+                    navigationLinkActive: $upgradeYourVaultLinkActive
+                )
             }
     }
     
@@ -95,32 +110,6 @@ struct EditVaultView: View {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }
     }
-    
-    var migrateVault: some View {
-        NavigationLink {
-            PeerDiscoveryView(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastSignConfig: nil
-            )
-        } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
-        }
-    }
-    
-    var migrateFastVault: some View {
-        NavigationLink {
-            FastVaultEmailView(
-                tssType: .Migrate,
-                vault: vault,
-                selectedTab: .secure,
-                fastVaultExist: true
-            )
-        } label: {
-            EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
-        }
-    }
 
     var biometrySelectionCell: some View {
         NavigationLink {
@@ -128,6 +117,13 @@ struct EditVaultView: View {
         } label: {
             EditVaultCell(title: "settingsBiometricsTitle", description: "settingsBiometricsSubtitle", icon: "person.badge.key")
         }
+    }
+    
+    var migrateVault: some View {
+        EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+            .onTapGesture {
+                showUpgradeYourVaultSheet = true
+            }
     }
     
     private func setData() {
