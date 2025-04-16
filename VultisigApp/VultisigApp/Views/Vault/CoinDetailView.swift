@@ -61,6 +61,7 @@ struct CoinDetailView: View {
         ChainDetailActionButtons(
             group: group,
             sendTx: sendTx,
+            isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive
