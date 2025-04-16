@@ -13,10 +13,6 @@ extension CoinDetailView {
         ZStack {
             Background()
             main
-            
-            if isLoading {
-                loader
-            }
         }
     }
     
