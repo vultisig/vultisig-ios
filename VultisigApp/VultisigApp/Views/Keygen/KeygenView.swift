@@ -64,6 +64,21 @@ struct KeygenView: View {
             }
     }
     
+    var container: some View {
+        ZStack {
+            fields
+                .opacity(tssType == .Migrate ? 0 : 1)
+            
+            if tssType == .Migrate {
+                migrateView
+            }
+        }
+    }
+    
+    var migrateView: some View {
+        UpgradingVaultView()
+    }
+    
     var fields: some View {
         VStack(spacing: 12) {
             Spacer()

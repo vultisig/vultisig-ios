@@ -440,6 +440,7 @@
 		A6A8163C2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */; };
 		A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */; };
 		A6A816402CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163F2CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift */; };
+		A6A96C942DB0B12D00864353 /* UpgradingVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A96C932DB0B12D00864353 /* UpgradingVaultView.swift */; };
 		A6ACAD5B2D0A613A00432CC4 /* CoinPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACAD5A2D0A613A00432CC4 /* CoinPickerCell.swift */; };
 		A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACAD5E2D1109EF00432CC4 /* SettingsAdvancedView.swift */; };
 		A6ACAD612D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACAD602D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift */; };
@@ -1314,6 +1315,7 @@
 		A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+iOS.swift"; sourceTree = "<group>"; };
 		A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileQRCodeImporterMac+iOS.swift"; sourceTree = "<group>"; };
 		A6A8163F2CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileQRCodeImporterMac+macOS.swift"; sourceTree = "<group>"; };
+		A6A96C932DB0B12D00864353 /* UpgradingVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradingVaultView.swift; sourceTree = "<group>"; };
 		A6ACAD5A2D0A613A00432CC4 /* CoinPickerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerCell.swift; sourceTree = "<group>"; };
 		A6ACAD5E2D1109EF00432CC4 /* SettingsAdvancedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAdvancedView.swift; sourceTree = "<group>"; };
 		A6ACAD602D110A0A00432CC4 /* SettingsAdvancedView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsAdvancedView+macOS.swift"; sourceTree = "<group>"; };
@@ -2008,6 +2010,7 @@
 				A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
+				A6A96C932DB0B12D00864353 /* UpgradingVaultView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -3977,6 +3980,7 @@
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
 				A622C84A2C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift in Sources */,
+				A6A96C942DB0B12D00864353 /* UpgradingVaultView.swift in Sources */,
 				A672643F2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift in Sources */,
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
 				A6C670FF2CA2762D00F59B6A /* SettingsDefaultChainView+macOS.swift in Sources */,

@@ -12,7 +12,7 @@ extension KeygenView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var content: some View {
-        fields
+        container
             .navigationTitle(NSLocalizedString("creatingVault", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .task {

@@ -10,7 +10,7 @@ import SwiftUI
 
 extension KeygenView {
     var content: some View {
-        fields
+        container
             .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
             .task {
                 await setData()
