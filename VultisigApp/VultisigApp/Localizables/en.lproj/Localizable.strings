@@ -638,3 +638,6 @@
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact bridge amount";
 "swapTXHash" = "Bridge Tx Hash";
 "upgradingVault" = "Upgrading vault";
+"vaultUpgraded" = "Vault upgraded";
+"succesfully" = "succesfully";
+"goToWallet" = "Go to wallet";

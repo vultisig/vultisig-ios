@@ -51,7 +51,11 @@ struct KeygenView: View {
                         viewModel: viewModel
                     )
                 } else {
-                    SecureBackupVaultOverview(vault: vault)
+                    if tssType == .Migrate {
+                        BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
+                    } else {
+                        SecureBackupVaultOverview(vault: vault)
+                    }
                 }
             }
             .onAppear {
@@ -77,27 +81,6 @@ struct KeygenView: View {
     
     var migrateView: some View {
         UpgradingVaultView()
-    }
-    
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            Spacer()
-            
-            if progressCounter < 4 {
-                if viewModel.status == .KeygenFailed {
-                    retryButton
-                } else {
-                    progressContainer
-                }
-            }
-        }
     }
     
     var states: some View {

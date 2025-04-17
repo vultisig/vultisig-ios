@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BackupPasswordSetupView: View {
+    let tssType: TssType
     let vault: Vault
     var isNewVault = false
     var showSkipPasswordButton = true
@@ -152,5 +153,5 @@ struct BackupPasswordSetupView: View {
 }
 
 #Preview {
-    BackupPasswordSetupView(vault: Vault.example)
+    BackupPasswordSetupView(tssType: .Keygen, vault: Vault.example)
 }
