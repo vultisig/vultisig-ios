@@ -26,6 +26,6 @@
  }
  */
 
-struct ThorchainNetworkInfo: Decodable {
+struct ThorchainNetworkInfo: Codable {
     let native_tx_fee_rune: String
 }

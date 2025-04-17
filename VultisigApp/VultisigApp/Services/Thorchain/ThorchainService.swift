@@ -177,7 +177,6 @@ class ThorchainService: ThorchainSwapProvider {
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             let inboundAddresses = try JSONDecoder().decode([InboundAddress].self, from: data)
             self.cacheInboundAddresses[cacheKey] = (data: inboundAddresses, timestamp: Date())
-            print("fetch inbound address: \(inboundAddresses)")
             return inboundAddresses
         } catch {
             print("JSON decoding error: \(error.localizedDescription)")

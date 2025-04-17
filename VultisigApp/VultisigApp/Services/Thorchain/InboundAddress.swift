@@ -23,7 +23,7 @@
  },
  */
 
-struct InboundAddress: Decodable {
+struct InboundAddress: Codable {
     let chain: String
     let address: String
     let halted: Bool
