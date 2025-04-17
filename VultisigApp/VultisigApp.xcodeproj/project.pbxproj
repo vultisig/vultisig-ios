@@ -827,6 +827,9 @@
 		DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */; };
 		DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */; };
 		DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */; };
+		DEA1C7002DB0CC8F00424466 /* InboundAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */; };
+		DEA1C7022DB0CD9900424466 /* TokenMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */; };
+		DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
@@ -1700,6 +1703,9 @@
 		DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignViewModel.swift; sourceTree = "<group>"; };
 		DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinExtension.swift; sourceTree = "<group>"; };
 		DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewModel.swift; sourceTree = "<group>"; };
+		DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboundAddress.swift; sourceTree = "<group>"; };
+		DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenMetadata.swift; sourceTree = "<group>"; };
+		DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
@@ -1926,6 +1932,9 @@
 		469ED3952B98E782008D4951 /* Thorchain */ = {
 			isa = PBXGroup;
 			children = (
+				DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */,
+				DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */,
+				DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */,
 				469ED3932B98E776008D4951 /* ThorchainService.swift */,
 				A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */,
 				A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */,
@@ -3789,6 +3798,7 @@
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				A6182F332C922CCC0059BFDD /* ChainHeaderCell+iOS.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
+				DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */,
 				A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */,
 				A51AE8C42C9589E000EF9A7A /* FastVaultEnterPasswordView+iOS.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
@@ -4190,6 +4200,7 @@
 				A6182F592C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift in Sources */,
 				A6ECA1902C93F7EF00456110 /* ProgressBar+iOS.swift in Sources */,
 				A6386DAE2C9025B000DDD58E /* ChainNavigationCell+iOS.swift in Sources */,
+				DEA1C7002DB0CC8F00424466 /* InboundAddress.swift in Sources */,
 				A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */,
 				A698222C2CB398E700966D19 /* FolderCell.swift in Sources */,
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
@@ -4327,6 +4338,7 @@
 				A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */,
 				A6C670ED2CA26F5C00F59B6A /* SettingsView+iOS.swift in Sources */,
 				A6BFE1C92D95F538000B73C0 /* SwapCoinCell.swift in Sources */,
+				DEA1C7022DB0CD9900424466 /* TokenMetadata.swift in Sources */,
 				A6C671052CA2792800F59B6A /* OnboardingView1+iOS.swift in Sources */,
 				A6182F532C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,

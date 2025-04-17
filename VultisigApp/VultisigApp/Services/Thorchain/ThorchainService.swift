@@ -11,8 +11,8 @@ class ThorchainService: ThorchainSwapProvider {
     var network: String = ""
     static let shared = ThorchainService()
     
-    private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
-    private var cacheInboundAddresses: [String: (data: [[String: Any]], timestamp: Date)] = [:]
+    private var cacheFeePrice: [String: (data: ThorchainNetworkInfo, timestamp: Date)] = [:]
+    private var cacheInboundAddresses: [String: (data: [InboundAddress], timestamp: Date)] = [:]
     
     private init() {}
     
@@ -21,21 +21,16 @@ class ThorchainService: ThorchainSwapProvider {
             return [CosmosBalance]()
         }
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        
         return balanceResponse.balances
     }
     
     func fetchTokens(_ address: String) async throws -> [CoinMeta] {
         do {
             let balances: [CosmosBalance] =  try await fetchBalances(address)
-            
             var coinMetaList = [CoinMeta]()
             for balance in balances {
-                
                 let info = getTokenMetadata(for: balance.denom)
-                
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
                     ticker: info.symbol,
@@ -46,9 +41,7 @@ class ThorchainService: ThorchainSwapProvider {
                     isNativeToken: false
                 )
                 coinMetaList.append(coinMeta)
-                
             }
-            
             return coinMetaList
         } catch {
             print("Error in fetchTokens: \(error)")
@@ -56,21 +49,13 @@ class ThorchainService: ThorchainSwapProvider {
         }
     }
     
-    struct TokenMetadata {
-        let chain: String
-        let ticker: String
-        let symbol: String
-        let decimals: Int
-        let logo: String
-    }
-
     func getTokenMetadata(for denom: String) -> TokenMetadata {
         let decimals = 8
         var chain = ""
         var symbol = ""
         var ticker = ""
         var logo = ""
-
+        
         if denom.contains(".") {
             // Switch asset: thor.fuzn
             let parts = denom.split(separator: ".")
@@ -92,9 +77,9 @@ class ThorchainService: ThorchainSwapProvider {
             symbol = denom.uppercased()
             ticker = denom.lowercased()
         }
-
+        
         logo = ticker // It will use whatever is in our asset list
-
+        
         return TokenMetadata(chain: chain, ticker: ticker, symbol: symbol, decimals: decimals, logo: logo)
     }
     
@@ -135,7 +120,12 @@ class ThorchainService: ThorchainSwapProvider {
         return req
     }
     
-    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: Int, isAffiliate: Bool) async throws -> ThorchainSwapQuote {
+    func fetchSwapQuotes(address: String,
+                         fromAsset: String,
+                         toAsset: String,
+                         amount: String,
+                         interval: Int,
+                         isAffiliate: Bool) async throws -> ThorchainSwapQuote {
         
         let url = Endpoint.fetchSwapQuoteThorchain(
             chain: .thorchain,
@@ -157,32 +147,25 @@ class ThorchainService: ThorchainSwapProvider {
             throw error
         }
     }
-
+    
     func fetchFeePrice() async throws -> UInt64 {
         let cacheKey = "thorchain-fee-price"
-        if let cachedData: UInt64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
-            return cachedData
+        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
+            return UInt64(cachedData.native_tx_fee_rune) ?? 0
         }
         
         let urlString = Endpoint.fetchThorchainNetworkInfoNineRealms
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        
-        if let result = Utils.extractResultFromJson(fromData: data, path: "native_tx_fee_rune") as? String,
-           let resultNumber = UInt64(result) {
-            self.cacheFeePrice[cacheKey] = (data: resultNumber, timestamp: Date())
-            return resultNumber
-        } else {
-            print("JSON decoding error")
-        }
-        
-        return .zero
+        let thorchainNetworkInfo = try JSONDecoder().decode(ThorchainNetworkInfo.self, from: data)
+        self.cacheFeePrice[cacheKey] = (data: thorchainNetworkInfo, timestamp: Date())
+        return UInt64(thorchainNetworkInfo.native_tx_fee_rune) ?? 0
     }
     
-    func fetchThorchainInboundAddress() async -> [[String: Any]] {
+    func fetchThorchainInboundAddress() async -> [InboundAddress] {
         do {
             let cacheKey = "thorchain-inbound-address"
             
-            if let cachedData: [[String: Any]] = await Utils.getCachedData(
+            if let cachedData = await Utils.getCachedData(
                 cacheKey: cacheKey,
                 cache: cacheInboundAddresses,
                 timeInSeconds: 60 * 5
@@ -192,14 +175,9 @@ class ThorchainService: ThorchainSwapProvider {
             
             let urlString = Endpoint.fetchThorchainInboundAddressesNineRealms
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            
-            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
-                self.cacheInboundAddresses[cacheKey] = (data: json, timestamp: Date())
-                return json
-            } else {
-                print("Failed to cast JSON to [[String: Any]]")
-                return []
-            }
+            let inboundAddresses = try JSONDecoder().decode([InboundAddress].self, from: data)
+            self.cacheInboundAddresses[cacheKey] = (data: inboundAddresses, timestamp: Date())
+            return inboundAddresses
         } catch {
             print("JSON decoding error: \(error.localizedDescription)")
             return []
