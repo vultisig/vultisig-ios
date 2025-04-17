@@ -92,9 +92,9 @@ struct FastBackupVaultOverview: View {
     }
     
     var migrateText: some View {
-        Group {
+        VStack(spacing: 2) {
             Text(NSLocalizedString("FastMigrateOverviewText1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(.neutral0)
             Text(NSLocalizedString("FastMigrateOverviewText2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }

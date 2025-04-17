@@ -592,3 +592,10 @@
 "swapVerifyCheckbox2Description" = "Slažem se s minimalnim iznosom koji ću primiti";
 "swapVerifyCheckbox3Description" = "Slažem se s dodjelom ERC20 dozvole za točan iznos bridge-a";
 "swapTXHash" = "Hash bridge transakcije";
+"upgradingVault" = "Nadograđivanje trezora";
+"vaultUpgraded" = "Trezor nadograđen";
+"succesfully" = "uspješno";
+"goToWallet" = "Idi na novčanik";
+"migratePasswordDescription" = "Unesite svoju lozinku za otključavanje server dijela i pokretanje nadogradnje";
+"FastMigrateOverviewText1" = "Poslali smo vam novi server dio!";
+"FastMigrateOverviewText2" = "Provjerite svoj e-mail za potvrdu";

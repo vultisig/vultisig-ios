@@ -593,3 +593,10 @@
 "swapVerifyCheckbox2Description" = "Concordo com o valor mínimo que receberei";
 "swapVerifyCheckbox3Description" = "Concordo em fornecer autorização ERC20 para o valor exato do bridge";
 "swapTXHash" = "Hash da transação de bridge";
+"upgradingVault" = "Atualizando cofre";
+"vaultUpgraded" = "Cofre atualizado";
+"succesfully" = "com sucesso";
+"goToWallet" = "Ir para a carteira";
+"migratePasswordDescription" = "Digite sua senha para desbloquear sua Parte do Servidor e iniciar a atualização";
+"FastMigrateOverviewText1" = "Enviamos sua nova parte do servidor!";
+"FastMigrateOverviewText2" = "Verifique seu e-mail para confirmar";

@@ -609,3 +609,10 @@
 "swapVerifyCheckbox2Description" = "Ich stimme dem Mindestbetrag zu, den ich erhalte";
 "swapVerifyCheckbox3Description" = "Ich stimme zu, eine ERC20-Freigabe für den genauen Bridge-Betrag zu erteilen";
 "swapTXHash" = "Bridge-Transaktions-Hash";
+"upgradingVault" = "Vault wird aktualisiert";
+"vaultUpgraded" = "Vault aktualisiert";
+"succesfully" = "erfolgreich";
+"goToWallet" = "Zur Wallet";
+"migratePasswordDescription" = "Gib dein Passwort ein, um deinen Serveranteil zu entsperren und das Upgrade zu starten";
+"FastMigrateOverviewText1" = "Wir haben dir deinen neuen Serveranteil gesendet!";
+"FastMigrateOverviewText2" = "Überprüfe deine E-Mail zur Bestätigung";
