@@ -594,7 +594,7 @@
 "swapTXHash" = "Hash de transacción de bridge";
 "upgradingVault" = "Actualizando bóveda";
 "vaultUpgraded" = "Bóveda actualizada";
-"succesfully" = "exitosamente";
+"successfully" = "exitosamente";
 "goToWallet" = "Ir a la billetera";
 "migratePasswordDescription" = "Introduce tu contraseña para desbloquear tu Parte del Servidor y comenzar la actualización";
 "FastMigrateOverviewText1" = "¡Te hemos enviado tu nueva parte del servidor!";

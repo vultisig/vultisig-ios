@@ -81,7 +81,7 @@ struct BackupVaultSuccessView: View {
             Text(NSLocalizedString("vaultUpgraded", comment: ""))
                 .foregroundColor(.neutral0)
             
-            Text(NSLocalizedString("succesfully", comment: ""))
+            Text(NSLocalizedString("successfully", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
         .font(.body34BrockmannMedium)

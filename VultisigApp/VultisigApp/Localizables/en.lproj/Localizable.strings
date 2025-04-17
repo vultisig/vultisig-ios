@@ -639,7 +639,7 @@
 "swapTXHash" = "Bridge Tx Hash";
 "upgradingVault" = "Upgrading vault";
 "vaultUpgraded" = "Vault upgraded";
-"succesfully" = "succesfully";
+"successfully" = "successfully";
 "goToWallet" = "Go to wallet";
 "migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";
 "FastMigrateOverviewText1" = "We’ve sent you your new server share!";

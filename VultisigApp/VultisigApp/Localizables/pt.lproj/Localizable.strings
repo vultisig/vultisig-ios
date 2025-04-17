@@ -595,7 +595,7 @@
 "swapTXHash" = "Hash da transação de bridge";
 "upgradingVault" = "Atualizando cofre";
 "vaultUpgraded" = "Cofre atualizado";
-"succesfully" = "com sucesso";
+"successfully" = "com sucesso";
 "goToWallet" = "Ir para a carteira";
 "migratePasswordDescription" = "Digite sua senha para desbloquear sua Parte do Servidor e iniciar a atualização";
 "FastMigrateOverviewText1" = "Enviamos sua nova parte do servidor!";

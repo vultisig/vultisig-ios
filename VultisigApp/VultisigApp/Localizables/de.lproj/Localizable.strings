@@ -611,7 +611,7 @@
 "swapTXHash" = "Bridge-Transaktions-Hash";
 "upgradingVault" = "Vault wird aktualisiert";
 "vaultUpgraded" = "Vault aktualisiert";
-"succesfully" = "erfolgreich";
+"successfully" = "erfolgreich";
 "goToWallet" = "Zur Wallet";
 "migratePasswordDescription" = "Gib dein Passwort ein, um deinen Serveranteil zu entsperren und das Upgrade zu starten";
 "FastMigrateOverviewText1" = "Wir haben dir deinen neuen Serveranteil gesendet!";

@@ -594,7 +594,7 @@
 "swapTXHash" = "Hash transazione bridge";
 "upgradingVault" = "Aggiornamento del vault";
 "vaultUpgraded" = "Vault aggiornato";
-"succesfully" = "con successo";
+"successfully" = "con successo";
 "goToWallet" = "Vai al wallet";
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
 "FastMigrateOverviewText1" = "Ti abbiamo inviato la nuova quota del server!";
