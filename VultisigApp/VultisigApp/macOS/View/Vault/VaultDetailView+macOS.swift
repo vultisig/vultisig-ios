@@ -13,7 +13,7 @@ extension VaultDetailView {
         list
             .opacity(showVaultsList ? 0 : 1)
             .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"))
+                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: vault)
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
                 if let vault = homeViewModel.selectedVault {
