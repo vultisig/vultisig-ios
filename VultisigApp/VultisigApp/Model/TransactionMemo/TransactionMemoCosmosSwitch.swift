@@ -75,18 +75,16 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
         
         Task { @MainActor in
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-            
-            if let match = addresses.first(where: { ($0["chain"] as? String)?.uppercased() == "GAIA" }) {
-                let halted = match["halted"] as? Bool ?? false
-                let globalPaused = match["global_trading_paused"] as? Bool ?? false
-                let chainPaused = match["chain_trading_paused"] as? Bool ?? false
+            if let match = addresses.first(where: { $0.chain.uppercased() == "GAIA" }) {
+                let halted = match.halted
+                let globalPaused = match.global_trading_paused
+                let chainPaused = match.chain_trading_paused
                 
                 if halted || globalPaused || chainPaused {
                     print("Chain is halted or paused. Cannot proceed with switch.")
                     return
                 }
-                
-                self.destinationAddress = match["address"] as? String ?? ""
+                self.destinationAddress = match.address
                 self.destinationAddressValid = true
                 
             }
