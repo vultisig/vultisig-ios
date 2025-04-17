@@ -15,6 +15,16 @@ struct UpgradingVaultView: View {
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     var body: some View {
+        ZStack {
+            shadow
+            content
+        }
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var content: some View {
         VStack(spacing: 26) {
             Spacer()
             animation
@@ -22,9 +32,14 @@ struct UpgradingVaultView: View {
             Spacer()
             appVersion
         }
-        .onAppear {
-            setData()
-        }
+    }
+    
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.05)
+            .blur(radius: 20)
     }
     
     var animation: some View {

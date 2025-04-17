@@ -86,6 +86,7 @@ struct BackupVaultSuccessView: View {
         }
         .font(.body34BrockmannMedium)
         .padding(.horizontal, 32)
+        .padding(.bottom, 32)
         .multilineTextAlignment(.center)
     }
     

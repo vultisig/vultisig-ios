@@ -46,6 +46,7 @@ struct KeygenView: View {
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
+                        tssType: tssType,
                         vault: vault,
                         email: fastSignConfig.email,
                         viewModel: viewModel

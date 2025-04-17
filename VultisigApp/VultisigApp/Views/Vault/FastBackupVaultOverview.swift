@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct FastBackupVaultOverview: View {
+    let tssType: TssType
     let vault: Vault
     let email: String
     @ObservedObject var viewModel: KeygenViewModel
@@ -31,19 +32,21 @@ struct FastBackupVaultOverview: View {
         }
         .sheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
+                tssType: tssType,
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
+                isBackupLinkActive: $isBackupLinkActive,
                 tabIndex: $tabIndex,
                 goBackToEmailSetup: $goBackToEmailSetup
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(tssType: .Keygen, vault: vault, isNewVault: true)
+            BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
         }
         .navigationDestination(isPresented: $goBackToEmailSetup, destination: { 
             FastVaultEmailView(
-                tssType: .Keygen,
+                tssType: tssType,
                 vault: vault,
                 selectedTab: .fast,
                 backButtonHidden: true,
@@ -57,10 +60,16 @@ struct FastBackupVaultOverview: View {
     
     var content: some View {
         VStack(spacing: 0) {
-            header
-            progressBar
-            Spacer()
-            textTabView
+            if tssType == .Migrate {
+                Spacer()
+                migrateText
+            } else {
+                header
+                progressBar
+                Spacer()
+                textTabView
+            }
+            
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
@@ -80,6 +89,19 @@ struct FastBackupVaultOverview: View {
         Text(NSLocalizedString(getTitle(), comment: ""))
             .foregroundColor(.neutral0)
             .font(.body18BrockmannMedium)
+    }
+    
+    var migrateText: some View {
+        Group {
+            Text(NSLocalizedString("FastMigrateOverviewText1", comment: ""))
+                .foregroundColor(.neutral0) +
+            Text(NSLocalizedString("FastMigrateOverviewText2", comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient)
+        }
+        .font(.body28BrockmannMedium)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 36)
+        .padding(.bottom, 24)
     }
     
     var progressBar: some View {
@@ -114,6 +136,11 @@ struct FastBackupVaultOverview: View {
     }
     
     private func nextTapped() {
+        guard tssType != .Migrate else {
+            isVerificationLinkActive = true
+            return
+        }
+        
         if tabIndex == 2 {
             isVerificationLinkActive = true
             return
@@ -149,6 +176,7 @@ struct FastBackupVaultOverview: View {
 
 #Preview {
     FastBackupVaultOverview(
+        tssType: .Keygen,
         vault: Vault.example,
         email: "mail@email.com",
         viewModel: KeygenViewModel()
