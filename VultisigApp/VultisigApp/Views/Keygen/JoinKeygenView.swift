@@ -11,6 +11,7 @@ import RiveRuntime
 
 struct JoinKeygenView: View {
     let vault: Vault
+    let selectedVault: Vault?
     
     @Query var vaults: [Vault]
     
@@ -246,12 +247,17 @@ struct JoinKeygenView: View {
             .padding(1)
     }
     
+    var vaultsMismatchedError: some View {
+        SendCryptoVaultErrorView()
+    }
+    
     private func setData() {
         appViewModel.checkCameraPermission()
         loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
         
         viewModel.setData(
             vault: vault,
+            selectedVault: selectedVault,
             serviceDelegate: self.serviceDelegate,
             vaults: vaults,
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
@@ -279,7 +285,7 @@ struct JoinKeygenView: View {
 }
 
 #Preview {
-    JoinKeygenView(vault: Vault.example)
+    JoinKeygenView(vault: Vault.example, selectedVault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
 }
