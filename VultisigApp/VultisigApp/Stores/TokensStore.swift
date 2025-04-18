@@ -34,7 +34,7 @@ class TokensStore {
         }
         
         static var mayaChainMaya: CoinMeta {
-            CoinMeta(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", decimals: 4, priceProviderId: "maya", contractAddress: "", isNativeToken: false)
+            CoinMeta(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", decimals: 4, priceProviderId: "", contractAddress: "", isNativeToken: false)
         }
         
         static var solana: CoinMeta {
