@@ -49,7 +49,7 @@ extension ReshareView {
             OutlineButton(title: "joinReshare")
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: vault)
+            JoinKeygenView(vault: vault, selectedVault: nil)
         }
         .padding(.bottom, 16)
     }

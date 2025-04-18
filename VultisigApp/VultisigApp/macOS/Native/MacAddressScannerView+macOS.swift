@@ -14,6 +14,7 @@ struct MacAddressScannerView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @Binding var showCameraScanView: Bool
+    let selectedVault: Vault?
     
     @State var showImportOptions: Bool = false
     
@@ -46,7 +47,7 @@ struct MacAddressScannerView: View {
     }
     
     var importOption: some View {
-        GeneralQRImportMacView(type: .Unknown, sendTx: tx)
+        GeneralQRImportMacView(type: .Unknown, sendTx: tx, selectedVault: selectedVault)
     }
     
     var headerMac: some View {
@@ -169,7 +170,8 @@ struct MacAddressScannerView: View {
     MacAddressScannerView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
-        showCameraScanView: .constant(true)
+        showCameraScanView: .constant(true),
+        selectedVault: Vault.example
     )
 }
 #endif

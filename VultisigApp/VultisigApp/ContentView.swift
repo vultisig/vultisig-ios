@@ -73,7 +73,7 @@ struct ContentView: View {
     }
     
     var createVaultView: some View {
-        CreateVaultView(showBackButton: false)
+        CreateVaultView(selectedVault: nil, showBackButton: false)
     }
     
     private func setData() {

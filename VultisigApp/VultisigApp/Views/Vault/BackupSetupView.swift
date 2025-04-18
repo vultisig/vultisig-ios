@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct BackupSetupView: View {
+    let tssType: TssType
     let vault: Vault
     var isNewVault = false
 
@@ -24,7 +25,7 @@ struct BackupSetupView: View {
     var body: some View {
         mainContent
             .navigationDestination(isPresented: $navigationLinkActive) {
-                PasswordBackupOptionsView(vault: vault, isNewVault: isNewVault)
+                PasswordBackupOptionsView(tssType: tssType, vault: vault, isNewVault: isNewVault)
             }
             .onAppear {
                 animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
@@ -75,5 +76,5 @@ struct BackupSetupView: View {
 }
 
 #Preview {
-    BackupPasswordSetupView(vault: Vault.example)
+    BackupPasswordSetupView(tssType: .Keygen, vault: Vault.example)
 }

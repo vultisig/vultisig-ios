@@ -592,3 +592,10 @@
 "swapVerifyCheckbox2Description" = "Accetto l'importo minimo che riceverò";
 "swapVerifyCheckbox3Description" = "Accetto di fornire l'autorizzazione ERC20 per l'importo esatto del bridge";
 "swapTXHash" = "Hash transazione bridge";
+"upgradingVault" = "Aggiornamento del vault";
+"vaultUpgraded" = "Vault aggiornato";
+"successfully" = "con successo";
+"goToWallet" = "Vai al wallet";
+"migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
+"FastMigrateOverviewText1" = "Ti abbiamo inviato la nuova quota del server!";
+"FastMigrateOverviewText2" = "Controlla la tua e-mail per verificare";

@@ -46,12 +46,17 @@ struct KeygenView: View {
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
+                        tssType: tssType,
                         vault: vault,
                         email: fastSignConfig.email,
                         viewModel: viewModel
                     )
                 } else {
-                    SecureBackupVaultOverview(vault: vault)
+                    if tssType == .Migrate {
+                        BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
+                    } else {
+                        SecureBackupVaultOverview(vault: vault)
+                    }
                 }
             }
             .onAppear {
@@ -64,25 +69,19 @@ struct KeygenView: View {
             }
     }
     
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            Spacer()
+    var container: some View {
+        ZStack {
+            fields
+                .opacity(tssType == .Migrate ? 0 : 1)
             
-            if progressCounter < 4 {
-                if viewModel.status == .KeygenFailed {
-                    retryButton
-                } else {
-                    progressContainer
-                }
+            if tssType == .Migrate {
+                migrateView
             }
         }
+    }
+    
+    var migrateView: some View {
+        UpgradingVaultView()
     }
     
     var states: some View {

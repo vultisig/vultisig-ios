@@ -12,7 +12,7 @@ extension CreateVaultView {
     var main: some View {
         view
             .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: createVault())
+                JoinKeygenView(vault: createVault(), selectedVault: selectedVault)
             }
             .sheet(isPresented: $showSheet, content: {
                 GeneralCodeScannerView(
@@ -46,7 +46,7 @@ extension CreateVaultView {
     
     var scanMacButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
+            GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
         } label: {
             scanQRButton
         }

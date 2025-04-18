@@ -25,9 +25,6 @@ extension FastVaultSetPasswordView {
             headerMac
             view
         }
-        .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetHintView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
-        }
     }
 
     var headerMac: some View {

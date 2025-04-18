@@ -18,7 +18,7 @@ extension CreateVaultView {
     
     var scanButton: some View {
         NavigationLink {
-            MacScannerView(vault: createVault(), type: .NewVault, sendTx: SendTransaction())
+            MacScannerView(vault: createVault(), type: .NewVault, sendTx: SendTransaction(), selectedVault: selectedVault)
         } label: {
             scanQRButton
         }

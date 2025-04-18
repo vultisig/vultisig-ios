@@ -191,6 +191,7 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
             return
         }
+        
         switch self.tssType {
         case .Keygen:
             showInfoSheet = true
@@ -199,7 +200,6 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             showInfoSheet = false
         }
-        
     }
 }
 
