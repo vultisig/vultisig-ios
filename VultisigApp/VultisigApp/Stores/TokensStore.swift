@@ -612,7 +612,11 @@ class TokensStore {
         }
         
         static var gaiaChainNami: CoinMeta {
-            CoinMeta(chain: Chain.kujira, ticker: "NAMI", logo: "nami", decimals: 6, priceProviderId: "nami-protocol", contractAddress: "ibc/4622E82B845FFC6AA8B45C1EB2F507133A9E876A5FEA1BA64585D5F564405453", isNativeToken: false)
+            CoinMeta(chain: Chain.gaiaChain, ticker: "NAMI", logo: "nami", decimals: 6, priceProviderId: "nami-protocol", contractAddress: "ibc/4622E82B845FFC6AA8B45C1EB2F507133A9E876A5FEA1BA64585D5F564405453", isNativeToken: false)
+        }
+        
+        static var gaiaChainFUZN: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "FUZN", logo: "fuzn", decimals: 6, priceProviderId: "fuzion", contractAddress: "ibc/6BBBB4B63C51648E9B8567F34505A9D5D8BAAC4C31D768971998BE8C18431C26", isNativeToken: false)
         }
         
         static var osmosis: CoinMeta {
@@ -707,6 +711,10 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/B64A07C006C0F5E260A8AD50BD53568F1FD4A0D75B7A9F8765C81BEAFDA62053", isNativeToken: false)
         }
         
+        static var kujiraFUZN: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "FUZN", logo: "fuzn", decimals: 6, priceProviderId: "fuzion", contractAddress: "factory/kujira1sc6a0347cc5q3k890jj0pf3ylx2s38rh4sza4t/ufuzn", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
@@ -774,6 +782,7 @@ class TokensStore {
         TokensStore.Token.gaiaChainUSK,
         TokensStore.Token.gaiaChainNSTK,
         TokensStore.Token.gaiaChainNami,
+        TokensStore.Token.gaiaChainFUZN,
         
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
@@ -786,6 +795,7 @@ class TokensStore {
         TokensStore.Token.kujiraNami,
         TokensStore.Token.kujiraRKuji,
         TokensStore.Token.kujiraLVN,
+        TokensStore.Token.kujiraFUZN,
         
         TokensStore.Token.dydx,
         

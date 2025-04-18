@@ -63,8 +63,17 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
             return [.vote]
         case .ton:
             return [.stake, .unstake]
-        case .gaiaChain, .kujira, .osmosis, .noble, .akash:
+        case .gaiaChain:
             return [.cosmosIBC, .theSwitch]
+        case .kujira:
+            return [.cosmosIBC]
+        case .osmosis:
+            return [.cosmosIBC]
+        case .noble:
+            return [.cosmosIBC]
+        case .akash:
+            return [.cosmosIBC]
+            
         default:
             return []
         }
