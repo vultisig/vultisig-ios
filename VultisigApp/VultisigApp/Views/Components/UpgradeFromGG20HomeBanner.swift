@@ -32,7 +32,7 @@ struct UpgradeFromGG20HomeBanner: View {
     }
     
     var icon: some View {
-        Image(systemName: "arrow.up.circle.dotted")
+        Image(systemName: "arrow.up.circle")
             .font(.body20MontserratMedium)
     }
     

@@ -75,7 +75,7 @@ struct BackupVaultNowView: View {
     
     var backupButton: some View {
         NavigationLink {
-            BackupSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(tssType: .Keygen, vault: vault, isNewVault: true)
         } label: {
             FilledButton(title: "Backup")
         }

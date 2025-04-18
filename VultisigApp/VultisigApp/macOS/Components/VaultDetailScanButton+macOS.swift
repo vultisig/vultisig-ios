@@ -11,7 +11,7 @@ import SwiftUI
 extension VaultDetailScanButton {
     var content: some View {
         NavigationLink {
-            MacScannerView(vault: vault, type: .SignTransaction, sendTx: sendTx)
+            MacScannerView(vault: vault, type: .SignTransaction, sendTx: sendTx, selectedVault: vault)
         } label: {
             label
         }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CreateVaultView: View {
+    let selectedVault: Vault?
     var showBackButton = false
     
     @State var showNewVaultButton = false
@@ -135,5 +136,5 @@ struct CreateVaultView: View {
 }
 
 #Preview {
-    CreateVaultView()
+    CreateVaultView(selectedVault: Vault.example)
 }

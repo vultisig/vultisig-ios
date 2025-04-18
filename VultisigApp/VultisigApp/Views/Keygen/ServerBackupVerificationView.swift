@@ -10,10 +10,12 @@ import SwiftData
 import RiveRuntime
 
 struct ServerBackupVerificationView: View {
+    let tssType: TssType
     let vault: Vault
     let email: String
 
     @Binding var isPresented: Bool
+    @Binding var isBackupLinkActive: Bool
     @Binding var tabIndex: Int
     @Binding var goBackToEmailSetup: Bool
 
@@ -195,6 +197,10 @@ struct ServerBackupVerificationView: View {
             if isSuccess {
                 tabIndex += 1
                 isPresented = false
+                
+                if tssType == .Migrate {
+                    isBackupLinkActive = true
+                }
             } else {
                 showAlert = true
             }
@@ -220,9 +226,11 @@ struct ServerBackupVerificationView: View {
 
 #Preview {
     ServerBackupVerificationView(
+        tssType: .Keygen,
         vault: Vault.example,
         email: "mail@email.com",
         isPresented: .constant(false),
+        isBackupLinkActive: .constant(false),
         tabIndex: .constant(2),
         goBackToEmailSetup: .constant(false)
     )

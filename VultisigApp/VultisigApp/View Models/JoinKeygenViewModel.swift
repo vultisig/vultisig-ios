@@ -32,6 +32,8 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var sessionID: String? = nil
     @Published var hexChainCode: String = ""
     @Published var isCameraPermissionGranted: Bool? = nil
+    @Published var selectedVault: Vault? = nil
+    @Published var areVaultsMismatched: Bool = false
     
     @Published var netService: NetService? = nil
     @Published var status = JoinKeygenStatus.DiscoverSessionID
@@ -42,6 +44,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
+    
     var encryptionKeyHex: String = ""
     var vaults: [Vault] = []
     
@@ -49,8 +52,9 @@ class JoinKeygenViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
+    func setData(vault: Vault, selectedVault: Vault?,serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
         self.vault = vault
+        self.selectedVault = selectedVault
         self.vaults = vaults
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
@@ -191,6 +195,12 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
+                
+                guard let selectedVaultKey = selectedVault?.pubKeyECDSA, selectedVaultKey == reshareMsg.pubKeyECDSA else {
+                    areVaultsMismatched = true
+                    return
+                }
+                
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
                     if !reshareMsg.pubKeyECDSA.isEmpty {
