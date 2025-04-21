@@ -6,11 +6,7 @@
 	<dict>
 		<key>.DS_Store</key>
 		<data>
-		bJ8ThpF55D7AUHGUpU9vERAO3yM=
-		</data>
-		<key>ios-arm64/goschnorr.framework/.DS_Store</key>
-		<data>
-		t2TEmJBb6UQe93ATlzz9KhR9+AU=
+		Y3C6xDVg2jRNGcISfGC4ri8kQD0=
 		</data>
 		<key>ios-arm64/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
@@ -26,7 +22,7 @@
 		</data>
 		<key>ios-arm64/goschnorr.framework/goschnorr</key>
 		<data>
-		XFamQQfPQGLLnY3BwB1ih8ZydNw=
+		5feDFreV+/cAeDTxfT5ZIhxXRuY=
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
 		<data>
@@ -42,7 +38,7 @@
 		</data>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/goschnorr</key>
 		<data>
-		GpZOXih6/57pSuKy/Ej8ae64m2c=
+		UVSNePcboBEXm8hRjTZM3SjRiyM=
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Modules/module.modulemap</key>
 		<data>
@@ -58,7 +54,7 @@
 		</data>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/A/goschnorr</key>
 		<data>
-		/QxMOaKchhfK5M8HfHQbuaysJIc=
+		TTWORCNokwta6qXs1pyL5e94iec=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -100,11 +96,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XFamQQfPQGLLnY3BwB1ih8ZydNw=
+			5feDFreV+/cAeDTxfT5ZIhxXRuY=
 			</data>
 			<key>hash2</key>
 			<data>
-			7W7AXuO1jmCGAriYMY3IBEIlaP3PZhe55Bw3Lf1OZw4=
+			ohZYp7LThFJI7cK8/8tYDoUrxFYTFQEwdESv24JDeB4=
 			</data>
 		</dict>
 		<key>ios-arm64_x86_64-simulator/goschnorr.framework/Headers/goschnorr.h</key>
@@ -144,11 +140,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			GpZOXih6/57pSuKy/Ej8ae64m2c=
+			UVSNePcboBEXm8hRjTZM3SjRiyM=
 			</data>
 			<key>hash2</key>
 			<data>
-			9hSYmUjLghrwAvM7rlbAtruyCCBN/FOUkrnPh8KiteQ=
+			+OzQ4q1iRXKFDdmzvv6J9rDyvTWQ9W2kmmDzEUe8q7U=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Headers</key>
@@ -198,11 +194,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			/QxMOaKchhfK5M8HfHQbuaysJIc=
+			TTWORCNokwta6qXs1pyL5e94iec=
 			</data>
 			<key>hash2</key>
 			<data>
-			N//aHws0uEYKEiwjmSltx2FOOSNWl1GZUWyk932/AZE=
+			o5G6sDWkGZDGnxMS1rFgegnANVNrOMBKjnNpOe9tuX0=
 			</data>
 		</dict>
 		<key>macos-arm64_x86_64/goschnorr.framework/Versions/Current</key>
