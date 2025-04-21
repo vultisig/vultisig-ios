@@ -176,7 +176,7 @@ struct PeerDiscoveryView: View {
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
-            Text("(\(viewModel.selections.count)/3)")
+            Text("(\(viewModel.selections.count)/\(getDeviceThreshold()))")
                 .opacity(viewModel.selections.count>3 ? 0 : 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -200,6 +200,14 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             showInfoSheet = false
         }
+    }
+    
+    private func getDeviceThreshold() -> String {
+        guard tssType == .Migrate else {
+            return "3"
+        }
+        
+        return "\(vault.signers.count)"
     }
 }
 
