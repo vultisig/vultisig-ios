@@ -68,6 +68,7 @@ struct GeneralCodeScannerView: View {
         }
         .overlay {
             background
+                .allowsHitTesting(false)
         }
     }
     
@@ -143,7 +144,6 @@ struct GeneralCodeScannerView: View {
     var overlay: some View {
         Image("QRScannerOutline")
             .padding(60)
-            .allowsHitTesting(false)
     }
     
     var menubuttons: some View {
