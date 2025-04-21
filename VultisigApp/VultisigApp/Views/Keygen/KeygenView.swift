@@ -75,7 +75,11 @@ struct KeygenView: View {
                 .opacity(tssType == .Migrate ? 0 : 1)
             
             if tssType == .Migrate {
-                migrateView
+                if viewModel.status == .KeygenFailed {
+                    migrationFailedText
+                } else {
+                    migrateView
+                }
             }
         }
     }
@@ -161,6 +165,25 @@ struct KeygenView: View {
         }
     }
     
+    var migrationFailedText: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            ErrorMessage(text: viewModel.keygenError)
+            Spacer()
+            appVersion
+            migrateRetryButton
+        }
+        .padding(32)
+    }
+    
+    var migrateRetryButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            FilledButton(title: "retry")
+        }
+    }
+    
     var doneText: some View {
         VStack(spacing: 18) {
             vaultCreatedAnimationVM?.view()
@@ -202,6 +225,7 @@ struct KeygenView: View {
             showProgressRing = false
         }
     }
+    
     var migrateFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
