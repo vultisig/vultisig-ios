@@ -106,6 +106,7 @@ struct GeneralCodeScannerView: View {
     var backButton: some View {
         Button {
             showSheet = false
+            print("back clicked")
         } label: {
             getIcon(for: "xmark")
         }
@@ -128,7 +129,7 @@ struct GeneralCodeScannerView: View {
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
-            )
+            ).allowsHitTesting(false)
             
             overlay
         }

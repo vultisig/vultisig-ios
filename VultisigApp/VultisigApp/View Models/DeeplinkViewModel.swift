@@ -32,7 +32,7 @@ class DeeplinkViewModel: ObservableObject {
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
         if queryItems == nil {
-            address = url.absoluteString
+            address = sanitizeAddress(address: url.absoluteString)
         }
         
         //Flow Type
@@ -49,6 +49,15 @@ class DeeplinkViewModel: ObservableObject {
         
         //JsonData
         jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
+    }
+    
+    private func sanitizeAddress(address: String) -> String {
+        let sanitizedAddress = address
+        if sanitizedAddress.hasPrefix("ethereum:") {
+            return String(sanitizedAddress.dropFirst(9))
+        }
+        
+        return sanitizedAddress
     }
     
     static func getJsonData(_ url: URL?) -> String? {
