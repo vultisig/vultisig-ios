@@ -50,13 +50,13 @@ extension AddressBookTextField {
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $text)
-            .foregroundColor(.neutral0)
-            .submitLabel(.next)
-            .disableAutocorrection(true)
-            .borderlessTextFieldStyle()
-            .keyboardType(.default)
-            .textInputAutocapitalization(.never)
-            .textContentType(.oneTimeCode)
+                .foregroundColor(.neutral0)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .borderlessTextFieldStyle()
+                .keyboardType(.default)
+                .textInputAutocapitalization(.never)
+                .textContentType(.oneTimeCode)
         }
     }
     
@@ -67,7 +67,7 @@ extension AddressBookTextField {
     func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
-            text = result.string
+            text = Utils.sanitizeAddress(address: result.string)
             showScanner = false
         case .failure(let err):
             print("fail to scan QR code,error:\(err.localizedDescription)")
