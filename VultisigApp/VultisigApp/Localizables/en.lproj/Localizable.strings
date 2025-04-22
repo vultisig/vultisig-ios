@@ -640,3 +640,10 @@
 "uploadQR" = "Upload QR";
 "photoLibrary" = "Photo Library";
 "chooseFiles" = "Choose Files";
+"upgradingVault" = "Upgrading vault";
+"vaultUpgraded" = "Vault upgraded";
+"successfully" = "successfully";
+"goToWallet" = "Go to wallet";
+"migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";
+"FastMigrateOverviewText1" = "We’ve sent you your new server share!";
+"FastMigrateOverviewText2" = "Check your e-mail to verify";

@@ -11,6 +11,7 @@ import SwiftData
 struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
+    let selectedVault: Vault?
     
     @State var fileName: String? = nil
     @State var alertDescription = ""
@@ -60,7 +61,7 @@ struct GeneralQRImportMacView: View {
         }
         .padding(40)
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -211,7 +212,7 @@ struct GeneralQRImportMacView: View {
 }
 
 #Preview {
-    GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction())
+    GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction(), selectedVault: Vault.example)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }

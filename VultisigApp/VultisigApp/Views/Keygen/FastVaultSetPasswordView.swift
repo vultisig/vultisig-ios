@@ -32,14 +32,27 @@ struct FastVaultSetPasswordView: View {
             .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
                 Button("OK", role: .cancel) { }
             }
+            .navigationDestination(isPresented: $isLinkActive) {
+                if tssType == .Migrate {
+                    PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
+                } else {
+                    FastVaultSetHintView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
+                }
+            }
     }
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
-            disclaimer
-            textfield
-            verifyTextfield
+            
+            if tssType == .Migrate {
+                migrateDescription
+                textfield
+            } else {
+                disclaimer
+                textfield
+                verifyTextfield
+            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
@@ -52,6 +65,12 @@ struct FastVaultSetPasswordView: View {
         Text(NSLocalizedString("vultiserverPassword", comment: ""))
             .font(.body34BrockmannMedium)
             .foregroundColor(.neutral0)
+    }
+    
+    var migrateDescription: some View {
+        Text(NSLocalizedString("migratePasswordDescription", comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.extraLightGray)
     }
     
     var disclaimer: some View {
@@ -89,6 +108,15 @@ struct FastVaultSetPasswordView: View {
         .padding(.top, 16)
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
+    }
+    
+    var fastSignConfig: FastSignConfig {
+        return FastSignConfig(
+            email: fastVaultEmail,
+            password: password,
+            hint: .empty,
+            isExist: fastVaultExist
+        )
     }
 
     @MainActor func checkPassword() async {

@@ -75,11 +75,12 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(vault: vault)
+            BackupSetupView(tssType: .Keygen, vault: vault)
         }
         .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
             if vault.isFastVault {
@@ -216,13 +217,20 @@ struct VaultDetailView: View {
     func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
-        return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, sendTx: sendTx, isSendLinkActive: $isSendLinkActive, isSwapLinkActive: $isSwapLinkActive, isMemoLinkActive: $isMemoLinkActive)
-            .padding(16)
-            .padding(.horizontal, 12)
-            .redacted(reason: selectedGroup == nil ? .placeholder : [])
-            .background(Color.backgroundBlue)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
+        return ChainDetailActionButtons(
+            group: selectedGroup ?? GroupedChain.example,
+            sendTx: sendTx,
+            isLoading: $isLoading,
+            isSendLinkActive: $isSendLinkActive,
+            isSwapLinkActive: $isSwapLinkActive,
+            isMemoLinkActive: $isMemoLinkActive
+        )
+        .padding(16)
+        .padding(.horizontal, 12)
+        .redacted(reason: selectedGroup == nil ? .placeholder : [])
+        .background(Color.backgroundBlue)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
     }
 
     private func showMonthlyReminderIfNeeded() {

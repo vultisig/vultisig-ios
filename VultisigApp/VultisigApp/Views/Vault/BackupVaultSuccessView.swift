@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct BackupVaultSuccessView: View {
+    let tssType: TssType
     let vault: Vault
     
     @State var secureAnimationVM: RiveViewModel? = nil
@@ -52,8 +53,14 @@ struct BackupVaultSuccessView: View {
     var content: some View {
         VStack {
             animation
-            text
-            button
+            
+            if tssType == .Migrate {
+                migrateText
+                migrateButton
+            } else {
+                text
+                button
+            }
         }
     }
     
@@ -69,6 +76,20 @@ struct BackupVaultSuccessView: View {
         }
     }
     
+    var migrateText: some View {
+        VStack(spacing: 2) {
+            Text(NSLocalizedString("vaultUpgraded", comment: ""))
+                .foregroundColor(.neutral0)
+            
+            Text(NSLocalizedString("successfully", comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient)
+        }
+        .font(.body34BrockmannMedium)
+        .padding(.horizontal, 32)
+        .padding(.bottom, 32)
+        .multilineTextAlignment(.center)
+    }
+    
     var text: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("wellDone.", comment: ""))
@@ -80,6 +101,20 @@ struct BackupVaultSuccessView: View {
         .font(.body34BrockmannMedium)
         .padding(.horizontal, 32)
         .multilineTextAlignment(.center)
+    }
+    
+    var migrateButton: some View {
+        Button {
+            isHomeViewActive = true
+        } label: {
+            migrateLabel
+        }
+        .padding(.horizontal, 40)
+        .padding(.bottom, 40)
+    }
+    
+    var migrateLabel: some View {
+        FilledButton(title: "goToWallet")
     }
     
     var button: some View {
@@ -120,5 +155,5 @@ struct BackupVaultSuccessView: View {
 }
 
 #Preview {
-    BackupVaultSuccessView(vault: Vault.example)
+    BackupVaultSuccessView(tssType: .Keygen, vault: Vault.example)
 }

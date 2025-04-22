@@ -10,17 +10,17 @@ import Foundation
 import Combine
 
 /**
-
+ 
  1) KUJIRA - FUNCTION: “IBC SEND”
-
+ 
  UI Elements:
-     •    Dropdown: Select destination chain (IBC compatible)
-     •    Address Field:
-     •    Prefilled with the user’s destination chain address :: TODO
-     •    Allow manual override
-     •    Amount Field: Enter amount to send
-     •    Memo Field (Optional): Enter memo if needed
-
+ •    Dropdown: Select destination chain (IBC compatible)
+ •    Address Field:
+ •    Prefilled with the user’s destination chain address :: TODO
+ •    Allow manual override
+ •    Amount Field: Enter amount to send
+ •    Memo Field (Optional): Enter memo if needed
+ 
  Action:
  → Perform IBC transfer from KUJIRA to the selected destination chain.
  
@@ -30,9 +30,8 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     @Published var amount: Double = 0.0
     @Published var destinationAddress: String = ""
     @Published var txMemo: String = ""
-
+    
     @Published var amountValid: Bool = false
-    @Published var destinationAddressValid: Bool = false
     @Published var txMemoValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
@@ -44,6 +43,7 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     @Published var selectedChainObject: Chain? = nil
     
     private var tx: SendTransaction
+    private var vault: Vault
     
     var addressFields: [String: String] {
         get {
@@ -60,27 +60,45 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
     ) {
         self.tx = tx
+        self.vault = vault
         setupValidation()
         
         let cosmosChains: [Chain] = Chain.allCases.filter { $0.chainType == .Cosmos && $0 != tx.coin.chain && (!$0.name.lowercased().contains("terra")) }
-
+        
         for chain in cosmosChains {
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
+                
+        getChainAddress()
+        
+        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        
+    }
+    
+    private func getChainAddress() -> Void {
+        
+        if selectedChainObject != nil {
+            let chainAddress = self.vault.coins.first { $0.chain == selectedChainObject && $0.isNativeToken }
+            if let chainAddress = chainAddress {
+                self.destinationAddress = chainAddress.address
+            } else {
+                self.destinationAddress = ""
+            }
+        }
+        
     }
     
     var balance: String {
         let balance = tx.coin.balanceDecimal.description
-        
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     
     private func setupValidation() {
-        Publishers.CombineLatest3($amountValid, $destinationAddressValid, $chainValid)
-            .map { $0 && $1 && $2 }
+        Publishers.CombineLatest($amountValid, $chainValid)
+            .map { $0 && $1 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -124,18 +142,17 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                     
                     let chainInfos = asset.value.split(separator: " ")
                     let chainName = chainInfos[0]
-                  
+                    
                     self.selectedChainObject = Chain(name: chainName.description)
+                    
+                    self.getChainAddress()
                 }
             )
             
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
-                isAddressValid: Binding(
-                    get: { self.destinationAddressValid },
-                    set: { self.destinationAddressValid = $0 }
-                ),
+                isAddressValid: .constant(true),
                 chain: self.selectedChainObject
             ).id(self.selectedChainObject?.name ?? UUID().uuidString)
             

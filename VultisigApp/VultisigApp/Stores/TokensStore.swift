@@ -34,7 +34,7 @@ class TokensStore {
         }
         
         static var mayaChainMaya: CoinMeta {
-            CoinMeta(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", decimals: 4, priceProviderId: "maya", contractAddress: "", isNativeToken: false)
+            CoinMeta(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", decimals: 4, priceProviderId: "", contractAddress: "", isNativeToken: false)
         }
         
         static var solana: CoinMeta {
@@ -595,6 +595,30 @@ class TokensStore {
             CoinMeta(chain: Chain.gaiaChain, ticker: "KUJI", logo: "kuji", decimals: 6, priceProviderId: "kujira", contractAddress: "ibc/4CC44260793F84006656DD868E017578F827A492978161DA31D7572BCB3F4289", isNativeToken: false)
         }
         
+        static var gaiaChainWINK: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "WINK", logo: "wink", decimals: 6, priceProviderId: "winkhub", contractAddress: "ibc/4363FD2EF60A7090E405B79A6C4337C5E9447062972028F5A99FB041B9571942", isNativeToken: false)
+        }
+        
+        static var gaiaChainLVN: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/B64A07C006C0F5E260A8AD50BD53568F1FD4A0D75B7A9F8765C81BEAFDA62053", isNativeToken: false)
+        }
+        
+        static var gaiaChainNSTK: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "NSTK", logo: "nstk", decimals: 6, priceProviderId: "unstake-fi", contractAddress: "ibc/0B99C4EFF1BD05E56DEDEE1D88286DB79680C893724E0E7573BC369D79B5DDF3", isNativeToken: false)
+        }
+        
+        static var gaiaChainUSK: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "USK", logo: "usk", decimals: 6, priceProviderId: "usk", contractAddress: "ibc/A47E814B0E8AE12D044637BCB4576FCA675EF66300864873FA712E1B28492B78", isNativeToken: false)
+        }
+        
+        static var gaiaChainNami: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "NAMI", logo: "nami", decimals: 6, priceProviderId: "nami-protocol", contractAddress: "ibc/4622E82B845FFC6AA8B45C1EB2F507133A9E876A5FEA1BA64585D5F564405453", isNativeToken: false)
+        }
+        
+        static var gaiaChainFUZN: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "FUZN", logo: "fuzn", decimals: 6, priceProviderId: "fuzion", contractAddress: "ibc/6BBBB4B63C51648E9B8567F34505A9D5D8BAAC4C31D768971998BE8C18431C26", isNativeToken: false)
+        }
+        
         static var osmosis: CoinMeta {
             CoinMeta(chain: Chain.osmosis, ticker: "OSMO", logo: "osmo", decimals: 6, priceProviderId: "osmosis", contractAddress: "", isNativeToken: true)
         }
@@ -683,6 +707,14 @@ class TokensStore {
             CoinMeta(chain: Chain.kujira, ticker: "rKUJI", logo: "rkuji", decimals: 6, priceProviderId: "kujira", contractAddress: "factory/kujira1tsekaqv9vmem0zwskmf90gpf0twl6k57e8vdnq/urkuji", isNativeToken: false)
         }
         
+        static var kujiraLVN: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/B64A07C006C0F5E260A8AD50BD53568F1FD4A0D75B7A9F8765C81BEAFDA62053", isNativeToken: false)
+        }
+        
+        static var kujiraFUZN: CoinMeta {
+            CoinMeta(chain: Chain.kujira, ticker: "FUZN", logo: "fuzn", decimals: 6, priceProviderId: "fuzion", contractAddress: "factory/kujira1sc6a0347cc5q3k890jj0pf3ylx2s38rh4sza4t/ufuzn", isNativeToken: false)
+        }
+        
         static var dydx: CoinMeta {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
@@ -745,18 +777,25 @@ class TokensStore {
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.gaiaChainUsdc,
         TokensStore.Token.gaiaChainKujira,
+        TokensStore.Token.gaiaChainWINK,
+        TokensStore.Token.gaiaChainLVN,
+        TokensStore.Token.gaiaChainUSK,
+        TokensStore.Token.gaiaChainNSTK,
+        TokensStore.Token.gaiaChainNami,
+        TokensStore.Token.gaiaChainFUZN,
         
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
         TokensStore.Token.kujiraLunc,
         TokensStore.Token.kujiraUsdc,
         TokensStore.Token.kujiraMnta,
-        
         TokensStore.Token.kujiraUSK,
         TokensStore.Token.kujiraNSTK,
         TokensStore.Token.kujiraWINK,
         TokensStore.Token.kujiraNami,
         TokensStore.Token.kujiraRKuji,
+        TokensStore.Token.kujiraLVN,
+        TokensStore.Token.kujiraFUZN,
         
         TokensStore.Token.dydx,
         

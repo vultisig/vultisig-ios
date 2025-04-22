@@ -14,6 +14,7 @@ struct MacScannerView: View {
     let vault: Vault
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
+    let selectedVault: Vault?
     
     @Query var vaults: [Vault]
     
@@ -31,7 +32,7 @@ struct MacScannerView: View {
             headerMac
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
-            JoinKeygenView(vault: vault)
+            JoinKeygenView(vault: vault, selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -132,7 +133,7 @@ struct MacScannerView: View {
     
     var uploadQRCodeButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: type, sendTx: sendTx)
+            GeneralQRImportMacView(type: type, sendTx: sendTx, selectedVault: selectedVault)
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }
@@ -208,7 +209,7 @@ struct MacScannerView: View {
 }
 
 #Preview {
-    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction())
+    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(VaultDetailViewModel())

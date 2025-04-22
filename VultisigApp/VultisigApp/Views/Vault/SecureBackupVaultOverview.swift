@@ -25,7 +25,7 @@ struct SecureBackupVaultOverview: View {
             container
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(tssType: .Keygen, vault: vault, isNewVault: true)
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)

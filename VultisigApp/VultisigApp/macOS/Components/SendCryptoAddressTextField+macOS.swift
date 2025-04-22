@@ -37,7 +37,8 @@ extension SendCryptoAddressTextField {
                 MacAddressScannerView(
                     tx: tx,
                     sendCryptoViewModel: sendCryptoViewModel,
-                    showCameraScanView: $showCameraScanView
+                    showCameraScanView: $showCameraScanView,
+                    selectedVault: nil
                 )
             }
     }

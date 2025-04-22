@@ -46,12 +46,17 @@ struct KeygenView: View {
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
+                        tssType: tssType,
                         vault: vault,
                         email: fastSignConfig.email,
                         viewModel: viewModel
                     )
                 } else {
-                    SecureBackupVaultOverview(vault: vault)
+                    if tssType == .Migrate {
+                        BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
+                    } else {
+                        SecureBackupVaultOverview(vault: vault)
+                    }
                 }
             }
             .onAppear {
@@ -64,25 +69,23 @@ struct KeygenView: View {
             }
     }
     
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            Spacer()
+    var container: some View {
+        ZStack {
+            fields
+                .opacity(tssType == .Migrate ? 0 : 1)
             
-            if progressCounter < 4 {
+            if tssType == .Migrate {
                 if viewModel.status == .KeygenFailed {
-                    retryButton
+                    migrationFailedText
                 } else {
-                    progressContainer
+                    migrateView
                 }
             }
         }
+    }
+    
+    var migrateView: some View {
+        UpgradingVaultView()
     }
     
     var states: some View {
@@ -162,6 +165,25 @@ struct KeygenView: View {
         }
     }
     
+    var migrationFailedText: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            ErrorMessage(text: viewModel.keygenError)
+            Spacer()
+            appVersion
+            migrateRetryButton
+        }
+        .padding(32)
+    }
+    
+    var migrateRetryButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            FilledButton(title: "retry")
+        }
+    }
+    
     var doneText: some View {
         VStack(spacing: 18) {
             vaultCreatedAnimationVM?.view()
@@ -203,6 +225,7 @@ struct KeygenView: View {
             showProgressRing = false
         }
     }
+    
     var migrateFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))

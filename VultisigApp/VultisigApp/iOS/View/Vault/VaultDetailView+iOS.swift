@@ -23,7 +23,7 @@ extension VaultDetailView {
                 )
             })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"))
+                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: vault)
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
                 if let vault = homeViewModel.selectedVault {
@@ -67,13 +67,12 @@ extension VaultDetailView {
     
     var list: some View {
         List {
-            if isLoading {
-                loader
-            } else if viewModel.groups.count >= 1 {
-                
+            if viewModel.groups.count >= 1 {
                 if vault.libType == .GG20 {
                     upgradeVaultBanner
-                } else if !vault.isBackedUp {
+                }
+                
+                if !vault.isBackedUp {
                     backupNowWidget
                 }
                 

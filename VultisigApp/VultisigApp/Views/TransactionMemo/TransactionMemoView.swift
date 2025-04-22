@@ -3,6 +3,7 @@ import SwiftUI
 struct TransactionMemoView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
+    let coin: Coin?
     
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var transactionMemoViewModel = TransactionMemoViewModel()
@@ -63,7 +64,8 @@ struct TransactionMemoView: View {
     var detailsView: some View {
         TransactionMemoDetailsView(
             tx: tx,
-            transactionMemoViewModel: transactionMemoViewModel
+            transactionMemoViewModel: transactionMemoViewModel,
+            vault: vault
         )
     }
     
@@ -129,6 +131,11 @@ struct TransactionMemoView: View {
     }
     
     private func setData() async {
+        
+        if let coin = coin {
+            tx.coin = coin
+        }
+        
         await transactionMemoViewModel.loadGasInfoForSending(tx: tx)
         await transactionMemoViewModel.loadFastVault(tx: tx, vault: vault)
     }
