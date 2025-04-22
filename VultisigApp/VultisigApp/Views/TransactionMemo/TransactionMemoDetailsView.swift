@@ -99,7 +99,7 @@ struct TransactionMemoDetailsView: View {
                 case .cosmosIBC:
                     txMemoInstance = .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 case .merge:
-                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 case .theSwitch:
                     txMemoInstance = .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 }

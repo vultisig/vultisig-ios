@@ -127,7 +127,10 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                 isOptional: true
             )
             StyledFloatingPointField(
-                placeholder: "Amount \(balance)",
+                placeholder: Binding(
+                    get: { "Amount \(self.balance)" },
+                    set: { _ in } // do nothing on set
+                ),
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }
