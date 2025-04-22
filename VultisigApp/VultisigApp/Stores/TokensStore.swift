@@ -29,6 +29,10 @@ class TokensStore {
             CoinMeta(chain: Chain.thorChain, ticker: "RUNE", logo: "rune", decimals: 8, priceProviderId: "thorchain", contractAddress: "", isNativeToken: true)
         }
         
+        static var thorChainTcy: CoinMeta {
+            CoinMeta(chain: Chain.thorChain, ticker: "TCY", logo: "tcy", decimals: 8, priceProviderId: "tcy", contractAddress: "", isNativeToken: false)
+        }
+        
         static var mayaChainCacao: CoinMeta {
             CoinMeta(chain: Chain.mayaChain, ticker: "CACAO", logo: "cacao", decimals: 10, priceProviderId: "cacao", contractAddress: "", isNativeToken: true)
         }
@@ -752,6 +756,7 @@ class TokensStore {
         TokensStore.Token.dogecoin,
         TokensStore.Token.dash,
         TokensStore.Token.thorChain,
+        TokensStore.Token.thorChainTcy,
         TokensStore.Token.mayaChainCacao,
         TokensStore.Token.mayaChainMaya,
         TokensStore.Token.ripple,
