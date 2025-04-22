@@ -129,7 +129,7 @@ struct GeneralCodeScannerView: View {
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
-            )
+            ).allowsHitTesting(false)
             
             overlay
         }

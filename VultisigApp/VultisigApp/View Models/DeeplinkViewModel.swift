@@ -32,7 +32,7 @@ class DeeplinkViewModel: ObservableObject {
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
         if queryItems == nil {
-            address = url.absoluteString
+            address = Utils.sanitizeAddress(address: url.absoluteString)
         }
         
         //Flow Type
@@ -51,6 +51,8 @@ class DeeplinkViewModel: ObservableObject {
         jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
     }
     
+    
+    
     static func getJsonData(_ url: URL?) -> String? {
         guard let url else {
             return nil
@@ -59,16 +61,16 @@ class DeeplinkViewModel: ObservableObject {
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         return queryItems?.first(where: { $0.name == "jsonData" })?.value
     }
-
+    
     static func getTssType(_ url: URL?) -> String? {
         guard let url else {
             return nil
         }
-
+        
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         return queryItems?.first(where: { $0.name == "tssType" })?.value
     }
-
+    
     func resetData() {
         type = nil
         selectedVault = nil
