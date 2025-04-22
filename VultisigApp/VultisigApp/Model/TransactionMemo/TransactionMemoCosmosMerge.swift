@@ -76,7 +76,12 @@ class TransactionMemoCosmosMerge: ObservableObject {
             }
         }
         
-        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        if tx.coin.isNativeToken {
+            self.amount = 0.0
+        } else  {
+            self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        }
+        
     }
     
     private var selectedVaultCoin: Coin? {
