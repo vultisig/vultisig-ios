@@ -40,7 +40,7 @@ extension PeerDiscoveryView {
     
     var headerMac: some View {
         PeerDiscoveryHeader(
-            title: "scanQR",
+            title: getHeaderTitle(),
             vault: vault,
             hideBackButton: hideBackButton,
             viewModel: viewModel,
@@ -153,6 +153,16 @@ extension PeerDiscoveryView {
     
     func getMinSize() -> CGFloat {
         min(screenWidth/2.5, screenHeight/1.5)
+    }
+    
+    private func getHeaderTitle() -> String {
+        if viewModel.status == .WaitingForDevices {
+            tssType == .Migrate ? "" : "scanQR"
+        } else if tssType == .Migrate {
+            ""
+        } else {
+            "creatingVault"
+        }
     }
 }
 #endif
