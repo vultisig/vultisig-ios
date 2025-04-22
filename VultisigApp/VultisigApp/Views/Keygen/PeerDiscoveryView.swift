@@ -176,8 +176,12 @@ struct PeerDiscoveryView: View {
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
-            Text("(\(viewModel.selections.count)/3)")
-                .opacity(viewModel.selections.count>3 ? 0 : 1)
+            
+            if tssType == .Migrate {
+                Text("(\(viewModel.selections.count)/\(vault.signers.count))")
+            } else {
+                Text("(\(viewModel.selections.count) \(NSLocalizedString("Selected", comment: "")))")
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body22BrockmannMedium)

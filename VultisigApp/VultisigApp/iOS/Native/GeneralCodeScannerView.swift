@@ -76,6 +76,7 @@ struct GeneralCodeScannerView: View {
             .resizable()
             .scaledToFill()
             .opacity(0.2)
+            .allowsHitTesting(false)
     }
     
     var content: some View {
