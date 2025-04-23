@@ -68,7 +68,7 @@ struct SetupVaultSecureText: View {
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity,minHeight: 80)
         .font(.body14BrockmannMedium)
         .padding(24)
         .background(Color.blue600)
