@@ -38,7 +38,10 @@ class TransactionMemoCosmosMerge: ObservableObject {
     
     @Published var balanceLabel: String = "( Select a token )"
     
-    private var tx: SendTransaction
+    @ObservedObject var tx: SendTransaction
+    
+    // @Published var selectedCoin: Coin? = nil
+    
     private var vault: Vault
     
     private var cancellables = Set<AnyCancellable>()
@@ -70,6 +73,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
             tokenValid = true
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
+                // self.selectedCoin = coin
                 let b = coin.balanceDecimal.description
                 amount = Double(b) ?? 0.0
                 balanceLabel = "Amount ( Balance: \(b) \(coin.ticker.uppercased()) )"
@@ -153,14 +157,14 @@ class TransactionMemoCosmosMerge: ObservableObject {
                     
                     if let coin = self.selectedVaultCoin {
                         
-                        self.tx.coin = coin
-                        
                         withAnimation {
                             self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
                             self.amount = Double(coin.balanceDecimal.description) ?? 0.0
                             
                             self.objectWillChange.send()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                self.tx.coin = coin
+                                // self.selectedCoin = coin
                                 self.objectWillChange.send()
                             }
                         }

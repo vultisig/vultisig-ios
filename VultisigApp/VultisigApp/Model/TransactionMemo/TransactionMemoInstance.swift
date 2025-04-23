@@ -218,7 +218,16 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         }
     }
-
+    
+    // var selectedCoin: Coin? {
+    //     switch self {
+    //     case .merge(let memo):
+    //         return memo.selectedCoin
+    //     default:
+    //         return nil
+    //     }
+    // }
+    
     static func getDefault(for coin: Coin, tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault) -> TransactionMemoInstance {
         switch coin.chain {
         case .thorChain:
