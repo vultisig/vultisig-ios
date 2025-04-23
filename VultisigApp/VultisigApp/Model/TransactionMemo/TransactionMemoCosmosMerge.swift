@@ -152,6 +152,9 @@ class TransactionMemoCosmosMerge: ObservableObject {
                     }?.wasmContractAddress ?? ""
                     
                     if let coin = self.selectedVaultCoin {
+                        
+                        self.tx.coin = coin
+                        
                         withAnimation {
                             self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
                             self.amount = Double(coin.balanceDecimal.description) ?? 0.0
