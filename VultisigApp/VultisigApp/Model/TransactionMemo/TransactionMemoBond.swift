@@ -129,7 +129,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
             StyledFloatingPointField(
                 placeholder: Binding(
                     get: { "Amount \(self.balance)" },
-                    set: { _ in } // do nothing on set
+                    set: { _ in }
                 ),
                 value: Binding(
                     get: { self.amount },

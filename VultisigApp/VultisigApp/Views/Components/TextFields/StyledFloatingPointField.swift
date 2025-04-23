@@ -39,11 +39,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             
             container
         }
-        .id(placeholder) // Force entire view to rebuild when placeholder changes
-        .onChange(of: placeholder) { oldValue, newValue in
-            // Optionally update the textFieldValue if you want to clear it when placeholder changes
-            // textFieldValue = ""
-        }
+        .id(placeholder)
     }
     
     var textField: some View {
@@ -70,7 +66,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 textFieldValue = formatInitialValue()
                 localIsValid = isValid
             }
-            .id(placeholder)  // Force view to rebuild when placeholder changes
+            .id(placeholder)
     }
     
     private func formatInitialValue() -> String {
