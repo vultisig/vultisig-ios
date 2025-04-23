@@ -143,21 +143,6 @@ struct TransactionMemoDetailsView: View {
         Button {
             Task {
                 if txMemoInstance.isTheFormValid {
-                    
-                    // await MainActor.run {
-                    //     if let selectedCoin = txMemoInstance.selectedCoin {
-                            
-                    //         print("Selected Coin")
-                    //         print(txMemoInstance.selectedCoin?.ticker)
-                            
-                    //         tx.coin = selectedCoin
-                            
-                    //         tx.reset(coin: selectedCoin)
-                            
-                    //         print("🟣 tx.coin after reset:", tx.coin.ticker)
-                    //     }
-                    // }
-                    
                     tx.amount = txMemoInstance.amount.description
                     tx.memo = txMemoInstance.description
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
