@@ -61,7 +61,7 @@ private extension OneInchSwaps {
 
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         // sometimes the `gas` field in oneinch tx is 0
-        // when it is 0, we need to override it with defaultETHSwapGasUnit(60000)
+        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
