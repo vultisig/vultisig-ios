@@ -59,4 +59,26 @@ class JoinKeysignSummaryViewModel {
             return "\(String(describing: amount)) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
         }
     }
+    
+    func getFromCoin(_ keysignPayload: KeysignPayload?) -> Coin? {
+        guard let payload = keysignPayload?.swapPayload else { return nil }
+        return payload.fromCoin
+    }
+    
+    func getFromAmountString(_ keysignPayload: KeysignPayload?) -> String {
+        guard let payload = keysignPayload?.swapPayload else { return "" }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        return String(describing: amount)
+    }
+    
+    func getToCoin(_ keysignPayload: KeysignPayload?) -> Coin? {
+        guard let payload = keysignPayload?.swapPayload else { return nil }
+        return payload.toCoin
+    }
+    
+    func getToAmountString(_ keysignPayload: KeysignPayload?) -> String {
+        guard let payload = keysignPayload?.swapPayload else { return "" }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        return String(describing: amount)
+    }
 }

@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SendCryptoKeysignView: View {
-    let title: String
+    var title: String? = nil
     var showError = false
     
     @Environment(\.dismiss) var dismiss
@@ -56,9 +56,16 @@ struct SendCryptoKeysignView: View {
     var signingAnimation: some View {
         VStack(spacing: 32) {
             animation
-            Text(NSLocalizedString(title, comment: "Signing"))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
+            
+            if let title {
+                Text(NSLocalizedString(title, comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+            } else {
+                Text(NSLocalizedString("signingTransaction", comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+            }
         }
     }
     
@@ -124,12 +131,12 @@ struct SendCryptoKeysignView: View {
     var infoIcon: some View {
         Image(systemName: "info.circle")
             .resizable()
-            .frame(width: 16, height: 16)
+            .frame(width: 12, height: 12)
     }
     
     var text: some View {
         Text(NSLocalizedString("sendCryptoKeysignViewDisclaimer", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(.body12BrockmannMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -143,6 +150,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView(title: "signing")
+        SendCryptoKeysignView()
     }
 }

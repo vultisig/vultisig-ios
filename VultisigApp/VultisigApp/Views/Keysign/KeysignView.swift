@@ -32,11 +32,11 @@ struct KeysignView: View {
         ZStack {
             switch viewModel.status {
             case .CreatingInstance:
-                SendCryptoKeysignView(title: "creatingTssInstance")
+                SendCryptoKeysignView()
             case .KeysignECDSA:
-                SendCryptoKeysignView(title: "signingWithECDSA")
+                SendCryptoKeysignView()
             case .KeysignEdDSA:
-                SendCryptoKeysignView(title: "signingWithEdDSA")
+                SendCryptoKeysignView()
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:

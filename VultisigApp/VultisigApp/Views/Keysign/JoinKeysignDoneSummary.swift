@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct JoinKeysignDoneSummary: View {
+    let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
+    @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
@@ -22,7 +24,11 @@ struct JoinKeysignDoneSummary: View {
     
     var body: some View {
         ScrollView {
-            summary
+            if viewModel.keysignPayload?.swapPayload != nil {
+                swapContent
+            } else {
+                summary
+            }
         }
     }
     
@@ -48,9 +54,7 @@ struct JoinKeysignDoneSummary: View {
     
     var content: some View {
         ZStack {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                swapContent
-            } else if viewModel.customMessagePayload != nil {
+            if viewModel.customMessagePayload != nil {
                 signMessageContent
             } else {
                 transactionContent
@@ -60,6 +64,16 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var swapContent: some View {
+        JoinSwapDoneSummary(
+            vault: Vault.example,
+            keysignViewModel: viewModel,
+            summaryViewModel: summaryViewModel,
+            moveToHome: $moveToHome,
+            showAlert: $showAlert
+        )
+    }
+    
+    var swapContent2: some View {
         VStack(spacing: 18) {
             Separator()
             getGeneralCell(
@@ -290,7 +304,7 @@ struct JoinKeysignDoneSummary: View {
 #Preview {
     ZStack {
         Background()
-        JoinKeysignDoneSummary(viewModel: KeysignViewModel(), showAlert: .constant(false))
+        JoinKeysignDoneSummary(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false), moveToHome: .constant(false))
     }
     .environmentObject(SettingsViewModel())
 }
