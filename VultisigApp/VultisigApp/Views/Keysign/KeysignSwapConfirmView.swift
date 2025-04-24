@@ -10,6 +10,10 @@ import BigInt
 
 struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
+    
+    var showApprove: Bool {
+        viewModel.keysignPayload?.approvePayload != nil
+    }
 
     var body: some View {
         VStack {
@@ -34,12 +38,12 @@ struct KeysignSwapConfirmView: View {
             separator
             getValueCell(
                 for: "provider",
-                with: getProvider(),
+                with: viewModel.getProvider(),
                 showIcon: true
             )
             
             separator
-            getValueCell(for: "NetworkFee", with: getCalculatedNetworkFee())
+            getValueCell(for: "NetworkFee", with: viewModel.getCalculatedNetworkFee())
         }
         .padding(16)
         .background(Color.blue600)
@@ -90,7 +94,7 @@ struct KeysignSwapConfirmView: View {
             let payload = viewModel.keysignPayload?.swapPayload
             
             getSwapAssetCell(
-                for: getFromAmount(),
+                for: viewModel.getFromAmount(),
                 with: payload?.fromCoin.ticker,
                 on: payload?.fromCoin.chain
             )
@@ -99,7 +103,7 @@ struct KeysignSwapConfirmView: View {
                 .padding(.leading, 12)
             
             getSwapAssetCell(
-                for: getToAmount(),
+                for: viewModel.getToAmount(),
                 with: viewModel.keysignPayload?.swapPayload?.toCoin.ticker,
                 on: viewModel.keysignPayload?.swapPayload?.toCoin.chain
             )
@@ -119,62 +123,6 @@ struct KeysignSwapConfirmView: View {
             .background(Color.blue400)
             .cornerRadius(32)
             .bold()
-    }
-
-    func getAction() -> String {
-        guard viewModel.keysignPayload?.approvePayload == nil else {
-            return NSLocalizedString("Approve and Swap", comment: "")
-        }
-        return NSLocalizedString("Swap", comment: "")
-    }
-
-    func getProvider() -> String {
-        switch viewModel.keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .none:
-            return .empty
-        }
-    }
-
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
-
-    func getSpender() -> String {
-        return viewModel.keysignPayload?.approvePayload?.spender ?? .empty
-    }
-
-    func getAmount() -> String {
-        guard let fromCoin = viewModel.keysignPayload?.coin, let amount = viewModel.keysignPayload?.approvePayload?.amount else {
-            return .empty
-        }
-
-        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators()) \(fromCoin.ticker)"
-    }
-
-    func getFromAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
-        }
-    }
-
-    func getToAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
-        }
     }
 
     func getValueCell(
@@ -256,62 +204,6 @@ struct KeysignSwapConfirmView: View {
             Circle()
                 .stroke(Color.blue400, lineWidth: 2)
         )
-    }
-    
-    func getCalculatedNetworkFee() -> String {
-        guard let payload = viewModel.keysignPayload else {
-            return .zero
-        }
-
-        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
-            $0.isNativeToken && $0.chain == payload.coin.chain
-        }) else {
-            return .zero
-        }
-
-        if payload.coin.chainType == .EVM {
-            let gas = payload.chainSpecific.gas
-
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
-                  let gasDecimal = Decimal(string: gas.description) else {
-                return .empty
-            }
-
-            let gasGwei = gasDecimal / weiPerGWeiDecimal
-            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
-            feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-
-            return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
-        }
-
-        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
-        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
-        feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-
-        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
-    }
-    
-    func feesInReadable(coin: Coin, fee: BigInt) -> String {
-        var nativeCoinAux: Coin?
-        
-        if coin.isNativeToken {
-            nativeCoinAux = coin
-        } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
-        }
-        
-        
-        
-        guard let nativeCoin = nativeCoinAux else {
-            return ""
-        }
-        
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
 }
 
