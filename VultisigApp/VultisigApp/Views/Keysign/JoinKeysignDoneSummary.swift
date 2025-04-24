@@ -75,53 +75,6 @@ struct JoinKeysignDoneSummary: View {
         )
     }
     
-    var swapContent2: some View {
-        VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(
-                title: "action",
-                description: summaryViewModel.getAction(viewModel.keysignPayload)
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "provider",
-                description: summaryViewModel.getProvider(viewModel.keysignPayload)
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "swapFrom",
-                description: summaryViewModel.getFromAmount(viewModel.keysignPayload)
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "to",
-                description: summaryViewModel.getToAmount(viewModel.keysignPayload)
-            )
-            
-            if showApprove {
-                Separator()
-                getGeneralCell(
-                    title: "allowanceSpender",
-                    description: summaryViewModel.getSpender(viewModel.keysignPayload)
-                )
-                
-                Separator()
-                getGeneralCell(
-                    title: "allowanceAmount",
-                    description: summaryViewModel.getAmount(
-                        viewModel.keysignPayload,
-                        selectedCurrency: settingsViewModel.selectedCurrency
-                    )
-                )
-            }
-            
-            transactionLink
-        }
-    }
-    
     var transactionContent: some View {
         VStack(spacing: 18) {
             Separator()
