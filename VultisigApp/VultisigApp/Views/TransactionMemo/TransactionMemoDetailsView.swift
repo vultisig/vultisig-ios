@@ -99,7 +99,7 @@ struct TransactionMemoDetailsView: View {
                 case .cosmosIBC:
                     txMemoInstance = .cosmosIBC(TransactionMemoCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 case .merge:
-                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                    txMemoInstance = .merge(TransactionMemoCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 case .theSwitch:
                     txMemoInstance = .theSwitch(TransactionMemoCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
                 }
@@ -144,16 +144,16 @@ struct TransactionMemoDetailsView: View {
             Task {
                 if txMemoInstance.isTheFormValid {
                     tx.amount = txMemoInstance.amount.description
-                        //.formatToDecimal(digits: tx.coin.decimals)
                     tx.memo = txMemoInstance.description
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
                     tx.transactionType = txMemoInstance.getTransactionType()
-                    transactionMemoViewModel.moveToNextView()
-
+                    
                     if let toAddress = txMemoInstance.toAddress {
                         tx.toAddress = toAddress
                     }
-
+                    
+                    transactionMemoViewModel.moveToNextView()
+                    
                 } else {
                     showInvalidFormAlert = true
                 }

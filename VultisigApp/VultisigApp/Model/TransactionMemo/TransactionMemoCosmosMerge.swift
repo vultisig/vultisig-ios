@@ -36,38 +36,76 @@ class TransactionMemoCosmosMerge: ObservableObject {
     @Published var tokenValid: Bool = false
     @Published var selectedToken: IdentifiableString = .init(value: "Select the token to be merged")
     
-    private var tx: SendTransaction
+    @Published var balanceLabel: String = "( Select a token )"
+    
+    @ObservedObject var tx: SendTransaction
+    
+    private var vault: Vault
     
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
     ) {
         self.tx = tx
+        self.vault = vault
+        
         setupValidation()
         
-        // Prepare tokens
+        let coinsInVault: Set<String> = Set(vault.coins.filter { $0.chain == tx.coin.chain }.map {
+            let normalized = $0.ticker.lowercased()
+            return normalized
+        })
+        
         for token in tokensToMerge {
-            let tokenValue = token.denom.uppercased()
-            tokens.append(.init(value: tokenValue))
+            let normalizedToken = token.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
+            if coinsInVault.contains(normalizedToken) {
+                tokens.append(.init(value: token.denom.uppercased()))
+            }
         }
         
-        // Set default selection if tx.coin.ticker matches any token.denom
-        if let match = tokensToMerge.first(where: { $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())".lowercased() }) {
-            let matchValue = match.denom.uppercased()
-            selectedToken = .init(value: matchValue)
+        if let match = tokensToMerge.first(where: {
+            $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
+        }) {
+            selectedToken = .init(value: match.denom.uppercased())
             tokenValid = true
             destinationAddress = match.wasmContractAddress
+            if let coin = selectedVaultCoin {
+                let b = coin.balanceDecimal.description
+                amount = Double(b) ?? 0.0
+                balanceLabel = "Amount ( Balance: \(b) \(coin.ticker.uppercased()) )"
+            }
         }
         
+        if tx.coin.isNativeToken {
+            self.amount = 0.0
+        } else  {
+            self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        }
         
-        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
     }
     
-    //The balance is not correct since it should be the balance of the token not the RUNE balance
+    private var selectedVaultCoin: Coin? {
+        let ticker = selectedToken.value
+            .lowercased()
+            .replacingOccurrences(of: "thor.", with: "")
+        
+        for coin in vault.coins {
+            if coin.chain == tx.coin.chain && coin.ticker.lowercased() == ticker {
+                return coin
+            }
+        }
+        
+        return nil
+    }
+    
     var balance: String {
-        let balance = tx.coin.balanceDecimal.description
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+        if let coin = selectedVaultCoin {
+            let balance = coin.balanceDecimal.description
+            return "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
+        } else {
+            return "Amount ( Select a token )"
+        }
     }
     
     private func setupValidation() {
@@ -97,7 +135,10 @@ class TransactionMemoCosmosMerge: ObservableObject {
         AnyView(VStack {
             
             GenericSelectorDropDown(
-                items: .constant(tokens),
+                items: Binding(
+                    get: { self.tokens },
+                    set: { self.tokens = $0 }
+                ),
                 selected: Binding(
                     get: { self.selectedToken },
                     set: { self.selectedToken = $0 }
@@ -106,16 +147,48 @@ class TransactionMemoCosmosMerge: ObservableObject {
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
                     self.selectedToken = asset
-                    self.tokenValid = asset.value.lowercased() != "Select the token to be merged".lowercased()
-                    self.destinationAddress = self.tokensToMerge.first { $0.denom.lowercased() == asset.value.lowercased() }?.wasmContractAddress ?? ""
+                    self.tokenValid = asset.value.lowercased() != "select the token to be merged"
+                    self.destinationAddress = self.tokensToMerge.first {
+                        $0.denom.lowercased() == asset.value.lowercased()
+                    }?.wasmContractAddress ?? ""
+                    
+                    if let coin = self.selectedVaultCoin {
+                        
+                        withAnimation {
+                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
+                            self.amount = Double(coin.balanceDecimal.description) ?? 0.0
+                            
+                            self.objectWillChange.send()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                self.tx.coin = coin
+                                self.objectWillChange.send()
+                            }
+                        }
+                    } else {
+                        self.balanceLabel = "Amount ( Select a token )"
+                        self.objectWillChange.send()
+                    }
                 }
             )
             
             StyledFloatingPointField(
-                placeholder: "Amount \(balance)",
+                placeholder: Binding(
+                    get: { self.balanceLabel },
+                    set: {
+                        self.balanceLabel = $0
+                        DispatchQueue.main.async {
+                            self.objectWillChange.send()
+                        }
+                    }
+                ),
                 value: Binding(
                     get: { self.amount },
-                    set: { self.amount = $0 }
+                    set: {
+                        self.amount = $0
+                        DispatchQueue.main.async {
+                            self.objectWillChange.send()
+                        }
+                    }
                 ),
                 format: .number,
                 isValid: Binding(
@@ -123,6 +196,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
                     set: { self.amountValid = $0 }
                 )
             )
+            .id("field-\(self.balanceLabel)-\(self.amount)")
         })
     }
     
@@ -131,10 +205,9 @@ class TransactionMemoCosmosMerge: ObservableObject {
         let wasmContractAddress: String
     }
     
-    private let tokensToMerge: [TokenMergeInfo] =
-    [
+    private let tokensToMerge: [TokenMergeInfo] = [
         TokenMergeInfo(denom: "thor.kuji", wasmContractAddress: "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"),
-        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
+        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvj0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
         TokenMergeInfo(denom: "thor.fuzn", wasmContractAddress: "thor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrsw5xx2d"),
         TokenMergeInfo(denom: "thor.nstk", wasmContractAddress: "thor1cnuw3f076wgdyahssdkd0g3nr96ckq8cwa2mh029fn5mgf2fmcmsmam5ck"),
         TokenMergeInfo(denom: "thor.wink", wasmContractAddress: "thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y"),

@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
-    let placeholder: String
+    @Binding var placeholder: String
     @Binding var value: Value
     let format: FloatingPointFormatStyle<Value>
     
@@ -39,10 +39,15 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             
             container
         }
+        .id(placeholder)
     }
     
     var textField: some View {
-        TextField(placeholder.capitalized, text: $textFieldValue)
+        TextField("", text: $textFieldValue)  // Empty placeholder
+            .placeholder(when: textFieldValue.isEmpty) {
+                Text(placeholder.capitalized)
+                    .foregroundColor(.gray)
+            }
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -57,6 +62,11 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 textFieldValue = formatInitialValue()
                 localIsValid = isValid
             }
+            .onChange(of: placeholder) { _, _ in
+                textFieldValue = formatInitialValue()
+                localIsValid = isValid
+            }
+            .id(placeholder)
     }
     
     private func formatInitialValue() -> String {
@@ -71,14 +81,14 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
         formatter.locale = Locale.current
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 8
-
+        
         textFieldValue = newValue
-
+        
         let decimalSeparator = formatter.decimalSeparator ?? "."
         let wrongSeparator = decimalSeparator == "." ? "," : "."
-
+        
         let sanitizedValue = newValue.replacingOccurrences(of: wrongSeparator, with: decimalSeparator)
-
+        
         if let number = formatter.number(from: sanitizedValue) {
             let doubleValue = number.doubleValue
             value = Value(doubleValue)
@@ -101,5 +111,20 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     
     var optionalMessage: String {
         return isOptional ? " (optional)" : ""
+    }
+}
+
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content
+    ) -> some View {
+        ZStack(alignment: alignment) {
+            self
+            if shouldShow {
+                placeholder()
+            }
+        }
     }
 }

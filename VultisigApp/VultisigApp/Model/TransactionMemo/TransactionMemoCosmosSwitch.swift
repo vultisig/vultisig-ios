@@ -143,7 +143,10 @@ class TransactionMemoCosmosSwitch: TransactionMemoAddressable, ObservableObject 
             )
             
             StyledFloatingPointField(
-                placeholder: "Amount \(balance)",
+                placeholder: Binding(
+                    get: { "Amount \(self.balance)" },
+                    set: { _ in }
+                ),
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }

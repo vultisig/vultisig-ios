@@ -50,7 +50,10 @@ class TransactionMemoAddLiquidityMaya: ObservableObject
         AnyView(
             VStack {
                 StyledFloatingPointField(
-                    placeholder: "Amount",
+                    placeholder: Binding(
+                        get: { "Amount" },
+                        set: { _ in }
+                    ),
                     value: Binding(
                         get: { self.amount },
                         set: { self.amount = $0 }

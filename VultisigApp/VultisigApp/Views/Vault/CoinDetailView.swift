@@ -11,7 +11,7 @@ struct CoinDetailView: View {
     let coin: Coin
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @ObservedObject var sendTx: SendTransaction
+    @StateObject var sendTx: SendTransaction
     @Binding var resetActive: Bool
     
     @State var isLoading = false
