@@ -18,7 +18,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     
     // Internal
     @Published var nodeAddressValid: Bool = false
-    @Published var amountValid: Bool = false
+    @Published var amountValid: Bool = true // if ZERO it will unbond all.
     @Published var providerValid: Bool = true
     
     private var cancellables = Set<AnyCancellable>()
@@ -108,8 +108,8 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                 ),
                 format: .number,
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { true },
+                    set: { _ in }
                 )
             )
 
