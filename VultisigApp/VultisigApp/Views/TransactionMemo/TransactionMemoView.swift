@@ -19,11 +19,12 @@ struct TransactionMemoView: View {
             .onAppear {
                 Task {
                     await setData()
+                    await loadGasInfo()
                 }
             }
             .onChange(of: tx.coin) {
                 Task {
-                    await setData()
+                    await loadGasInfo()
                 }
             }
             .onDisappear(){
@@ -131,11 +132,12 @@ struct TransactionMemoView: View {
     }
     
     private func setData() async {
-        
         if let coin = coin {
             tx.coin = coin
         }
-        
+    }
+    
+    private func loadGasInfo() async {
         await transactionMemoViewModel.loadGasInfoForSending(tx: tx)
         await transactionMemoViewModel.loadFastVault(tx: tx, vault: vault)
     }
