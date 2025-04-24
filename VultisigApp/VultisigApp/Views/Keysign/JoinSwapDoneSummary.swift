@@ -50,7 +50,6 @@ struct JoinSwapDoneSummary: View {
         }
         .padding(.vertical)
         .padding(.horizontal, 24)
-        .background(Color.backgroundBlue)
     }
     
     var trackButton: some View {
@@ -163,15 +162,12 @@ struct JoinSwapDoneSummary: View {
     
     var summary: some View {
         VStack(spacing: 0) {
-            if let approveTxid = keysignViewModel.approveTxid {
-                separator
-                getCell(
-                    title: "txid",
-                    value: approveTxid,
-                    valueMaxWidth: 120,
-                    showCopyButton: true
-                )
-            }
+            getCell(
+                title: "txid",
+                value: keysignViewModel.txid,
+                valueMaxWidth: 120,
+                showCopyButton: true
+            )
             
             separator
             getCell(
@@ -191,7 +187,7 @@ struct JoinSwapDoneSummary: View {
             separator
             getCell(
                 title: "networkFee",
-                value: summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address,
+                value: getCalculatedNetworkFee(),
                 valueMaxWidth: 120
             )
         }
@@ -334,8 +330,6 @@ struct JoinSwapDoneSummary: View {
         } else {
             nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
         }
-        
-        
         
         guard let nativeCoin = nativeCoinAux else {
             return ""

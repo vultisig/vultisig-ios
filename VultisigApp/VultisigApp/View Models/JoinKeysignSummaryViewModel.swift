@@ -77,8 +77,8 @@ class JoinKeysignSummaryViewModel {
     }
     
     func getToAmountString(_ keysignPayload: KeysignPayload?) -> String {
-        guard let payload = keysignPayload?.swapPayload else { return "" }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.toAmountDecimal
         return String(describing: amount)
     }
 }

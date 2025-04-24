@@ -38,9 +38,9 @@ struct KeysignPayload: Codable, Hashable {
     }
     
     var toAmountFiatString: String {
-        let newValueFiat = (Decimal(string: toAmount.description) ?? Decimal.zero) * Decimal(coin.price)
+        let newValueFiat = (Decimal(string: toAmount.description) ?? Decimal.zero) * Decimal(swapPayload?.toCoin.price ?? 1)
         let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2)
-        let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
+        let power = Decimal(sign: .plus, exponent: -(swapPayload?.toCoin.decimals ?? 1), significand: 1)
         return NSDecimalNumber(decimal: truncatedValueFiat * power).stringValue.formatToFiat()
     }
 

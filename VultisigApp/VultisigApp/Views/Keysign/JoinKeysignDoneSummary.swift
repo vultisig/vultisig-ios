@@ -23,11 +23,13 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var body: some View {
-        ScrollView {
+        ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
                 swapContent
             } else {
-                summary
+                ScrollView {
+                    summary
+                }
             }
         }
     }

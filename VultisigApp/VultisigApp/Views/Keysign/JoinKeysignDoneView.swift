@@ -28,7 +28,10 @@ struct JoinKeysignDoneView: View {
     var view: some View {
         VStack(spacing: 32) {
             cards
-            continueButton
+            
+            if viewModel.keysignPayload?.swapPayload == nil {
+                continueButton
+            }
         }
     }
     

@@ -36,7 +36,6 @@ struct SendCryptoKeysignView: View {
     
     var signingView: some View {
         VStack {
-            disclaimer
             Spacer()
             signingAnimation
             Spacer()
@@ -109,35 +108,6 @@ struct SendCryptoKeysignView: View {
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
             .padding(.bottom, 30)
-    }
-    
-    var disclaimer: some View {
-        HStack(spacing: 12) {
-            infoIcon
-            text
-        }
-        .foregroundColor(.neutral0)
-        .padding(12)
-        .background(Color.blue600)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(.horizontal, 8)
-        .padding(.vertical, 12)
-    }
-    
-    var infoIcon: some View {
-        Image(systemName: "info.circle")
-            .resizable()
-            .frame(width: 12, height: 12)
-    }
-    
-    var text: some View {
-        Text(NSLocalizedString("sendCryptoKeysignViewDisclaimer", comment: ""))
-            .font(.body12BrockmannMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func setData() {
