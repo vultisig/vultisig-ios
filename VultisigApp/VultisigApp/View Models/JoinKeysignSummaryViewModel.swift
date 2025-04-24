@@ -40,7 +40,7 @@ class JoinKeysignSummaryViewModel {
         return "\(String(describing: fromCoin.decimal(for: amount))) \(fromCoin.ticker)"
     }
 
-    func getFromAmount(_ keysignPayload: KeysignPayload?, selectedCurrency: SettingsCurrency) -> String {
+    func getFromAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
         if payload.fromCoin.chain == payload.toCoin.chain {
@@ -50,7 +50,7 @@ class JoinKeysignSummaryViewModel {
         }
     }
 
-    func getToAmount(_ keysignPayload: KeysignPayload?, selectedCurrency: SettingsCurrency) -> String {
+    func getToAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
         if payload.fromCoin.chain == payload.toCoin.chain {

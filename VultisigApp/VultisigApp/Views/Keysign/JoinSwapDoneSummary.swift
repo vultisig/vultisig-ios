@@ -109,13 +109,13 @@ struct JoinSwapDoneSummary: View {
             HStack(spacing: 8) {
                 getFromToCard(
                     coin: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload),
-                    title: summaryViewModel.getFromAmountString(keysignViewModel.keysignPayload),
+                    title: summaryViewModel.getFromAmount(keysignViewModel.keysignPayload),
                     description: keysignViewModel.keysignPayload?.fromAmountFiatString
                 )
                 
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
-                    title: summaryViewModel.getToAmountString(keysignViewModel.keysignPayload),
+                    title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
                     description: keysignViewModel.keysignPayload?.toAmountFiatString
                 )
             }
@@ -187,8 +187,7 @@ struct JoinSwapDoneSummary: View {
             separator
             getCell(
                 title: "networkFee",
-                value: getCalculatedNetworkFee(),
-                valueMaxWidth: 120
+                value: getCalculatedNetworkFee()
             )
         }
         .padding(24)

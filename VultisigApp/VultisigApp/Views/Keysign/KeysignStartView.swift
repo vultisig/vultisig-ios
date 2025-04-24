@@ -14,6 +14,22 @@ struct KeysignStartView: View {
     @State var loadingAnimationVM: RiveViewModel? = nil
     
     var body: some View {
+        ZStack {
+            shadow
+            content
+        }
+    }
+    
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.05)
+            .blur(radius: 20)
+            .padding(-15)
+    }
+    
+    var content: some View {
         VStack(spacing: 16) {
             loader
             title
@@ -21,8 +37,6 @@ struct KeysignStartView: View {
         }
         .multilineTextAlignment(.center)
         .padding(30)
-        .background(Color.blue600)
-        .cornerRadius(10)
         .onAppear {
             loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
         }

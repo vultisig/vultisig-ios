@@ -92,19 +92,13 @@ struct JoinKeysignDoneSummary: View {
             Separator()
             getGeneralCell(
                 title: "swapFrom",
-                description: summaryViewModel.getFromAmount(
-                    viewModel.keysignPayload,
-                    selectedCurrency: settingsViewModel.selectedCurrency
-                )
+                description: summaryViewModel.getFromAmount(viewModel.keysignPayload)
             )
             
             Separator()
             getGeneralCell(
                 title: "to",
-                description: summaryViewModel.getToAmount(
-                    viewModel.keysignPayload,
-                    selectedCurrency: settingsViewModel.selectedCurrency
-                )
+                description: summaryViewModel.getToAmount(viewModel.keysignPayload)
             )
             
             if showApprove {
