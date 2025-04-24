@@ -63,7 +63,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .base: return "Base"
         case .optimism: return "Optimism"
         case .polygon: return "Polygon"
-        case .polygonV2: return "Polygon POL"
+        case .polygonV2: return "Polygon"
         case .blast: return "Blast"
         case .cronosChain: return "CronosChain"
         case .sui: return "Sui"
