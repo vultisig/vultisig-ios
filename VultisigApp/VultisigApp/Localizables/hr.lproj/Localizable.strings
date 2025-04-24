@@ -599,3 +599,5 @@
 "migratePasswordDescription" = "Unesite svoju lozinku za otključavanje server dijela i pokretanje nadogradnje";
 "FastMigrateOverviewText1" = "Poslali smo vam novi server dio!";
 "FastMigrateOverviewText2" = "Provjerite svoj e-mail za potvrdu";
+"signingTransaction" = "Potpisivanje transakcije";
+"txid" = "ID transakcije";

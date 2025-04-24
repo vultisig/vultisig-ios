@@ -616,3 +616,5 @@
 "migratePasswordDescription" = "Gib dein Passwort ein, um deinen Serveranteil zu entsperren und das Upgrade zu starten";
 "FastMigrateOverviewText1" = "Wir haben dir deinen neuen Serveranteil gesendet!";
 "FastMigrateOverviewText2" = "Überprüfe deine E-Mail zur Bestätigung";
+"signingTransaction" = "Transaktion wird signiert";
+"txid" = "Tx-ID";
