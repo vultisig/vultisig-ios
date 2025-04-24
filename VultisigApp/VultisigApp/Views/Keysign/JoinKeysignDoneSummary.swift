@@ -67,7 +67,7 @@ struct JoinKeysignDoneSummary: View {
     
     var swapContent: some View {
         JoinSwapDoneSummary(
-            vault: Vault.example,
+            vault: vault,
             keysignViewModel: viewModel,
             summaryViewModel: summaryViewModel,
             moveToHome: $moveToHome,

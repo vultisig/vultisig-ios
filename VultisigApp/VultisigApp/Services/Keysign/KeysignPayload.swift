@@ -38,10 +38,7 @@ struct KeysignPayload: Codable, Hashable {
     }
     
     var toAmountFiatString: String {
-        let newValueFiat = (Decimal(string: toAmount.description) ?? Decimal.zero) * Decimal(swapPayload?.toCoin.price ?? 1)
-        let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2)
-        let power = Decimal(sign: .plus, exponent: -(swapPayload?.toCoin.decimals ?? 1), significand: 1)
-        return NSDecimalNumber(decimal: truncatedValueFiat * power).stringValue.formatToFiat()
+        swapPayload?.toCoin.fiat(decimal: swapPayload?.toAmountDecimal ?? 0).description ?? ""
     }
 
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, approvePayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")

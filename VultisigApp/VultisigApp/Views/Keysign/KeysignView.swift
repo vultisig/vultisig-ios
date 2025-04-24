@@ -45,7 +45,7 @@ struct KeysignView: View {
                 KeysignVaultMismatchErrorView()
             }
             
-            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
+            PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
         .task {
             await setData()
