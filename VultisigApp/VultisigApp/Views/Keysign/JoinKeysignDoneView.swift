@@ -28,12 +28,20 @@ struct JoinKeysignDoneView: View {
     var view: some View {
         VStack(spacing: 32) {
             cards
-            continueButton
+            
+            if viewModel.keysignPayload?.swapPayload == nil {
+                continueButton
+            }
         }
     }
     
     var cards: some View {
-        JoinKeysignDoneSummary(viewModel: viewModel, showAlert: $showAlert)
+        JoinKeysignDoneSummary(
+            vault: vault,
+            viewModel: viewModel,
+            showAlert: $showAlert,
+            moveToHome: $moveToHome
+        )
     }
 
     var continueButton: some View {

@@ -1,26 +1,21 @@
 //
-//  SwapCryptoDoneView.swift
+//  JoinSwapDoneSummary.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-04-04.
+//  Created by Amol Kumar on 2025-04-23.
 //
 
 import SwiftUI
 import RiveRuntime
+import BigInt
 
-struct SwapCryptoDoneView: View {
-    let tx: SwapTransaction
+struct JoinSwapDoneSummary: View {
     let vault: Vault
-    let hash: String
-    let approveHash: String?
-    let progressLink: String?
-    let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
+    let keysignViewModel: KeysignViewModel
+    let summaryViewModel: JoinKeysignSummaryViewModel
+    @Binding var moveToHome: Bool
     @Binding var showAlert: Bool
-    @Binding var alertTitle: String
-    @Binding var navigateToHome: Bool
     
-    @State var showFees: Bool = false
     @State var animationVM: RiveViewModel? = nil
     
     @Environment(\.openURL) var openURL
@@ -53,15 +48,16 @@ struct SwapCryptoDoneView: View {
             trackButton
             doneButton
         }
-        .padding(.top)
-        .padding(.horizontal, 18)
-        .background(Color.backgroundBlue)
+        .padding(.vertical)
+        .padding(.horizontal, 24)
     }
     
     var trackButton: some View {
         Button {
-            if let progressLink, let url = URL(string: progressLink) {
-                openURL(url)
+            if let link = keysignViewModel.getSwapProgressURL(txid: keysignViewModel.txid) {
+                progressLink(link: link)
+            } else {
+                shareLink(txid: keysignViewModel.txid)
             }
         } label: {
             trackLabel
@@ -78,7 +74,7 @@ struct SwapCryptoDoneView: View {
     
     var doneButton: some View {
         Button {
-            navigateToHome = true
+            moveToHome = true
         } label: {
             doneLabel
         }
@@ -112,21 +108,15 @@ struct SwapCryptoDoneView: View {
         ZStack {
             HStack(spacing: 8) {
                 getFromToCard(
-                    coin: tx.fromCoin,
-                    title: sendSummaryViewModel.getFromAmount(
-                        tx,
-                        selectedCurrency: settingsViewModel.selectedCurrency
-                    ),
-                    description: swapSummaryViewModel.fromFiatAmount(tx: tx)
+                    coin: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload),
+                    title: summaryViewModel.getFromAmount(keysignViewModel.keysignPayload),
+                    description: keysignViewModel.keysignPayload?.fromAmountFiatString
                 )
                 
                 getFromToCard(
-                    coin: tx.toCoin,
-                    title: sendSummaryViewModel.getToAmount(
-                        tx,
-                        selectedCurrency: settingsViewModel.selectedCurrency
-                    ),
-                    description: swapSummaryViewModel.toFiatAmount(tx: tx)
+                    coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
+                    title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
+                    description: keysignViewModel.keysignPayload?.toAmountFiatString
                 )
             }
             
@@ -173,43 +163,32 @@ struct SwapCryptoDoneView: View {
     var summary: some View {
         VStack(spacing: 0) {
             getCell(
-                title: "swapTXHash",
-                value: hash,
+                title: "txid",
+                value: keysignViewModel.txid,
                 valueMaxWidth: 120,
                 showCopyButton: true
             )
-            
-            if let approveHash {
-                separator
-                getCell(
-                    title: "approvalTXHash",
-                    value: approveHash,
-                    valueMaxWidth: 120,
-                    showCopyButton: true
-                )
-            }
             
             separator
             getCell(
                 title: "from",
                 value: vault.name,
-                bracketValue: tx.fromCoin.address,
+                bracketValue: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address,
                 bracketMaxWidth: 120
             )
             
             separator
             getCell(
                 title: "to",
-                value: tx.toCoin.address,
+                value: summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address,
                 valueMaxWidth: 120
             )
             
-            if swapSummaryViewModel.showTotalFees(tx: tx) {
-                separator
-                totalFees
-            }
-            
-            otherFees
+            separator
+            getCell(
+                title: "networkFee",
+                value: getCalculatedNetworkFee()
+            )
         }
         .padding(24)
         .background(Color.blue600)
@@ -225,85 +204,23 @@ struct SwapCryptoDoneView: View {
             .opacity(0.2)
     }
     
-    var totalFees: some View {
-        Button {
-            showFees.toggle()
-        } label: {
-            totalFeesLabel
-        }
-    }
-    
-    var totalFeesLabel: some View {
-        HStack {
-            getCell(
-                title: "totalFee",
-                value: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
-            )
-            
-            chevron
-        }
-    }
-    
-    var chevron: some View {
-        Image(systemName: "chevron.up")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.neutral0)
-            .rotationEffect(Angle(degrees: showFees ? 0 : 180))
-    }
-    
-    var otherFees: some View {
-        HStack {
-            Rectangle()
-                .frame(width: 1)
-                .foregroundColor(.persianBlue200)
-            
-            expandableFees
-        }
-        .frame(maxHeight: showFees ? nil : 0)
-        .clipped()
-    }
-    
-    var expandableFees: some View {
+    private func getFromToCard(coin: Coin?, title: String, description: String?) -> some View {
         VStack(spacing: 4) {
-            if swapSummaryViewModel.showFees(tx: tx) {
-                swapFees
+            if let coin {
+                AsyncImageView(
+                    logo: coin.logo,
+                    size: CGSize(width: 32, height: 32),
+                    ticker: coin.ticker,
+                    tokenChainLogo: coin.tokenChainLogo
+                )
+                .padding(.bottom, 8)
             }
-            
-            if swapSummaryViewModel.showGas(tx: tx) {
-                swapGas
-            }
-        }
-    }
-    
-    var swapFees: some View {
-        getCell(
-            title: "swapFee",
-            value: swapSummaryViewModel.swapFeeString(tx: tx)
-        )
-    }
-    
-    var swapGas: some View {
-        getCell(
-            title: "networkFee",
-            value: "\(swapSummaryViewModel.swapGasString(tx: tx))(\(swapSummaryViewModel.approveFeeString(tx: tx)))"
-        )
-    }
-    
-    private func getFromToCard(coin: Coin, title: String, description: String) -> some View {
-        VStack(spacing: 4) {
-            AsyncImageView(
-                logo: coin.logo,
-                size: CGSize(width: 32, height: 32),
-                ticker: coin.ticker,
-                tokenChainLogo: coin.tokenChainLogo
-            )
-            .padding(.bottom, 8)
             
             Text(title)
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
             
-            Text(description.formatToFiat(includeCurrencySymbol: true))
+            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(.body10BrockmannMedium)
                 .foregroundColor(.extraLightGray)
         }
@@ -319,7 +236,7 @@ struct SwapCryptoDoneView: View {
     
     private func getCell(
         title: String,
-        value: String,
+        value: String?,
         bracketValue: String? = nil,
         valueMaxWidth: CGFloat? = nil,
         bracketMaxWidth: CGFloat? = nil,
@@ -331,7 +248,7 @@ struct SwapCryptoDoneView: View {
             
             Spacer()
             
-            Text(value)
+            Text(value ?? "")
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .foregroundColor(.neutral0)
@@ -357,29 +274,84 @@ struct SwapCryptoDoneView: View {
         .font(.body14BrockmannMedium)
     }
     
-    private func getCopyButton(for value: String) -> some View {
+    private func getCopyButton(for value: String?) -> some View {
         Button {
-            copyValue(value)
+            copyHash(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(.neutral0)
                 .font(.body14BrockmannMedium)
         }
     }
+    
+    func getCalculatedNetworkFee() -> String {
+        guard let payload = keysignViewModel.keysignPayload else {
+            return .zero
+        }
+
+        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
+            $0.isNativeToken && $0.chain == payload.coin.chain
+        }) else {
+            return .zero
+        }
+
+        if payload.coin.chainType == .EVM {
+            let gas = payload.chainSpecific.gas
+
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
+                  let gasDecimal = Decimal(string: gas.description) else {
+                return .empty
+            }
+
+            let gasGwei = gasDecimal / weiPerGWeiDecimal
+            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
+
+            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
+            feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
+            return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
+        }
+
+        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
+        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+
+        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
+        feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
+
+        return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
+    }
+    
+    func feesInReadable(coin: Coin, fee: BigInt) -> String {
+        var nativeCoinAux: Coin?
+        
+        if coin.isNativeToken {
+            nativeCoinAux = coin
+        } else {
+            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+        }
+        
+        guard let nativeCoin = nativeCoinAux else {
+            return ""
+        }
+        
+        let fee = nativeCoin.decimal(for: fee)
+        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+    }
+    
+    private func shareLink(txid: String) {
+        let urlString = keysignViewModel.getTransactionExplorerURL(txid: txid)
+        if !urlString.isEmpty, let url = URL(string: urlString) {
+            openURL(url)
+        }
+    }
+
+    private func progressLink(link: String) {
+        if !link.isEmpty, let url = URL(string: link) {
+            openURL(url)
+        }
+    }
 }
 
 #Preview {
-    SwapCryptoDoneView(
-        tx: SwapTransaction(),
-        vault:Vault.example,
-        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-        progressLink: nil,
-        sendSummaryViewModel: SendSummaryViewModel(),
-        swapSummaryViewModel: SwapCryptoViewModel(),
-        showAlert: .constant(false),
-        alertTitle: .constant(""),
-        navigateToHome: .constant(false)
-    )
-    .environmentObject(SettingsViewModel())
+    JoinSwapDoneSummary(vault: Vault.example, keysignViewModel: KeysignViewModel(), summaryViewModel: JoinKeysignSummaryViewModel(), moveToHome: .constant(false), showAlert: .constant(false))
 }

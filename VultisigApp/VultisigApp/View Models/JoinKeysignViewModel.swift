@@ -53,6 +53,18 @@ class JoinKeysignViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
         self.isShowingScanner = false
     }
+
+    func getSpender() -> String {
+        return keysignPayload?.approvePayload?.spender ?? .empty
+    }
+
+    func getAmount() -> String {
+        guard let fromCoin = keysignPayload?.coin, let amount = keysignPayload?.approvePayload?.amount else {
+            return .empty
+        }
+
+        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators()) \(fromCoin.ticker)"
+    }
     
     func setData(vault: Vault, serviceDelegate: ServiceDelegate, isCameraPermissionGranted: Bool) {
         self.vault = vault
@@ -340,6 +352,19 @@ class JoinKeysignViewModel: ObservableObject {
         return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
     }
     
+    func getProvider() -> String {
+        switch keysignPayload?.swapPayload {
+        case .oneInch:
+            return "1Inch"
+        case .thorchain:
+            return "THORChain"
+        case .mayachain:
+            return "Maya protocol"
+        case .none:
+            return .empty
+        }
+    }
+    
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
         var nativeCoinAux: Coin?
         
@@ -349,13 +374,31 @@ class JoinKeysignViewModel: ObservableObject {
             nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
         }
         
-        
-        
         guard let nativeCoin = nativeCoinAux else {
             return ""
         }
         
         let fee = nativeCoin.decimal(for: fee)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+    }
+    
+    func getFromAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker)"
+        } else {
+            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+        }
+    }
+
+    func getToAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.toAmountDecimal
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker)"
+        } else {
+            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+        }
     }
 }

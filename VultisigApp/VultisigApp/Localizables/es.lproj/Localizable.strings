@@ -599,3 +599,5 @@
 "migratePasswordDescription" = "Introduce tu contraseña para desbloquear tu Parte del Servidor y comenzar la actualización";
 "FastMigrateOverviewText1" = "¡Te hemos enviado tu nueva parte del servidor!";
 "FastMigrateOverviewText2" = "Revisa tu correo electrónico para verificar";
+"signingTransaction" = "Firmando transacción";
+"txid" = "ID de transacción";

@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import BigInt
 
 struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
+    
+    var showApprove: Bool {
+        viewModel.keysignPayload?.approvePayload != nil
+    }
 
     var body: some View {
         VStack {
@@ -18,28 +23,27 @@ struct KeysignSwapConfirmView: View {
     }
 
     var fields: some View {
-        ScrollView {
-            VStack(spacing: 30) {
-                summary
-            }
+        VStack {
+            Spacer()
+            summary
+            Spacer()
         }
     }
 
     var summary: some View {
         VStack(spacing: 16) {
-            getValueCell(for: "action", with: getAction())
-            Separator()
-            getValueCell(for: "provider", with: getProvider())
-            Separator()
-            getValueCell(for: "fromAsset", with: getFromAmount())
-            Separator()
-            getValueCell(for: "toAsset", with: getToAmount())
-            if showApprove {
-                Separator()
-                getValueCell(for: "Allowance spender", with: getSpender())
-                Separator()
-                getValueCell(for: "Allowance amount", with: getAmount())
-            }
+            summaryTitle
+            summaryFromToContent
+            
+            separator
+            getValueCell(
+                for: "provider",
+                with: viewModel.getProvider(),
+                showIcon: true
+            )
+            
+            separator
+            getValueCell(for: "NetworkFee", with: viewModel.getCalculatedNetworkFee())
         }
         .padding(16)
         .background(Color.blue600)
@@ -54,76 +58,153 @@ struct KeysignSwapConfirmView: View {
         }
         .padding(20)
     }
-
-    func getAction() -> String {
-        guard viewModel.keysignPayload?.approvePayload == nil else {
-            return NSLocalizedString("Approve and Swap", comment: "")
-        }
-        return NSLocalizedString("Swap", comment: "")
+    
+    var summaryTitle: some View {
+        Text(NSLocalizedString("youreBridging", comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.lightText)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    func getProvider() -> String {
-        switch viewModel.keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .none:
-            return .empty
+    
+    var summaryFromToContent: some View {
+        HStack {
+            summaryFromToIcons
+            summaryFromTo
         }
     }
-
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
-
-    func getSpender() -> String {
-        return viewModel.keysignPayload?.approvePayload?.spender ?? .empty
-    }
-
-    func getAmount() -> String {
-        guard let fromCoin = viewModel.keysignPayload?.coin, let amount = viewModel.keysignPayload?.approvePayload?.amount else {
-            return .empty
-        }
-
-        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators()) \(fromCoin.ticker)"
-    }
-
-    func getFromAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+    
+    var summaryFromToIcons: some View {
+        VStack(spacing: 0) {
+            getCoinIcon(for: viewModel.keysignPayload?.swapPayload?.fromCoin)
+            verticalSeparator
+            chevronIcon
+            verticalSeparator
+            getCoinIcon(for: viewModel.keysignPayload?.swapPayload?.toCoin)
         }
     }
-
-    func getToAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker)"
-        } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+    
+    var verticalSeparator: some View {
+        Rectangle()
+            .frame(width: 1, height: 12)
+            .foregroundColor(.blue400)
+    }
+    
+    var summaryFromTo: some View {
+        VStack(spacing: 16) {
+            let payload = viewModel.keysignPayload?.swapPayload
+            
+            getSwapAssetCell(
+                for: viewModel.getFromAmount(),
+                with: payload?.fromCoin.ticker,
+                on: payload?.fromCoin.chain
+            )
+            
+            separator
+                .padding(.leading, 12)
+            
+            getSwapAssetCell(
+                for: viewModel.getToAmount(),
+                with: viewModel.keysignPayload?.swapPayload?.toCoin.ticker,
+                on: viewModel.keysignPayload?.swapPayload?.toCoin.chain
+            )
         }
     }
+    
+    var separator: some View {
+        Separator()
+            .opacity(0.2)
+    }
+    
+    var chevronIcon: some View {
+        Image(systemName: "arrow.down")
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.persianBlue200)
+            .padding(6)
+            .background(Color.blue400)
+            .cornerRadius(32)
+            .bold()
+    }
 
-    func getValueCell(for title: String, with value: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    func getValueCell(
+        for title: String,
+        with value: String,
+        bracketValue: String? = nil,
+        showIcon: Bool = false
+    ) -> some View {
+        HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-
+                .foregroundColor(.extraLightGray)
+            
+            Spacer()
+            
+            if showIcon {
+                Image(value)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+            }
+            
             Text(value)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(.neutral0)
+            
+            if let bracketValue {
+                Text(bracketValue)
+                    .foregroundColor(.extraLightGray)
+            }
+            
+        }
+        .font(.body14BrockmannMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func getSwapAssetCell(
+        for amount: String?,
+        with ticker: String?,
+        on chain: Chain? = nil
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Group {
+                Text(amount ?? "")
+                    .foregroundColor(.neutral0) +
+                Text(" ") +
+                Text(ticker ?? "")
+                    .foregroundColor(.extraLightGray)
+            }
+            .font(.body18BrockmannMedium)
+            
+            if let chain {
+                HStack(spacing: 2) {
+                    Text(NSLocalizedString("on", comment: ""))
+                        .foregroundColor(.extraLightGray)
+                        .padding(.trailing, 4)
+                    
+                    Image(chain.logo)
+                        .resizable()
+                        .frame(width: 12, height: 12)
+                    
+                    Text(chain.name)
+                        .foregroundColor(.neutral0)
+                    
+                    Spacer()
+                }
+                .font(.body10BrockmannMedium)
+                .offset(x: 2)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func getCoinIcon(for coin: Coin?) -> some View {
+        AsyncImageView(
+            logo: coin?.logo ?? "",
+            size: CGSize(width: 28, height: 28),
+            ticker: coin?.ticker ?? "",
+            tokenChainLogo: nil
+        )
+        .overlay(
+            Circle()
+                .stroke(Color.blue400, lineWidth: 2)
+        )
+    }
 }
 
 #Preview {

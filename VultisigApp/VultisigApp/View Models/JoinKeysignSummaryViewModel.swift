@@ -40,7 +40,7 @@ class JoinKeysignSummaryViewModel {
         return "\(String(describing: fromCoin.decimal(for: amount))) \(fromCoin.ticker)"
     }
 
-    func getFromAmount(_ keysignPayload: KeysignPayload?, selectedCurrency: SettingsCurrency) -> String {
+    func getFromAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
         if payload.fromCoin.chain == payload.toCoin.chain {
@@ -50,7 +50,7 @@ class JoinKeysignSummaryViewModel {
         }
     }
 
-    func getToAmount(_ keysignPayload: KeysignPayload?, selectedCurrency: SettingsCurrency) -> String {
+    func getToAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
         if payload.fromCoin.chain == payload.toCoin.chain {
@@ -58,5 +58,27 @@ class JoinKeysignSummaryViewModel {
         } else {
             return "\(String(describing: amount)) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
         }
+    }
+    
+    func getFromCoin(_ keysignPayload: KeysignPayload?) -> Coin? {
+        guard let payload = keysignPayload?.swapPayload else { return nil }
+        return payload.fromCoin
+    }
+    
+    func getFromAmountString(_ keysignPayload: KeysignPayload?) -> String {
+        guard let payload = keysignPayload?.swapPayload else { return "" }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        return String(describing: amount)
+    }
+    
+    func getToCoin(_ keysignPayload: KeysignPayload?) -> Coin? {
+        guard let payload = keysignPayload?.swapPayload else { return nil }
+        return payload.toCoin
+    }
+    
+    func getToAmountString(_ keysignPayload: KeysignPayload?) -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.toAmountDecimal
+        return String(describing: amount)
     }
 }

@@ -599,3 +599,5 @@
 "migratePasswordDescription" = "Inserisci la tua password per sbloccare la quota del server e iniziare l'aggiornamento";
 "FastMigrateOverviewText1" = "Ti abbiamo inviato la nuova quota del server!";
 "FastMigrateOverviewText2" = "Controlla la tua e-mail per verificare";
+"signingTransaction" = "Firma della transazione";
+"txid" = "ID transazione";

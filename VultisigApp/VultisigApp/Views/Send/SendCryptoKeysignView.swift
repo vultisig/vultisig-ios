@@ -9,7 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SendCryptoKeysignView: View {
-    let title: String
+    var title: String? = nil
     var showError = false
     
     @Environment(\.dismiss) var dismiss
@@ -36,7 +36,6 @@ struct SendCryptoKeysignView: View {
     
     var signingView: some View {
         VStack {
-            disclaimer
             Spacer()
             signingAnimation
             Spacer()
@@ -56,9 +55,16 @@ struct SendCryptoKeysignView: View {
     var signingAnimation: some View {
         VStack(spacing: 32) {
             animation
-            Text(NSLocalizedString(title, comment: "Signing"))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
+            
+            if let title {
+                Text(NSLocalizedString(title, comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+            } else {
+                Text(NSLocalizedString("signingTransaction", comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+            }
         }
     }
     
@@ -104,35 +110,6 @@ struct SendCryptoKeysignView: View {
             .padding(.bottom, 30)
     }
     
-    var disclaimer: some View {
-        HStack(spacing: 12) {
-            infoIcon
-            text
-        }
-        .foregroundColor(.neutral0)
-        .padding(12)
-        .background(Color.blue600)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(.horizontal, 8)
-        .padding(.vertical, 12)
-    }
-    
-    var infoIcon: some View {
-        Image(systemName: "info.circle")
-            .resizable()
-            .frame(width: 16, height: 16)
-    }
-    
-    var text: some View {
-        Text(NSLocalizedString("sendCryptoKeysignViewDisclaimer", comment: ""))
-            .font(.body14BrockmannMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
     private func setData() {
         loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
     }
@@ -143,6 +120,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView(title: "signing")
+        SendCryptoKeysignView()
     }
 }
