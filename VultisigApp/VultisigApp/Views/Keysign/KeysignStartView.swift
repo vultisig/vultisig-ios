@@ -58,9 +58,11 @@ struct KeysignStartView: View {
     }
     
     var deviceID: some View {
-        HStack {
+        HStack(spacing: 0) {
             Text(NSLocalizedString("thisDevice", comment: ""))
+            Text(":")
             Text(viewModel.localPartyID)
+                .padding(.leading)
         }
         .font(.body14BrockmannMedium)
         .foregroundColor(.extraLightGray)
