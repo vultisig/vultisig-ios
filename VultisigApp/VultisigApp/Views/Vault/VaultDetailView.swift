@@ -247,7 +247,7 @@ struct VaultDetailView: View {
         }
     }
     
-    private func getBackgroundOpacity() -> CGFloat {
+    func getBackgroundOpacity() -> CGFloat {
         if isMonthlyBackupWarningLinkActive || isBiweeklyPasswordVerifyLinkActive {
             0.5
         } else {
