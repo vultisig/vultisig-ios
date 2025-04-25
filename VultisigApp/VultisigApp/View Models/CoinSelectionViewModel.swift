@@ -16,11 +16,17 @@ class CoinSelectionViewModel: ObservableObject {
     @Published var selection = Set<CoinMeta>()
 
     var filteredChains: [String] {
-        return searchText.isEmpty 
-            ? groupedAssets.keys.sorted()
-            : groupedAssets.keys
-                .filter { $0.lowercased().contains(searchText.lowercased()) }
+        if searchText.isEmpty {
+            return groupedAssets.keys.sorted()
+        } else {
+            return groupedAssets
+                .filter { (chain, tokens) in
+                    chain.lowercased().contains(searchText.lowercased()) ||
+                    tokens.contains { $0.ticker.lowercased().contains(searchText.lowercased()) }
+                }
+                .map { $0.key }
                 .sorted()
+        }
     }
 
     let actionResolver = CoinActionResolver()
