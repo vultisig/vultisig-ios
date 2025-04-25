@@ -56,6 +56,9 @@ extension SendCryptoDetailsView {
                     }
                     
                     amountField
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.decimalPad)
+
                     amountFiatField
                     
                     if !tx.coin.isNativeToken {

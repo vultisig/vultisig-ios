@@ -273,7 +273,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
-        if let newValueDecimal = Decimal(string: newValue) {
+        let newValueDecimal = newValue.toDecimal()
+        if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
             tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue

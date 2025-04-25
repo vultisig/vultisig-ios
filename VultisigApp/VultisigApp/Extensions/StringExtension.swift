@@ -76,10 +76,21 @@ extension String {
     }
     
     private func parseInput() -> Decimal? {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+
+        let decimalSeparator = formatter.decimalSeparator ?? "."
+        let wrongSeparator = decimalSeparator == "." ? "," : "."
+
         var cleanInput = self.trimmingCharacters(in: .whitespaces)
-        cleanInput = cleanInput.replacingOccurrences(of: ",", with: "")
-        
-        return Decimal(string: cleanInput)
+        cleanInput = cleanInput.replacingOccurrences(of: wrongSeparator, with: decimalSeparator)
+
+        if let number = formatter.number(from: cleanInput) {
+            return number.decimalValue
+        }
+
+        return nil
     }
     
     private func getCurrentDecimalPoint() -> String {
