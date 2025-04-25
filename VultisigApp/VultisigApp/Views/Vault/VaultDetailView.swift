@@ -31,6 +31,7 @@ struct VaultDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
+    @State var isBiweeklyPasswordVerifyLinkActive = true
     @State var isBackupLinkActive = false
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -104,12 +105,17 @@ struct VaultDetailView: View {
                 navigationLinkActive: $upgradeYourVaultLinkActive
             )
         }
+        .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
+            PasswordVerifyReminderView(isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
+                .presentationDetents([.height(240)])
+        }
     }
 
     var shadowView: some View {
         Background()
-            .opacity(isMonthlyBackupWarningLinkActive ? 0.5 : 0)
+            .opacity(getBackgroundOpacity())
             .animation(.default, value: isMonthlyBackupWarningLinkActive)
+            .animation(.default, value: isBiweeklyPasswordVerifyLinkActive)
     }
 
     var emptyList: some View {
@@ -238,6 +244,14 @@ struct VaultDetailView: View {
 
         if let days = diff.day, days >= 30 {
             isMonthlyBackupWarningLinkActive = true
+        }
+    }
+    
+    private func getBackgroundOpacity() -> CGFloat {
+        if isMonthlyBackupWarningLinkActive || isBiweeklyPasswordVerifyLinkActive {
+            0.5
+        } else {
+            0
         }
     }
 }

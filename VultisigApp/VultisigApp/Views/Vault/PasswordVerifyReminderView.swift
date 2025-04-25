@@ -26,9 +26,10 @@ struct PasswordVerifyReminderView: View {
         VStack(spacing: 16) {
             header
             textField
-            Spacer()
             verifyButton
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 24)
         .onAppear {
             monthlyReminderDate = Date()
         }
@@ -48,26 +49,37 @@ struct PasswordVerifyReminderView: View {
 
             closeButton
         }
-        .padding(.top, 30)
         .foregroundColor(.neutral0)
         .font(.body16BrockmannMedium)
     }
     
     var textField: some View {
         HStack {
-            SecureField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
-                .foregroundColor(.neutral0)
-                .borderlessTextFieldStyle()
-                .keyboardType(.default)
-                .textInputAutocapitalization(.never)
-                .textContentType(.password)
+            if isPasswordVisible {
+                TextField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
+                    .borderlessTextFieldStyle()
+            } else {
+                SecureField(NSLocalizedString("verifyPassword", comment: "").capitalized, text: $verifyPassword)
+                    .borderlessTextFieldStyle()
+            }
             
             hideButton
         }
+        .foregroundColor(.neutral0)
+        .font(.body14BrockmannMedium)
+        .borderlessTextFieldStyle()
+        .keyboardType(.default)
+        .textInputAutocapitalization(.never)
+        .textContentType(.password)
+        .frame(height: 56)
+        .padding(.horizontal, 24)
+        .background(Color.blue600)
+        .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Color.turquoise600, lineWidth: 1)
         )
+        .padding(.top, 12)
     }
     
     var hideButton: some View {
@@ -103,7 +115,6 @@ struct PasswordVerifyReminderView: View {
         } label: {
             FilledButton(title: "verify")
         }
-        .padding(.horizontal, 16)
         .buttonStyle(.plain)
     }
 }
