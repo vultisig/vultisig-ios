@@ -100,14 +100,15 @@ struct JoinKeysignView: View {
         .padding(.horizontal, 30)
     }
     
-    @ViewBuilder
     var keysignMessageConfirm: some View {
-        if viewModel.keysignPayload?.swapPayload != nil {
-            KeysignSwapConfirmView(viewModel: viewModel)
-        } else if viewModel.customMessagePayload != nil {
-            KeysignCustomMessageConfirmView(viewModel: viewModel)
-        } else {
-            KeysignMessageConfirmView(viewModel: viewModel)
+        ZStack {
+            if viewModel.keysignPayload?.swapPayload != nil {
+                KeysignSwapConfirmView(viewModel: viewModel)
+            } else if viewModel.customMessagePayload != nil {
+                KeysignCustomMessageConfirmView(viewModel: viewModel)
+            } else {
+                KeysignMessageConfirmView(viewModel: viewModel)
+            }
         }
     }
     

@@ -637,6 +637,9 @@
 "swapVerifyCheckbox2Description" = "I agree with the min. amount I’ll receive";
 "swapVerifyCheckbox3Description" = "I agree with providing ERC20 allowance for exact bridge amount";
 "swapTXHash" = "Bridge Tx Hash";
+"uploadQR" = "Upload QR";
+"photoLibrary" = "Photo Library";
+"chooseFiles" = "Choose Files";
 "upgradingVault" = "Upgrading vault";
 "vaultUpgraded" = "Vault upgraded";
 "successfully" = "successfully";
@@ -644,3 +647,5 @@
 "migratePasswordDescription" = "Enter your password to unlock your Server Share and start the upgrade";
 "FastMigrateOverviewText1" = "We’ve sent you your new server share!";
 "FastMigrateOverviewText2" = "Check your e-mail to verify";
+"signingTransaction" = "Signing transaction";
+"txid" = "Tx ID";
