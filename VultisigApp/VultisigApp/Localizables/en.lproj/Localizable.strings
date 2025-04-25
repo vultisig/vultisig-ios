@@ -649,3 +649,4 @@
 "FastMigrateOverviewText2" = "Check your e-mail to verify";
 "signingTransaction" = "Signing transaction";
 "txid" = "Tx ID";
+"biweeklyPasswordVerifyTitle" = "Verify your Server Share\nPassword";
