@@ -12,8 +12,6 @@ struct PasswordVerifyReminderView: View {
     
     @State var verifyPassword = ""
     @State var isPasswordVisible = false
-
-    @AppStorage("biweeklyPasswordVerifyDate") var monthlyReminderDate: Date = Date()
     
     var body: some View {
         ZStack {
@@ -30,9 +28,6 @@ struct PasswordVerifyReminderView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
-        .onAppear {
-            monthlyReminderDate = Date()
-        }
     }
 
     var header: some View {

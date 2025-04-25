@@ -19,6 +19,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
+    @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Date = Date()
 
     @State var showSheet = false
     @State var isLoading = true
@@ -31,7 +32,7 @@ struct VaultDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
-    @State var isBiweeklyPasswordVerifyLinkActive = true
+    @State var isBiweeklyPasswordVerifyLinkActive = false
     @State var isBackupLinkActive = false
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -204,6 +205,7 @@ struct VaultDetailView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             showMonthlyReminderIfNeeded()
+//            showBiweeklyPasswordVerificationIfNeeded()
         }
     }
     
@@ -244,6 +246,15 @@ struct VaultDetailView: View {
 
         if let days = diff.day, days >= 30 {
             isMonthlyBackupWarningLinkActive = true
+        }
+    }
+    
+    private func showBiweeklyPasswordVerificationIfNeeded() {
+        let difference = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
+
+        if let days = difference.day, days >= 15 {
+            isBiweeklyPasswordVerifyLinkActive = true
+            biweeklyPasswordVerifyDate = Date()
         }
     }
     
