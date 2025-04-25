@@ -7,6 +7,7 @@
 
 #if os(iOS)
 import SwiftUI
+import MoonPaySdk
 
 extension SwapCryptoView {
     var content: some View {
@@ -17,6 +18,16 @@ extension SwapCryptoView {
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
             swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
+            let params = MoonPaySwapsCustomerSetupQueryParams(apiKey: "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk",amount:0,amountCurrencyCode: "USD")
+            let config = MoonPaySdkSwapsCustomerSetupConfig(
+                debug: false,
+                environment: MoonPayWidgetEnvironment.sandbox,
+                params: params,
+                handlers: nil
+            )
+            
+            let moonPaySdk = MoonPayiOSSdk(config: config)
+            moonPaySdk.show(mode: .WebViewOverlay())
         }
         .task {
             await swapViewModel.loadFastVault(tx: tx, vault: vault)
