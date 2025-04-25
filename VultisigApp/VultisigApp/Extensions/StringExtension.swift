@@ -60,8 +60,14 @@ extension String {
 }
 
 // MARK: - Amount Formatter
-
 extension String {
+    
+    private func getCurrentDecimalPoint() -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current // Ensure it uses system locale
+        return formatter.decimalSeparator ?? "."
+    }
+    
     func formatCurrency() -> String {
         let decimalPoint = getCurrentDecimalPoint()
         return self.replacingOccurrences(of: ",", with: decimalPoint)
@@ -75,28 +81,16 @@ extension String {
         return number.formatToFiat(includeCurrencySymbol: false, useAbbreviation: false)
     }
     
-    private func parseInput() -> Decimal? {
+    func parseInput(locale: Locale = Locale.current) -> Decimal? {
         let formatter = NumberFormatter()
-        formatter.locale = Locale.current
+        formatter.locale = locale
         formatter.numberStyle = .decimal
-
-        let decimalSeparator = formatter.decimalSeparator ?? "."
-        let wrongSeparator = decimalSeparator == "." ? "," : "."
-
-        var cleanInput = self.trimmingCharacters(in: .whitespaces)
-        cleanInput = cleanInput.replacingOccurrences(of: wrongSeparator, with: decimalSeparator)
-
-        if let number = formatter.number(from: cleanInput) {
+        
+        if let number = formatter.number(from: self) {
             return number.decimalValue
         }
-
+        
         return nil
-    }
-    
-    private func getCurrentDecimalPoint() -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current // Ensure it uses system locale
-        return formatter.decimalSeparator ?? "."
     }
 }
 
@@ -118,7 +112,7 @@ extension String {
         return number.formatToFiat(includeCurrencySymbol: includeCurrencySymbol, useAbbreviation: false)
     }
     
-    func formatToDecimal(digits: Int) -> String {
+    func formatToDecimal(digits: Int = 8) -> String {
         guard let number = parseInput() else {
             return self
         }
@@ -139,25 +133,13 @@ extension String {
     }
     
     func isValidDecimal() -> Bool {
-        if self.isEmpty {
+        guard let number = parseInput() else {
             return false
         }
         
-        let currentLocale = Locale.current
-        let localeDecimalSeparator = currentLocale.decimalSeparator ?? "."
-        
-        var normalizedString = self
-        if localeDecimalSeparator != "." && self.contains(".") && !self.contains(localeDecimalSeparator) {
-            normalizedString = self.replacingOccurrences(of: ".", with: localeDecimalSeparator)
-        }
-        
-        let formatter = NumberFormatter()
-        formatter.locale = currentLocale
-        formatter.numberStyle = .decimal
-        
-        return formatter.number(from: normalizedString) != nil
+        return number > 0
     }
-
+    
     var isValidEmail: Bool {
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let predicate = NSPredicate(format:"SELF MATCHES %@", regex)
@@ -208,11 +190,11 @@ extension String {
         let domains = [".eth", ".sol"]
         return domains.contains(where: { self.contains($0) })
     }
-
+    
     static var zeroAddress: String {
         return "0x0000000000000000000000000000000000000000"
     }
-
+    
     static var anyAddress: String {
         return "0x1111111111111111111111111111111111111111"
     }
