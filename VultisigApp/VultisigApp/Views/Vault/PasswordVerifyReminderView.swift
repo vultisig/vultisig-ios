@@ -13,6 +13,7 @@ struct PasswordVerifyReminderView: View {
     
     @State var showError = false
     @State var errorText = ""
+    @State var passwordVerified = false
     
     @State var isLoading = false
     @State var verifyPassword = ""
@@ -50,12 +51,26 @@ struct PasswordVerifyReminderView: View {
     var view: some View {
         VStack(spacing: 28) {
             header
-            field
-            verifyButton
+            
+            if passwordVerified {
+                passwordVerifiedText
+                closeFilledButton
+            } else {
+                field
+                verifyButton
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
         .blur(radius: isLoading ? 1 : 0)
+    }
+    
+    var passwordVerifiedText: some View {
+        Text(NSLocalizedString("passwordVerifiedSuccessfully", comment: ""))
+            .font(.body16BrockmannMedium)
+            .foregroundColor(.extraLightGray)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 24)
     }
 
     var header: some View {
@@ -100,6 +115,7 @@ struct PasswordVerifyReminderView: View {
             
             hideButton
         }
+        .colorScheme(.dark)
         .foregroundColor(.neutral0)
         .font(.body14BrockmannMedium)
         .borderlessTextFieldStyle()
@@ -162,6 +178,15 @@ struct PasswordVerifyReminderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    var closeFilledButton: some View {
+        Button {
+            isSheetPresented = false
+        } label: {
+            FilledButton(title: "close")
+        }
+        .buttonStyle(.plain)
+    }
+    
     private func verifyPasswordIsValid() async {
         guard !verifyPassword.isEmpty else {
             errorText = "emptyField"
@@ -178,7 +203,7 @@ struct PasswordVerifyReminderView: View {
         )
         
         if isValid {
-            print("Correct")
+            passwordVerified = true
         } else {
             errorText = "incorrectPassword"
             showError = true

@@ -650,3 +650,5 @@
 "signingTransaction" = "Signing transaction";
 "txid" = "Tx ID";
 "biweeklyPasswordVerifyTitle" = "Verify your Server Share\nPassword";
+"passwordVerifiedSuccessfully" = "Password verified successfully";
+"close" = "Close";

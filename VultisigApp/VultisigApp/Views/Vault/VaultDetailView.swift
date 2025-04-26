@@ -32,7 +32,7 @@ struct VaultDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
-    @State var isBiweeklyPasswordVerifyLinkActive = true
+    @State var isBiweeklyPasswordVerifyLinkActive = false
     @State var isBackupLinkActive = false
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -205,7 +205,7 @@ struct VaultDetailView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             showMonthlyReminderIfNeeded()
-//            showBiweeklyPasswordVerificationIfNeeded()
+            showBiweeklyPasswordVerificationIfNeeded()
         }
     }
     
@@ -252,7 +252,7 @@ struct VaultDetailView: View {
     private func showBiweeklyPasswordVerificationIfNeeded() {
         guard vault.isFastVault else { return }
         
-        let difference = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
+        let difference = Calendar.current.dateComponents([.day], from: biweeklyPasswordVerifyDate, to: Date())
 
         if let days = difference.day, days >= 15 {
             isBiweeklyPasswordVerifyLinkActive = true
