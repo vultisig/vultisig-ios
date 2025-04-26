@@ -601,3 +601,6 @@
 "FastMigrateOverviewText2" = "Revisa tu correo electrónico para verificar";
 "signingTransaction" = "Firmando transacción";
 "txid" = "ID de transacción";
+"biweeklyPasswordVerifyTitle" = "Verifica la Contraseña de tu\nParte del Servidor";
+"passwordVerifiedSuccessfully" = "Contraseña verificada exitosamente";
+"close" = "Cerrar";

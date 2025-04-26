@@ -618,3 +618,6 @@
 "FastMigrateOverviewText2" = "Überprüfe deine E-Mail zur Bestätigung";
 "signingTransaction" = "Transaktion wird signiert";
 "txid" = "Tx-ID";
+"biweeklyPasswordVerifyTitle" = "Überprüfe dein Server-Share-\nPasswort";
+"passwordVerifiedSuccessfully" = "Passwort erfolgreich überprüft";
+"close" = "Schließen";

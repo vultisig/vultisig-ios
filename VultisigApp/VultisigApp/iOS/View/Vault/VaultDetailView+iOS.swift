@@ -11,6 +11,7 @@ import SwiftUI
 extension VaultDetailView {
     var view: some View {
         list
+            .blur(radius: getBackgroundOpacity()*2)
             .opacity(showVaultsList ? 0 : 1)
             .sheet(isPresented: $showScanner, content: {
                 GeneralCodeScannerView(
