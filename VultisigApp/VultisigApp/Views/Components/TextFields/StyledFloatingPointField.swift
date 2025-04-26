@@ -8,21 +8,15 @@
 import Foundation
 import SwiftUI
 
-struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
+struct StyledFloatingPointField: View {
     @Binding var placeholder: String
-    @Binding var value: Value
-    let format: FloatingPointFormatStyle<Value>
-    
+    @Binding var value: Decimal
     @Binding var isValid: Bool
+    
     var isOptional: Bool = false
     
     @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
-    
-    // Determine the decimal separator based on the current locale
-    private var decimalSeparator: String {
-        return Locale.current.decimalSeparator ?? "."
-    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -43,7 +37,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     }
     
     var textField: some View {
-        TextField("", text: $textFieldValue)  // Empty placeholder
+        TextField("", text: $textFieldValue)
             .placeholder(when: textFieldValue.isEmpty) {
                 Text(placeholder.capitalized)
                     .foregroundColor(.gray)
@@ -59,52 +53,33 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 updateValue(newValue)
             }
             .onAppear {
-                textFieldValue = formatInitialValue()
+                textFieldValue = value.formatDecimalToLocale() ?? ""
                 localIsValid = isValid
             }
             .onChange(of: placeholder) { _, _ in
-                textFieldValue = formatInitialValue()
+                textFieldValue = value.formatDecimalToLocale() ?? ""
                 localIsValid = isValid
             }
             .id(placeholder)
     }
     
-    private func formatInitialValue() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 8
-        return formatter.string(from: NSNumber(value: Double(value))) ?? ""
-    }
-    
-    private func updateValue(_ newValue: String) {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 8
-        
+    private func updateValue(_ newValue: String) {        
         textFieldValue = newValue
-        
-        let decimalSeparator = formatter.decimalSeparator ?? "."
-        let wrongSeparator = decimalSeparator == "." ? "," : "."
-        
-        let sanitizedValue = newValue.replacingOccurrences(of: wrongSeparator, with: decimalSeparator)
-        
-        if let number = formatter.number(from: sanitizedValue) {
-            let doubleValue = number.doubleValue
-            value = Value(doubleValue)
+
+        if newValue.isValidDecimal() {
+            value = newValue.toDecimal()
             validate(value)
         } else {
-            if newValue.isEmpty || newValue == decimalSeparator {
-                value = 0
-            }
+            value = 0
+            validate(value)
         }
     }
     
-    private func validate(_ newValue: Value) {
+    private func validate(_ newValue: Decimal) {
         if isOptional {
-            isValid = String(describing: newValue).isEmpty || newValue >= 0
+            isValid = (newValue == 0) || (newValue >= 0)
         } else {
-            isValid = !String(describing: newValue).isEmpty && newValue > 0
+            isValid = newValue > 0
         }
         localIsValid = isValid
     }
@@ -114,6 +89,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     }
 }
 
+// Placeholder helper stays the same
 extension View {
     func placeholder<Content: View>(
         when shouldShow: Bool,

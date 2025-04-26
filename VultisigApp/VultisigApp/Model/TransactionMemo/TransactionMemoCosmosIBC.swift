@@ -27,7 +27,7 @@ import Combine
  */
 
 class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var txMemo: String = ""
     
@@ -74,7 +74,7 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                 
         getChainAddress()
         
-        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        self.amount = tx.coin.balanceDecimal
         
     }
     
@@ -165,7 +165,6 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                     get: { self.amount },
                     set: { self.amount = $0 }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }

@@ -92,7 +92,7 @@ enum TransactionMemoInstance {
         }
     }
 
-    var amount: Double {
+    var amount: Decimal {
         switch self {
         case .bond(let memo):
             return memo.amount

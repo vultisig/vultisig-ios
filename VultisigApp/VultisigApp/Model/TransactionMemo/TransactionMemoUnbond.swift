@@ -13,7 +13,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     
     @Published var nodeAddress: String = ""
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var provider: String = ""
     
     // Internal
@@ -45,7 +45,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
         setupValidation()
     }
     
-    init(nodeAddress: String, amount: Double = 0.0, provider: String = "") {
+    init(nodeAddress: String, amount: Decimal = 0.0, provider: String = "") {
         self.nodeAddress = nodeAddress
         self.amount = amount
         self.provider = provider
@@ -64,7 +64,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     }
     
     var amountInUnits: String {
-        let amountInSats = Int64(self.amount * pow(10, 8))
+        let amountInSats = self.amount * pow(10, 8)
         return amountInSats.description
     }
     
@@ -106,7 +106,6 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     get: { self.amount },
                     set: { self.amount = $0 }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { true },
                     set: { _ in }

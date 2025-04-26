@@ -143,7 +143,7 @@ struct TransactionMemoDetailsView: View {
         Button {
             Task {
                 if txMemoInstance.isTheFormValid {
-                    tx.amount = txMemoInstance.amount.description
+                    tx.amount = txMemoInstance.amount.formatDecimalToLocale() ?? ""
                     tx.memo = txMemoInstance.description
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
                     tx.transactionType = txMemoInstance.getTransactionType()

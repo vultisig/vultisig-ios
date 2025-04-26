@@ -23,7 +23,7 @@ import Combine
  */
 
 class TransactionMemoCosmosMerge: ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var txMemo: String = ""
     
@@ -71,16 +71,15 @@ class TransactionMemoCosmosMerge: ObservableObject {
             tokenValid = true
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
-                let b = coin.balanceDecimal.description
-                amount = Double(b) ?? 0.0
-                balanceLabel = "Amount ( Balance: \(b) \(coin.ticker.uppercased()) )"
+                amount = coin.balanceDecimal
+                balanceLabel = "Amount ( Balance: \(amount) \(coin.ticker.uppercased()) )"
             }
         }
         
         if tx.coin.isNativeToken {
             self.amount = 0.0
         } else  {
-            self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+            self.amount = tx.coin.balanceDecimal
         }
         
     }
@@ -156,7 +155,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
                         
                         withAnimation {
                             self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
-                            self.amount = Double(coin.balanceDecimal.description) ?? 0.0
+                            self.amount = coin.balanceDecimal
                             
                             self.objectWillChange.send()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -190,7 +189,6 @@ class TransactionMemoCosmosMerge: ObservableObject {
                         }
                     }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
