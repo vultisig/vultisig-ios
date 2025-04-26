@@ -601,3 +601,6 @@
 "FastMigrateOverviewText2" = "Provjerite svoj e-mail za potvrdu";
 "signingTransaction" = "Potpisivanje transakcije";
 "txid" = "ID transakcije";
+"biweeklyPasswordVerifyTitle" = "Provjeri lozinku za svoj\nServer Share";
+"passwordVerifiedSuccessfully" = "Lozinka uspješno potvrđena";
+"close" = "Zatvori";

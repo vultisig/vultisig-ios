@@ -19,6 +19,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
+    @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Date = Date()
 
     @State var showSheet = false
     @State var isLoading = true
@@ -31,6 +32,7 @@ struct VaultDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
+    @State var isBiweeklyPasswordVerifyLinkActive = false
     @State var isBackupLinkActive = false
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -104,12 +106,17 @@ struct VaultDetailView: View {
                 navigationLinkActive: $upgradeYourVaultLinkActive
             )
         }
+        .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
+            PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
+                .presentationDetents([.height(260)])
+        }
     }
 
     var shadowView: some View {
         Background()
-            .opacity(isMonthlyBackupWarningLinkActive ? 0.5 : 0)
+            .opacity(getBackgroundOpacity())
             .animation(.default, value: isMonthlyBackupWarningLinkActive)
+            .animation(.default, value: isBiweeklyPasswordVerifyLinkActive)
     }
 
     var emptyList: some View {
@@ -198,6 +205,7 @@ struct VaultDetailView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             showMonthlyReminderIfNeeded()
+            showBiweeklyPasswordVerificationIfNeeded()
         }
     }
     
@@ -238,6 +246,25 @@ struct VaultDetailView: View {
 
         if let days = diff.day, days >= 30 {
             isMonthlyBackupWarningLinkActive = true
+        }
+    }
+    
+    private func showBiweeklyPasswordVerificationIfNeeded() {
+        guard vault.isFastVault else { return }
+        
+        let difference = Calendar.current.dateComponents([.day], from: biweeklyPasswordVerifyDate, to: Date())
+
+        if let days = difference.day, days >= 15 {
+            isBiweeklyPasswordVerifyLinkActive = true
+            biweeklyPasswordVerifyDate = Date()
+        }
+    }
+    
+    func getBackgroundOpacity() -> CGFloat {
+        if isMonthlyBackupWarningLinkActive || isBiweeklyPasswordVerifyLinkActive {
+            0.5
+        } else {
+            0
         }
     }
 }

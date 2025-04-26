@@ -150,6 +150,7 @@
 		A601D3A52DB96995004B6A0A /* JoinSwapDoneSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A601D3A42DB96995004B6A0A /* JoinSwapDoneSummary.swift */; };
 		A601D3A72DB9F078004B6A0A /* JoinSwapDoneSummary+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A601D3A62DB9F078004B6A0A /* JoinSwapDoneSummary+iOS.swift */; };
 		A601D3A92DB9F087004B6A0A /* JoinSwapDoneSummary+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A601D3A82DB9F087004B6A0A /* JoinSwapDoneSummary+macOS.swift */; };
+		A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */; };
 		A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */; };
 		A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */; };
 		A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */; };
@@ -1029,6 +1030,7 @@
 		A601D3A42DB96995004B6A0A /* JoinSwapDoneSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinSwapDoneSummary.swift; sourceTree = "<group>"; };
 		A601D3A62DB9F078004B6A0A /* JoinSwapDoneSummary+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinSwapDoneSummary+iOS.swift"; sourceTree = "<group>"; };
 		A601D3A82DB9F087004B6A0A /* JoinSwapDoneSummary+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinSwapDoneSummary+macOS.swift"; sourceTree = "<group>"; };
+		A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordVerifyReminderView.swift; sourceTree = "<group>"; };
 		A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDetailsSummary.swift; sourceTree = "<group>"; };
 		A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoAmountTextField.swift; sourceTree = "<group>"; };
 		A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -3371,6 +3373,7 @@
 				A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */,
 				A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */,
 				A6CEFE752D8E32B9005AB80C /* PasswordBackupOptionsView.swift */,
+				A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -3984,6 +3987,7 @@
 				A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
+				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6C670E72C9E954B00F59B6A /* SendCryptoDoneView+macOS.swift in Sources */,
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
