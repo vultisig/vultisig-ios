@@ -32,7 +32,7 @@ struct VaultDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
-    @State var isBiweeklyPasswordVerifyLinkActive = false
+    @State var isBiweeklyPasswordVerifyLinkActive = true
     @State var isBackupLinkActive = false
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
@@ -107,7 +107,7 @@ struct VaultDetailView: View {
             )
         }
         .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
-            PasswordVerifyReminderView(isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
+            PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
                 .presentationDetents([.height(240)])
         }
     }
@@ -250,6 +250,8 @@ struct VaultDetailView: View {
     }
     
     private func showBiweeklyPasswordVerificationIfNeeded() {
+        guard vault.isFastVault else { return }
+        
         let difference = Calendar.current.dateComponents([.day], from: monthlyReminderDate, to: Date())
 
         if let days = difference.day, days >= 15 {

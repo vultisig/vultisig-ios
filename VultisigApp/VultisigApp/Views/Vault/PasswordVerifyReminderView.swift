@@ -8,16 +8,39 @@
 import SwiftUI
 
 struct PasswordVerifyReminderView: View {
+    let vault: Vault
     @Binding var isSheetPresented: Bool
     
+    @State var isLoading = false
     @State var verifyPassword = ""
     @State var isPasswordVisible = false
+    
+    private let fastVaultService: FastVaultService = .shared
     
     var body: some View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                loader
+            }
         }
+    }
+    
+    var loader: some View {
+        ZStack {
+            overlay
+            
+            ProgressView()
+                .preferredColorScheme(.dark)
+        }
+    }
+    
+    var overlay: some View {
+        Color.black
+            .ignoresSafeArea()
+            .opacity(0.3)
     }
 
     var view: some View {
@@ -28,6 +51,7 @@ struct PasswordVerifyReminderView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
+        .blur(radius: isLoading ? 1 : 0)
     }
 
     var header: some View {
@@ -106,10 +130,28 @@ struct PasswordVerifyReminderView: View {
 
     var verifyButton: some View {
         Button {
-            
+            Task {
+                isLoading = true
+                await verifyPasswordIsValid()
+            }
         } label: {
             FilledButton(title: "verify")
         }
         .buttonStyle(.plain)
+    }
+    
+    private func verifyPasswordIsValid() async {
+        let isValid = await fastVaultService.get(
+            pubKeyECDSA: vault.pubKeyECDSA,
+            password: verifyPassword
+        )
+        
+        if isValid {
+            print("Correct")
+        } else {
+            print("Incorrect")
+        }
+        
+        isLoading = false
     }
 }
