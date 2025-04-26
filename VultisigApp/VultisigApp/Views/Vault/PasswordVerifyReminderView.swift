@@ -11,6 +11,9 @@ struct PasswordVerifyReminderView: View {
     let vault: Vault
     @Binding var isSheetPresented: Bool
     
+    @State var showError = false
+    @State var errorText = ""
+    
     @State var isLoading = false
     @State var verifyPassword = ""
     @State var isPasswordVisible = false
@@ -26,6 +29,7 @@ struct PasswordVerifyReminderView: View {
                 loader
             }
         }
+        .animation(.easeInOut, value: showError)
     }
     
     var loader: some View {
@@ -44,9 +48,9 @@ struct PasswordVerifyReminderView: View {
     }
 
     var view: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 28) {
             header
-            textField
+            field
             verifyButton
         }
         .padding(.horizontal, 16)
@@ -70,6 +74,18 @@ struct PasswordVerifyReminderView: View {
         }
         .foregroundColor(.neutral0)
         .font(.body16BrockmannMedium)
+    }
+    
+    var field: some View {
+        ZStack {
+            textField
+            
+            if showError {
+                errorContent
+                    .offset(y: 48)
+            }
+        }
+        .padding(.bottom)
     }
     
     var textField: some View {
@@ -96,9 +112,8 @@ struct PasswordVerifyReminderView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.turquoise600, lineWidth: 1)
+                .stroke(showError ? Color.invalidRed : Color.turquoise600, lineWidth: 1)
         )
-        .padding(.top, 12)
     }
     
     var hideButton: some View {
@@ -140,7 +155,23 @@ struct PasswordVerifyReminderView: View {
         .buttonStyle(.plain)
     }
     
+    var errorContent: some View {
+        Text(NSLocalizedString(errorText, comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.invalidRed)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
     private func verifyPasswordIsValid() async {
+        guard !verifyPassword.isEmpty else {
+            errorText = "emptyField"
+            showError = true
+            isLoading = false
+            return
+        }
+        
+        showError = false
+        
         let isValid = await fastVaultService.get(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: verifyPassword
@@ -149,7 +180,8 @@ struct PasswordVerifyReminderView: View {
         if isValid {
             print("Correct")
         } else {
-            print("Incorrect")
+            errorText = "incorrectPassword"
+            showError = true
         }
         
         isLoading = false

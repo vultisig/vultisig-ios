@@ -108,7 +108,7 @@ struct VaultDetailView: View {
         }
         .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
             PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
-                .presentationDetents([.height(240)])
+                .presentationDetents([.height(260)])
         }
     }
 
