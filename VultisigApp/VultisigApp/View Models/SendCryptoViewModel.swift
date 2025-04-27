@@ -271,7 +271,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
-            tx.amount = NSDecimalNumber(decimal: truncatedValueCoin).stringValue
+            tx.amount = truncatedValueCoin.formatDecimalToLocale() ?? ""
             tx.sendMaxAmount = false
         } else {
             tx.amount = ""
@@ -283,7 +283,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-            tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue
+            tx.amountInFiat = truncatedValueFiat.formatDecimalToLocale() ?? ""
             tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""
