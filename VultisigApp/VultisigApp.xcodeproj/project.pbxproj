@@ -203,6 +203,8 @@
 		A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */; };
 		A62268FE2DC0005800F378E0 /* SwapChainPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62268FD2DC0005800F378E0 /* SwapChainPickerView+iOS.swift */; };
 		A62269002DC0007300F378E0 /* SwapChainPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62268FF2DC0007300F378E0 /* SwapChainPickerView+macOS.swift */; };
+		A62269022DC000E400F378E0 /* SwapCoinPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62269012DC000E400F378E0 /* SwapCoinPickerView+macOS.swift */; };
+		A62269042DC000F200F378E0 /* SwapCoinPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62269032DC000F200F378E0 /* SwapCoinPickerView+iOS.swift */; };
 		A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */; };
 		A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */; };
 		A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */; };
@@ -1085,6 +1087,8 @@
 		A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionCell.swift; sourceTree = "<group>"; };
 		A62268FD2DC0005800F378E0 /* SwapChainPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapChainPickerView+iOS.swift"; sourceTree = "<group>"; };
 		A62268FF2DC0007300F378E0 /* SwapChainPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapChainPickerView+macOS.swift"; sourceTree = "<group>"; };
+		A62269012DC000E400F378E0 /* SwapCoinPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCoinPickerView+macOS.swift"; sourceTree = "<group>"; };
+		A62269032DC000F200F378E0 /* SwapCoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCoinPickerView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8312C9BB26F00908332 /* VultisigApp+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+iOS.swift"; sourceTree = "<group>"; };
 		A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+macOS.swift"; sourceTree = "<group>"; };
 		A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+iOS.swift"; sourceTree = "<group>"; };
@@ -2906,6 +2910,7 @@
 				A6505AFA2CA67A880002FBF4 /* Send */,
 				A6505AF92CA67A7D0002FBF4 /* Settings */,
 				A6505AF82CA67A720002FBF4 /* Onboarding */,
+				A62269032DC000F200F378E0 /* SwapCoinPickerView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2965,6 +2970,7 @@
 				A6BB9BD42DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift */,
 				A601D3A82DB9F087004B6A0A /* JoinSwapDoneSummary+macOS.swift */,
 				A62268FF2DC0007300F378E0 /* SwapChainPickerView+macOS.swift */,
+				A62269012DC000E400F378E0 /* SwapCoinPickerView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -4008,6 +4014,7 @@
 				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
 				A6C6711D2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
+				A62269042DC000F200F378E0 /* SwapCoinPickerView+iOS.swift in Sources */,
 				A6C670EF2CA26F6400F59B6A /* SettingsView+macOS.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
@@ -4294,6 +4301,7 @@
 				A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
+				A62269022DC000E400F378E0 /* SwapCoinPickerView+macOS.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
