@@ -420,7 +420,9 @@ private extension BlockChainService {
             
             let sequence = account?.result?.accountData?.sequence ?? 0
             
-            return .Ripple(sequence: UInt64(sequence), gas: 180000)
+            let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
+            
+            return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 5)
             
         case .akash:
             let account = try await akash.fetchAccountNumber(coin.address)
