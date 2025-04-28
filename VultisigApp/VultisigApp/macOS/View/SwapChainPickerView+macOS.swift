@@ -11,8 +11,7 @@ import SwiftUI
 extension SwapChainPickerView {
     var body: some View {
         content
-            .frame(minWidth: 700)
-            .frame(height: 500)
+            .frame(width: 700, height: 450)
     }
 }
 #endif

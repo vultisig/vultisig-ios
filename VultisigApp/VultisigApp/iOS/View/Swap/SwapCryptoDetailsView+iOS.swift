@@ -19,6 +19,40 @@ extension SwapCryptoDetailsView {
                 loader
             }
         }
+        .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
+            SwapChainPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showFromChainSelector,
+                selectedChain: $swapViewModel.fromChain,
+                selectedCoin: $tx.fromCoin
+            )
+        })
+        .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
+            SwapChainPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showToChainSelector,
+                selectedChain: $swapViewModel.toChain,
+                selectedCoin: $tx.toCoin
+            )
+        })
+        .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
+            SwapCoinPickerView(
+                vault: vault,
+                selectedNetwork: swapViewModel.fromChain,
+                showSheet: $swapViewModel.showFromCoinSelector,
+                selectedCoin: $tx.fromCoin,
+                selectedChain: $swapViewModel.fromChain
+            )
+        })
+        .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
+            SwapCoinPickerView(
+                vault: vault,
+                selectedNetwork: swapViewModel.toChain,
+                showSheet: $swapViewModel.showToCoinSelector,
+                selectedCoin: $tx.toCoin,
+                selectedChain: $swapViewModel.toChain
+            )
+        })
     }
     
     var view: some View {
