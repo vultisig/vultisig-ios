@@ -13,5 +13,22 @@ extension SwapCoinPickerView {
         content
             .frame(width: 700, height: 450)
     }
+    
+    var content: some View {
+        ZStack {
+            Background()
+            main
+            
+            if showChainPickerSheet {
+                SwapChainPickerView(
+                    vault: vault,
+                    showSheet: $showChainPickerSheet,
+                    selectedChain: $selectedChain,
+                    selectedCoin: $selectedCoin
+                )
+            }
+        }
+        .buttonStyle(BorderlessButtonStyle())
+    }
 }
 #endif

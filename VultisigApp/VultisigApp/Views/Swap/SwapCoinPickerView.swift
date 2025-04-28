@@ -18,24 +18,6 @@ struct SwapCoinPickerView: View {
     @State var showChainPickerSheet: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
-    var content: some View {
-        ZStack {
-            ZStack {
-                Background()
-                main
-            }
-        }
-        .buttonStyle(BorderlessButtonStyle())
-        .sheet(isPresented: $showChainPickerSheet, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $showChainPickerSheet,
-                selectedChain: $selectedChain,
-                selectedCoin: $selectedCoin
-            )
-        })
-    }
-    
     var main: some View {
         VStack {
             header
