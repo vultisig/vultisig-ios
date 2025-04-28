@@ -130,7 +130,7 @@ struct SwapCryptoDetailsView: View {
             vault: vault,
             coin: tx.toCoin,
             fiatAmount: swapViewModel.toFiatAmount(tx: tx),
-            amount: .constant(tx.toAmountDecimal.description),
+            amount: .constant(tx.toAmountDecimal.formatDecimalToLocale() ?? ""),
             selectedChain: $swapViewModel.toChain,
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
