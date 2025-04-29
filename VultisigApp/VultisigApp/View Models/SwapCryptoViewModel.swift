@@ -94,11 +94,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func fromFiatAmount(tx: SwapTransaction) -> String {
-        return tx.fromCoin.fiat(decimal: tx.fromAmountDecimal).description
+        return tx.fromCoin.fiat(decimal: tx.fromAmountDecimal).formatDecimalToLocale() ?? ""
     }
     
     func toFiatAmount(tx: SwapTransaction) -> String {
-        return tx.toCoin.fiat(decimal: tx.toAmountDecimal).description
+        return tx.toCoin.fiat(decimal: tx.toAmountDecimal).formatDecimalToLocale() ?? ""
     }
     
     func showGas(tx: SwapTransaction) -> Bool {
