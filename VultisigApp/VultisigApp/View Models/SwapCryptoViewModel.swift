@@ -175,7 +175,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let fromBalance = tx.fromCoin.balanceDecimal
         let feeCoinBalance = feeCoin.balanceDecimal
         
-        let amount = Decimal(string: tx.fromAmount) ?? 0
+        let amount = tx.fromAmount.toDecimal()
         
         if feeCoin == tx.fromCoin {
             return fromFee + amount <= fromBalance

@@ -39,7 +39,7 @@ struct SwapCryptoAmountTextField: View {
                 guard amount != newValue else { return }
                 amount = newValue
                 
-                DebounceHelper.shared.debounce {
+                DebounceHelper.shared.debounce(delay: 1.5) {
                     Task { await onChange(newValue) }
                 }
             }
