@@ -85,12 +85,11 @@ class SwapTransaction: ObservableObject {
 extension SwapTransaction {
     
     var fromAmountDecimal: Decimal {
-        let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
-        return Decimal(string: amountString) ?? .zero
+        return fromAmount.toDecimal()
     }
 
     var amountInCoinDecimal: BigInt {
-        return fromCoin.raw(for: fromAmountDecimal)
+        return fromCoin.raw(for: fromAmount.toDecimal())
     }
 
     func buildThorchainSwapPayload(quote: ThorchainSwapQuote, provider: SwapProvider) -> THORChainSwapPayload {
