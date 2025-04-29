@@ -420,7 +420,10 @@ private extension BlockChainService {
             
             let sequence = account?.result?.accountData?.sequence ?? 0
             
-            return .Ripple(sequence: UInt64(sequence), gas: 180000)
+            let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
+            
+            //60 is bc of tss to wait till 5min so all devices can sign.
+            return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
             
         case .akash:
             let account = try await akash.fetchAccountNumber(coin.address)
