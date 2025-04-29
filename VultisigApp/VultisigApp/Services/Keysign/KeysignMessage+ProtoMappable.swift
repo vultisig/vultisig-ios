@@ -300,7 +300,8 @@ extension BlockChainSpecific {
         case .rippleSpecific(let value):
             self = .Ripple(
                 sequence: value.sequence,
-                gas: value.gas
+                gas: value.gas,
+                lastLedgerSequence: value.lastLedgerSequence
             )
         case .tronSpecific(let value):
             self = .Tron(
@@ -400,10 +401,11 @@ extension BlockChainSpecific {
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
             })
-        case .Ripple(let sequence, let gas):
+        case .Ripple(let sequence, let gas, let lastLedgerSequence):
             return .rippleSpecific(.with {
                 $0.sequence = sequence
                 $0.gas = gas
+                $0.lastLedgerSequence = lastLedgerSequence
             })
             
         case .Tron(
