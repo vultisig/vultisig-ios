@@ -53,40 +53,6 @@ struct SwapCryptoDetailsView: View {
             fields
             continueButton
         }
-        .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $swapViewModel.showFromChainSelector,
-                selectedChain: $swapViewModel.fromChain,
-                selectedCoin: $tx.fromCoin
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $swapViewModel.showToChainSelector,
-                selectedChain: $swapViewModel.toChain,
-                selectedCoin: $tx.toCoin
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
-            SwapCoinPickerView(
-                vault: vault,
-                selectedNetwork: swapViewModel.fromChain,
-                showSheet: $swapViewModel.showFromCoinSelector,
-                selectedCoin: $tx.fromCoin,
-                selectedChain: $swapViewModel.fromChain
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
-            SwapCoinPickerView(
-                vault: vault,
-                selectedNetwork: swapViewModel.toChain,
-                showSheet: $swapViewModel.showToCoinSelector,
-                selectedCoin: $tx.toCoin,
-                selectedChain: $swapViewModel.toChain
-            )
-        })
     }
     
     var swapContent: some View {
@@ -228,6 +194,10 @@ struct SwapCryptoDetailsView: View {
         let fromChain = swapViewModel.fromChain
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
+    }
+    
+    func showSheet() -> Bool {
+        swapViewModel.showFromChainSelector || swapViewModel.showToChainSelector || swapViewModel.showFromCoinSelector || swapViewModel.showToCoinSelector
     }
 }
 
