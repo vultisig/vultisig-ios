@@ -30,10 +30,6 @@ struct SwapChainPickerView: View {
             : chainsArray
             .filter { $0.name.lowercased().contains(searchText.lowercased()) }
     }
-
-    var body: some View {
-        content
-    }
     
     var content: some View {
         ZStack {
