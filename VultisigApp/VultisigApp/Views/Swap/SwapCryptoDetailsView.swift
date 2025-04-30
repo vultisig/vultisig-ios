@@ -205,20 +205,20 @@ extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
         switch percentage {
         case 25:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: tx.fromCoin.decimals)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 50:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: tx.fromCoin.decimals)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 75:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: tx.fromCoin.decimals)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 100:
-            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: tx.fromCoin.decimals)
+            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 4)
             handleFromCoinUpdate()
             let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
             let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
-            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: tx.fromCoin.decimals)
+            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 4)
         default:
             break
         }
