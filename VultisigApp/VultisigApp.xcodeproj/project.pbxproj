@@ -842,6 +842,7 @@
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEE4AD0C2DBCFC08003A2FC0 /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DEE4AD0B2DBCFC08003A2FC0 /* walletcore */; };
+		DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */; };
 		DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */; };
@@ -1726,6 +1727,7 @@
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
+		DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignWrongVaultTypeErrorView.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeysign.swift; sourceTree = "<group>"; };
 		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
@@ -3406,6 +3408,7 @@
 		DE15729A2B70F284009BC7C5 /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */,
 				DE1905262BD8CC4D0043577E /* KeysignVerify.swift */,
 				DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */,
 				DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */,
@@ -4007,6 +4010,7 @@
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
 				A6C670C92C9E773300F59B6A /* VULTFileDocument.swift in Sources */,
 				46DE088E2BD08C9900AE8BDE /* KujiraService.swift in Sources */,
+				DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */,
 				A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
