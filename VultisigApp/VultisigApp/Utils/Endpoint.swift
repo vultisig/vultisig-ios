@@ -75,11 +75,11 @@ class Endpoint {
     
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
         let url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
-
+        
         if let integrator, let fee {
             return (url + "&integrator=\(integrator)&fee=\(fee)").asUrl
         }
-
+        
         return url.asUrl
     }
     
@@ -157,7 +157,7 @@ class Endpoint {
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
-
+    
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }
@@ -235,6 +235,18 @@ class Endpoint {
     }
     
     static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
+    static func fetchOsmosisWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://osmosis-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchOsmosisIbcDenomTraces(hash: String) -> String{
+        "https://osmosis-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
+    static func fetchOsmosisLatestBlock() -> String{
+        "https://osmosis-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
     
     static func fetchAkashAccountBalance(address: String) -> String{
         "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
