@@ -40,7 +40,7 @@ final class ERC20ChainsHelperTest: XCTestCase {
                                             swapPayload: nil,
                                             approvePayload: nil,
                                             vaultPubKeyECDSA: "ECDSAKey",
-                                            vaultLocalPartyID: "localPartyID",libType: .DKLS)
+                                            vaultLocalPartyID: "localPartyID",libType: LibType.DKLS.toString())
         let eRC20Helper = ERC20Helper(coinType: .ethereum)
         let preImageHashes = try eRC20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         XCTAssertEqual(preImageHashes.count,1)

@@ -250,10 +250,13 @@ class JoinKeysignViewModel: ObservableObject {
                 self.status = .KeysignSameDeviceShare
                 return
             }
-            
-            if vault.libType != keysignPayload.libType {
-                self.status = .VaultTypeDoesntMatch
-                return
+            // only compare libType when it is not empty
+            if !keysignPayload.libType.isEmpty {
+                let libType = vault.libType ?? .GG20
+                if libType != keysignPayload.libType.toLibType() {
+                    self.status = .VaultTypeDoesntMatch
+                    return
+                }
             }
         }
         if useVultisigRelay {
