@@ -275,6 +275,18 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchCosmosWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://cosmos-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchCosmosIbcDenomTraces(hash: String) -> String{
+        "https://cosmos-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
+    static func fetchCosmosLatestBlock() -> String{
+        "https://cosmos-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
+    
     
     static func fetchTerraAccountBalance(address: String) -> String{
         "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
