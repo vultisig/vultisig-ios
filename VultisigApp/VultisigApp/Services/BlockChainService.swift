@@ -308,7 +308,24 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await atom.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+            
+            let latestBlock = try await atom.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .kujira:
             let account = try await kuji.fetchAccountNumber(coin.address)
             
@@ -347,8 +364,24 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
             
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await osmo.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+            
+            let latestBlock = try await osmo.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .terra:
             let account = try await terra.fetchAccountNumber(coin.address)
             
