@@ -37,6 +37,6 @@ struct KeysignWrongVaultTypeErrorView: View {
 #Preview {
     ZStack {
         Background()
-        KeysignVaultMismatchErrorView()
+        KeysignWrongVaultTypeErrorView()
     }
 }

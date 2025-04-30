@@ -604,3 +604,4 @@
 "biweeklyPasswordVerifyTitle" = "Verifica la Password della tua\nQuota Server";
 "passwordVerifiedSuccessfully" = "Password verificata con successo";
 "close" = "Chiudi";
+"vaultTypeDoesnotMatch" = " Il tipo di cassaforte non corrisponde";
