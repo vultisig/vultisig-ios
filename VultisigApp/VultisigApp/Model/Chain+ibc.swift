@@ -8,6 +8,7 @@
 
 import Foundation
 
+// https://github.com/cosmos/chain-registry/blob/master/_IBC/cosmoshub-osmosis.json
 extension Chain {
     struct IBCInfo {
         let sourceChannel: String
@@ -26,13 +27,19 @@ extension Chain {
             ]
         case .osmosis:
             return [
-                IBCInfo(sourceChannel: "channel-141", destinationChain: .gaiaChain)
+                IBCInfo(sourceChannel: "channel-0", destinationChain: .gaiaChain),
+                IBCInfo(sourceChannel: "channel-259", destinationChain: .kujira),
+            ]
+        case .gaiaChain:
+            return [
+                IBCInfo(sourceChannel: "channel-141", destinationChain: .osmosis),
+                IBCInfo(sourceChannel: "channel-343", destinationChain: .kujira),
             ]
         default:
             return []
         }
     }
-
+    
     func ibcChannel(to destination: Chain?) -> String? {
         if destination == nil {
             return nil

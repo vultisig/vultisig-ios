@@ -66,7 +66,7 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
         self.vault = vault
         setupValidation()
         
-        let cosmosChains: [Chain] = Chain.allCases.filter { $0.chainType == .Cosmos && $0 != tx.coin.chain && (!$0.name.lowercased().contains("terra")) }
+        let cosmosChains: [Chain] = tx.coin.chain.ibcTo.map { $0.destinationChain }
         
         for chain in cosmosChains {
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
