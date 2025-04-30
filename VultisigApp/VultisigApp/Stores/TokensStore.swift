@@ -604,7 +604,7 @@ class TokensStore {
         }
         
         static var gaiaChainLVN: CoinMeta {
-            CoinMeta(chain: Chain.gaiaChain, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/CE26C8060F437C6F2157D7A7AF2B2ECA6CBFAA268755504E038A4D085BA70EFC", isNativeToken: false)
+            CoinMeta(chain: Chain.gaiaChain, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/6C95083ADD352D5D47FB4BA427015796E5FEF17A829463AD05ECD392EB38D889", isNativeToken: false)
         }
         
         static var gaiaChainNSTK: CoinMeta {
