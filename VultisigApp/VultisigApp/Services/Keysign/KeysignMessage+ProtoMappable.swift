@@ -80,6 +80,7 @@ extension KeysignPayload: ProtoMappable {
         self.vaultLocalPartyID = proto.vaultLocalPartyID
         self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0) }
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
+        self.libType = proto.libType.toLibType()
     }
     
     func mapToProtobuff() -> VSKeysignPayload {

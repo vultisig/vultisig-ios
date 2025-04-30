@@ -17,6 +17,7 @@ enum JoinKeysignStatus {
     case VaultMismatch
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
+    case VaultTypeDoesntMatch
 }
 
 @MainActor
@@ -247,6 +248,11 @@ class JoinKeysignViewModel: ObservableObject {
             
             if vault.localPartyID == keysignPayload.vaultLocalPartyID {
                 self.status = .KeysignSameDeviceShare
+                return
+            }
+            
+            if vault.libType != keysignPayload.libType {
+                self.status = .VaultTypeDoesntMatch
                 return
             }
         }

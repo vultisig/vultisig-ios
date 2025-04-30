@@ -58,7 +58,8 @@ struct KeysignPayloadFactory {
             swapPayload: swapPayload,
             approvePayload: approvePayload,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
-            vaultLocalPartyID: vault.localPartyID
+            vaultLocalPartyID: vault.localPartyID,
+            libType: vault.libType ?? .GG20
         )
     }
 }
