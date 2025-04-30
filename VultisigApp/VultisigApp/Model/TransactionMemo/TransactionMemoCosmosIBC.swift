@@ -69,6 +69,8 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
         let cosmosChains: [Chain] = tx.coin.chain.ibcTo.map { $0.destinationChain }
         
         for chain in cosmosChains {
+            // Disable IBC for LVN and Kujira
+            if tx.coin.ticker == TokensStore.Token.kujiraLVN.ticker, tx.coin.chain == .kujira { continue }
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
                 
