@@ -22,7 +22,7 @@ struct KeysignPayload: Codable, Hashable {
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(swapPayload?.fromCoin.decimals ?? 1), significand: 1)
-        return "\(decimalAmount * power) \(swapPayload?.fromCoin.ticker ?? "")"
+        return "\((decimalAmount * power).formatDecimalToLocale() ?? "") \(swapPayload?.fromCoin.ticker ?? "")"
     }
     
     var fromAmountFiatString: String {
@@ -35,7 +35,7 @@ struct KeysignPayload: Codable, Hashable {
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
-        return "\(decimalAmount * power) \(coin.ticker)"
+        return "\((decimalAmount * power).formatDecimalToLocale() ?? "") \(coin.ticker)"
     }
     
     var toAmountFiatString: String {
