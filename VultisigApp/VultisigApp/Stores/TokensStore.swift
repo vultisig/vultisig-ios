@@ -30,7 +30,7 @@ class TokensStore {
         }
         
         static var thorChainTcy: CoinMeta {
-            CoinMeta(chain: Chain.thorChain, ticker: "TCY", logo: "tcy", decimals: 8, priceProviderId: "tcy", contractAddress: "", isNativeToken: false)
+            CoinMeta(chain: Chain.thorChain, ticker: "TCY", logo: "tcy", decimals: 8, priceProviderId: "tcy", contractAddress: "tcy", isNativeToken: false)
         }
         
         static var mayaChainCacao: CoinMeta {
