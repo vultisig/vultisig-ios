@@ -52,7 +52,10 @@ struct JoinKeysignView: View {
                 KeysignSameDeviceShareErrorView()
             case .KeysignNoCameraAccess:
                 NoCameraPermissionView()
+            case .VaultTypeDoesntMatch:
+                KeysignWrongVaultTypeErrorView()
             }
+            
         }
         .padding()
         .cornerRadius(10)

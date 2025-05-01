@@ -227,6 +227,11 @@ class JoinKeygenViewModel: ObservableObject {
                         status = .FailToStart
                         return
                     }
+                    if vault.libType != reshareMsg.libType {
+                        errorMessage = "Vault type doesn't match, initiate device and pair device's vault type are different"
+                        status = .FailToStart
+                        return
+                    }
                 }
             }
             

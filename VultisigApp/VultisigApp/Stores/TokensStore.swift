@@ -604,7 +604,7 @@ class TokensStore {
         }
         
         static var gaiaChainLVN: CoinMeta {
-            CoinMeta(chain: Chain.gaiaChain, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/B64A07C006C0F5E260A8AD50BD53568F1FD4A0D75B7A9F8765C81BEAFDA62053", isNativeToken: false)
+            CoinMeta(chain: Chain.gaiaChain, ticker: "LVN", logo: "levana", decimals: 6, priceProviderId: "levana-protocol", contractAddress: "ibc/6C95083ADD352D5D47FB4BA427015796E5FEF17A829463AD05ECD392EB38D889", isNativeToken: false)
         }
         
         static var gaiaChainNSTK: CoinMeta {
@@ -621,6 +621,10 @@ class TokensStore {
         
         static var gaiaChainFUZN: CoinMeta {
             CoinMeta(chain: Chain.gaiaChain, ticker: "FUZN", logo: "fuzn", decimals: 6, priceProviderId: "fuzion", contractAddress: "ibc/6BBBB4B63C51648E9B8567F34505A9D5D8BAAC4C31D768971998BE8C18431C26", isNativeToken: false)
+        }
+        
+        static var gaiaChainRKuji: CoinMeta {
+            CoinMeta(chain: Chain.gaiaChain, ticker: "rKUJI", logo: "rkuji", decimals: 6, priceProviderId: "kujira", contractAddress: "ibc/50A69DC508ACCADE2DAC4B8B09AA6D9C9062FCBFA72BB4C6334367DECD972B06", isNativeToken: false)
         }
         
         static var osmosis: CoinMeta {
@@ -788,6 +792,7 @@ class TokensStore {
         TokensStore.Token.gaiaChainNSTK,
         TokensStore.Token.gaiaChainNami,
         TokensStore.Token.gaiaChainFUZN,
+        TokensStore.Token.gaiaChainRKuji,
         
         TokensStore.Token.kujira,
         TokensStore.Token.kujiraAstro,
