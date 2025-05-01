@@ -36,6 +36,14 @@ extension String {
     var nilIfEmpty: String? {
         return isEmpty ? nil : self
     }
+    func toLibType() -> LibType? {
+        if self.uppercased() == "GG20" {
+            return LibType.GG20
+        } else if self.uppercased() == "DKLS" {
+            return LibType.DKLS
+        }
+        return nil
+    }
 }
 
 // MARK: - String constants

@@ -604,3 +604,4 @@
 "biweeklyPasswordVerifyTitle" = "Verifica la Contraseña de tu\nParte del Servidor";
 "passwordVerifiedSuccessfully" = "Contraseña verificada exitosamente";
 "close" = "Cerrar";
+"vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";

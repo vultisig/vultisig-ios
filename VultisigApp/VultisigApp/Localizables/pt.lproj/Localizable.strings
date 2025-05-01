@@ -605,3 +605,4 @@
 "biweeklyPasswordVerifyTitle" = "Verifique a Senha da sua\nParte do Servidor";
 "passwordVerifiedSuccessfully" = "Senha verificada com sucesso";
 "close" = "Fechar";
+"vaultTypeDoesnotMatch" = "O tipo de cofre não corresponde";

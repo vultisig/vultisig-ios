@@ -621,3 +621,4 @@
 "biweeklyPasswordVerifyTitle" = "Überprüfe dein Server-Share-\nPasswort";
 "passwordVerifiedSuccessfully" = "Passwort erfolgreich überprüft";
 "close" = "Schließen";
+"vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";

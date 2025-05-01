@@ -19,6 +19,15 @@ enum LibType : Int,Codable {
             return .dkls
         }
     }
+    
+    func toString()->String{
+        switch self {
+        case .GG20:
+            return "GG20"
+        case .DKLS:
+            return "DKLS"
+        }
+    }
 }
 
 extension VSLibType {

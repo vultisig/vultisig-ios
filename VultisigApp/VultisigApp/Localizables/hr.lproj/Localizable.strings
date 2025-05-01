@@ -604,3 +604,4 @@
 "biweeklyPasswordVerifyTitle" = "Provjeri lozinku za svoj\nServer Share";
 "passwordVerifiedSuccessfully" = "Lozinka uspješno potvrđena";
 "close" = "Zatvori";
+"vaultTypeDoesnotMatch" = " Vrsta trezora se ne podudara";
