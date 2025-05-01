@@ -18,7 +18,7 @@ extension OnboardingSummaryView {
                 animationVM?.view()
             }
         }
-        .frame(width: 700, height: 500)
+        .frame(width: 500, height: 400)
     }
 }
 
