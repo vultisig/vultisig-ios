@@ -60,7 +60,7 @@ struct KeysignSwapConfirmView: View {
     }
     
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreBridging", comment: ""))
+        Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(.body14BrockmannMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity, alignment: .leading)
