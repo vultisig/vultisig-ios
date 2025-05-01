@@ -65,7 +65,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     
     var amountInUnits: String {
         let amountInSats = self.amount * pow(10, 8)
-        return amountInSats.description
+        return amountInSats.formatDecimalToLocale() ?? ""
     }
     
     func toString() -> String {

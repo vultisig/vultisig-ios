@@ -26,9 +26,13 @@ struct StyledFloatingPointField: View {
                     .foregroundColor(.neutral0)
                 if !localIsValid {
                     Text("*")
-                        .font(.body14MontserratMedium)
+                        .font(.body8Menlo)
                         .foregroundColor(.red)
                 }
+                let decimalSeparator = Locale.current.decimalSeparator ?? "."
+                Text("(\(Locale.current.region ?? "") – use \(decimalSeparator) for decimals)")
+                    .font(.body8Menlo)
+                    .foregroundColor(.red)
             }
             
             container

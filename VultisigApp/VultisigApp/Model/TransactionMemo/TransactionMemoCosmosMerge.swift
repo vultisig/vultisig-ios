@@ -72,7 +72,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
                 amount = coin.balanceDecimal
-                balanceLabel = "Amount ( Balance: \(amount) \(coin.ticker.uppercased()) )"
+                balanceLabel = "Amount ( Balance: \(amount.formatDecimalToLocale() ?? "0") \(coin.ticker.uppercased()) )"
             }
         }
         
@@ -100,7 +100,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
     
     var balance: String {
         if let coin = selectedVaultCoin {
-            let balance = coin.balanceDecimal.description
+            let balance = coin.balanceDecimal.formatDecimalToLocale() ?? "0"
             return "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
         } else {
             return "Amount ( Select a token )"
@@ -154,7 +154,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
                     if let coin = self.selectedVaultCoin {
                         
                         withAnimation {
-                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
+                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatDecimalToLocale() ?? "0") \(coin.ticker.uppercased()) )"
                             self.amount = coin.balanceDecimal
                             
                             self.objectWillChange.send()
