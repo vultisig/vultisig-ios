@@ -29,8 +29,9 @@ struct StyledFloatingPointField: View {
                         .font(.body8Menlo)
                         .foregroundColor(.red)
                 }
+                let region = Locale.current.region?.identifier ?? "Unknown"
                 let decimalSeparator = Locale.current.decimalSeparator ?? "."
-                Text("(\(Locale.current.region ?? "") – use \(decimalSeparator) for decimals)")
+                Text("(\(region) – use \(decimalSeparator) for decimals)")
                     .font(.body8Menlo)
                     .foregroundColor(.red)
             }
@@ -69,7 +70,7 @@ struct StyledFloatingPointField: View {
     
     private func updateValue(_ newValue: String) {        
         textFieldValue = newValue
-
+        
         if newValue.isValidDecimal() {
             value = newValue.toDecimal()
             validate(value)
