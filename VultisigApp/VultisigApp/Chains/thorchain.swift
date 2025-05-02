@@ -115,8 +115,8 @@ enum THORChainHelper {
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
-                    $0.symbol = "RUNE"
-                    $0.ticker = "RUNE"
+                    $0.symbol = keysignPayload.coin.ticker.uppercased()
+                    $0.ticker = keysignPayload.coin.ticker.uppercased()
                     $0.synth = false
                 }
                 if keysignPayload.toAmount > 0 {
