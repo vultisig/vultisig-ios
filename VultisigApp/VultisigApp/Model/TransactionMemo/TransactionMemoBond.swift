@@ -53,7 +53,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     }
     
     var balance: String {
-        let balance = tx.coin.balanceDecimal.formatDecimalToLocale() ?? ""
+        let balance = tx.coin.balanceDecimal.formatDecimalToLocale()
         
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }

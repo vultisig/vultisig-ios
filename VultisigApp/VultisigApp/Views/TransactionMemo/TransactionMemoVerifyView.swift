@@ -176,7 +176,7 @@ struct TransactionMemoVerifyView: View {
     
     
     private func getAmount() -> String {
-        tx.amountDecimal.formatDecimalToLocale() ?? "" + " " + tx.coin.ticker
+        tx.amountDecimal.formatDecimalToLocale() + " " + tx.coin.ticker
     }
 }
 

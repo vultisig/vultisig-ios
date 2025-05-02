@@ -58,11 +58,11 @@ struct StyledFloatingPointField: View {
                 updateValue(newValue)
             }
             .onAppear {
-                textFieldValue = value.formatDecimalToLocale() ?? ""
+                textFieldValue = value.formatDecimalToLocale()
                 localIsValid = isValid
             }
             .onChange(of: placeholder) { _, _ in
-                textFieldValue = value.formatDecimalToLocale() ?? ""
+                textFieldValue = value.formatDecimalToLocale()
                 localIsValid = isValid
             }
             .id(placeholder)

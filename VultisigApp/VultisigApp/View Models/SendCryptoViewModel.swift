@@ -258,12 +258,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        
-        if let localeAmount = amountDecimal.formatDecimalToLocale() {
-            tx.amount = localeAmount
-        } else {
-            tx.amount = ""
-        }
+        tx.amount = amountDecimal.formatDecimalToLocale()
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
@@ -271,7 +266,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
-            tx.amount = truncatedValueCoin.formatDecimalToLocale() ?? ""
+            tx.amount = truncatedValueCoin.formatDecimalToLocale()
             tx.sendMaxAmount = false
         } else {
             tx.amount = ""
@@ -283,7 +278,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-            tx.amountInFiat = truncatedValueFiat.formatDecimalToLocale() ?? ""
+            tx.amountInFiat = truncatedValueFiat.formatDecimalToLocale()
             tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""

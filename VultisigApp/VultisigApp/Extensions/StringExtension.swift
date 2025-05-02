@@ -145,7 +145,7 @@ extension String {
             return false
         }
         
-        return number > 0
+        return number >= 0
     }
     
     var isValidEmail: Bool {

@@ -34,7 +34,7 @@ struct SwapCryptoAmountTextField: View {
         let customBiding = Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.toDecimal().formatDecimalToLocale() ?? ""
+                let newValue = $0.toDecimal().formatDecimalToLocale()
                 
                 guard amount != newValue else { return }
                 amount = newValue
