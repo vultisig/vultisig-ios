@@ -1548,7 +1548,7 @@ class TokensStore {
             logo: "tcy",
             decimals: 8,
             priceProviderId: "tcy",
-            contractAddress: "",
+            contractAddress: "tcy",
             isNativeToken: false
         ),
         CoinMeta(

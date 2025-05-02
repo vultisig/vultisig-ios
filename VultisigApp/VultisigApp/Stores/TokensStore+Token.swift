@@ -36,4 +36,15 @@ extension TokensStore {
             CoinMeta(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", decimals: 8, priceProviderId: "dogecoin", contractAddress: "", isNativeToken: true)
         }
     }
+
+    enum TokenSelectionAssetError: Error {
+        case error(message: String)
+
+        var localizedDescription: String {
+            switch self {
+            case let .error(message):
+                return "Error: \(message)"
+            }
+        }
+    }
 }

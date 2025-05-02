@@ -1,7 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 
-const url = 'https://raw.githubusercontent.com/vultisig/commondata/7c4f1cf687848ad78764806c71c10c8b608fbaae/tokens/tokens.json';
+const url = 'https://raw.githubusercontent.com/vultisig/commondata/main/tokens/tokens.json';
 const outputFile = '../VultisigApp/Stores/TokensStore.swift';
 
 // Swift-compatible chain enum mapping
