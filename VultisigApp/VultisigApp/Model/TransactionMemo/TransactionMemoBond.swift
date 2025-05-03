@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
     @Published var fee: Int64 = .zero
@@ -53,7 +53,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     }
     
     var balance: String {
-        let balance = tx.coin.balanceDecimal.description
+        let balance = tx.coin.balanceDecimal.formatDecimalToLocale()
         
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
@@ -135,7 +135,6 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                     get: { self.amount },
                     set: { self.amount = $0 }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }

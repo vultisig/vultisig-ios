@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 1003
+    @Published var amount: Decimal = 1003
     @Published var nodeAddress: String = "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5"
     
     // Internal
@@ -76,7 +76,8 @@ class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }
-                ), format: .number, isValid: Binding(
+                ),
+                isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
                 ))

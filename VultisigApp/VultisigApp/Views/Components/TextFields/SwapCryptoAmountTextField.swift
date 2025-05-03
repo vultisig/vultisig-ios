@@ -34,12 +34,12 @@ struct SwapCryptoAmountTextField: View {
         let customBiding = Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency()
+                let newValue = $0.toDecimal().formatDecimalToLocale()
                 
                 guard amount != newValue else { return }
                 amount = newValue
                 
-                DebounceHelper.shared.debounce {
+                DebounceHelper.shared.debounce(delay: 1.5) {
                     Task { await onChange(newValue) }
                 }
             }
