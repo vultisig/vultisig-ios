@@ -70,7 +70,8 @@ struct SetupVaultTabView: View {
             showContent = true
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            animationVM?.triggerInput("Switch")
             showAnimation = true
         }
     }
