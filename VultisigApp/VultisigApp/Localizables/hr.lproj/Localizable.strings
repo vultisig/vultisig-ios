@@ -486,8 +486,8 @@
 "readyToUseNewWalletStandard." = "Spremni ste za korištenje novog standarda novčanika.";
 "secureVaultSummaryDiscalimer" = "Pročitao/la sam i razumijem što trebam učiniti.";
 "secureVaultSecureTextDescription" = "Maksimalna sigurnost s više uređaja\nUvijek dostupan uz sigurnosne kopije uređaja\nOsiguraj bilo koji iznos imovine";
-"fastVaultSecureTextDescription" = "Potreban je samo 1 uređaj\nPohrani manje iznose za svakodnevnu upotrebu\nVultiserver odmah supotpisuje";
-"fastSetUp" = "Brza postavka s 1 uređajem";
+"fastVaultSecureTextDescription" = "Potrebno je samo 1 uređaj\nPohrani manja sredstva za brze radnje\nVultiserver trenutno supotpisuje";
+"fastSetUp" = "Brza postavka";
 "vaultCreated" = "Trezoor stvoren";
 "successfully" = "uspješno";
 "OnboardingCard1Text1" = "Pozdravite ";

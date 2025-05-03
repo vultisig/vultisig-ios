@@ -529,8 +529,8 @@
 "secureVaultSummaryText4" = "All vault shares ensure secure access to your funds";
 "secureVaultSummaryDiscalimer" = "I have read and understand what to do";
 "secureVaultSecureTextDescription" = "Maximum security with multiple devices\nAlways accessible with device backups\nSecure any amount of assets";
-"fastVaultSecureTextDescription" = "Only 1 device needed\nStore smaller funds for daily use\nVultiserver co-signs instantly";
-"fastSetUp" = "Quick, 1 device setup";
+"fastVaultSecureTextDescription" = "Only 1 device needed\nStore small funds for quick actions\nVultiserver co-signs instantly";
+"fastSetUp" = "Fast set-up";
 "vaultCreated" = "Vault created";
 "successfully" = "successfully";
 "OnboardingCard1Text1" = "Say hello to ";
