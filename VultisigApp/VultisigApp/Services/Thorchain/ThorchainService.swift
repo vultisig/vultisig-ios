@@ -139,6 +139,9 @@ class ThorchainService: ThorchainSwapProvider {
         
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
+        print(url)
+        print(String(data: data, encoding: .utf8))
+        
         do {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
             return response

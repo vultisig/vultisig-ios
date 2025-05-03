@@ -226,6 +226,12 @@ class Coin: ObservableObject, Codable, Hashable {
             }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
+        
+        // TCY is a native token as well. Does not follow the same rules.
+        if contractAddress.uppercased() == "TCY" {
+            return "\(chain.swapAsset).TCY"
+        }
+        
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     
