@@ -44,6 +44,7 @@
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
 		46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
+		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */; };
@@ -930,6 +931,7 @@
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
+		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
 		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
 		A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaSwaps.swift; sourceTree = "<group>"; };
@@ -2248,6 +2250,7 @@
 			isa = PBXGroup;
 			children = (
 				A61BC8182BA2687D00484689 /* TokensStore.swift */,
+				8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
 				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
 			);
@@ -4230,6 +4233,7 @@
 				A6C670FB2CA275A900F59B6A /* SettingsFAQView+macOS.swift in Sources */,
 				A617B67E2CEC6540006E5122 /* SendSummaryViewModel.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
+				8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
 				A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */,
