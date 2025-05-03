@@ -486,8 +486,8 @@
 "readyToUseNewWalletStandard." = "Estás listo para usar un nuevo estándar de billetera.";
 "secureVaultSummaryDiscalimer" = "He leído y entendido qué hacer.";
 "secureVaultSecureTextDescription" = "Máxima seguridad con múltiples dispositivos\nSiempre accesible con copias de seguridad de dispositivos\nProtege cualquier cantidad de activos";
-"fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para uso diario\nVultiserver firma instantáneamente";
-"fastSetUp" = "Configuración rápida con 1 dispositivo";
+"fastVaultSecureTextDescription" = "Solo se necesita 1 dispositivo\nGuarda fondos pequeños para acciones rápidas\nVultiserver cofirma al instante";
+"fastSetUp" = "Configuración rápida";
 "vaultCreated" = "Bóveda creada";
 "successfully" = "exitosamente";
 "OnboardingCard1Text1" = "Di hola a ";
