@@ -30,7 +30,7 @@ struct SetupVaultSwithControl: View {
             RoundedRectangle(cornerRadius: 100)
                 .foregroundColor(.blue600)
                 .frame(width: (width/2))
-                .offset(x: selectedTab == .secure ? 0 : (width/2))
+                .offset(x: selectedTab == .fast ? 0 : (width/2))
             
             Spacer()
         }
@@ -39,8 +39,8 @@ struct SetupVaultSwithControl: View {
     var content: some View {
         GeometryReader { size in
             HStack {
-                getButton(for: .secure)
                 getButton(for: .fast)
+                getButton(for: .secure)
             }
             .onAppear {
                 width = size.size.width
@@ -107,7 +107,7 @@ struct SetupVaultSwithControl: View {
         
         guard oldTab != selectedTab else { return }
         
-        if option == .secure {
+        if option == .fast {
             animationVM?.triggerInput("Switch")
             animationVM?.triggerInput("Switch")
         } else {
