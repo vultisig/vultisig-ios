@@ -24,6 +24,15 @@ extension TransactionMemoView {
                     backButton
                 }
             }
+            if transactionMemoViewModel.currentIndex == 3 {
+                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                        NavigationQRShareButton(
+                            vault: vault,
+                            type: .Keysign,
+                            renderedImage: shareSheetViewModel.renderedImage
+                        )
+                    }
+                }
         }
     }
     
