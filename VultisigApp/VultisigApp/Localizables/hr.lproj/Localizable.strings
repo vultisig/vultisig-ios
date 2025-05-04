@@ -605,3 +605,4 @@
 "passwordVerifiedSuccessfully" = "Lozinka uspješno potvrđena";
 "close" = "Zatvori";
 "vaultTypeDoesnotMatch" = " Vrsta trezora se ne podudara";
+"failedToLoadFileData" = "Greška pri učitavanju podataka datoteke";
