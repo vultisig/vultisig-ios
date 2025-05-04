@@ -78,7 +78,7 @@ class EncryptedBackupViewModel: ObservableObject {
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
-
+            
         } catch {
             print(error)
         }
@@ -92,6 +92,24 @@ class EncryptedBackupViewModel: ObservableObject {
         } catch {
             print("Error encrypting data: \(error.localizedDescription)")
             return nil
+        }
+    }
+    
+    func importDragDropFile(content: Data){
+        do {
+            if isBakFile() {
+                try importBakFile(data: content)
+                return
+            }
+            
+            if let decryptedString = decryptOrReadData(data: content, password: "") {
+                decryptedContent = decryptedString
+                isFileUploaded = true
+            } else {
+                promptForPasswordAndImport(from: content)
+            }
+        } catch {
+            print("Error reading file: \(error.localizedDescription)")
         }
     }
     
@@ -332,29 +350,31 @@ class EncryptedBackupViewModel: ObservableObject {
         importFile(from: url)
     }
     
-    func handleOnDrop(providers: [NSItemProvider]) -> Bool {
+    func handleOnDrop(providers: [NSItemProvider]) async {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.data.identifier) }) else {
             print("Invalid file type.")
-            return false
+            return
         }
-
-        provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.data.identifier) { url, success, error in
-            guard let url = url else {
-                print(error?.localizedDescription ?? "Failed to load file.")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                guard self.isValidFormat(url) else {
-                    self.showInvalidFormatAlert()
-                    return
+        do{
+            let dragDropData = try await provider.loadItem(forTypeIdentifier: UTType.data.identifier)
+            if let urlData = dragDropData as? NSURL {
+                print("File Path as NSURL: \(urlData)")
+                provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data,err in
+                    if let data {
+                        let url = urlData as URL
+                        DispatchQueue.main.async {
+                            guard self.isValidFormat(url) else {
+                                self.showInvalidFormatAlert()
+                                return
+                            }    
+                            self.importedFileName = url.lastPathComponent
+                            self.importDragDropFile(content: data)
+                        }
+                    }
                 }
-                
-                self.importedFileName = url.lastPathComponent
-                self.importFile(from: url)
             }
+        } catch {
+            print("fail to process drag and drop file: \(error.localizedDescription)")
         }
-
-        return true
     }
 }

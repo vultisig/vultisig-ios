@@ -15,7 +15,10 @@ extension ImportWalletView {
             main
         }
         .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-            backupViewModel.handleOnDrop(providers: providers)
+            Task{
+                await backupViewModel.handleOnDrop(providers: providers)
+            }
+            return true
         }
     }
     
