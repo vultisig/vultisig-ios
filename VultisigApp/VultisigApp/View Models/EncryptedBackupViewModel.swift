@@ -374,6 +374,10 @@ class EncryptedBackupViewModel: ObservableObject {
                 }
             }
         } catch {
+            DispatchQueue.main.async{
+                self.alertTitle = "failedToLoadFileData"
+                self.showAlert = true
+            }
             print("fail to process drag and drop file: \(error.localizedDescription)")
         }
     }

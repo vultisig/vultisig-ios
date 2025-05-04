@@ -622,3 +622,4 @@
 "passwordVerifiedSuccessfully" = "Passwort erfolgreich überprüft";
 "close" = "Schließen";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
+"failedToLoadFileData" = "Fehler beim Laden der Dateidaten"; 
