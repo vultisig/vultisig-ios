@@ -23,7 +23,7 @@ import Combine
  */
 
 class TransactionMemoCosmosMerge: ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var txMemo: String = ""
     
@@ -71,16 +71,15 @@ class TransactionMemoCosmosMerge: ObservableObject {
             tokenValid = true
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
-                let b = coin.balanceDecimal.description
-                amount = Double(b) ?? 0.0
-                balanceLabel = "Amount ( Balance: \(b) \(coin.ticker.uppercased()) )"
+                amount = coin.balanceDecimal
+                balanceLabel = "Amount ( Balance: \(amount.formatDecimalToLocale() ?? "0") \(coin.ticker.uppercased()) )"
             }
         }
         
         if tx.coin.isNativeToken {
             self.amount = 0.0
         } else  {
-            self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+            self.amount = tx.coin.balanceDecimal
         }
         
     }
@@ -101,7 +100,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
     
     var balance: String {
         if let coin = selectedVaultCoin {
-            let balance = coin.balanceDecimal.description
+            let balance = coin.balanceDecimal.formatDecimalToLocale() ?? "0"
             return "Amount ( Balance: \(balance) \(coin.ticker.uppercased()) )"
         } else {
             return "Amount ( Select a token )"
@@ -155,8 +154,8 @@ class TransactionMemoCosmosMerge: ObservableObject {
                     if let coin = self.selectedVaultCoin {
                         
                         withAnimation {
-                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.description) \(coin.ticker.uppercased()) )"
-                            self.amount = Double(coin.balanceDecimal.description) ?? 0.0
+                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatDecimalToLocale() ?? "0") \(coin.ticker.uppercased()) )"
+                            self.amount = coin.balanceDecimal
                             
                             self.objectWillChange.send()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -190,7 +189,6 @@ class TransactionMemoCosmosMerge: ObservableObject {
                         }
                     }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
@@ -207,7 +205,7 @@ class TransactionMemoCosmosMerge: ObservableObject {
     
     private let tokensToMerge: [TokenMergeInfo] = [
         TokenMergeInfo(denom: "thor.kuji", wasmContractAddress: "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"),
-        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvj0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
+        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
         TokenMergeInfo(denom: "thor.fuzn", wasmContractAddress: "thor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrsw5xx2d"),
         TokenMergeInfo(denom: "thor.nstk", wasmContractAddress: "thor1cnuw3f076wgdyahssdkd0g3nr96ckq8cwa2mh029fn5mgf2fmcmsmam5ck"),
         TokenMergeInfo(denom: "thor.wink", wasmContractAddress: "thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y"),

@@ -27,7 +27,7 @@ enum RippleHelper {
         }
 
         guard
-            case .Ripple(let sequence, let gas) = keysignPayload
+            case .Ripple(let sequence, let gas, let lastLedgerSequence) = keysignPayload
                 .chainSpecific
         else {
             print("keysignPayload.chainSpecific is not Ripple")
@@ -60,7 +60,10 @@ enum RippleHelper {
             $0.account = keysignPayload.coin.address
             $0.publicKey = publicKey.data
             $0.opPayment = operation
+            $0.lastLedgerSequence = UInt32(lastLedgerSequence)
         }
+        
+        print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
 
         return try input.serializedData()
 

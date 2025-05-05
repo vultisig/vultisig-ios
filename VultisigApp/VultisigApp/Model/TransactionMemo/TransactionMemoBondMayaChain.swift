@@ -16,7 +16,7 @@ struct IdentifiableString: Identifiable, Equatable {
 
 class TransactionMemoBondMayaChain: TransactionMemoAddressable, ObservableObject
 {
-    @Published var amount: Double = 1
+    @Published var amount: Decimal = 1
     @Published var nodeAddress: String = ""
     @Published var fee: Int64 = .zero
 

@@ -53,40 +53,6 @@ struct SwapCryptoDetailsView: View {
             fields
             continueButton
         }
-        .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $swapViewModel.showFromChainSelector,
-                selectedChain: $swapViewModel.fromChain,
-                selectedCoin: $tx.fromCoin
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $swapViewModel.showToChainSelector,
-                selectedChain: $swapViewModel.toChain,
-                selectedCoin: $tx.toCoin
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
-            SwapCoinPickerView(
-                vault: vault,
-                selectedNetwork: swapViewModel.fromChain,
-                showSheet: $swapViewModel.showFromCoinSelector,
-                selectedCoin: $tx.fromCoin,
-                selectedChain: $swapViewModel.fromChain
-            )
-        })
-        .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
-            SwapCoinPickerView(
-                vault: vault,
-                selectedNetwork: swapViewModel.toChain,
-                showSheet: $swapViewModel.showToCoinSelector,
-                selectedCoin: $tx.toCoin,
-                selectedChain: $swapViewModel.toChain
-            )
-        })
     }
     
     var swapContent: some View {
@@ -130,7 +96,7 @@ struct SwapCryptoDetailsView: View {
             vault: vault,
             coin: tx.toCoin,
             fiatAmount: swapViewModel.toFiatAmount(tx: tx),
-            amount: .constant(tx.toAmountDecimal.description),
+            amount: .constant(tx.toAmountDecimal.formatDecimalToLocale()),
             selectedChain: $swapViewModel.toChain,
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
@@ -229,26 +195,30 @@ struct SwapCryptoDetailsView: View {
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
     }
+    
+    func showSheet() -> Bool {
+        swapViewModel.showFromChainSelector || swapViewModel.showToChainSelector || swapViewModel.showFromCoinSelector || swapViewModel.showToCoinSelector
+    }
 }
 
 extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
         switch percentage {
         case 25:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 8)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 50:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 8)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 75:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 8)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 4)
             handleFromCoinUpdate()
         case 100:
-            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 8)
+            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 4)
             handleFromCoinUpdate()
             let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
             let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
-            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 8)
+            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 4)
         default:
             break
         }

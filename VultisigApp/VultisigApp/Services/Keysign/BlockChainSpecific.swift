@@ -19,7 +19,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
     case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool, sendMaxAmount: Bool)
-    case Ripple(sequence: UInt64, gas: UInt64)
+    case Ripple(sequence: UInt64, gas: UInt64, lastLedgerSequence: UInt64)
     
     case Tron(
         timestamp: UInt64,
@@ -53,7 +53,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return PolkadotHelper.defaultFeeInPlancks
         case .Ton(_,_,_,_):
             return TonHelper.defaultFee
-        case .Ripple(_, let gas):
+        case .Ripple(_, let gas, _):
             return gas.description.toBigInt()
         case .Tron(_, _, _, _, _, _, _, _, let gasFeeEstimation):
             return gasFeeEstimation.description.toBigInt()
