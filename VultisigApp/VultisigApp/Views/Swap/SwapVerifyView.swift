@@ -123,7 +123,7 @@ struct SwapVerifyView: View {
     var summaryFromTo: some View {
         VStack(spacing: 16) {
             getSwapAssetCell(
-                for: tx.fromAmount,
+                for: tx.fromAmountDecimal.formatDecimalToLocale(),
                 with: tx.fromCoin.ticker,
                 on: tx.fromCoin.chain
             )
@@ -132,7 +132,7 @@ struct SwapVerifyView: View {
                 .padding(.leading, 12)
             
             getSwapAssetCell(
-                for: tx.toAmountDecimal.description,
+                for: tx.toAmountDecimal.formatDecimalToLocale(),
                 with: tx.toCoin.ticker,
                 on: tx.toCoin.chain
             )
@@ -150,7 +150,7 @@ struct SwapVerifyView: View {
     }
     
     var summaryTitle: some View {
-        Text(NSLocalizedString("youreBridging", comment: ""))
+        Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(.body14BrockmannMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity, alignment: .leading)

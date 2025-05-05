@@ -72,6 +72,8 @@ extension HomeView {
                 editButton
             }
         }
+        .toolbarBackground(Color.backgroundBlue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             setData()
         }

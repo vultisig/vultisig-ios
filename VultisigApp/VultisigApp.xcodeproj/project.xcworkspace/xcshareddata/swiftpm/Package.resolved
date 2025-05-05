@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "94c20d48b803bcfcb25e87fb2d4a3d2d5e5111e9"
+        "revision" : "a2492623ef05747f5e5ed3402061734e4deae92b"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
-        "version" : "1.28.2"
+        "revision" : "d72aed98f8253ec1aa9ea1141e28150f408cf17f",
+        "version" : "1.29.0"
       }
     },
     {
@@ -78,7 +78,7 @@
       "location" : "https://github.com/vultisig/walletcore-spm.git",
       "state" : {
         "branch" : "main",
-        "revision" : "d3c95e9e34528dfe045ba2ee735d9207c90eac6f"
+        "revision" : "746ea3fea384742d0b5e4f9f2e8df289d0f1de99"
       }
     }
   ],

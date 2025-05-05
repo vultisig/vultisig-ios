@@ -50,6 +50,13 @@ extension Decimal {
         return ""
     }
     
+    func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        return formatter.string(from: self as NSDecimalNumber) ?? ""
+    }
+    
     func formatToDecimal(digits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

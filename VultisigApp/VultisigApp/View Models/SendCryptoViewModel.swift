@@ -258,14 +258,15 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        tx.amount = "\(amountDecimal)"
+        tx.amount = amountDecimal.formatDecimalToLocale()
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
-        if let newValueDecimal = Decimal(string: newValue) {
+        let newValueDecimal = newValue.toDecimal()
+        if newValueDecimal > 0 {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
-            tx.amount = NSDecimalNumber(decimal: truncatedValueCoin).stringValue
+            tx.amount = truncatedValueCoin.formatDecimalToLocale()
             tx.sendMaxAmount = false
         } else {
             tx.amount = ""
@@ -273,10 +274,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) {
-        if let newValueDecimal = Decimal(string: newValue) {
+        let newValueDecimal = newValue.toDecimal()
+        if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-            tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue
+            tx.amountInFiat = truncatedValueFiat.formatDecimalToLocale()
             tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""
@@ -470,7 +472,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
-            vaultLocalPartyID: vault.localPartyID
+            vaultLocalPartyID: vault.localPartyID,
+            libType: (vault.libType ?? .GG20).toString()
         )
         
         guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {

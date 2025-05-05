@@ -27,7 +27,7 @@ enum RippleHelper {
         }
 
         guard
-            case .Ripple(let sequence, let gas) = keysignPayload
+            case .Ripple(let sequence, let gas, let lastLedgerSequence) = keysignPayload
                 .chainSpecific
         else {
             print("keysignPayload.chainSpecific is not Ripple")
@@ -47,7 +47,7 @@ enum RippleHelper {
         let operation = RippleOperationPayment.with {
 
             if let memo = keysignPayload.memo {
-                $0.destinationTag = Int64(memo) ?? 0
+                $0.destinationTag = UInt64(memo) ?? 0
             }
 
             $0.destination = keysignPayload.toAddress
@@ -56,11 +56,14 @@ enum RippleHelper {
 
         let input = RippleSigningInput.with {
             $0.fee = Int64(gas)
-            $0.sequence = Int32(sequence)  // from account info api
+            $0.sequence = UInt32(sequence)  // from account info api
             $0.account = keysignPayload.coin.address
             $0.publicKey = publicKey.data
             $0.opPayment = operation
+            $0.lastLedgerSequence = UInt32(lastLedgerSequence)
         }
+        
+        print("UInt32(lastLedgerSequence) \(UInt32(lastLedgerSequence))")
 
         return try input.serializedData()
 
@@ -111,10 +114,10 @@ enum RippleHelper {
         let signatureProvider = SignatureProvider(signatures: signatures)
 
         // If I use datahash it is not finding anything
-        let signature = signatureProvider.getDerSignature(
+        let signature = signatureProvider.getSignatureWithRecoveryID(
             preHash: preSigningOutput.dataHash)
         guard
-            publicKey.verifyAsDER(
+            publicKey.verify(
                 signature: signature, message: preSigningOutput.dataHash)
         else {
             let errorMessage = "Invalid signature"

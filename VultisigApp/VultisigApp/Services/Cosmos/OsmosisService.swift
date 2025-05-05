@@ -22,4 +22,16 @@ class OsmosisService: CosmosService {
     override func transactionURL() -> URL? {
         return URL(string: Endpoint.broadcastOsmosisTransaction)
     }
+    
+    override func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
+        return URL(string: Endpoint.fetchOsmosisWasmTokenBalance(contractAddress: contractAddress, base64Payload: base64Payload))
+    }
+    
+    override func ibcDenomTraceURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchOsmosisIbcDenomTraces(hash: coin.contractAddress.replacingOccurrences(of: "ibc/", with: "")))
+    }
+    
+    override func latestBlockURL(coin: Coin)-> URL? {
+        return URL(string: Endpoint.fetchOsmosisLatestBlock())
+    }
 }

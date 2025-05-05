@@ -11,7 +11,7 @@ import SwiftUI
 
 class TransactionMemoAddLiquidityMaya: ObservableObject
 {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     
     // Internal
     @Published var amountValid: Bool = false
@@ -58,7 +58,6 @@ class TransactionMemoAddLiquidityMaya: ObservableObject
                         get: { self.amount },
                         set: { self.amount = $0 }
                     ),
-                    format: .number,
                     isValid: Binding(
                         get: { self.amountValid },
                         set: { self.amountValid = $0 }

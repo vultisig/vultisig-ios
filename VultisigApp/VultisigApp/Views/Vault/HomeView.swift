@@ -39,17 +39,15 @@ struct HomeView: View {
     }
     
     var navigationTitle: some View {
-        ZStack {
-            HStack {
-                title
-                
-                if viewModel.selectedVault != nil {
-                    Image(systemName: "chevron.up")
-                        .font(.body8Menlo)
-                        .bold()
-                        .foregroundColor(.neutral0)
-                        .rotationEffect(.degrees(showVaultsList ? 0 : 180))
-                }
+        HStack {
+            title
+            
+            if viewModel.selectedVault != nil {
+                Image(systemName: "chevron.up")
+                    .font(.body8Menlo)
+                    .bold()
+                    .foregroundColor(.neutral0)
+                    .rotationEffect(.degrees(showVaultsList ? 0 : 180))
             }
         }
         .onTapGesture {

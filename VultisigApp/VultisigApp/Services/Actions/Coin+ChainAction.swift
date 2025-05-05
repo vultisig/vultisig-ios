@@ -16,7 +16,7 @@ extension CoinAction {
     ]
     
     static var memoChains: [Chain] = [
-        .thorChain, .mayaChain, .ton, .dydx, .kujira, .gaiaChain
+        .thorChain, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis
     ]
 }
 

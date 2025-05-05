@@ -17,6 +17,7 @@ enum JoinKeysignStatus {
     case VaultMismatch
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
+    case VaultTypeDoesntMatch
 }
 
 @MainActor
@@ -249,6 +250,14 @@ class JoinKeysignViewModel: ObservableObject {
                 self.status = .KeysignSameDeviceShare
                 return
             }
+            // only compare libType when it is not empty
+            if !keysignPayload.libType.isEmpty {
+                let libType = vault.libType ?? .GG20
+                if libType != keysignPayload.libType.toLibType() {
+                    self.status = .VaultTypeDoesntMatch
+                    return
+                }
+            }
         }
         if useVultisigRelay {
             self.serverAddress = Endpoint.vultisigRelay
@@ -386,9 +395,9 @@ class JoinKeysignViewModel: ObservableObject {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker)"
+            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker)"
         } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
         }
     }
 
@@ -396,9 +405,9 @@ class JoinKeysignViewModel: ObservableObject {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker)"
+            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker)"
         } else {
-            return "\(String(describing: amount).formatCurrencyWithSeparators()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
         }
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct PasswordVerifyReminderView: View {
     let vault: Vault
     @Binding var isSheetPresented: Bool
+
     @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Double?
     
     @State var showError = false
@@ -183,9 +184,6 @@ struct PasswordVerifyReminderView: View {
             FilledButton(title: "close")
         }
         .buttonStyle(.plain)
-        // Only show close button after successful verification
-        .opacity(passwordVerified ? 1 : 0)
-        .animation(.easeInOut, value: passwordVerified)
     }
     
     private func verifyPasswordIsValid() async {

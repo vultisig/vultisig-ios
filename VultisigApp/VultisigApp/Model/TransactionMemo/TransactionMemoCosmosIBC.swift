@@ -27,7 +27,7 @@ import Combine
  */
 
 class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
     @Published var txMemo: String = ""
     
@@ -66,15 +66,17 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
         self.vault = vault
         setupValidation()
         
-        let cosmosChains: [Chain] = Chain.allCases.filter { $0.chainType == .Cosmos && $0 != tx.coin.chain && (!$0.name.lowercased().contains("terra")) }
+        let cosmosChains: [Chain] = tx.coin.chain.ibcTo.map { $0.destinationChain }
         
         for chain in cosmosChains {
+            // Disable IBC for LVN and Kujira
+            if tx.coin.ticker == TokensStore.Token.kujiraLVN.ticker, tx.coin.chain == .kujira { continue }
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
                 
         getChainAddress()
         
-        self.amount = Double(tx.coin.balanceDecimal.description) ?? 0.0
+        self.amount = tx.coin.balanceDecimal
         
     }
     
@@ -165,7 +167,6 @@ class TransactionMemoCosmosIBC: TransactionMemoAddressable, ObservableObject {
                     get: { self.amount },
                     set: { self.amount = $0 }
                 ),
-                format: .number,
                 isValid: Binding(
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
