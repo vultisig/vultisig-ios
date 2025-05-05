@@ -1,5 +1,5 @@
 //
-//  TransactionMemoContractSelectorDropDown.swift
+//  FunctionCallContractSelectorDropDown.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.
@@ -7,13 +7,13 @@
 import Foundation
 import SwiftUI
 
-struct TransactionMemoContractSelectorDropDown: View {
+struct FunctionCallContractSelectorDropDown: View {
     
-    @Binding var items: [TransactionMemoContractType]
-    @Binding var selected: TransactionMemoContractType
+    @Binding var items: [FunctionCallContractType]
+    @Binding var selected: FunctionCallContractType
     var coin: Coin
     
-    var onSelect: ((TransactionMemoContractType) -> Void)?
+    var onSelect: ((FunctionCallContractType) -> Void)?
     
     @State private var isExpanded = false
     
@@ -69,7 +69,7 @@ struct TransactionMemoContractSelectorDropDown: View {
         }
     }
     
-    private func getCell(for item: TransactionMemoContractType) -> some View {
+    private func getCell(for item: FunctionCallContractType) -> some View {
         HStack(spacing: 12) {
             Text(item.getDescription(for: coin))
                 .font(.body16Menlo)
@@ -90,7 +90,7 @@ struct TransactionMemoContractSelectorDropDown: View {
         return items.count > 1
     }
     
-    private func handleSelection(for item: TransactionMemoContractType) {
+    private func handleSelection(for item: FunctionCallContractType) {
         isExpanded = false
         selected = item
         onSelect?(item)

@@ -1,5 +1,5 @@
 //
-//  TransactionMemoTypeEnum.swift
+//  FunctionCallTypeEnum.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.
@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 import VultisigCommonData
 
-enum TransactionMemoInstance {
+enum FunctionCallInstance {
     case bond(FunctionCallBond)
     case unbond(FunctionCallUnbond)
     case bondMaya(FunctionCallBondMayaChain)
@@ -219,10 +219,10 @@ enum TransactionMemoInstance {
         }
     }
 
-    static func getDefault(for coin: Coin, tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault) -> TransactionMemoInstance {
+    static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
-            return .bond(FunctionCallBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+            return .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:
@@ -230,9 +230,9 @@ enum TransactionMemoInstance {
         case .ton:
             return .stake(FunctionCallStake())
         case .gaiaChain:
-            return .theSwitch(FunctionCallCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+            return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .kujira:
-            return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+            return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         default:
             return .custom(FunctionCallCustom())
         }

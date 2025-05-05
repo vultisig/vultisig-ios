@@ -1,5 +1,5 @@
 //
-//  TransactionMemoBond.swift
+//  FunctionCallBond.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -120,7 +120,7 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
                     )
                 )
 
-                TransactionMemoAddressTextField(
+                FunctionCallAddressTextField(
                     memo: self,
                     addressKey: "nodeAddress",
                     isAddressValid: Binding(

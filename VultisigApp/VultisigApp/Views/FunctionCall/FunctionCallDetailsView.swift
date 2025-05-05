@@ -2,24 +2,24 @@ import Foundation
 import OSLog
 import SwiftUI
 
-struct TransactionMemoDetailsView: View {
+struct FunctionCallDetailsView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var functionCallViewModel: TransactionMemoViewModel
+    @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var vault: Vault
 
     @State private var selectedFunctionMemoType: FunctionCallType
     @State private var selectedContractMemoType: FunctionCallContractType
     @State private var showInvalidFormAlert = false
     
-    @State var txMemoInstance: TransactionMemoInstance
+    @State var fnCallInstance: FunctionCallInstance
     
     @StateObject var keyboardObserver = KeyboardObserver()
 
     init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
     ) {
         self.tx = tx
-        self.transactionMemoViewModel = transactionMemoViewModel
+        self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         let defaultCoin = tx.coin
         self._selectedFunctionMemoType = State(
@@ -27,13 +27,13 @@ struct TransactionMemoDetailsView: View {
         self._selectedContractMemoType = State(
             initialValue: FunctionCallContractType.getDefault(
                 for: defaultCoin))
-        self._txMemoInstance = State(
-            initialValue: TransactionMemoInstance.getDefault(for: defaultCoin, tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+        self._fnCallInstance = State(
+            initialValue: FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
     }
 
     var body: some View {
         content
-            .alert(isPresented: $transactionMemoViewModel.showAlert) {
+            .alert(isPresented: $functionCallViewModel.showAlert) {
                 alert
             }
             .alert(isPresented: $showInvalidFormAlert) {
@@ -42,9 +42,9 @@ struct TransactionMemoDetailsView: View {
             .onChange(of: selectedFunctionMemoType) {
                 switch selectedFunctionMemoType {
                 case .bond:
-                    txMemoInstance = .bond(FunctionCallBond(tx: tx, transactionMemoViewModel: transactionMemoViewModel))
+                    fnCallInstance = .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
                 case .unbond:
-                    txMemoInstance = .unbond(FunctionCallUnbond())
+                    fnCallInstance = .unbond(FunctionCallUnbond())
                 case .bondMaya:
 
                     DispatchQueue.main.async {
@@ -54,7 +54,7 @@ struct TransactionMemoDetailsView: View {
                                 IdentifiableString(value: $0)
                             }
                             DispatchQueue.main.async {
-                                txMemoInstance = .bondMaya(
+                                fnCallInstance = .bondMaya(
                                     FunctionCallBondMayaChain(assets: assets)
                                 )
                             }
@@ -70,7 +70,7 @@ struct TransactionMemoDetailsView: View {
                                 IdentifiableString(value: $0)
                             }
                             DispatchQueue.main.async {
-                                txMemoInstance = .unbondMaya(
+                                fnCallInstance = .unbondMaya(
                                     FunctionCallUnbondMayaChain(
                                         assets: assets))
                             }
@@ -78,30 +78,30 @@ struct TransactionMemoDetailsView: View {
                     }
 
                 case .leave:
-                    txMemoInstance = .leave(FunctionCallLeave())
+                    fnCallInstance = .leave(FunctionCallLeave())
                 case .custom:
-                    txMemoInstance = .custom(FunctionCallCustom())
+                    fnCallInstance = .custom(FunctionCallCustom())
                 case .vote:
-                    txMemoInstance = .vote(FunctionCallVote())
+                    fnCallInstance = .vote(FunctionCallVote())
                 case .stake:
-                    txMemoInstance = .stake(FunctionCallStake())
+                    fnCallInstance = .stake(FunctionCallStake())
                 case .unstake:
-                    txMemoInstance = .unstake(FunctionCallUnstake())
+                    fnCallInstance = .unstake(FunctionCallUnstake())
                 case .addPool:
-                    txMemoInstance = .addPool(
+                    fnCallInstance = .addPool(
                         FunctionCallAddLiquidityMaya()
                     )
                 case .removePool:
-                    txMemoInstance = .removePool(
+                    fnCallInstance = .removePool(
                         FunctionCallRemoveLiquidityMaya()
                     )
                     
                 case .cosmosIBC:
-                    txMemoInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+                    fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .merge:
-                    txMemoInstance = .merge(FunctionCallCosmosMerge(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+                    fnCallInstance = .merge(FunctionCallCosmosMerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
-                    txMemoInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, transactionMemoViewModel: transactionMemoViewModel, vault: vault))
+                    fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 }
             }
     }
@@ -111,7 +111,7 @@ struct TransactionMemoDetailsView: View {
             title: Text(NSLocalizedString("error", comment: "")),
             message: Text(
                 NSLocalizedString(
-                    transactionMemoViewModel.errorMessage, comment: "")),
+                    functionCallViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -127,13 +127,13 @@ struct TransactionMemoDetailsView: View {
     }
 
     var functionSelector: some View {
-        TransactionMemoSelectorDropdown(
+        FunctionCallSelectorDropdown(
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
             selected: $selectedFunctionMemoType, coin: $tx.coin)
     }
 
     var contractSelector: some View {
-        TransactionMemoContractSelectorDropDown(
+        FunctionCallContractSelectorDropDown(
             items: .constant(
                 FunctionCallContractType.getCases(for: tx.coin)),
             selected: $selectedContractMemoType, coin: tx.coin)
@@ -142,17 +142,17 @@ struct TransactionMemoDetailsView: View {
     var button: some View {
         Button {
             Task {
-                if txMemoInstance.isTheFormValid {
-                    tx.amount = txMemoInstance.amount.formatDecimalToLocale()
-                    tx.memo = txMemoInstance.description
-                    tx.memoFunctionDictionary = txMemoInstance.toDictionary()
-                    tx.transactionType = txMemoInstance.getTransactionType()
+                if fnCallInstance.isTheFormValid {
+                    tx.amount = fnCallInstance.amount.formatDecimalToLocale()
+                    tx.memo = fnCallInstance.description
+                    tx.memoFunctionDictionary = fnCallInstance.toDictionary()
+                    tx.transactionType = fnCallInstance.getTransactionType()
                     
-                    if let toAddress = txMemoInstance.toAddress {
+                    if let toAddress = fnCallInstance.toAddress {
                         tx.toAddress = toAddress
                     }
                     
-                    transactionMemoViewModel.moveToNextView()
+                    functionCallViewModel.moveToNextView()
                     
                 } else {
                     showInvalidFormAlert = true

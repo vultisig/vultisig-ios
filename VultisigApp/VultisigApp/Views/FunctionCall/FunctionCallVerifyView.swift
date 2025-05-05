@@ -1,5 +1,5 @@
 //
-//  TransactionMemoVerifyView.swift
+//  FunctionCallVerifyView.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 14/05/24.
@@ -8,10 +8,10 @@
 import Foundation
 import SwiftUI
 
-struct TransactionMemoVerifyView: View {
+struct FunctionCallVerifyView: View {
     @Binding var keysignPayload: KeysignPayload?
     @ObservedObject var depositViewModel: FunctionCallViewModel
-    @ObservedObject var depositVerifyViewModel: TransactionMemoVerifyViewModel
+    @ObservedObject var depositVerifyViewModel: FunctionCallVerifyViewModel
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
@@ -181,10 +181,10 @@ struct TransactionMemoVerifyView: View {
 }
 
 #Preview {
-    TransactionMemoVerifyView(
+    FunctionCallVerifyView(
         keysignPayload: .constant(nil),
         depositViewModel: FunctionCallViewModel(),
-        depositVerifyViewModel: TransactionMemoVerifyViewModel(),
+        depositVerifyViewModel: FunctionCallVerifyViewModel(),
         tx: SendTransaction(),
         vault: Vault.example
     )

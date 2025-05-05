@@ -1,5 +1,5 @@
 //
-//  TransactionMemoBond.swift
+//  FunctionCallBond.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -46,7 +46,7 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
     ) {
         self.tx = tx
         setupValidation()
@@ -95,7 +95,7 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
                 isAddressValid: Binding(
@@ -103,7 +103,7 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "provider",
                 isOptional: true,

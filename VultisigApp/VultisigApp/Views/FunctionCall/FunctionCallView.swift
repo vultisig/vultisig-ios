@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct TransactionMemoView: View {
+struct FunctionCallView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     let coin: Coin?
     
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var functionCallViewModel = FunctionCallViewModel()
-    @StateObject var functionCallVerifyViewModel = TransactionMemoVerifyViewModel()
+    @StateObject var functionCallVerifyViewModel = FunctionCallVerifyViewModel()
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
@@ -65,13 +65,13 @@ struct TransactionMemoView: View {
     var detailsView: some View {
         FunctionCallDetailsView(
             tx: tx,
-            transactionMemoViewModel: functionCallViewModel,
+            functionCallViewModel: functionCallViewModel,
             vault: vault
         )
     }
     
     var verifyView: some View {
-        TransactionMemoVerifyView(
+        FunctionCallVerifyView(
             keysignPayload: $keysignPayload,
             depositViewModel: functionCallViewModel,
             depositVerifyViewModel: functionCallVerifyViewModel,

@@ -1,14 +1,14 @@
 import Foundation
 import SwiftUI
 
-struct TransactionMemoSelectorDropdown: View {
+struct FunctionCallSelectorDropdown: View {
     
-    @Binding var items: [TransactionMemoType]
-    @Binding var selected: TransactionMemoType
+    @Binding var items: [FunctionCallType]
+    @Binding var selected: FunctionCallType
     
     @Binding var coin: Coin
     
-    var onSelect: ((TransactionMemoType) -> Void)?
+    var onSelect: ((FunctionCallType) -> Void)?
     
     @State private var isExpanded = false
     
@@ -61,7 +61,7 @@ struct TransactionMemoSelectorDropdown: View {
         }
     }
     
-    private func getCell(for item: TransactionMemoType) -> some View {
+    private func getCell(for item: FunctionCallType) -> some View {
         HStack(spacing: 12) {
             Text(item.display(coin: coin))
                 .font(.body16Menlo)
@@ -78,7 +78,7 @@ struct TransactionMemoSelectorDropdown: View {
         .frame(height: 48)
     }
     
-    private func handleSelection(for item: TransactionMemoType) {
+    private func handleSelection(for item: FunctionCallType) {
         isExpanded = false
         selected = item
         onSelect?(item)

@@ -1,5 +1,5 @@
 //
-//  TransactionMemoVote.swift
+//  FunctionCallVote.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 24/05/24.

@@ -1,5 +1,5 @@
 //
-//  TransactionMemoCosmosMerge.swift
+//  FunctionCallCosmosMerge.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -25,10 +25,10 @@ import Combine
 class FunctionCallCosmosMerge: ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
-    @Published var txMemo: String = ""
+    @Published var fnCall: String = ""
     
     @Published var amountValid: Bool = false
-    @Published var txMemoValid: Bool = true
+    @Published var fnCallValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
     
@@ -45,7 +45,7 @@ class FunctionCallCosmosMerge: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault

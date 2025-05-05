@@ -1,5 +1,5 @@
 //
-//  TransactionMemoAddressTextField.swift
+//  FunctionCallAddressTextField.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 14/05/24.
@@ -10,7 +10,7 @@ import OSLog
 import UniformTypeIdentifiers
 import WalletCore
 
-struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
+struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     @ObservedObject var memo: MemoType
     var addressKey: String
     var isOptional: Bool = false

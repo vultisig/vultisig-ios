@@ -1,5 +1,5 @@
 //
-//  TransactionMemoCosmosIBC.swift
+//  FunctionCallCosmosIBC.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -29,10 +29,10 @@ import Combine
 class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var destinationAddress: String = ""
-    @Published var txMemo: String = ""
+    @Published var fnCall: String = ""
     
     @Published var amountValid: Bool = false
-    @Published var txMemoValid: Bool = true
+    @Published var fnCallValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
     
@@ -60,7 +60,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault
@@ -111,8 +111,8 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     
     func toString() -> String {
         var memo = "\(self.selectedChainObject?.name ?? ""):\(self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? ""):\(self.destinationAddress)"
-        if txMemo.isEmpty == false {
-            memo += ":\(self.txMemo)"
+        if fnCall.isEmpty == false {
+            memo += ":\(self.fnCall)"
         }
         return memo
     }
@@ -122,7 +122,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
         dict.set("destinationChain", self.selectedChainObject?.name ?? "")
         dict.set("destinationChannel", self.tx.coin.chain.ibcChannel(to: selectedChainObject) ?? "")
         dict.set("destinationAddress", self.destinationAddress)
-        dict.set("transferMemo", self.txMemo)
+        dict.set("transferMemo", self.fnCall)
         dict.set("memo", self.toString())
         return dict
     }
@@ -151,7 +151,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
                 }
             )
             
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
                 isAddressValid: .constant(true),
@@ -175,13 +175,13 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
             StyledTextField(
                 placeholder: "Memo",
                 text: Binding(
-                    get: { self.txMemo },
-                    set: { self.txMemo = $0 }
+                    get: { self.fnCall },
+                    set: { self.fnCall = $0 }
                 ),
                 maxLengthSize: Int.max,
                 isValid: Binding(
-                    get: { self.txMemoValid },
-                    set: { self.txMemoValid = $0 }
+                    get: { self.fnCallValid },
+                    set: { self.fnCallValid = $0 }
                 ),
                 isOptional: true
             )

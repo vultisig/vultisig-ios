@@ -1,5 +1,5 @@
 //
-//  TransactionMemoUnstake.swift
+//  FunctionCallUnstake.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 24/10/24.
@@ -60,7 +60,7 @@ class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
                 isAddressValid: Binding(

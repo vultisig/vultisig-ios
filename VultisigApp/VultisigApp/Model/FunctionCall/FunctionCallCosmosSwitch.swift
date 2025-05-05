@@ -1,5 +1,5 @@
 //
-//  TransactionMemoCosmosIBC.swift
+//  FunctionCallCosmosIBC.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -58,7 +58,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel, vault: Vault
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
     ) {
         self.tx = tx
         self.vault = vault
@@ -123,7 +123,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack {
             
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "destinationAddress",
                 isAddressValid: Binding(
@@ -133,7 +133,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                 chain: tx.coin.chain
             )
             
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "thorchainAddress",
                 isAddressValid: Binding(

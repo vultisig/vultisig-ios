@@ -1,5 +1,5 @@
 //
-//  TransactionMemoUnbondMayaChain.swift
+//  FunctionCallUnbondMayaChain.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -115,7 +115,7 @@ class FunctionCallUnbondMayaChain: FunctionCallAddressable,
                     )
                 )
 
-                TransactionMemoAddressTextField(
+                FunctionCallAddressTextField(
                     memo: self,
                     addressKey: "nodeAddress",
                     isAddressValid: Binding(

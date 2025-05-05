@@ -1,5 +1,5 @@
 //
-//  TransactionMemoTransactionMemoAddressable.swift
+//  TransactionMemoFunctionCallAddressable.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.

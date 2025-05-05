@@ -1,5 +1,5 @@
 //
-//  TransactionMemoUnbond.swift
+//  FunctionCallUnbond.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 17/05/24.
@@ -88,7 +88,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack {
 
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
                 isAddressValid: Binding(
@@ -112,7 +112,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                 )
             )
 
-            TransactionMemoAddressTextField(
+            FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "provider",
                 isOptional: true,
