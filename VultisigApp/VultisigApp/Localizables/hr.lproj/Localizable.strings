@@ -514,7 +514,7 @@
 "OnboardingCard6Text2" = "otključali vaš trezor.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
-"privatePairingMode" = "Želite li privatno stvoriti trezor?";
+"privatePairingMode" = "Upariti privatno?";
 "switchToLocalMode" = "Prijeđi na lokalni način rada";
 "youAreInLocalMode" = "Nalazite se u lokalnom načinu rada";
 "switchBackToInternetMode" = "Vrati se na internetski način rada";
