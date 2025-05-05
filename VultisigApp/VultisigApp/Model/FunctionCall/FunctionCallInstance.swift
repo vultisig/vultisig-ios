@@ -1,5 +1,5 @@
 //
-//  FunctionCallTypeEnum.swift
+//  FunctionCallInstance.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.

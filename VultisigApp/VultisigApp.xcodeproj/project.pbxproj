@@ -716,7 +716,7 @@
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
-		B54E317B2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */; };
+		B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */; };
 		B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */; };
 		B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */; };
 		B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */; };
@@ -744,9 +744,9 @@
 		B5A97CEF2BF41779007574D7 /* FunctionCallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* FunctionCallViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* FunctionCallVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* FunctionCallVerifyViewModel.swift */; };
 		B5A97CF32BF426D4007574D7 /* FunctionCallDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF22BF426D4007574D7 /* FunctionCallDetailsView.swift */; };
-		B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */; };
+		B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF42BF4287A007574D7 /* FunctionCallSelectorDropdown.swift */; };
 		B5A97CF72BF42BE1007574D7 /* FunctionCallVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF62BF42BE1007574D7 /* FunctionCallVerifyView.swift */; };
-		B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF82BF42E72007574D7 /* TransactionMemoAddressTextField.swift */; };
+		B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF82BF42E72007574D7 /* FunctionCallAddressTextField.swift */; };
 		B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */; };
 		B5B5E2782CCADD69001167C3 /* FunctionCallStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */; };
 		B5B5E27A2CCADE85001167C3 /* FunctionCallUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */; };
@@ -1601,7 +1601,7 @@
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
-		B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoContractSelectorDropDown.swift; sourceTree = "<group>"; };
+		B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractSelectorDropDown.swift; sourceTree = "<group>"; };
 		B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledTextField.swift; sourceTree = "<group>"; };
 		B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledNumberField.swift; sourceTree = "<group>"; };
 		B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledFloatingPointField.swift; sourceTree = "<group>"; };
@@ -1629,9 +1629,9 @@
 		B5A97CEE2BF41779007574D7 /* FunctionCallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* FunctionCallVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallVerifyViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF22BF426D4007574D7 /* FunctionCallDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallDetailsView.swift; sourceTree = "<group>"; };
-		B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoSelectorDropdown.swift; sourceTree = "<group>"; };
+		B5A97CF42BF4287A007574D7 /* FunctionCallSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallSelectorDropdown.swift; sourceTree = "<group>"; };
 		B5A97CF62BF42BE1007574D7 /* FunctionCallVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallVerifyView.swift; sourceTree = "<group>"; };
-		B5A97CF82BF42E72007574D7 /* TransactionMemoAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressTextField.swift; sourceTree = "<group>"; };
+		B5A97CF82BF42E72007574D7 /* FunctionCallAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressTextField.swift; sourceTree = "<group>"; };
 		B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallInstance.swift; sourceTree = "<group>"; };
 		B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStake.swift; sourceTree = "<group>"; };
 		B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstake.swift; sourceTree = "<group>"; };
@@ -1821,8 +1821,8 @@
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 				A69069B42BCF538000F28A8B /* NetworkPrompts.swift */,
 				A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */,
-				B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */,
-				B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */,
+				B5A97CF42BF4287A007574D7 /* FunctionCallSelectorDropdown.swift */,
+				B54E317A2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift */,
 				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
 				A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */,
 				A66BFCD02C134B3B004DCD4F /* QRShareSheetImage.swift */,
@@ -2838,7 +2838,7 @@
 			children = (
 				A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */,
 				A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */,
-				B5A97CF82BF42E72007574D7 /* TransactionMemoAddressTextField.swift */,
+				B5A97CF82BF42E72007574D7 /* FunctionCallAddressTextField.swift */,
 				B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */,
 				B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */,
 				B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */,
@@ -3940,7 +3940,7 @@
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
 				A60F29E32DA5A50B00C24765 /* SwapCryptoDoneView+iOS.swift in Sources */,
-				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
+				B5A97CF52BF4287A007574D7 /* FunctionCallSelectorDropdown.swift in Sources */,
 				A6F7B6C62D4AB86900AC8104 /* EmptyPeerCell.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
@@ -4164,7 +4164,7 @@
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
 				A6BB9BCB2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift in Sources */,
 				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
-				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
+				B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
 				A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
@@ -4555,7 +4555,7 @@
 				A6CEFE762D8E32B9005AB80C /* PasswordBackupOptionsView.swift in Sources */,
 				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */,
-				B54E317B2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift in Sources */,
+				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */,
