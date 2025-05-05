@@ -557,7 +557,7 @@
 "OnboardingCard6Text2" = "unlock your vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
-"createVaultPrivately" = "Want to create vault privately?";
+"privatePairingMode" = "Want to pair privately?";
 "switchToLocalMode" = "Switch to local mode";
 "youAreInLocalMode" = "You’re in local mode";
 "switchBackToInternetMode" = " Switch back to internet mode";
