@@ -1524,6 +1524,7 @@ class TokensStore {
             contractAddress: "",
             isNativeToken: true
         ),
+        
         CoinMeta(
             chain: .terraClassic,
             ticker: "USTC",
