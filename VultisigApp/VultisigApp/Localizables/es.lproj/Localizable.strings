@@ -514,7 +514,7 @@
 "OnboardingCard6Text2" = "desbloquear tu bóveda.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
-"privatePairingMode" = "¿Quieres crear el vault en privado?";
+"privatePairingMode" = "¿Emparejar en privado?";
 "switchToLocalMode" = "Cambiar al modo local";
 "youAreInLocalMode" = "Estás en modo local";
 "switchBackToInternetMode" = "Volver al modo internet";
