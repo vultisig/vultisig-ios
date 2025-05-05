@@ -32,7 +32,7 @@ struct SwitchToLocalLink: View {
     
     var switchToLocalLabel: some View {
         HStack {
-            Text(NSLocalizedString("createVaultPrivately", comment: ""))
+            Text(NSLocalizedString("privatePairingMode", comment: ""))
             
             Text(NSLocalizedString("switchToLocalMode", comment: ""))
             .underline()

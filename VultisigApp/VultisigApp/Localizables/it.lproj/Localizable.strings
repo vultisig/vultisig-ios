@@ -514,7 +514,7 @@
 "OnboardingCard6Text2" = "sbloccare il tuo vault.";
 "OnboardingCard6Text3" = "";
 "OnboardingCard6Text4" = "";
-"createVaultPrivately" = "Vuoi creare il vault in privato?";
+"privatePairingMode" = "Associare in privato?";
 "switchToLocalMode" = "Passa alla modalità locale";
 "youAreInLocalMode" = "Sei in modalità locale";
 "switchBackToInternetMode" = "Torna alla modalità internet";
