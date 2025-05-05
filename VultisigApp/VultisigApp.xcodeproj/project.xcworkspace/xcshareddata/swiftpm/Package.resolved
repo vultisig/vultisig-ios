@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "a2492623ef05747f5e5ed3402061734e4deae92b"
+        "revision" : "419940d50d4284c73e6c5f55435c8ff8cef3a60e"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
       "state" : {
-        "revision" : "3c0f453444b8127533563a69dc5093fc173d7f0d",
-        "version" : "6.8.0"
+        "revision" : "4d69c927b8c5b599f2caa58e818290bb7ceebce7",
+        "version" : "6.8.1"
       }
     },
     {
