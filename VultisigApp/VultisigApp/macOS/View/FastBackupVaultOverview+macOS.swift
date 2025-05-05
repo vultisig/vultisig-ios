@@ -43,6 +43,8 @@ extension FastBackupVaultOverview {
                 animationVM?.view()
             }
         }
+        .scaleEffect(0.7)
+        .offset(y: -60)
     }
 }
 #endif
