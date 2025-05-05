@@ -19,7 +19,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
-    @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Date = Date()
+    @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
 
     @State var showSheet = false
     @State var isLoading = true
@@ -27,6 +27,7 @@ struct VaultDetailView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
+    @State private var shouldShowPasswordVerify = false
 
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
@@ -109,6 +110,7 @@ struct VaultDetailView: View {
         .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
             PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
                 .presentationDetents([.height(260)])
+                .interactiveDismissDisabled()
         }
     }
 
@@ -252,11 +254,29 @@ struct VaultDetailView: View {
     private func showBiweeklyPasswordVerificationIfNeeded() {
         guard vault.isFastVault else { return }
         
-        let difference = Calendar.current.dateComponents([.day], from: biweeklyPasswordVerifyDate, to: Date())
-
+        // If no verification has been done yet, show the prompt
+        guard let lastVerifyTimestamp = biweeklyPasswordVerifyDate else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isBiweeklyPasswordVerifyLinkActive = true
+            }
+            return
+        }
+        
+        let lastVerifyDate = Date(timeIntervalSince1970: lastVerifyTimestamp)
+        let currentDate = Date()
+        
+        print("----------")
+        print("Last verify date: \(lastVerifyDate)")
+        print("Current date: \(currentDate)")
+        let calendar = Calendar.current
+        let difference = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastVerifyDate), to: calendar.startOfDay(for: currentDate))
+        print("Difference in days: \(difference.day ?? 0)")
+        print("----------")
+        
         if let days = difference.day, days >= 15 {
-            isBiweeklyPasswordVerifyLinkActive = true
-            biweeklyPasswordVerifyDate = Date()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isBiweeklyPasswordVerifyLinkActive = true
+            }
         }
     }
     
