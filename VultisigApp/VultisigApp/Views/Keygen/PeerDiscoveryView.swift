@@ -31,7 +31,7 @@ struct PeerDiscoveryView: View {
     @State var orientation = UIDevice.current.orientation
 #endif
     
-    @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
@@ -59,7 +59,7 @@ struct PeerDiscoveryView: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
-                animationVM.stop()
+                animationVM?.stop()
             }
             .onFirstAppear {
                 showInfo()
