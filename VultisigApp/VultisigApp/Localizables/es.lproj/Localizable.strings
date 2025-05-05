@@ -605,3 +605,4 @@
 "passwordVerifiedSuccessfully" = "Contraseña verificada exitosamente";
 "close" = "Cerrar";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
+"failedToLoadFileData" = "Error al cargar los datos del archivo";

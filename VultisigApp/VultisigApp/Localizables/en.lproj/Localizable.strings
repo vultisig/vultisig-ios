@@ -652,4 +652,5 @@
 "biweeklyPasswordVerifyTitle" = "Verify your Server Share\nPassword";
 "passwordVerifiedSuccessfully" = "Password verified successfully";
 "close" = "Close";
-"vaultTypeDoesnotMatch" = " Vault type doesn't match";
+"vaultTypeDoesnotMatch" = "Vault type doesn't match";
+"failedToLoadFileData" = "Failed to load file data";
