@@ -24,5 +24,26 @@ extension SecureBackupVaultOverview {
             .padding(.horizontal, 40)
             .padding(.bottom, 100)
     }
+    
+    var animation: some View {
+        animationVM?.view()
+            .offset(y: -80)
+    }
+    
+    var text: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<totalTabCount, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    OnboardingTextCard(
+                        index: index,
+                        textPrefix: "SecureVaultOverview",
+                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
+                    )
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
 }
 #endif
