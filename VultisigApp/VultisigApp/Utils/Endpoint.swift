@@ -16,17 +16,20 @@ class Endpoint {
         var baseUrl: String {
             switch self {
             case .thorchain:
-                return "https://thornode.ninerealms.com/thorchain"
+                return "\(Endpoint.thorNodeBaseUrl)/thorchain"
             case .maya:
                 return "https://mayanode.mayachain.info/mayachain"
             }
         }
     }
     
+    // Base URLs
+    static let thorNodeBaseUrl = "https://thornode.ninerealms.com"
+    
     static let vultisigApiProxy = "https://api.vultisig.com"
     static let supportDocumentLink = "https://docs.vultisig.com/user-actions/creating-a-vault"
     static let vultisigRelay = "https://api.vultisig.com/router"
-    static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionThorchainNineRealms = "\(thorNodeBaseUrl)/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
@@ -36,40 +39,40 @@ class Endpoint {
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
-        "https://thornode.ninerealms.com/auth/accounts/\(address)"
+        "\(thorNodeBaseUrl)/auth/accounts/\(address)"
     }
     
-    static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
+    static let fetchThorchainNetworkInfoNineRealms = "\(thorNodeBaseUrl)/thorchain/network"
     static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
     
-    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
+    static let fetchThorchainInboundAddressesNineRealms = "\(thorNodeBaseUrl)/thorchain/inbound_addresses"
     
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
     }
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
-        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        "\(thorNodeBaseUrl)/cosmos/bank/v1beta1/balances/\(address)"
     }
     
     // TCY-specific endpoints
     static func fetchTCYStaker(address: String) -> String {
-        "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
+        "\(thorNodeBaseUrl)/thorchain/tcy_staker/\(address)"
     }
     
     static func fetchTCYStakers() -> String {
-        "https://thornode.ninerealms.com/thorchain/tcy_stakers"
+        "\(thorNodeBaseUrl)/thorchain/tcy_stakers"
     }
     
     static func fetchTCYClaimers() -> String {
-        "https://thornode.ninerealms.com/thorchain/tcy_claimers"
+        "\(thorNodeBaseUrl)/thorchain/tcy_claimers"
     }
     
     static func fetchTCYClaimer(address: String) -> String {
-        "https://thornode.ninerealms.com/thorchain/tcy_claimer/\(address)"
+        "\(thorNodeBaseUrl)/thorchain/tcy_claimer/\(address)"
     }
     
     static func fetchTCYPoolInfo() -> String {
-        "https://thornode.ninerealms.com/thorchain/pool/THOR.TCY"
+        "\(thorNodeBaseUrl)/thorchain/pool/THOR.TCY"
     }
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"

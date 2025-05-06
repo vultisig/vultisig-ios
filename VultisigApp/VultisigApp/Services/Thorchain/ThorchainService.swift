@@ -242,25 +242,7 @@ extension ThorchainService {
         }
     }
     
-    /// Get staker information for a specific address
-    /// - Parameter address: The address to check for TCY staking
-    /// - Returns: The TCY staker information if available
-    fileprivate func getTCYStaker(address: String) async throws -> TCYStaker? {
-        guard let url = URL(string: Endpoint.fetchTCYStaker(address: address)) else {
-            throw Errors.invalidURL
-        }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            return try JSONDecoder().decode(TCYStaker.self, from: data)
-        } catch {
-            // If the staker doesn't exist, the API will return a 404
-            if let urlError = error as? URLError, urlError.code == .fileDoesNotExist {
-                return nil
-            }
-            throw error
-        }
-    }
+    // TCY staker functionality will be implemented in the future
     
     private func fetchTCYPrice() async throws -> Double {
         guard let url = URL(string: Endpoint.fetchTCYPoolInfo()) else {
@@ -316,14 +298,7 @@ private extension ThorchainService {
     }
     
     /// Model for a TCY staker's information
-    struct TCYStaker: Codable {
-        let address: String
-        let amount: String
-        
-        var amountDecimal: Decimal {
-            return (Decimal(string: amount) ?? 0) / pow(10, 8)
-        }
-    }
+    // TCYStaker struct will be implemented when staking functionality is added
     
     enum Errors: Error {
         case tnsEntryNotFound
