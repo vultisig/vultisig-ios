@@ -31,7 +31,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
     @Published var serverAddr = "http://127.0.0.1:18080"
-    @Published var selectedNetwork = NetworkPromptType.Internet
+    @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
+        didSet {
+            print("selected network changed: \(selectedNetwork)")
+            VultisigRelay.IsRelayEnabled = NetworkPromptType.Internet == selectedNetwork
+        }
+    }
     
     private var cancellables = Set<AnyCancellable>()
     private let mediator = Mediator.shared
