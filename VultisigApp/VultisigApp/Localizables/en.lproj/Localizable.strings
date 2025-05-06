@@ -89,7 +89,7 @@
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Upload your previously created vault share:";
 "uploadFile" = "Upload file, text or image";
-"devicesOnSameWifi" = "Keep devices on the same Network with Vultisig open";
+"devicesOnSameWifi" = "Keep devices on the same network with Vultisig open.";
 "need3Devices" = "You need at least 2 devices";
 "chooseTokens" = "Choose Tokens";
 "chooseChains" = "Choose Chains";
@@ -606,7 +606,7 @@
 "maxTotalFee" = "Max. Total Fee";
 "allowance" = "Allowance";
 "on" = "on";
-"keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction";
+"keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction.";
 "startTransaction" = "Start transaction";
 "transactionSuccessful" = "Transaction successful";
 "track" = "Track";
