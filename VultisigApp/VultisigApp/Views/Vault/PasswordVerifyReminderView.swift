@@ -10,6 +10,8 @@ import SwiftUI
 struct PasswordVerifyReminderView: View {
     let vault: Vault
     @Binding var isSheetPresented: Bool
+
+    @AppStorage("biweeklyPasswordVerifyDate") var biweeklyPasswordVerifyDate: Double?
     
     @State var showError = false
     @State var errorText = ""
@@ -201,6 +203,10 @@ struct PasswordVerifyReminderView: View {
         
         if isValid {
             passwordVerified = true
+            // Store the verification time using a fixed reference point
+            let calendar = Calendar.current
+            let startOfToday = calendar.startOfDay(for: Date())
+            biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
         } else {
             errorText = "incorrectPassword"
             showError = true
