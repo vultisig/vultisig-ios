@@ -265,13 +265,8 @@ struct VaultDetailView: View {
         let lastVerifyDate = Date(timeIntervalSince1970: lastVerifyTimestamp)
         let currentDate = Date()
         
-        print("----------")
-        print("Last verify date: \(lastVerifyDate)")
-        print("Current date: \(currentDate)")
         let calendar = Calendar.current
         let difference = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastVerifyDate), to: calendar.startOfDay(for: currentDate))
-        print("Difference in days: \(difference.day ?? 0)")
-        print("----------")
         
         if let days = difference.day, days >= 15 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
