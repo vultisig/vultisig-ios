@@ -54,6 +54,7 @@ class Endpoint {
     
     static let supportDocumentLink = "https://docs.vultisig.com/user-actions/creating-a-vault"
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
+    
     // MARK: - App Update Endpoints
     
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
@@ -163,29 +164,24 @@ class Endpoint {
     
     // MARK: - RPC Services
     
+    // Vultisig-proxied RPC endpoints
     static let avalancheServiceRpcService = "https://api.vultisig.com/avax/"
-    
     static let bscServiceRpcService = "https://api.vultisig.com/bsc/"
-    
     static let baseServiceRpcService = "https://api.vultisig.com/base/"
-    
     static let arbitrumOneServiceRpcService = "https://api.vultisig.com/arb/"
-    
     static let polygonServiceRpcService = "https://api.vultisig.com/polygon/"
-    
-    static let optimismServiceRpcService = "https://api.vultisig.com/opt/"
-    
-    static let cronosServiceRpcService = "https://cronos-evm-rpc.publicnode.com"
-    
     static let blastServiceRpcService = "https://api.vultisig.com/blast/"
-    
-    static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
-    
+    static let cronosServiceRpcService = "https://api.vultisig.com/cronos/"
     static let ethServiceRpcService = "https://api.vultisig.com/eth/"
-    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
+    // Third-party RPC endpoints
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
+    static let suiServiceRpc = "https://sui-rpc.publicnode.com"
+    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
+    static let rippleServiceRpc = "https://xrplcluster.com"
+    static let cronosServiceRpcRaw = "https://cronos-evm-rpc.publicnode.com"
+    static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
     
     static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
         "https://tokens.jup.ag/token/\(tokenAddress)"
@@ -195,7 +191,8 @@ class Endpoint {
         "https://tokens.jup.ag/tokens?tags=verified"
     }
     
-    static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
+    // DEX Quote Endpoints
+    static func fetchJupiterSwapQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
         "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
     }
     
@@ -203,12 +200,7 @@ class Endpoint {
         "https://api-sui.cetus.zone/v2/sui/swap/count"
     }
     
-    static let rippleServiceRpc = "https://xrplcluster.com"
-    
-    static let suiServiceRpc = "https://sui-rpc.publicnode.com"
-    
-    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
-    
+    static let optimismServiceRpcService = "https://api.vultisig.com/opt/"
     static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
     
     static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
@@ -229,8 +221,15 @@ class Endpoint {
         return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
     }
     
+    // MARK: - Naming Services
+    
+    static func resolveTNS(name: String) -> URL {
+        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
+    }
+    
     // MARK: - Transaction Explorer URLs
     
+    // Individual Chain Explorer URLs
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
@@ -264,6 +263,8 @@ class Endpoint {
         "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
     }
     
+    // MARK: - Price APIs
+    
     static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
@@ -288,6 +289,7 @@ class Endpoint {
     
     // MARK: - Transaction History Endpoints
     
+    // Chain-specific Transaction History APIs
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
