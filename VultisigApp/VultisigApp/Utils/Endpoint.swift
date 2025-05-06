@@ -184,7 +184,7 @@ class Endpoint {
     
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
+        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
     }
     
     static func ethereumLabelTxHash(_ value: String) -> String {

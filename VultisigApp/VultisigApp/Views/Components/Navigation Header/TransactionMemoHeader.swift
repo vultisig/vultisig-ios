@@ -1,5 +1,5 @@
 //
-//  TransactionMemoHeader.swift
+//  FunctionCallHeader.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-08-08.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct TransactionMemoHeader: View {
-    @ObservedObject var transactionMemoViewModel: TransactionMemoViewModel
+struct FunctionCallHeader: View {
+    @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -25,7 +25,7 @@ struct TransactionMemoHeader: View {
     }
     
     var leadingAction: some View {
-        let isDone = transactionMemoViewModel.currentIndex==5
+        let isDone = functionCallViewModel.currentIndex==5
         
         return Button {
             handleBackTap()
@@ -37,21 +37,21 @@ struct TransactionMemoHeader: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
+        Text(NSLocalizedString(functionCallViewModel.currentTitle, comment: "SendCryptoView title"))
             .foregroundColor(.neutral0)
             .font(.title3)
     }
     
     private func handleBackTap() {
-        guard transactionMemoViewModel.currentIndex>1 else {
+        guard functionCallViewModel.currentIndex>1 else {
             dismiss()
             return
         }
         
-        transactionMemoViewModel.handleBackTap()
+        functionCallViewModel.handleBackTap()
     }
 }
 
 #Preview {
-    TransactionMemoHeader(transactionMemoViewModel: TransactionMemoViewModel())
+    FunctionCallHeader(functionCallViewModel: FunctionCallViewModel())
 }
