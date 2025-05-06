@@ -40,6 +40,24 @@ extension SecureBackupVaultOverview {
         .frame(width: 80)
     }
     
+    var text: some View {
+        VStack {
+            Spacer()
+            OnboardingTextCard(
+                index: tabIndex,
+                textPrefix: "SecureVaultOverview",
+                deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
+            )
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    var animation: some View {
+        animationVM?.view()
+            .scaleEffect(0.7)
+            .offset(y: -60)
+    }
+    
     private func prevTapped() {
         guard tabIndex>0 else {
             return

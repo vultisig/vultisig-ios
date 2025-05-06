@@ -7,6 +7,7 @@
 
 #if os(iOS)
 import SwiftUI
+import RiveRuntime
 
 extension PeerDiscoveryView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -74,7 +75,7 @@ extension PeerDiscoveryView {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
     
     var scrollList: some View {
@@ -151,6 +152,7 @@ extension PeerDiscoveryView {
 
     func setData() {
         qrCodeImage = viewModel.getQrImage(size: 100)
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         
         guard let qrCodeImage else {
             return

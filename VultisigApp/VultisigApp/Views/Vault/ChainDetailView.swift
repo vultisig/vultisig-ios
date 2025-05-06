@@ -53,7 +53,7 @@ struct ChainDetailView: View {
                 }
             }
             .navigationDestination(isPresented: $isMemoLinkActive) {
-                TransactionMemoView(
+                FunctionCallView(
                     tx: sendTx,
                     vault: vault,
                     coin: group.nativeCoin
