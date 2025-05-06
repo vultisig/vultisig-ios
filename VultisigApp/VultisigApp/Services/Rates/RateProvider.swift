@@ -28,6 +28,12 @@ final class RateProvider {
     static let shared = RateProvider()
 
     static func cryptoId(for coin: Coin) -> CryptoId {
+        // Special case for TCY
+        if coin.isTCY {
+            // Use 'tcy' as the price provider ID for TCY tokens
+            return .priceProvider("tcy")
+        }
+        
         switch coin.chain.chainType {
         case .EVM, .Solana, .Sui:
             if coin.isNativeToken || !coin.priceProviderId.isEmpty {

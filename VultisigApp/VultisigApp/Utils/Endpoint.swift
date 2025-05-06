@@ -50,6 +50,27 @@ class Endpoint {
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
+    
+    // TCY-specific endpoints
+    static func fetchTCYStaker(address: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
+    }
+    
+    static func fetchTCYStakers() -> String {
+        "https://thornode.ninerealms.com/thorchain/tcy_stakers"
+    }
+    
+    static func fetchTCYClaimers() -> String {
+        "https://thornode.ninerealms.com/thorchain/tcy_claimers"
+    }
+    
+    static func fetchTCYClaimer(address: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/tcy_claimer/\(address)"
+    }
+    
+    static func fetchTCYPoolInfo() -> String {
+        "https://thornode.ninerealms.com/thorchain/pool/THOR.TCY"
+    }
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }

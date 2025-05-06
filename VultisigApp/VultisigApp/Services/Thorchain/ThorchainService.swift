@@ -13,6 +13,7 @@ class ThorchainService: ThorchainSwapProvider {
     
     private var cacheFeePrice = ThreadSafeDictionary<String,(data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String,(data: [InboundAddress], timestamp: Date)>()
+    private var cacheTCYPrice = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
     
     private init() {}
     
@@ -217,9 +218,118 @@ class ThorchainService: ThorchainSwapProvider {
 }
 
 
+// MARK: - TCY Functionality
+
+extension ThorchainService {
+    
+    /// Get TCY price in USD
+    /// - Returns: The current TCY price in USD
+    func getTCYPriceInUSD() async -> Double {
+        let cacheKey = "tcy-price"
+        
+        // Check cache first
+        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTCYPrice, timeInSeconds: 60*5) {
+            return cachedData
+        }
+        
+        // Fetch fresh data if cache expired or doesn't exist
+        do {
+            let price = try await fetchTCYPrice()
+            self.cacheTCYPrice.set(cacheKey, (data: price, timestamp: Date()))
+            return price
+        } catch {
+            return 0.0
+        }
+    }
+    
+    /// Get staker information for a specific address
+    /// - Parameter address: The address to check for TCY staking
+    /// - Returns: The TCY staker information if available
+    fileprivate func getTCYStaker(address: String) async throws -> TCYStaker? {
+        guard let url = URL(string: Endpoint.fetchTCYStaker(address: address)) else {
+            throw Errors.invalidURL
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return try JSONDecoder().decode(TCYStaker.self, from: data)
+        } catch {
+            // If the staker doesn't exist, the API will return a 404
+            if let urlError = error as? URLError, urlError.code == .fileDoesNotExist {
+                return nil
+            }
+            throw error
+        }
+    }
+    
+    private func fetchTCYPrice() async throws -> Double {
+        guard let url = URL(string: Endpoint.fetchTCYPoolInfo()) else {
+            throw Errors.invalidURL
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw Errors.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            throw Errors.apiError("HTTP Error: \(httpResponse.statusCode)")
+        }
+        
+        let decoder = JSONDecoder()
+        let poolResponse = try decoder.decode(TCYPoolResponse.self, from: data)
+        
+        // Convert from 8 decimal places to a decimal value
+        guard let priceValue = Double(poolResponse.assetTorPrice) else {
+            throw Errors.invalidPriceFormat
+        }
+        
+        // Convert from 8 decimal places (e.g., 22840997 = $0.22840997)
+        let price = priceValue / 100_000_000
+        return price
+    }
+}
+
 private extension ThorchainService {
+    
+    // MARK: - Models
+    
+    /// Response model for TCY pool data from the THORChain API
+    struct TCYPoolResponse: Codable {
+        let status: String
+        let asset: String
+        let decimals: Int
+        let balanceAsset: String
+        let balanceRune: String
+        
+        // The TCY price in TOR (8 decimal places)
+        let assetTorPrice: String
+        
+        enum CodingKeys: String, CodingKey {
+            case status
+            case asset
+            case decimals
+            case balanceAsset = "balance_asset"
+            case balanceRune = "balance_rune"
+            case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
+        }
+    }
+    
+    /// Model for a TCY staker's information
+    struct TCYStaker: Codable {
+        let address: String
+        let amount: String
+        
+        var amountDecimal: Decimal {
+            return (Decimal(string: amount) ?? 0) / pow(10, 8)
+        }
+    }
     
     enum Errors: Error {
         case tnsEntryNotFound
+        case invalidURL
+        case invalidPriceFormat
+        case invalidResponse
+        case apiError(String)
     }
 }

@@ -27,6 +27,30 @@ public class CryptoPriceService: ObservableObject {
 
 private extension CryptoPriceService {
     
+    // Handle special case for TCY price fetching from THORChain pool
+    func fetchTCYPrice(coins: [Coin]) async throws {
+        let tcyPrice = await ThorchainService.shared.getTCYPriceInUSD()
+        
+        var rates: [Rate] = []
+        for coin in coins {
+            // Create rate for each currency
+            for currency in SettingsCurrency.allCases {
+                let fiat = currency.rawValue.lowercased()
+                // Currently only USD is supported directly, other currencies would require conversion
+                let value = fiat == "usd" ? tcyPrice : 0.0
+                
+                // Use 'tcy' as the consistent ID for TCY tokens
+                // This ensures that RateProvider can find the rate later
+                let cryptoId = "tcy"
+                
+                let rate = Rate(fiat: fiat, crypto: cryptoId, value: value)
+                rates.append(rate)
+            }
+        }
+        
+        try await RateProvider.shared.save(rates: rates)
+    }
+    
     @MainActor func refresh(vault: Vault) {
         vault.objectWillChange.send()
     }
@@ -38,6 +62,12 @@ private extension CryptoPriceService {
     }
     
     func fetchPrices(coins: [Coin]) async throws {
+        // Check for TCY in any thorchain coins
+        let tcyCoins = coins.filter { $0.isTCY }
+        if !tcyCoins.isEmpty {
+            try await fetchTCYPrice(coins: tcyCoins)
+        }
+        
         let sources = resolveSources(coins: coins)
         
         if !sources.providerIds.isEmpty {
