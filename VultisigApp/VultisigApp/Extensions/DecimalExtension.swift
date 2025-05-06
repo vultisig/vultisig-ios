@@ -54,6 +54,8 @@ extension Decimal {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = locale
+        formatter.maximumFractionDigits = 8
+        formatter.minimumFractionDigits = 4
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
