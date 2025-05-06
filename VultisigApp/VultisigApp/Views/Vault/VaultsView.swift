@@ -43,6 +43,9 @@ struct VaultsView: View {
             .onDisappear {
                 isEditingVaults = false
             }
+            .onChange(of: folders.count) { oldValue, newValue in
+                setData()
+            }
         }
     }
     
