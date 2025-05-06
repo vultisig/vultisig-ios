@@ -56,7 +56,6 @@ extension Decimal {
         formatter.locale = locale
         formatter.maximumFractionDigits = 8
         formatter.minimumFractionDigits = 4
-        print(self)
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
