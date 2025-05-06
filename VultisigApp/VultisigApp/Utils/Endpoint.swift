@@ -7,10 +7,6 @@
 
 import Foundation
 
-fileprivate extension String {
-    static let empty = ""
-}
-
 class Endpoint {
     
     // MARK: - Enums
@@ -121,7 +117,7 @@ class Endpoint {
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
         let isAffiliateParams = isAffiliate
         ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
-        : .empty
+        : ""
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }
@@ -130,7 +126,7 @@ class Endpoint {
         
         let isAffiliateParams = isAffiliate
         ? "&referrer=\(referrer)&fee=\(fee)"
-        : .empty
+        : ""
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
@@ -198,6 +194,11 @@ class Endpoint {
     // DEX Quote Endpoints
     static func fetchJupiterSwapQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
         "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
+    }
+    
+    // For backward compatibility with existing code
+    static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
+        return fetchJupiterSwapQuote(inputMint: inputMint, outputMint: outputMint, amount: amount, slippageBps: slippageBps)
     }
     
     static func suiTokenQuote() -> String {
