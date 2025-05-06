@@ -66,6 +66,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         tx.isFastVault = isExist && !isLocalBackup
     }
     
+    // TODO: Refactor to remove duplication
     func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
@@ -85,7 +86,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     if tx.coin.isNativeToken {
                         let evm = try await blockchainService.fetchSpecific(tx: tx)
                         let totalFeeWei = evm.fee
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).formatToDecimal(digits: tx.coin.decimals))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
                     } else {
                         tx.amount = "\(tx.coin.getMaxValue(0))"
@@ -107,7 +108,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     if tx.coin.isNativeToken {
                         let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
                         tx.coin.rawBalance = rawBalance
-                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
+                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports).formatToDecimal(digits: tx.coin.decimals))"
                         setPercentageAmount(tx: tx, for: percentage)
                     } else {
                         
@@ -136,7 +137,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                             gas = tx.coin.feeDefault.toBigInt()
                         }
                         
-                        tx.amount = "\(tx.coin.getMaxValue(gas))"
+                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                         setPercentageAmount(tx: tx, for: percentage)
                         
                         convertToFiat(newValue: tx.amount, tx: tx)
@@ -162,7 +163,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
                 }
                 
-                tx.amount = "\(tx.coin.getMaxValue(gas))"
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 convertToFiat(newValue: tx.amount, tx: tx)
@@ -178,7 +179,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     gas = tx.coin.feeDefault.toBigInt()
                 }
                 
-                tx.amount = "\(tx.coin.getMaxValue(gas))"
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 convertToFiat(newValue: tx.amount, tx: tx)
@@ -197,7 +198,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         gas = tx.coin.feeDefault.toBigInt()
                     }
                     
-                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
@@ -218,7 +219,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         gas = tx.coin.feeDefault.toBigInt()
                     }
                     
-                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
                     convertToFiat(newValue: tx.amount, tx: tx)
@@ -240,7 +241,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         gas = tx.coin.feeDefault.toBigInt()
                     }
                     
-                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                     setPercentageAmount(tx: tx, for: percentage)
                     
                     convertToFiat(newValue: tx.amount, tx: tx)
@@ -257,8 +258,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        tx.amount = amountDecimal.formatDecimalToLocale()
+        let amountDecimal = max.toDecimal() * multiplier
+        tx.amount = amountDecimal.formatToDecimal(digits: tx.coin.decimals)
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) {
@@ -266,7 +267,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
-            tx.amount = truncatedValueCoin.formatDecimalToLocale()
+            tx.amount = truncatedValueCoin.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = false
         } else {
             tx.amount = ""
@@ -278,7 +279,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if newValueDecimal > 0 {
             let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
-            tx.amountInFiat = truncatedValueFiat.formatDecimalToLocale()
+            tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
             tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""
