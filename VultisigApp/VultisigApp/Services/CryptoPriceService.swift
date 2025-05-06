@@ -33,21 +33,11 @@ private extension CryptoPriceService {
         let thorchainService = ThorchainService.shared
         
         for coin in coins {
-            // Get the asset name for the coin
-            let assetName: String
-            let cryptoId: String
+            // Format the asset name using the helper
+            let assetName = thorchainService.formatAssetName(chain: coin.chain, symbol: coin.ticker)
             
-            if coin.isTCY {
-                // Special case for TCY
-                assetName = "THOR.TCY"
-                cryptoId = "tcy"
-            } else {
-                // For other assets, use the formatAssetName helper
-                assetName = thorchainService.formatAssetName(chain: coin.chain, symbol: coin.ticker)
-                
-                // Use consistent cryptoId format for RateProvider
-                cryptoId = RateProvider.cryptoId(for: coin).id
-            }
+            // Get the crypto ID for storing rates
+            let cryptoId = RateProvider.cryptoId(for: coin).id
             
             // Get the price from THORChain
             let assetPrice = await thorchainService.getAssetPriceInUSD(assetName: assetName)
@@ -99,6 +89,7 @@ private extension CryptoPriceService {
         }
         
         // Step 2: For any THORChain asset without a price, try the THORChain pools
+        // Find all THORChain assets without prices after normal sources
         let thorchainCoinsWithoutPrices = coins.filter { coin in
             // Check if this coin is on THORChain
             guard coin.chain == .thorChain else { return false }

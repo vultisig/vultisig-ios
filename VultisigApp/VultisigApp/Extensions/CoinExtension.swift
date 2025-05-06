@@ -14,16 +14,6 @@ extension Coin {
         return chain.coinType
     }
     
-    /// Identifies if this coin is a TCY token
-    var isTCY: Bool {
-        // TCY is a native token on THORChain
-        guard chain == .thorChain else {
-            return false
-        }
-        
-        // Check if the ticker is TCY
-        return ticker.uppercased() == "TCY"
-    }
 }
 
 extension Array where Element: Coin {
