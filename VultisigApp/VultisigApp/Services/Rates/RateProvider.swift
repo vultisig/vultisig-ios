@@ -74,10 +74,35 @@ final class RateProvider {
         return balance.formatToFiat(includeCurrencySymbol: true)
     }
 
+    // Cache of recently looked up rates to avoid repeated lookups
+    private var rateCache: [String: Rate?] = [:]
+    
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
         let cryptoId = RateProvider.cryptoId(for: coin)
-        let identifier = Rate.identifier(fiat: currency.rawValue, crypto: cryptoId.id)
-        return rates.first(where: { $0.id == identifier })
+        let identifier = Rate.identifier(fiat: currency.rawValue.lowercased(), crypto: cryptoId.id.lowercased())
+        
+        // Check if we've already looked up this rate recently
+        if let cachedRate = rateCache[identifier] {
+            return cachedRate
+        }
+        
+        // Only log when we have a cache miss
+        #if DEBUG
+        // Only print these logs in debug builds
+        if coin.ticker == "TCY" {
+            // Only log TCY lookups since that's what we're troubleshooting
+            // Looking for rate
+            let relevantRates = rates.filter { $0.crypto.lowercased() == cryptoId.id.lowercased() }
+            // Available rates
+        }
+        #endif
+        
+        let result = rates.first(where: { $0.id == identifier })
+        
+        // Cache the result (even if nil) to avoid repeated lookups
+        rateCache[identifier] = result
+        
+        return result
     }
 
     @MainActor func save(rates newRates: [Rate]) async throws {

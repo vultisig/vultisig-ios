@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 public class CryptoPriceService: ObservableObject {
     
@@ -10,17 +11,78 @@ public class CryptoPriceService: ObservableObject {
     
     public static let shared = CryptoPriceService()
     
-    private init() {}
+    // Track when prices were last updated to avoid redundant API calls
+    private var lastPriceUpdate: [String: Date] = [:]
+    
+    // Time interval for refreshing prices (5 minutes)
+    private let priceRefreshInterval: TimeInterval = 5 * 60
+    
+    // Flag to track ongoing fetch operations
+    private var isFetchingPrices = false
+    private var lastFetchTime: Date?
+    
+    // Minimum time between price fetches to prevent rapid successive calls
+    private let minFetchInterval: TimeInterval = 2.0 // 2 seconds
+    
+    private init() {
+        // Load any cached price update timestamps
+        if let savedTimestamps = UserDefaults.standard.dictionary(forKey: "CryptoPriceUpdateTimes") as? [String: Date] {
+            self.lastPriceUpdate = savedTimestamps
+        }
+    }
+    
+    private func canFetchPrices() -> Bool {
+        // Prevent multiple simultaneous fetches
+        if isFetchingPrices {
+            // Price fetch already in progress
+            return false
+        }
+        
+        // Debounce frequent calls
+        if let lastFetch = lastFetchTime, Date().timeIntervalSince(lastFetch) < minFetchInterval {
+            // Throttling price fetch to avoid excessive API calls
+            return false
+        }
+        
+        return true
+    }
+    
+    /// Check if a coin needs a price update
+    private func needsPriceUpdate(coin: Coin) -> Bool {
+        let coinId = coin.ticker + "_" + coin.chain.rawValue
+        
+        // If we have a recent price, check if it's still fresh
+        if let lastUpdate = lastPriceUpdate[coinId] {
+            return Date().timeIntervalSince(lastUpdate) > priceRefreshInterval
+        }
+        
+        // Otherwise, we need to update
+        return true
+    }
     
     func fetchPrices(vault: Vault) async throws {
+        // Check if we can fetch prices (debounce/throttle)
+        guard canFetchPrices() else {
+            // Still refresh the UI with existing rates
+            await refresh(vault: vault)
+            await refresh(coins: vault.coins)
+            return
+        }
+        
         try await fetchPrices(coins: vault.coins)
         await refresh(vault: vault)
         await refresh(coins: vault.coins)
     }
     
     func fetchPrice(coin: Coin) async throws {
-        try await fetchPrices(coins: [coin])
+        // Check if we can fetch prices (debounce/throttle)
+        guard canFetchPrices() else {
+            // Still refresh the UI with existing rates
+            await refresh(coins: [coin])
+            return
+        }
         
+        try await fetchPrices(coins: [coin])
         await refresh(coins: [coin])
     }
 }
@@ -31,6 +93,7 @@ private extension CryptoPriceService {
     func fetchThorchainAssetPrice(coins: [Coin]) async throws {
         var rates: [Rate] = []
         let thorchainService = ThorchainService.shared
+        // Processing THORChain assets for pricing
         
         for coin in coins {
             // Format the asset name using the helper
@@ -41,24 +104,39 @@ private extension CryptoPriceService {
             
             // Get the price from THORChain
             let assetPrice = await thorchainService.getAssetPriceInUSD(assetName: assetName)
+            // Fetched USD price for asset
             
-            // If we got a valid price (non-zero), create rates for all currencies
+            // If we have a valid USD price, create rates for all supported fiat currencies
             if assetPrice > 0 {
-                // Create rate for each currency
+                // Create rate for USD (direct from THORChain)
+                let usdRate = Rate(fiat: "usd", crypto: cryptoId, value: assetPrice)
+                rates.append(usdRate)
+                // Added USD rate for asset
+                
+                // Create rates for other fiat currencies using exchange rates
                 for currency in SettingsCurrency.allCases {
                     let fiat = currency.rawValue.lowercased()
-                    // Currently only USD is supported directly, other currencies would require conversion
-                    let value = fiat == "usd" ? assetPrice : 0.0
                     
-                    let rate = Rate(fiat: fiat, crypto: cryptoId, value: value)
-                    rates.append(rate)
+                    // Skip USD as we already added it
+                    if fiat == "usd" { continue }
+                    
+                    // Convert USD price to target fiat using our exchange rate table
+                    if let convertedValue = FiatExchangeRates.shared.convert(amount: assetPrice, fromUSD: fiat) {
+                        let rate = Rate(fiat: fiat, crypto: cryptoId, value: convertedValue)
+                        rates.append(rate)
+                        // Converted price to target fiat
+                    } else {
+                        // Failed to convert price to target fiat
+                    }
                 }
+            } else {
+                // Invalid or zero price fetched
             }
         }
         
-        if !rates.isEmpty {
-            try await RateProvider.shared.save(rates: rates)
-        }
+        // Save all rates to the provider
+        try await RateProvider.shared.save(rates: rates)
+        // Saved rates for THORChain assets
     }
     
     @MainActor func refresh(vault: Vault) {
@@ -72,36 +150,98 @@ private extension CryptoPriceService {
     }
     
     func fetchPrices(coins: [Coin]) async throws {
-        // Step 1: Try to get ALL asset prices from normal price sources first
+        // Set fetching flag to prevent concurrent calls
+        guard !isFetchingPrices else {
+            // Price fetch already in progress
+            return
+        }
+        
+        isFetchingPrices = true
+        defer {
+            isFetchingPrices = false
+            lastFetchTime = Date()
+        }
+        
+        // First, ensure we have up-to-date fiat exchange rates
+        if FiatExchangeRates.shared.needsUpdate {
+            _ = await FiatExchangeRates.shared.updateExchangeRates()
+        }
+        
+        // Filter out coins that already have recent prices
+        let coinsNeedingUpdate = coins.filter { needsPriceUpdate(coin: $0) }
+        
+        if coinsNeedingUpdate.isEmpty {
+            // No coins need updates at this time
+            // Ensure UI is refreshed even if we're using cached prices
+            await refresh(coins: coins)
+            return
+        }
+        
+        // Fetching prices for coins that need updates
+        
+        // Step 1: Try to get asset prices from normal price sources first
         
         // Resolve all coins to their price sources
-        let sources = resolveSources(coins: coins)
+        let sources = resolveSources(coins: coinsNeedingUpdate)
         
         // Try to fetch prices from normal sources
         if !sources.providerIds.isEmpty {
-            try await fetchPrices(ids: sources.providerIds)
+            do {
+                try await fetchPrices(ids: sources.providerIds, coins: coinsNeedingUpdate)
+            } catch {
+                // Error fetching provider prices, continuing with other sources
+            }
         }
         
         if !sources.contracts.isEmpty {
             for (chain, contracts) in sources.contracts {
-                try await fetchPrices(contracts: contracts, chain: chain)
+                do {
+                    try await fetchPrices(contracts: contracts, chain: chain)
+                } catch {
+                    // Error fetching contract prices, continuing with other sources
+                }
             }
         }
         
-        // Step 2: For any THORChain asset without a price, try the THORChain pools
-        // Find all THORChain assets without prices after normal sources
-        let thorchainCoinsWithoutPrices = coins.filter { coin in
+        // Step 2: For THORChain assets without prices, try THORChain pools
+        
+        // Find all THORChain assets without prices after normal sources that still need updates
+        let thorchainCoinsWithoutPrices = coinsNeedingUpdate.filter { coin in
             // Check if this coin is on THORChain
             guard coin.chain == .thorChain else { return false }
+            
+            // Special case for TCY - always use THORChain pricing
+            if coin.ticker == "TCY" {
+                // Only print this once per fetch
+                // Always include TCY for THORChain pricing
+                return true
+            }
             
             // Check if it already has a price from normal sources
             let hasPrice = RateProvider.shared.rate(for: coin) != nil
             return !hasPrice
         }
         
+        // Only log if we actually have coins to process
         if !thorchainCoinsWithoutPrices.isEmpty {
-            try await fetchThorchainAssetPrice(coins: thorchainCoinsWithoutPrices)
+            // Processing THORChain coins without prices
+            
+            // Try to fetch THORChain asset prices, but don't fail if there's an error
+            do {
+                try await fetchThorchainAssetPrice(coins: thorchainCoinsWithoutPrices)
+            } catch {
+                // Error fetching THORChain prices
+            }
         }
+        
+        // Update the last fetched time for all coins we've processed
+        for coin in coinsNeedingUpdate {
+            let coinId = coin.ticker + "_" + coin.chain.rawValue
+            lastPriceUpdate[coinId] = Date()
+        }
+        
+        // Save our updated timestamps
+        UserDefaults.standard.set(lastPriceUpdate, forKey: "CryptoPriceUpdateTimes")
         
         // Step 3: If still no price, it will default to $0.0 (handled in RateProvider)
     }
@@ -122,31 +262,38 @@ private extension CryptoPriceService {
         return ResolvedSources(providerIds: providerIds, contracts: contracts)
     }
     
-    func fetchPrices(ids: [String]) async throws {
-        let idsQuery = ids
-            .filter { !$0.isEmpty }
-            .joined(separator: ",")
+    func fetchPrices(ids: [String], coins: [Coin]) async throws {
+        let idString = ids.joined(separator: ",")
+        let endpoint = Endpoint.fetchCryptoPrices(ids: idString, currencies: "usd")
         
-        let currencies = SettingsCurrency.allCases
-            .map { $0.rawValue }
-            .joined(separator: ",")
+        let (data, _) = try await URLSession.shared.data(from: endpoint)
+        let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
         
-        let url = Endpoint.fetchCryptoPrices(
-            ids: idsQuery,
-            currencies: currencies
-        )
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-            
-            try await RateProvider.shared.save(rates: mapRates(response: response))
-        } catch {
-            if let error = error as? URLError, error.code == .cancelled {
-                print("request cancelled")
+        var rates: [Rate] = []
+        
+        for (id, coin) in zip(ids, coins) {
+            if let priceData = response[id],
+               let price = priceData["usd"] {
+                let rate = Rate(fiat: "usd", crypto: id, value: price)
+                rates.append(rate)
+                // Fetched price from normal source
+                
+                // Convert to other fiat currencies if we have exchange rates
+                for currency in SettingsCurrency.allCases {
+                    let fiat = currency.rawValue.lowercased()
+                    if fiat != "usd",
+                       let convertedValue = FiatExchangeRates.shared.convert(amount: price, fromUSD: fiat) {
+                        let convertedRate = Rate(fiat: fiat, crypto: id, value: convertedValue)
+                        rates.append(convertedRate)
+                        // Converted price to target fiat
+                    }
+                }
             } else {
-                throw error
+                // No price fetched from normal source
             }
         }
+        
+        try await RateProvider.shared.save(rates: rates)
     }
     
     func fetchPrices(contracts: [String], chain: Chain) async throws {
