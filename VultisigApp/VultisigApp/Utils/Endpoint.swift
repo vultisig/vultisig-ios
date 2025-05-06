@@ -7,6 +7,10 @@
 
 import Foundation
 
+fileprivate extension String {
+    static let empty = ""
+}
+
 class Endpoint {
     
     // MARK: - Enums
@@ -322,8 +326,6 @@ class Endpoint {
     static func fetchOsmosisLatestBlock() -> String{
         "\(osmosisPublicNodeBaseUrl)/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
-    
-    static let akashPublicNodeBaseUrl = "https://akash-rest.publicnode.com"
     
     // Akash
     static func fetchAkashAccountBalance(address: String) -> String{
@@ -693,6 +695,4 @@ fileprivate extension String {
     var asUrl: URL {
         return URL(string: self)!
     }
-    
-    static let empty = ""
 }
