@@ -13,7 +13,7 @@ class ThorchainService: ThorchainSwapProvider {
     
     private var cacheFeePrice = ThreadSafeDictionary<String,(data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String,(data: [InboundAddress], timestamp: Date)>()
-    private var cacheTCYPrice = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
+    private var cacheAssetPrices = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
     
     private init() {}
     
@@ -218,34 +218,63 @@ class ThorchainService: ThorchainSwapProvider {
 }
 
 
-// MARK: - TCY Functionality
+// MARK: - THORChain Pool Prices Functionality
 
 extension ThorchainService {
     
-    /// Get TCY price in USD
-    /// - Returns: The current TCY price in USD
-    func getTCYPriceInUSD() async -> Double {
-        let cacheKey = "tcy-price"
+    /// Get price in USD for any THORChain asset using the pools endpoint
+    /// - Parameter assetName: The fully qualified asset name (e.g., "THOR.TCY", "BTC.BTC", etc.)
+    /// - Returns: The current asset price in USD, or 0.0 if not available
+    func getAssetPriceInUSD(assetName: String) async -> Double {
+        let cacheKey = "\(assetName.lowercased())-price"
         
         // Check cache first
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTCYPrice, timeInSeconds: 60*5) {
+        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAssetPrices, timeInSeconds: 60*5) {
             return cachedData
         }
         
         // Fetch fresh data if cache expired or doesn't exist
         do {
-            let price = try await fetchTCYPrice()
-            self.cacheTCYPrice.set(cacheKey, (data: price, timestamp: Date()))
+            let price = try await fetchAssetPrice(assetName: assetName)
+            self.cacheAssetPrices.set(cacheKey, (data: price, timestamp: Date()))
             return price
         } catch {
             return 0.0
         }
     }
     
-    // TCY staker functionality will be implemented in the future
+    /// Check if an asset exists in THORChain pools
+    /// - Parameter assetName: The fully qualified asset name to check
+    /// - Returns: True if the asset exists in THORChain pools
+    func assetExistsInPools(assetName: String) async -> Bool {
+        do {
+            _ = try await fetchAssetPrice(assetName: assetName)
+            return true
+        } catch {
+            return false
+        }
+    }
     
-    private func fetchTCYPrice() async throws -> Double {
-        guard let url = URL(string: Endpoint.fetchTCYPoolInfo()) else {
+    /// Get THORChain asset name in the format expected by the API
+    /// - Parameters:
+    ///   - chain: The chain the asset is on
+    ///   - symbol: The ticker/symbol of the asset
+    /// - Returns: Formatted asset name (e.g., "THOR.RUNE", "BTC.BTC")
+    func formatAssetName(chain: Chain, symbol: String) -> String {
+        // For THORChain assets, the chain code should be "THOR"
+        let chainCode = chain == .thorChain ? "THOR" : chain.rawValue.uppercased()
+        
+        // Uppercase the symbol
+        let assetSymbol = symbol.uppercased()
+        
+        return "\(chainCode).\(assetSymbol)"
+    }
+    
+    private func fetchAssetPrice(assetName: String) async throws -> Double {
+        // Use the generic pool endpoint for all assets
+        let endpoint = Endpoint.fetchPoolInfo(asset: assetName)
+        
+        guard let url = URL(string: endpoint) else {
             throw Errors.invalidURL
         }
         
@@ -259,7 +288,7 @@ extension ThorchainService {
         }
         
         let decoder = JSONDecoder()
-        let poolResponse = try decoder.decode(TCYPoolResponse.self, from: data)
+        let poolResponse = try decoder.decode(PoolResponse.self, from: data)
         
         // Convert from 8 decimal places to a decimal value
         guard let priceValue = Double(poolResponse.assetTorPrice) else {
@@ -276,8 +305,8 @@ private extension ThorchainService {
     
     // MARK: - Models
     
-    /// Response model for TCY pool data from the THORChain API
-    struct TCYPoolResponse: Codable {
+    /// Response model for pool data from the THORChain API
+    struct PoolResponse: Codable {
         let status: String
         let asset: String
         let decimals: Int

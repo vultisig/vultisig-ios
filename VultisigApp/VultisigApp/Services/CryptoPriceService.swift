@@ -27,28 +27,48 @@ public class CryptoPriceService: ObservableObject {
 
 private extension CryptoPriceService {
     
-    // Handle special case for TCY price fetching from THORChain pool
-    func fetchTCYPrice(coins: [Coin]) async throws {
-        let tcyPrice = await ThorchainService.shared.getTCYPriceInUSD()
-        
+    // Handle THORChain assets price fetching from pools endpoint
+    func fetchThorchainAssetPrice(coins: [Coin]) async throws {
         var rates: [Rate] = []
+        let thorchainService = ThorchainService.shared
+        
         for coin in coins {
-            // Create rate for each currency
-            for currency in SettingsCurrency.allCases {
-                let fiat = currency.rawValue.lowercased()
-                // Currently only USD is supported directly, other currencies would require conversion
-                let value = fiat == "usd" ? tcyPrice : 0.0
+            // Get the asset name for the coin
+            let assetName: String
+            let cryptoId: String
+            
+            if coin.isTCY {
+                // Special case for TCY
+                assetName = "THOR.TCY"
+                cryptoId = "tcy"
+            } else {
+                // For other assets, use the formatAssetName helper
+                assetName = thorchainService.formatAssetName(chain: coin.chain, symbol: coin.ticker)
                 
-                // Use 'tcy' as the consistent ID for TCY tokens
-                // This ensures that RateProvider can find the rate later
-                let cryptoId = "tcy"
-                
-                let rate = Rate(fiat: fiat, crypto: cryptoId, value: value)
-                rates.append(rate)
+                // Use consistent cryptoId format for RateProvider
+                cryptoId = RateProvider.cryptoId(for: coin).id
+            }
+            
+            // Get the price from THORChain
+            let assetPrice = await thorchainService.getAssetPriceInUSD(assetName: assetName)
+            
+            // If we got a valid price (non-zero), create rates for all currencies
+            if assetPrice > 0 {
+                // Create rate for each currency
+                for currency in SettingsCurrency.allCases {
+                    let fiat = currency.rawValue.lowercased()
+                    // Currently only USD is supported directly, other currencies would require conversion
+                    let value = fiat == "usd" ? assetPrice : 0.0
+                    
+                    let rate = Rate(fiat: fiat, crypto: cryptoId, value: value)
+                    rates.append(rate)
+                }
             }
         }
         
-        try await RateProvider.shared.save(rates: rates)
+        if !rates.isEmpty {
+            try await RateProvider.shared.save(rates: rates)
+        }
     }
     
     @MainActor func refresh(vault: Vault) {
@@ -62,14 +82,12 @@ private extension CryptoPriceService {
     }
     
     func fetchPrices(coins: [Coin]) async throws {
-        // Check for TCY in any thorchain coins
-        let tcyCoins = coins.filter { $0.isTCY }
-        if !tcyCoins.isEmpty {
-            try await fetchTCYPrice(coins: tcyCoins)
-        }
+        // Step 1: Try to get ALL asset prices from normal price sources first
         
+        // Resolve all coins to their price sources
         let sources = resolveSources(coins: coins)
         
+        // Try to fetch prices from normal sources
         if !sources.providerIds.isEmpty {
             try await fetchPrices(ids: sources.providerIds)
         }
@@ -79,6 +97,22 @@ private extension CryptoPriceService {
                 try await fetchPrices(contracts: contracts, chain: chain)
             }
         }
+        
+        // Step 2: For any THORChain asset without a price, try the THORChain pools
+        let thorchainCoinsWithoutPrices = coins.filter { coin in
+            // Check if this coin is on THORChain
+            guard coin.chain == .thorChain else { return false }
+            
+            // Check if it already has a price from normal sources
+            let hasPrice = RateProvider.shared.rate(for: coin) != nil
+            return !hasPrice
+        }
+        
+        if !thorchainCoinsWithoutPrices.isEmpty {
+            try await fetchThorchainAssetPrice(coins: thorchainCoinsWithoutPrices)
+        }
+        
+        // Step 3: If still no price, it will default to $0.0 (handled in RateProvider)
     }
     
     func resolveSources(coins: [Coin]) -> ResolvedSources {

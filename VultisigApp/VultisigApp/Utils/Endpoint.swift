@@ -95,8 +95,9 @@ class Endpoint {
         "\(thorNodeBaseUrl)/thorchain/tcy_claimer/\(address)"
     }
     
-    static func fetchTCYPoolInfo() -> String {
-        "\(thorNodeBaseUrl)/thorchain/pool/THOR.TCY"
+    // Fetch pool info for any THORChain asset
+    static func fetchPoolInfo(asset: String) -> String {
+        "\(thorNodeBaseUrl)/thorchain/pool/\(asset)"
     }
     
     // MARK: - Maya Chain Endpoints
