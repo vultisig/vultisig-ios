@@ -76,11 +76,16 @@ extension PeerDiscoveryView {
     }
     
     var scrollList: some View {
-        LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
-            ThisDevicePeerCell(deviceName: "Mac")
-            devices
-            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+        VStack {
+            listTitle
+            
+            LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
+                ThisDevicePeerCell(deviceName: "Mac")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            }
         }
+        .frame(maxWidth: .infinity)
     }
     
     var networkPrompts: some View {
@@ -126,7 +131,12 @@ extension PeerDiscoveryView {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
             } else if showDisclaimer {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                if tssType != .Migrate {
+                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                } else {
+                    Spacer()
+                        .frame(height: 24)
+                }
             }
         }
         .padding(.leading, 24)
