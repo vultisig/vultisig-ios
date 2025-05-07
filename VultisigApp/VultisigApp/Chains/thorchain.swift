@@ -52,12 +52,71 @@ enum THORChainHelper {
         var thorChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
         
+        var chainID = coin.chainId
+        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
+            chainID = ThorchainService.shared.network
+        }
+        
         if isDeposit {
+            
+            // This should invoke the wasm contract for RUJI merge
+            if keysignPayload.memo?.lowercased().hasPrefix("merge:") == true {
+                // it's a merge
+                
+                let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
+            
+                // This is for WASM tokens
+                
+                guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
+                    throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
+                }
+                
+                let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
+                    $0.senderAddress = fromAddr.description
+                    $0.contractAddress = keysignPayload.toAddress.description
+                    $0.executeMsg = """
+                    { "deposit": {} }
+                    """
+                    $0.coins = [
+                        TW_Cosmos_Proto_Amount.with {
+                            $0.denom = mergeToken.lowercased() // "THOR.KUJI".lowercased()
+                            $0.amount = String(keysignPayload.toAmount)
+                        }
+                    ]
+                }
+
+                let message = CosmosMessage.with {
+                    $0.wasmExecuteContractGeneric = wasmGenericMessage
+                }
+                               
+                let fee = CosmosFee.with {
+                    $0.gas = 20000000
+                }
+                
+                let input = CosmosSigningInput.with {
+                    $0.signingMode = .protobuf;
+                    $0.accountNumber = accountNumber
+                    $0.chainID = chainID
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                    $0.sequence = sequence
+                    $0.messages = [message]
+                    $0.fee = fee
+                    $0.publicKey = pubKeyData
+                    $0.mode = .sync
+                }
+                
+                return try input.serializedData()
+
+            }
+            
+            
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
-                    $0.symbol = "RUNE"
-                    $0.ticker = "RUNE"
+                    $0.symbol = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
+                    $0.ticker = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
                     $0.synth = false
                 }
                 if keysignPayload.toAmount > 0 {
@@ -81,17 +140,14 @@ enum THORChainHelper {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "rune"
+                        $0.denom = keysignPayload.coin.isNativeToken ? "rune" : keysignPayload.coin.contractAddress
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = toAddress.data
                 }
             }]
         }
-        var chainID = coin.chainId
-        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
-            chainID = ThorchainService.shared.network
-        }
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf

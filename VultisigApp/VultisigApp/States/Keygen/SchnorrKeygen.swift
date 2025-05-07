@@ -7,7 +7,6 @@
 
 import Foundation
 import goschnorr
-import godkls
 import OSLog
 import Mediator
 
@@ -64,12 +63,12 @@ final class SchnorrKeygen {
         return self.keyshare
     }
     
-    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.lib_error,[UInt8]) {
+    func GetSchnorrOutboundMessage(handle: goschnorr.Handle) -> (goschnorr.schnorr_lib_error,[UInt8]) {
         var buf = goschnorr.tss_buffer()
         defer {
             goschnorr.tss_buffer_free(&buf)
         }
-        var result: goschnorr.lib_error
+        var result: goschnorr.schnorr_lib_error
         switch self.tssType {
         case .Keygen,.Migrate:
             result = schnorr_keygen_session_output_message(handle,&buf)
@@ -106,7 +105,7 @@ final class SchnorrKeygen {
             goschnorr.tss_buffer_free(&buf_receiver)
         }
         var mutableMessage = message
-        var receiverResult: goschnorr.lib_error
+        var receiverResult: goschnorr.schnorr_lib_error
         switch self.tssType {
         case .Keygen,.Migrate:
             receiverResult = schnorr_keygen_session_message_receiver(handle, &mutableMessage, idx, &buf_receiver)
@@ -222,7 +221,7 @@ final class SchnorrKeygen {
             let descryptedBodyArr = [UInt8](decodedMsg)
             var decryptedBodySlice = descryptedBodyArr.to_dkls_goslice()
             var isFinished:UInt32 = 0
-            var result: goschnorr.lib_error
+            var result: goschnorr.schnorr_lib_error
             switch self.tssType {
             case .Keygen,.Migrate:
                 result = schnorr_keygen_session_input_message(handle, &decryptedBodySlice, &isFinished)
@@ -416,7 +415,7 @@ final class SchnorrKeygen {
         self.setKeygenDone(status: false)
         var task: Task<(), any Error>? = nil
         do {
-            var keyshareHandle = godkls.Handle()
+            var keyshareHandle = goschnorr.Handle()
             if !self.publicKeyEdDSA.isEmpty {
                 // we are part of the old keygen committee, let's load existing keyshare
                 let keyshare = try getKeyshareBytesFromVault()
@@ -443,7 +442,7 @@ final class SchnorrKeygen {
                 reshareSetupMsg = Array(base64: strReshareSetupMsg)
             }
             var decodedSetupMsg = reshareSetupMsg.to_dkls_goslice()
-            var handler = godkls.Handle()
+            var handler = goschnorr.Handle()
             let localPartyIDArr = self.localPartyID.toArray()
             var localPartySlice = localPartyIDArr.to_dkls_goslice()
             

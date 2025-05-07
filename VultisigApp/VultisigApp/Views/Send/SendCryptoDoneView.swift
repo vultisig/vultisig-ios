@@ -17,8 +17,12 @@ struct SendCryptoDoneView: View {
     
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
+    
+    @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
+    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
+    @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
     
     @Environment(\.openURL) var openURL
@@ -28,7 +32,17 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
+            PopupCapsule(text: alertTitle, showPopup: $showAlert)
+        }
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomeView(selectedVault: vault)
+        }
+    }
+    
+    var sendView: some View {
+        VStack {
+            cards
+            continueButton
         }
     }
     
@@ -92,7 +106,37 @@ struct SendCryptoDoneView: View {
     var summaryCard: some View {
         SendCryptoDoneSummary(
             sendTransaction: sendTransaction,
-            swapTransaction: swapTransaction
+            swapTransaction: swapTransaction,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel
+        )
+    }
+    
+    var view: some View {
+        ZStack {
+            if let tx = swapTransaction {
+                getSwapDoneView(tx)
+            } else {
+                sendView
+            }
+        }
+    }
+    
+    private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
+        SwapCryptoDoneView(
+            tx: tx,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            progressLink: progressLink,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel,
+            showAlert: $showAlert,
+            alertTitle: $alertTitle,
+            navigateToHome: $navigateToHome
         )
     }
     

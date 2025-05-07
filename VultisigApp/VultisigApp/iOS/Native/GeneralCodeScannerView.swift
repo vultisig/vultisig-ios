@@ -68,6 +68,7 @@ struct GeneralCodeScannerView: View {
         }
         .overlay {
             background
+                .allowsHitTesting(false)
         }
     }
     
@@ -76,6 +77,7 @@ struct GeneralCodeScannerView: View {
             .resizable()
             .scaledToFill()
             .opacity(0.2)
+            .allowsHitTesting(false)
     }
     
     var content: some View {
@@ -83,7 +85,7 @@ struct GeneralCodeScannerView: View {
             header
             Spacer()
             if showButtons {
-                buttons
+                menubuttons
             }
         }
         .padding(.vertical, 8)
@@ -128,7 +130,7 @@ struct GeneralCodeScannerView: View {
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
-            )
+            ).allowsHitTesting(false)
             
             overlay
         }
@@ -143,32 +145,36 @@ struct GeneralCodeScannerView: View {
     var overlay: some View {
         Image("QRScannerOutline")
             .padding(60)
-            .allowsHitTesting(false)
     }
     
-    var buttons: some View {
-        VStack {
-            galleryButton
-            fileButton
+    var menubuttons: some View {
+        Menu {
+            Button {
+                isGalleryPresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("photoLibrary", comment: ""),
+                    systemImage: "photo.on.rectangle.angled"
+                )
+            }
+            
+            Button {
+                isFilePresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("chooseFiles", comment: ""),
+                    systemImage: "folder"
+                )
+            }
+        } label: {
+            uploadButton
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 30)
     }
     
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            FilledButton(title: "uploadFromGallerySingleLine")
-        }
-    }
-    
-    var fileButton: some View {
-        Button {
-            isFilePresented.toggle()
-        } label: {
-            FilledButton(title: "uploadFromFilesSingleLine")
-        }
+    var uploadButton: some View {
+        FilledButton(title: "uploadQR", icon: "arrow.up.document")
     }
     
     var alert: Alert {

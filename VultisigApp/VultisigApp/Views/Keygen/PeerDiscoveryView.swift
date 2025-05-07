@@ -31,7 +31,7 @@ struct PeerDiscoveryView: View {
     @State var orientation = UIDevice.current.orientation
 #endif
     
-    @State var animationVM: RiveViewModel = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
+    @State var animationVM: RiveViewModel? = nil
     
     let adaptiveColumns = [
         GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
@@ -59,7 +59,7 @@ struct PeerDiscoveryView: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
-                animationVM.stop()
+                animationVM?.stop()
             }
             .onFirstAppear {
                 showInfo()
@@ -69,7 +69,6 @@ struct PeerDiscoveryView: View {
                     .presentationDetents([.height(450)])
             }
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
@@ -176,8 +175,12 @@ struct PeerDiscoveryView: View {
     var listTitle: some View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("devices", comment: ""))
-            Text("(\(viewModel.selections.count)/3)")
-                .opacity(viewModel.selections.count>3 ? 0 : 1)
+            
+            if tssType == .Migrate {
+                Text("(\(viewModel.selections.count)/\(vault.signers.count))")
+            } else {
+                Text("(\(viewModel.selections.count) \(NSLocalizedString("Selected", comment: "")))")
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body22BrockmannMedium)
@@ -191,6 +194,7 @@ struct PeerDiscoveryView: View {
             showInfoSheet = false
             return
         }
+        
         switch self.tssType {
         case .Keygen:
             showInfoSheet = true
@@ -199,7 +203,6 @@ struct PeerDiscoveryView: View {
         case .Migrate:
             showInfoSheet = false
         }
-        
     }
 }
 

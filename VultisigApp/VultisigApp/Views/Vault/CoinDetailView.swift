@@ -11,7 +11,7 @@ struct CoinDetailView: View {
     let coin: Coin
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @ObservedObject var sendTx: SendTransaction
+    @StateObject var sendTx: SendTransaction
     @Binding var resetActive: Bool
     
     @State var isLoading = false
@@ -32,9 +32,10 @@ struct CoinDetailView: View {
                 SwapCryptoView(fromCoin: coin, vault: vault)
             }
             .navigationDestination(isPresented: $isMemoLinkActive) {
-                TransactionMemoView(
+                FunctionCallView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: coin
                 )
             }
             .onAppear {
@@ -43,6 +44,11 @@ struct CoinDetailView: View {
             .onChange(of: isSendLinkActive) { oldValue, newValue in
                 if newValue {
                     sendTx.reset(coin: coin)
+                }
+            }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    sendTx.coin = coin
                 }
             }
     }
@@ -55,6 +61,7 @@ struct CoinDetailView: View {
         ChainDetailActionButtons(
             group: group,
             sendTx: sendTx,
+            isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive

@@ -8,21 +8,15 @@
 import Foundation
 import SwiftUI
 
-struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
-    let placeholder: String
-    @Binding var value: Value
-    let format: FloatingPointFormatStyle<Value>
-    
+struct StyledFloatingPointField: View {
+    @Binding var placeholder: String
+    @Binding var value: Decimal
     @Binding var isValid: Bool
+    
     var isOptional: Bool = false
     
     @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
-    
-    // Determine the decimal separator based on the current locale
-    private var decimalSeparator: String {
-        return Locale.current.decimalSeparator ?? "."
-    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -32,17 +26,22 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                     .foregroundColor(.neutral0)
                 if !localIsValid {
                     Text("*")
-                        .font(.body14MontserratMedium)
+                        .font(.body8Menlo)
                         .foregroundColor(.red)
                 }
             }
             
             container
         }
+        .id(placeholder)
     }
     
     var textField: some View {
-        TextField(placeholder.capitalized, text: $textFieldValue)
+        TextField("", text: $textFieldValue)
+            .placeholder(when: textFieldValue.isEmpty) {
+                Text(placeholder.capitalized)
+                    .foregroundColor(.gray)
+            }
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -50,51 +49,58 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
-            .onChange(of: textFieldValue) { newValue in
+            .onChange(of: textFieldValue) { oldValue, newValue in
                 updateValue(newValue)
             }
             .onAppear {
-                textFieldValue = formatInitialValue()
+                textFieldValue = value.formatDecimalToLocale()
                 localIsValid = isValid
             }
-        }
-    
-    private func formatInitialValue() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 8
-        return formatter.string(from: NSNumber(value: Double(value))) ?? ""
+            .onChange(of: placeholder) { _, _ in
+                textFieldValue = value.formatDecimalToLocale()
+                localIsValid = isValid
+            }
+            .id(placeholder)
     }
     
-    private func updateValue(_ newValue: String) {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 8
-
+    private func updateValue(_ newValue: String) {        
         textFieldValue = newValue
-
-        if let number = formatter.number(from: newValue) {
-            let doubleValue = number.doubleValue
-            value = Value(doubleValue)
+        
+        if newValue.isValidDecimal() {
+            value = newValue.toDecimal()
             validate(value)
         } else {
-            if newValue.isEmpty || newValue == decimalSeparator {
-                value = 0
-            }
+            value = 0
+            validate(value)
         }
     }
     
-    private func validate(_ newValue: Value) {
+    private func validate(_ newValue: Decimal) {
         if isOptional {
-            isValid = String(describing: newValue).isEmpty || newValue >= 0
+            isValid = (newValue == 0) || (newValue >= 0)
         } else {
-            isValid = !String(describing: newValue).isEmpty && newValue > 0
+            isValid = newValue > 0
         }
         localIsValid = isValid
     }
     
     var optionalMessage: String {
         return isOptional ? " (optional)" : ""
+    }
+}
+
+// Placeholder helper stays the same
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content
+    ) -> some View {
+        ZStack(alignment: alignment) {
+            self
+            if shouldShow {
+                placeholder()
+            }
+        }
     }
 }

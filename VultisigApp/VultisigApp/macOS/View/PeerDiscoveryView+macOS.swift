@@ -7,6 +7,7 @@
 
 #if os(macOS)
 import SwiftUI
+import RiveRuntime
 
 extension PeerDiscoveryView {
     var content: some View {
@@ -40,7 +41,7 @@ extension PeerDiscoveryView {
     
     var headerMac: some View {
         PeerDiscoveryHeader(
-            title: "scanQR",
+            title: getHeaderTitle(),
             vault: vault,
             hideBackButton: hideBackButton,
             viewModel: viewModel,
@@ -71,15 +72,20 @@ extension PeerDiscoveryView {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
     
     var scrollList: some View {
-        LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
-            ThisDevicePeerCell(deviceName: "Mac")
-            devices
-            EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+        VStack {
+            listTitle
+            
+            LazyVGrid(columns: adaptiveColumnsMac, spacing: 8) {
+                ThisDevicePeerCell(deviceName: "Mac")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            }
         }
+        .frame(maxWidth: .infinity)
     }
     
     var networkPrompts: some View {
@@ -125,7 +131,12 @@ extension PeerDiscoveryView {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
             } else if showDisclaimer {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                if tssType != .Migrate {
+                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                } else {
+                    Spacer()
+                        .frame(height: 24)
+                }
             }
         }
         .padding(.leading, 24)
@@ -139,6 +150,7 @@ extension PeerDiscoveryView {
     
     func setData() {
         qrCodeImage = viewModel.getQrImage(size: 100)
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         
         guard let qrCodeImage else {
             return
@@ -153,6 +165,16 @@ extension PeerDiscoveryView {
     
     func getMinSize() -> CGFloat {
         min(screenWidth/2.5, screenHeight/1.5)
+    }
+    
+    private func getHeaderTitle() -> String {
+        if viewModel.status == .WaitingForDevices {
+            tssType == .Migrate ? "" : "scanQR"
+        } else if tssType == .Migrate {
+            ""
+        } else {
+            "creatingVault"
+        }
     }
 }
 #endif

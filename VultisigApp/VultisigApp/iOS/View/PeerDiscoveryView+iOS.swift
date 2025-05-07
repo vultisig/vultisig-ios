@@ -7,6 +7,7 @@
 
 #if os(iOS)
 import SwiftUI
+import RiveRuntime
 
 extension PeerDiscoveryView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -74,7 +75,7 @@ extension PeerDiscoveryView {
     }
     
     var animation: some View {
-        animationVM.view()
+        animationVM?.view()
     }
     
     var scrollList: some View {
@@ -86,7 +87,7 @@ extension PeerDiscoveryView {
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 12)
         }
         .frame(maxWidth: .infinity)
     }
@@ -94,7 +95,6 @@ extension PeerDiscoveryView {
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
@@ -135,7 +135,12 @@ extension PeerDiscoveryView {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
             } else if showDisclaimer {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                if tssType != .Migrate {
+                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                } else {
+                    Spacer()
+                        .frame(height: 24)
+                }
             }
         }
         .padding(.horizontal, idiom == .pad ? 24 : 12)
@@ -151,6 +156,7 @@ extension PeerDiscoveryView {
 
     func setData() {
         qrCodeImage = viewModel.getQrImage(size: 100)
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         
         guard let qrCodeImage else {
             return

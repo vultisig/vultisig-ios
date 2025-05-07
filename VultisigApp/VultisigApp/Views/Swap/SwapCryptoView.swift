@@ -12,10 +12,11 @@ struct SwapCryptoView: View {
     let toCoin: Coin?
     let vault: Vault
     
+    @State var keysignView: KeysignView?
+    
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    @State var keysignView: KeysignView?
     
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin

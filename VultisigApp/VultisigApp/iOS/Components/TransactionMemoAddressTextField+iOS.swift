@@ -1,5 +1,5 @@
 //
-//  TransactionMemoAddressTextField+iOS.swift
+//  FunctionCallAddressTextField+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-24.
@@ -9,7 +9,7 @@
 import SwiftUI
 import CodeScanner
 
-extension TransactionMemoAddressTextField {
+extension FunctionCallAddressTextField {
     var container: some View {
         content
             .font(.body12Menlo)
@@ -99,7 +99,9 @@ extension TransactionMemoAddressTextField {
     func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             memo.addressFields[addressKey] = clipboardContent
-            validateAddress(memo.addressFields[addressKey] ?? "")
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
         }
     }
 }

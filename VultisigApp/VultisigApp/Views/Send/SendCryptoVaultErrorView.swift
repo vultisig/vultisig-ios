@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SendCryptoVaultErrorView: View {
-    
     var body: some View {
         VStack(spacing: 22) {
             Spacer()

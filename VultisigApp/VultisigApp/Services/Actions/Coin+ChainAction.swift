@@ -7,20 +7,31 @@
 
 import Foundation
 
-extension Chain {
+extension CoinAction {
+    
+    static var swapChains: [Chain] = [
+        .solana,.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
+        .thorChain, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,
+        .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync
+    ]
+    
+    static var memoChains: [Chain] = [
+        .thorChain, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis
+    ]
+}
 
+extension Chain {
+    
     var defaultActions: [CoinAction] {
-        let actions: [CoinAction]
-        switch self {
-        case .thorChain, .mayaChain:
-            actions = [.send, .swap, .memo]
-        case .solana, .ethereum, .avalanche, .base, .arbitrum, .polygon, .polygonV2, .optimism, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .zksync:
-            actions = [.send, .swap]
-        case .ton, .dydx:
-            actions = [.send, .memo]
-        case .blast, .cronosChain, .sui, .polkadot, .osmosis, .terra, .terraClassic, .noble, .akash, .ripple, .tron:
-            actions = [.send]
+        var actions: [CoinAction] = [.send] // always include send
+        
+        if CoinAction.swapChains.contains(self) {
+            actions.append(.swap)
         }
+        if CoinAction.memoChains.contains(self) {
+            actions.append(.memo)
+        }
+        
         return actions.filtered
     }
 }

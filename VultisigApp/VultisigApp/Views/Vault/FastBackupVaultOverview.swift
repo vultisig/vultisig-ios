@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct FastBackupVaultOverview: View {
+    let tssType: TssType
     let vault: Vault
     let email: String
     @ObservedObject var viewModel: KeygenViewModel
@@ -18,6 +19,7 @@ struct FastBackupVaultOverview: View {
     @State var tabIndex = 0
     @State var isVerificationLinkActive = false
     @State var isBackupLinkActive = false
+    @State var goBackToEmailSetup = false
     
     @State var animationVM: RiveViewModel? = nil
     @State var backupVaultAnimationVM: RiveViewModel? = nil
@@ -30,15 +32,27 @@ struct FastBackupVaultOverview: View {
         }
         .sheet(isPresented: $isVerificationLinkActive) {
             ServerBackupVerificationView(
+                tssType: tssType,
                 vault: vault,
                 email: email,
                 isPresented: $isVerificationLinkActive,
-                tabIndex: $tabIndex
+                isBackupLinkActive: $isBackupLinkActive,
+                tabIndex: $tabIndex,
+                goBackToEmailSetup: $goBackToEmailSetup
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
         }
+        .navigationDestination(isPresented: $goBackToEmailSetup, destination: { 
+            FastVaultEmailView(
+                tssType: tssType,
+                vault: vault,
+                selectedTab: .fast,
+                backButtonHidden: true,
+                email: email
+            )
+        })
         .onAppear {
             setData()
         }
@@ -46,10 +60,16 @@ struct FastBackupVaultOverview: View {
     
     var content: some View {
         VStack(spacing: 0) {
-            header
-            progressBar
-            Spacer()
-            textTabView
+            if tssType == .Migrate {
+                Spacer()
+                migrateText
+            } else {
+                header
+                progressBar
+                Spacer()
+                textTabView
+            }
+            
             button
         }
         .onChange(of: tabIndex) { oldValue, newValue in
@@ -71,6 +91,19 @@ struct FastBackupVaultOverview: View {
             .font(.body18BrockmannMedium)
     }
     
+    var migrateText: some View {
+        VStack(spacing: 2) {
+            Text(NSLocalizedString("FastMigrateOverviewText1", comment: ""))
+                .foregroundColor(.neutral0)
+            Text(NSLocalizedString("FastMigrateOverviewText2", comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient)
+        }
+        .font(.body28BrockmannMedium)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 36)
+        .padding(.bottom, 24)
+    }
+    
     var progressBar: some View {
         HStack(spacing: 5) {
             ForEach(0..<totalTabCount, id: \.self) { index in
@@ -82,33 +115,6 @@ struct FastBackupVaultOverview: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-    
-    var animation: some View {
-        ZStack{
-            if tabIndex>2 {
-                backupVaultAnimationVM?.view()
-            } else {
-                animationVM?.view()
-            }
-        }
-        .offset(y: -100)
-    }
-    
-    var text: some View {
-        TabView(selection: $tabIndex) {
-            ForEach(0..<totalTabCount, id: \.self) { index in
-                VStack {
-                    Spacer()
-                    OnboardingTextCard(
-                        index: index,
-                        textPrefix: "FastVaultOverview",
-                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
-                    )
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
     }
     
     var nextButton: some View {
@@ -130,6 +136,11 @@ struct FastBackupVaultOverview: View {
     }
     
     private func nextTapped() {
+        guard tssType != .Migrate else {
+            isVerificationLinkActive = true
+            return
+        }
+        
         if tabIndex == 2 {
             isVerificationLinkActive = true
             return
@@ -165,6 +176,7 @@ struct FastBackupVaultOverview: View {
 
 #Preview {
     FastBackupVaultOverview(
+        tssType: .Keygen,
         vault: Vault.example,
         email: "mail@email.com",
         viewModel: KeygenViewModel()

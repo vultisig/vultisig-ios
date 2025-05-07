@@ -84,7 +84,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceDecimal: Decimal {
-        let tokenBalance = Decimal(string: rawBalance) ?? 0.0
+        let tokenBalance = rawBalance.toDecimal()
         let tokenDecimals = decimals
         return tokenBalance / pow(10, tokenDecimals)
     }
@@ -195,7 +195,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
 
     func decimal(for value: BigInt) -> Decimal {
-        let decimalValue = Decimal(string: String(value)) ?? 0
+        let decimalValue = value.description.toDecimal()
         return decimalValue / pow(Decimal(10), decimals)
     }
     

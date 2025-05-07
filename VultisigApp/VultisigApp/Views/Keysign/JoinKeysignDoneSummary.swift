@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct JoinKeysignDoneSummary: View {
+    let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
+    @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
     @EnvironmentObject var settingsViewModel: SettingsViewModel
@@ -21,8 +23,14 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var body: some View {
-        ScrollView {
-            summary
+        ZStack {
+            if viewModel.keysignPayload?.swapPayload != nil {
+                swapContent
+            } else {
+                ScrollView {
+                    summary
+                }
+            }
         }
     }
     
@@ -48,9 +56,7 @@ struct JoinKeysignDoneSummary: View {
     
     var content: some View {
         ZStack {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                swapContent
-            } else if viewModel.customMessagePayload != nil {
+            if viewModel.customMessagePayload != nil {
                 signMessageContent
             } else {
                 transactionContent
@@ -60,56 +66,13 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var swapContent: some View {
-        VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(
-                title: "action",
-                description: summaryViewModel.getAction(viewModel.keysignPayload)
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "provider",
-                description: summaryViewModel.getProvider(viewModel.keysignPayload)
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "swapFrom",
-                description: summaryViewModel.getFromAmount(
-                    viewModel.keysignPayload,
-                    selectedCurrency: settingsViewModel.selectedCurrency
-                )
-            )
-            
-            Separator()
-            getGeneralCell(
-                title: "to",
-                description: summaryViewModel.getToAmount(
-                    viewModel.keysignPayload,
-                    selectedCurrency: settingsViewModel.selectedCurrency
-                )
-            )
-            
-            if showApprove {
-                Separator()
-                getGeneralCell(
-                    title: "allowanceSpender",
-                    description: summaryViewModel.getSpender(viewModel.keysignPayload)
-                )
-                
-                Separator()
-                getGeneralCell(
-                    title: "allowanceAmount",
-                    description: summaryViewModel.getAmount(
-                        viewModel.keysignPayload,
-                        selectedCurrency: settingsViewModel.selectedCurrency
-                    )
-                )
-            }
-            
-            transactionLink
-        }
+        JoinSwapDoneSummary(
+            vault: vault,
+            keysignViewModel: viewModel,
+            summaryViewModel: summaryViewModel,
+            moveToHome: $moveToHome,
+            showAlert: $showAlert
+        )
     }
     
     var transactionContent: some View {
@@ -290,7 +253,7 @@ struct JoinKeysignDoneSummary: View {
 #Preview {
     ZStack {
         Background()
-        JoinKeysignDoneSummary(viewModel: KeysignViewModel(), showAlert: .constant(false))
+        JoinKeysignDoneSummary(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false), moveToHome: .constant(false))
     }
     .environmentObject(SettingsViewModel())
 }

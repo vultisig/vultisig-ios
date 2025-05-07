@@ -10,8 +10,7 @@ import SwiftUI
 
 extension KeygenView {
     var content: some View {
-        fields
-            .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
+        container
             .task {
                 await setData()
                 await viewModel.startKeygen(
@@ -19,6 +18,27 @@ extension KeygenView {
                     defaultChains: settingsDefaultChainViewModel.defaultChains
                 )
             }
+    }
+    
+    var fields: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            if showProgressRing {
+                if progressCounter<4 {
+                    title
+                }
+                states
+            }
+            Spacer()
+            
+            if progressCounter < 4 {
+                if viewModel.status == .KeygenFailed {
+                    retryButton
+                } else {
+                    progressContainer
+                }
+            }
+        }
     }
     
     var progressContainer: some View {

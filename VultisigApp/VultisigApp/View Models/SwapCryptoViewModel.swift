@@ -12,8 +12,8 @@ import Mediator
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-    private let titles = ["swap", "verify", "pair", "keysign", "done"]
-    
+    private let titles = ["swap", "swapOverview", "pair", "keysign", "done"]
+
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
@@ -94,11 +94,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func fromFiatAmount(tx: SwapTransaction) -> String {
-        return tx.fromCoin.fiat(decimal: tx.fromAmountDecimal).description
+        return tx.fromCoin.fiat(decimal: tx.fromAmountDecimal).formatDecimalToLocale()
     }
     
     func toFiatAmount(tx: SwapTransaction) -> String {
-        return tx.toCoin.fiat(decimal: tx.toAmountDecimal).description
+        return tx.toCoin.fiat(decimal: tx.toAmountDecimal).formatDecimalToLocale()
     }
     
     func showGas(tx: SwapTransaction) -> Bool {
@@ -175,7 +175,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let fromBalance = tx.fromCoin.balanceDecimal
         let feeCoinBalance = feeCoin.balanceDecimal
         
-        let amount = Decimal(string: tx.fromAmount) ?? 0
+        let amount = tx.fromAmount.toDecimal()
         
         if feeCoin == tx.fromCoin {
             return fromFee + amount <= fromBalance

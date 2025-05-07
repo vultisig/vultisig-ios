@@ -70,9 +70,9 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
-    
+    @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        let cacheKey =  await getCacheKey(for: tx.fromCoin,
+        let cacheKey =  getCacheKey(for: tx.fromCoin,
                                           action: .swap,
                                           sendMaxAmount: false,
                                           isDeposit: tx.isDeposit,
@@ -80,7 +80,7 @@ final class BlockChainService {
                                           fromAddress: tx.fromCoin.address,
                                           feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
-            let cacheSeconds = await getCacheSeconds(chain: tx.fromCoin.chain)
+            let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific
@@ -332,7 +332,24 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await atom.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+            
+            let latestBlock = try await atom.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .kujira:
             let account = try await kuji.fetchAccountNumber(coin.address)
             
@@ -356,6 +373,10 @@ private extension BlockChainService {
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .osmosis:
             let account = try await osmo.fetchAccountNumber(coin.address)
@@ -367,8 +388,24 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
             
+            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
+            if coin.contractAddress.contains("ibc/"), let denomTrace = await osmo.fetchIbcDenomTraces(coin: coin) {
+                ibcDenomTrace = denomTrace
+            }
+            
+            let now = Date()
+            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
+            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+            
+            let latestBlock = try await osmo.fetchLatestBlock(coin: coin)
+            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            if ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
         case .terra:
             let account = try await terra.fetchAccountNumber(coin.address)
             
@@ -440,7 +477,10 @@ private extension BlockChainService {
             
             let sequence = account?.result?.accountData?.sequence ?? 0
             
-            return .Ripple(sequence: UInt64(sequence), gas: 180000)
+            let lastLedgerSequence = account?.result?.ledgerCurrentIndex ?? 0
+            
+            //60 is bc of tss to wait till 5min so all devices can sign.
+            return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
             
         case .akash:
             let account = try await akash.fetchAccountNumber(coin.address)

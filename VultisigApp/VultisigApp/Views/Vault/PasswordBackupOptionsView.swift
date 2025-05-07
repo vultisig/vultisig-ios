@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct PasswordBackupOptionsView: View {
+    let tssType: TssType
     let vault: Vault
     var isNewVault = false
     
@@ -25,7 +26,7 @@ struct PasswordBackupOptionsView: View {
             HomeView(selectedVault: vault)
         }
         .navigationDestination(isPresented: $navigationLinkActive) {
-            BackupVaultSuccessView(vault: vault)
+            BackupVaultSuccessView(tssType: tssType, vault: vault)
         }
         .onAppear {
             backupViewModel.resetData()
@@ -34,15 +35,6 @@ struct PasswordBackupOptionsView: View {
         .onDisappear {
             backupViewModel.resetData()
         }
-    }
-    
-    var content: some View {
-        VStack(spacing: 36) {
-            icon
-            textContent
-            buttons
-        }
-        .padding(24)
     }
     
     var icon: some View {
@@ -81,6 +73,7 @@ struct PasswordBackupOptionsView: View {
     var withPasswordButton: some View {
         NavigationLink {
             BackupPasswordSetupView(
+                tssType: tssType,
                 vault: vault,
                 isNewVault: isNewVault,
                 showSkipPasswordButton: false
@@ -117,5 +110,5 @@ struct PasswordBackupOptionsView: View {
 }
 
 #Preview {
-    PasswordBackupOptionsView(vault: Vault.example)
+    PasswordBackupOptionsView(tssType: .Keygen, vault: Vault.example)
 }

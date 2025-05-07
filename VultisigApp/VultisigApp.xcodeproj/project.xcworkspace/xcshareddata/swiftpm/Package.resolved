@@ -33,7 +33,7 @@
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
         "branch" : "main",
-        "revision" : "5c4b32017c5bdc04a61fcfb0bb459eb6485f950a"
+        "revision" : "419940d50d4284c73e6c5f55435c8ff8cef3a60e"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/krzyzanowskim/CryptoSwift.git",
       "state" : {
-        "revision" : "678d442c6f7828def400a70ae15968aef67ef52d",
-        "version" : "1.8.3"
+        "revision" : "729e01bc9b9dab466ac85f21fb9ee2bc1c61b258",
+        "version" : "1.8.4"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
       "state" : {
-        "revision" : "635cdbdc47c31154d9409ab4b9d4ed14bedb48f4",
-        "version" : "6.7.1"
+        "revision" : "4d69c927b8c5b599f2caa58e818290bb7ceebce7",
+        "version" : "6.8.1"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
-        "version" : "1.28.2"
+        "revision" : "d72aed98f8253ec1aa9ea1141e28150f408cf17f",
+        "version" : "1.29.0"
       }
     },
     {
@@ -78,7 +78,7 @@
       "location" : "https://github.com/vultisig/walletcore-spm.git",
       "state" : {
         "branch" : "main",
-        "revision" : "d3c95e9e34528dfe045ba2ee735d9207c90eac6f"
+        "revision" : "746ea3fea384742d0b5e4f9f2e8df289d0f1de99"
       }
     }
   ],

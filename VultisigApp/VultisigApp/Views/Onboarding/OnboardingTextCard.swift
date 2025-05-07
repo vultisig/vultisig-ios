@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct OnboardingTextCard: View {
     let index: Int

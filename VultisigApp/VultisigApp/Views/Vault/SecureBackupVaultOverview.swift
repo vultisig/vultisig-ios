@@ -25,7 +25,7 @@ struct SecureBackupVaultOverview: View {
             container
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(vault: vault, isNewVault: true)
+            BackupSetupView(tssType: .Keygen, vault: vault, isNewVault: true)
         }
         .onAppear {
             animationVM = RiveViewModel(fileName: "securevault_overview", autoPlay: true)
@@ -73,27 +73,6 @@ struct SecureBackupVaultOverview: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-    
-    var animation: some View {
-        animationVM?.view()
-            .offset(y: -80)
-    }
-    
-    var text: some View {
-        TabView(selection: $tabIndex) {
-            ForEach(0..<totalTabCount, id: \.self) { index in
-                VStack {
-                    Spacer()
-                    OnboardingTextCard(
-                        index: index,
-                        textPrefix: "SecureVaultOverview",
-                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
-                    )
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
     }
     
     var nextButton: some View {

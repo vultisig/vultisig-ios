@@ -27,5 +27,32 @@ extension FastBackupVaultOverview {
             .padding(.horizontal, 40)
             .padding(.bottom, 100)
     }
+    
+    var text: some View {
+        TabView(selection: $tabIndex) {
+            ForEach(0..<totalTabCount, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    OnboardingTextCard(
+                        index: index,
+                        textPrefix: "FastVaultOverview",
+                        deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
+                    )
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    var animation: some View {
+        ZStack{
+            if tabIndex>2 {
+                backupVaultAnimationVM?.view()
+            } else {
+                animationVM?.view()
+            }
+        }
+        .offset(y: -100)
+    }
 }
 #endif

@@ -40,7 +40,8 @@ final class EVMChainsHelperTest: XCTestCase {
                                             swapPayload: nil,
                                             approvePayload: nil,
                                             vaultPubKeyECDSA: "ECDSAKey",
-                                            vaultLocalPartyID: "localPartyID")
+                                            vaultLocalPartyID: "localPartyID",
+                                            libType: LibType.DKLS.toString())
         let evmHelper = EVMHelper(coinType: .ethereum)
         let preImageHashes = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         XCTAssertEqual(preImageHashes.count,1)

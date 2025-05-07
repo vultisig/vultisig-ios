@@ -18,36 +18,33 @@ extension FastBackupVaultOverview {
     }
     
     var button: some View {
-        HStack {
-            if tabIndex != 0 {
-                prevButton
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 50)
+    }
+    
+    var text: some View {
+        VStack {
+            Spacer()
+            OnboardingTextCard(
+                index: tabIndex,
+                textPrefix: "FastVaultOverview",
+                deviceCount: tabIndex==0 ? "\(vault.signers.count)" : nil
+            )
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    var animation: some View {
+        ZStack{
+            if tabIndex>2 {
+                backupVaultAnimationVM?.view()
+            } else {
+                animationVM?.view()
             }
-            
-            nextButton
         }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 50)
-    }
-    
-    var prevButton: some View {
-        Button {
-            prevTapped()
-        } label: {
-            FilledButton(icon: "chevron.left")
-        }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
-        .frame(width: 80)
-    }
-    
-    private func prevTapped() {
-        guard tabIndex>0 else {
-            return
-        }
-        
-        withAnimation {
-            tabIndex-=1
-        }
+        .scaleEffect(0.7)
+        .offset(y: -60)
     }
 }
 #endif

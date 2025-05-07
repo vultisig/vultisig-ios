@@ -17,6 +17,7 @@ enum JoinKeysignStatus {
     case VaultMismatch
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
+    case VaultTypeDoesntMatch
 }
 
 @MainActor
@@ -52,6 +53,18 @@ class JoinKeysignViewModel: ObservableObject {
     init() {
         self.vault = Vault(name: "Main Vault")
         self.isShowingScanner = false
+    }
+
+    func getSpender() -> String {
+        return keysignPayload?.approvePayload?.spender ?? .empty
+    }
+
+    func getAmount() -> String {
+        guard let fromCoin = keysignPayload?.coin, let amount = keysignPayload?.approvePayload?.amount else {
+            return .empty
+        }
+
+        return "\(String(describing: fromCoin.decimal(for: amount)).formatCurrencyWithSeparators()) \(fromCoin.ticker)"
     }
     
     func setData(vault: Vault, serviceDelegate: ServiceDelegate, isCameraPermissionGranted: Bool) {
@@ -237,6 +250,14 @@ class JoinKeysignViewModel: ObservableObject {
                 self.status = .KeysignSameDeviceShare
                 return
             }
+            // only compare libType when it is not empty
+            if !keysignPayload.libType.isEmpty {
+                let libType = vault.libType ?? .GG20
+                if libType != keysignPayload.libType.toLibType() {
+                    self.status = .VaultTypeDoesntMatch
+                    return
+                }
+            }
         }
         if useVultisigRelay {
             self.serverAddress = Endpoint.vultisigRelay
@@ -332,12 +353,25 @@ class JoinKeysignViewModel: ObservableObject {
         }
 
         let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
-        var gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
+        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
 
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
 
         return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
+    }
+    
+    func getProvider() -> String {
+        switch keysignPayload?.swapPayload {
+        case .oneInch:
+            return "1Inch"
+        case .thorchain:
+            return "THORChain"
+        case .mayachain:
+            return "Maya protocol"
+        case .none:
+            return .empty
+        }
     }
     
     func feesInReadable(coin: Coin, fee: BigInt) -> String {
@@ -349,13 +383,31 @@ class JoinKeysignViewModel: ObservableObject {
             nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
         }
         
-        
-        
         guard let nativeCoin = nativeCoinAux else {
             return ""
         }
         
         let fee = nativeCoin.decimal(for: fee)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+    }
+    
+    func getFromAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker)"
+        } else {
+            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+        }
+    }
+
+    func getToAmount() -> String {
+        guard let payload = keysignPayload?.swapPayload else { return .empty }
+        let amount = payload.toAmountDecimal
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker)"
+        } else {
+            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+        }
     }
 }

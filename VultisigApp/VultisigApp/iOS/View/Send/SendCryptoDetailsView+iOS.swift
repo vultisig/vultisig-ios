@@ -51,11 +51,14 @@ extension SendCryptoDetailsView {
                     fromField
                     toField
                     
-                    if tx.coin.isNativeToken {
+                    if tx.coin.isNativeToken || tx.coin.chainType == .Cosmos || tx.coin.ticker == "TCY" {
                         memoField
                     }
                     
                     amountField
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.decimalPad)
+
                     amountFiatField
                     
                     if !tx.coin.isNativeToken {

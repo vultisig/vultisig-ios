@@ -30,11 +30,15 @@ struct Checkbox: View {
     
     var check: some View {
         Image(systemName: isChecked ? "checkmark" : "")
-            .font(.body14MenloBold)
-            .foregroundColor(.neutral0)
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.alertTurquoise)
             .frame(width: 24, height: 24)
-            .background(isChecked ? Color.turquoise600 : Color.blue200)
+            .background(Color.checkboxBlue)
             .cornerRadius(20)
+            .overlay(
+                Circle()
+                    .stroke(isChecked ? Color.alertTurquoise : Color.borderBlue, lineWidth: 1)
+            )
     }
     
     var description: some View {

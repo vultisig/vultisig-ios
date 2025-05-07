@@ -27,7 +27,7 @@ extension FastVaultEmailView {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "")
+        GeneralMacHeader(title: "", showActions: !backButtonHidden)
     }
     
     var view: some View {

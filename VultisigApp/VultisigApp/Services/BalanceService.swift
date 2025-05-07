@@ -91,7 +91,7 @@ private extension BalanceService {
             
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
-            return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
+            return thorBalances.balance(denom: Chain.thorChain.ticker.lowercased(), coin: coin)
             
         case .solana:
             return try await sol.getSolanaBalance(coin: coin)
