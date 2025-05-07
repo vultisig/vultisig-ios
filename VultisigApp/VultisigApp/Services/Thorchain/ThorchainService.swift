@@ -41,7 +41,7 @@ class ThorchainService: ThorchainSwapProvider {
                     ticker: info.symbol,
                     logo: info.logo, // We will have to move this logo to another storage
                     decimals: 8,
-                    priceProviderId: localAsset?.priceProviderId ?? "", // we don't know the provider ID
+                    priceProviderId: localAsset?.priceProviderId ?? "",
                     contractAddress: balance.denom,
                     isNativeToken: false
                 )
