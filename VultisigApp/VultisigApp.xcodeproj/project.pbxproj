@@ -696,6 +696,7 @@
 		B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F46742DA9A308007B16DE /* Chain+ibc.swift */; };
 		B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* FunctionCallCustom.swift */; };
 		B51819862DCC0A480013C435 /* FunctionCallStakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */; };
+		B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */; };
 		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
 		B52196422C1296DF0021D27A /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196412C1296DF0021D27A /* IntExtension.swift */; };
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
@@ -1582,6 +1583,7 @@
 		B50F46742DA9A308007B16DE /* Chain+ibc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+ibc.swift"; sourceTree = "<group>"; };
 		B51119322C0072620020B711 /* FunctionCallCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCustom.swift; sourceTree = "<group>"; };
 		B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeTCY.swift; sourceTree = "<group>"; };
+		B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeTCY.swift; sourceTree = "<group>"; };
 		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
 		B52196412C1296DF0021D27A /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
@@ -3216,6 +3218,7 @@
 				B5A54E012D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift */,
 				B5B5E2772CCADD69001167C3 /* FunctionCallStake.swift */,
 				B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */,
+				B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */,
 				B53D8CC92BF7F22500B795D3 /* FunctionCallUnbond.swift */,
 				B541C9252CF04C4700335933 /* FunctionCallUnbondMayaChain.swift */,
 				B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */,
@@ -3936,6 +3939,7 @@
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
+				B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */,
 				A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */,
