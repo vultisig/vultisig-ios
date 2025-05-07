@@ -243,6 +243,7 @@ extension ThorchainService {
             }
             return price
         } catch {
+            print("Error in getAssetPriceInUSD: \(error.localizedDescription)")
             return 0.0
         }
     }
@@ -255,6 +256,7 @@ extension ThorchainService {
             _ = try await fetchAssetPrice(assetName: assetName)
             return true
         } catch {
+            print("Error in assetExistsInPools: \(error.localizedDescription)")
             return false
         }
     }
