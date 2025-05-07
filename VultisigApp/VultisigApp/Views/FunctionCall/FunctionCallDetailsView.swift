@@ -85,6 +85,8 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .vote(FunctionCallVote())
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
+                case .stakeTcy:
+                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, functionCallViewModel: functionCallViewModel))
                 case .unstake:
                     fnCallInstance = .unstake(FunctionCallUnstake())
                 case .addPool:
