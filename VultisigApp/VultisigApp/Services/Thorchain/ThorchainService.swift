@@ -238,7 +238,9 @@ extension ThorchainService {
         // Fetch fresh data if cache expired or doesn't exist
         do {
             let price = try await fetchAssetPrice(assetName: assetName)
-            self.cacheAssetPrices.set(cacheKey, (data: price, timestamp: Date()))
+            if price > 0 {
+                self.cacheAssetPrices.set(cacheKey, (data: price, timestamp: Date()))
+            }
             return price
         } catch {
             return 0.0
