@@ -54,6 +54,11 @@ class Endpoint {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }
     
+    // Fetch pool info for any THORChain asset
+    static func fetchPoolInfo(asset: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+    }
+    
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {

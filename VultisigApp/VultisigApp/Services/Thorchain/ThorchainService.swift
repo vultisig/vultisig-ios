@@ -13,6 +13,7 @@ class ThorchainService: ThorchainSwapProvider {
     
     private var cacheFeePrice = ThreadSafeDictionary<String,(data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String,(data: [InboundAddress], timestamp: Date)>()
+    private var cacheAssetPrices = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
     
     private init() {}
     
@@ -31,12 +32,16 @@ class ThorchainService: ThorchainSwapProvider {
             var coinMetaList = [CoinMeta]()
             for balance in balances {
                 let info = getTokenMetadata(for: balance.denom)
+                
+                // We don't care about the chain in that case, since we only want the Price Provider ID and it is the same in all networks.
+                let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == info.symbol.uppercased() })
+                
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
                     ticker: info.symbol,
                     logo: info.logo, // We will have to move this logo to another storage
                     decimals: 8,
-                    priceProviderId: "", // we don't know the provider ID
+                    priceProviderId: localAsset?.priceProviderId ?? "",
                     contractAddress: balance.denom,
                     isNativeToken: false
                 )
@@ -216,10 +221,121 @@ class ThorchainService: ThorchainSwapProvider {
     }
 }
 
+// MARK: - THORChain Pool Prices Functionality
+extension ThorchainService {
+    
+    /// Get price in USD for any THORChain asset using the pools endpoint
+    /// - Parameter assetName: The fully qualified asset name (e.g., "THOR.TCY", "BTC.BTC", etc.)
+    /// - Returns: The current asset price in USD, or 0.0 if not available
+    func getAssetPriceInUSD(assetName: String) async -> Double {
+        let cacheKey = "\(assetName.lowercased())-price"
+        
+        // Check cache first
+        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAssetPrices, timeInSeconds: 60*5) {
+            return cachedData
+        }
+        
+        // Fetch fresh data if cache expired or doesn't exist
+        do {
+            let price = try await fetchAssetPrice(assetName: assetName)
+            if price > 0 {
+                self.cacheAssetPrices.set(cacheKey, (data: price, timestamp: Date()))
+            }
+            return price
+        } catch {
+            print("Error in getAssetPriceInUSD: \(error.localizedDescription)")
+            return 0.0
+        }
+    }
+    
+    /// Check if an asset exists in THORChain pools
+    /// - Parameter assetName: The fully qualified asset name to check
+    /// - Returns: True if the asset exists in THORChain pools
+    func assetExistsInPools(assetName: String) async -> Bool {
+        do {
+            _ = try await fetchAssetPrice(assetName: assetName)
+            return true
+        } catch {
+            print("Error in assetExistsInPools: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    /// Get THORChain asset name in the format expected by the API
+    /// - Parameters:
+    ///   - chain: The chain the asset is on
+    ///   - symbol: The ticker/symbol of the asset
+    /// - Returns: Formatted asset name (e.g., "THOR.RUNE", "BTC.BTC")
+    func formatAssetName(chain: Chain, symbol: String) -> String {
+        // For THORChain assets, the chain code should be "THOR"
+        let chainCode = chain == .thorChain ? "THOR" : chain.rawValue.uppercased()
+        
+        // Uppercase the symbol
+        let assetSymbol = symbol.uppercased()
+        
+        return "\(chainCode).\(assetSymbol)"
+    }
+    
+    private func fetchAssetPrice(assetName: String) async throws -> Double {
+        // Use the generic pool endpoint for all assets
+        let endpoint = Endpoint.fetchPoolInfo(asset: assetName)
+        
+        guard let url = URL(string: endpoint) else {
+            throw Errors.invalidURL
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw Errors.invalidResponse
+        }
+        
+        if httpResponse.statusCode != 200 {
+            throw Errors.apiError("HTTP Error: \(httpResponse.statusCode)")
+        }
+        
+        let decoder = JSONDecoder()
+        let poolResponse = try decoder.decode(PoolResponse.self, from: data)
+        
+        // Convert from 8 decimal places to a decimal value
+        guard let priceValue = Double(poolResponse.assetTorPrice) else {
+            throw Errors.invalidPriceFormat
+        }
+        
+        // Convert from 8 decimal places (e.g., 22840997 = $0.22840997)
+        let price = priceValue / 100_000_000
+        return price
+    }
+}
 
 private extension ThorchainService {
+    // MARK: - Models
+    /// Response model for pool data from the THORChain API
+    struct PoolResponse: Codable {
+        let status: String
+        let asset: String
+        let decimals: Int
+        let balanceAsset: String
+        let balanceRune: String
+        
+        // The TCY price in TOR (8 decimal places)
+        let assetTorPrice: String
+        
+        enum CodingKeys: String, CodingKey {
+            case status
+            case asset
+            case decimals
+            case balanceAsset = "balance_asset"
+            case balanceRune = "balance_rune"
+            case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
+        }
+    }
     
     enum Errors: Error {
         case tnsEntryNotFound
+        case invalidURL
+        case invalidPriceFormat
+        case invalidResponse
+        case apiError(String)
     }
 }
