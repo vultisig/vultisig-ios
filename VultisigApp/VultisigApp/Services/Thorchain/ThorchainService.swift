@@ -32,12 +32,16 @@ class ThorchainService: ThorchainSwapProvider {
             var coinMetaList = [CoinMeta]()
             for balance in balances {
                 let info = getTokenMetadata(for: balance.denom)
+                
+                // We don't care about the chain in that case, since we only want the Price Provider ID and it is the same in all networks.
+                let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == info.symbol.uppercased() })
+                
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
                     ticker: info.symbol,
                     logo: info.logo, // We will have to move this logo to another storage
                     decimals: 8,
-                    priceProviderId: "", // we don't know the provider ID
+                    priceProviderId: localAsset?.priceProviderId ?? "", // we don't know the provider ID
                     contractAddress: balance.denom,
                     isNativeToken: false
                 )
