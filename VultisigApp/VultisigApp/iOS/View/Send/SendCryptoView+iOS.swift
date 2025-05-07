@@ -54,11 +54,11 @@ extension SendCryptoView {
             sendCryptoViewModel.handleBackTap(dismiss)
         } label: {
             NavigationBlankBackButton()
-                .offset(x: -24)
         }
         .padding(.horizontal, 24)
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
+        .offset(x: -32)
     }
 }
 #endif
