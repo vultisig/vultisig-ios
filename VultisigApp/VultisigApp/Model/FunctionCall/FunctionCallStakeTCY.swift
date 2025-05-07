@@ -12,8 +12,8 @@ class FunctionCallStakeTCY: ObservableObject {
     @Published var amount: Decimal = 0
     
     // Internal
-    @Published var amountValid: Bool = true
-    @Published var isTheFormValid: Bool = true
+    @Published var amountValid: Bool = false
+    @Published var isTheFormValid: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -23,8 +23,8 @@ class FunctionCallStakeTCY: ObservableObject {
         tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
     ) {
         self.tx = tx
-        setupValidation()
         self.amount = tx.coin.balanceDecimal
+        setupValidation()
     }
     
     var balance: String {
