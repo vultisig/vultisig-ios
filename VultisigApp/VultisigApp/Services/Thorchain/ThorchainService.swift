@@ -282,8 +282,6 @@ extension ThorchainService {
         
         let (data, response) = try await URLSession.shared.data(from: url)
         
-        print(String(data: data, encoding: .utf8) ?? "No data")
-        
         guard let httpResponse = response as? HTTPURLResponse else {
             throw Errors.invalidResponse
         }
