@@ -202,6 +202,9 @@ struct ChainDetailView: View {
             for coin in group.coins {
                 taskGroup.addTask {
                     await viewModel.loadData(coin: coin)
+                    if coin.isNativeToken {
+                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                    }
                 }
             }
         }
