@@ -95,7 +95,6 @@ extension PeerDiscoveryView {
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
@@ -136,7 +135,12 @@ extension PeerDiscoveryView {
             if viewModel.selectedNetwork == .Local {
                 LocalModeDisclaimer()
             } else if showDisclaimer {
-                PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                if tssType != .Migrate {
+                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                } else {
+                    Spacer()
+                        .frame(height: 24)
+                }
             }
         }
         .padding(.horizontal, idiom == .pad ? 24 : 12)

@@ -69,7 +69,6 @@ struct PeerDiscoveryView: View {
                     .presentationDetents([.height(450)])
             }
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }

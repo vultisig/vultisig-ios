@@ -23,7 +23,7 @@ struct KeysignDiscoveryView: View {
     @State var screenWidth: CGFloat = 0
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
-    @State var selectedNetwork = NetworkPromptType.Internet
+    @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
     @State var previewType: QRShareSheetType = .Send
     
     @State var qrSize: CGFloat = .zero
@@ -69,6 +69,14 @@ struct KeysignDiscoveryView: View {
         }
         .onDisappear {
             viewModel.stopDiscovery()
+        }
+        .onChange(of: selectedNetwork) { _, newValue in
+            VultisigRelay.IsRelayEnabled = newValue == .Internet
+            
+            viewModel.restartParticipantDiscovery()
+            Task {
+                await setData()
+            }
         }
     }
     
