@@ -62,11 +62,11 @@ extension Coin {
                 return [.oneinch(chain), .lifi]
             }
         case .base:
-            return [.oneinch(chain), .lifi]
+            return [.oneinch(chain), .lifi, .eldorito(chain), .thorchain]
         case .optimism, .polygon, .polygonV2, .zksync:
             return [.oneinch(chain), .lifi]
         case .thorChain:
-            return [.thorchain, .mayachain]
+            return [.thorchain, .mayachain, .eldorito(chain)]
         case .bitcoin:
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
@@ -104,10 +104,6 @@ private extension Coin {
     
     var thorBscTokens: [String] {
         return ["BNB", "USDT", "USDC"]
-    }
-    
-    var thorBaseTokens: [String] {
-        return ["ETH", "USDC", "CBBTC"]
     }
     
     var thorAvaxTokens: [String] {
