@@ -19,16 +19,18 @@ class FunctionCallUnstakeTCY: ObservableObject {
     
     private var tx: SendTransaction
     
+    private var stakedAmount: Decimal = .zero
+    
     required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, stakedAmount: Decimal
     ) {
+        self.stakedAmount = stakedAmount
         self.tx = tx
         setupValidation()
     }
     
     var balance: String {
-        let balance = tx.coin.balanceDecimal.formatDecimalToLocale()
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+        return "( Staked Amount: \(self.stakedAmount) \(tx.coin.ticker.uppercased()) )"
     }
     
     private func setupValidation() {
@@ -52,20 +54,9 @@ class FunctionCallUnstakeTCY: ObservableObject {
         return dict
     }
     
-    // API call to fetch staked amount
-    func fetchStakedAmount() {
-        let address = tx.coin.address
-        Task {
-            if let url = URL(string: "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)") {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                // Process data to update stakedAmount
-            }
-        }
-    }
-    
     var percentageButtons: some View {
         SwapPercentageButtons { percentage in
-            print(percentage)
+            self.amount = Int64(percentage)
         }
     }
     
@@ -73,7 +64,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
         AnyView(VStack {
             percentageButtons
             StyledIntegerField(
-                placeholder: "Amount \(self.balance)",
+                placeholder: "Percentage to Unstake \(self.balance)",
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }
