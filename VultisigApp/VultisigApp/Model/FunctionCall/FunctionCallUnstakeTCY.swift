@@ -11,12 +11,15 @@ import Combine
 class FunctionCallUnstakeTCY: ObservableObject {
     @Published var amount: String = ""
     public var lastUpdateTime: Date = Date()
+    
     @Published var amountValid: Bool = false
     @Published var isTheFormValid: Bool = false
     
-    private var tx: SendTransaction
-    private var stakedAmount: Decimal = .zero
     private var cancellables = Set<AnyCancellable>()
+    
+    private var tx: SendTransaction
+    
+    private var stakedAmount: Decimal = .zero
     
     required init(
         tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, stakedAmount: Decimal
@@ -24,6 +27,10 @@ class FunctionCallUnstakeTCY: ObservableObject {
         self.stakedAmount = stakedAmount
         self.tx = tx
         setupValidation()
+    }
+    
+    var balance: String {
+        return "( Staked Amount: \(self.stakedAmount) \(tx.coin.ticker.uppercased()) )"
     }
     
     private func setupValidation() {
@@ -36,10 +43,6 @@ class FunctionCallUnstakeTCY: ObservableObject {
         $amountValid
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
-    }
-    
-    var balance: String {
-        return "( Staked Amount: \(self.stakedAmount) \(tx.coin.ticker.uppercased()) )"
     }
     
     var description: String {
@@ -61,11 +64,18 @@ class FunctionCallUnstakeTCY: ObservableObject {
         return dict
     }
     
+    var percentageButtons: some View {
+        PercentageButtons { [weak self] percentage in
+            self?.setPercentage(percentage)
+        }
+    }
+    
     func setPercentage(_ percentage: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
             self.amount = String(percentage)
+            self.validateAmount()
             self.lastUpdateTime = Date()
             self.objectWillChange.send()
         }
@@ -85,11 +95,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
         isTheFormValid = amountValid
     }
     
-    var percentageButtons: some View {
-        PercentageButtons { [weak self] percentage in
-            self?.setPercentage(percentage)
-        }
-    }
+
     
     struct PercentageButtons: View {
         let action: (Int) -> Void
