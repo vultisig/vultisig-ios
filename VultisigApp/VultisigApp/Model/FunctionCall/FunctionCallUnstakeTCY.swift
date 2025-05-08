@@ -95,7 +95,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
         isTheFormValid = amountValid
     }
     
-
+    
     
     struct PercentageButtons: View {
         let action: (Int) -> Void
@@ -123,6 +123,18 @@ class FunctionCallUnstakeTCY: ObservableObject {
 struct UnstakeView: View {
     @ObservedObject var viewModel: FunctionCallUnstakeTCY
     
+    var textField: some View {
+        TextField("Enter percentage", text: $viewModel.amount)
+            .id(viewModel.lastUpdateTime)
+        //.keyboardType(.numberPad)
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .padding(12)
+            .background(Color.blue600)
+            .cornerRadius(12)
+            .borderlessTextFieldStyle()
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
@@ -146,15 +158,12 @@ struct UnstakeView: View {
                     }
                 }
                 
-                TextField("Enter percentage", text: $viewModel.amount)
-                    .id(viewModel.lastUpdateTime)
-                    .keyboardType(.numberPad)
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-                    .padding(12)
-                    .background(Color.blue600)
-                    .cornerRadius(12)
-                    .borderlessTextFieldStyle()
+#if os(iOS)
+                textField.keyboardType(.decimalPad)
+#endif
+#if os(macOS)
+                textField
+#endif
             }
         }
     }
