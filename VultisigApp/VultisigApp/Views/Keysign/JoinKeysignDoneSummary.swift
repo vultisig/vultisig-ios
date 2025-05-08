@@ -44,7 +44,7 @@ struct JoinKeysignDoneSummary: View {
                 card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
                     .padding(.horizontal, -16)
             }
-
+            
             content
         }
         .padding(.vertical, 12)
@@ -77,13 +77,17 @@ struct JoinKeysignDoneSummary: View {
     
     var transactionContent: some View {
         VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(
-                title: "to",
-                description: viewModel.keysignPayload?.toAddress ?? "",
-                isVerticalStacked: true
-            )
             
+            if let address = viewModel.keysignPayload?.toAddress, !address.isEmpty {
+                
+                Separator()
+                getGeneralCell(
+                    title: "to",
+                    description: address,
+                    isVerticalStacked: true
+                )
+                
+            }
             
             if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                 Separator()
@@ -94,24 +98,32 @@ struct JoinKeysignDoneSummary: View {
                 )
             }
             
-            Separator()
-            getGeneralCell(
-                title: "amount",
-                description: viewModel.keysignPayload?.toAmountString ?? "",
-                isVerticalStacked: false
-            )
+            if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
+                
+                Separator()
+                getGeneralCell(
+                    title: "amount",
+                    description: amount,
+                    isVerticalStacked: false
+                )
+                
+            }
             
-            Separator()
-            getGeneralCell(
-                title: "value",
-                description: viewModel.keysignPayload?.toAmountFiatString ?? "",
-                isVerticalStacked: false
-            )
+            if let fiat = viewModel.keysignPayload?.toAmountFiatString, !fiat.isEmpty {
+                
+                Separator()
+                getGeneralCell(
+                    title: "value",
+                    description: fiat,
+                    isVerticalStacked: false
+                )
+                
+            }
             
             transactionLink
         }
     }
-
+    
     var signMessageContent: some View {
         VStack(spacing: 18) {
             getGeneralCell(
@@ -119,7 +131,7 @@ struct JoinKeysignDoneSummary: View {
                 description: viewModel.customMessagePayload?.method ?? "",
                 isVerticalStacked: true
             )
-
+            
             Separator()
             getGeneralCell(
                 title: "Message",
@@ -134,7 +146,7 @@ struct JoinKeysignDoneSummary: View {
             )
         }
     }
-
+    
     var transactionLink: some View {
         VStack {
             Separator()
@@ -145,7 +157,7 @@ struct JoinKeysignDoneSummary: View {
             }
         }
     }
-
+    
     private func getGeneralCell(title: String, description: String, isVerticalStacked: Bool = false) -> some View {
         ZStack {
             if isVerticalStacked {
@@ -175,7 +187,7 @@ struct JoinKeysignDoneSummary: View {
     private func card(title: String, txid: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             titleSection(title: title, txid: txid)
-
+            
             Text(txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
@@ -242,7 +254,7 @@ struct JoinKeysignDoneSummary: View {
             openURL(url)
         }
     }
-
+    
     private func progressLink(link: String) {
         if !link.isEmpty, let url = URL(string: link) {
             openURL(url)

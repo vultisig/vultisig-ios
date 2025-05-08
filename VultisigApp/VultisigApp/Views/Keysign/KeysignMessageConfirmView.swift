@@ -34,10 +34,16 @@ struct KeysignMessageConfirmView: View {
     var summary: some View {
         ScrollView {
             VStack(spacing: 16) {
-                fromField
-                Separator()
-                toField
-                Separator()
+                
+                if ((viewModel.keysignPayload?.coin.address.isEmpty) == nil) {
+                    fromField
+                    Separator()
+                }
+                
+                if ((viewModel.keysignPayload?.toAddress.isEmpty) == nil) {
+                    toField
+                    Separator()
+                }
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                     getSummaryCell(title: "memo", value: memo)
@@ -49,10 +55,16 @@ struct KeysignMessageConfirmView: View {
                     Separator()
                 }
                 
-                amountField
-                Separator()
-                valueField
-                Separator()
+                if ((viewModel.keysignPayload?.toAmountString.isEmpty) == nil) {
+                    amountField
+                    Separator()
+                }
+                
+                if ((viewModel.keysignPayload?.toAmountFiatString.isEmpty) == nil) {
+                    valueField
+                    Separator()
+                }
+                
                 networkFeeField
             }
             .padding(16)
@@ -78,15 +90,15 @@ struct KeysignMessageConfirmView: View {
     var networkFeeField: some View {
         getSummaryCell(title: "networkFee", value: viewModel.getCalculatedNetworkFee())
     }
-
+    
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-
+    
     func functionField(decodedMemo: String) -> some View {
         getSummaryCell(title: "function", value: decodedMemo)
     }
-
+    
     var button: some View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()
