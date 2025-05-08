@@ -32,19 +32,24 @@ struct SendCryptoDoneSummary: View {
     
     private func getSendCard(_ tx: SendTransaction) -> some View {
         VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(
-                title: "from",
-                description: tx.fromAddress,
-                isVerticalStacked: true
-            )
             
-            Separator()
-            getGeneralCell(
-                title: "to",
-                description: tx.toAddress,
-                isVerticalStacked: true
-            )
+            if !tx.fromAddress.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "from",
+                    description: tx.fromAddress,
+                    isVerticalStacked: true
+                )
+            }
+            
+            if !tx.toAddress.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "to",
+                    description: tx.toAddress,
+                    isVerticalStacked: true
+                )
+            }
             
             if !tx.memo.isEmpty {
                 Separator()
@@ -55,17 +60,21 @@ struct SendCryptoDoneSummary: View {
                 )
             }
             
-            Separator()
-            getGeneralCell(
-                title: "amount",
-                description: getSendAmount(for: tx)
-            )
+            if !getSendAmount(for: tx).isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "amount",
+                    description: getSendAmount(for: tx)
+                )
+            }
             
-            Separator()
-            getGeneralCell(
-                title: "value",
-                description: getSendFiatAmount(for: tx)
-            )
+            if !getSendFiatAmount(for: tx).isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "value",
+                    description: getSendFiatAmount(for: tx)
+                )
+            }
             
             Separator()
             getGeneralCell(
