@@ -86,7 +86,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
     }
     
     func validateAmount() {
-        if let intAmount = Int64(amount), intAmount > 0 {
+        if let intAmount = Int64(amount), intAmount > 0, self.stakedAmount > 0 {
             amountValid = true
         } else {
             amountValid = false
