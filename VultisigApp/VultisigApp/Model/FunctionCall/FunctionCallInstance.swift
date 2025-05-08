@@ -122,6 +122,8 @@ enum FunctionCallInstance {
             return memo.amount
         case .stakeTcy(let memo):
             return memo.amount
+        case .stakeTcy(let memo):
+            return memo.amount
         case .unstakeTcy(let memo):
             return .zero // The amount goes in the memo
         case .unstake(let memo):

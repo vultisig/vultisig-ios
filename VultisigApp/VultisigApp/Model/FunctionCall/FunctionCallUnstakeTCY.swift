@@ -12,8 +12,8 @@ class FunctionCallUnstakeTCY: ObservableObject {
     @Published var amount: Int64 = .zero
     
     // Internal
-    @Published var amountValid: Bool = true
-    @Published var isTheFormValid: Bool = true
+    @Published var amountValid: Bool = false
+    @Published var isTheFormValid: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
     
