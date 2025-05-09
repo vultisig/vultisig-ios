@@ -9,9 +9,10 @@
 import SwiftUI
 import MoonPaySdk
 
+let moonPayApiKey = "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk"
 extension ChainDetailActionButtons{
     func showMoonPayBuy(){
-        let params = MoonPayBuyQueryParams(apiKey: "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk")
+        let params = MoonPayBuyQueryParams(apiKey: moonPayApiKey)
         let helper = MoonPayHelper()
         if let vault = ApplicationState.shared.currentVault {
             params.setWalletAddresses(value: helper.getWalletAddresses(vault: vault))
@@ -30,8 +31,13 @@ extension ChainDetailActionButtons{
         let moonPaySdk = MoonPayiOSSdk(config: config)
         moonPaySdk.show(mode: MoonPayRenderingOptioniOS.WebViewOverlay())
     }
+    
+    func processDepositRequest(_ request: OnInitiateDepositRequestPayload){
+        
+    }
+    
     func showMoonpaySell(){
-        let params = MoonPaySellQueryParams(apiKey: "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk")
+        let params = MoonPaySellQueryParams(apiKey: moonPayApiKey)
         params.setQuoteCurrencyCode(value: "USD")
         let helper = MoonPayHelper()
         if let vault = ApplicationState.shared.currentVault {
@@ -41,23 +47,18 @@ extension ChainDetailActionButtons{
             params.setBaseCurrencyCode(value: currency)
         }
         let handlers = MoonPayHandlers(
-            onAuthToken: { data in
-                print("onAuthToken called", data)
-            },
-            onSwapsCustomerSetupComplete: {
-                print("onSwapsCustomerSetupComplete called")
-            },
-            onUnsupportedRegion: {
-                print("onUnsupportedRegion called")
-            },
-            onKmsWalletCreated: {
-                print("kms wallet created")
-            },
-            onLogin: { data in
-                print("onLogin called", data)
-            },
-            onInitiateDeposit: { data in
-                print("onInitiateDepositCalled:\(data)")
+            onAuthToken: nil,
+            onSwapsCustomerSetupComplete: nil,
+            onUnsupportedRegion: nil,
+            onKmsWalletCreated: nil,
+            onLogin: nil,
+            onInitiateDeposit: { payload in
+                print("deposit payload: \(payload)")
+                print("deposit address: \(payload.depositWalletAddress)")
+                print("deposit amount: \(payload.cryptoCurrencyAmount)")
+                print("deposit amount crypto: \(payload.cryptoCurrencyAmountSmallestDenomination)")
+                print("deposit crypto currency name: \(payload.cryptoCurrency.name)")
+                // present a view to send tx
                 let response = OnInitiateDepositResponsePayload(depositId: "yourDepositId")
                 return response
             },
