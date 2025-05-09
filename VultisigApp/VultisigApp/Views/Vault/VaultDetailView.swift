@@ -229,7 +229,6 @@ struct VaultDetailView: View {
         
         return ChainDetailActionButtons(
             group: selectedGroup ?? GroupedChain.example,
-            sendTx: sendTx,
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
