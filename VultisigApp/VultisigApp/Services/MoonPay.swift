@@ -54,11 +54,6 @@ class MoonPayHelper {
         return walletAddresses
     }
     func getCurrencyFromChain(chain: Chain) -> String? {
-        for (k,v) in walletAddressMap {
-            if v == chain {
-                return k
-            }
-        }
-        return nil
+        return walletAddressMap.first(where: { $0.value == chain })?.key
     }
 }
