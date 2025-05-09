@@ -59,7 +59,7 @@ struct ChainDetailActionButtons: View {
             }
         }
     }
-    
+
     var memoButton: some View {
         Button {
             if let selected = viewModel.selection.first(where: { $0.chain == group.chain }),
