@@ -27,13 +27,13 @@ struct SettingsAdvancedView: View {
             
             SettingToggleCell(
                 title: "Swap",
-                icon: "timelapse",
+                icon: "arrow.2.squarepath",
                 isEnabled: $settingsViewModel.allowSwap
             )
             
             SettingToggleCell(
                 title: "MoonPay",
-                icon: "timelapse",
+                icon: "creditcard",
                 isEnabled: $settingsViewModel.moonpayEnabled
             )
         }
