@@ -6,6 +6,10 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import MoonPaySdk
+#endif
+
 
 struct ChainDetailActionButtons: View {
     var isChainDetail: Bool
