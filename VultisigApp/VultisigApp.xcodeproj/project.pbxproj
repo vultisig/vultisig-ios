@@ -844,6 +844,7 @@
 		DEA1C7002DB0CC8F00424466 /* InboundAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */; };
 		DEA1C7022DB0CD9900424466 /* TokenMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */; };
 		DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */; };
+		DEBE4AB72DCDDC8D002C5B92 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
@@ -1736,6 +1737,7 @@
 		DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboundAddress.swift; sourceTree = "<group>"; };
 		DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenMetadata.swift; sourceTree = "<group>"; };
 		DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
+		DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
@@ -1819,6 +1821,7 @@
 				A617B67A2CEC63F6006E5122 /* Send */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
 				DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */,
+				DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				049BBB672B71E9C5004C231F /* WifiInstruction.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
@@ -4525,6 +4528,7 @@
 				A69FBBCE2C8BBA1900A4B78B /* FunctionCallVerifyView+macOS.swift in Sources */,
 				DE1509C22DCD8FB50030C9A0 /* ChainDetailActionButtons+iOS.swift in Sources */,
 				A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */,
+				DEBE4AB72DCDDC8D002C5B92 /* ChainDetailActionButtons+macOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
 				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
