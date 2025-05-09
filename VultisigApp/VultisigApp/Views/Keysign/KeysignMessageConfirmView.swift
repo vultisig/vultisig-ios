@@ -35,12 +35,12 @@ struct KeysignMessageConfirmView: View {
         ScrollView {
             VStack(spacing: 16) {
                 
-                if ((viewModel.keysignPayload?.coin.address.isEmpty) == nil) {
+                if let from = viewModel.keysignPayload?.coin.address, !from.isEmpty {
                     fromField
                     Separator()
                 }
-                
-                if ((viewModel.keysignPayload?.toAddress.isEmpty) == nil) {
+
+                if let to = viewModel.keysignPayload?.toAddress, !to.isEmpty {
                     toField
                     Separator()
                 }
@@ -55,12 +55,12 @@ struct KeysignMessageConfirmView: View {
                     Separator()
                 }
                 
-                if ((viewModel.keysignPayload?.toAmountString.isEmpty) == nil) {
+                if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
                     amountField
                     Separator()
                 }
-                
-                if ((viewModel.keysignPayload?.toAmountFiatString.isEmpty) == nil) {
+
+                if let fiat = viewModel.keysignPayload?.toAmountFiatString, !fiat.isEmpty {
                     valueField
                     Separator()
                 }
