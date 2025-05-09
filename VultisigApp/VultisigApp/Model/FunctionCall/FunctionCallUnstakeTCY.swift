@@ -126,7 +126,6 @@ struct UnstakeView: View {
     var textField: some View {
         TextField("Enter percentage", text: $viewModel.amount)
             .id(viewModel.lastUpdateTime)
-        //.keyboardType(.numberPad)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .padding(12)
