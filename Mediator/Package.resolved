@@ -10,15 +10,6 @@
       }
     },
     {
-      "identity" : "bigint",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/attaswift/BigInt.git",
-      "state" : {
-        "revision" : "114343a705df4725dfe7ab8a2a326b8883cfd79c",
-        "version" : "5.5.1"
-      }
-    },
-    {
       "identity" : "cache",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/hyperoslo/Cache",
@@ -52,6 +43,15 @@
       "state" : {
         "revision" : "729e01bc9b9dab466ac85f21fb9ee2bc1c61b258",
         "version" : "1.8.4"
+      }
+    },
+    {
+      "identity" : "mobile-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/moonpay/mobile-sdk-ios",
+      "state" : {
+        "branch" : "main",
+        "revision" : "8f687fee8b6b39d57dc181f22959c746320d93cb"
       }
     },
     {
