@@ -24,7 +24,9 @@ extension Chain {
     
     var defaultActions: [CoinAction] {
         var actions: [CoinAction] = [.send] // always include send
-        
+#if os(iOS)
+        actions.append(.buy)
+#endif
         if CoinAction.swapChains.contains(self) {
             actions.append(.swap)
         }

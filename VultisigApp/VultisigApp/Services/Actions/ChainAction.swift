@@ -13,6 +13,7 @@ enum CoinAction: String, Codable {
     case deposit
     case bridge
     case memo
+    case buy
 
     var title: String {
         return rawValue.capitalized
@@ -24,7 +25,7 @@ enum CoinAction: String, Codable {
             return .turquoise600
         case .swap:
             return .persianBlue200
-        case .deposit, .bridge, .memo:
+        case .deposit, .bridge, .memo,.buy:
             return .mediumPurple
         }
     }
