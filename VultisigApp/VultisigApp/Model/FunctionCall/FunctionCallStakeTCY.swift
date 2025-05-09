@@ -34,6 +34,7 @@ class FunctionCallStakeTCY: ObservableObject {
     
     private func setupValidation() {
         $amountValid
+            .map { $0 && !self.amount.isZero && self.tx.coin.balanceDecimal >= self.amount }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
