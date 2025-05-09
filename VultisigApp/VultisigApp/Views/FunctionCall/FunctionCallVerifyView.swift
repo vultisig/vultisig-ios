@@ -103,13 +103,18 @@ struct FunctionCallVerifyView: View {
                 getDetailsCell(for: "amount", with: getAmount())
             }
             
-            VStack {
-                ForEach(Array(tx.memoFunctionDictionary.allKeysInOrder()), id: \.self) { key in
+            if !tx.memoFunctionDictionary.allKeysInOrder().isEmpty {
+                let validKeys = tx.memoFunctionDictionary.allKeysInOrder().filter { key in
+                    guard let value = tx.memoFunctionDictionary.get(key) else { return false }
+                    return !value.isEmpty && value != "0" && value != "0.0"
+                }
+                
+                ForEach(Array(validKeys.enumerated()), id: \.element) { index, key in
                     if let value = tx.memoFunctionDictionary.get(key) {
-                        if !value.isEmpty && value != "0" && value != "0.0" {
+                        if index > 0 || tx.amountDecimal > 0 || !tx.fromAddress.isEmpty {
                             Separator()
-                            getAddressCell(for: key.toFormattedTitleCase(), with: value)
                         }
+                        getAddressCell(for: key.toFormattedTitleCase(), with: value)
                     }
                 }
             }

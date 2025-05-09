@@ -169,20 +169,24 @@ struct JoinSwapDoneSummary: View {
                 showCopyButton: true
             )
             
-            separator
-            getCell(
-                title: "from",
-                value: vault.name,
-                bracketValue: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address,
-                bracketMaxWidth: 120
-            )
+            if ((summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address) != nil) == false {
+                separator
+                getCell(
+                    title: "from",
+                    value: vault.name,
+                    bracketValue: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address,
+                    bracketMaxWidth: 120
+                )
+            }
             
-            separator
-            getCell(
-                title: "to",
-                value: summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address,
-                valueMaxWidth: 120
-            )
+            if summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address.isEmpty == false {
+                separator
+                getCell(
+                    title: "to",
+                    value: summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address,
+                    valueMaxWidth: 120
+                )
+            }
             
             separator
             getCell(
