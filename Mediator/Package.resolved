@@ -55,6 +55,15 @@
       }
     },
     {
+      "identity" : "mobile-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/moonpay/mobile-sdk-ios",
+      "state" : {
+        "branch" : "main",
+        "revision" : "8f687fee8b6b39d57dc181f22959c746320d93cb"
+      }
+    },
+    {
       "identity" : "rive-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
