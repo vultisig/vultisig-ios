@@ -6,6 +6,10 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import MoonPaySdk
+#endif
+
 
 struct ChainDetailActionButtons: View {
     @ObservedObject var group: GroupedChain
@@ -32,6 +36,8 @@ struct ChainDetailActionButtons: View {
                     memoButton
                 case .deposit, .bridge:
                     ActionButton(title: "function", fontColor: action.color)
+                case .buy:
+                    buyButton
                 }
             }
         }
@@ -73,6 +79,54 @@ struct ChainDetailActionButtons: View {
             isSendLinkActive = true
         } label: {
             ActionButton(title: "send", fontColor: .turquoise600)
+        }
+    }
+    
+    var buyButton: some View {
+        Button {
+#if os(iOS)
+            let handlers = MoonPayHandlers(
+                onAuthToken: { data in
+                    print("onAuthToken called", data)
+                },
+                onSwapsCustomerSetupComplete: {
+                    print("onSwapsCustomerSetupComplete called")
+                },
+                onUnsupportedRegion: {
+                    print("onUnsupportedRegion called")
+                },
+                onKmsWalletCreated: {
+                    print("kms wallet created")
+                },
+                onLogin: { data in
+                    print("onLogin called", data)
+                },
+                onInitiateDeposit: { data in
+                    print("onInitiateDepositCalled")
+                    let response = OnInitiateDepositResponsePayload(depositId: "yourDepositId")
+                    return response
+                },
+                onTransactionCreated: { payload in
+                    print("onTransaction Created \(payload)")
+                }
+            )
+            let params = MoonPayBuyQueryParams(apiKey: "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk")
+            
+            params.setBaseCurrencyCode(value: "GBP")
+            params.setBaseCurrencyAmount(value: 100)
+            params.setWalletAddresses(value: ["ETH":"0x07773707BdA78aC4052f736544928b15dD31c5cc"])
+            let config = MoonPaySdkBuyConfig(
+                debug: false,
+                environment: MoonPayWidgetEnvironment.sandbox,
+                params: params,
+                handlers: handlers
+            )
+            
+            let moonPaySdk = MoonPayiOSSdk(config: config)
+            moonPaySdk.show(mode: MoonPayRenderingOptioniOS.WebViewOverlay())
+#endif
+        } label: {
+            ActionButton(title: "buy", fontColor: .turquoise600)
         }
     }
     
