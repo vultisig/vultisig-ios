@@ -101,6 +101,7 @@ struct ChainDetailView: View {
     
     var actionButtons: some View {
         ChainDetailActionButtons(
+            isChainDetail: true,
             group: group,
             sendTx: sendTx,
             isLoading: $isLoading,

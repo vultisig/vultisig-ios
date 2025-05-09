@@ -14,18 +14,19 @@ enum CoinAction: String, Codable {
     case bridge
     case memo
     case buy
-
+    case sell
+    
     var title: String {
         return rawValue.capitalized
     }
-
+    
     var color: Color {
         switch self {
         case .send:
             return .turquoise600
         case .swap:
             return .persianBlue200
-        case .deposit, .bridge, .memo,.buy:
+        case .deposit, .bridge, .memo,.buy,.sell:
             return .mediumPurple
         }
     }

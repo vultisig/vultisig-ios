@@ -383,7 +383,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.tron
         }
     }
-    
+   
     var isECDSA: Bool {
         return signingKeyType == .ECDSA
     }

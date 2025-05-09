@@ -774,6 +774,8 @@
 		DE0893562C47C8FA007632F7 /* Chain+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0893552C47C8FA007632F7 /* Chain+extensions.swift */; };
 		DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE13BB9E2C239FC90014B754 /* CoinMeta.swift */; };
 		DE1509C02DCD7B520030C9A0 /* MoonPaySdk in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = DE1509BF2DCD7B520030C9A0 /* MoonPaySdk */; };
+		DE1509C22DCD8FB50030C9A0 /* ChainDetailActionButtons+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */; };
+		DE1509C42DCD93180030C9A0 /* MoonPay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1509C32DCD93150030C9A0 /* MoonPay.swift */; };
 		DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572942B70F254009BC7C5 /* TssMessenger.swift */; };
 		DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */; };
 		DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572982B70F26A009BC7C5 /* KeyType.swift */; };
@@ -1661,6 +1663,8 @@
 		DE03EA0C2D0D3C7700AA4BB0 /* goschnorr.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = goschnorr.xcframework; sourceTree = "<group>"; };
 		DE0893552C47C8FA007632F7 /* Chain+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+extensions.swift"; sourceTree = "<group>"; };
 		DE13BB9E2C239FC90014B754 /* CoinMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinMeta.swift; sourceTree = "<group>"; };
+		DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+iOS.swift"; sourceTree = "<group>"; };
+		DE1509C32DCD93150030C9A0 /* MoonPay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonPay.swift; sourceTree = "<group>"; };
 		DE1572942B70F254009BC7C5 /* TssMessenger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssMessenger.swift; sourceTree = "<group>"; };
 		DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalStateAccessorImp.swift; sourceTree = "<group>"; };
 		DE1572982B70F26A009BC7C5 /* KeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyType.swift; sourceTree = "<group>"; };
@@ -1814,6 +1818,7 @@
 				A608E3752C01BD6800E40B85 /* Swap */,
 				A617B67A2CEC63F6006E5122 /* Send */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
+				DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				049BBB672B71E9C5004C231F /* WifiInstruction.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
@@ -1876,6 +1881,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				DE1509C32DCD93150030C9A0 /* MoonPay.swift */,
 				B5E654E92D277CD5003A037C /* Tron */,
 				B5A80F192D0645BC00DC9069 /* Ripple */,
 				DE8B69982CD4602500F53E14 /* PayloadService.swift */,
@@ -4517,6 +4523,7 @@
 				B5A97CF12BF41903007574D7 /* FunctionCallVerifyViewModel.swift in Sources */,
 				A6B84B0C2CE56D79006929A0 /* ServerBackupVerificationView.swift in Sources */,
 				A69FBBCE2C8BBA1900A4B78B /* FunctionCallVerifyView+macOS.swift in Sources */,
+				DE1509C22DCD8FB50030C9A0 /* ChainDetailActionButtons+iOS.swift in Sources */,
 				A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
 				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
@@ -4548,6 +4555,7 @@
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */,
 				DE8291942D891AAB0037E5FD /* MigrationRequest.swift in Sources */,
+				DE1509C42DCD93180030C9A0 /* MoonPay.swift in Sources */,
 				A6C670DD2C9E91A900F59B6A /* SendCryptoDetailsView+iOS.swift in Sources */,
 				A6F7B6FC2D4D5BE600AC8104 /* BackupVaultSuccessView.swift in Sources */,
 				A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */,
