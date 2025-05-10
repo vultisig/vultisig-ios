@@ -44,6 +44,7 @@ struct MacScannerView: View {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
+                    coin: nil,
                     selectedChain: cameraViewModel.selectedChain
                 )
             }

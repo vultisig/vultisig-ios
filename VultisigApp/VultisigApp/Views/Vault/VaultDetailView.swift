@@ -67,7 +67,8 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
@@ -229,7 +230,6 @@ struct VaultDetailView: View {
         
         return ChainDetailActionButtons(
             group: selectedGroup ?? GroupedChain.example,
-            sendTx: sendTx,
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,

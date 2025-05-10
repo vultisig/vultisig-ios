@@ -25,6 +25,7 @@ extension VaultDetailView {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
+                    coin: nil,
                     selectedChain: selectedChain
                 )
             }

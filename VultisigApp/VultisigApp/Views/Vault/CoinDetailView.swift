@@ -25,7 +25,8 @@ struct CoinDetailView: View {
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: coin
                 )
             }
             .navigationDestination(isPresented: $isSwapLinkActive) {
@@ -60,7 +61,6 @@ struct CoinDetailView: View {
     var actionButtons: some View {
         ChainDetailActionButtons(
             group: group,
-            sendTx: sendTx,
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
