@@ -11,7 +11,6 @@ struct ChainDetailView: View {
             .sorted()
     }
 
-//    @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
