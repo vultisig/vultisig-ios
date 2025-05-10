@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
+#if os(iOS)
+import MoonPaySdk
+#endif
+
 
 struct ChainDetailActionButtons: View {
+    var isChainDetail: Bool
     @ObservedObject var group: GroupedChain
     @ObservedObject var sendTx: SendTransaction
     
@@ -32,6 +37,10 @@ struct ChainDetailActionButtons: View {
                     memoButton
                 case .deposit, .bridge:
                     ActionButton(title: "function", fontColor: action.color)
+                case .buy:
+                    buyButton
+                case .sell:
+                    sellButton
                 }
             }
         }
@@ -50,7 +59,7 @@ struct ChainDetailActionButtons: View {
             }
         }
     }
-    
+
     var memoButton: some View {
         Button {
             if let selected = viewModel.selection.first(where: { $0.chain == group.chain }),
@@ -76,6 +85,7 @@ struct ChainDetailActionButtons: View {
         }
     }
     
+    
     var swapButton: some View {
         Button {
             isSwapLinkActive = true
@@ -98,6 +108,7 @@ struct ChainDetailActionButtons: View {
 
 #Preview {
     ChainDetailActionButtons(
+        isChainDetail:false,
         group: GroupedChain.example,
         sendTx: SendTransaction(),
         isLoading: .constant(false),
