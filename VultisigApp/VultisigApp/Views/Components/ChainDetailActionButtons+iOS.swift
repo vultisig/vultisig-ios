@@ -18,7 +18,8 @@ extension ChainDetailActionButtons{
             params.setWalletAddresses(value: helper.getWalletAddresses(vault: vault))
         }
         
-        if isChainDetail,let currency =  helper.getCurrencyFromChain(chain: group.chain) {
+        if isChainDetail,let currency =  helper.getCurrencyFromChain(chain: group.chain,
+                                                                     contractAddress: group.coins[0].contractAddress) {
             params.setCurrencyCode(value: currency)
         }
         let config = MoonPaySdkBuyConfig(
@@ -33,7 +34,7 @@ extension ChainDetailActionButtons{
     }
     
     func processDepositRequest(_ request: OnInitiateDepositRequestPayload){
-        
+        // TODO: Construct KeysignPayload, and bring up PeerDiscoveryView for keysign
     }
     
     func showMoonpaySell(){
@@ -43,7 +44,7 @@ extension ChainDetailActionButtons{
         if let vault = ApplicationState.shared.currentVault {
             params.setRefundWalletAddresses(value: helper.getWalletAddresses(vault: vault))
         }
-        if isChainDetail,let currency =  helper.getCurrencyFromChain(chain: group.chain) {
+        if isChainDetail,let currency =  helper.getCurrencyFromChain(chain: group.chain,contractAddress: group.coins[0].contractAddress) {
             params.setBaseCurrencyCode(value: currency)
         }
         let handlers = MoonPayHandlers(
@@ -53,11 +54,11 @@ extension ChainDetailActionButtons{
             onKmsWalletCreated: nil,
             onLogin: nil,
             onInitiateDeposit: { payload in
-                print("deposit payload: \(payload)")
-                print("deposit address: \(payload.depositWalletAddress)")
-                print("deposit amount: \(payload.cryptoCurrencyAmount)")
-                print("deposit amount crypto: \(payload.cryptoCurrencyAmountSmallestDenomination)")
-                print("deposit crypto currency name: \(payload.cryptoCurrency.name)")
+//                print("deposit payload: \(payload)")
+//                print("deposit address: \(payload.depositWalletAddress)")
+//                print("deposit amount: \(payload.cryptoCurrencyAmount)")
+//                print("deposit amount crypto: \(payload.cryptoCurrencyAmountSmallestDenomination)")
+//                print("deposit crypto currency name: \(payload.cryptoCurrency.name)")
                 // present a view to send tx
                 let response = OnInitiateDepositResponsePayload(depositId: "yourDepositId")
                 return response
