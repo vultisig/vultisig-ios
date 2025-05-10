@@ -37,7 +37,7 @@ struct TransactionsView: View {
         VStack{
             Spacer()
             ErrorMessage(text: "cannotFindTransactions")
-            if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chainTicker:coin.chain.ticker,address:coin.address) {
+            if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chain:coin.chain,address:coin.address) {
                 if let url = URL(string: explorerUrl) {
                     Link("checkExplorer",destination: url)
                         .font(.body16MenloBold)
