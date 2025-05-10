@@ -191,7 +191,7 @@ private extension CryptoPriceService {
     
     private func coinGeckoPlatform(chain: Chain) -> String {
         switch chain {
-        case .ethereum:
+        case .ethereum,.ethereumSepolia:
             return "ethereum"
         case .avalanche:
             return "avalanche"

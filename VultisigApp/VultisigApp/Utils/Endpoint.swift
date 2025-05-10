@@ -131,6 +131,8 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://api.vultisig.com/eth/"
     
+    static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
+    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
@@ -542,6 +544,8 @@ class Endpoint {
             return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .dydx:

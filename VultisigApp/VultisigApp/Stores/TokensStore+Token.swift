@@ -35,6 +35,9 @@ extension TokensStore {
         static var dogecoin: CoinMeta {
             CoinMeta(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", decimals: 8, priceProviderId: "dogecoin", contractAddress: "", isNativeToken: true)
         }
+        static var ethSepolia: CoinMeta {
+            CoinMeta(chain: Chain.ethereumSepolia, ticker: "ETH", logo: "eth", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        }
     }
 
     enum TokenSelectionAssetError: Error {
