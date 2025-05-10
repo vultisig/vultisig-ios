@@ -11,7 +11,7 @@ struct ChainDetailView: View {
             .sorted()
     }
 
-    @State var actions: [CoinAction] = []
+//    @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
@@ -39,7 +39,8 @@ struct ChainDetailView: View {
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: group.nativeCoin
                 )
             }
             .navigationDestination(isPresented: $isSwapLinkActive) {

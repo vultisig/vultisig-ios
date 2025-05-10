@@ -67,7 +67,8 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
