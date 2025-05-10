@@ -188,7 +188,7 @@ struct SendCryptoDoneView: View {
     }
 
     func explorerLink(hash: String) -> String {
-        return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
+        return Endpoint.getExplorerURL(chain: chain, txid: hash)
     }
     
     private func shareLink(hash: String) {

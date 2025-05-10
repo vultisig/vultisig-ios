@@ -399,141 +399,138 @@ class Endpoint {
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     
-    static func getExplorerURL(chainTicker: String, txid: String) -> String {
-        switch chainTicker {
-        case "BTC":
+    static func getExplorerURL(chain: Chain, txid: String) -> String {
+        switch chain {
+        case .bitcoin:
             return "https://mempool.space/tx/\(txid)"
-        case "BCH":
+        case .bitcoinCash:
             return "https://blockchair.com/bitcoin-cash/transaction/\(txid)"
-        case "LTC":
+        case .litecoin:
             return "https://blockchair.com/litecoin/transaction/\(txid)"
-        case "DOGE":
+        case .dogecoin:
             return "https://blockchair.com/dogecoin/transaction/\(txid)"
-        case "DASH":
+        case .dash:
             return "https://blockchair.com/dash/transaction/\(txid)"
-        case "RUNE":
+        case .thorChain:
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
-        case "SOL":
+        case .solana:
             return "https://solscan.io/tx/\(txid)"
-        case "ETH":
+        case .ethereum:
             return "https://etherscan.io/tx/\(txid)"
-        case "UATOM":
+        case .gaiaChain:
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
-        case "ADYDX":
+        case .dydx:
             return "https://www.mintscan.io/dydx/tx/\(txid)"
-        case "UKUJI":
+        case .kujira:
             return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
-        case "AVAX":
+        case .avalanche:
             return "https://snowtrace.io/tx/\(txid)"
-        case "BNB":
+        case .bscChain:
             return "https://bscscan.com/tx/\(txid)"
-        case "CACAO":
+        case .mayaChain:
             return "https://www.mayascan.org/tx/\(txid)"
-        case "ARB":
+        case .arbitrum:
             return "https://arbiscan.io/tx/\(txid)"
-        case "BASE":
+        case .base:
             return "https://basescan.org/tx/\(txid)"
-        case "OP":
+        case .optimism:
             return "https://optimistic.etherscan.io/tx/\(txid)"
-        case "MATIC":
+        case .polygon,.polygonV2:
             return "https://polygonscan.com/tx/\(txid)"
-        case "BLAST":
+        case .blast:
             return "https://blastscan.io/tx/\(txid)"
-        case "CRO":
+        case .cronosChain:
             return "https://cronoscan.com/tx/\(txid)"
-        case "SUI":
+        case .sui:
             return "https://suiscan.xyz/mainnet/tx/\(txid)"
-        case "DOT":
+        case .polkadot:
             return "https://polkadot.subscan.io/extrinsic/\(txid)"
-        case "ZK":
+        case .zksync:
             return "https://explorer.zksync.io/tx/\(txid)"
-        case "TON":
+        case .ton:
             return "https://tonviewer.com/transaction/\(txid)"
-        case "UOSMO":
+        case .osmosis:
             return "https://www.mintscan.io/osmosis/tx/\(txid)"
-        case "ULUNA":
+        case .terra:
             return "https://www.mintscan.io/terra/tx/\(txid)"
-        case "ULUNC":
+        case .terraClassic:
             return "https://finder.terra.money/classic/tx/\(txid)"
-        case "USDC":
+        case .noble:
             return "https://www.mintscan.io/noble/tx/\(txid)"
-        case "XRP":
+        case .ripple:
             return "https://xrpscan.com/tx/\(txid)"
-        case "UAKT":
+        case .akash:
             return "https://www.mintscan.io/akash/tx/\(txid)"
-        case "TRX":
+        case .tron:
             return "https://tronscan.org/#/transaction/\(txid)"
-        default:
-            return ""
         }
     }
     
-    static func getExplorerByAddressURL(chainTicker:String, address:String) -> String? {
-        switch chainTicker {
-        case "BTC":
+    static func getExplorerByAddressURL(chain: Chain, address:String) -> String? {
+        switch chain {
+        case .bitcoin:
             return "https://mempool.space/address/\(address)"
-        case "BCH":
+        case .bitcoinCash:
             return "https://blockchair.com/bitcoin-cash/address/\(address)"
-        case "LTC":
+        case .litecoin:
             return "https://blockchair.com/litecoin/address/\(address)"
-        case "DOGE":
+        case .dogecoin:
             return "https://blockchair.com/dogecoin/address/\(address)"
-        case "DASH":
+        case .dash:
             return "https://blockchair.com/dash/address/\(address)"
-        case "RUNE":
+        case .thorChain:
             return "https://runescan.io/address/\(address)"
-        case "SOL":
+        case .solana:
             return "https://solscan.io/account/\(address)"
-        case "ETH":
+        case .ethereum:
             return "https://etherscan.io/address/\(address)"
-        case "UATOM":
+        case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
-        case "ADYDX":
+        case .dydx:
             return "https://www.mintscan.io/dydx/address/\(address)"
-        case "UKUJI":
+        case .kujira:
             return "https://finder.kujira.network/kaiyo-1/address/\(address)"
-        case "AVAX":
+        case .avalanche:
             return "https://snowtrace.io/address/\(address)"
-        case "BNB":
+        case .bscChain:
             return "https://bscscan.com/address/\(address)"
-        case "CACAO":
+        case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
-        case "ARB":
+        case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
-        case "BASE":
+        case .base:
             return "https://basescan.org/address/\(address)"
-        case "OP":
+        case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case "MATIC":
+        case .polygon,.polygonV2:
             return "https://polygonscan.com/address/\(address)"
-        case "BLAST":
+        case .blast:
             return "https://blastscan.io/address/\(address)"
-        case "CRO":
+        case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
-        case "SUI":
+        case .sui:
             return "https://suiscan.xyz/mainnet/address/\(address)"
-        case "DOT":
+        case .polkadot:
             return "https://polkadot.subscan.io/account/\(address)"
-        case "ZK":
+        case .zksync:
             return "https://explorer.zksync.io/address/\(address)"
-        case "TON":
+        case .ton:
             return "https://tonviewer.com/\(address)"
-        case "UOSMO":
+        case .osmosis:
             return "https://www.mintscan.io/osmosis/address/\(address)"
-        case "ULUNA":
+        case .terra:
             return "https://www.mintscan.io/terra/address/\(address)"
-        case "ULUNC":
+        case .terraClassic:
             return "https://finder.terra.money/classic/address/\(address)"
-        case "USDC":
+        case .noble:
             return "https://www.mintscan.io/noble/address/\(address)"
-        case "XRP":
+        case .ripple:
             return "https://xrpscan.com/account/\(address)"
-        case "UAKT":
+        case .akash:
             return "https://www.mintscan.io/akash/address/\(address)"
-        case "TRX":
+        case .tron:
             return "https://tronscan.org/#/address/\(address)"
-        default:
-            return nil
+        
         }
     }
     
