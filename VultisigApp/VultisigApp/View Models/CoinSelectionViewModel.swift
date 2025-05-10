@@ -58,12 +58,12 @@ class CoinSelectionViewModel: ObservableObject {
             }
             return false
         })) { $0.chain.name }
-        #if os(iOS)
+        
         let enableMoonPaySell = UserDefaults.standard.bool(forKey: "moonpaySellEnabled")
-        if enableMoonPaySell {   
+        if enableMoonPaySell {
             groupedAssets[TokensStore.Token.ethSepolia.chain.name] = [TokensStore.Token.ethSepolia]
         }
-        #endif
+        
     }
 
     func isSelected(asset: CoinMeta) -> Bool {

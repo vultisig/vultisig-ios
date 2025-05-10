@@ -34,8 +34,7 @@ class EVMHelper {
         gasPrice: BigUInt? = nil,
         incrementNonce: Bool = false) throws -> Data
     {
-
-        guard let intChainID = Int(coinType.chainId) else {
+        guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
 
@@ -67,10 +66,14 @@ class EVMHelper {
 
         return try input.serializedData()
     }
-    
+    func getChainId(chain: Chain) -> String {
+        if chain == Chain.ethereumSepolia {
+            return "11155111"
+        }
+        return self.coinType.chainId
+    }
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        let coin = self.coinType
-        guard let intChainID = Int(coin.chainId) else {
+        guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,
