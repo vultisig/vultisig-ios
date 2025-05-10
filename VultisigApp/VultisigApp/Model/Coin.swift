@@ -103,7 +103,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia:
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
             return .UTXO
@@ -139,7 +139,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain:
+        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain,.ethereumSepolia:
             if self.isNativeToken {
                 return "23000"
             } else {

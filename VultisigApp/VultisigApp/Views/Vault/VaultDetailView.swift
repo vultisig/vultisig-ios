@@ -228,6 +228,7 @@ struct VaultDetailView: View {
         let selectedGroup = viewModel.selectedGroup
         
         return ChainDetailActionButtons(
+            isChainDetail:false,
             group: selectedGroup ?? GroupedChain.example,
             sendTx: sendTx,
             isLoading: $isLoading,

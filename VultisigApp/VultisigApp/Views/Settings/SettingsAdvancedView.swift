@@ -32,9 +32,15 @@ struct SettingsAdvancedView: View {
             )
             
             SettingToggleCell(
-                title: "MoonPay",
+                title: "MoonPay Buy",
                 icon: "creditcard",
-                isEnabled: $settingsViewModel.moonpayEnabled
+                isEnabled: $settingsViewModel.moonpayBuyEnabled
+            )
+            
+            SettingToggleCell(
+                title: "MoonPay Sell",
+                icon: "creditcard",
+                isEnabled: $settingsViewModel.moonpaySellEnabled
             )
         }
     }
