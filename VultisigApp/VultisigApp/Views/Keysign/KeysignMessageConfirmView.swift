@@ -34,10 +34,16 @@ struct KeysignMessageConfirmView: View {
     var summary: some View {
         ScrollView {
             VStack(spacing: 16) {
-                fromField
-                Separator()
-                toField
-                Separator()
+                
+                if let from = viewModel.keysignPayload?.coin.address, !from.isEmpty {
+                    fromField
+                    Separator()
+                }
+
+                if let to = viewModel.keysignPayload?.toAddress, !to.isEmpty {
+                    toField
+                    Separator()
+                }
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                     getSummaryCell(title: "memo", value: memo)
@@ -49,10 +55,16 @@ struct KeysignMessageConfirmView: View {
                     Separator()
                 }
                 
-                amountField
-                Separator()
-                valueField
-                Separator()
+                if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
+                    amountField
+                    Separator()
+                }
+
+                if let fiat = viewModel.keysignPayload?.toAmountFiatString, !fiat.isEmpty {
+                    valueField
+                    Separator()
+                }
+                
                 networkFeeField
             }
             .padding(16)
@@ -78,15 +90,15 @@ struct KeysignMessageConfirmView: View {
     var networkFeeField: some View {
         getSummaryCell(title: "networkFee", value: viewModel.getCalculatedNetworkFee())
     }
-
+    
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-
+    
     func functionField(decodedMemo: String) -> some View {
         getSummaryCell(title: "function", value: decodedMemo)
     }
-
+    
     var button: some View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()

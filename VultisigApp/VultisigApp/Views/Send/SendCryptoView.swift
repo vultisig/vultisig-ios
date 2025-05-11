@@ -11,6 +11,7 @@ import BigInt
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
+    let coin: Coin?
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -41,11 +42,12 @@ struct SendCryptoView: View {
         .onAppear {
             Task {
                 await setData()
+                await loadGasInfo()
             }
         }
         .onChange(of: tx.coin) {
             Task {
-                await setData()
+                await loadGasInfo()
             }
         }
         .onDisappear(){
@@ -187,16 +189,22 @@ struct SendCryptoView: View {
     
     private func setData() async {
         guard !sendCryptoViewModel.isLoading else { return }
+        
+        if let coin = coin {
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+        }
+        
         presetData()
         
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask {
-                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-            }
-            group.addTask {
-                await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
-            }
-        }
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+    }
+    
+    private func loadGasInfo() async {
+        guard !sendCryptoViewModel.isLoading else { return }
+        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
     }
     
     private func presetData() {
@@ -210,10 +218,17 @@ struct SendCryptoView: View {
             return
         }
         
-        tx.coin = selectedCoin
-        tx.fromAddress = selectedCoin.address
-        tx.toAddress = deeplinkViewModel.address ?? ""
-        selectedChain = nil
+        if let coin = coin {
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+        } else {
+            tx.coin = selectedCoin
+            tx.fromAddress = selectedCoin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+        }
         
         DebounceHelper.shared.debounce {
             validateAddress(deeplinkViewModel.address ?? "")
@@ -256,7 +271,8 @@ extension SendCryptoView: SendGasSettingsOutput {
 #Preview {
     SendCryptoView(
         tx: SendTransaction(),
-        vault: Vault.example
+        vault: Vault.example,
+        coin: .example
     )
     .environmentObject(DeeplinkViewModel())
 }

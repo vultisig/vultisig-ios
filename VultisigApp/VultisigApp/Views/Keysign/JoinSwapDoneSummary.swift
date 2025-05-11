@@ -168,22 +168,26 @@ struct JoinSwapDoneSummary: View {
                 valueMaxWidth: 120,
                 showCopyButton: true
             )
-            
-            separator
-            getCell(
-                title: "from",
-                value: vault.name,
-                bracketValue: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address,
-                bracketMaxWidth: 120
-            )
-            
-            separator
-            getCell(
-                title: "to",
-                value: summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address,
-                valueMaxWidth: 120
-            )
-            
+
+            if let fromAddress = summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address, !fromAddress.isEmpty {
+                separator
+                getCell(
+                    title: "from",
+                    value: vault.name,
+                    bracketValue: fromAddress,
+                    bracketMaxWidth: 120
+                )
+            }
+
+            if let toAddress = summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address, !toAddress.isEmpty {
+                separator
+                getCell(
+                    title: "to",
+                    value: toAddress,
+                    valueMaxWidth: 120
+                )
+            }
+
             separator
             getCell(
                 title: "networkFee",

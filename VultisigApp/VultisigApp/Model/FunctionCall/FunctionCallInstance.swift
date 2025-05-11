@@ -19,6 +19,8 @@ enum FunctionCallInstance {
     case custom(FunctionCallCustom)
     case vote(FunctionCallVote)
     case stake(FunctionCallStake)
+    case stakeTcy(FunctionCallStakeTCY)
+    case unstakeTcy(FunctionCallUnstakeTCY)
     case unstake(FunctionCallUnstake)
     case addPool(FunctionCallAddLiquidityMaya)
     case removePool(FunctionCallRemoveLiquidityMaya)
@@ -43,6 +45,10 @@ enum FunctionCallInstance {
         case .vote(let memo):
             return memo.getView()
         case .stake(let memo):
+            return memo.getView()
+        case .stakeTcy(let memo):
+            return memo.getView()
+        case .unstakeTcy(let memo):
             return memo.getView()
         case .unstake(let memo):
             return memo.getView()
@@ -77,6 +83,10 @@ enum FunctionCallInstance {
             return memo.description
         case .stake(let memo):
             return memo.description
+        case .stakeTcy(let memo):
+            return memo.description
+        case .unstakeTcy(let memo):
+            return memo.description
         case .unstake(let memo):
             return memo.description
         case .addPool(let memo):
@@ -110,6 +120,12 @@ enum FunctionCallInstance {
             return .zero
         case .stake(let memo):
             return memo.amount
+        case .stakeTcy(let memo):
+            return memo.amount
+        case .stakeTcy(let memo):
+            return memo.amount
+        case .unstakeTcy(let memo):
+            return .zero // The amount goes in the memo
         case .unstake(let memo):
             return memo.amount  // You must send 1 TON to unstake with a "w" memo
         case .addPool(let memo):
@@ -160,6 +176,10 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .stake(let memo):
             return memo.toDictionary()
+        case .stakeTcy(let memo):
+            return memo.toDictionary()
+        case .unstakeTcy(let memo):
+            return memo.toDictionary()
         case .unstake(let memo):
             return memo.toDictionary()
         case .addPool(let memo):
@@ -203,6 +223,10 @@ enum FunctionCallInstance {
         case .vote(let memo):
             return memo.isTheFormValid
         case .stake(let memo):
+            return memo.isTheFormValid
+        case .stakeTcy(let memo):
+            return memo.isTheFormValid
+        case .unstakeTcy(let memo):
             return memo.isTheFormValid
         case .unstake(let memo):
             return memo.isTheFormValid

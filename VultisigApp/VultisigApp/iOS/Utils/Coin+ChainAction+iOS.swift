@@ -13,6 +13,10 @@ extension Array where Element == CoinAction {
 #if DEBUG
         return self
 #else
+        let allowSwap = UserDefaults.standard.bool(forKey: "allowSwap")
+        if allowSwap {
+            return self
+        }
         return filter { $0 != .swap }
 #endif
     }

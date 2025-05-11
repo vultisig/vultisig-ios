@@ -85,6 +85,20 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .vote(FunctionCallVote())
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
+                case .stakeTcy:
+                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, functionCallViewModel: functionCallViewModel))
+                case .unstakeTcy:
+                    
+                    DispatchQueue.main.async {
+                        ThorchainService.shared.fetchTcyStakedAmount(address: tx.coin.address) {
+                            stakedAmount in
+                            
+                            DispatchQueue.main.async {
+                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
+                            }
+                        }
+                    }
+                    
                 case .unstake:
                     fnCallInstance = .unstake(FunctionCallUnstake())
                 case .addPool:

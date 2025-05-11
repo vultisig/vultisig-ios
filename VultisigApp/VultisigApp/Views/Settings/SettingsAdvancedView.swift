@@ -24,6 +24,18 @@ struct SettingsAdvancedView: View {
                 icon: "timelapse",
                 isEnabled: $settingsViewModel.isDKLSEnabled
             )
+            
+            SettingToggleCell(
+                title: "Swap",
+                icon: "arrow.2.squarepath",
+                isEnabled: $settingsViewModel.allowSwap
+            )
+            
+            SettingToggleCell(
+                title: "MoonPay",
+                icon: "creditcard",
+                isEnabled: $settingsViewModel.moonpayEnabled
+            )
         }
     }
 }

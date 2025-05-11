@@ -85,7 +85,7 @@ class KeysignViewModel: ObservableObject {
     
     func getTransactionExplorerURL(txid: String) -> String {
         guard let keysignPayload else { return .empty }
-        return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
+        return Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
     }
     
     func getSwapProgressURL(txid: String) -> String? {
