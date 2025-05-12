@@ -14,8 +14,6 @@ import MoonPaySdk
 struct ChainDetailActionButtons: View {
     var isChainDetail: Bool
     @ObservedObject var group: GroupedChain
-    @ObservedObject var sendTx: SendTransaction
-    
     @Binding var isLoading: Bool
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
@@ -62,15 +60,6 @@ struct ChainDetailActionButtons: View {
 
     var memoButton: some View {
         Button {
-            if let selected = viewModel.selection.first(where: { $0.chain == group.chain }),
-               let selectedCoin = group.coins.first(where: { $0.ticker.lowercased() == selected.ticker.lowercased() }) {
-                sendTx.reset(coin: selectedCoin)
-            }
-            // Fallback to native token
-            else if let nativeCoin = group.coins.first(where: { $0.isNativeToken }) {
-                sendTx.reset(coin: nativeCoin)
-            }
-
             isMemoLinkActive = true
         } label: {
             ActionButton(title: "function", fontColor: .turquoise600)
@@ -97,12 +86,6 @@ struct ChainDetailActionButtons: View {
     
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
-        
-        guard let activeCoin = group.coins.first(where: { $0.isNativeToken }) else {
-            return
-        }
-        
-        sendTx.reset(coin: activeCoin)
     }
 }
 
@@ -110,7 +93,6 @@ struct ChainDetailActionButtons: View {
     ChainDetailActionButtons(
         isChainDetail:false,
         group: GroupedChain.example,
-        sendTx: SendTransaction(),
         isLoading: .constant(false),
         isSendLinkActive: .constant(false),
         isSwapLinkActive: .constant(false),
