@@ -54,11 +54,6 @@ extension ChainDetailActionButtons{
             onKmsWalletCreated: nil,
             onLogin: nil,
             onInitiateDeposit: { payload in
-//                print("deposit payload: \(payload)")
-//                print("deposit address: \(payload.depositWalletAddress)")
-//                print("deposit amount: \(payload.cryptoCurrencyAmount)")
-//                print("deposit amount crypto: \(payload.cryptoCurrencyAmountSmallestDenomination)")
-//                print("deposit crypto currency name: \(payload.cryptoCurrency.name)")
                 // present a view to send tx
                 let response = OnInitiateDepositResponsePayload(depositId: "yourDepositId")
                 return response

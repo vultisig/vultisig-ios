@@ -14,6 +14,7 @@ class MoonPayHelper {
     
     let walletAddressMap = [
         MoonPayToken(currencyCode: "eth", chain: .ethereum, contractAddress: ""),
+        MoonPayToken(currencyCode: "eth", chain: .ethereumSepolia, contractAddress: ""),
         MoonPayToken(currencyCode: "atom", chain: .gaiaChain, contractAddress: ""),
         MoonPayToken(currencyCode: "avax_cchain", chain: .avalanche, contractAddress: ""),
         MoonPayToken(currencyCode: "bch", chain: .bitcoinCash, contractAddress: ""),
