@@ -131,7 +131,7 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://api.vultisig.com/eth/"
     
-    static let ethSepoliaServiceRpcService = "https://api.vultisig.com/eth/"
+    static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
     
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
