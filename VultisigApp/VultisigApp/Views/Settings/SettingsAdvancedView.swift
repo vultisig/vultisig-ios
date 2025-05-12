@@ -32,6 +32,12 @@ struct SettingsAdvancedView: View {
             )
             
             SettingToggleCell(
+                title: "ETH Testnet(Sepolia)",
+                icon: "timelapse",
+                isEnabled: $settingsViewModel.enableSepolia
+            )
+            
+            SettingToggleCell(
                 title: "MoonPay Buy",
                 icon: "creditcard",
                 isEnabled: $settingsViewModel.moonpayBuyEnabled

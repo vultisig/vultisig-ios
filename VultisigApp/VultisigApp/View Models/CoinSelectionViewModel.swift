@@ -59,8 +59,8 @@ class CoinSelectionViewModel: ObservableObject {
             return false
         })) { $0.chain.name }
         
-        let enableMoonPaySell = UserDefaults.standard.bool(forKey: "moonpaySellEnabled")
-        if enableMoonPaySell {
+        let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
+        if enableETHSepolia {
             groupedAssets[TokensStore.Token.ethSepolia.chain.name] = [TokensStore.Token.ethSepolia]
         }
         
