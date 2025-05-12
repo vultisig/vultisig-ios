@@ -465,6 +465,8 @@ class Endpoint {
             return "https://www.mintscan.io/akash/tx/\(txid)"
         case .tron:
             return "https://tronscan.org/#/transaction/\(txid)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/tx/\(txid)"
         }
     }
     
@@ -486,6 +488,8 @@ class Endpoint {
             return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .dydx:
