@@ -147,7 +147,7 @@ extension PeerDiscoveryView {
     }
     
     var switchLink: some View {
-        SwitchToLocalLink(selectedNetwork: $viewModel.selectedNetwork)
+        SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
     }
 
     var isShareButtonVisible: Bool {

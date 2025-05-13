@@ -109,8 +109,8 @@ extension KeysignDiscoveryView {
     }
     
     var switchLink: some View {
-        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
-            .padding(.bottom, 8)
+        SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
+            .padding(.bottom, 24)
     }
     
     func getMinSize() -> CGFloat {
