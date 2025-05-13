@@ -606,3 +606,5 @@
 "close" = "Cerrar";
 "vaultTypeDoesnotMatch" = " El tipo de bóveda no coincide";
 "failedToLoadFileData" = "Error al cargar los datos del archivo";
+"wantToCreateVaultPrivately" = "¿Quieres crear la bóveda en privado?";
+"wantToSignPrivately" = "¿Quieres firmar en privado?";

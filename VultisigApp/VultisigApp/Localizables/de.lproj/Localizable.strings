@@ -623,3 +623,5 @@
 "close" = "Schließen";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "failedToLoadFileData" = "Fehler beim Laden der Dateidaten"; 
+"wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
+"wantToSignPrivately" = "Möchtest du privat signieren?";

@@ -607,3 +607,5 @@
 "close" = "Fechar";
 "vaultTypeDoesnotMatch" = "O tipo de cofre não corresponde";
 "failedToLoadFileData" = "Falha ao carregar dados do arquivo";
+"wantToCreateVaultPrivately" = "Deseja criar o cofre de forma privada?";
+"wantToSignPrivately" = "Deseja assinar de forma privada?";
