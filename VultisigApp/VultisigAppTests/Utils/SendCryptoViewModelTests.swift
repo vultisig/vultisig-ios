@@ -66,6 +66,54 @@ class SendCryptoViewModelTests: XCTestCase {
         XCTAssertFalse(sut.isLoading, "isLoading should be false after operation")
     }
     
+    func testSetMaxValues_Bitcoin_50Percent() async throws {
+            guard let currentVault = ApplicationState.shared.currentVault else {
+                XCTFail("Current vault is nil. Please ensure a vault is loaded.")
+                return
+            }
+            
+            guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
+                XCTFail("No native BTC coin found in the current vault.")
+                return
+            }
+            
+            let expectation = XCTestExpectation(description: "SetMaxValues for Bitcoin 50% completes using live service with vault coin")
+            
+            let btcToAddress = coin.address
+            let tx = await createTx(coin: coin, toAddress: btcToAddress)
+            
+            guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
+                XCTFail("Could not convert initial coin.rawBalance to BigInt: \(coin.rawBalance)")
+                return
+            }
+
+            guard initialRawBalanceBigInt > 0 else {
+                print("Skipping 50% test as initial raw balance for BTC is zero or invalid.")
+                expectation.fulfill()
+                await fulfillment(of: [expectation], timeout: 1.0)
+                return
+            }
+            
+            sut.setMaxValues(tx: tx, percentage: 50)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
+                XCTAssertFalse(tx.sendMaxAmount)
+                
+                print("Teste BTC 50% (Moeda do Vault) - Valor tx.amount: \(tx.amount), Valor tx.amountInRaw: \(tx.amountInRaw.description), Saldo coin.rawBalance Inicial: \(coin.rawBalance)")
+                
+                if tx.amount.isEmpty {
+                    XCTFail("tx.amount está vazio para 50%.")
+                } else {
+                    let expectedAmountInRaw = initialRawBalanceBigInt / 2
+                    XCTAssertEqual(tx.amountInRaw, expectedAmountInRaw, "The amount in raw for 50% BTC should be approximately half of the coin's initial raw balance. tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw)")
+                }
+                expectation.fulfill()
+            }
+            
+            await fulfillment(of: [expectation], timeout: 15.0)
+            XCTAssertFalse(sut.isLoading)
+        }
+    
 }
 
 
