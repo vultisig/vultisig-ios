@@ -18,7 +18,7 @@ extension SettingsCustomMessageView {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: viewModel.state.title)
+        GeneralMacHeader(title: viewModel.state.title, showActions: viewModel.state != .initial)
     }
 }
 #endif

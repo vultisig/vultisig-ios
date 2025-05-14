@@ -25,13 +25,6 @@ struct SettingsCustomMessageView: View {
             Background()
             main
         }
-        .toolbar {
-            if viewModel.state != .initial {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-            }
-        }
     }
 
     var view: some View {
@@ -42,8 +35,7 @@ struct SettingsCustomMessageView: View {
             tabView
         }
     }
-
-    @ViewBuilder
+    
     var tabView: some View {
         ZStack {
             switch viewModel.state {
@@ -65,6 +57,7 @@ struct SettingsCustomMessageView: View {
                 title(text: "Message")
                 textField(title: "Message to sign", text: $message)
             }
+            .padding()
             .padding(.horizontal, 16)
         }
         .safeAreaInset(edge: .bottom) {
@@ -137,6 +130,8 @@ struct SettingsCustomMessageView: View {
         .padding(.bottom, 12)
         .disabled(!buttonEnabled)
         .opacity(buttonEnabled ? 1 : 0.5)
+        .padding(.horizontal)
+        .padding(.bottom)
     }
 
     var backButton: some View {
