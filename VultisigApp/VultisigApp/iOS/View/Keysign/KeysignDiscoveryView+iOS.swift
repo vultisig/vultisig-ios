@@ -103,7 +103,7 @@ extension KeysignDiscoveryView {
     }
     
     var switchLink: some View {
-        SwitchToLocalLink(selectedNetwork: $selectedNetwork)
+        SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
     }
 }
 #endif

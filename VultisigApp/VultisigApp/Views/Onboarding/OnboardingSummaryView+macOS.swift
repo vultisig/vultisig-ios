@@ -9,7 +9,6 @@
 import SwiftUI
 
 extension OnboardingSummaryView {
-
     var animation: some View {
         ZStack {
             if kind == .secure {
@@ -18,7 +17,7 @@ extension OnboardingSummaryView {
                 animationVM?.view()
             }
         }
-        .frame(width: 500, height: 400)
+        .frame(width: 450, height: 350)
     }
 }
 

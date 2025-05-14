@@ -103,6 +103,8 @@ struct OnboardingSummaryView: View {
     }
     
     private func setData() {
-        animationVM = RiveViewModel(fileName: kind.animation)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            animationVM = RiveViewModel(fileName: kind.animation)
+        }
     }
 }

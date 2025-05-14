@@ -25,7 +25,7 @@ class SettingsCustomMessageViewModel: ObservableObject, TransferViewModel {
             case .keysign:
                 return "keysign"
             case .done:
-                return "done"
+                return "overview"
             }
         }
     }

@@ -23,7 +23,9 @@ class SettingsViewModel: ObservableObject {
     
     @AppStorage("isDKLSEnabled") var isDKLSEnabled: Bool = false
     @AppStorage("allowSwap") var allowSwap: Bool = false
-    @AppStorage("moonpay") var moonpayEnabled: Bool = false
+    @AppStorage("moonpayBuyEnabled") var moonpayBuyEnabled: Bool = false
+    @AppStorage("sepolia") var enableSepolia: Bool = false
+    @AppStorage("moonpaySellEnabled") var moonpaySellEnabled: Bool = false
     
     init() {
         self.selectedCurrency = SettingsCurrency.current

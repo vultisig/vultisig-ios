@@ -90,14 +90,30 @@ extension String {
     }
     
     func parseInput(locale: Locale = Locale.current) -> Decimal? {
-        let formatter = NumberFormatter()
-        formatter.locale = locale
-        formatter.numberStyle = .decimal
+        let usLocale = Locale(identifier: "en_US")
         
-        if let number = formatter.number(from: self) {
+        // Attempt 1: Try parsing with "en_US" locale
+        let formatterUS = NumberFormatter()
+        formatterUS.locale = usLocale
+        formatterUS.numberStyle = .decimal
+        
+        if let number = formatterUS.number(from: self) {
             return number.decimalValue
         }
         
+        // Attempt 2: Try parsing with the user's current (or provided default) locale
+        // This is only attempted if the US locale parsing failed and the defaultLocale is different from usLocale
+        if locale.identifier != usLocale.identifier {
+            let formatterCurrent = NumberFormatter()
+            formatterCurrent.locale = locale
+            formatterCurrent.numberStyle = .decimal
+            
+            if let number = formatterCurrent.number(from: self) {
+                return number.decimalValue
+            }
+        }
+        
+        // If both attempts fail
         return nil
     }
 }

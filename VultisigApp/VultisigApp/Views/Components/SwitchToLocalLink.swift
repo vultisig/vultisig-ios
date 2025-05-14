@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SwitchToLocalLink: View {
+    let isForKeygen: Bool
     @Binding var selectedNetwork: NetworkPromptType
     
     var body: some View {
@@ -32,7 +33,11 @@ struct SwitchToLocalLink: View {
     
     var switchToLocalLabel: some View {
         HStack {
-            Text(NSLocalizedString("privatePairingMode", comment: ""))
+            if isForKeygen {
+                Text(NSLocalizedString("wantToCreateVaultPrivately", comment: ""))
+            } else {
+                Text(NSLocalizedString("wantToSignPrivately", comment: ""))
+            }
             
             Text(NSLocalizedString("switchToLocalMode", comment: ""))
             .underline()
@@ -57,5 +62,5 @@ struct SwitchToLocalLink: View {
 }
 
 #Preview {
-    SwitchToLocalLink(selectedNetwork: .constant(.Internet))
+    SwitchToLocalLink(isForKeygen: true, selectedNetwork: .constant(.Internet))
 }

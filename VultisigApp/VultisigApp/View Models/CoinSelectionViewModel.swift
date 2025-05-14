@@ -58,6 +58,12 @@ class CoinSelectionViewModel: ObservableObject {
             }
             return false
         })) { $0.chain.name }
+        
+        let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
+        if enableETHSepolia {
+            groupedAssets[TokensStore.Token.ethSepolia.chain.name] = [TokensStore.Token.ethSepolia]
+        }
+        
     }
 
     func isSelected(asset: CoinMeta) -> Bool {
