@@ -1547,7 +1547,7 @@ class TokensStore {
             ticker: "TCY",
             logo: "tcy",
             decimals: 8,
-            priceProviderId: "tcy",
+            priceProviderId: "",
             contractAddress: "tcy",
             isNativeToken: false
         ),
