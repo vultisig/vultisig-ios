@@ -53,7 +53,7 @@ struct SwapCryptoDoneView: View {
             trackButton
             doneButton
         }
-        .padding(.top)
+        .padding(.vertical)
         .padding(.horizontal, 18)
         .background(Color.backgroundBlue)
     }
