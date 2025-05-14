@@ -26,23 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                Background()
-                
-                SwapCryptoDoneView(
-                    tx: SwapTransaction(),
-                    vault:Vault.example,
-                    hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-                    approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-                    progressLink: nil,
-                    sendSummaryViewModel: SendSummaryViewModel(),
-                    swapSummaryViewModel: SwapCryptoViewModel(),
-                    showAlert: .constant(false),
-                    alertTitle: .constant(""),
-                    navigateToHome: .constant(false)
-                )
-                .environmentObject(SettingsViewModel())
-            }
+            content
         }
         .modelContainer(sharedModelContainer)
         
