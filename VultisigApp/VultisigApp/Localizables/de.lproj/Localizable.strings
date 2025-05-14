@@ -625,3 +625,4 @@
 "failedToLoadFileData" = "Fehler beim Laden der Dateidaten"; 
 "wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
 "wantToSignPrivately" = "Möchtest du privat signieren?";
+"overview" = "Übersicht";

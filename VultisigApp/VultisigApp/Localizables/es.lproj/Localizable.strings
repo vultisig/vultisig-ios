@@ -608,3 +608,4 @@
 "failedToLoadFileData" = "Error al cargar los datos del archivo";
 "wantToCreateVaultPrivately" = "¿Quieres crear la bóveda en privado?";
 "wantToSignPrivately" = "¿Quieres firmar en privado?";
+"overview" = "Resumen";
