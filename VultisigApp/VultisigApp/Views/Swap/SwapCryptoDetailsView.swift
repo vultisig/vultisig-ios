@@ -203,6 +203,7 @@ struct SwapCryptoDetailsView: View {
 
 extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
+        swapViewModel.showAllPercentageButtons = false
         switch percentage {
         case 25:
             tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 4)
