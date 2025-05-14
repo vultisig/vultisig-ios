@@ -28,6 +28,11 @@ struct KeysignMessageFactory {
             switch swapPayload {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
+                
+                if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) ||
+                    (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
+                    break // should use the regular thorchain message for deposit
+                }
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):

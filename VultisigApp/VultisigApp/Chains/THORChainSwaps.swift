@@ -27,6 +27,12 @@ class THORChainSwaps {
     }
     
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
+        
+        if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) ||
+            (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
+            return try THORChainHelper.getPreSignedInputData(keysignPayload: keysignPayload)
+        }
+        
         let input = THORChainSwapSwapInput.with {
             $0.fromAsset = swapPayload.fromAsset
             $0.fromAddress = swapPayload.fromAddress
