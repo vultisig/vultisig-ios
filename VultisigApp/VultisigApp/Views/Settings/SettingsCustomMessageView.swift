@@ -51,14 +51,8 @@ struct SettingsCustomMessageView: View {
 
     var customMessage: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                title(text: "Method").padding(.top, 16.0)
-                textField(title: "Signing method", text: $method)
-                title(text: "Message")
-                textField(title: "Message to sign", text: $message)
-            }
-            .padding()
-            .padding(.horizontal, 16)
+            customMessageContent
+                .padding(.horizontal, 16)
         }
         .safeAreaInset(edge: .bottom) {
             if viewModel.state == .initial {
@@ -120,7 +114,7 @@ struct SettingsCustomMessageView: View {
         )
     }
 
-    var button: some View {
+    var buttonLabel: some View {
         return Button {
             viewModel.moveToNextView()
         } label: {
@@ -130,8 +124,6 @@ struct SettingsCustomMessageView: View {
         .padding(.bottom, 12)
         .disabled(!buttonEnabled)
         .opacity(buttonEnabled ? 1 : 0.5)
-        .padding(.horizontal)
-        .padding(.bottom)
     }
 
     var backButton: some View {
