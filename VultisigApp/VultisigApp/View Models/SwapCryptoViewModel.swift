@@ -39,7 +39,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var showToChainSelector = false
     @Published var showFromCoinSelector = false
     @Published var showToCoinSelector = false
-
+    @Published var showAllPercentageButtons = true
+    
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }

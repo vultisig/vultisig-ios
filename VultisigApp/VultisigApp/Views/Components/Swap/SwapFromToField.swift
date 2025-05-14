@@ -111,6 +111,7 @@ struct SwapFromToField: View {
         SwapCryptoAmountTextField(amount: $amount) { _ in
             if title=="from" {
                 swapViewModel.updateFromAmount(tx: tx, vault: vault)
+                swapViewModel.showAllPercentageButtons = true
             }
         }
         .disabled(title=="to")
