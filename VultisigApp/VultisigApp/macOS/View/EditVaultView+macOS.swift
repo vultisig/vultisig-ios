@@ -45,7 +45,8 @@ extension EditVaultView {
                 customMessage
                 deleteVault
             }
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
         }
     }
 }
