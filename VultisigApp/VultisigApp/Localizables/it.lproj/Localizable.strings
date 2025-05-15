@@ -608,3 +608,4 @@
 "failedToLoadFileData" = "Impossibile caricare i dati del file";
 "wantToCreateVaultPrivately" = "Vuoi creare il vault in privato?";
 "wantToSignPrivately" = "Vuoi firmare in privato?";
+"overview" = "Panoramica";

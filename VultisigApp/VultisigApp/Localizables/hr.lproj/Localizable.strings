@@ -608,3 +608,4 @@
 "failedToLoadFileData" = "Greška pri učitavanju podataka datoteke";
 "wantToCreateVaultPrivately" = "Želite li stvoriti trezor privatno?";
 "wantToSignPrivately" = "Želite li potpisivati privatno?";
+"overview" = "Pregled";
