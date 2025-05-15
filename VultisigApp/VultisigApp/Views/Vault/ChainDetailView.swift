@@ -35,6 +35,7 @@ struct ChainDetailView: View {
     
     var body: some View {
         content
+            .sensoryFeedback(showAlert ? .stop : .impact, trigger: showAlert)
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendCryptoView(
                     tx: sendTx,

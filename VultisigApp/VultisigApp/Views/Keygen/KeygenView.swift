@@ -33,6 +33,8 @@ struct KeygenView: View {
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
+    @State var showDoneText = false
+    @State var showError = false
     @State var showVerificationView = false
     @State var vaultCreatedAnimationVM: RiveViewModel? = nil
     @State var checkmarkAnimationVM: RiveViewModel? = nil
@@ -43,6 +45,9 @@ struct KeygenView: View {
     
     var body: some View {
         content
+            .sensoryFeedback(.success, trigger: showDoneText)
+            .sensoryFeedback(.error, trigger: showError)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
@@ -174,6 +179,9 @@ struct KeygenView: View {
             migrateRetryButton
         }
         .padding(32)
+        .onAppear {
+            showError = true
+        }
     }
     
     var migrateRetryButton: some View {
@@ -221,6 +229,7 @@ struct KeygenView: View {
             }
         }
         .onAppear {
+            showError = true
             hideBackButton = false
             showProgressRing = false
         }
@@ -299,6 +308,7 @@ struct KeygenView: View {
     }
     
     private func setDoneData() {
+        showDoneText = true
         checkVaultType()
         
         if tssType == .Reshare {
