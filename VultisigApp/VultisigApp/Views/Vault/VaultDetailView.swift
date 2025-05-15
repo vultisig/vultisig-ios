@@ -49,6 +49,7 @@ struct VaultDetailView: View {
             popup
             shadowView
         }
+        .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
             onAppear()
