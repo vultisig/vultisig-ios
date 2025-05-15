@@ -20,6 +20,7 @@ struct SetupQRCodeView: View {
     
     var body: some View {
         content
+            .sensoryFeedback(.selection, trigger: selectedTab)
     }
     
     var view: some View {

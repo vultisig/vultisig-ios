@@ -47,7 +47,7 @@ struct KeygenView: View {
         content
             .sensoryFeedback(.success, trigger: showDoneText)
             .sensoryFeedback(.error, trigger: showError)
-            .sensoryFeedback(.impact, trigger: viewModel.status)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
                 if let fastSignConfig, showVerificationView {
                     FastBackupVaultOverview(
@@ -326,17 +326,6 @@ struct KeygenView: View {
     private func checkVaultType() {
         if let selectedTab, selectedTab == .fast {
             showVerificationView = true
-        }
-    }
-    
-    private func getFeedbackType() -> SensoryFeedback {
-        switch viewModel.status {
-        case .KeygenFinished:
-            .success
-        case .KeygenFailed:
-            .error
-        default:
-            .impact
         }
     }
 }
