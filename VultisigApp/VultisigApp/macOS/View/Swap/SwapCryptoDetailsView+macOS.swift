@@ -75,7 +75,7 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons { percentage in
+        SwapPercentageButtons(showAllPercentageButtons: $swapViewModel.showAllPercentageButtons) { percentage in
             handlePercentageSelection(percentage)
         }
     }

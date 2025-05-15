@@ -16,5 +16,15 @@ extension SwapCryptoDoneView {
         pasteboard.clearContents()
         pasteboard.setString(value, forType: .string)
     }
+    
+    var buttons: some View {
+        HStack(spacing: 8) {
+            trackButton
+            doneButton
+        }
+        .padding(.vertical)
+        .padding(.horizontal, 18)
+        .background(Color.backgroundBlue)
+    }
 }
 #endif
