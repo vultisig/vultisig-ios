@@ -10,6 +10,10 @@ import SwiftUI
 struct SwapPercentageButtons: View {
     let buttonOptions = [25, 50, 75, 100]
     
+    @State private var selectedPercentage: Int? = nil
+    
+    @Binding var showAllPercentageButtons: Bool
+    
     let onTap: (Int) -> Void
     
     var body: some View {
@@ -36,19 +40,21 @@ struct SwapPercentageButtons: View {
     
     private func getPercentageButton(for option: Int) -> some View {
         Button(action: {
+            self.selectedPercentage = option
             onTap(option)
         }) {
-            getPercentageCell(for: "\(option)")
+            getPercentageCell(for: "\(option)", isSelected: self.selectedPercentage == option && !self.showAllPercentageButtons)
         }
+        .disabled(self.selectedPercentage == option && !self.showAllPercentageButtons)
     }
     
-    private func getPercentageCell(for text: String) -> some View {
+    private func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
             .font(.body12BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(isSelected ? Color.white : .neutral0)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .background(Color.blue600)
+            .background(isSelected ? Color.blue800 : Color.blue600)
             .cornerRadius(32)
     }
 }
