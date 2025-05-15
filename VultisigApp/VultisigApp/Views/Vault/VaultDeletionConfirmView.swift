@@ -18,6 +18,7 @@ struct VaultDeletionConfirmView: View {
     
     @State var showAlert = false
     @State var navigateBackToHome = false
+    @State var navigateToCreateVault = false
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -26,6 +27,9 @@ struct VaultDeletionConfirmView: View {
     
     var body: some View {
         content
+            .navigationDestination(isPresented: $navigateToCreateVault) {
+                CreateVaultView(selectedVault: nil, showBackButton: false)
+            }
     }
     
     var details: some View {
@@ -33,6 +37,8 @@ struct VaultDeletionConfirmView: View {
     }
     
     func delete() {
+        let vaultCount = vaults.count
+        
         guard allFieldsChecked() else {
             showAlert = true
             return
@@ -45,7 +51,12 @@ struct VaultDeletionConfirmView: View {
             print("Error: \(error)")
         }
         ApplicationState.shared.currentVault = nil
-        navigateBackToHome = true
+        
+        if vaultCount > 1 {
+            navigateBackToHome = true
+        } else {
+            navigateToCreateVault = true
+        }
     }
     
     private func allFieldsChecked() -> Bool {
