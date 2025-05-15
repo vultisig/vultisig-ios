@@ -90,7 +90,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 4)
+        return balanceDecimal.formatToDecimal(digits: 8) // top 8, bc if I use decimals ETH has 18....
     }
     
     var balanceInFiat: String {
