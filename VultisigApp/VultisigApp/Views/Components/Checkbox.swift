@@ -23,6 +23,7 @@ struct Checkbox: View {
                 Spacer()
             }
         }
+        .sensoryFeedback(.selection, trigger: isChecked)
         .onTapGesture {
             isChecked.toggle()
         }
