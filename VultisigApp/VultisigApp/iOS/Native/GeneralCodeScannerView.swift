@@ -68,7 +68,6 @@ struct GeneralCodeScannerView: View {
         }
         .overlay {
             background
-                .allowsHitTesting(false)
         }
     }
     
@@ -77,7 +76,6 @@ struct GeneralCodeScannerView: View {
             .resizable()
             .scaledToFill()
             .opacity(0.2)
-            .allowsHitTesting(false)
     }
     
     var content: some View {
@@ -130,7 +128,7 @@ struct GeneralCodeScannerView: View {
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
-            ).allowsHitTesting(false)
+            )
             
             overlay
         }
