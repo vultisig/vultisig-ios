@@ -15,7 +15,6 @@ struct MoonPaySignatureHelper {
     var keysignUrl = "https://moonpay-sign-delta.vercel.app/api/sign"
     func getSignature(url: String) async -> String {
         do{
-            print("url to get signature \(url)")
             let req = MoonPaySignatureReq(url: url)
             var request = URLRequest(url: URL(string: keysignUrl)!)
             request.httpMethod = "POST"
