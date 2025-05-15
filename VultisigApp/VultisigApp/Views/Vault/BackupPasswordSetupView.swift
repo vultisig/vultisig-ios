@@ -29,6 +29,7 @@ struct BackupPasswordSetupView: View {
             mainContent
             popup
         }
+        .sensoryFeedback(.success, trigger: vault.isBackedUp)
     }
     
     var mainContent: some View {
