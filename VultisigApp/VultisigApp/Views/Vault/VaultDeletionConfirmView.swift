@@ -59,7 +59,7 @@ struct VaultDeletionConfirmView: View {
         }
     }
     
-    private func allFieldsChecked() -> Bool {
+    func allFieldsChecked() -> Bool {
         permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
     }
     
