@@ -398,6 +398,9 @@ class Endpoint {
     static func triggerSolidityConstantContractTron() -> String {
         "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
     }
+    static func moonPaySignatureUrl() -> URL {
+      return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
+    }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     

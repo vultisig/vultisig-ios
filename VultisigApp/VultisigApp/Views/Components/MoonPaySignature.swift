@@ -12,11 +12,10 @@ struct MoonPaySignatureReq : Codable {
     let url: String
 }
 struct MoonPaySignatureHelper {
-    var keysignUrl = "https://moonpay-sign-delta.vercel.app/api/sign"
     func getSignature(url: String) async -> String {
         do{
             let req = MoonPaySignatureReq(url: url)
-            var request = URLRequest(url: URL(string: keysignUrl)!)
+            var request = URLRequest(url: Endpoint.moonPaySignatureUrl())
             request.httpMethod = "POST"
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
             let result = try JSONEncoder().encode(req)
