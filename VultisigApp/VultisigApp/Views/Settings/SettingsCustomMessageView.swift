@@ -131,7 +131,6 @@ struct SettingsCustomMessageView: View {
             viewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
-                .offset(x: -8)
         }
         .opacity(viewModel.state == .done ? 0 : 1)
         .disabled(viewModel.state == .done)

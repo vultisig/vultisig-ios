@@ -14,6 +14,7 @@ struct NavigationBlankBackButton: View {
         Image(systemName: "chevron.backward")
             .font(.body16MenloMedium)
             .foregroundColor(tint)
+            .offset(x: -8)
     }
 }
 

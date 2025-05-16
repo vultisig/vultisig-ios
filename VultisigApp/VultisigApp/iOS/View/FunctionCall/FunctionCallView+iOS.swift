@@ -61,7 +61,6 @@ extension FunctionCallView {
             functionCallViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
-                .offset(x: -8)
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
