@@ -9,9 +9,9 @@
 import SwiftUI
 import MoonPaySdk
 
-let moonPayApiKey = "pk_test_lcbfRHJ2a6zumnV73XKGPDESC3nFQTk"
+let moonPayApiKey = "pk_live_TF7bU9YxoJCwnwKgxY7STQjHorAQlnFE"
 extension ChainDetailActionButtons{
-    func showMoonPayBuy(){
+    func showMoonPayBuy() async {
         let params = MoonPayBuyQueryParams(apiKey: moonPayApiKey)
         let helper = MoonPayHelper()
         if let vault = ApplicationState.shared.currentVault {
@@ -24,12 +24,15 @@ extension ChainDetailActionButtons{
         }
         let config = MoonPaySdkBuyConfig(
             debug: false,
-            environment: MoonPayWidgetEnvironment.sandbox,
+            environment: MoonPayWidgetEnvironment.production,
             params: params,
             handlers: nil
         )
         
         let moonPaySdk = MoonPayiOSSdk(config: config)
+        let url = moonPaySdk.generateUrlForSigning()
+        let sig = await MoonPaySignatureHelper().getSignature(url:url)
+        moonPaySdk.updateSignature(signature: sig)
         moonPaySdk.show(mode: MoonPayRenderingOptioniOS.WebViewOverlay())
     }
     
@@ -64,7 +67,7 @@ extension ChainDetailActionButtons{
         )
         let config = MoonPaySdkSellConfig(
             debug: false,
-            environment: MoonPayWidgetEnvironment.sandbox,
+            environment: MoonPayWidgetEnvironment.production,
             params: params,
             handlers: handlers
         )
@@ -74,7 +77,9 @@ extension ChainDetailActionButtons{
     }
     var buyButton: some View {
         Button {
-            showMoonPayBuy()
+            Task{
+                await showMoonPayBuy()
+            }
         } label: {
             ActionButton(title: "buy", fontColor: .turquoise600)
         }
