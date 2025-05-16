@@ -10,15 +10,15 @@ import SwiftUI
 
 extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
-#if DEBUG
+//#if DEBUG
         return self
-#else
+/*#else
         let allowSwap = UserDefaults.standard.bool(forKey: "allowSwap")
         if allowSwap {
             return self
         }
         return filter { $0 != .swap }
-#endif
+#endif*/
     }
 }
 #endif

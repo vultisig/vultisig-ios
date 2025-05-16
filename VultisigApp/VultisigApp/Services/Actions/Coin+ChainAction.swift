@@ -25,6 +25,11 @@ extension Chain {
     var defaultActions: [CoinAction] {
         var actions: [CoinAction] = [.send] // always include send
 #if os(iOS)
+        let hasMoonPayEnabledSet = UserDefaults.standard.value(forKey: "moonpayBuyEnabled")
+        // when moonpayBuyEnabled has not been set , set it to true
+        if hasMoonPayEnabledSet == nil {
+            UserDefaults.standard.set(true, forKey: "moonpayBuyEnabled")
+        }
         let enableMoonpayBuy = UserDefaults.standard.bool(forKey: "moonpayBuyEnabled")
         if enableMoonpayBuy {
             actions.append(.buy)

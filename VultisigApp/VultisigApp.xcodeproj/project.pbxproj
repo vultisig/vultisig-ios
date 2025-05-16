@@ -845,6 +845,7 @@
 		DEA1C7002DB0CC8F00424466 /* InboundAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */; };
 		DEA1C7022DB0CD9900424466 /* TokenMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */; };
 		DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */; };
+		DEA630882DD6AC9F00F8C062 /* MoonPaySignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA630872DD6AC9900F8C062 /* MoonPaySignature.swift */; };
 		DEBE4AB72DCDDC8D002C5B92 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
@@ -1739,6 +1740,7 @@
 		DEA1C6FF2DB0CC8900424466 /* InboundAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboundAddress.swift; sourceTree = "<group>"; };
 		DEA1C7012DB0CD9300424466 /* TokenMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenMetadata.swift; sourceTree = "<group>"; };
 		DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInfo.swift; sourceTree = "<group>"; };
+		DEA630872DD6AC9900F8C062 /* MoonPaySignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonPaySignature.swift; sourceTree = "<group>"; };
 		DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
@@ -1823,6 +1825,7 @@
 				A617B67A2CEC63F6006E5122 /* Send */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
 				DE1509C12DCD8FA70030C9A0 /* ChainDetailActionButtons+iOS.swift */,
+				DEA630872DD6AC9900F8C062 /* MoonPaySignature.swift */,
 				DEBE4AB62DCDDC85002C5B92 /* ChainDetailActionButtons+macOS.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				049BBB672B71E9C5004C231F /* WifiInstruction.swift */,
@@ -4134,6 +4137,7 @@
 				A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */,
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
+				DEA630882DD6AC9F00F8C062 /* MoonPaySignature.swift in Sources */,
 				A672643B2D02993A0002E97E /* JoinKeysignDoneSummary.swift in Sources */,
 				A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
