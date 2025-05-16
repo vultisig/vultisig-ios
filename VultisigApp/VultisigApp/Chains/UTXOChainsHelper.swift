@@ -105,9 +105,6 @@ class UTXOChainsHelper {
             }
         }
         
-        print("Get Signing Input data")
-        print(plan.debugDescription)
-        
         input.plan = plan
         return try input.serializedData()
     }
@@ -191,9 +188,6 @@ class UTXOChainsHelper {
             }
         }
 
-        print("getBitcoinPreSigningInputData")
-        print(plan.debugDescription)
-        
         input.plan = plan
         return try input.serializedData()
     }
@@ -212,10 +206,6 @@ class UTXOChainsHelper {
             }
         }
         
-        print("getBitcoinTransactionPlan")
-        print(plan.debugDescription)
-        
-
         return plan
     }
     
