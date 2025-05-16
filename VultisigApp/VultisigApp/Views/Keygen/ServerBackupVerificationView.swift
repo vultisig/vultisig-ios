@@ -116,7 +116,7 @@ struct ServerBackupVerificationView: View {
 
     private func handleInputChange(_ newValue: String, index: Int) {
         if newValue.count > 1 {
-            otp[index] = String(newValue.last!)
+            pasteCode()
         }
 
         if !newValue.isEmpty && index < Self.codeLength - 1 {
