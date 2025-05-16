@@ -217,6 +217,9 @@ private extension BlockChainService {
                        toAddress: String?,
                        feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
+            
+        case .zcash:
+            return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let byteFeeValue: BigInt
             if let byteFee, !byteFee.isZero {
