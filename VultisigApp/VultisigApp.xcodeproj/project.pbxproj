@@ -2061,7 +2061,6 @@
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
-				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 				A6A96C932DB0B12D00864353 /* UpgradingVaultView.swift */,
 				A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */,
 			);
@@ -3019,6 +3018,7 @@
 		A69FBBCC2C8BB86300A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */,

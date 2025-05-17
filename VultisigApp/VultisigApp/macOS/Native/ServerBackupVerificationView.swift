@@ -19,7 +19,7 @@ struct ServerBackupVerificationView: View {
     @Binding var tabIndex: Int
     @Binding var goBackToEmailSetup: Bool
 
-    @FocusState private var focusedField: Int?
+    @FocusState var focusedField: Int?
 
     @State var otp: [String] = Array(repeating: "", count: codeLength)
 
@@ -71,50 +71,6 @@ struct ServerBackupVerificationView: View {
             .font(.body14BrockmannMedium)
             .foregroundColor(.extraLightGray)
     }
-    
-    var field: some View {
-        HStack(spacing: 8) {
-            ForEach(0 ..< Self.codeLength, id: \.self) { index in
-#if os(iOS)
-                TextField("", text: $otp[index])
-                    .foregroundColor(.neutral0)
-                    .disableAutocorrection(true)
-                    .borderlessTextFieldStyle()
-                    .font(.body16BrockmannMedium)
-                    .frame(width: 46, height: 46)
-                    .background(Color.blue600)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(getBorderColor(index), lineWidth: 1)
-                    )
-                    .focused($focusedField, equals: index)
-                    .onChange(of: otp[index]) { _, newValue in
-                        handleInputChange(newValue, index: index)
-                    }
-#elseif os(macOS)
-                BackspaceDetectingTextField(text: $otp[index]) {
-                    handleBackspaceTap(index: index)
-                }
-                    .foregroundColor(.neutral0)
-                    .disableAutocorrection(true)
-                    .borderlessTextFieldStyle()
-                    .font(.body16BrockmannMedium)
-                    .frame(width: 46, height: 46)
-                    .background(Color.blue600)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(getBorderColor(index), lineWidth: 1)
-                    )
-                    .focused($focusedField, equals: index)
-                    .onChange(of: otp[index]) { _, newValue in
-                        handleInputChange(newValue, index: index)
-                    }
-#endif
-            }
-        }
-    }
 
     private var cancelButton: some View {
         Button {
@@ -135,7 +91,7 @@ struct ServerBackupVerificationView: View {
         .buttonStyle(.plain)
     }
 
-    private func handleInputChange(_ newValue: String, index: Int) {
+    func handleInputChange(_ newValue: String, index: Int) {
         if newValue.count > 1 {
             pasteCode()
         }
@@ -150,15 +106,8 @@ struct ServerBackupVerificationView: View {
             verifyCode()
         }
     }
-    
-    private func handleBackspaceTap(index: Int) {
-        if otp[index].isEmpty && index > 0 {
-            otp[index] = ""
-            focusedField = index - 1
-        }
-    }
 
-    private func getBorderColor(_ index: Int) -> Color {
+    func getBorderColor(_ index: Int) -> Color {
         if showAlert {
             return .alertRed
         } else {

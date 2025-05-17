@@ -37,6 +37,7 @@ struct BackspaceDetectingTextField: NSViewRepresentable {
 
         textField.wantsLayer = true
         textField.layer?.cornerRadius = 12
+        textField.focusRingType = .none
 
         return textField
     }

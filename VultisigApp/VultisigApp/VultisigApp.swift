@@ -26,15 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ServerBackupVerificationView(
-                tssType: .Keygen,
-                vault: Vault.example,
-                email: "mail@email.com",
-                isPresented: .constant(false),
-                isBackupLinkActive: .constant(false),
-                tabIndex: .constant(2),
-                goBackToEmailSetup: .constant(false)
-            )
+            content
         }
         .modelContainer(sharedModelContainer)
         
