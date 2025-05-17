@@ -75,6 +75,7 @@ struct ServerBackupVerificationView: View {
     var field: some View {
         HStack(spacing: 8) {
             ForEach(0 ..< Self.codeLength, id: \.self) { index in
+#if os(iOS)
                 TextField("", text: $otp[index])
                     .foregroundColor(.neutral0)
                     .disableAutocorrection(true)
@@ -91,6 +92,26 @@ struct ServerBackupVerificationView: View {
                     .onChange(of: otp[index]) { _, newValue in
                         handleInputChange(newValue, index: index)
                     }
+#elseif os(macOS)
+                BackspaceDetectingTextField(text: $otp[index]) {
+                    handleBackspaceTap(index: index)
+                }
+                    .foregroundColor(.neutral0)
+                    .disableAutocorrection(true)
+                    .borderlessTextFieldStyle()
+                    .font(.body16BrockmannMedium)
+                    .frame(width: 46, height: 46)
+                    .background(Color.blue600)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(getBorderColor(index), lineWidth: 1)
+                    )
+                    .focused($focusedField, equals: index)
+                    .onChange(of: otp[index]) { _, newValue in
+                        handleInputChange(newValue, index: index)
+                    }
+#endif
             }
         }
     }
@@ -127,6 +148,13 @@ struct ServerBackupVerificationView: View {
 
         if verificationCode.count == Self.codeLength {
             verifyCode()
+        }
+    }
+    
+    private func handleBackspaceTap(index: Int) {
+        if otp[index].isEmpty && index > 0 {
+            otp[index] = ""
+            focusedField = index - 1
         }
     }
 
