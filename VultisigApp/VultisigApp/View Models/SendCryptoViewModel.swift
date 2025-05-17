@@ -72,7 +72,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         switch tx.coin.chain {
-        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
+        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
             tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             setPercentageAmount(tx: tx, for: percentage)

@@ -416,6 +416,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/transaction/\(txid)"
         case .dash:
             return "https://blockchair.com/dash/transaction/\(txid)"
+        case .zcash:
+            return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case .solana:
@@ -485,6 +487,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .solana:
@@ -573,6 +577,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
         case .arbitrum:
