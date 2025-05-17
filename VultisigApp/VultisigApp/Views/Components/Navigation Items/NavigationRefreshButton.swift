@@ -24,6 +24,7 @@ struct NavigationRefreshButton: View {
                 .rotationEffect(.degrees(animate ? 360 : 0))
                 .animation(enableTransition ? .easeInOut(duration: 1) : nil, value: animate)
         }
+        .offset(x: 8)
     }
     
     private func handleTap() {
