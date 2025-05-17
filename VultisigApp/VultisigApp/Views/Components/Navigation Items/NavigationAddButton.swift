@@ -14,6 +14,7 @@ struct NavigationAddButton: View {
         Image(systemName: "plus")
             .font(.body18MenloBold)
             .foregroundColor(tint)
+            .offset(x: 8)
     }
 }
 
