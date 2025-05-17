@@ -363,6 +363,8 @@
 		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */; };
 		A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */; };
+		A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */; };
+		A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */; };
 		A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */; };
 		A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */; };
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
@@ -1259,6 +1261,8 @@
 		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalStateViewModel.swift; sourceTree = "<group>"; };
 		A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconCapsule.swift; sourceTree = "<group>"; };
+		A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+iOS.swift"; sourceTree = "<group>"; };
+		A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+macOS.swift"; sourceTree = "<group>"; };
 		A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAddressBookView.swift; sourceTree = "<group>"; };
 		A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookTextField.swift; sourceTree = "<group>"; };
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
@@ -2411,6 +2415,7 @@
 				A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */,
 				A6A8163D2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift */,
 				A6BFE1B42D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift */,
+				A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2455,6 +2460,7 @@
 				A6A8163F2CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift */,
 				A6C556F12CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift */,
 				A6BFE1B22D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift */,
+				A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -4310,6 +4316,7 @@
 				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */,
+				A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,
 				A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */,
 				A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */,
@@ -4441,6 +4448,7 @@
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
+				A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
