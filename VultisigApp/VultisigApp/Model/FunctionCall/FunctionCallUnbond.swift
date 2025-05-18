@@ -65,10 +65,15 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     
     var amountInUnits: String {
         let amountInSats = self.amount * pow(10, 8)
-        return amountInSats.formatDecimalToLocale()
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.maximumFractionDigits = 0
+        formatter.usesGroupingSeparator = false
+        return formatter.string(from: amountInSats as NSDecimalNumber) ?? "0"
     }
     
     func toString() -> String {
+
         var memo = "UNBOND:\(self.nodeAddress):\(amountInUnits)"
         if !self.provider.isEmpty {
             memo += ":\(self.provider)"
