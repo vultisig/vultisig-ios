@@ -373,6 +373,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .zcash,
+            ticker: "ZEC",
+            logo: "zec",
+            decimals: 8,
+            priceProviderId: "zcash",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .bitcoinCash,
             ticker: "BCH",
             logo: "bch",
