@@ -73,7 +73,7 @@ extension Coin {
             return [.thorchain]
         case .blast, .solana:
             return [.lifi]
-        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron,.ethereumSepolia:
+        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron,.ethereumSepolia, .zcash:
             return []
         }
     }
