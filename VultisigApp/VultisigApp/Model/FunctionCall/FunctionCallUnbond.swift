@@ -65,7 +65,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     
     var amountInUnits: String {
         let amountInSats = self.amount * pow(10, 8)
-        return amountInSats.formatDecimalToLocale()
+        return amountInSats.description
     }
     
     func toString() -> String {
