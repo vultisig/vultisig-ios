@@ -25,6 +25,7 @@ struct NavigationQRShareButton: View {
     
     var body: some View {
         container
+            .offset(x: 8)
     }
     
     var shareLink: some View {

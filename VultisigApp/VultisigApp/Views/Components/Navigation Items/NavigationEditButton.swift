@@ -14,6 +14,7 @@ struct NavigationEditButton: View {
         Image(systemName: "square.and.pencil")
             .font(.body18MenloBold)
             .foregroundColor(tint)
+            .offset(x: 8)
     }
 }
 
