@@ -126,6 +126,75 @@ class SendCryptoViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
     }
     
+    func testSetMaxValues_Bitcoin_PercentageWithFeeValidation() async throws {
+        guard let currentVault = ApplicationState.shared.currentVault else {
+            XCTFail("Current vault is nil. Please ensure a vault is loaded.")
+            return
+        }
+        
+        guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
+            XCTFail("No native BTC coin found in the current vault.")
+            return
+        }
+        
+        let percentages = [25, 50, 75, 100]
+        let btcToAddress = "1K6KoYC69NnafWJ7YgtrpwJxBLiijWqwa6"
+        
+        guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
+            XCTFail("Could not convert initial coin.rawBalance to BigInt: \(coin.rawBalance)")
+            return
+        }
+        
+        let threshold = BigInt(1) // Tolerance of ±1 satoshi
+        
+        for percentage in percentages {
+            let expectation = XCTestExpectation(description: "Testing \(percentage)% with fee consideration")
+            
+            let tx = await createTx(coin: coin, toAddress: btcToAddress)
+            
+            viewModel.setMaxValues(tx: tx, percentage: Double(percentage))
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
+                print("\n🔍 Testing \(percentage)%")
+                print("Initial Raw Balance: \(initialRawBalanceBigInt)")
+                
+                tx.toAddress = btcToAddress
+                let plan = self.viewModel.getTransactionPlan(tx: tx)
+                
+                let fee = (plan?.fee ?? 0).description.toBigInt() ?? BigInt(0)
+                let totalAmount = tx.amountInRaw + fee
+                
+                print("Fee: \(fee), AmountInRaw: \(tx.amountInRaw), Total: \(totalAmount), Raw Balance: \(initialRawBalanceBigInt)")
+                
+                if totalAmount > initialRawBalanceBigInt {
+                    XCTFail("""
+                        Invalid state for \(percentage)%: total amount including fee exceeds available balance.
+                        tx.amountInRaw: \(tx.amountInRaw), fee: \(fee), total: \(totalAmount), balance: \(initialRawBalanceBigInt)
+                    """)
+                } else {
+                    let expectedAmountInRaw = (initialRawBalanceBigInt * BigInt(percentage)) / 100
+                    
+                    let difference = abs(tx.amountInRaw - expectedAmountInRaw)
+                    
+                    XCTAssertLessThanOrEqual(
+                        difference,
+                        threshold,
+                        """
+                        Expected amount for \(percentage)% within threshold ±\(threshold). 
+                        tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw), difference: \(difference), fee: \(fee)
+                        """
+                    )
+                }
+                
+                expectation.fulfill()
+            }
+            
+            await fulfillment(of: [expectation], timeout: 15.0)
+        }
+        
+        XCTAssertFalse(viewModel.isLoading)
+    }
+    
     func testSetMaxValues_Bitcoin_50Percent() async throws {
         guard let currentVault = ApplicationState.shared.currentVault else {
             XCTFail("Current vault is nil. Please ensure a vault is loaded.")
