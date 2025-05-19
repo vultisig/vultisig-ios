@@ -443,10 +443,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         })
     }
 
-    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
+    func getTransactionPlan(tx: SendTransaction) -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
         guard let utxoInfo = utxo.blockchairData
-            .get(key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
+            .get(tx.coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
             .map({
                 UtxoInfo(
                     hash: $0.transactionHash ?? "",
