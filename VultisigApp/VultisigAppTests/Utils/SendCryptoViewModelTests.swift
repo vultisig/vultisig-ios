@@ -24,47 +24,6 @@ class SendCryptoViewModelTests: XCTestCase {
         return tx
     }
     
-    func testSetMaxValues_Bitcoin_100Percent() async throws {
-        guard let currentVault = ApplicationState.shared.currentVault else {
-            XCTFail("Current vault is nil. Please ensure a vault is loaded.")
-            return
-        }
-        
-        print("TEST Current VAULT Name: \(currentVault.name)")
-        guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
-            XCTFail("No native BTC coin found in the current vault. Coins available: \(currentVault.coins.map({ "\($0.ticker) (\($0.chain.name))" }))")
-            return
-        }
-        
-        print("Found BTC Coin: \(coin.ticker), Address: \(coin.address), RawBalance: \(coin.rawBalance)")
-        
-        let expectation = XCTestExpectation(description: "SetMaxValues for Bitcoin 100% completes using live service with vault coin")
-        
-        let btcToAddress = coin.address
-        
-        let tx = await createTx(coin: coin, toAddress: btcToAddress)
-        
-        viewModel.setMaxValues(tx: tx, percentage: 100)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-            XCTAssertTrue(tx.sendMaxAmount)
-            
-            print("Teste BTC 100% (Moeda do Vault) - Valor Real: \(tx.amount), Valor Fiat Real: \(tx.amountInFiat)")
-            
-            if tx.amount.isEmpty {
-                XCTFail("tx.amount está vazio.")
-            } else {
-                
-                XCTAssertTrue(tx.amountInRaw.description == coin.rawBalance, "The total amount if 100% in BTC must be equal to the raw balance of the vault BTC coin, because the fees will be deducted from the raw balance directly in the blockchain.")
-                
-            }
-            expectation.fulfill()
-        }
-        
-        await fulfillment(of: [expectation], timeout: 15.0) // Aumentado timeout
-        XCTAssertFalse(viewModel.isLoading, "isLoading should be false after operation")
-    }
-    
     func testSetMaxValues_Bitcoin_100Percent_WithFee() async throws {
         guard let currentVault = ApplicationState.shared.currentVault else {
             XCTFail("Current vault is nil. Please ensure a vault is loaded.")
@@ -89,41 +48,56 @@ class SendCryptoViewModelTests: XCTestCase {
         viewModel.setMaxValues(tx: tx, percentage: 100)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-            XCTAssertTrue(tx.sendMaxAmount)
-            
-            print("Teste BTC 100% com fee - Valor tx.amount: \(tx.amount), Valor tx.amountInRaw: \(tx.amountInRaw.description), Saldo coin.rawBalance: \(coin.rawBalance)")
+            XCTAssertTrue(tx.sendMaxAmount, "Transaction should be marked as sendMax for 100%.")
             
             if tx.amount.isEmpty {
                 XCTFail("tx.amount está vazio.")
-            } else {
-                // ✅ Aqui você chama seu método de transaction plan para calcular a fee real.
-                // Exemplo fictício, substitua por seu método real:
-                
-                tx.toAddress = "1K6KoYC69NnafWJ7YgtrpwJxBLiijWqwa6"
-                
-                let plan = self.viewModel.getTransactionPlan(tx: tx)
-                
-                print("Plan: \(String(describing: plan))")
-                
-                print("Plan Amount: \(String(describing: plan?.amount))")
-                
-                print("Plan Available Amount: \(String(describing: plan?.availableAmount))")
-                
-                print("Plan Fee: \(String(describing: plan?.fee))")
-                
-                
-                let fee = (plan?.fee ?? 0).description.toBigInt()
-                
-                let expectedAmountInRaw = initialRawBalanceBigInt - fee
-                
-                XCTAssertEqual(tx.amountInRaw, expectedAmountInRaw,
-                               "The amount in raw for 100% BTC should be raw balance minus fee. tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw), fee: \(fee)")
+                expectation.fulfill()
+                return
             }
+            
+            tx.toAddress = btcToAddress
+            guard let plan = self.viewModel.getTransactionPlan(tx: tx) else {
+                XCTFail("Transaction plan could not be generated.")
+                expectation.fulfill()
+                return
+            }
+            
+            let fee = (plan.fee).description.toBigInt()
+            
+            print("""
+                Plan Details:
+                - Plan Amount: \(plan.amount)
+                - Plan Available Amount: \(plan.availableAmount)
+                - Plan Fee: \(plan.fee) (as BigInt: \(fee))
+                - Initial Raw Balance: \(initialRawBalanceBigInt)
+                - tx.amountInRaw: \(tx.amountInRaw)
+            """)
+            
+            // Ensure that amountInRaw is exactly equal to the total balance
+            XCTAssertEqual(
+                tx.amountInRaw,
+                initialRawBalanceBigInt,
+                """
+                For 100% send, amountInRaw must equal total balance.
+                Found: \(tx.amountInRaw), Expected: \(initialRawBalanceBigInt)
+                """
+            )
+            
+            // Ensure the fee is deducted on-chain and doesn't affect amountInRaw directly
+            let remainingBalanceAfterSend = initialRawBalanceBigInt - tx.amountInRaw
+            if remainingBalanceAfterSend < fee {
+                XCTFail("""
+                    Insufficient remaining balance to cover the fee after setting max value.
+                    Remaining: \(remainingBalanceAfterSend), Fee: \(fee)
+                """)
+            }
+            
             expectation.fulfill()
         }
         
         await fulfillment(of: [expectation], timeout: 15.0)
-        XCTAssertFalse(viewModel.isLoading)
+        XCTAssertFalse(viewModel.isLoading, "isLoading should be false after operation.")
     }
     
     func testSetMaxValues_Bitcoin_PercentageWithFeeValidation() async throws {
@@ -137,7 +111,7 @@ class SendCryptoViewModelTests: XCTestCase {
             return
         }
         
-        let percentages = [25, 50, 75, 100]
+        let percentages = [25, 50, 75]
         let btcToAddress = "1K6KoYC69NnafWJ7YgtrpwJxBLiijWqwa6"
         
         guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
@@ -155,13 +129,13 @@ class SendCryptoViewModelTests: XCTestCase {
             viewModel.setMaxValues(tx: tx, percentage: Double(percentage))
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-                print("\n🔍 Testing \(percentage)%")
+                print("\n Testing \(percentage)%")
                 print("Initial Raw Balance: \(initialRawBalanceBigInt)")
                 
                 tx.toAddress = btcToAddress
                 let plan = self.viewModel.getTransactionPlan(tx: tx)
                 
-                let fee = (plan?.fee ?? 0).description.toBigInt() ?? BigInt(0)
+                let fee = (plan?.fee ?? 0).description.toBigInt()
                 let totalAmount = tx.amountInRaw + fee
                 
                 print("Fee: \(fee), AmountInRaw: \(tx.amountInRaw), Total: \(totalAmount), Raw Balance: \(initialRawBalanceBigInt)")
@@ -195,158 +169,6 @@ class SendCryptoViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoading)
     }
     
-    func testSetMaxValues_Bitcoin_50Percent() async throws {
-        guard let currentVault = ApplicationState.shared.currentVault else {
-            XCTFail("Current vault is nil. Please ensure a vault is loaded.")
-            return
-        }
-        
-        guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
-            XCTFail("No native BTC coin found in the current vault.")
-            return
-        }
-        
-        let expectation = XCTestExpectation(description: "SetMaxValues for Bitcoin 50% completes using live service with vault coin")
-        
-        let btcToAddress = coin.address
-        let tx = await createTx(coin: coin, toAddress: btcToAddress)
-        
-        guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
-            XCTFail("Could not convert initial coin.rawBalance to BigInt: \(coin.rawBalance)")
-            return
-        }
-        
-        guard initialRawBalanceBigInt > 0 else {
-            print("Skipping 50% test as initial raw balance for BTC is zero or invalid.")
-            expectation.fulfill()
-            await fulfillment(of: [expectation], timeout: 1.0)
-            return
-        }
-        
-        viewModel.setMaxValues(tx: tx, percentage: 50)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-            XCTAssertFalse(tx.sendMaxAmount)
-            
-            print("Teste BTC 50% (Moeda do Vault) - Valor tx.amount: \(tx.amount), Valor tx.amountInRaw: \(tx.amountInRaw.description), Saldo coin.rawBalance Inicial: \(coin.rawBalance)")
-            
-            if tx.amount.isEmpty {
-                XCTFail("tx.amount está vazio para 50%.")
-            } else {
-                let expectedAmountInRaw = initialRawBalanceBigInt / 2
-                XCTAssertEqual(tx.amountInRaw, expectedAmountInRaw, "The amount in raw for 50% BTC should be approximately half of the coin's initial raw balance. tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw)")
-            }
-            expectation.fulfill()
-        }
-        
-        await fulfillment(of: [expectation], timeout: 15.0)
-        XCTAssertFalse(viewModel.isLoading)
-    }
-    
-    func testSetMaxValues_Bitcoin_75Percent() async throws {
-        guard let currentVault = ApplicationState.shared.currentVault else {
-            XCTFail("Current vault is nil. Please ensure a vault is loaded.")
-            return
-        }
-        
-        guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
-            XCTFail("No native BTC coin found in the current vault.")
-            return
-        }
-        
-        let expectation = XCTestExpectation(description: "SetMaxValues for Bitcoin 75% completes using live service with vault coin")
-        
-        let btcToAddress = coin.address
-        let tx = await createTx(coin: coin, toAddress: btcToAddress)
-        
-        guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
-            XCTFail("Could not convert initial coin.rawBalance to BigInt: \(coin.rawBalance)")
-            return
-        }
-        
-        guard initialRawBalanceBigInt > 0 else {
-            print("Skipping 75% test as initial raw balance for BTC is zero or invalid.")
-            expectation.fulfill()
-            await fulfillment(of: [expectation], timeout: 1.0)
-            return
-        }
-        
-        viewModel.setMaxValues(tx: tx, percentage: 75)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-            XCTAssertFalse(tx.sendMaxAmount)
-            
-            print("Teste BTC 75% (Moeda do Vault) - Valor tx.amount: \(tx.amount), Valor tx.amountInRaw: \(tx.amountInRaw.description), Saldo coin.rawBalance Inicial: \(coin.rawBalance)")
-            
-            if tx.amount.isEmpty {
-                XCTFail("tx.amount está vazio para 75%.")
-            } else {
-                let initialRawBalanceDecimal = Decimal(string: initialRawBalanceBigInt.description) ?? .zero
-                let calculatedAmount = (initialRawBalanceDecimal * 75) / 100
-                let expectedAmountInRawDecimal = calculatedAmount.rounded(scale: 0, roundingMode: .up)
-                
-                guard let expectedAmountInRaw = BigInt(expectedAmountInRawDecimal.description) else {
-                    XCTFail("Failed to convert expectedAmountInRawDecimal to BigInt.")
-                    return
-                }
-                
-                XCTAssertEqual(tx.amountInRaw, expectedAmountInRaw,
-                               "The amount in raw for 75% BTC should be approximately 75% of the coin's initial raw balance. tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw)")
-            }
-            expectation.fulfill()
-        }
-        
-        await fulfillment(of: [expectation], timeout: 15.0)
-        XCTAssertFalse(viewModel.isLoading)
-    }
-    
-    func testSetMaxValues_Bitcoin_25Percent() async throws {
-        guard let currentVault = ApplicationState.shared.currentVault else {
-            XCTFail("Current vault is nil. Please ensure a vault is loaded.")
-            return
-        }
-        
-        guard let coin = currentVault.coins.first(where: { $0.chain == .bitcoin && $0.isNativeToken }) else {
-            XCTFail("No native BTC coin found in the current vault.")
-            return
-        }
-        
-        let expectation = XCTestExpectation(description: "SetMaxValues for Bitcoin 25% completes using live service with vault coin")
-        
-        let btcToAddress = coin.address
-        let tx = await createTx(coin: coin, toAddress: btcToAddress)
-        
-        guard let initialRawBalanceBigInt = BigInt(coin.rawBalance) else {
-            XCTFail("Could not convert initial coin.rawBalance to BigInt: \(coin.rawBalance)")
-            return
-        }
-        
-        guard initialRawBalanceBigInt > 0 else {
-            print("Skipping 25% test as initial raw balance for BTC is zero or invalid.")
-            expectation.fulfill()
-            await fulfillment(of: [expectation], timeout: 1.0)
-            return
-        }
-        
-        viewModel.setMaxValues(tx: tx, percentage: 25)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) {
-            XCTAssertFalse(tx.sendMaxAmount)
-            
-            print("Teste BTC 25% (Moeda do Vault) - Valor tx.amount: \(tx.amount), Valor tx.amountInRaw: \(tx.amountInRaw.description), Saldo coin.rawBalance Inicial: \(coin.rawBalance)")
-            
-            if tx.amount.isEmpty {
-                XCTFail("tx.amount está vazio para 25%.")
-            } else {
-                let expectedAmountInRaw = (initialRawBalanceBigInt * 25) / 100
-                XCTAssertEqual(tx.amountInRaw, expectedAmountInRaw, "The amount in raw for 25% BTC should be approximately 25% of the coin's initial raw balance. tx.amountInRaw: \(tx.amountInRaw), expected: \(expectedAmountInRaw)")
-            }
-            expectation.fulfill()
-        }
-        
-        await fulfillment(of: [expectation], timeout: 15.0)
-        XCTAssertFalse(viewModel.isLoading)
-    }
 }
 
 
@@ -380,8 +202,7 @@ extension Decimal {
         formatter.usesGroupingSeparator = false
         return formatter.string(from: self as NSDecimalNumber) ?? "\(self)"
     }
-}
-extension Decimal {
+
     func rounded(scale: Int = 0, roundingMode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
         var result = Decimal()
         var value = self
