@@ -285,9 +285,7 @@ struct KeygenView: View {
     
     var button: some View {
         Button {
-            Task {
-                await setData()
-            }
+            dismiss()
         } label: {
             FilledButton(title: "retry")
         }
