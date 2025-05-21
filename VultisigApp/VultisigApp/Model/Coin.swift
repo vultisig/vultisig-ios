@@ -17,6 +17,7 @@ class Coin: ObservableObject, Codable, Hashable {
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
+    var stakedBalance: String = ""
     
     var decimals: Int {
         get {
@@ -26,7 +27,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-
+    
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
@@ -121,7 +122,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Tron
         }
     }
-
+    
     var supportsFeeSettings: Bool {
         switch chainType {
         case .EVM, .UTXO:
@@ -130,7 +131,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return false
         }
     }
-
+    
     var feeDefault: String{
         switch self.chain {
         case .thorChain:
@@ -191,11 +192,11 @@ class Coin: ObservableObject, Codable, Hashable {
             return "800000"
         }
     }
-
+    
     var price: Double {
         return RateProvider.shared.rate(for: self)?.value ?? 0
     }
-
+    
     func decimal(for value: BigInt) -> Decimal {
         let decimalValue = value.description.toDecimal()
         return decimalValue / pow(Decimal(10), decimals)
