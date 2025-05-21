@@ -141,6 +141,7 @@ struct BackupPasswordSetupView: View {
     
     func fileSaved() {
         vault.isBackedUp = true
+        FileManager.default.clearTmpDirectory()
     }
     
     func dismissView() {
