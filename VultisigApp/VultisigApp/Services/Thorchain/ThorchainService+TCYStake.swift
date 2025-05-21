@@ -45,4 +45,26 @@ extension ThorchainService {
 
         task.resume()
     }
+    
+    func fetchTcyStakedAmount(address: String) async -> Decimal {
+        let urlString = Endpoint.fetchTcyStakedAmount(address: address)
+        guard let url = URL(string: urlString) else {
+            return .zero
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let amountString = json["amount"] as? String,
+               let stakedAmountInt = UInt64(amountString) {
+                return Decimal(stakedAmountInt) / Decimal(100_000_000)
+            } else {
+                return .zero
+            }
+        } catch {
+            print("Error fetching or decoding staked amount: \(error.localizedDescription)")
+            return .zero
+        }
+    }
+    
 }

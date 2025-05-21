@@ -51,6 +51,9 @@ class BalanceService {
                             do {
                                 let rawBalance = try await fetchBalance(for: coin)
                                 try await updateCoin(coin, rawBalance: rawBalance)
+                                
+                                let stakedBalance = try await fetchStakedBalance(for: coin)
+                                try await updateCoin(coin, stakedBalance: stakedBalance)
                             } catch {
                                 print("Fetch Balances error: \(error.localizedDescription)")
                             }
@@ -74,6 +77,10 @@ class BalanceService {
         do {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
+            
+            let stakedBalance = try await fetchStakedBalance(for: coin)
+            try await updateCoin(coin, stakedBalance: stakedBalance)
+            
             try await Storage.shared.save()
         } catch {
             print("Fetch Balance error: \(error.localizedDescription)")
@@ -83,6 +90,71 @@ class BalanceService {
 
 private extension BalanceService {
     
+    func fetchStakedBalance(for coin: Coin) async throws -> String {
+        switch coin.chain {
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+            return .zero
+            
+        case .thorChain:
+            
+            if coin.ticker.uppercased() == "TCY".uppercased() {
+                let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
+                return tcyStakedBalance.description
+            }
+            
+            return .zero
+            
+        case .solana:
+            return .zero
+            
+        case .sui:
+            return .zero
+            
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
+            return .zero
+            
+        case .gaiaChain:
+            return .zero
+            
+        case .dydx:
+            return .zero
+            
+        case .kujira:
+            return .zero
+            
+        case .osmosis:
+            return .zero
+            
+        case .terra:
+            return .zero
+            
+        case .terraClassic:
+            return .zero
+            
+        case .noble:
+            return .zero
+         
+        case .mayaChain:
+            return .zero
+            
+        case .polkadot:
+            return .zero
+            
+        case .ton:
+            return .zero
+            
+        case .ripple:
+            return .zero
+            
+        case .akash:
+            return .zero
+            
+        case .tron:
+            return .zero
+        
+        }
+    }
+
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
@@ -165,5 +237,13 @@ private extension BalanceService {
         }
         
         coin.rawBalance = rawBalance
+    }
+    
+    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) async throws {
+        guard coin.stakedBalance != stakedBalance else {
+            return
+        }
+        
+        coin.stakedBalance = stakedBalance
     }
 }
