@@ -363,6 +363,7 @@
 		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */; };
 		A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */; };
+		A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */; };
 		A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */; };
 		A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */; };
 		A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */; };
@@ -1262,6 +1263,7 @@
 		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalStateViewModel.swift; sourceTree = "<group>"; };
 		A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconCapsule.swift; sourceTree = "<group>"; };
+		A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackspaceDetectingTextField.swift; sourceTree = "<group>"; };
 		A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+iOS.swift"; sourceTree = "<group>"; };
 		A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+macOS.swift"; sourceTree = "<group>"; };
 		A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAddressBookView.swift; sourceTree = "<group>"; };
@@ -2065,8 +2067,8 @@
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
-				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 				A6A96C932DB0B12D00864353 /* UpgradingVaultView.swift */,
+				A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -3025,6 +3027,7 @@
 		A69FBBCC2C8BB86300A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				A6B84B0B2CE56D79006929A0 /* ServerBackupVerificationView.swift */,
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A6B662D22D38CD54001E8BC1 /* MacAddressScannerView+macOS.swift */,
@@ -4668,6 +4671,7 @@
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 				A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */,
+				A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */,
 				DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */,
 				DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */,
 				DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */,
