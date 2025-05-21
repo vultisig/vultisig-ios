@@ -63,7 +63,9 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
     }
     
-    
+    static func fetchThorchainMergedAssets() -> String {
+        "https://api.rujira.network/api/graphiql"
+    }
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
