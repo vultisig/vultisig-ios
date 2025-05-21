@@ -363,9 +363,9 @@
 		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A66DFF3B2D141A2300312F71 /* GlobalStateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */; };
 		A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */; };
-		A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */; };
 		A670CEBF2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */; };
 		A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */; };
+		A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */; };
 		A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */; };
 		A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */; };
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
@@ -622,6 +622,7 @@
 		A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */; };
 		A6D44A5B2D51950600C66726 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = A6D44A5A2D51950600C66726 /* RiveRuntime */; };
 		A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */; };
+		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6ECA1842C93F36200456110 /* NavigationQRShareButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */; };
@@ -760,6 +761,7 @@
 		B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */; };
 		B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
+		B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
 		B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AC2C1A556D005DB485 /* DydxService.swift */; };
 		B5E654EB2D277CE2003A037C /* TronService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EA2D277CE0003A037C /* TronService.swift */; };
@@ -1262,9 +1264,9 @@
 		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalStateViewModel.swift; sourceTree = "<group>"; };
 		A66E90A02D778B1A00BF7BCB /* IconCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconCapsule.swift; sourceTree = "<group>"; };
-		A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackspaceDetectingTextField.swift; sourceTree = "<group>"; };
 		A670CEBE2DD7CFC600E33B09 /* NavigationBlankBackButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+iOS.swift"; sourceTree = "<group>"; };
 		A670CEC02DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationBlankBackButton+macOS.swift"; sourceTree = "<group>"; };
+		A670CEC22DD7E09000E33B09 /* BackspaceDetectingTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackspaceDetectingTextField.swift; sourceTree = "<group>"; };
 		A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAddressBookView.swift; sourceTree = "<group>"; };
 		A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookTextField.swift; sourceTree = "<group>"; };
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
@@ -1518,6 +1520,7 @@
 		A6D07E422C36756700594687 /* OnboardingView4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView4.swift; sourceTree = "<group>"; };
 		A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCameraPermissionView.swift; sourceTree = "<group>"; };
 		A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupGuideAnimation.swift; sourceTree = "<group>"; };
+		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationQRShareButton+iOS.swift"; sourceTree = "<group>"; };
@@ -1656,6 +1659,7 @@
 		B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressService.swift; sourceTree = "<group>"; };
 		B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosSwitch.swift; sourceTree = "<group>"; };
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
+		B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeAccountResponse.swift; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
 		B5E476AC2C1A556D005DB485 /* DydxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DydxService.swift; sourceTree = "<group>"; };
 		B5E654EA2D277CE0003A037C /* TronService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronService.swift; sourceTree = "<group>"; };
@@ -2786,6 +2790,7 @@
 				B590DF892C2E88F900ED934E /* VoteOption.swift */,
 				B520B2FD2C3250230097C590 /* TextField.swift */,
 				B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */,
+				A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -3324,6 +3329,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */,
 				DE8291932D891AA20037E5FD /* MigrationRequest.swift */,
 				B5A97CFA2BF43653007574D7 /* FunctionCall */,
 				B5F7581B2BD8FD970097B5B9 /* Sui */,
@@ -4513,7 +4519,9 @@
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6C6710B2CA27D1400F59B6A /* OnboardingView2+macOS.swift in Sources */,
+				A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */,
 				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
+				B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */,
 				A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */,
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
