@@ -96,13 +96,28 @@ private extension BalanceService {
             return .zero
             
         case .thorChain:
-            
-            if coin.ticker.uppercased() == "TCY".uppercased() {
+            // Handle TCY staked balance
+            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
                 return tcyStakedBalance.description
             }
-            
-            return .zero
+
+            // Handle merge account balances for non-native tokens
+            if !coin.isNativeToken {
+                let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
+                
+                print("Fetched \(mergedAccounts.count) merged accounts for address \(coin.address)")
+
+                if let matchedAccount = mergedAccounts.first(where: {
+                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
+                }) {
+                    let amountInDecimal = matchedAccount.size.amount.toDecimal() / Decimal(100_000_000)
+                    return amountInDecimal.description
+                }
+            }
+
+            // Fallback return value
+            return "0"
             
         case .solana:
             return .zero

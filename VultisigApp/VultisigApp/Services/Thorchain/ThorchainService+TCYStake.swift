@@ -67,4 +67,55 @@ extension ThorchainService {
         }
     }
     
+    func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
+        let id = "Account:\(address)".data(using: .utf8)?.base64EncodedString() ?? ""
+        
+        guard let url = URL(string: "https://api.rujira.network/api/graphiql") else {
+            print("Invalid GraphQL URL")
+            return []
+        }
+
+        let query = """
+        {
+          node(id: "\(id)") {
+            ... on Account {
+              merge {
+                accounts {
+                  pool {
+                    mergeAsset {
+                      metadata {
+                        symbol
+                      }
+                    }
+                  }
+                  size {
+                    amount
+                  }
+                  shares
+                }
+              }
+            }
+          }
+        }
+        """
+
+        let requestBody: [String: Any] = ["query": query]
+
+        do {
+            let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = bodyData
+
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let decoded = try JSONDecoder().decode(MergeAccountResponse.self, from: data)
+
+            return decoded.data.node?.merge?.accounts ?? []
+        } catch {
+            print("Failed to fetch merge accounts: \(error)")
+            return []
+        }
+    }
+    
 }

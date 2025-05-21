@@ -65,10 +65,22 @@ struct CoinCell: View {
             
         } else {
             
-            Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Bonded")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+            if coin.isNativeToken {
+                
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Bonded")
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+                
+                
+            } else {
+                
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Merged")
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+                
+            }
             
         }
         
