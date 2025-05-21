@@ -189,11 +189,13 @@ struct SwapCryptoDetailsView: View {
     }
     
     private func handleSwapTap() {
+        swapViewModel.error = nil
         buttonRotated.toggle()
         swapViewModel.switchCoins(tx: tx, vault: vault)
         let fromChain = swapViewModel.fromChain
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
+        swapViewModel.refreshData(tx: tx, vault: vault)
     }
     
     func showSheet() -> Bool {
