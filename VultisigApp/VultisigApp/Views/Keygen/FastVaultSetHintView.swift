@@ -14,31 +14,37 @@ struct FastVaultSetHintView: View {
     let fastVaultEmail: String
     let fastVaultPassword: String
     let fastVaultExist: Bool
-
+    
     @State var hint: String = ""
     @State var isLinkActive = false
-
+    @FocusState var isFocused: Bool
+    
     var body: some View {
         content
+            .onAppear(){
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isFocused = true
+                }
+            }
     }
-
+    
     var hintField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
                 .font(.body34BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 16)
-
+            
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.extraLightGray)
-
+            
             hintTextfield
         }
         .padding(.top, 24)
         .padding(.horizontal, 16)
     }
-
+    
     var hintTextfield: some View {
         ZStack {
             HStack {
@@ -49,7 +55,13 @@ struct FastVaultSetHintView: View {
                     .font(.body16BrockmannMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
-
+                    .focused($isFocused)
+                    .onSubmit {
+                        
+                        isLinkActive = true
+                        
+                    }
+                
                 if !hint.isEmpty {
                     VStack {
                         clearButton
@@ -67,7 +79,7 @@ struct FastVaultSetHintView: View {
                             .padding(.leading, 5)
                         Spacer()
                     }
-
+                    
                     Spacer()
                 }
             }
@@ -82,7 +94,7 @@ struct FastVaultSetHintView: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
     }
-
+    
     var clearButton: some View {
         Button {
             hint = ""
@@ -91,7 +103,7 @@ struct FastVaultSetHintView: View {
                 .foregroundColor(.neutral500)
         }
     }
-
+    
     var buttons: some View {
         HStack(spacing: 8) {
             Button(action: {
@@ -110,7 +122,7 @@ struct FastVaultSetHintView: View {
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
-
+    
     var fastSignConfig: FastSignConfig {
         return FastSignConfig(
             email: fastVaultEmail,

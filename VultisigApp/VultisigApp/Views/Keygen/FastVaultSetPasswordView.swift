@@ -23,7 +23,8 @@ struct FastVaultSetPasswordView: View {
     
     @State var passwordFieldError = ""
     @State var verifyFieldError = ""
-
+    @FocusState var isPasswordFieldFocused: Bool
+    @FocusState var isVerifyPasswordFieldFocused: Bool
     private let fastVaultService: FastVaultService = .shared
 
     var body: some View {
@@ -37,6 +38,11 @@ struct FastVaultSetPasswordView: View {
                     PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
                 } else {
                     FastVaultSetHintView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
+                }
+            }
+            .onAppear() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    isPasswordFieldFocused = true
                 }
             }
     }
@@ -83,6 +89,11 @@ struct FastVaultSetPasswordView: View {
             password: $password,
             errorMessage: passwordFieldError
         )
+        .submitLabel(.next)
+        .focused($isPasswordFieldFocused)
+        .onSubmit {
+            isVerifyPasswordFieldFocused = true
+        }
         .padding(.top, 32)
     }
 
@@ -92,16 +103,22 @@ struct FastVaultSetPasswordView: View {
             password: $verifyPassword,
             errorMessage: verifyFieldError
         )
+        .focused($isVerifyPasswordFieldFocused)
+        .onSubmit {
+            handleSubmit()
+        }
         .opacity(fastVaultExist ? 0 : 1)
     }
-
+    func handleSubmit(){
+        if fastVaultExist {
+            Task { await checkPassword() }
+        } else {
+            handleTap()
+        }
+    }
     var button: some View {
         Button(action: {
-            if fastVaultExist {
-                Task { await checkPassword() }
-            } else {
-                handleTap()
-            }
+            handleSubmit()
         }) {
             FilledButton(title: "next")
         }
