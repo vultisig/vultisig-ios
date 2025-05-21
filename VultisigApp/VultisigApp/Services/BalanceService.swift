@@ -106,8 +106,6 @@ private extension BalanceService {
             if !coin.isNativeToken {
                 let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
                 
-                print("Fetched \(mergedAccounts.count) merged accounts for address \(coin.address)")
-
                 if let matchedAccount = mergedAccounts.first(where: {
                     $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
                 }) {

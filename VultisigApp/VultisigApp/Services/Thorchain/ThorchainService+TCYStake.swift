@@ -70,7 +70,7 @@ extension ThorchainService {
     func fetchMergeAccounts(address: String) async -> [MergeAccountResponse.ResponseData.Node.AccountMerge.MergeAccount] {
         let id = "Account:\(address)".data(using: .utf8)?.base64EncodedString() ?? ""
         
-        guard let url = URL(string: "https://api.rujira.network/api/graphiql") else {
+        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
             print("Invalid GraphQL URL")
             return []
         }
