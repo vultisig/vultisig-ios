@@ -196,11 +196,6 @@ struct SwapCryptoDetailsView: View {
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
         swapViewModel.refreshData(tx: tx, vault: vault)
-//        let fromChain = swapViewModel.fromChain
-//        swapViewModel.fromChain = swapViewModel.toChain
-//        swapViewModel.toChain = fromChain
-//        handleFromCoinUpdate()
-//        handleToCoinUpdate()
     }
     
     func showSheet() -> Bool {
