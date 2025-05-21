@@ -172,7 +172,7 @@ struct ServerBackupVerificationView: View {
             )
 
             if isSuccess {
-                tabIndex += 1
+                tabIndex = 3
                 isPresented = false
                 
                 if tssType == .Migrate {
