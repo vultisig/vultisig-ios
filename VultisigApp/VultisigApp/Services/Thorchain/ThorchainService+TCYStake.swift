@@ -118,4 +118,55 @@ extension ThorchainService {
         }
     }
     
+    func fetchNodeBonds(address: String, completion: @escaping ([ThorchainActiveNodeBondResponse]) -> Void) {
+        //let urlString = "https://midgard.ninerealms.com/v2/bonds/\(address)"
+        
+        let urlString = "https://midgard.ninerealms.com/v2/bonds/thor1fpyaj39rdlc5f80kulq55tqlvku4t66gq5pvqk"
+        guard let url = URL(string: urlString) else {
+            completion([])
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+            if let error = error {
+                print("Error fetching node bonds: \(error)")
+                completion([])
+                return
+            }
+
+            guard let data = data else {
+                completion([])
+                return
+            }
+
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let nodes = json["nodes"] as? [[String: Any]] {
+
+                    var result: [ThorchainActiveNodeBondResponse] = []
+
+                    for node in nodes {
+                        if let nodeAddress = node["address"] as? String,
+                           let bondStr = node["bond"] as? String,
+                           let bond = UInt64(bondStr),
+                           let status = node["status"] as? String {
+
+                            let bondDecimal = Decimal(bond) / Decimal(100_000_000)
+                            result.append(ThorchainActiveNodeBondResponse(nodeAddress: nodeAddress, bondAmount: bondDecimal, status: status))
+                        }
+                    }
+
+                    completion(result)
+                } else {
+                    completion([])
+                }
+            } catch {
+                print("Error decoding JSON: \(error.localizedDescription)")
+                completion([])
+            }
+        }
+
+        task.resume()
+    }
+    
 }

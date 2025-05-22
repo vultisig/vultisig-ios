@@ -9,11 +9,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-struct IdentifiableString: Identifiable, Equatable {
-    let id = UUID()
-    let value: String
-}
-
 class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
 {
     @Published var amount: Decimal = 1
