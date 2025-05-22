@@ -57,9 +57,7 @@ struct FastVaultSetHintView: View {
                     .autocorrectionDisabled()
                     .focused($isFocused)
                     .onSubmit {
-                        
                         isLinkActive = true
-                        
                     }
                 
                 if !hint.isEmpty {
@@ -69,7 +67,7 @@ struct FastVaultSetHintView: View {
                     }
                 }
             }
-            if hint.isEmpty {
+            if hint.isEmpty && !isFocused {
                 VStack {
                     HStack {
                         Text(NSLocalizedString("enterHint", comment: ""))
