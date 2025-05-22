@@ -20,9 +20,14 @@ struct FastVaultEmailView: View {
     
     @State var isEmptyEmail: Bool = false
     @State var isInvalidEmail: Bool = false
-
+    @FocusState var isEmailFocused: Bool
+    
     var body: some View {
-        content
+        content.onAppear(){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isEmailFocused = true
+            }
+        }
     }
 
     var emailField: some View {
@@ -41,6 +46,7 @@ struct FastVaultEmailView: View {
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEmptyEmail)
         .animation(.easeInOut, value: isInvalidEmail)
+        
     }
 
     var emptyEmailLabel: some View {
@@ -89,7 +95,7 @@ struct FastVaultEmailView: View {
         }
     }
     
-    private func handleTap() {
+    func handleTap() {
         guard isEmptyEmailCheck() else {
             isEmptyEmail = true
             return

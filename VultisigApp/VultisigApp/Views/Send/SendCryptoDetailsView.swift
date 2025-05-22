@@ -42,6 +42,7 @@ struct SendCryptoDetailsView: View {
         }
         .gesture(DragGesture())
         .onFirstAppear {
+            focusedField = .toAddress
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
