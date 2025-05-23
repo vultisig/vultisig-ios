@@ -115,14 +115,8 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
-        let success = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         
-        guard success else {
-            alertTitle = "Permission denied for accessing the file."
-            showAlert = true
-            return
-        }
         do {
             
             let data = try Data(contentsOf: url)
@@ -267,13 +261,14 @@ class EncryptedBackupViewModel: ObservableObject {
                 .setDefaultCoinsOnce(vault: backupVault.vault, defaultChains: defaultChains)
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
+            showAlert = false
             isLinkActive = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            
             // fallback
             do{
-                let vault = try decoder.decode(Vault.self,
-                                               from: vaultData)
+                let vault = try decoder.decode(Vault.self, from: vaultData)
                 
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
                     alertTitle = "vaultAlreadyExists"
@@ -285,6 +280,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
                 modelContext.insert(vault)
                 selectedVault = vault
+                showAlert = false
                 isLinkActive = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
