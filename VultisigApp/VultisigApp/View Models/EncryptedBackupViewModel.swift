@@ -115,7 +115,7 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
-        let success = url.startAccessingSecurityScopedResource()
+        let _ = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         
         do {
