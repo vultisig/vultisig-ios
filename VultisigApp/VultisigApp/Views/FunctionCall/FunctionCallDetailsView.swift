@@ -44,7 +44,17 @@ struct FunctionCallDetailsView: View {
                 case .bond:
                     fnCallInstance = .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
                 case .unbond:
-                    fnCallInstance = .unbond(FunctionCallUnbond())
+                    
+                    DispatchQueue.main.async {
+                        ThorchainService.shared.fetchNodeBonds(address: tx.coin.address) {
+                            bonds in
+                            
+                            DispatchQueue.main.async {
+                                fnCallInstance = .unbond(FunctionCallUnbond(bonds: bonds))
+                            }
+                        }
+                    }
+                    
                 case .bondMaya:
 
                     DispatchQueue.main.async {
