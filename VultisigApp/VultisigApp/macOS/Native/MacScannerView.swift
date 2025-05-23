@@ -32,7 +32,7 @@ struct MacScannerView: View {
             headerMac
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
-            JoinKeygenView(vault: vault, selectedVault: selectedVault)
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
