@@ -10,15 +10,12 @@ import SwiftUI
 
 extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
-//#if DEBUG
-        return self
-/*#else
-        let allowSwap = UserDefaults.standard.bool(forKey: "allowSwap")
-        if allowSwap {
+        let localeCode = Locale.current.region?.identifier
+        if localeCode == "GB" || localeCode == "JP" {
+            return filter { $0 != .swap }
+        } else {
             return self
         }
-        return filter { $0 != .swap }
-#endif*/
     }
 }
 #endif
