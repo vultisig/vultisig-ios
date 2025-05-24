@@ -158,7 +158,6 @@ extension MacCameraServiceViewModel {
         switch type {
         case .NewVault:
             moveToCreateVaultView()
-            moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
@@ -171,10 +170,12 @@ extension MacCameraServiceViewModel {
     }
     
     private func moveToCreateVaultView() {
-        shouldSendCrypto = false
-        shouldKeysignTransaction = false
-        self.stopSession()
-        shouldJoinKeygen = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.shouldSendCrypto = false
+            self.shouldKeysignTransaction = false
+            self.stopSession()
+            self.shouldJoinKeygen = true
+        }
     }
     
     private func moveToVaultsView() {
