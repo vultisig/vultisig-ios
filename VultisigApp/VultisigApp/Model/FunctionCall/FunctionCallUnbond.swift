@@ -18,7 +18,6 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var provider: String = ""
     
-    // Internal
     @Published var nodeAddressValid: Bool = false
     @Published var amountValid: Bool = true // if ZERO it will unbond all.
     @Published var providerValid: Bool = true
@@ -76,7 +75,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
         }
     }
     
-    private func findBondByIdentifier(_ identifier: String) -> ThorchainActiveNodeBondResponse? {
+    func findBondByIdentifier(_ identifier: String) -> ThorchainActiveNodeBondResponse? {
         guard let bonds = bonds else { return nil }
         let index = Int(identifier.split(separator: "\t")[0]) ?? 0
         return bonds[index]
@@ -116,75 +115,96 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(VStack {
-            
+        AnyView(UnbondView(viewModel: self))
+    }
+}
+
+struct UnbondView: View {
+    @ObservedObject var viewModel: FunctionCallUnbond
+    @State private var amountText: String = "0"
+    
+    var body: some View {
+        VStack {
             GenericSelectorDropDown(
-                items: .constant(assets),
+                items: Binding.constant(viewModel.assets),
                 selected: Binding(
-                    get: { self.selectedAsset },
-                    set: { self.selectedAsset = $0 }
+                    get: { viewModel.selectedAsset },
+                    set: { viewModel.selectedAsset = $0 }
                 ),
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    self.selectedAsset = asset
-                    self.assetValid = asset.value.lowercased() != "Node".lowercased()
+                    viewModel.selectedAsset = asset
+                    viewModel.assetValid = asset.value.lowercased() != "Node".lowercased()
                     
-                    if let bond = self.findBondByIdentifier(asset.value) {
-                        withAnimation {
-                            DispatchQueue.main.async { [weak self] in
-                                guard let self = self else { return }
-                                
-                                self.amount = bond.bondAmount
-                                self.nodeAddress = bond.nodeAddress
-                                self.lastUpdateTime = Date() // ⬅️ Isto força a view a atualizar
-                                self.objectWillChange.send()
-                            }
-                        }
+                    if let bond = viewModel.findBondByIdentifier(asset.value) {
+                        viewModel.amount = bond.bondAmount
+                        viewModel.nodeAddress = bond.nodeAddress
+                        
+                        self.amountText = bond.bondAmount.formatDecimalToLocale()
+                        
+                        viewModel.lastUpdateTime = Date()
+                        viewModel.objectWillChange.send()
                     }
                 }
             )
-
+            
             FunctionCallAddressTextField(
-                memo: self,
+                memo: viewModel,
                 addressKey: "nodeAddress",
-                isAddressValid: Binding(
-                    get: { self.nodeAddressValid },
-                    set: { self.nodeAddressValid = $0 }
+                isAddressValid: .init(
+                    get: { viewModel.nodeAddressValid },
+                    set: { viewModel.nodeAddressValid = $0 }
                 )
             )
-
-            StyledFloatingPointField(
-                placeholder: Binding(
-                    get: { "Amount" },
-                    set: { _ in }
-                ),
-                value: Binding(
-                    get: { self.amount },
-                    set: {
-                        self.amount = $0
-                        DispatchQueue.main.async {
-                            self.lastUpdateTime = Date()
-                            self.objectWillChange.send()
+            
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Amount\(viewModel.amountValid ? "" : " *")")
+                        .font(.body14MontserratMedium)
+                        .foregroundColor(.neutral0)
+                    if !viewModel.amountValid {
+                        Text("*")
+                            .font(.body8Menlo)
+                            .foregroundColor(.red)
+                    }
+                }
+                
+                TextField("", text: $amountText)
+                    .id("amount-field-\(viewModel.lastUpdateTime.timeIntervalSince1970)")
+                    .placeholder(when: amountText.isEmpty) {
+                        Text("Amount".capitalized)
+                            .foregroundColor(.gray)
+                    }
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+                    .submitLabel(.done)
+                    .padding(12)
+                    .background(Color.blue600)
+                    .cornerRadius(12)
+                    .onChange(of: amountText) { _, newValue in
+                        if let decimal = Decimal(string: newValue.replacingOccurrences(of: ",", with: ".")) {
+                            viewModel.amount = decimal
                         }
                     }
-                ),
-                isValid: Binding(
-                    get: { true },
-                    set: { _ in }
-                )
-            )
-            .id("field-\(nodeAddress)-\(amount.formatDecimalToLocale())") // ✅ Força atualização confiável
-
+            }
+            
             FunctionCallAddressTextField(
-                memo: self,
+                memo: viewModel,
                 addressKey: "provider",
                 isOptional: true,
-                isAddressValid: Binding(
-                    get: { self.providerValid },
-                    set: { self.providerValid = $0 }
+                isAddressValid: .init(
+                    get: { viewModel.providerValid },
+                    set: { viewModel.providerValid = $0 }
                 )
             )
-        })
+        }
+        .onAppear {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 8
+            formatter.minimumFractionDigits = 4
+            amountText = formatter.string(from: viewModel.amount as NSDecimalNumber) ?? "0"
+        }
     }
 }
