@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  MergeAccountResponse.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 21/05/25.
