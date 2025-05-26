@@ -328,15 +328,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     showInvalidFormatAlert()
                     return
                 }
-                
-                if url.pathExtension.lowercased() == "txt" {
-                    let fileName = url.lastPathComponent
-                    let newFileName = fileName.replacingOccurrences(of: ".txt", with: ".vult")
-                    importedFileName = newFileName
-                } else {
-                    importedFileName = url.lastPathComponent
-                }
-                
+                importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                 importFile(from: url)
             }
         case .failure(let error):
@@ -349,15 +341,7 @@ class EncryptedBackupViewModel: ObservableObject {
             showInvalidFormatAlert()
             return
         }
-        
-        if url.pathExtension.lowercased() == "txt" {
-            let fileName = url.lastPathComponent
-            let newFileName = fileName.replacingOccurrences(of: ".txt", with: ".vult")
-            importedFileName = newFileName
-        } else {
-            importedFileName = url.lastPathComponent
-        }
-        
+        importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
         importFile(from: url)
     }
     
@@ -378,13 +362,7 @@ class EncryptedBackupViewModel: ObservableObject {
                                 self.showInvalidFormatAlert()
                                 return
                             }    
-                            if url.pathExtension.lowercased() == "txt" {
-                                let fileName = url.lastPathComponent
-                                let newFileName = fileName.replacingOccurrences(of: ".txt", with: ".vult")
-                                self.importedFileName = newFileName
-                            } else {
-                                self.importedFileName = url.lastPathComponent
-                            }
+                            self.importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                             self.importDragDropFile(content: data)
                         }
                     }
