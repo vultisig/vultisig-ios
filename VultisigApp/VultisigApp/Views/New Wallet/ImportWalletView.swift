@@ -80,11 +80,7 @@ struct ImportWalletView: View {
     
     var continueButton: some View {
         Button {
-            backupViewModel.restoreVault(
-                modelContext: context,
-                vaults: vaults,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
+            handleButtonTap()
         } label: {
             FilledButton(
                 title: "continue",
@@ -112,6 +108,18 @@ struct ImportWalletView: View {
     
     private func resetData() {
         backupViewModel.resetData()
+    }
+    
+    private func handleButtonTap() {
+        backupViewModel.restoreVault(
+            modelContext: context,
+            vaults: vaults,
+            defaultChains: settingsDefaultChainViewModel.defaultChains
+        )
+        
+        if !backupViewModel.showAlert {
+            vultExtensionViewModel.showImportView = false
+        }
     }
 }
 

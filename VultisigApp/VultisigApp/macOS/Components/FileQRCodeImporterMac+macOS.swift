@@ -17,7 +17,7 @@ extension FileQRCodeImporterMac {
                 fileCell(name)
             }
         }
-        .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
+        .onDrop(of: [.fileURL], isTargeted: $isUploading) { providers -> Bool in
             OnDropQRUtils.handleFileQRCodeImporterMacDrop(providers: providers) { result in
                 handleFileImport(result)
             }

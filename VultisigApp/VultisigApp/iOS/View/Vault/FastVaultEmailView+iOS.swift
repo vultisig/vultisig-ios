@@ -50,7 +50,10 @@ extension FastVaultEmailView {
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
-            
+            .focused($isEmailFocused)
+            .onSubmit {
+                handleTap()
+            }
             if !email.isEmpty {
                 clearButton
             }
