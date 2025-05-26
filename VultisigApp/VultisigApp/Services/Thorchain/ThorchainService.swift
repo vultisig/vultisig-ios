@@ -83,7 +83,7 @@ class ThorchainService: ThorchainSwapProvider {
             ticker = denom.lowercased()
         }
         
-        logo = ticker // It will use whatever is in our asset list
+        logo = ticker.replacingOccurrences(of: "/", with: "") // It will use whatever is in our asset list
         
         return TokenMetadata(chain: chain, ticker: ticker, symbol: symbol, decimals: decimals, logo: logo)
     }
