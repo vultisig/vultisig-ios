@@ -741,6 +741,7 @@
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
 		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
+		B59177202DE4FD74008F22F2 /* SendCryptoViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B591771F2DE4FD74008F22F2 /* SendCryptoViewModelTests.swift */; };
 		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A2279D2DE4F93F00A09B4E /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A2279C2DE4F93F00A09B4E /* MergeAccountResponse.swift */; };
 		B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */; };
@@ -1641,6 +1642,7 @@
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
 		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
+		B591771F2DE4FD74008F22F2 /* SendCryptoViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModelTests.swift; sourceTree = "<group>"; };
 		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A2279C2DE4F93F00A09B4E /* MergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeAccountResponse.swift; sourceTree = "<group>"; };
 		B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosMerge.swift; sourceTree = "<group>"; };
@@ -3648,6 +3650,7 @@
 		DE8AD7482BC7A84100339775 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				B591771F2DE4FD74008F22F2 /* SendCryptoViewModelTests.swift */,
 				DE8AD7492BC7A86200339775 /* EncryptionTest.swift */,
 			);
 			path = Utils;
@@ -4690,6 +4693,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B59177202DE4FD74008F22F2 /* SendCryptoViewModelTests.swift in Sources */,
 				DEF429592CA65AFD004B6D0B /* EvmTest.swift in Sources */,
 				DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */,
 				B5293CDB2DBC00C300C6C66A /* StringExtensionTests.swift in Sources */,
