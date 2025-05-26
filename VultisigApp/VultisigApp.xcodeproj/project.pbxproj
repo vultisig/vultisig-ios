@@ -624,6 +624,7 @@
 		A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */; };
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* UseReferralCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* UseReferralCodeView.swift */; };
+		A6E0C9112DE4F89100A01543 /* ReferralTextFieldWithCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9102DE4F89100A01543 /* ReferralTextFieldWithCopy.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6ECA1842C93F36200456110 /* NavigationQRShareButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */; };
@@ -1523,6 +1524,7 @@
 		A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupGuideAnimation.swift; sourceTree = "<group>"; };
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* UseReferralCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseReferralCodeView.swift; sourceTree = "<group>"; };
+		A6E0C9102DE4F89100A01543 /* ReferralTextFieldWithCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextFieldWithCopy.swift; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationQRShareButton+iOS.swift"; sourceTree = "<group>"; };
@@ -1884,6 +1886,7 @@
 				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 				A60F29AA2D9F700E00C24765 /* KeysignDiscoveryScanDeviceDisclaimer.swift */,
 				A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */,
+				A6E0C9102DE4F89100A01543 /* ReferralTextFieldWithCopy.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -3934,6 +3937,7 @@
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */,
 				A6182F352C922CD70059BFDD /* ChainHeaderCell+macOS.swift in Sources */,
+				A6E0C9112DE4F89100A01543 /* ReferralTextFieldWithCopy.swift in Sources */,
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
 				A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */,

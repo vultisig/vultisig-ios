@@ -25,10 +25,6 @@ struct UseReferralCodeView: View {
             VStack(spacing: 8) {
                 title
                 textField
-                
-                if showError {
-                    errorText
-                }
             }
         }
         .foregroundColor(.neutral0)
@@ -42,35 +38,12 @@ struct UseReferralCodeView: View {
     }
     
     var textField: some View {
-        HStack {
-            TextField(NSLocalizedString("enterUpto4Characters", comment: ""), text: $referralCode)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .submitLabel(.done)
-            
-            copyButton
-        }
-        .frame(height: 56)
-        .font(.body16BrockmannMedium)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.blue200, lineWidth: 1)
+        ReferralTextFieldWithCopy(
+            placeholderText: "enterUpto4Characters",
+            text: $referralCode,
+            showError: $showError,
+            errorMessage: $errorMessage
         )
-        .textInputAutocapitalization(.never)
-        .autocorrectionDisabled()
-        .borderlessTextFieldStyle()
-        .padding(1)
-    }
-    
-    var copyButton: some View {
-        Button {
-            handleCopyCode()
-        } label: {
-            Image(systemName: "square.on.square")
-        }
     }
     
     var button: some View {
@@ -81,18 +54,6 @@ struct UseReferralCodeView: View {
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
-    }
-    
-    var errorText: some View {
-        Text(NSLocalizedString(errorMessage, comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.invalidRed)
-    }
-    
-    private func handleCopyCode() {
-        errorMessage = "sameUseReferralCodeErrorMessage"
-        showError = true
     }
 }
 
