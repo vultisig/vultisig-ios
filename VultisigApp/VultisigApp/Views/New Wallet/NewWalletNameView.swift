@@ -17,6 +17,7 @@ struct NewWalletNameView: View {
     @State var didSet = false
     @State var isLinkActive = false
     @State var showAlert = false
+    @FocusState private var isNameFocused: Bool
     
     @Query var vaults: [Vault]
     
@@ -30,6 +31,9 @@ struct NewWalletNameView: View {
             Spacer()
             button
         }
+        .onAppear() {
+            isNameFocused = true
+        }
         .alert(isPresented: $showAlert) {
             alert
         }
@@ -41,6 +45,10 @@ struct NewWalletNameView: View {
                 .font(.body16BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
+                .focused($isNameFocused)
+                .onSubmit {
+                    verifyVault()
+                }
             
             if !name.isEmpty {
                 clearButton

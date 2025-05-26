@@ -626,3 +626,4 @@
 "wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
 "wantToSignPrivately" = "Möchtest du privat signieren?";
 "overview" = "Übersicht";
+"keygenFailedErrorMessage" = "Keygen fehlgeschlagen\nBitte versuche es erneut";

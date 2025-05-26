@@ -431,7 +431,11 @@ private extension SwapCryptoViewModel {
                 throw Errors.insufficientFunds
             }
         } catch {
-            self.error = error
+            if let error = error as? URLError, error.code == .cancelled {
+                print("request cancelled")
+            } else {
+                self.error = error
+            }
         }
     }
     

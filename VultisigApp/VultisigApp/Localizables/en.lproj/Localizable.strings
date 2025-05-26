@@ -657,3 +657,4 @@
 "wantToCreateVaultPrivately" = "Want to create vault privately?";
 "wantToSignPrivately" = "Want to sign privately?";
 "overview" = "Overview";
+"keygenFailedErrorMessage" = "Keygen failed\nPlease try again";

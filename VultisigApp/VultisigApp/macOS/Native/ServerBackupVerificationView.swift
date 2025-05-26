@@ -19,7 +19,7 @@ struct ServerBackupVerificationView: View {
     @Binding var tabIndex: Int
     @Binding var goBackToEmailSetup: Bool
 
-    @FocusState private var focusedField: Int?
+    @FocusState var focusedField: Int?
 
     @State var otp: [String] = Array(repeating: "", count: codeLength)
 
@@ -71,29 +71,6 @@ struct ServerBackupVerificationView: View {
             .font(.body14BrockmannMedium)
             .foregroundColor(.extraLightGray)
     }
-    
-    var field: some View {
-        HStack(spacing: 8) {
-            ForEach(0 ..< Self.codeLength, id: \.self) { index in
-                TextField("", text: $otp[index])
-                    .foregroundColor(.neutral0)
-                    .disableAutocorrection(true)
-                    .borderlessTextFieldStyle()
-                    .font(.body16BrockmannMedium)
-                    .frame(width: 46, height: 46)
-                    .background(Color.blue600)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(getBorderColor(index), lineWidth: 1)
-                    )
-                    .focused($focusedField, equals: index)
-                    .onChange(of: otp[index]) { _, newValue in
-                        handleInputChange(newValue, index: index)
-                    }
-            }
-        }
-    }
 
     private var cancelButton: some View {
         Button {
@@ -114,9 +91,9 @@ struct ServerBackupVerificationView: View {
         .buttonStyle(.plain)
     }
 
-    private func handleInputChange(_ newValue: String, index: Int) {
+    func handleInputChange(_ newValue: String, index: Int) {
         if newValue.count > 1 {
-            otp[index] = String(newValue.last!)
+            pasteCode()
         }
 
         if !newValue.isEmpty && index < Self.codeLength - 1 {
@@ -130,7 +107,7 @@ struct ServerBackupVerificationView: View {
         }
     }
 
-    private func getBorderColor(_ index: Int) -> Color {
+    func getBorderColor(_ index: Int) -> Color {
         if showAlert {
             return .alertRed
         } else {
@@ -195,7 +172,7 @@ struct ServerBackupVerificationView: View {
             )
 
             if isSuccess {
-                tabIndex += 1
+                tabIndex = 3
                 isPresented = false
                 
                 if tssType == .Migrate {

@@ -610,3 +610,4 @@
 "wantToCreateVaultPrivately" = "Deseja criar o cofre de forma privada?";
 "wantToSignPrivately" = "Deseja assinar de forma privada?";
 "overview" = "Visão geral";
+"keygenFailedErrorMessage" = "Falha no Keygen\nTente novamente";

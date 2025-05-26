@@ -7,6 +7,7 @@
 
 #if os(macOS)
 import AppKit
+import UniformTypeIdentifiers
 
 enum OnDropQRError: Error {
     case noItems
@@ -48,7 +49,7 @@ class OnDropQRUtils {
         
         for provider in providers {
             dispatchGroup.enter()
-            provider.loadItem(forTypeIdentifier: "public.data", options: nil) { (item, error) in
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (item, error) in
                 if let error = error {
                     dropError = error
                     dispatchGroup.leave()

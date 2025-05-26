@@ -96,13 +96,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
         
         if coin == .zcash {
-            plan = BitcoinTransactionPlan.with {
-                $0.amount = plan.amount
-                $0.fee = plan.fee
-                $0.change = plan.change
-                $0.branchID = Data(hexString: "5510e7c8")! // Correct hex string
-                $0.utxos = plan.utxos
-            }
+            plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
         
         input.plan = plan
@@ -179,13 +173,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan = BitcoinTransactionPlan.with {
-                $0.amount = plan.amount
-                $0.fee = plan.fee
-                $0.change = plan.change
-                $0.branchID = Data(hexString: "5510e7c8")! // Correct hex string
-                $0.utxos = plan.utxos
-            }
+            plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
 
         input.plan = plan
@@ -197,13 +185,7 @@ class UTXOChainsHelper {
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
 
         if coin == .zcash {
-            plan = BitcoinTransactionPlan.with {
-                $0.amount = plan.amount
-                $0.fee = plan.fee
-                $0.change = plan.change
-                $0.branchID = Data(hexString: "5510e7c8")! // Correct hex string
-                $0.utxos = plan.utxos
-            }
+            plan .branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
         
         return plan

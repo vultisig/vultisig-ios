@@ -609,3 +609,4 @@
 "wantToCreateVaultPrivately" = "Želite li stvoriti trezor privatno?";
 "wantToSignPrivately" = "Želite li potpisivati privatno?";
 "overview" = "Pregled";
+"keygenFailedErrorMessage" = "Keygen nije uspio\nPokušajte ponovno";

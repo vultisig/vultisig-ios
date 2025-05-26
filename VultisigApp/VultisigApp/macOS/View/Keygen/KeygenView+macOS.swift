@@ -29,12 +29,15 @@ extension KeygenView {
                 }
                 states
             }
-            Spacer()
             
             if progressCounter < 4 {
                 if viewModel.status == .KeygenFailed {
+                    errorMessage
+                    Spacer()
                     retryButton
+                        .padding(.bottom)
                 } else {
+                    Spacer()
                     progressContainer
                 }
             }
@@ -43,6 +46,10 @@ extension KeygenView {
     
     var progressContainer: some View {
         KeygenProgressContainer(progressCounter: progressCounter)
+    }
+    
+    var errorMessage: some View {
+        ErrorMessage(text: "keygenFailedErrorMessage")
     }
 }
 #endif
