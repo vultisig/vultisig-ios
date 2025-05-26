@@ -125,29 +125,34 @@ struct UnbondView: View {
     
     var body: some View {
         VStack {
-            GenericSelectorDropDown(
-                items: Binding.constant(viewModel.assets),
-                selected: Binding(
-                    get: { viewModel.selectedAsset },
-                    set: { viewModel.selectedAsset = $0 }
-                ),
-                mandatoryMessage: "*",
-                descriptionProvider: { $0.value },
-                onSelect: { asset in
-                    viewModel.selectedAsset = asset
-                    viewModel.assetValid = asset.value.lowercased() != "Node".lowercased()
-                    
-                    if let bond = viewModel.findBondByIdentifier(asset.value) {
-                        viewModel.amount = bond.bondAmount
-                        viewModel.nodeAddress = bond.nodeAddress
+            
+            if viewModel.assets.count > 0 {
+                
+                GenericSelectorDropDown(
+                    items: Binding.constant(viewModel.assets),
+                    selected: Binding(
+                        get: { viewModel.selectedAsset },
+                        set: { viewModel.selectedAsset = $0 }
+                    ),
+                    mandatoryMessage: "*",
+                    descriptionProvider: { $0.value },
+                    onSelect: { asset in
+                        viewModel.selectedAsset = asset
+                        viewModel.assetValid = asset.value.lowercased() != "Node".lowercased()
                         
-                        self.amountText = bond.bondAmount.formatDecimalToLocale()
-                        
-                        viewModel.lastUpdateTime = Date()
-                        viewModel.objectWillChange.send()
+                        if let bond = viewModel.findBondByIdentifier(asset.value) {
+                            viewModel.amount = bond.bondAmount
+                            viewModel.nodeAddress = bond.nodeAddress
+                            
+                            self.amountText = bond.bondAmount.formatDecimalToLocale()
+                            
+                            viewModel.lastUpdateTime = Date()
+                            viewModel.objectWillChange.send()
+                        }
                     }
-                }
-            )
+                )
+                
+            }
             
             FunctionCallAddressTextField(
                 memo: viewModel,
@@ -183,9 +188,7 @@ struct UnbondView: View {
                     .background(Color.blue600)
                     .cornerRadius(12)
                     .onChange(of: amountText) { _, newValue in
-                        if let decimal = Decimal(string: newValue.replacingOccurrences(of: ",", with: ".")) {
-                            viewModel.amount = decimal
-                        }
+                        viewModel.amount = newValue.toDecimal()
                     }
             }
             
@@ -200,11 +203,7 @@ struct UnbondView: View {
             )
         }
         .onAppear {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 8
-            formatter.minimumFractionDigits = 4
-            amountText = formatter.string(from: viewModel.amount as NSDecimalNumber) ?? "0"
+            amountText = viewModel.amount.formatDecimalToLocale()
         }
     }
 }

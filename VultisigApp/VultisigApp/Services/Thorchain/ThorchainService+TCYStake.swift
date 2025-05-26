@@ -119,9 +119,7 @@ extension ThorchainService {
     }
     
     func fetchNodeBonds(address: String, completion: @escaping ([ThorchainActiveNodeBondResponse]) -> Void) {
-        //let urlString = "https://midgard.ninerealms.com/v2/bonds/\(address)"
-        
-        let urlString = "https://midgard.ninerealms.com/v2/bonds/thor1fpyaj39rdlc5f80kulq55tqlvku4t66gq5pvqk"
+        let urlString = Endpoint.fetchNodeBonds(address: address)
         guard let url = URL(string: urlString) else {
             completion([])
             return
