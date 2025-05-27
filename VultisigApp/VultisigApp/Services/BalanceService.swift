@@ -51,6 +51,9 @@ class BalanceService {
                             do {
                                 let rawBalance = try await fetchBalance(for: coin)
                                 try await updateCoin(coin, rawBalance: rawBalance)
+                                
+                                let stakedBalance = try await fetchStakedBalance(for: coin)
+                                try await updateCoin(coin, stakedBalance: stakedBalance)
                             } catch {
                                 print("Fetch Balances error: \(error.localizedDescription)")
                             }
@@ -74,6 +77,10 @@ class BalanceService {
         do {
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
+            
+            let stakedBalance = try await fetchStakedBalance(for: coin)
+            try await updateCoin(coin, stakedBalance: stakedBalance)
+            
             try await Storage.shared.save()
         } catch {
             print("Fetch Balance error: \(error.localizedDescription)")
@@ -83,9 +90,87 @@ class BalanceService {
 
 private extension BalanceService {
     
+    func fetchStakedBalance(for coin: Coin) async throws -> String {
+        switch coin.chain {
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+            return .zero
+            
+        case .thorChain:
+            // Handle TCY staked balance
+            if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
+                let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
+                return tcyStakedBalance.description
+            }
+
+            // Handle merge account balances for non-native tokens
+            if !coin.isNativeToken {
+                let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
+                
+                if let matchedAccount = mergedAccounts.first(where: {
+                    $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
+                }) {
+                    let amountInDecimal = matchedAccount.size.amount.toDecimal() / Decimal(100_000_000)
+                    return amountInDecimal.description
+                }
+            }
+
+            // Fallback return value
+            return "0"
+            
+        case .solana:
+            return .zero
+            
+        case .sui:
+            return .zero
+            
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
+            return .zero
+            
+        case .gaiaChain:
+            return .zero
+            
+        case .dydx:
+            return .zero
+            
+        case .kujira:
+            return .zero
+            
+        case .osmosis:
+            return .zero
+            
+        case .terra:
+            return .zero
+            
+        case .terraClassic:
+            return .zero
+            
+        case .noble:
+            return .zero
+         
+        case .mayaChain:
+            return .zero
+            
+        case .polkadot:
+            return .zero
+            
+        case .ton:
+            return .zero
+            
+        case .ripple:
+            return .zero
+            
+        case .akash:
+            return .zero
+            
+        case .tron:
+            return .zero
+        
+        }
+    }
+
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             return blockChairData.address?.balance?.description ?? "0"
             
@@ -99,7 +184,7 @@ private extension BalanceService {
         case .sui:
             return try await sui.getBalance(coin: coin)
             
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
             
@@ -165,5 +250,13 @@ private extension BalanceService {
         }
         
         coin.rawBalance = rawBalance
+    }
+    
+    @MainActor func updateCoin(_ coin: Coin, stakedBalance: String) async throws {
+        guard coin.stakedBalance != stakedBalance else {
+            return
+        }
+        
+        coin.stakedBalance = stakedBalance
     }
 }

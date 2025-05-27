@@ -17,6 +17,7 @@ class Coin: ObservableObject, Codable, Hashable {
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
+    var stakedBalance: String = ""
     
     var decimals: Int {
         get {
@@ -26,7 +27,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-
+    
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
@@ -90,7 +91,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 4)
+        return balanceDecimal.formatToDecimal(digits: 8) // top 8, bc if I use decimals ETH has 18....
     }
     
     var balanceInFiat: String {
@@ -103,9 +104,9 @@ class Coin: ObservableObject, Codable, Hashable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia:
             return .EVM
-        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
+        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
         case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return .Cosmos
@@ -121,7 +122,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Tron
         }
     }
-
+    
     var supportsFeeSettings: Bool {
         switch chainType {
         case .EVM, .UTXO:
@@ -130,7 +131,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return false
         }
     }
-
+    
     var feeDefault: String{
         switch self.chain {
         case .thorChain:
@@ -139,7 +140,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain:
+        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain,.ethereumSepolia:
             if self.isNativeToken {
                 return "23000"
             } else {
@@ -157,6 +158,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "200000"
         case .bitcoin,.bitcoinCash,.dash:
             return "20"
+        case .zcash:
+            return "1000" // "2000" for faster confirmation
         case .litecoin:
             return "1000"
         case .dogecoin:
@@ -189,11 +192,11 @@ class Coin: ObservableObject, Codable, Hashable {
             return "800000"
         }
     }
-
+    
     var price: Double {
         return RateProvider.shared.rate(for: self)?.value ?? 0
     }
-
+    
     func decimal(for value: BigInt) -> Decimal {
         let decimalValue = value.description.toDecimal()
         return decimalValue / pow(Decimal(10), decimals)

@@ -32,9 +32,21 @@ struct SettingsAdvancedView: View {
             )
             
             SettingToggleCell(
-                title: "MoonPay",
+                title: "ETH Testnet(Sepolia)",
+                icon: "timelapse",
+                isEnabled: $settingsViewModel.enableSepolia
+            )
+            
+            SettingToggleCell(
+                title: "MoonPay Buy",
                 icon: "creditcard",
-                isEnabled: $settingsViewModel.moonpayEnabled
+                isEnabled: $settingsViewModel.moonpayBuyEnabled
+            )
+            
+            SettingToggleCell(
+                title: "MoonPay Sell",
+                icon: "creditcard",
+                isEnabled: $settingsViewModel.moonpaySellEnabled
             )
         }
     }

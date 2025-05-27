@@ -20,10 +20,16 @@ class ERC20Helper {
         return ERC20Helper(coinType: coin.coinType)
     }
     
+    func getChainId(chain: Chain) -> String {
+        if chain == Chain.ethereumSepolia {
+            return "11155111"
+        }
+        return self.coinType.chainId
+    }
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        let coin = self.coinType
-        guard let intChainID = Int64(coin.chainId) else {
+        guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,

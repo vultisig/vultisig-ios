@@ -241,6 +241,9 @@ private extension BlockChainService {
                        toAddress: String?,
                        feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
+            
+        case .zcash:
+            return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let byteFeeValue: BigInt
             if let byteFee, !byteFee.isZero {
@@ -303,7 +306,7 @@ private extension BlockChainService {
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
             return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
             
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let baseFee = try await service.getBaseFee()
             let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)

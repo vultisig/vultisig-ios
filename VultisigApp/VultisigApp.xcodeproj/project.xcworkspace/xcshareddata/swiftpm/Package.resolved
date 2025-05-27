@@ -46,6 +46,15 @@
       }
     },
     {
+      "identity" : "mobile-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/moonpay/mobile-sdk-ios",
+      "state" : {
+        "branch" : "main",
+        "revision" : "8f687fee8b6b39d57dc181f22959c746320d93cb"
+      }
+    },
+    {
       "identity" : "rive-ios",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rive-app/rive-ios",
@@ -78,7 +87,7 @@
       "location" : "https://github.com/vultisig/walletcore-spm.git",
       "state" : {
         "branch" : "main",
-        "revision" : "746ea3fea384742d0b5e4f9f2e8df289d0f1de99"
+        "revision" : "702d2b23b3ba61a8f0aebf87d326c33656befb13"
       }
     }
   ],

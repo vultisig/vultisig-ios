@@ -138,7 +138,7 @@ enum SolanaHelper {
         guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
             throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
+        guard let _ = PublicKey(data: pubkeyData, type: .ed25519) else {
             throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
         

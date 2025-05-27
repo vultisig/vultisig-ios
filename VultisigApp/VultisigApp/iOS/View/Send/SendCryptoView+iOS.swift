@@ -58,7 +58,7 @@ extension SendCryptoView {
         .padding(.horizontal, 24)
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
-        .offset(x: -32)
+        .offset(x: -24)
     }
 }
 #endif

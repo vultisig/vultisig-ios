@@ -29,6 +29,7 @@ struct BackupPasswordSetupView: View {
             mainContent
             popup
         }
+        .sensoryFeedback(.success, trigger: vault.isBackedUp)
     }
     
     var mainContent: some View {
@@ -140,6 +141,7 @@ struct BackupPasswordSetupView: View {
     
     func fileSaved() {
         vault.isBackedUp = true
+        FileManager.default.clearTmpDirectory()
     }
     
     func dismissView() {

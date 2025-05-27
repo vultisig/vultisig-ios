@@ -21,7 +21,15 @@ struct CoinCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 15) {
             header
-            quantity
+            
+            HStack {
+                quantity
+                if !coin.stakedBalance.isEmpty, coin.stakedBalance != .zero {
+                    Spacer()
+                    stakedAmount
+                }
+                
+            }
         }
     }
     
@@ -44,6 +52,38 @@ struct CoinCell: View {
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
+    }
+    
+    var stakedAmount: some View {
+        
+        if coin.ticker.uppercased() == "TCY".uppercased() {
+            
+            Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Staked")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+            
+        } else {
+            
+            if coin.isNativeToken {
+                
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Bonded")
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+                
+                
+            } else {
+                
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Merged")
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
+                
+            }
+            
+        }
+        
     }
     
     var amount: some View {

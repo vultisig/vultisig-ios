@@ -115,14 +115,9 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
-        let success = url.startAccessingSecurityScopedResource()
+        let _ = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         
-        guard success else {
-            alertTitle = "Permission denied for accessing the file."
-            showAlert = true
-            return
-        }
         do {
             
             let data = try Data(contentsOf: url)
@@ -267,13 +262,14 @@ class EncryptedBackupViewModel: ObservableObject {
                 .setDefaultCoinsOnce(vault: backupVault.vault, defaultChains: defaultChains)
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
+            showAlert = false
             isLinkActive = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            
             // fallback
             do{
-                let vault = try decoder.decode(Vault.self,
-                                               from: vaultData)
+                let vault = try decoder.decode(Vault.self, from: vaultData)
                 
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
                     alertTitle = "vaultAlreadyExists"
@@ -285,6 +281,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
                 modelContext.insert(vault)
                 selectedVault = vault
+                showAlert = false
                 isLinkActive = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
@@ -309,7 +306,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak" ||  fileExtension == "vult" {
+        if fileExtension == "dat" || fileExtension == "bak" || fileExtension == "vult" || fileExtension == "txt" {
             return true
         } else {
             return false
@@ -331,8 +328,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     showInvalidFormatAlert()
                     return
                 }
-                
-                importedFileName = url.lastPathComponent
+                importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                 importFile(from: url)
             }
         case .failure(let error):
@@ -345,8 +341,7 @@ class EncryptedBackupViewModel: ObservableObject {
             showInvalidFormatAlert()
             return
         }
-        
-        importedFileName = url.lastPathComponent
+        importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
         importFile(from: url)
     }
     
@@ -367,7 +362,7 @@ class EncryptedBackupViewModel: ObservableObject {
                                 self.showInvalidFormatAlert()
                                 return
                             }    
-                            self.importedFileName = url.lastPathComponent
+                            self.importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                             self.importDragDropFile(content: data)
                         }
                     }

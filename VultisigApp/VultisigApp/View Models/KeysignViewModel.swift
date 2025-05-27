@@ -447,10 +447,10 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         throw error
                     }
-                case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync:
+                case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia:
                     let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
-                case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+                case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {

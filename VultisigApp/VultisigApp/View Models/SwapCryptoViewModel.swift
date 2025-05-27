@@ -39,7 +39,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var showToChainSelector = false
     @Published var showFromCoinSelector = false
     @Published var showToCoinSelector = false
-
+    @Published var showAllPercentageButtons = true
+    
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }
@@ -430,7 +431,11 @@ private extension SwapCryptoViewModel {
                 throw Errors.insufficientFunds
             }
         } catch {
-            self.error = error
+            if let error = error as? URLError, error.code == .cancelled {
+                print("request cancelled")
+            } else {
+                self.error = error
+            }
         }
     }
     

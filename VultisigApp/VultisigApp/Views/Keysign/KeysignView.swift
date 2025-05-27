@@ -20,12 +20,17 @@ struct KeysignView: View {
     @StateObject var viewModel = KeysignViewModel()
     
     @State var showAlert = false
+    @State var showDoneText = false
+    @State var showError = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
     var body: some View {
         container
+            .sensoryFeedback(.success, trigger: showDoneText)
+            .sensoryFeedback(.error, trigger: showError)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
     }
     
     var content: some View {
@@ -40,9 +45,9 @@ struct KeysignView: View {
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
-                SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+                sendCryptoKeysignView
             case .KeysignVaultMismatch:
-                KeysignVaultMismatchErrorView()
+                keysignVaultMismatchErrorView
             }
             
             PopupCapsule(text: "hashCopied", showPopup: $showAlert)
@@ -64,6 +69,9 @@ struct KeysignView: View {
                 forJoinKeysign
             }
         }
+        .onAppear {
+            showDoneText = true
+        }
     }
     
     var forStartKeysign: some View {
@@ -77,6 +85,20 @@ struct KeysignView: View {
             }
             .onDisappear {
                 globalStateViewModel.showKeysignDoneView = false
+            }
+    }
+    
+    var sendCryptoKeysignView: some View {
+        SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+            .onAppear {
+                showError = true
+            }
+    }
+    
+    var keysignVaultMismatchErrorView: some View {
+        KeysignVaultMismatchErrorView()
+            .onAppear {
+                showError = true
             }
     }
     

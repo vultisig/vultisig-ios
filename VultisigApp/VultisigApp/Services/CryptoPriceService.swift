@@ -191,7 +191,7 @@ private extension CryptoPriceService {
     
     private func coinGeckoPlatform(chain: Chain) -> String {
         switch chain {
-        case .ethereum:
+        case .ethereum,.ethereumSepolia:
             return "ethereum"
         case .avalanche:
             return "avalanche"
@@ -209,7 +209,7 @@ private extension CryptoPriceService {
             return "binance-smart-chain"
         case .zksync:
             return "zksync"
-        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron:
+        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash:
             return .empty
         }
     }

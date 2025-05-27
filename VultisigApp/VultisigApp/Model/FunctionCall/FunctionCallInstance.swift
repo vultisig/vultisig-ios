@@ -122,9 +122,7 @@ enum FunctionCallInstance {
             return memo.amount
         case .stakeTcy(let memo):
             return memo.amount
-        case .stakeTcy(let memo):
-            return memo.amount
-        case .unstakeTcy(let memo):
+        case .unstakeTcy(_):
             return .zero // The amount goes in the memo
         case .unstake(let memo):
             return memo.amount  // You must send 1 TON to unstake with a "w" memo

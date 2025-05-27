@@ -63,7 +63,9 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
     }
     
-    
+    static func fetchThorchainMergedAssets() -> String {
+        "https://api.rujira.network/api/graphiql"
+    }
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
@@ -138,6 +140,8 @@ class Endpoint {
     static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
     
     static let ethServiceRpcService = "https://api.vultisig.com/eth/"
+    
+    static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
     
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
@@ -404,6 +408,9 @@ class Endpoint {
     static func triggerSolidityConstantContractTron() -> String {
         "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
     }
+    static func moonPaySignatureUrl() -> URL {
+      return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
+    }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     
@@ -419,6 +426,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/transaction/\(txid)"
         case .dash:
             return "https://blockchair.com/dash/transaction/\(txid)"
+        case .zcash:
+            return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
             return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case .solana:
@@ -471,6 +480,8 @@ class Endpoint {
             return "https://www.mintscan.io/akash/tx/\(txid)"
         case .tron:
             return "https://tronscan.org/#/transaction/\(txid)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/tx/\(txid)"
         }
     }
     
@@ -486,12 +497,16 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
         case .thorChain:
             return "https://runescan.io/address/\(address)"
         case .solana:
             return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .dydx:
@@ -550,6 +565,8 @@ class Endpoint {
             return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .dydx:
@@ -570,6 +587,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
         case .arbitrum:

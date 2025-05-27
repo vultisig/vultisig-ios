@@ -12,7 +12,7 @@ extension CoinAction {
     static var swapChains: [Chain] = [
         .solana,.bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash,
         .thorChain, .mayaChain, .ethereum, .avalanche, .base, .arbitrum,
-        .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync
+        .polygon, .polygonV2, .optimism, .bscChain, .gaiaChain, .kujira, .zksync, .zcash
     ]
     
     static var memoChains: [Chain] = [
@@ -24,7 +24,21 @@ extension Chain {
     
     var defaultActions: [CoinAction] {
         var actions: [CoinAction] = [.send] // always include send
-        
+#if os(iOS)
+        let hasMoonPayEnabledSet = UserDefaults.standard.value(forKey: "moonpayBuyEnabled")
+        // when moonpayBuyEnabled has not been set , set it to true
+        if hasMoonPayEnabledSet == nil {
+            UserDefaults.standard.set(true, forKey: "moonpayBuyEnabled")
+        }
+        let enableMoonpayBuy = UserDefaults.standard.bool(forKey: "moonpayBuyEnabled")
+        if enableMoonpayBuy {
+            actions.append(.buy)
+        }
+        let enableMoonpaySell = UserDefaults.standard.bool(forKey: "moonpaySellEnabled")
+        if enableMoonpaySell {
+            actions.append(.sell)
+        }
+#endif
         if CoinAction.swapChains.contains(self) {
             actions.append(.swap)
         }

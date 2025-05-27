@@ -22,6 +22,7 @@ struct PasswordBackupOptionsView: View {
             Background()
             content
         }
+        .sensoryFeedback(.success, trigger: vault.isBackedUp)
         .navigationDestination(isPresented: $homeLinkActive) {
             HomeView(selectedVault: vault)
         }
@@ -98,6 +99,7 @@ struct PasswordBackupOptionsView: View {
     
     func fileSaved() {
         vault.isBackedUp = true
+        FileManager.default.clearTmpDirectory()
     }
     
     func dismissView() {

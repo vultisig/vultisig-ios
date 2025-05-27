@@ -17,8 +17,12 @@ struct SendCryptoAmountTextField: View {
     
     var body: some View {
         HStack(spacing: 0) {
+#if os(iOS)
+            container.keyboardType(.decimalPad)
+#endif
+#if os(macOS)
             container
-            
+#endif
             if showButton {
                 maxButton
             }

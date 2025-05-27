@@ -606,12 +606,12 @@ enum Utils {
             let success = url.startAccessingSecurityScopedResource()
             defer { url.stopAccessingSecurityScopedResource() }
             
+#if os(iOS)
             guard success else {
                 print("Failed to access URL")
                 throw UtilsQrCodeFromImageError.URLInaccessible
             }
             
-#if os(iOS)
             if let imageData = try? Data(contentsOf: url), let selectedImage = UIImage(data: imageData) {
                 let qrStrings = Utils.detectQRCode(selectedImage)
                 

@@ -467,7 +467,7 @@
 "moreInfo" = "Više informacija";
 "moreInfoDescription" = "Ovo se događa jer se lozinka koristi za lokalno šifriranje datoteke sigurnosne kopije, slično kao što se šifrira tvrdi disk. U sljedećem koraku imate mogućnost dodati savjet.";
 "connectingWithServer..." = "Povezivanje sa serverom...";
-"shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo minutu";
+"shouldOnlyTakeAMinute..." = "Ovo bi trebalo trajati samo sekundu";
 "enter5DigitVerificationCode" = "Unesite 4-znamenkasti kod koji smo vam poslali e-mailom";
 "enter5DigitVerificationCodeDescription" = "Ovaj kod potvrđuje da ste primili svoj vault dio putem e-maila";
 "verifyingCodePleaseWait" = "Provjera koda, pričekajte";
@@ -606,3 +606,7 @@
 "close" = "Zatvori";
 "vaultTypeDoesnotMatch" = " Vrsta trezora se ne podudara";
 "failedToLoadFileData" = "Greška pri učitavanju podataka datoteke";
+"wantToCreateVaultPrivately" = "Želite li stvoriti trezor privatno?";
+"wantToSignPrivately" = "Želite li potpisivati privatno?";
+"overview" = "Pregled";
+"keygenFailedErrorMessage" = "Keygen nije uspio\nPokušajte ponovno";

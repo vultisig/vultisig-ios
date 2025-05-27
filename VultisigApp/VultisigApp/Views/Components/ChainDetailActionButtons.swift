@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChainDetailActionButtons: View {
+    var isChainDetail: Bool
     @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
     @Binding var isSendLinkActive: Bool
@@ -30,6 +31,10 @@ struct ChainDetailActionButtons: View {
                     memoButton
                 case .deposit, .bridge:
                     ActionButton(title: "function", fontColor: action.color)
+                case .buy:
+                    buyButton
+                case .sell:
+                    sellButton
                 }
             }
         }
@@ -48,7 +53,7 @@ struct ChainDetailActionButtons: View {
             }
         }
     }
-    
+
     var memoButton: some View {
         Button {
             isMemoLinkActive = true
@@ -64,6 +69,7 @@ struct ChainDetailActionButtons: View {
             ActionButton(title: "send", fontColor: .turquoise600)
         }
     }
+    
     
     var swapButton: some View {
         Button {
@@ -81,6 +87,7 @@ struct ChainDetailActionButtons: View {
 
 #Preview {
     ChainDetailActionButtons(
+        isChainDetail:false,
         group: GroupedChain.example,
         isLoading: .constant(false),
         isSendLinkActive: .constant(false),

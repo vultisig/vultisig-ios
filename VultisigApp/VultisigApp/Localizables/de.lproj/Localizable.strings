@@ -484,7 +484,7 @@
 "moreInfo" = "Mehr Infos";
 "moreInfoDescription" = "Dies geschieht, weil das Passwort verwendet wird, um die Sicherungsdatei lokal zu verschlüsseln, ähnlich wie eine Festplatte verschlüsselt wird. Im folgenden Schritt haben Sie die Möglichkeit, einen Hinweis hinzuzufügen.";
 "connectingWithServer..." = "Verbindung mit dem Server wird hergestellt...";
-"shouldOnlyTakeAMinute..." = "Das sollte nur eine Minute dauern";
+"shouldOnlyTakeAMinute..." = "Das sollte nur eine Sekunde dauern";
 "enter5DigitVerificationCode" = "Geben Sie den 4-stelligen Code ein, den wir Ihnen per E-Mail gesendet haben";
 "enter5DigitVerificationCodeDescription" = "Dieser Code bestätigt, dass Sie Ihren Tresoranteil per E-Mail erhalten haben";
 "verifyingCodePleaseWait" = "Code wird überprüft, bitte warten";
@@ -623,3 +623,7 @@
 "close" = "Schließen";
 "vaultTypeDoesnotMatch" = "Tresortyp stimmt nicht überein";
 "failedToLoadFileData" = "Fehler beim Laden der Dateidaten"; 
+"wantToCreateVaultPrivately" = "Möchtest du den Tresor privat erstellen?";
+"wantToSignPrivately" = "Möchtest du privat signieren?";
+"overview" = "Übersicht";
+"keygenFailedErrorMessage" = "Keygen fehlgeschlagen\nBitte versuche es erneut";

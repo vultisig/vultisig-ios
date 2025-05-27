@@ -48,16 +48,6 @@ struct SwapCryptoDoneView: View {
         }
     }
     
-    var buttons: some View {
-        HStack(spacing: 8) {
-            trackButton
-            doneButton
-        }
-        .padding(.top)
-        .padding(.horizontal, 18)
-        .background(Color.backgroundBlue)
-    }
-    
     var trackButton: some View {
         Button {
             if let progressLink, let url = URL(string: progressLink) {
