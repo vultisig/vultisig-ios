@@ -467,7 +467,7 @@
 "moreInfo" = "Más información";
 "moreInfoDescription" = "Esto ocurre porque la contraseña se utiliza para cifrar localmente el archivo de copia de seguridad, de forma similar a cómo se cifra un disco duro. En el siguiente paso, tienes la opción de añadir una pista.";
 "connectingWithServer..." = "Conectando con el servidor...";
-"shouldOnlyTakeAMinute..." = "Esto debería tardar solo un minuto";
+"shouldOnlyTakeAMinute..." = "Esto debería tardar solo un segundo";
 "enter5DigitVerificationCode" = "Introduce el código de 4 dígitos que te enviamos por correo electrónico";
 "enter5DigitVerificationCodeDescription" = "Este código confirmará que has recibido tu parte del vault por correo electrónico";
 "verifyingCodePleaseWait" = "Verificando código, por favor espera";
