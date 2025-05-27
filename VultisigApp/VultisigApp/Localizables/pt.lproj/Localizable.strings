@@ -468,7 +468,7 @@
 "moreInfo" = "Mais informações";
 "moreInfoDescription" = "Isto ocorre porque a senha é usada para criptografar localmente o arquivo de backup, de forma semelhante a como um disco rígido é criptografado. Na etapa seguinte, você tem a opção de adicionar uma dica.";
 "connectingWithServer..." = "Conectando-se ao servidor...";
-"shouldOnlyTakeAMinute..." = "Isso deve levar apenas um minuto";
+"shouldOnlyTakeAMinute..." = "Isso deve levar apenas um segundo";
 "enter5DigitVerificationCode" = "Digite o código de 4 dígitos que enviamos por e-mail";
 "enter5DigitVerificationCodeDescription" = "Este código confirmará que você recebeu sua parte do cofre por e-mail";
 "verifyingCodePleaseWait" = "Verificando código, aguarde";
