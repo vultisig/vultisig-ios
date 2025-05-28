@@ -140,7 +140,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain,.ethereumSepolia:
+        case .ethereum,.avalanche, .bscChain,.ethereumSepolia:
             if self.isNativeToken {
                 return "23000"
             } else {
@@ -148,7 +148,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .arbitrum:
             return "120000"
-        case .base,.blast,.optimism,.cronosChain:
+        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2:
             if self.isNativeToken {
                 return "40000"
             } else {

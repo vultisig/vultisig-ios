@@ -73,7 +73,9 @@ extension Coin {
             return [.thorchain]
         case .blast, .solana:
             return [.lifi]
-        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron,.ethereumSepolia, .zcash:
+        case .zcash:
+            return [.mayachain]
+        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron,.ethereumSepolia:
             return []
         }
     }
@@ -99,7 +101,7 @@ private extension Coin {
     }
     
     var thorEthTokens: [String] {
-        return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX"]
+        return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX", "vTHOR"]
     }
     
     var thorBscTokens: [String] {
