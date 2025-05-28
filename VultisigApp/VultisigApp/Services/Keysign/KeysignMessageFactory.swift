@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import BigInt
+import WalletCore
 
 struct KeysignMessageFactory {
 
@@ -29,9 +31,17 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 
-                if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) ||
-                    (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
-                    break // should use the regular thorchain message for deposit
+                if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) {
+                    let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                    return messages
+                } else if (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
+                    if swapPayload.fromCoin.isNativeToken {
+                        let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                        messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                        return messages
+                    }
+                    break
                 }
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
@@ -45,7 +55,12 @@ struct KeysignMessageFactory {
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
             case .mayachain:
-                break // No op - Regular transaction with memo
+                break
+            case .eldorito(let swapPayload):
+                if swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain && !swapPayload.fromCoin.isNativeToken {
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(payload: swapPayload.toOneInchSwapPayload(), keysignPayload: self.payload, incrementNonce: incrementNonce)
+                }
             }
         }
 

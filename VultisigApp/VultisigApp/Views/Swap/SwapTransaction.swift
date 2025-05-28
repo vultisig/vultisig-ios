@@ -35,7 +35,17 @@ class SwapTransaction: ObservableObject {
     }
     
     var isDeposit: Bool {
-        return fromCoin.chain == .mayaChain
+        // isDeposit should be true for Maya chain swaps
+        if fromCoin.chain == .mayaChain {
+            return true
+        }
+        
+        // isDeposit should be true for Thor/Base swaps
+        if (fromCoin.chain == .thorChain && toCoin.chain == .base) {
+            return true
+        }
+        
+        return false
     }
     
     var fee: BigInt {

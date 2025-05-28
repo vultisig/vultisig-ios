@@ -28,10 +28,16 @@ class ERC20Helper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-
+        print("💰 ERC20: Building transaction for \(keysignPayload.coin.ticker) on \(keysignPayload.coin.chain.rawValue)")
+        print("💰 ERC20: Contract address: \(keysignPayload.coin.contractAddress)")
+        print("💰 ERC20: To address: \(keysignPayload.toAddress)")
+        print("💰 ERC20: Amount: \(keysignPayload.toAmount)")
+        
         guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
+        print("💰 ERC20: Chain ID: \(intChainID)")
+        
         guard case .Ethereum(let maxFeePerGasWei,
                           let priorityFeeWei,
                           let nonce,
@@ -39,6 +45,12 @@ class ERC20Helper {
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
+        
+        print("💰 ERC20: Fee parameters from chain specific:")
+        print("💰 ERC20: Max fee per gas: \(maxFeePerGasWei)")
+        print("💰 ERC20: Priority fee: \(priorityFeeWei)")
+        print("💰 ERC20: Nonce: \(nonce)")
+        print("💰 ERC20: Gas limit: \(gasLimit)")
         
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: intChainID.hexString())!
@@ -48,6 +60,12 @@ class ERC20Helper {
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.coin.contractAddress
             $0.txMode = .enveloped
+            
+            print("💰 ERC20: Serialized gas parameters:")
+            print("💰 ERC20: Gas limit: \($0.gasLimit.hexString)")
+            print("💰 ERC20: Max fee per gas: \($0.maxFeePerGas.hexString)")
+            print("💰 ERC20: Priority fee: \($0.maxInclusionFeePerGas.hexString)")
+            
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
@@ -60,12 +78,17 @@ class ERC20Helper {
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        print("💰 ERC20: Getting pre-signed image hash")
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        print("💰 ERC20: Input data size: \(inputData.count) bytes")
+        
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
+            print("💰 ERC20: ⚠️ Error in pre-signing: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
+        print("💰 ERC20: Generated hash: \(preSigningOutput.dataHash.hexString)")
         return [preSigningOutput.dataHash.hexString]
     }
     
@@ -74,6 +97,7 @@ class ERC20Helper {
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
+        print("💰 ERC20: Creating signed transaction for \(keysignPayload.coin.ticker)")
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
@@ -104,7 +128,13 @@ class ERC20Helper {
             let output = try EthereumSigningOutput(serializedBytes: compileWithSignature)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                  transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-            return result
+        
+        print("💰 ERC20: Signed transaction created successfully")
+        print("💰 ERC20: Transaction hash: \(result.transactionHash)")
+        print("💰 ERC20: Raw transaction first 100 chars: \(result.rawTransaction.prefix(100))...")
+        print("💰 ERC20: Transaction size: \(result.rawTransaction.count) chars")
+        
+        return result
         } catch {
             throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
         }

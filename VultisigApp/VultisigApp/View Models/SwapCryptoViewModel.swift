@@ -1,9 +1,4 @@
-//
-//  SwapCryptoViewModel.swift
-//  VultisigApp
-//
-//  Created by Artur Guseinov on 02.04.2024.
-//
+
 
 import SwiftUI
 import BigInt
@@ -13,7 +8,7 @@ import Mediator
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let titles = ["swap", "swapOverview", "pair", "keysign", "done"]
-
+    
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
@@ -27,7 +22,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var currentTitle = "swap"
     @Published var hash: String?
     @Published var approveHash: String?
-
+    
     @Published var error: Error?
     @Published var isLoading = false
     @Published var dataLoaded = false
@@ -185,13 +180,58 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
+    func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
+        // Check if this is an ERC20 token that requires approval
+        if !tx.fromCoin.isNativeToken {
+            // For El Dorito swaps (Base ERC20 to RUNE), we need to check for the approvalAddress
+            if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain,
+               let quote = tx.quote {
+                switch quote {
+                case .thorchain(let thorchainQuote):
+                    // Try to get the approval address from the meta data
+                    if let approvalAddress = getApprovalAddressFromQuote(tx: tx) {
+                        // Create an approval payload with the maximum uint256 value
+                        // This allows the router to spend any amount of tokens
+                        let maxUint256 = BigInt("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", radix: 16)!
+                        return ERC20ApprovePayload(amount: maxUint256, spender: approvalAddress)
+                    }
+                default:
+                    break
+                }
+            }
+        }
+        
         guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }
         let amount = tx.amountInCoinDecimal
         let payload = ERC20ApprovePayload(amount: amount, spender: spender)
         return payload
+    }
+    
+    private func getApprovalAddressFromQuote(tx: SwapTransaction) -> String? {
+        // Try to get the approval address from the El Dorito quote
+        guard let quote = tx.quote else { return nil }
+        
+        switch quote {
+        case .thorchain(let thorchainQuote):
+            // For El Dorito swaps, we need to get the El Dorito quote to access the meta.approvalAddress
+            Task {
+                do {
+                    let elDoritoQuote = try await getElDoritoQuote(tx: tx)
+                    return elDoritoQuote.meta?.approvalAddress
+                } catch {
+                    print("Error getting El Dorito quote for approval address: \(error)")
+                    return nil
+                }
+            }
+            
+            // As a fallback, use the router or inbound address
+            return thorchainQuote.router ?? thorchainQuote.inboundAddress
+            
+        default:
+            return nil
+        }
     }
     
     func durationString(tx: SwapTransaction) -> String {
@@ -255,21 +295,49 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return true
                 
             case .thorchain(let quote):
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                
-                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: toAddress,
-                    amount: tx.amountInCoinDecimal,
-                    memo: quote.memo,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
-                        quote: quote,
-                        provider: .thorchain
-                    )),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
+                // Check if this is an El Dorito swap (Base ERC20 to RUNE)
+                 if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain {
+                     // For Base ERC20 to RUNE, we need to create an El Dorito swap payload
+                     let elDoritoPayload = ElDoritoSwapPayload(
+                         fromCoin: tx.fromCoin,
+                         toCoin: tx.toCoin,
+                         fromAmount: tx.fromAmount.toBigInt(),
+                         toAmountDecimal: tx.toAmountDecimal,
+                         quote: try await getElDoritoQuote(tx: tx)
+                     )
+                    
+                     // For ERC20 tokens on Base to RUNE, we need to sign a data transaction
+                     // and broadcast it to the inbound address
+                     let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                    
+                     keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                         coin: tx.fromCoin,
+                         toAddress: toAddress,
+                         amount: tx.amountInCoinDecimal,
+                         memo: quote.memo,
+                         chainSpecific: chainSpecific,
+                         swapPayload: .eldorito(elDoritoPayload),
+                         approvePayload: buildApprovePayload(tx: tx),
+                         vault: vault
+                     )
+                 } else {
+                    // Regular THORChain swap
+                    let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                    
+                    keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                        coin: tx.fromCoin,
+                        toAddress: toAddress,
+                        amount: tx.amountInCoinDecimal,
+                        memo: quote.memo,
+                        chainSpecific: chainSpecific,
+                        swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                            quote: quote,
+                            provider: .thorchain
+                        )),
+                        approvePayload: buildApprovePayload(tx: tx),
+                        vault: vault
+                    )
+                }
                 
                 return true
                 
@@ -337,7 +405,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateTimer(tx: SwapTransaction, vault: Vault) {
         timer -= 1
-
+        
         if timer < 1 {
             restartTimer(tx: tx, vault: vault)
         }
@@ -385,6 +453,31 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 }
 
 private extension SwapCryptoViewModel {
+    
+    func getElDoritoQuote(tx: SwapTransaction) async throws -> ElDoritoQuote {
+        guard let quote = tx.quote else {
+            throw Errors.unexpectedError
+        }
+        
+        switch quote {
+        case .thorchain(_):
+            // For a thorchain quote that's actually an El Dorito quote (Base to RUNE)
+            // we need to get the El Dorito quote from the El Dorito service
+            let response = try await ElDoritoService.shared.fetchQuotes(
+                chain: tx.fromCoin.chain.chainIDElDorito ?? "",
+                source: tx.fromCoin.swapAsset,
+                destination: tx.toCoin.swapAsset,
+                amount: tx.fromAmountDecimal.description,
+                from: tx.fromCoin.address,
+                to: tx.toCoin.address,
+                isAffiliate: tx.isAlliliate
+            )
+            
+            return response.quote
+        default:
+            throw Errors.unexpectedError
+        }
+    }
     
     enum Errors: String, Error, LocalizedError {
         case unexpectedError

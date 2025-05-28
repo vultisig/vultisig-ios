@@ -10,8 +10,8 @@ import Foundation
 import BigInt
 
 struct ElDoritoResponse: Codable, Hashable {
-    let quoteId: String
-    let routes: [ElDoritoQuote]
+    var quoteId: String
+    var routes: [ElDoritoQuote]
 }
 
 struct ElDoritoQuote: Codable, Hashable {
@@ -27,45 +27,38 @@ struct ElDoritoQuote: Codable, Hashable {
     let inboundAddress: String?
     let expiration: String?
     let memo: String?
-    let fees: [Fee]?
-    let tx: Transaction?
+    var fees: [Fee]?
+    var tx: Transaction?
     let estimatedTime: EstimatedTime?
     let totalSlippageBps: Int?
     let legs: [Leg]?
     let warnings: [String]?
     let meta: Meta?
-    
+
     struct Transaction: Codable, Hashable {
         let from: String
         let to: String
-        let data: String
+        let data: String?
         let value: String
-        let gasPrice: String
-        let gas: Int64
-        
-        init(from: String, to: String, data: String, value: String, gasPrice: String, gas: Int64) {
-            self.from = from
-            self.to = to
-            self.data = data
-            self.value = value
-            self.gasPrice = gasPrice
-            self.gas = gas
-        }
-        
-        init(from decoder: any Decoder) throws {
-            let container: KeyedDecodingContainer<ElDoritoQuote.Transaction.CodingKeys> = try decoder.container(keyedBy: ElDoritoQuote.Transaction.CodingKeys.self)
-            
-            self.from = try container.decode(String.self, forKey: ElDoritoQuote.Transaction.CodingKeys.from)
-            self.to = try container.decode(String.self, forKey: ElDoritoQuote.Transaction.CodingKeys.to)
-            self.data = try container.decode(String.self, forKey: ElDoritoQuote.Transaction.CodingKeys.data)
-            self.value = try container.decode(String.self, forKey: ElDoritoQuote.Transaction.CodingKeys.value)
-            self.gasPrice = try container.decode(String.self, forKey: ElDoritoQuote.Transaction.CodingKeys.gasPrice)
-            
-            let gasValue = try container.decode(Int64.self, forKey: ElDoritoQuote.Transaction.CodingKeys.gas)
-            self.gas = gasValue == 0 ? EVMHelper.defaultETHSwapGasUnit : gasValue
-        }
+        var gasPrice: String?
+        var gas: Int64?
+
+//        enum CodingKeys: String, CodingKey {
+//            case from, to, data, value, gasPrice, gas
+//        }
+//
+//        init(from decoder: Decoder) throws {
+//            let container = try decoder.container(keyedBy: CodingKeys.self)
+//            from = try container.decode(String.self, forKey: .from)
+//            to = try container.decode(String.self, forKey: .to)
+//            data = try container.decode(String.self, forKey: .data)
+//            value = try container.decode(String.self, forKey: .value)
+//            gasPrice = try? container.decodeIfPresent(String.self, forKey: .gasPrice)
+//            let gasValue = try container.decode(Int64.self, forKey: .gas)
+//            gas = gasValue == 0 ? EVMHelper.defaultETHSwapGasUnit : gasValue
+//        }
     }
-    
+
     struct Fee: Codable, Hashable {
         let type: String?
         let amount: String?
@@ -73,14 +66,14 @@ struct ElDoritoQuote: Codable, Hashable {
         let chain: String?
         let `protocol`: String?
     }
-    
+
     struct EstimatedTime: Codable, Hashable {
         let inbound: Int?
         let swap: Int?
         let outbound: Int?
         let total: Int?
     }
-    
+
     struct Leg: Codable, Hashable {
         let provider: String?
         let sellAsset: String?
@@ -90,7 +83,7 @@ struct ElDoritoQuote: Codable, Hashable {
         let buyAmountMaxSlippage: String?
         let fees: [Fee]?
     }
-    
+
     struct Meta: Codable, Hashable {
         let priceImpact: Double?
         let assets: [Asset]?
@@ -98,8 +91,9 @@ struct ElDoritoQuote: Codable, Hashable {
         let affiliateFee: String?
         let tags: [String]?
         let txType: String?
+        let approvalAddress: String?
     }
-    
+
     struct Asset: Codable, Hashable {
         let asset: String?
         let price: Double?
@@ -113,9 +107,9 @@ extension ElDoritoQuote {
               let memo = memo else {
             throw SwapError.serverError(message: "ElDoritoQuote :: We need the expectedBuyAmount, expiration and memo for this ThorchainSwapQuote")
         }
-        
-        let quote = ThorchainSwapQuote(
-            dustThreshold: nil, // No direct mapping, setting as nil
+
+        return ThorchainSwapQuote(
+            dustThreshold: nil,
             expectedAmountOut: expectedBuyAmount,
             expiry: Int(expiration ?? "0") ?? 0,
             fees: Fees(
@@ -129,19 +123,47 @@ extension ElDoritoQuote {
                     .description ?? "0"
             ),
             inboundAddress: inboundAddress,
-            inboundConfirmationBlocks: nil, // Not provided in ElDoritoQuote
-            inboundConfirmationSeconds: nil, // Not provided in ElDoritoQuote
+            inboundConfirmationBlocks: nil,
+            inboundConfirmationSeconds: nil,
             memo: memo,
-            notes: "Converted from ElDoritoQuote", // Adding a note
-            outboundDelayBlocks: 0, // Not available, setting to 0
-            outboundDelaySeconds: 0, // Not available, setting to 0
-            recommendedMinAmountIn: "0", // Not available, setting to "0"
+            notes: "Converted from ElDoritoQuote",
+            outboundDelayBlocks: 0,
+            outboundDelaySeconds: 0,
+            recommendedMinAmountIn: "0",
             slippageBps: totalSlippageBps,
             totalSwapSeconds: estimatedTime?.total,
             warning: warnings?.first ?? "",
-            router: nil // Not provided in ElDoritoQuote
+            router: nil
         )
-        
-        return quote
+    }
+}
+
+extension ElDoritoSwapPayload {
+    func toOneInchSwapPayload() throws -> OneInchSwapPayload {
+        guard let elDoritoTx = quote.tx else {
+            throw SwapError.serverError(message: "ElDoritoQuote is missing transaction data")
+        }
+
+        let oneInchTx = OneInchQuote.Transaction(
+            from: elDoritoTx.from,
+            to: elDoritoTx.to,
+            data: elDoritoTx.data ?? "",
+            value: elDoritoTx.value,
+            gasPrice: elDoritoTx.gasPrice ?? "0",
+            gas: elDoritoTx.gas ?? .zero
+        )
+
+        let oneInchQuote = OneInchQuote(
+            dstAmount: quote.expectedBuyAmount ?? "0",
+            tx: oneInchTx
+        )
+
+        return OneInchSwapPayload(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount,
+            toAmountDecimal: toAmountDecimal,
+            quote: oneInchQuote
+        )
     }
 }

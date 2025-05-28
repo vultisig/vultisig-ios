@@ -221,6 +221,26 @@ extension SwapPayload {
                     }
                 }
             })
+        case .eldorito(let payload):
+            return .oneinchSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.quote = .with {
+                    $0.dstAmount = payload.toAmountDecimal.description
+                    if let tx = payload.quote.tx {
+                        $0.tx = .with {
+                            $0.from = tx.from
+                            $0.to = tx.to
+                            $0.data = tx.data ?? ""
+                            $0.value = tx.value
+                            $0.gasPrice = tx.gasPrice ?? ""
+                            $0.gas = tx.gas ?? .zero
+                        }
+                    }
+                }
+            })
         }
     }
 }
