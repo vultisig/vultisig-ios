@@ -28,7 +28,7 @@ struct VultisigApp: App {
         WindowGroup {
             ZStack {
                 Background()
-                UseReferralCodeView()
+                ReferralOnboardingView()
             }
         }
         .modelContainer(sharedModelContainer)

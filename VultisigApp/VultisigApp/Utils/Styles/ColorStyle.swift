@@ -50,6 +50,7 @@ extension Color {
     static let checkboxBlue = Color(hex: "042436")
     
     static let miamiMarmalade = Color(hex: "F7961B")
+    static let infoBlue = Color(hex: "5CA7FF")
     
     static let reshareCellGreen = Color(hex: "15D7AC")
     static let reshareCellRed = Color(hex: "DA2E2E")
