@@ -26,10 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                Background()
-                ReferralOnboardingView()
-            }
+            content
         }
         .modelContainer(sharedModelContainer)
         
