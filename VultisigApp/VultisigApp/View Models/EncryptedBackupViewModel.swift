@@ -306,7 +306,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak" ||  fileExtension == "vult" {
+        if fileExtension == "dat" || fileExtension == "bak" || fileExtension == "vult" || fileExtension == "txt" {
             return true
         } else {
             return false
@@ -328,8 +328,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     showInvalidFormatAlert()
                     return
                 }
-                
-                importedFileName = url.lastPathComponent
+                importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                 importFile(from: url)
             }
         case .failure(let error):
@@ -342,8 +341,7 @@ class EncryptedBackupViewModel: ObservableObject {
             showInvalidFormatAlert()
             return
         }
-        
-        importedFileName = url.lastPathComponent
+        importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
         importFile(from: url)
     }
     
@@ -364,7 +362,7 @@ class EncryptedBackupViewModel: ObservableObject {
                                 self.showInvalidFormatAlert()
                                 return
                             }    
-                            self.importedFileName = url.lastPathComponent
+                            self.importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                             self.importDragDropFile(content: data)
                         }
                     }

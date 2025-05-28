@@ -501,7 +501,7 @@
 "moreInfo" = "More info";
 "moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted, In the following step, you have the option to add a hint";
 "connectingWithServer..." = "Connecting with server...";
-"shouldOnlyTakeAMinute..." = "This should only take a minute";
+"shouldOnlyTakeAMinute..." = "This should only take a second";
 "enter5DigitVerificationCode" = "Enter the 4 digit code we emailed you";
 "enter5DigitVerificationCodeDescription" = "This code will confirm that you’ve received your vault share via email";
 "verifyingCodePleaseWait" = "Verifying code, please wait";
