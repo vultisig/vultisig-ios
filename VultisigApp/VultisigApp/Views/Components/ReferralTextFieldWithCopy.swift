@@ -41,7 +41,6 @@ struct ReferralTextFieldWithCopy: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(showError ? Color.invalidRed : Color.blue200, lineWidth: 1)
         )
-        .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
         .padding(1)
