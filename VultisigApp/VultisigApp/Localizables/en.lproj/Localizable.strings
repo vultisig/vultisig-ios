@@ -673,3 +673,8 @@
 "getStarted" = "Get Started";
 "referralOnboardingBannerTitle" = "Invite friends. Earn rewards. Save on fees.";
 "referralOnboardingBannerDescription" = "Share your unique referral code to invite friends. You lower their fees and the more they trade, the more you earn — directly to your wallet.";
+"referralOverviewCheckbox1" = "The amount is correct";
+"referralOverviewCheckbox2" = "I’m sending it to the correct address";
+"youreSending" = "You’re sending";
+"estNetworkFee" = "Est. network fee";
+"signTransaction" = "SignT  transaction";
