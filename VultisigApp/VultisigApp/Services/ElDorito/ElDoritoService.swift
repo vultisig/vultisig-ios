@@ -145,8 +145,6 @@ struct ElDoritoService {
         
         var fee = BigInt(0)
         if let quote = response.routes.first {
-            print("💰 ElDoritoService: Found route with fee: \(quote.fees)")
-
             
             if let transaction = quote.tx {
                 print("💰 ElDoritoService: Transaction data available")
@@ -154,6 +152,8 @@ struct ElDoritoService {
                 print("💰 ElDoritoService: Transaction value: \(transaction.value)")
                 print("💰 ElDoritoService: Transaction gas: \(transaction.gas ?? 0)")
                 print("💰 ElDoritoService: Transaction gasPrice: \(transaction.gasPrice ?? "0")")
+                
+                print("💰 ElDoritoService: Transaction DATA: \(transaction.data ?? "")")
                 
                 let gasPrice = BigInt(transaction.gasPrice ?? "0") ?? 0
                 let gas = BigInt(transaction.gas ?? .zero)

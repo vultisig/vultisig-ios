@@ -103,17 +103,37 @@ class EVMHelper {
         return self.coinType.chainId
     }
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        print("⚙️ EVMHelper: Creating transaction from KeysignPayload")
+        print("⚙️ EVMHelper: Coin: \(keysignPayload.coin.ticker), chain: \(keysignPayload.coin.chain.rawValue)")
+        print("⚙️ EVMHelper: To address: \(keysignPayload.toAddress)")
+        print("⚙️ EVMHelper: Amount: \(keysignPayload.toAmount)")
+        if let memo = keysignPayload.memo {
+            print("⚙️ EVMHelper: Memo: \(memo)")
+        } else {
+            print("⚙️ EVMHelper: No memo")
+        }
+        print("⚙️ EVMHelper: Swap payload type: \(keysignPayload.swapPayload)")
+        
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
+            print("⚙️ EVMHelper: ⚠️ Failed to get chainID")
             throw HelperError.runtimeError("fail to get chainID")
         }
+        print("⚙️ EVMHelper: Chain ID: \(intChainID)")
+        
         guard case .Ethereum(let maxFeePerGasWei,
                              let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
+            print("⚙️ EVMHelper: ⚠️ Failed to get Ethereum chain specific")
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
+        print("⚙️ EVMHelper: MaxFeePerGas: \(maxFeePerGasWei)")
+        print("⚙️ EVMHelper: PriorityFee: \(priorityFeeWei)")
+        print("⚙️ EVMHelper: Nonce: \(nonce)")
+        print("⚙️ EVMHelper: GasLimit: \(gasLimit)")
         
+        print("⚙️ EVMHelper: Creating EthereumSigningInput")
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
@@ -122,24 +142,48 @@ class EVMHelper {
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
+            print("⚙️ EVMHelper: Serialized fields:")
+            print("⚙️ EVMHelper: chainID: \($0.chainID.hexString)")
+            print("⚙️ EVMHelper: nonce: \($0.nonce.hexString)")
+            print("⚙️ EVMHelper: gasLimit: \($0.gasLimit.hexString)")
+            print("⚙️ EVMHelper: maxFeePerGas: \($0.maxFeePerGas.hexString)")
+            print("⚙️ EVMHelper: maxInclusionFeePerGas: \($0.maxInclusionFeePerGas.hexString)")
+            print("⚙️ EVMHelper: toAddress: \($0.toAddress)")
+            print("⚙️ EVMHelper: txMode: \($0.txMode)")
+            
             $0.transaction = EthereumTransaction.with {
+                print("⚙️ EVMHelper: Creating transfer transaction")
                 $0.transfer = EthereumTransaction.Transfer.with {
                     print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
+                    print("⚙️ EVMHelper: Serialized amount: \($0.amount.hexString)")
+                    
                     if let memo = keysignPayload.memo {
                         print("EVM MEMO: \(memo)")
                         
                         if memo.hasPrefix("0x") {
                             // if memo start with 0x , meaning it is hex encoded string , then let's hex decode it first
                             $0.data = Data(hex: memo)
+                            print("⚙️ EVMHelper: Using hex-decoded memo, size: \($0.data.count) bytes")
                         } else {
                             $0.data = Data(memo.utf8)
+                            print("⚙️ EVMHelper: Using UTF8-encoded memo, size: \($0.data.count) bytes")
                         }
+                    } else {
+                        print("⚙️ EVMHelper: No memo data")
                     }
                 }
             }
         }
-        return try input.serializedData()
+        
+        do {
+            let serialized = try input.serializedData()
+            print("⚙️ EVMHelper: Input serialized successfully, size: \(serialized.count) bytes")
+            return serialized
+        } catch {
+            print("⚙️ EVMHelper: ⚠️ Failed to serialize input: \(error.localizedDescription)")
+            throw error
+        }
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

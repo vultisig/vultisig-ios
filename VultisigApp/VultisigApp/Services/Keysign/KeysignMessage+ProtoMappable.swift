@@ -222,21 +222,47 @@ extension SwapPayload {
                 }
             })
         case .eldorito(let payload):
+            print("🔄 ProtoMap: Converting ElDorito payload to protobuf")
+            print("🔄 ProtoMap: From coin: \(payload.fromCoin.ticker), isNative: \(payload.fromCoin.isNativeToken)")
+            print("🔄 ProtoMap: To coin: \(payload.toCoin.ticker)")
+            print("🔄 ProtoMap: To amount: \(payload.toAmountDecimal)")
+            
+            // Ensure consistent handling for both BASE.ETH and BASE.ERC20
             return .oneinchSwapPayload(.with {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.quote = .with {
+                    // Always use toAmountDecimal for dstAmount
                     $0.dstAmount = payload.toAmountDecimal.description
-                    if let tx = payload.quote.tx {
-                        $0.tx = .with {
+                    
+                    // Always create a tx object with consistent default values
+                    $0.tx = .with {
+                        if let tx = payload.quote.tx {
+                            print("🔄 ProtoMap: Transaction data available")
                             $0.from = tx.from
                             $0.to = tx.to
                             $0.data = tx.data ?? ""
                             $0.value = tx.value
-                            $0.gasPrice = tx.gasPrice ?? ""
-                            $0.gas = tx.gas ?? .zero
+                            $0.gasPrice = tx.gasPrice ?? "0"
+                            $0.gas = tx.gas ?? 600000 // Default gas limit for ERC20 swaps
+                            
+                            print("🔄 ProtoMap: From: \(tx.from)")
+                            print("🔄 ProtoMap: To: \(tx.to)")
+                            print("🔄 ProtoMap: Value: \(tx.value)")
+                            print("🔄 ProtoMap: Gas: \(tx.gas ?? 600000)")
+                            print("🔄 ProtoMap: GasPrice: \(tx.gasPrice ?? "0")")
+                            print("🔄 ProtoMap: Data length: \((tx.data ?? "").count) chars")
+                        } else {
+                            print("🔄 ProtoMap: ⚠️ No transaction data in payload, using defaults")
+                            // Use memo as transaction data for BASE.ETH if tx is nil
+                            $0.from = payload.quote.sourceAddress ?? ""
+                            $0.to = payload.quote.inboundAddress ?? ""
+                            $0.data = ""
+                            $0.value = "0"
+                            $0.gasPrice = "0"
+                            $0.gas = 600000
                         }
                     }
                 }
