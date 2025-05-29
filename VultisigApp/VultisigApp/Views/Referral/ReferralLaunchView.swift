@@ -83,6 +83,9 @@ struct ReferralLaunchView: View {
     
     var image: some View {
         Image("ReferralLaunchOverview")
+            .resizable()
+            .frame(maxWidth: 1024)
+            .aspectRatio(contentMode: .fit)
     }
 }
 
