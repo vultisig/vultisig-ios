@@ -677,4 +677,5 @@
 "referralOverviewCheckbox2" = "I’m sending it to the correct address";
 "youreSending" = "You’re sending";
 "estNetworkFee" = "Est. network fee";
-"signTransaction" = "SignT  transaction";
+"signTransaction" = "Sign  transaction";
+"transactionDetails" = "Transaction details";
