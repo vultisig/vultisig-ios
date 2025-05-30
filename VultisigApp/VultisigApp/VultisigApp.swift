@@ -26,7 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            content
+            CreateReferralView()
         }
         .modelContainer(sharedModelContainer)
         
