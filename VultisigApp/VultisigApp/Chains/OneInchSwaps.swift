@@ -11,10 +11,10 @@ import BigInt
 import Tss
 
 struct OneInchSwaps {
-
+    
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
-
+    
     func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
@@ -28,7 +28,7 @@ struct OneInchSwaps {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-
+    
     func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
         
         let inputData = try getPreSignedInputData(
@@ -50,7 +50,7 @@ struct OneInchSwaps {
 }
 
 private extension OneInchSwaps {
-
+    
     func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
@@ -61,24 +61,19 @@ private extension OneInchSwaps {
                 }
             }
         }
-
-        // Get gas price from quote, but never use zero
+        
         var gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         if gasPrice == 0 {
-            // If API returns 0, use the chain's gas price from keysignPayload
             guard case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific else {
                 throw HelperError.runtimeError("Failed to get valid gas price for transaction")
             }
             gasPrice = maxFeePerGasWei.magnitude
         }
         
-        // Make sure to normalize for Base chain by applying multiplier
         if keysignPayload.coin.chain == .base {
             gasPrice = gasPrice + (gasPrice / 2) * 5 / 3 // Same as multiplier 2.5 from normalizeEVMFee
         }
         
-        // sometimes the `gas` field in oneinch tx is 0
-        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
