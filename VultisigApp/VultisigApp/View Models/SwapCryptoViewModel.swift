@@ -265,7 +265,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
             case .thorchain(let quote):
                 // Check if this is an El Dorito swap (Base ERC20 to RUNE)
-                 if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain {
+                 if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain && !tx.fromCoin.isNativeToken {
                      // For Base ERC20 to RUNE, we need to create an El Dorito swap payload
                      let elDoritoPayload = ElDoritoSwapPayload(
                          fromCoin: tx.fromCoin,
@@ -289,7 +289,36 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                          approvePayload: buildApprovePayload(tx: tx, approvalAddress: elDoritoPayload.quote.meta?.approvalAddress),
                          vault: vault
                      )
-                 } else {
+                 } else if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain && tx.fromCoin.isNativeToken {
+                     // For Base ERC20 to RUNE, we need to create an El Dorito swap payload
+                     let elDoritoPayload = ElDoritoSwapPayload(
+                         fromCoin: tx.fromCoin,
+                         toCoin: tx.toCoin,
+                         fromAmount: tx.fromAmount.toBigInt(),
+                         toAmountDecimal: tx.toAmountDecimal,
+                         quote: try await getElDoritoQuote(tx: tx)
+                     )
+                     
+                     // For ERC20 tokens on Base to RUNE, we need to sign a data transaction
+                     // and broadcast it to the inbound address
+                     let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+                     
+                     keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                         coin: tx.fromCoin,
+                         toAddress: toAddress,
+                         amount: tx.amountInCoinDecimal,
+                         memo: quote.memo,
+                         chainSpecific: chainSpecific,
+                         swapPayload: nil,
+                         approvePayload: nil,
+                         vault: vault
+                     )
+                 }
+                
+                
+                
+                
+                else {
                     // Regular THORChain swap
                     let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
                     
