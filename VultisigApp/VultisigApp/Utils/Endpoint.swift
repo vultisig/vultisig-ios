@@ -388,7 +388,7 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
