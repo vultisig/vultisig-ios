@@ -1,5 +1,5 @@
 //
-//  SendOverviewReferralView.swift
+//  ReferralSendOverviewView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-28.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SendOverviewReferralView: View {
+struct ReferralSendOverviewView: View {
     @State var isAmountCorrect: Bool = false
     @State var isAddressCorrect: Bool = false
     
@@ -102,7 +102,6 @@ struct SendOverviewReferralView: View {
     
     var button: some View {
         FilledButton(title: "signTransaction")
-            
     }
     
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
@@ -131,5 +130,5 @@ struct SendOverviewReferralView: View {
 }
 
 #Preview {
-    SendOverviewReferralView()
+    ReferralSendOverviewView()
 }

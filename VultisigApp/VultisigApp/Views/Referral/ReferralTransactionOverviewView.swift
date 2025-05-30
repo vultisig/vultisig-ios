@@ -1,5 +1,5 @@
 //
-//  TransactionOverviewReferralView.swift
+//  ReferralTransactionOverviewView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-28.
@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct TransactionOverviewReferralView: View {
+struct ReferralTransactionOverviewView: View {
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
@@ -102,5 +102,5 @@ struct TransactionOverviewReferralView: View {
 }
 
 #Preview {
-    TransactionOverviewReferralView()
+    ReferralTransactionOverviewView()
 }
