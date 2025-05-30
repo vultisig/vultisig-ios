@@ -180,59 +180,28 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func buildApprovePayload(tx: SwapTransaction) -> ERC20ApprovePayload? {
-        // Check if this is an ERC20 token that requires approval
-        if !tx.fromCoin.isNativeToken {
-            // For El Dorito swaps (Base ERC20 to RUNE), we need to check for the approvalAddress
-            if tx.fromCoin.chain == .base && tx.toCoin.chain == .thorChain,
-               let quote = tx.quote {
-                switch quote {
-                case .thorchain(let thorchainQuote):
-                    // Try to get the approval address from the meta data
-                    if let approvalAddress = getApprovalAddressFromQuote(tx: tx) {
-                        // Create an approval payload with the maximum uint256 value
-                        // This allows the router to spend any amount of tokens
-                        let maxUint256 = BigInt("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", radix: 16)!
-                        return ERC20ApprovePayload(amount: maxUint256, spender: approvalAddress)
-                    }
-                default:
-                    break
-                }
-            }
-        }
+    func buildApprovePayload(tx: SwapTransaction, approvalAddress: String? = nil) -> ERC20ApprovePayload? {
         
-        guard tx.isApproveRequired, let spender = tx.router else {
+        if !tx.fromCoin.shouldApprove {
             return nil
         }
+        
+        var spender: String = ""
+        if let approvalAddress = approvalAddress {
+            spender = approvalAddress
+        } else {
+            spender = tx.router ?? .empty
+        }
+        
+        if spender == .empty {
+            return nil
+        }
+        
         let amount = tx.amountInCoinDecimal
         let payload = ERC20ApprovePayload(amount: amount, spender: spender)
         return payload
     }
     
-    private func getApprovalAddressFromQuote(tx: SwapTransaction) -> String? {
-        // Try to get the approval address from the El Dorito quote
-        guard let quote = tx.quote else { return nil }
-        
-        switch quote {
-        case .thorchain(let thorchainQuote):
-            // For El Dorito swaps, we need to get the El Dorito quote to access the meta.approvalAddress
-            Task {
-                do {
-                    let elDoritoQuote = try await getElDoritoQuote(tx: tx)
-                    return elDoritoQuote.meta?.approvalAddress
-                } catch {
-                    print("Error getting El Dorito quote for approval address: \(error)")
-                    return nil
-                }
-            }
-            
-            // As a fallback, use the router or inbound address
-            return thorchainQuote.router ?? thorchainQuote.inboundAddress
-            
-        default:
-            return nil
-        }
-    }
     
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
@@ -305,11 +274,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                          toAmountDecimal: tx.toAmountDecimal,
                          quote: try await getElDoritoQuote(tx: tx)
                      )
-                    
+                     
                      // For ERC20 tokens on Base to RUNE, we need to sign a data transaction
                      // and broadcast it to the inbound address
                      let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                    
+                     
                      keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                          coin: tx.fromCoin,
                          toAddress: toAddress,
@@ -317,7 +286,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                          memo: quote.memo,
                          chainSpecific: chainSpecific,
                          swapPayload: .eldorito(elDoritoPayload),
-                         approvePayload: buildApprovePayload(tx: tx),
+                         approvePayload: buildApprovePayload(tx: tx, approvalAddress: elDoritoPayload.quote.meta?.approvalAddress),
                          vault: vault
                      )
                  } else {
