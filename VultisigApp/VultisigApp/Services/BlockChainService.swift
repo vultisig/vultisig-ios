@@ -20,18 +20,12 @@ final class BlockChainService {
     }
     
     static func normalizeEVMFee(_ value: BigInt, chain: Chain? = nil) -> BigInt {
-        print("🔌 BlockChainService: Normalizing EVM fee for chain: \(chain?.rawValue ?? "unknown")")
-        print("🔌 BlockChainService: Original value: \(value)")
-        
         var multiplier: BigInt = 3
         if chain == .base {
             multiplier = 5 // x2.5 fee for Base chain
-            print("🔌 BlockChainService: Using higher multiplier (5/3 = 2.5x) for Base chain")
         }
         
         let normalized = value + (value / 2) * (multiplier / 3)
-        print("🔌 BlockChainService: Normalized value: \(normalized)")
-        
         return max(normalized, 1) // To avoid 0 miner tips
     }
     
@@ -83,10 +77,6 @@ final class BlockChainService {
     }
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        print("🔍 SWAP: Fetching specific for swap transaction")
-        print("🔍 SWAP: From coin: \(tx.fromCoin.ticker), chain: \(tx.fromCoin.chain.rawValue)")
-        print("🔍 SWAP: To coin: \(tx.toCoin.ticker), chain: \(tx.toCoin.chain.rawValue)")
-        print("🔍 SWAP: Is deposit: \(tx.isDeposit)")
         
         let cacheKey = getCacheKey(for: tx.fromCoin,
                                     action: .swap,
@@ -99,7 +89,6 @@ final class BlockChainService {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
-                print("🔍 SWAP: Using cached block specific: \(localCacheItem.blockSpecific)")
                 return localCacheItem.blockSpecific
             }
         }
@@ -107,11 +96,7 @@ final class BlockChainService {
         let fromCoin = await tx.fromCoin
         let toCoin = await tx.toCoin
         
-        print("🔍 SWAP: From: \(fromCoin.ticker) (\(fromCoin.chain.rawValue)) -> To: \(toCoin.ticker) (\(toCoin.chain.rawValue))")
-        
         if (fromCoin.chain == .thorChain && toCoin.chain == .base) {
-            print("🔍 SWAP: Special case - THOR to BASE swap detected")
-            print("🔍 SWAP: Setting isDeposit to true for this direction")
             
             let specific = try await fetchSpecific(
                 for: tx.fromCoin,
@@ -125,13 +110,9 @@ final class BlockChainService {
                 toAddress: nil,
                 feeMode: .fast
             )
-            print("🔍 SWAP: Generated specific for THOR->BASE: \(specific)")
             self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
             return specific
         }
-        
-        print("🔍 SWAP: Standard swap case")
-        print("🔍 SWAP: Using isDeposit value: \(tx.isDeposit)")
         
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
@@ -146,7 +127,6 @@ final class BlockChainService {
             feeMode: .fast
         )
         
-        print("🔍 SWAP: Generated specific: \(specific)")
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -225,30 +205,18 @@ private extension BlockChainService {
         }
         
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        
-        print("🔌 BlockChainService: Fetching gas info for chain: \(tx.coin.chain.rawValue), ticker: \(tx.coin.ticker)")
-        print("🔌 BlockChainService: Address: \(tx.coin.address), Fee mode: \(tx.feeMode)")
-        
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
             fromAddress: tx.coin.address,
             mode: tx.feeMode
         )
         
-        print("🔌 BlockChainService: Got gas price: \(gasPrice), priority fee: \(priorityFee), nonce: \(nonce)")
-        
-        print("🔌 BlockChainService: Estimating gas limit for \(tx.coin.isNativeToken ? "native token" : "ERC20 token")")
-        
         let estimateGasLimit = tx.coin.isNativeToken ?
         try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
         await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
         
-        print("🔌 BlockChainService: Estimated gas limit: \(estimateGasLimit)")
-        
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        print("🔌 BlockChainService: Default gas limit: \(defaultGasLimit)")
         
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
-        print("🔌 BlockChainService: Final gas limit: \(gasLimit)")
         
         let specific = try await fetchSpecific(
             for: tx.coin,

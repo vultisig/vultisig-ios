@@ -101,16 +101,8 @@ struct ElDoritoService {
         to: String,
         isAffiliate: Bool
     ) async throws -> (quote: ElDoritoQuote, fee: BigInt?) {
-        
-        print("💰 ElDoritoService: Fetching swap quote")
-        print("💰 ElDoritoService: From asset: \(source)")
-        print("💰 ElDoritoService: To asset: \(destination)")
-        print("💰 ElDoritoService: Amount: \(amount)")
-        print("💰 ElDoritoService: From address: \(from)")
-        print("💰 ElDoritoService: To address: \(to)")
-        
+                
         let url = Endpoint.fetchElDoritoSwapQuote()
-        print("💰 ElDoritoService: URL: \(url)")
         
         var body: [String: Any] = [
             "sellAsset": source, // The asset being sold (e.g. "ETH.ETH").
@@ -140,25 +132,14 @@ struct ElDoritoService {
         // print(String(data: data, encoding: .utf8) ?? "No data")
         
         let response = try JSONDecoder().decode(ElDoritoResponse.self, from: data)
-        print("💰 ElDoritoService: Response decoded successfully")
-        print("💰 ElDoritoService: Routes count: \(response.routes.count)")
         
         var fee = BigInt(0)
         if let quote = response.routes.first {
             
             if let transaction = quote.tx {
-                print("💰 ElDoritoService: Transaction data available")
-                print("💰 ElDoritoService: Transaction to: \(transaction.to)")
-                print("💰 ElDoritoService: Transaction value: \(transaction.value)")
-                print("💰 ElDoritoService: Transaction gas: \(transaction.gas ?? 0)")
-                print("💰 ElDoritoService: Transaction gasPrice: \(transaction.gasPrice ?? "0")")
-                
-                print("💰 ElDoritoService: Transaction DATA: \(transaction.data ?? "")")
-                
                 let gasPrice = BigInt(transaction.gasPrice ?? "0") ?? 0
                 let gas = BigInt(transaction.gas ?? .zero)
                 fee = gas * gasPrice
-                print("💰 ElDoritoService: Calculated fee: \(fee)")
             } else {
                 print("💰 ElDoritoService: ⚠️ No transaction data in quote")
             }

@@ -30,20 +30,12 @@ struct OneInchSwaps {
     }
 
     func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
-        print("🔍 OneInch: Creating swap transaction")
-        print("🔍 OneInch: From token: \(payload.fromCoin.ticker), chain: \(payload.fromCoin.chain.rawValue)")
-        print("🔍 OneInch: To address: \(payload.quote.tx.to)")
-        print("🔍 OneInch: Value: \(payload.quote.tx.value)")
-        print("🔍 OneInch: Gas price: \(payload.quote.tx.gasPrice)")
-        print("🔍 OneInch: Gas limit: \(payload.quote.tx.gas)")
-        print("🔍 OneInch: Data length: \(payload.quote.tx.data.count) chars")
         
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
             incrementNonce: incrementNonce
         )
-        print("🔍 OneInch: Input data created successfully")
         
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let transaction = try helper.getSignedTransaction(
@@ -52,8 +44,6 @@ struct OneInchSwaps {
             inputData: inputData,
             signatures: signatures
         )
-        print("🔍 OneInch: Transaction created successfully")
-        print("🔍 OneInch: Transaction hash: \(transaction.transactionHash)")
         
         return transaction
     }
@@ -62,7 +52,6 @@ struct OneInchSwaps {
 private extension OneInchSwaps {
 
     func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
-        print("🔍 OneInch: Creating pre-signed input data with quote: \(quote.tx.gasPrice)")  
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -81,20 +70,17 @@ private extension OneInchSwaps {
                 throw HelperError.runtimeError("Failed to get valid gas price for transaction")
             }
             gasPrice = maxFeePerGasWei.magnitude
-            print("🔍 OneInch: ⚠️ API returned zero gas price, using chainSpecific value: \(gasPrice)")
         }
         
         // Make sure to normalize for Base chain by applying multiplier
         if keysignPayload.coin.chain == .base {
             gasPrice = gasPrice + (gasPrice / 2) * 5 / 3 // Same as multiplier 2.5 from normalizeEVMFee
-            print("🔍 OneInch: Applied Base chain gas multiplier: \(gasPrice)")
         }
         
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
-        print("🔍 OneInch: Using gas limit: \(gas), gas price: \(gasPrice)")
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed

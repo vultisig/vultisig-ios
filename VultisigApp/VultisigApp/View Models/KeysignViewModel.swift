@@ -284,7 +284,6 @@ class KeysignViewModel: ObservableObject {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
-        print("🛠 BUILD: Starting transaction build process for \(keysignPayload.coin.ticker)")
         var signedTransactions: [SignedTransactionResult] = []
         
         if let approvePayload = keysignPayload.approvePayload {
@@ -319,16 +318,9 @@ class KeysignViewModel: ObservableObject {
                 }
             case .eldorito(let payload):
                 if payload.fromCoin.chain == .base && payload.toCoin.chain == .thorChain && !payload.fromCoin.isNativeToken {
-                    print("🚀 DEBUG: Building El Dorito swap transaction (BASE.ERC20 -> RUNE)")
-                    print("🚀 DEBUG: From coin: \(payload.fromCoin.ticker), isNative: \(payload.fromCoin.isNativeToken)")
-                    print("🚀 DEBUG: To coin: \(payload.toCoin.ticker)")
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     let oneInchPayload = try payload.toOneInchSwapPayload()
-                    print("🚀 DEBUG: OneInch payload created with amount: \(oneInchPayload.quote.dstAmount)")
-                    
                     let transaction = try swaps.getSignedTransaction(payload: oneInchPayload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
-                    print("🚀 DEBUG: El Dorito transaction created: \(transaction.rawTransaction)")
-                    print("🚀 DEBUG: El Dorito transaction hash: \(transaction.transactionHash)")
                     signedTransactions.append(transaction)
                 }
                 
@@ -338,7 +330,6 @@ class KeysignViewModel: ObservableObject {
         }
         
         if let signedTransactionType = SignedTransactionType(transactions: signedTransactions) {
-            print("🛠 BUILD: Created transaction type: \(String(describing: signedTransactionType))")
             return signedTransactionType
         }
         
@@ -559,21 +550,9 @@ class KeysignViewModel: ObservableObject {
                 }
                 
             case .regularWithApprove(let approve, let transaction):
-                print("📡 BROADCAST: Processing approval and swap transaction pair")
-                print("📡 BROADCAST: Chain: \(keysignPayload.coin.chain.rawValue)")
-                print("📡 BROADCAST: Coin ticker: \(keysignPayload.coin.ticker)")
-                print("📡 BROADCAST: Is native token: \(keysignPayload.coin.isNativeToken)")
-                
                 let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
-                print("📡 BROADCAST: Broadcasting approval transaction")
                 let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                print("📡 BROADCAST: Approval transaction broadcasted successfully: \(approveTxHash)")
-                
-                print("📡 BROADCAST: Broadcasting swap transaction")
-                print("📡 BROADCAST: Raw transaction: \(transaction.rawTransaction.prefix(100))...")
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
-                print("📡 BROADCAST: Swap transaction broadcasted successfully: \(regularTxHash)")
-                
                 self.approveTxid = approveTxHash
                 self.txid = regularTxHash
             }
