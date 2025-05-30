@@ -26,7 +26,7 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ReferralTransactionDetailsView()
+            content
         }
         .modelContainer(sharedModelContainer)
         
