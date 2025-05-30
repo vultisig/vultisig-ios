@@ -1,17 +1,9 @@
-//
-//  OneInchSwaps.swift
-//  VultisigApp
-//
-//  Created by Artur Guseinov on 10.05.2024.
-//
-
 import Foundation
 import WalletCore
 import BigInt
 import Tss
 
-struct OneInchSwaps {
-    
+struct ElDoritoSwaps {
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
     
@@ -44,14 +36,11 @@ struct OneInchSwaps {
             inputData: inputData,
             signatures: signatures
         )
-        
         return transaction
     }
-}
-
-private extension OneInchSwaps {
     
     func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
+        
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -62,18 +51,7 @@ private extension OneInchSwaps {
             }
         }
         
-        var gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-        if gasPrice == 0 {
-            guard case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific else {
-                throw HelperError.runtimeError("Failed to get valid gas price for transaction")
-            }
-            gasPrice = maxFeePerGasWei.magnitude
-        }
-        
-        if keysignPayload.coin.chain == .base {
-            gasPrice = gasPrice + (gasPrice / 2) * 5 / 3 // Same as multiplier 2.5 from normalizeEVMFee
-        }
-        
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
@@ -81,3 +59,4 @@ private extension OneInchSwaps {
         return signed
     }
 }
+

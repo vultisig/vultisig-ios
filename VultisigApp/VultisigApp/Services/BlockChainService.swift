@@ -19,8 +19,13 @@ final class BlockChainService {
         return value * 2 + value / 2 // x2.5 fee
     }
     
-    static func normalizeEVMFee(_ value: BigInt) -> BigInt {
-        let normalized = value + value / 2 // x1.5 fee
+    static func normalizeEVMFee(_ value: BigInt, chain: Chain? = nil) -> BigInt {
+        var multiplier: BigInt = 3
+        if chain == .base {
+            multiplier = 5 // x2.5 fee for Base chain
+        }
+        
+        let normalized = value + (value / 2) * (multiplier / 3)
         return max(normalized, 1) // To avoid 0 miner tips
     }
     
@@ -72,19 +77,41 @@ final class BlockChainService {
     }
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        let cacheKey =  getCacheKey(for: tx.fromCoin,
-                                          action: .swap,
-                                          sendMaxAmount: false,
-                                          isDeposit: tx.isDeposit,
-                                          transactionType: .unspecified,
-                                          fromAddress: tx.fromCoin.address,
-                                          feeMode: .fast)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
+        
+        let cacheKey = getCacheKey(for: tx.fromCoin,
+                                    action: .swap,
+                                    sendMaxAmount: false,
+                                    isDeposit: tx.isDeposit,
+                                    transactionType: .unspecified,
+                                    fromAddress: tx.fromCoin.address,
+                                    feeMode: .fast)
+        if let localCacheItem = self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific
             }
+        }
+        
+        let fromCoin = await tx.fromCoin
+        let toCoin = await tx.toCoin
+        
+        if (fromCoin.chain == .thorChain && toCoin.chain == .base) {
+            
+            let specific = try await fetchSpecific(
+                for: tx.fromCoin,
+                action: .swap,
+                sendMaxAmount: false,
+                isDeposit: true, // All swap operations should use deposit flag
+                transactionType: .unspecified,
+                gasLimit: nil,
+                byteFee: nil,
+                fromAddress: nil,
+                toAddress: nil,
+                feeMode: .fast
+            )
+            self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+            return specific
         }
         
         let specific = try await fetchSpecific(
@@ -99,6 +126,7 @@ final class BlockChainService {
             toAddress: nil,
             feeMode: .fast
         )
+        
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -177,7 +205,6 @@ private extension BlockChainService {
         }
         
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
             fromAddress: tx.coin.address,
             mode: tx.feeMode
@@ -188,6 +215,7 @@ private extension BlockChainService {
         await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
         
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
         let specific = try await fetchSpecific(

@@ -1,9 +1,4 @@
-//
-//  JoinKeysignSummaryViewModel.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-12-05.
-//
+
 
 import Foundation
 
@@ -23,6 +18,8 @@ class JoinKeysignSummaryViewModel {
             return "THORChain"
         case .mayachain:
             return "Maya protocol"
+        case .eldorito:
+            return "El Dorito"
         case .none:
             return .empty
         }

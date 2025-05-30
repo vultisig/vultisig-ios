@@ -328,6 +328,39 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
     
+    var chainIDElDorito: String? {
+        switch self {
+        case .ethereum:
+            return "1"
+        case .avalanche:
+            return "43114"
+        case .base:
+            return "8453"
+        case .blast:
+            return "81457"
+        case .arbitrum:
+            return "42161"
+        case .polygon:
+            return "137"
+        case .polygonV2:
+            return "137" // TODO: find the new id
+        case .optimism:
+            return "10"
+        case .bscChain:
+            return "56"
+        case .cronosChain:
+            return "25"
+        case .zksync:
+            return "324"
+        case .solana:
+            return "solana"
+        case .thorChain:
+            return "thorchain-1"
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .ethereumSepolia, .zcash:
+            return nil
+        }
+    }
+    
     var coinType: CoinType {
         switch self {
         case .bitcoin:

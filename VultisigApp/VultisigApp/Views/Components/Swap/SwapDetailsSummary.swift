@@ -113,6 +113,8 @@ struct SwapDetailsSummary: View {
             return "THORChain"
         case .mayachain:
             return "Maya Protocol"
+        case .eldorito:
+            return "El Dorito"
         case .none:
             return nil
         }
