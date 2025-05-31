@@ -650,3 +650,10 @@
 "transactionDetails" = "Transaktionsdetails";
 "saveReferral" = "Empfehlung speichern";
 "transactionHash" = "Transaktions-Hash";
+"pickReferralCode" = "Wähle Empfehlungscode";
+"setExpiration(inYears)" = "Ablaufdatum festlegen (in Jahren)";
+"choosePayoutAsset" = "Auszahlungs-Asset wählen";
+"select" = "Auswählen";
+"registrationFee" = "Registrierungsgebühr";
+"costs" = "Kosten";
+"createReferral" = "Empfehlung erstellen";

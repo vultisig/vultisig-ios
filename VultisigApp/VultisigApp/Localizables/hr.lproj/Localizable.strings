@@ -633,3 +633,10 @@
 "transactionDetails" = "Detalji transakcije";
 "saveReferral" = "Spremi referalu";
 "transactionHash" = "Hash transakcije";
+"pickReferralCode" = "Odaberi referalni kod";
+"setExpiration(inYears)" = "Postavi istek (u godinama)";
+"choosePayoutAsset" = "Odaberi isplatni token";
+"select" = "Odaberi";
+"registrationFee" = "Naknada za registraciju";
+"costs" = "Troškovi";
+"createReferral" = "Kreiraj preporuku";

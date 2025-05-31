@@ -633,3 +633,10 @@
 "transactionDetails" = "Dettagli transazione";
 "saveReferral" = "Salva invito";
 "transactionHash" = "Hash transazione";
+"pickReferralCode" = "Scegli codice di invito";
+"setExpiration(inYears)" = "Imposta scadenza (in anni)";
+"choosePayoutAsset" = "Scegli asset di pagamento";
+"select" = "Seleziona";
+"registrationFee" = "Costo di registrazione";
+"costs" = "Costi";
+"createReferral" = "Crea invito";

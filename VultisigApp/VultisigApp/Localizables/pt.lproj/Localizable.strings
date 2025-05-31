@@ -634,3 +634,10 @@
 "transactionDetails" = "Detalhes da transação";
 "saveReferral" = "Salvar indicação";
 "transactionHash" = "Hash da transação";
+"pickReferralCode" = "Escolha o código de indicação";
+"setExpiration(inYears)" = "Definir expiração (em anos)";
+"choosePayoutAsset" = "Escolher ativo de pagamento";
+"select" = "Selecionar";
+"registrationFee" = "Taxa de registro";
+"costs" = "Custos";
+"createReferral" = "Criar indicação";

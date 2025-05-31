@@ -633,3 +633,10 @@
 "transactionDetails" = "Detalles de la transacción";
 "saveReferral" = "Guardar referido";
 "transactionHash" = "Hash de transacción";
+"pickReferralCode" = "Elige código de referido";
+"setExpiration(inYears)" = "Establecer vencimiento (en años)";
+"choosePayoutAsset" = "Elegir activo de pago";
+"select" = "Seleccionar";
+"registrationFee" = "Tarifa de registro";
+"costs" = "Costos";
+"createReferral" = "Crear referido";
