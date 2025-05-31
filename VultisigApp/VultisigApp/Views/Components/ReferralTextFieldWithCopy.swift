@@ -29,6 +29,7 @@ struct ReferralTextFieldWithCopy: View {
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
+                .colorScheme(.dark)
             
             copyButton
         }
