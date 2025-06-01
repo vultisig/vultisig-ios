@@ -19,13 +19,8 @@ final class BlockChainService {
         return value * 2 + value / 2 // x2.5 fee
     }
     
-    static func normalizeEVMFee(_ value: BigInt, chain: Chain? = nil) -> BigInt {
-        var multiplier: BigInt = 3
-        if chain == .base {
-            multiplier = 5 // x2.5 fee for Base chain
-        }
-        
-        let normalized = value + (value / 2) * (multiplier / 3)
+    static func normalizeEVMFee(_ value: BigInt) -> BigInt {
+        let normalized = value + value / 2 // x1.5 fee
         return max(normalized, 1) // To avoid 0 miner tips
     }
     
@@ -79,12 +74,12 @@ final class BlockChainService {
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         
         let cacheKey = getCacheKey(for: tx.fromCoin,
-                                    action: .swap,
-                                    sendMaxAmount: false,
-                                    isDeposit: tx.isDeposit,
-                                    transactionType: .unspecified,
-                                    fromAddress: tx.fromCoin.address,
-                                    feeMode: .fast)
+                                   action: .swap,
+                                   sendMaxAmount: false,
+                                   isDeposit: tx.isDeposit,
+                                   transactionType: .unspecified,
+                                   fromAddress: tx.fromCoin.address,
+                                   feeMode: .fast)
         if let localCacheItem = self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item

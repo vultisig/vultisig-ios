@@ -62,22 +62,14 @@ private extension OneInchSwaps {
             }
         }
         
-        var gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-        if gasPrice == 0 {
-            guard case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific else {
-                throw HelperError.runtimeError("Failed to get valid gas price for transaction")
-            }
-            gasPrice = maxFeePerGasWei.magnitude
-        }
-        
-        if keysignPayload.coin.chain == .base {
-            gasPrice = gasPrice + (gasPrice / 2) * 5 / 3 // Same as multiplier 2.5 from normalizeEVMFee
+        guard case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("Failed to get valid gas price for transaction")
         }
         
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
+        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: maxFeePerGasWei.magnitude, incrementNonce: incrementNonce)
         return signed
     }
 }

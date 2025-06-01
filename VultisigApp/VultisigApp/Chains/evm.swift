@@ -88,12 +88,6 @@ class EVMHelper {
     }
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        if let memo = keysignPayload.memo {
-            print("⚙️ EVMHelper: Memo: \(memo)")
-        } else {
-            print("⚙️ EVMHelper: No memo")
-        }
-        
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             print("⚙️ EVMHelper: ⚠️ Failed to get chainID")
             throw HelperError.runtimeError("fail to get chainID")
