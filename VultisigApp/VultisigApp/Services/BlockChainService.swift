@@ -70,9 +70,9 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
+    
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        
         let cacheKey = getCacheKey(for: tx.fromCoin,
                                    action: .swap,
                                    sendMaxAmount: false,
@@ -80,40 +80,25 @@ final class BlockChainService {
                                    transactionType: .unspecified,
                                    fromAddress: tx.fromCoin.address,
                                    feeMode: .fast)
+        
         if let localCacheItem = self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
-            // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific
             }
         }
-        
+
         let fromCoin = await tx.fromCoin
         let toCoin = await tx.toCoin
-        
-        if (fromCoin.chain == .thorChain && toCoin.chain == .base) {
-            
-            let specific = try await fetchSpecific(
-                for: tx.fromCoin,
-                action: .swap,
-                sendMaxAmount: false,
-                isDeposit: true, // All swap operations should use deposit flag
-                transactionType: .unspecified,
-                gasLimit: nil,
-                byteFee: nil,
-                fromAddress: nil,
-                toAddress: nil,
-                feeMode: .fast
-            )
-            self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
-            return specific
-        }
-        
+
+        // Force `isDeposit = true` only for thorChain → base swaps
+        let isDeposit = (fromCoin.chain == .thorChain && toCoin.chain == .base) ? true : tx.isDeposit
+
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
             sendMaxAmount: false,
-            isDeposit: tx.isDeposit,
+            isDeposit: isDeposit,
             transactionType: .unspecified,
             gasLimit: nil,
             byteFee: nil,
@@ -121,7 +106,7 @@ final class BlockChainService {
             toAddress: nil,
             feeMode: .fast
         )
-        
+
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
