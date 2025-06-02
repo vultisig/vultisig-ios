@@ -444,31 +444,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
 private extension SwapCryptoViewModel {
     
-    func getElDoritoQuote(tx: SwapTransaction) async throws -> ElDoritoQuote {
-        guard let quote = tx.quote else {
-            throw Errors.unexpectedError
-        }
-        
-        switch quote {
-        case .thorchain(_):
-            // For a thorchain quote that's actually an El Dorito quote (Base to RUNE)
-            // we need to get the El Dorito quote from the El Dorito service
-            let response = try await ElDoritoService.shared.fetchQuotes(
-                chain: tx.fromCoin.chain.chainIDElDorito ?? "",
-                source: tx.fromCoin.swapAsset,
-                destination: tx.toCoin.swapAsset,
-                amount: tx.fromAmountDecimal.description,
-                from: tx.fromCoin.address,
-                to: tx.toCoin.address,
-                isAffiliate: tx.isAlliliate
-            )
-            
-            return response.quote
-        default:
-            throw Errors.unexpectedError
-        }
-    }
-    
     enum Errors: String, Error, LocalizedError {
         case unexpectedError
         case insufficientFunds
