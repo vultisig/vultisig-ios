@@ -128,9 +128,7 @@ struct KeysignDiscoveryView: View {
         ZStack {
             if selectedNetwork == .Local {
                 LocalModeDisclaimer()
-            } else if showDisclaimer {
-                KeysignDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
-            }
+            } 
         }
         .padding(.horizontal)
     }

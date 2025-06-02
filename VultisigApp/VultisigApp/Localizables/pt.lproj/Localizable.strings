@@ -562,7 +562,6 @@
 "maxTotalFee" = "Taxa total máx.";
 "allowance" = "Permissão";
 "on" = "na";
-"keysignDiscoveryScanDeviceDisclaimer" = "Mantenha os dispositivos na mesma rede enquanto assina a transação";
 "startTransaction" = "Iniciar transação";
 "transactionSuccessful" = "Transação bem-sucedida";
 "track" = "Acompanhar";

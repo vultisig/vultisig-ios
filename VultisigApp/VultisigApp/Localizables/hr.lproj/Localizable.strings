@@ -561,7 +561,6 @@
 "maxTotalFee" = "Maks. ukupna naknada";
 "allowance" = "Dozvola";
 "on" = "na";
-"keysignDiscoveryScanDeviceDisclaimer" = "Držite uređaje na istoj mreži tijekom potpisivanja transakcije";
 "startTransaction" = "Pokreni transakciju";
 "transactionSuccessful" = "Transakcija uspješna";
 "track" = "Prati";
