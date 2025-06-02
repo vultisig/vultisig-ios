@@ -606,7 +606,6 @@
 "maxTotalFee" = "Max. Total Fee";
 "allowance" = "Allowance";
 "on" = "on";
-"keysignDiscoveryScanDeviceDisclaimer" = "Keep devices on the same network while signing the transaction.";
 "startTransaction" = "Start transaction";
 "transactionSuccessful" = "Transaction successful";
 "track" = "Track";

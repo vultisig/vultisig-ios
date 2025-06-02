@@ -578,7 +578,6 @@
 "maxTotalFee" = "Max. Gesamtgebühr";
 "allowance" = "Freigabe";
 "on" = "auf";
-"keysignDiscoveryScanDeviceDisclaimer" = "Halte die Geräte im selben Netzwerk, während die Transaktion signiert wird";
 "startTransaction" = "Transaktion starten";
 "transactionSuccessful" = "Transaktion erfolgreich";
 "track" = "Verfolgen";
