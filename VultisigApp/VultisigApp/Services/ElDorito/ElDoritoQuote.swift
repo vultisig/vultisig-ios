@@ -118,7 +118,8 @@ extension ElDoritoQuote {
             slippageBps: totalSlippageBps,
             totalSwapSeconds: estimatedTime?.total,
             warning: warnings?.first ?? "",
-            router: tx?.to
+            router: tx?.to,
+            elDoritoQuote: self
         )
     }
 }
