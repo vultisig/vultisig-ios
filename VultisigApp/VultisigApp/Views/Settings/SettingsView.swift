@@ -22,6 +22,9 @@ struct SettingsView: View {
             .navigationDestination(isPresented: $showAdvancedSettings) {
                 SettingsAdvancedView()
             }
+            .sheet(isPresented: $referralViewModel.showReferralOverviewSheet) {
+                <#code#>
+            }
     }
     
     var mainSection: some View {
