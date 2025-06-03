@@ -91,14 +91,11 @@ final class BlockChainService {
         let fromCoin = await tx.fromCoin
         let toCoin = await tx.toCoin
 
-        // Force `isDeposit = true` only for thorChain → base swaps
-        let isDeposit = (fromCoin.chain == .thorChain && toCoin.chain == .base) ? true : tx.isDeposit
-
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
             sendMaxAmount: false,
-            isDeposit: isDeposit,
+            isDeposit: tx.isDeposit,
             transactionType: .unspecified,
             gasLimit: nil,
             byteFee: nil,
