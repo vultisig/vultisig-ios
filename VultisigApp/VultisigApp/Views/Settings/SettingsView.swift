@@ -15,6 +15,8 @@ struct SettingsView: View {
     @State var scale: CGFloat = 1
     @State var showAdvancedSettings: Bool = false
     
+    @StateObject var referralViewModel = ReferralViewModel()
+    
     var body: some View {
         content
             .navigationDestination(isPresented: $showAdvancedSettings) {
@@ -108,7 +110,11 @@ struct SettingsView: View {
     
     var referralCodeCell: some View {
         ZStack {
-            
+            if referralViewModel.isReferralCodeRegistered {
+                referralCodeNavigationLink
+            } else {
+                referralCodeButton
+            }
         }
     }
     
@@ -123,7 +129,7 @@ struct SettingsView: View {
     var referralCodeButton: some View {
         referralCodeLabel
             .onTapGesture {
-                
+                referralViewModel.showReferralOverviewSheet.toggle()
             }
     }
     
