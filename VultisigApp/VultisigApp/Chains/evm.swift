@@ -63,21 +63,7 @@ class EVMHelper {
             input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             input.txMode = .enveloped
         }
-
-        if let gasLimitInt = Int(input.gasLimit.hexString, radix: 16) {
-            print("🔧 TxBuilder: Gas limit: \(gasLimitInt)")
-        }
-        
-        if input.txMode == .legacy {
-            if let gasPriceInt = Int(input.gasPrice.hexString, radix: 16) {
-                print("🔧 TxBuilder: Gas Price: \(gasPriceInt)")
-            }
-        } else {
-            if let maxFeeInt = Int(input.maxFeePerGas.hexString, radix: 16) {
-                print("🔧 TxBuilder: Max fee per gas: \(maxFeeInt)")
-            }
-        }
-        
+ 
         return try input.serializedData()
     }
     func getChainId(chain: Chain) -> String {
@@ -125,13 +111,7 @@ class EVMHelper {
             }
         }
         
-        do {
-            let serialized = try input.serializedData()
-            return serialized
-        } catch {
-            print("⚙️ EVMHelper: ⚠️ Failed to serialize input: \(error.localizedDescription)")
-            throw error
-        }
+        return try input.serializedData()
     }
     
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
