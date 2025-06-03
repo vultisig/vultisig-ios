@@ -106,6 +106,31 @@ struct SettingsView: View {
         }
     }
     
+    var referralCodeCell: some View {
+        ZStack {
+            
+        }
+    }
+    
+    var referralCodeNavigationLink: some View {
+        NavigationLink {
+            
+        } label: {
+            referralCodeLabel
+        }
+    }
+    
+    var referralCodeButton: some View {
+        referralCodeLabel
+            .onTapGesture {
+                
+            }
+    }
+    
+    var referralCodeLabel: some View {
+        SettingCell(title: "referralCode", icon: "horn")
+    }
+    
     var faqCell: some View {
         NavigationLink {
             SettingsFAQView()
