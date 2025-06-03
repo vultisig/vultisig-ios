@@ -31,20 +31,13 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 
-                if (swapPayload.fromCoin.chain == .thorChain && swapPayload.toCoin.chain == .base) {
-                    let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-                    return messages
-                } else if (swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain) {
-                    if swapPayload.fromCoin.isNativeToken {
-                        let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                        messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-                        return messages
-                    }
+                if swapPayload.fromCoin.chain == .base && !swapPayload.fromCoin.isNativeToken {
                     break
                 }
+
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                return messages
             case .oneInch(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:

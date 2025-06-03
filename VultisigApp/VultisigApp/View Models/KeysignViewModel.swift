@@ -297,7 +297,7 @@ class KeysignViewModel: ObservableObject {
             switch swapPayload {
             case .thorchain(let payload):
                 if (payload.fromCoin.chain == .thorChain && payload.toCoin.chain == .base) ||
-                    (payload.fromCoin.chain == .base && payload.toCoin.chain == .thorChain) {
+                    (payload.fromCoin.chain == .base) {
                     break
                 }
                 
@@ -317,7 +317,7 @@ class KeysignViewModel: ObservableObject {
                     signedTransactions.append(transaction)
                 }
             case .eldorito(let payload):
-                if payload.fromCoin.chain == .base && payload.toCoin.chain == .thorChain && !payload.fromCoin.isNativeToken {
+                if payload.fromCoin.chain == .base && !payload.fromCoin.isNativeToken {
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     let oneInchPayload = try payload.toOneInchSwapPayload()
                     let transaction = try swaps.getSignedTransaction(payload: oneInchPayload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
