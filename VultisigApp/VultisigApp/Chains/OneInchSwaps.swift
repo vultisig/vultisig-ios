@@ -50,7 +50,7 @@ struct OneInchSwaps {
 }
 
 private extension OneInchSwaps {
-    
+
     func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
@@ -61,15 +61,15 @@ private extension OneInchSwaps {
                 }
             }
         }
+
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt(1000000000) // Min 1 GWEI
         
-        guard case .Ethereum(let maxFeePerGasWei, _, _, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("Failed to get valid gas price for transaction")
-        }
-        
+        // sometimes the `gas` field in oneinch tx is 0
+        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
         let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: maxFeePerGasWei.magnitude, incrementNonce: incrementNonce)
+        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
     }
 }
