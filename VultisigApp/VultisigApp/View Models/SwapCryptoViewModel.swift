@@ -180,28 +180,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func buildApprovePayload(tx: SwapTransaction, approvalAddress: String? = nil) -> ERC20ApprovePayload? {
-        
-        if !tx.fromCoin.shouldApprove {
-            return nil
-        }
-        
-        var spender: String = ""
-        if let approvalAddress = approvalAddress {
-            spender = approvalAddress
-        } else {
-            spender = tx.router ?? .empty
-        }
-        
-        if spender == .empty {
-            return nil
-        }
-        
-        let amount = tx.amountInCoinDecimal
-        let payload = ERC20ApprovePayload(amount: amount, spender: spender)
-        return payload
+    func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
+            guard tx.isApproveRequired, let spender = tx.router else {
+                return nil
+            }
+            let amount = tx.amountInCoinDecimal
+            let payload = ERC20ApprovePayload(amount: amount, spender: spender)
+            return payload
     }
-    
     
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
@@ -291,7 +277,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                          memo: quote.memo,
                          chainSpecific: chainSpecific,
                          swapPayload: .eldorito(elDoritoPayload),
-                         approvePayload: buildApprovePayload(tx: tx, approvalAddress: elDoritoPayload.quote.meta?.approvalAddress),
+                         approvePayload: buildApprovePayload(tx: tx),
                          vault: vault
                      )
                  } else if tx.fromCoin.chain == .base && tx.fromCoin.isNativeToken {

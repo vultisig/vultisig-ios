@@ -62,7 +62,8 @@ private extension OneInchSwaps {
             }
         }
 
-        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt(1000000000) // Min 1 GWEI
+        let rawGasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
+        let gasPrice = rawGasPrice == 0 ? BigUInt(1000000000) : rawGasPrice
         
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
