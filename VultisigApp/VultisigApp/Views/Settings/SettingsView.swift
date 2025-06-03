@@ -23,7 +23,7 @@ struct SettingsView: View {
                 SettingsAdvancedView()
             }
             .sheet(isPresented: $referralViewModel.showReferralOverviewSheet) {
-                <#code#>
+                referralOverviewSheet
             }
     }
     
@@ -34,6 +34,7 @@ struct SettingsView: View {
             currencySelectionCell
             addressBookCell
             defaultChainsSelectionCell
+            referralCodeCell
             faqCell
         }
     }
@@ -123,17 +124,18 @@ struct SettingsView: View {
     
     var referralCodeNavigationLink: some View {
         NavigationLink {
-            
+            ReferralOnboardingView()
         } label: {
             referralCodeLabel
         }
     }
     
     var referralCodeButton: some View {
-        referralCodeLabel
-            .onTapGesture {
-                referralViewModel.showReferralOverviewSheet.toggle()
-            }
+        Button {
+            referralViewModel.showReferralOverviewSheet = true
+        } label: {
+            referralCodeLabel
+        }
     }
     
     var referralCodeLabel: some View {
@@ -227,6 +229,11 @@ struct SettingsView: View {
         .onTapGesture {
             handleVersionTap()
         }
+    }
+    
+    var referralOverviewSheet: some View {
+        ReferralOnboardingBanner()
+            .presentationDetents([.height(400)])
     }
     
     private func handleVersionTap() {

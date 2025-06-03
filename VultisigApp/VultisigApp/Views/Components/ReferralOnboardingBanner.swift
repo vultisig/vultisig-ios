@@ -9,13 +9,20 @@ import SwiftUI
 
 struct ReferralOnboardingBanner: View {
     var body: some View {
+        ZStack {
+            Background()
+            content
+        }
+    }
+    
+    var content: some View {
         VStack(spacing: 12) {
             image
+            Spacer()
             title
-            description
             button
         }
-        .frame(height: 464)
+        .frame(height: 400)
         .padding(.horizontal, 24)
     }
     

@@ -10,9 +10,5 @@ import SwiftUI
 class ReferralViewModel: ObservableObject {
     @AppStorage("isReferralCodeRegistered") var isReferralCodeRegistered: Bool = false
     
-    @State var showReferralOverviewSheet: Bool = true
-    
-    var body: some View {
-        Text("Hello, World!")
-    }
+    @Published var showReferralOverviewSheet: Bool = false
 }
