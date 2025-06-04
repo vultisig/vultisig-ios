@@ -28,15 +28,14 @@ class ERC20Helper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        
+
         guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
-        
         guard case .Ethereum(let maxFeePerGasWei,
-                             let priorityFeeWei,
-                             let nonce,
-                             let gasLimit) = keysignPayload.chainSpecific
+                          let priorityFeeWei,
+                          let nonce,
+                          let gasLimit) = keysignPayload.chainSpecific
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
@@ -49,7 +48,6 @@ class ERC20Helper {
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.coin.contractAddress
             $0.txMode = .enveloped
-            
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
@@ -57,7 +55,7 @@ class ERC20Helper {
                 }
             }
         }
-        
+
         return try input.serializedData()
     }
     
@@ -66,16 +64,15 @@ class ERC20Helper {
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
-            print("💰 ERC20: ⚠️ Error in pre-signing: \(preSigningOutput.errorMessage)")
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.dataHash.hexString]
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                              vaultHexChainCode: String,
-                              keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
+                                     vaultHexChainCode: String,
+                                     keysignPayload: KeysignPayload,
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
@@ -107,7 +104,6 @@ class ERC20Helper {
             let output = try EthereumSigningOutput(serializedBytes: compileWithSignature)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                  transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-            
             return result
         } catch {
             throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")

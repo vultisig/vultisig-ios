@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import BigInt
-import WalletCore
 
 struct KeysignMessageFactory {
 
@@ -37,7 +35,6 @@ struct KeysignMessageFactory {
 
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-                return messages
             case .oneInch(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
@@ -48,7 +45,7 @@ struct KeysignMessageFactory {
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
             case .mayachain:
-                break
+                break // No op - Regular transaction with memo
             }
         }
 

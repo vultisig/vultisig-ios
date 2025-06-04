@@ -1,4 +1,9 @@
-
+//
+//  KeysignViewModel.swift
+//  VultisigApp
+//
+//  Created by Johnny Luo on 15/3/2024.
+//
 
 import Foundation
 import OSLog
@@ -172,7 +177,7 @@ class KeysignViewModel: ObservableObject {
         }
         status = .KeysignFinished
     }
-    
+    // Return value bool indicate whether keysign should be retried
     func keysignOneMessageWithRetry(msg: String, attempt: UInt8) async throws {
         logger.info("signing message:\(msg)")
         let msgHash = Utils.getMessageBodyHash(msg: msg)
@@ -195,7 +200,7 @@ class KeysignViewModel: ObservableObject {
                                              encryptGCM: isEncryptGCM)
         self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
         var err: NSError?
-        
+        // keysign doesn't need to recreate preparams
         self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
         if let err {
             throw err
@@ -217,11 +222,12 @@ class KeysignViewModel: ObservableObject {
         if let keysignPayload {
             keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
         } else {
-            
+            // TODO: Should we use Ether as default derivationPath?
             keysignReq.derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
         }
         
-        
+        // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+        // and then pass it to TSS for keysign
         if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
             keysignReq.messageToSign = msgToSign
         }
@@ -245,10 +251,10 @@ class KeysignViewModel: ObservableObject {
             }
             
             self.messagePuller?.stop()
-            try await Task.sleep(for: .seconds(1))
+            try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
         } catch {
             self.messagePuller?.stop()
-            
+            // Check whether the other party already have the signature
             logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
             let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
             if resp != nil {
@@ -282,6 +288,8 @@ class KeysignViewModel: ObservableObject {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
+        
+        // TODO: Refactor into Signed transaction factory
         var signedTransactions: [SignedTransactionResult] = []
         
         if let approvePayload = keysignPayload.approvePayload {
@@ -313,9 +321,9 @@ class KeysignViewModel: ObservableObject {
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
-                }                
+                }
             case .mayachain:
-                break
+                break // No op - Regular transaction with memo
             }
         }
         
@@ -557,7 +565,7 @@ class KeysignViewModel: ObservableObject {
     }
     
     func customMessageSignature() -> String {
-        
+        // currently keysign for custom message is using ETH , and the signature should be get signature with recoveryid
         switch signatures.first?.value.getSignatureWithRecoveryID() {
         case .success(let sig):
             return sig.hexString
@@ -597,7 +605,7 @@ class KeysignViewModel: ObservableObject {
         default:
             errMessage = "Failed to get signed transaction,error:\(err.localizedDescription)"
         }
-        
+        // since it failed to get transaction or failed to broadcast , go to failed page
         DispatchQueue.main.async {
             self.status = .KeysignFailed
             self.keysignError = errMessage

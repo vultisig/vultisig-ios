@@ -11,10 +11,10 @@ import BigInt
 import Tss
 
 struct OneInchSwaps {
-    
+
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
-    
+
     func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
@@ -28,15 +28,13 @@ struct OneInchSwaps {
         }
         return [preSigningOutput.dataHash.hexString]
     }
-    
+
     func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
-        
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
             incrementNonce: incrementNonce
         )
-        
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let transaction = try helper.getSignedTransaction(
             vaultHexPubKey: vaultHexPublicKey,
@@ -44,7 +42,6 @@ struct OneInchSwaps {
             inputData: inputData,
             signatures: signatures
         )
-        
         return transaction
     }
 }
@@ -62,9 +59,7 @@ private extension OneInchSwaps {
             }
         }
 
-        let rawGasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-        let gasPrice = rawGasPrice == 0 ? BigUInt(1000000000) : rawGasPrice
-        
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
         let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas

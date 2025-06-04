@@ -8,11 +8,11 @@
 import Foundation
 import BigInt
 
-enum SwapPayload: Codable, Hashable {
+enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchain(THORChainSwapPayload)
     case mayachain(THORChainSwapPayload)
     case oneInch(OneInchSwapPayload)
-    
+
     var fromCoin: Coin {
         switch self {
         case .thorchain(let payload), .mayachain(let payload):

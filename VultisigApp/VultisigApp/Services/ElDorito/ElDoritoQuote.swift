@@ -107,7 +107,7 @@ extension ElDoritoQuote.Transaction {
             to: self.to,
             data: self.data ?? "",
             value: self.value,
-            gasPrice: self.gasPrice ?? "0",
+            gasPrice: self.gasPrice ?? "1000000000", // 1 GWEI min
             gas: self.gas ?? Int64(0)
         )
     }

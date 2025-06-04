@@ -1,4 +1,7 @@
-
+//
+//  JoinKeysignViewModel.swift
+//  VultisigApp
+//
 
 import Foundation
 import OSLog
@@ -247,7 +250,7 @@ class JoinKeysignViewModel: ObservableObject {
                 self.status = .KeysignSameDeviceShare
                 return
             }
-
+            // only compare libType when it is not empty
             if !keysignPayload.libType.isEmpty {
                 let libType = vault.libType ?? .GG20
                 if libType != keysignPayload.libType.toLibType() {

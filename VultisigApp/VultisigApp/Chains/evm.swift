@@ -63,7 +63,7 @@ class EVMHelper {
             input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             input.txMode = .enveloped
         }
- 
+
         return try input.serializedData()
     }
     func getChainId(chain: Chain) -> String {
@@ -73,21 +73,16 @@ class EVMHelper {
         return self.coinType.chainId
     }
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
-            print("⚙️ EVMHelper: ⚠️ Failed to get chainID")
             throw HelperError.runtimeError("fail to get chainID")
         }
-        
         guard case .Ethereum(let maxFeePerGasWei,
                              let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
-            print("⚙️ EVMHelper: ⚠️ Failed to get Ethereum chain specific")
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
-
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
@@ -96,12 +91,13 @@ class EVMHelper {
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
-            
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
+                    print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
                         if memo.hasPrefix("0x") {
+                            // if memo start with 0x , meaning it is hex encoded string , then let's hex decode it first
                             $0.data = Data(hex: memo)
                         } else {
                             $0.data = Data(memo.utf8)
@@ -110,7 +106,6 @@ class EVMHelper {
                 }
             }
         }
-        
         return try input.serializedData()
     }
     
@@ -167,7 +162,6 @@ class EVMHelper {
         let output = try EthereumSigningOutput(serializedBytes: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                              transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-        
         return result
     }
 }

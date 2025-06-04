@@ -1,4 +1,9 @@
-
+//
+//  JoinKeysignSummaryViewModel.swift
+//  VultisigApp
+//
+//  Created by Amol Kumar on 2024-12-05.
+//
 
 import Foundation
 

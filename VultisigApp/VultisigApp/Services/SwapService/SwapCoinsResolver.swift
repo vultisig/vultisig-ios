@@ -22,19 +22,18 @@ struct SwapCoinsResolver {
     }
 
     static func resolveToCoins(fromCoin: Coin, allCoins: [Coin], selectedToCoin: Coin) -> (coins: [Coin], selected: Coin) {
-        let coins = allCoins.filter { coin in
-            let commonProviders = fromCoin.swapProviders.filter { coin.swapProviders.contains($0) }
-            return !commonProviders.isEmpty
-        }
-        .filter { $0 != fromCoin }
-        .sorted()
+        
+        let coins = allCoins
+            .filter { $0.swapProviders.contains(where: fromCoin.swapProviders.contains) }
+            .filter { $0 != fromCoin }
+            .sorted()
 
         let selected = coins.contains(selectedToCoin) ? selectedToCoin : coins.first ?? .example
+
         return (coins, selected)
     }
 
     static func resolveProvider(fromCoin: Coin, toCoin: Coin) -> SwapProvider? {
-        let commonProviders = fromCoin.swapProviders.filter { toCoin.swapProviders.contains($0) }
-        return commonProviders.first // Pick the first available provider
+        return fromCoin.swapProviders.first(where: toCoin.swapProviders.contains)
     }
 }

@@ -70,27 +70,23 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
-    
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
-        let cacheKey = getCacheKey(for: tx.fromCoin,
-                                   action: .swap,
-                                   sendMaxAmount: false,
-                                   isDeposit: tx.isDeposit,
-                                   transactionType: .unspecified,
-                                   fromAddress: tx.fromCoin.address,
-                                   feeMode: .fast)
-        
-        if let localCacheItem = self.localCache.get(cacheKey) {
+        let cacheKey =  getCacheKey(for: tx.fromCoin,
+                                          action: .swap,
+                                          sendMaxAmount: false,
+                                          isDeposit: tx.isDeposit,
+                                          transactionType: .unspecified,
+                                          fromAddress: tx.fromCoin.address,
+                                          feeMode: .fast)
+        if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
+            // use the cache item
             if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
                 return localCacheItem.blockSpecific
             }
         }
-
-        let fromCoin = await tx.fromCoin
-        let toCoin = await tx.toCoin
-
+        
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
@@ -103,7 +99,6 @@ final class BlockChainService {
             toAddress: nil,
             feeMode: .fast
         )
-
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -182,6 +177,7 @@ private extension BlockChainService {
         }
         
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+        
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
             fromAddress: tx.coin.address,
             mode: tx.feeMode
@@ -192,7 +188,6 @@ private extension BlockChainService {
         await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
         
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
-        
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
         let specific = try await fetchSpecific(
