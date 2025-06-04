@@ -101,11 +101,11 @@ private extension SwapService {
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
                 throw SwapError.swapAmountTooSmall
             }
-// I don't think we should have a min amount to swap.
-//            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-//                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-//                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
-//            }
+
+            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
+                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+            }
 
             switch service {
             case _ as ThorchainService:
