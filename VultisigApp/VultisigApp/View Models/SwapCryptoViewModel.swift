@@ -251,10 +251,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
             case .thorchain(let quote):
                 if tx.fromCoin.chain == .base && tx.fromCoin.isNativeToken {
-                    // For Base ERC20 to RUNE, we need to create an El Dorito swap payload
-                    // For ERC20 tokens on Base to RUNE, we need to sign a data transaction
-                    // and broadcast it to the inbound address
-                    let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+                    
+                    guard let toAddress = quote.inboundAddress else {
+                        throw Errors.inboundAddress
+                    }
                     
                     keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                         coin: tx.fromCoin,
@@ -268,7 +268,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     )
                     
                 } else {
-                    // Regular THORChain swap
+
                     let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
                     
                     keysignPayload = try await KeysignPayloadFactory().buildTransfer(
@@ -405,6 +405,7 @@ private extension SwapCryptoViewModel {
         case unexpectedError
         case insufficientFunds
         case swapAmountTooSmall
+        case inboundAddress
         
         var errorDescription: String? {
             switch self {
@@ -414,6 +415,8 @@ private extension SwapCryptoViewModel {
                 return "Insufficient funds"
             case .swapAmountTooSmall:
                 return "Swap amount too small"
+            case .inboundAddress:
+                return "Inbound address is invalid"
             }
         }
     }
