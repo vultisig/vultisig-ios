@@ -97,14 +97,6 @@ struct ReferralTextField: View {
             .foregroundColor(.invalidRed)
     }
     
-    private func handleCopyCode() {
-        
-    }
-    
-    private func handlePasteCode() {
-        
-    }
-    
     private func clearCode() {
         text = ""
     }
