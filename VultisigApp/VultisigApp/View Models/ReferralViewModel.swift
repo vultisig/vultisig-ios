@@ -8,8 +8,7 @@
 import SwiftUI
 
 class ReferralViewModel: ObservableObject {
-//    @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
-    @Published var showReferralCodeOnboarding: Bool = true
+    @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
     
     @Published var showReferralBannerSheet: Bool = false
     @Published var navigationToReferralOverview: Bool = false

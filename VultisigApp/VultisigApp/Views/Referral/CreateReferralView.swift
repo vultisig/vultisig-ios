@@ -59,8 +59,9 @@ struct CreateReferralView: View {
     }
     
     var pickReferralTextfield: some View {
-        ReferralTextFieldWithCopy(
+        ReferralTextField(
             placeholderText: "enterUpto4Characters",
+            action: .Clear,
             text: $referralCode,
             showError: $showError,
             errorMessage: $errorMessage

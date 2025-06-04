@@ -45,7 +45,15 @@ struct ReferralLaunchView: View {
     }
     
     var saveButton: some View {
-        FilledButton(title: "saveReferral", textColor: .neutral0, background: .blue400)
+        Button {
+            
+        } label: {
+            saveLabel
+        }
+    }
+    
+    var saveLabel: some View {
+        OutlineButton(title: "saveReferral", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var orSeparator: some View {
@@ -66,12 +74,13 @@ struct ReferralLaunchView: View {
     }
     
     var createButton: some View {
-        FilledButton(title: "createNewVault", textColor: .neutral0, background: .persianBlue400)
+        FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
     }
     
     var textField: some View {
-        ReferralTextFieldWithCopy(
+        ReferralTextField(
             placeholderText: "enterUpto4Characters",
+            action: .Paste,
             text: $referralCode,
             showError: $showError,
             errorMessage: $errorMessage

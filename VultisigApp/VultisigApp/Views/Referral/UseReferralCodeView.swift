@@ -38,8 +38,9 @@ struct UseReferralCodeView: View {
     }
     
     var textField: some View {
-        ReferralTextFieldWithCopy(
+        ReferralTextField(
             placeholderText: "enterUpto4Characters",
+            action: .Paste,
             text: $referralCode,
             showError: $showError,
             errorMessage: $errorMessage

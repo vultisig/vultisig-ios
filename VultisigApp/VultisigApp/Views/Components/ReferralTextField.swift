@@ -1,5 +1,5 @@
 //
-//  ReferralTextFieldWithCopy.swift
+//  ReferralTextField.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-26.
@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-struct ReferralTextFieldWithCopy: View {
+struct ReferralTextField: View {
     let placeholderText: String
+    let action: ReferralTextFieldAction
     @Binding var text: String
     @Binding var showError: Bool
     @Binding var errorMessage: String
@@ -31,7 +32,7 @@ struct ReferralTextFieldWithCopy: View {
                 .submitLabel(.done)
                 .colorScheme(.dark)
             
-            copyButton
+            actionButton
         }
         .frame(height: 56)
         .font(.body16BrockmannMedium)
@@ -47,12 +48,46 @@ struct ReferralTextFieldWithCopy: View {
         .padding(1)
     }
     
+    var actionButton: some View {
+        ZStack {
+            switch action {
+            case .Paste:
+                pasteButton
+            case .Copy:
+                copyButton
+            case .Clear:
+                clearButton
+            case .None:
+                EmptyView()
+            }
+        }
+        .font(.body16Menlo)
+        .foregroundColor(.neutral0)
+    }
+    
     var copyButton: some View {
         Button {
             handleCopyCode()
         } label: {
             Image(systemName: "square.on.square")
         }
+    }
+    
+    var pasteButton: some View {
+        Button {
+            handlePasteCode()
+        } label: {
+            Image(systemName: "doc.on.clipboard")
+        }
+    }
+    
+    var clearButton: some View {
+        Button {
+            clearCode()
+        } label: {
+            Image(systemName: "xmark")
+        }
+        .opacity(text.isEmpty ? 0 : 1)
     }
     
     var errorText: some View {
@@ -65,8 +100,16 @@ struct ReferralTextFieldWithCopy: View {
     private func handleCopyCode() {
         
     }
+    
+    private func handlePasteCode() {
+        
+    }
+    
+    private func clearCode() {
+        text = ""
+    }
 }
 
 #Preview {
-    ReferralTextFieldWithCopy(placeholderText: "enterUpto4Characters", text: .constant("ABCD"), showError: .constant(false), errorMessage: .constant(""))
+    ReferralTextField(placeholderText: "enterUpto4Characters", action: .Copy, text: .constant("ABCD"), showError: .constant(false), errorMessage: .constant(""))
 }
