@@ -87,42 +87,6 @@ struct ElDoritoQuote: Codable, Hashable {
 }
 
 extension ElDoritoQuote {
-    func toThorchainSwapQuote() throws -> ThorchainSwapQuote {
-        guard let expectedBuyAmount = expectedBuyAmount,
-              let memo = memo else {
-            throw SwapError.serverError(message: "ElDoritoQuote :: We need the expectedBuyAmount, expiration and memo for this ThorchainSwapQuote")
-        }
-        
-        return ThorchainSwapQuote(
-            dustThreshold: nil,
-            expectedAmountOut: expectedBuyAmount,
-            expiry: Int(expiration ?? "0") ?? 0,
-            fees: Fees(
-                affiliate: fees?.first(where: { $0.type == "affiliate" })?.amount ?? "0",
-                asset: fees?.first?.asset ?? "UNKNOWN",
-                outbound: fees?.first(where: { $0.type == "outbound" })?.amount ?? "0",
-                total: fees?
-                    .filter { $0.type == "outbound" || $0.type == "inbound" || $0.type == "affiliate" }
-                    .compactMap { Int($0.amount ?? "0") }
-                    .reduce(0, +)
-                    .description ?? "0"
-            ),
-            inboundAddress: inboundAddress,
-            inboundConfirmationBlocks: nil,
-            inboundConfirmationSeconds: nil,
-            memo: memo,
-            notes: "Converted from ElDoritoQuote",
-            outboundDelayBlocks: 0,
-            outboundDelaySeconds: 0,
-            recommendedMinAmountIn: "0",
-            slippageBps: totalSlippageBps,
-            totalSwapSeconds: estimatedTime?.total,
-            warning: warnings?.first ?? "",
-            router: tx?.to,
-            elDoritoQuote: self
-        )
-    }
-    
     func toOneInchQuote() throws -> OneInchQuote {
         
         guard let elDoritoTx = self.tx else {
@@ -145,36 +109,6 @@ extension ElDoritoQuote.Transaction {
             value: self.value,
             gasPrice: self.gasPrice ?? "0",
             gas: self.gas ?? Int64(0)
-        )
-    }
-}
-
-extension ElDoritoSwapPayload {
-    func toOneInchSwapPayload() throws -> OneInchSwapPayload {
-        guard let elDoritoTx = quote.tx else {
-            throw SwapError.serverError(message: "ElDoritoQuote is missing transaction data")
-        }
-        
-        let oneInchTx = OneInchQuote.Transaction(
-            from: elDoritoTx.from,
-            to: elDoritoTx.to,
-            data: elDoritoTx.data ?? "",
-            value: elDoritoTx.value,
-            gasPrice: elDoritoTx.gasPrice ?? "0",
-            gas: elDoritoTx.gas ?? .zero
-        )
-        
-        let oneInchQuote = OneInchQuote(
-            dstAmount: quote.expectedBuyAmount ?? "0",
-            tx: oneInchTx
-        )
-        
-        return OneInchSwapPayload(
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            fromAmount: fromAmount,
-            toAmountDecimal: toAmountDecimal,
-            quote: oneInchQuote
         )
     }
 }

@@ -25,8 +25,6 @@ struct ThorchainSwapQuote: Codable {
     let warning: String
     let router: String?
     
-    let elDoritoQuote: ElDoritoQuote?
-
     enum CodingKeys: String, CodingKey {
         case dustThreshold = "dust_threshold"
         case expectedAmountOut = "expected_amount_out"
@@ -44,7 +42,6 @@ struct ThorchainSwapQuote: Codable {
         case totalSwapSeconds = "total_swap_seconds"
         case warning
         case router
-        case elDoritoQuote
     }
 }
 
