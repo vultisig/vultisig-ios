@@ -54,6 +54,7 @@ struct ReferralOnboardingBanner: View {
         } label: {
             label
         }
+        .buttonStyle(.plain)
     }
     
     var label: some View {

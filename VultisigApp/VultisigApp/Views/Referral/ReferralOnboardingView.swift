@@ -11,19 +11,7 @@ struct ReferralOnboardingView: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            shadow
-            main
-        }
-    }
-
-    var main: some View {
-        VStack {
-            ReferralOnboardingGuideAnimation()
-            Spacer()
-            button
-        }
+        container
     }
     
     var shadow: some View {
