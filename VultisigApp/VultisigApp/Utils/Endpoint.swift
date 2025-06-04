@@ -622,6 +622,21 @@ class Endpoint {
         }
     }
     
+    // Referral
+    
+    static let ReferralBase = "https://thornode.ninerealms.com/thorchain/network"
+    
+    static func checkNameAvailability(for code: String) -> String {
+        ReferralBase + "/thorname/lookup/\(code)"
+    }
+    
+    static func getUserDetails(for code: String) -> String {
+        ReferralBase + "/thorname/\(code)"
+    }
+    
+    static func reverseLookup(for address: String) -> String {
+        ReferralBase + "/thorname/lookup/\(address)"
+    }
 }
 
 fileprivate extension String {
