@@ -14,6 +14,7 @@ struct ReferralOnboardingGuideAnimation: View {
     @State var showCell1: Bool = false
     @State var showCell2: Bool = false
     @State var showCell3: Bool = false
+    @State var showCell4: Bool = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -125,6 +126,13 @@ struct ReferralOnboardingGuideAnimation: View {
                 description: "referralOnboardingDescription3",
                 showCell: showCell3
             )
+            
+            getCell(
+                icon: "person.badge.shield.checkmark",
+                title: "referralOnboardingTitle4",
+                description: "referralOnboardingDescription4",
+                showCell: showCell4
+            )
             .background(
                 GeometryReader { geometry in
                     Color.clear
@@ -186,6 +194,10 @@ struct ReferralOnboardingGuideAnimation: View {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             showCell3 = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            showCell4 = true
         }
     }
 }
