@@ -8,10 +8,7 @@
 import SwiftUI
 
 struct ReferralLaunchView: View {
-    @State var referralCode: String = ""
-    
-    @State var showError: Bool = false
-    @State var errorMessage: String = ""
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
         container
@@ -44,9 +41,17 @@ struct ReferralLaunchView: View {
             .foregroundColor(.neutral0)
     }
     
+    var errorText: some View {
+        Text(NSLocalizedString(referralViewModel.referralLaunchViewErrorMessage, comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertRed)
+            .opacity(referralViewModel.showReferralLaunchViewError ? 1 : 0)
+    }
+    
     var saveButton: some View {
         Button {
-            
+            referralViewModel.saveReferredCode()
         } label: {
             saveLabel
         }
@@ -81,9 +86,9 @@ struct ReferralLaunchView: View {
         ReferralTextField(
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            text: $referralViewModel.referredCode,
+            showError: $referralViewModel.showReferralLaunchViewError,
+            errorMessage: $referralViewModel.referralLaunchViewErrorMessage
         )
     }
     
@@ -96,5 +101,5 @@ struct ReferralLaunchView: View {
 }
 
 #Preview {
-    ReferralLaunchView()
+    ReferralLaunchView(referralViewModel: ReferralViewModel())
 }

@@ -22,6 +22,7 @@ struct ReferralTextField: View {
                 errorText
             }
         }
+        .animation(.easeInOut, value: showError)
     }
     
     var textField: some View {
