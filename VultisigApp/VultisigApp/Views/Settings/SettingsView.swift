@@ -26,7 +26,7 @@ struct SettingsView: View {
                 ReferralOnboardingView(referralViewModel: referralViewModel)
             })
             .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
-                CreateReferralView()
+                ReferralLaunchView()
             })
             .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
                 referralOverviewSheet

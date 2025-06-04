@@ -77,6 +77,7 @@ struct ReferralOnboardingBanner: View {
     var closeLabel: some View {
         Image(systemName: "xmark")
             .font(.body22BrockmannMedium)
+            .foregroundColor(.neutral0)
     }
     
     private func handleTap() {
