@@ -21,14 +21,5 @@ extension ReferralOnboardingView {
             main
         }
     }
-    
-    var main: some View {
-        VStack {
-            Spacer()
-            ReferralOnboardingGuideAnimation()
-            Spacer()
-            button
-        }
-    }
 }
 #endif

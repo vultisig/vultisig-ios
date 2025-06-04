@@ -28,13 +28,5 @@ extension ReferralOnboardingView {
     var header: some View {
         GeneralMacHeader(title: "referral")
     }
-    
-    var main: some View {
-        VStack {
-            ReferralOnboardingGuideAnimation()
-            Spacer()
-            button
-        }
-    }
 }
 #endif

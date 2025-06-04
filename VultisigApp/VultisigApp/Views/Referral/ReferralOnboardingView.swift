@@ -28,12 +28,25 @@ struct ReferralOnboardingView: View {
         } label: {
             label
         }
+        .padding(.horizontal, 24)
     }
     
     var label: some View {
         FilledButton(title: "getStarted")
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
+    }
+    
+    var main: some View {
+        VStack {
+            ScrollView {
+                ReferralOnboardingGuideAnimation()
+                    .padding(.horizontal, 24)
+            }
+            
+            button
+        }
+        .padding(.horizontal, -24)
     }
 }
 
