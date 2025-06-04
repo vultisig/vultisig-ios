@@ -630,9 +630,6 @@
 "enterUpto4Characters" = "Bis zu 4 Zeichen eingeben";
 "useReferral" = "Empfehlung verwenden";
 "sameUseReferralCodeErrorMessage" = "Der verwendete Empfehlungscode darf nicht derselbe wie dein eigener sein";
-"referralOnboardingTitle1" = "Erstelle deinen Empfehlungscode";
-"referralOnboardingTitle2" = "Teile mit Freunden";
-"referralOnboardingTitle3" = "Verdiene automatisch Belohnungen";
 "referralOnboardingDescription1" = "Wähle einen kurzen Code und lege deine Auszahlung fest.";
 "referralOnboardingDescription2" = "Lade Freunde ein, deinen Code beim Swappen zu verwenden.";
 "referralOnboardingDescription3" = "Erhalte 10 Bps in deinem bevorzugten Asset, jedes Mal wenn sie traden.";
@@ -656,3 +653,17 @@
 "registrationFee" = "Registrierungsgebühr";
 "costs" = "Kosten";
 "createReferral" = "Empfehlung erstellen";
+"referralCode" = "Empfehlungscode";
+"referralOnboardingBannerTitle1" = "Freunde einladen. ";
+"referralOnboardingBannerTitle2" = "Belohnungen verdienen.\n";
+"referralOnboardingBannerTitle3" = "Gebühren sparen.";
+"referralOnboardingTitle1" = "Erstelle deinen Empfehlungscode";
+"referralOnboardingTitle2" = "Teile ihn mit Freunden";
+"referralOnboardingTitle3" = "Verdiene automatisch Belohnungen";
+"referralOnboardingTitle4" = "Empfehlungscode verwenden";
+"referralOnboardingDescription1" = "Wähle einen kurzen Code und lege deine Belohnung fest.";
+"referralOnboardingDescription2" = "Lade Freunde ein, deinen Code beim Swappen zu nutzen.";
+"referralOnboardingDescription3" = "Erhalte Zahlungen in deinem bevorzugten Asset jedes Mal, wenn sie handeln.";
+"referralOnboardingDescription4" = "Nutze den Code deines Freundes und spare Gebühren beim Swappen.";
+"referral" = "Empfehlung";
+"vultisig-referrals" = "Vultisig – Empfehlungen";
