@@ -11,9 +11,10 @@ struct ReferralOnboardingBanner: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Background()
             content
+            closeButton
         }
     }
     
@@ -61,6 +62,21 @@ struct ReferralOnboardingBanner: View {
         FilledButton(title: "next")
             .padding(.bottom, 24)
             .padding(.top, 12)
+    }
+    
+    var closeButton: some View {
+        Button {
+            referralViewModel.showReferralBannerSheet = false
+        } label: {
+            closeLabel
+        }
+        .buttonStyle(.plain)
+        .padding(24)
+    }
+    
+    var closeLabel: some View {
+        Image(systemName: "xmark")
+            .font(.body22BrockmannMedium)
     }
     
     private func handleTap() {
