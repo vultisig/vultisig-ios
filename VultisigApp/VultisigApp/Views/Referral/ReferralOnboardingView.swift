@@ -10,19 +10,19 @@ import SwiftUI
 struct ReferralOnboardingView: View {
     
     var body: some View {
-        VStack {
-            ZStack {
-                Background()
-                shadow
-                main
-            }
-            
-            button
+        ZStack {
+            Background()
+            shadow
+            main
         }
     }
 
     var main: some View {
-        ReferralOnboardingGuideAnimation()
+        VStack {
+            ReferralOnboardingGuideAnimation()
+            Spacer()
+            button
+        }
     }
     
     var shadow: some View {

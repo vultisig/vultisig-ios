@@ -22,7 +22,10 @@ struct SettingsView: View {
             .navigationDestination(isPresented: $showAdvancedSettings) {
                 SettingsAdvancedView()
             }
-            .sheet(isPresented: $referralViewModel.showReferralOverviewSheet) {
+            .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
+                ReferralOnboardingView()
+            })
+            .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
                 referralOverviewSheet
             }
     }
@@ -114,17 +117,17 @@ struct SettingsView: View {
     
     var referralCodeCell: some View {
         ZStack {
-            if referralViewModel.isReferralCodeRegistered {
-                referralCodeNavigationLink
-            } else {
+            if referralViewModel.showReferralCodeOnboarding {
                 referralCodeButton
+            } else {
+                referralCodeNavigationLink
             }
         }
     }
     
     var referralCodeNavigationLink: some View {
         NavigationLink {
-            ReferralOnboardingView()
+            CreateReferralView()
         } label: {
             referralCodeLabel
         }
@@ -132,7 +135,7 @@ struct SettingsView: View {
     
     var referralCodeButton: some View {
         Button {
-            referralViewModel.showReferralOverviewSheet = true
+            referralViewModel.showReferralBannerSheet = true
         } label: {
             referralCodeLabel
         }
@@ -232,7 +235,7 @@ struct SettingsView: View {
     }
     
     var referralOverviewSheet: some View {
-        ReferralOnboardingBanner()
+        ReferralOnboardingBanner(referralViewModel: referralViewModel)
             .presentationDetents([.height(400)])
     }
     
