@@ -613,9 +613,6 @@
 "enterUpto4Characters" = "Ingresa hasta 4 caracteres";
 "useReferral" = "Usar referido";
 "sameUseReferralCodeErrorMessage" = "El código usado no puede ser igual al tuyo";
-"referralOnboardingTitle1" = "Crea tu código de referido";
-"referralOnboardingTitle2" = "Compártelo con amigos";
-"referralOnboardingTitle3" = "Gana recompensas automáticamente";
 "referralOnboardingDescription1" = "Elige un código corto y configura tu recompensa.";
 "referralOnboardingDescription2" = "Invita amigos a usar tu código al hacer swaps.";
 "referralOnboardingDescription3" = "Recibe 10 bps en tu activo preferido cada vez que ellos operen.";
@@ -639,3 +636,17 @@
 "registrationFee" = "Tarifa de registro";
 "costs" = "Costos";
 "createReferral" = "Crear referido";
+"referralCode" = "Código de referido";
+"referralOnboardingBannerTitle1" = "Invita amigos. ";
+"referralOnboardingBannerTitle2" = "Gana recompensas.\n";
+"referralOnboardingBannerTitle3" = "Ahorra en comisiones.";
+"referralOnboardingTitle1" = "Crea tu código de referido";
+"referralOnboardingTitle2" = "Compártelo con amigos";
+"referralOnboardingTitle3" = "Gana recompensas automáticamente";
+"referralOnboardingTitle4" = "Usar código de referido";
+"referralOnboardingDescription1" = "Elige un código corto y define tu recompensa.";
+"referralOnboardingDescription2" = "Invita a amigos a usar tu código al hacer intercambios.";
+"referralOnboardingDescription3" = "Recibe pagos en tu activo preferido cada vez que hagan transacciones.";
+"referralOnboardingDescription4" = "Usa el código de un amigo y ahorra en comisiones.";
+"referral" = "Referido";
+"vultisig-referrals" = "Vultisig - Referidos";

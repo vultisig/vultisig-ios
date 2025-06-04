@@ -8,21 +8,10 @@
 import SwiftUI
 
 struct ReferralOnboardingView: View {
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        VStack {
-            ZStack {
-                Background()
-                shadow
-                main
-            }
-            
-            button
-        }
-    }
-
-    var main: some View {
-        ReferralOnboardingGuideAnimation()
+        container
     }
     
     var shadow: some View {
@@ -34,12 +23,33 @@ struct ReferralOnboardingView: View {
     }
     
     var button: some View {
+        Button {
+            referralViewModel.showReferralDashboard()
+        } label: {
+            label
+        }
+        .padding(.horizontal, 24)
+    }
+    
+    var label: some View {
         FilledButton(title: "getStarted")
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
     }
+    
+    var main: some View {
+        VStack {
+            ScrollView {
+                ReferralOnboardingGuideAnimation()
+                    .padding(.horizontal, 24)
+            }
+            
+            button
+        }
+        .padding(.horizontal, -24)
+    }
 }
 
 #Preview {
-    ReferralOnboardingView()
+    ReferralOnboardingView(referralViewModel: ReferralViewModel())
 }

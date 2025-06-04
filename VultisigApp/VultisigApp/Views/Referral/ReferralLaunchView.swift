@@ -14,13 +14,10 @@ struct ReferralLaunchView: View {
     @State var errorMessage: String = ""
     
     var body: some View {
-        ZStack {
-            Background()
-            content
-        }
+        container
     }
     
-    var content: some View {
+    var main: some View {
         VStack(spacing: 16) {
             Spacer()
             image

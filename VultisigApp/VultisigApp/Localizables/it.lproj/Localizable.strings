@@ -613,9 +613,6 @@
 "enterUpto4Characters" = "Inserisci fino a 4 caratteri";
 "useReferral" = "Usa invito";
 "sameUseReferralCodeErrorMessage" = "Il codice di invito usato non può essere uguale al tuo";
-"referralOnboardingTitle1" = "Crea il tuo codice di invito";
-"referralOnboardingTitle2" = "Condividilo con amici";
-"referralOnboardingTitle3" = "Ricevi ricompense automaticamente";
 "referralOnboardingDescription1" = "Scegli un codice breve e imposta il tuo premio.";
 "referralOnboardingDescription2" = "Invita amici a usare il tuo codice per lo swap.";
 "referralOnboardingDescription3" = "Ricevi 10 bps in asset preferito ogni volta che tradano.";
@@ -639,3 +636,17 @@
 "registrationFee" = "Costo di registrazione";
 "costs" = "Costi";
 "createReferral" = "Crea invito";
+"referralCode" = "Codice di invito";
+"referralOnboardingBannerTitle1" = "Invita amici. ";
+"referralOnboardingBannerTitle2" = "Guadagna premi.\n";
+"referralOnboardingBannerTitle3" = "Risparmia sulle commissioni.";
+"referralOnboardingTitle1" = "Crea il tuo codice di invito";
+"referralOnboardingTitle2" = "Condividilo con gli amici";
+"referralOnboardingTitle3" = "Ottieni ricompense automaticamente";
+"referralOnboardingTitle4" = "Usa il codice di invito";
+"referralOnboardingDescription1" = "Scegli un codice breve e imposta la ricompensa.";
+"referralOnboardingDescription2" = "Invita amici a usare il tuo codice durante lo swap.";
+"referralOnboardingDescription3" = "Ricevi pagamenti nel tuo asset preferito ogni volta che scambiano.";
+"referralOnboardingDescription4" = "Usa il codice di un amico e risparmia sulle commissioni.";
+"referral" = "Invito";
+"vultisig-referrals" = "Vultisig - Inviti";

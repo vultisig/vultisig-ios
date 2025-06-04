@@ -15,10 +15,21 @@ struct SettingsView: View {
     @State var scale: CGFloat = 1
     @State var showAdvancedSettings: Bool = false
     
+    @StateObject var referralViewModel = ReferralViewModel()
+    
     var body: some View {
         content
             .navigationDestination(isPresented: $showAdvancedSettings) {
                 SettingsAdvancedView()
+            }
+            .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
+                ReferralOnboardingView(referralViewModel: referralViewModel)
+            })
+            .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
+                ReferralLaunchView()
+            })
+            .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
+                referralOverviewSheet
             }
     }
     
@@ -29,6 +40,7 @@ struct SettingsView: View {
             currencySelectionCell
             addressBookCell
             defaultChainsSelectionCell
+//            referralCodeCell
             faqCell
         }
     }
@@ -104,6 +116,36 @@ struct SettingsView: View {
         } label: {
             SettingCell(title: "addressBook", icon: "text.book.closed")
         }
+    }
+    
+    var referralCodeCell: some View {
+        ZStack {
+            if referralViewModel.showReferralCodeOnboarding {
+                referralCodeButton
+            } else {
+                referralCodeNavigationLink
+            }
+        }
+    }
+    
+    var referralCodeNavigationLink: some View {
+        NavigationLink {
+            ReferralLaunchView()
+        } label: {
+            referralCodeLabel
+        }
+    }
+    
+    var referralCodeButton: some View {
+        Button {
+            referralViewModel.showReferralBannerSheet = true
+        } label: {
+            referralCodeLabel
+        }
+    }
+    
+    var referralCodeLabel: some View {
+        SettingCell(title: "referralCode", icon: "horn")
     }
     
     var faqCell: some View {
@@ -193,6 +235,11 @@ struct SettingsView: View {
         .onTapGesture {
             handleVersionTap()
         }
+    }
+    
+    var referralOverviewSheet: some View {
+        ReferralOnboardingBanner(referralViewModel: referralViewModel)
+            .presentationDetents([.height(400)])
     }
     
     private func handleVersionTap() {
