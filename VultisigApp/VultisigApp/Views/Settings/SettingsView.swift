@@ -23,7 +23,10 @@ struct SettingsView: View {
                 SettingsAdvancedView()
             }
             .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
-                ReferralOnboardingView()
+                ReferralOnboardingView(referralViewModel: referralViewModel)
+            })
+            .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
+                CreateReferralView()
             })
             .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
                 referralOverviewSheet
@@ -127,7 +130,7 @@ struct SettingsView: View {
     
     var referralCodeNavigationLink: some View {
         NavigationLink {
-            CreateReferralView()
+            ReferralLaunchView()
         } label: {
             referralCodeLabel
         }
