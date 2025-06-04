@@ -688,3 +688,6 @@
 "costs" = "Costs";
 "createReferral" = "Create Referral";
 "referralCode" = "Referral Code";
+"referralOnboardingBannerTitle1" = "Invite friends. ";
+"referralOnboardingBannerTitle2" = "Earn rewards.\n";
+"referralOnboardingBannerTitle3" = "Save on fees.";

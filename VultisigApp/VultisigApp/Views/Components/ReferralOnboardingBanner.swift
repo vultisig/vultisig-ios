@@ -34,17 +34,16 @@ struct ReferralOnboardingBanner: View {
     }
     
     var title: some View {
-        Text(NSLocalizedString("referralOnboardingBannerTitle", comment: ""))
-            .font(.body22BrockmannMedium)
-            .foregroundColor(.neutral0)
-            .multilineTextAlignment(.center)
-    }
-    
-    var description: some View {
-        Text(NSLocalizedString("referralOnboardingBannerDescription", comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
-            .multilineTextAlignment(.center)
+        Group {
+            Text(NSLocalizedString("referralOnboardingBannerTitle1", comment: ""))
+                .foregroundColor(.neutral0) +
+            Text(NSLocalizedString("referralOnboardingBannerTitle2", comment: ""))
+                .foregroundStyle(LinearGradient.primaryGradient) +
+            Text(NSLocalizedString("referralOnboardingBannerTitle3", comment: ""))
+                .foregroundColor(.neutral0)
+        }
+        .font(.body22BrockmannMedium)
+        .multilineTextAlignment(.center)
     }
     
     var button: some View {
