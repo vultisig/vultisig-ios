@@ -70,14 +70,7 @@ class SwapTransaction: ObservableObject {
         case .oneinch(let quote, _), .lifi(let quote, _):
             
             if self.fromCoin.chain == .base && !self.fromCoin.isNativeToken {
-                
-                print("quote dstAmount: \(quote.dstAmount)")
-                
                 let rawAmount = quote.dstAmount.toDecimal() * pow(10, self.toCoin.decimals)
-                
-                print ("decimals: \(self.toCoin.decimals)")
-                print ("rawAmount: \(rawAmount)")
-                
                 let amount = rawAmount.description.toBigInt()
                 return toCoin.decimal(for: amount)
             }
