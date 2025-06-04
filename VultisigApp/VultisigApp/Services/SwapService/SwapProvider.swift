@@ -11,7 +11,6 @@ enum SwapProvider: Equatable {
     case thorchain
     case mayachain
     case oneinch(Chain)
-    case eldorito(Chain)
     case lifi
 
     var streamingInterval: Int {

@@ -49,11 +49,11 @@ struct KeysignMessageFactory {
                 }
             case .mayachain:
                 break
-            case .eldorito(let swapPayload):
-                if swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain && !swapPayload.fromCoin.isNativeToken {
-                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(payload: swapPayload.toOneInchSwapPayload(), keysignPayload: self.payload, incrementNonce: incrementNonce)
-                }
+//            case .eldorito(let swapPayload):
+//                if swapPayload.fromCoin.chain == .base && swapPayload.toCoin.chain == .thorChain && !swapPayload.fromCoin.isNativeToken {
+//                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+//                    messages += try swaps.getPreSignedImageHash(payload: swapPayload.toOneInchSwapPayload(), keysignPayload: self.payload, incrementNonce: incrementNonce)
+//                }
             }
         }
 

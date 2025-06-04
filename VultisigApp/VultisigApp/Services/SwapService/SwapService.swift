@@ -8,40 +8,39 @@
 import Foundation
 
 struct SwapService {
-
+    
     static let shared = SwapService()
-
+    
     private let thorchainService: ThorchainSwapProvider = ThorchainService.shared
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
     private let lifiService: LiFiService = LiFiService.shared
     private let eldoritoService: ElDoritoService = ElDoritoService.shared
-
+    
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
-
+        
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
             throw SwapError.routeUnavailable
         }
-
+        
         switch provider {
         case .thorchain:
             
-            if (fromCoin.chain == Chain.thorChain && toCoin.chain == Chain.base) ||
-                (fromCoin.chain == Chain.base && toCoin.chain == Chain.thorChain)
-            {
-                
+            if  fromCoin.chain == Chain.base && !fromCoin.isNativeToken {
                 guard let fromChainID = fromCoin.chain.chainIDElDorito else {
-                      throw SwapError.routeUnavailable
+                    throw SwapError.routeUnavailable
                 }
                 return try await fetchElDoritoQuote(
                     chain: fromChainID,
-                    amount: amount, fromCoin: fromCoin,
-                    toCoin: toCoin, isAffiliate: isAffiliate
+                    amount: amount,
+                    fromCoin: fromCoin,
+                    toCoin: toCoin,
+                    isAffiliate: isAffiliate
                 )
             }
             
             return try await fetchCrossChainQuote(
-                service: thorchainService, 
+                service: thorchainService,
                 provider: provider,
                 amount: amount,
                 fromCoin: fromCoin,
@@ -60,7 +59,7 @@ struct SwapService {
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-                  throw SwapError.routeUnavailable
+                throw SwapError.routeUnavailable
             }
             return try await fetchOneInchQuote(
                 chain: fromChainID,
@@ -72,21 +71,12 @@ struct SwapService {
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
-        case .eldorito:
-            guard let fromChainID = fromCoin.chain.chainIDElDorito else {
-                  throw SwapError.routeUnavailable
-            }
-            return try await fetchElDoritoQuote(
-                chain: fromChainID,
-                amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
-            )
         }
     }
 }
 
 private extension SwapService {
-
+    
     func fetchCrossChainQuote(
         service: ThorchainSwapProvider,
         provider: SwapProvider,
@@ -107,16 +97,18 @@ private extension SwapService {
                 interval: provider.streamingInterval,
                 isAffiliate: isAffiliate
             )
-
+            
+            print("fetchCrossChainQuote: \(quote)")
+            
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
                 throw SwapError.swapAmountTooSmall
             }
-
-            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
-            }
-
+            
+//            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
+//                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+//                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+//            }
+            
             switch service {
             case _ as ThorchainService:
                 return .thorchain(quote)
@@ -140,7 +132,7 @@ private extension SwapService {
             throw SwapError.swapAmountTooSmall
         }
     }
-
+    
     func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let response = try await oneInchService.fetchQuotes(
@@ -171,9 +163,9 @@ private extension SwapService {
             isAffiliate: isAffiliate
         )
         
-        return .thorchain(try response.quote.toThorchainSwapQuote())
+        return .oneinch(response.quote, fee: response.fee)
     }
-
+    
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await lifiService.fetchQuotes(

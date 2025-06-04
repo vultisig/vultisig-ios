@@ -100,7 +100,7 @@ struct ElDoritoService {
         from: String,
         to: String,
         isAffiliate: Bool
-    ) async throws -> (quote: ElDoritoQuote, fee: BigInt?) {
+    ) async throws -> (quote: OneInchQuote, fee: BigInt?) {
                 
         let url = Endpoint.fetchElDoritoSwapQuote()
         
@@ -144,7 +144,7 @@ struct ElDoritoService {
                 print("💰 ElDoritoService: ⚠️ No transaction data in quote")
             }
             
-            return (quote, fee)
+            return (try quote.toOneInchQuote(), fee)
         } else {
             print("💰 ElDoritoService: ⚠️ No routes found")
         }

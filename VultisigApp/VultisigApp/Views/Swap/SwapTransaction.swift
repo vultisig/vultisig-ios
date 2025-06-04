@@ -66,14 +66,22 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = quote.expectedAmountOut.toDecimal()
-            
-            if (fromCoin.chain == .thorChain && toCoin.chain == .base) ||
-                (fromCoin.chain == .base && toCoin.chain == .thorChain) {
-                return expected
-            }
-            
             return expected / toCoin.thorswapMultiplier
         case .oneinch(let quote, _), .lifi(let quote, _):
+            
+            if self.fromCoin.chain == .base && !self.fromCoin.isNativeToken {
+                
+                print("quote dstAmount: \(quote.dstAmount)")
+                
+                let rawAmount = quote.dstAmount.toDecimal() * pow(10, self.toCoin.decimals)
+                
+                print ("decimals: \(self.toCoin.decimals)")
+                print ("rawAmount: \(rawAmount)")
+                
+                let amount = rawAmount.description.toBigInt()
+                return toCoin.decimal(for: amount)
+            }
+            
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }

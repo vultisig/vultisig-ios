@@ -62,11 +62,14 @@ extension Coin {
                 return [.oneinch(chain), .lifi]
             }
         case .base:
-            return [.oneinch(chain), .lifi, .eldorito(chain), .thorchain]
+            if thorBaseTokens.contains(ticker) {
+                return [.oneinch(chain), .lifi, .thorchain]
+            }
+            return [.oneinch(chain), .lifi]
         case .optimism, .polygon, .polygonV2, .zksync:
             return [.oneinch(chain), .lifi]
         case .thorChain:
-            return [.thorchain, .mayachain, .eldorito(chain)]
+            return [.thorchain, .mayachain]
         case .bitcoin:
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
@@ -102,6 +105,10 @@ private extension Coin {
     
     var thorEthTokens: [String] {
         return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX", "vTHOR"]
+    }
+    
+    var thorBaseTokens: [String] {
+        return ["ETH", "USDC"]
     }
     
     var thorBscTokens: [String] {

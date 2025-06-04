@@ -89,8 +89,6 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .eldorito:
-            return Endpoint.getSwapProgressURL(txid: txid)
         case .oneInch, .none:
             return nil
         }
@@ -316,13 +314,13 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
-            case .eldorito(let payload):
-                if payload.fromCoin.chain == .base && !payload.fromCoin.isNativeToken {
-                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    let oneInchPayload = try payload.toOneInchSwapPayload()
-                    let transaction = try swaps.getSignedTransaction(payload: oneInchPayload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
-                    signedTransactions.append(transaction)
-                }
+//            case .eldorito(let payload):
+//                if payload.fromCoin.chain == .base && !payload.fromCoin.isNativeToken {
+//                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+//                    let oneInchPayload = try payload.toOneInchSwapPayload()
+//                    let transaction = try swaps.getSignedTransaction(payload: oneInchPayload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+//                    signedTransactions.append(transaction)
+//                }
                 
             case .mayachain:
                 break

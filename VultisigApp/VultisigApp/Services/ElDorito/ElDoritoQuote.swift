@@ -122,6 +122,31 @@ extension ElDoritoQuote {
             elDoritoQuote: self
         )
     }
+    
+    func toOneInchQuote() throws -> OneInchQuote {
+        
+        guard let elDoritoTx = self.tx else {
+            throw SwapError.serverError(message: "ElDoritoQuote is missing transaction data")
+        }
+        
+        return OneInchQuote(
+            dstAmount: self.expectedBuyAmount ?? "0",
+            tx: elDoritoTx.toOneInchQuoteTransaction()
+        )
+    }
+}
+
+extension ElDoritoQuote.Transaction {
+    func toOneInchQuoteTransaction() -> OneInchQuote.Transaction {
+        OneInchQuote.Transaction(
+            from: self.from,
+            to: self.to,
+            data: self.data ?? "",
+            value: self.value,
+            gasPrice: self.gasPrice ?? "0",
+            gas: self.gas ?? Int64(0)
+        )
+    }
 }
 
 extension ElDoritoSwapPayload {

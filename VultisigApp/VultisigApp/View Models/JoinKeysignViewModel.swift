@@ -361,13 +361,14 @@ class JoinKeysignViewModel: ObservableObject {
     func getProvider() -> String {
         switch keysignPayload?.swapPayload {
         case .oneInch:
+            if keysignPayload?.swapPayload?.fromCoin.chain == .base {
+                return "El Dorito"
+            }
             return "1Inch"
         case .thorchain:
             return "THORChain"
         case .mayachain:
             return "Maya protocol"
-        case .eldorito:
-            return "El Dorito"
         case .none:
             return .empty
         }
