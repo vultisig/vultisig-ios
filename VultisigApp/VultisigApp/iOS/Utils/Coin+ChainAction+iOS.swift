@@ -11,7 +11,7 @@ import SwiftUI
 extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
         let localeCode = Locale.current.region?.identifier
-        if localeCode == "GB" || localeCode == "JP" {
+        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY"{
             return filter { $0 != .swap }
         } else {
             return self
