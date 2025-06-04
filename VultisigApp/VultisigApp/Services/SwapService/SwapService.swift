@@ -98,16 +98,14 @@ private extension SwapService {
                 isAffiliate: isAffiliate
             )
             
-            print("fetchCrossChainQuote: \(quote)")
-            
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
                 throw SwapError.swapAmountTooSmall
             }
             
-//            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
-//                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-//                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
-//            }
+            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
+                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
+                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
+            }
             
             switch service {
             case _ as ThorchainService:
