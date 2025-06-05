@@ -755,6 +755,10 @@
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
 		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
+		B5961B882D86B63B00AE6AE9 /* ElDoritoSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B872D86B63B00AE6AE9 /* ElDoritoSwapPayload.swift */; };
+		B5961B8D2D86B67B00AE6AE9 /* ElDoritoToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B8B2D86B67B00AE6AE9 /* ElDoritoToken.swift */; };
+		B5961B8E2D86B67B00AE6AE9 /* ElDoritoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B8A2D86B67B00AE6AE9 /* ElDoritoService.swift */; };
+		B5961B8F2D86B67B00AE6AE9 /* ElDoritoQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5961B892D86B67B00AE6AE9 /* ElDoritoQuote.swift */; };
 		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */; };
 		B5A54E002D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A54DFF2D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift */; };
@@ -1667,6 +1671,10 @@
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
 		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
+		B5961B872D86B63B00AE6AE9 /* ElDoritoSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoSwapPayload.swift; sourceTree = "<group>"; };
+		B5961B892D86B67B00AE6AE9 /* ElDoritoQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoQuote.swift; sourceTree = "<group>"; };
+		B5961B8A2D86B67B00AE6AE9 /* ElDoritoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoService.swift; sourceTree = "<group>"; };
+		B5961B8B2D86B67B00AE6AE9 /* ElDoritoToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElDoritoToken.swift; sourceTree = "<group>"; };
 		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosMerge.swift; sourceTree = "<group>"; };
 		B5A54DFF2D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddLiquidityMaya.swift; sourceTree = "<group>"; };
@@ -1943,6 +1951,7 @@
 				A50E79382BFE30170031DB47 /* Storage */,
 				A543B39E2BEA72BA003FB989 /* SwapService */,
 				A543B3992BEA6E3E003FB989 /* 1inch */,
+				B5961B8C2D86B67B00AE6AE9 /* ElDorito */,
 				A5D49F542BE26BA7001766C8 /* Actions */,
 				B5A51B532BD8C68B00791D78 /* Sui */,
 				B54B01982BDE0A0F00FDA472 /* Polkadot */,
@@ -2231,6 +2240,7 @@
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
+				B5961B872D86B63B00AE6AE9 /* ElDoritoSwapPayload.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 			);
 			path = Keysign;
@@ -3256,6 +3266,16 @@
 			path = Ton;
 			sourceTree = "<group>";
 		};
+		B5961B8C2D86B67B00AE6AE9 /* ElDorito */ = {
+			isa = PBXGroup;
+			children = (
+				B5961B892D86B67B00AE6AE9 /* ElDoritoQuote.swift */,
+				B5961B8A2D86B67B00AE6AE9 /* ElDoritoService.swift */,
+				B5961B8B2D86B67B00AE6AE9 /* ElDoritoToken.swift */,
+			);
+			path = ElDorito;
+			sourceTree = "<group>";
+		};
 		B5A51B532BD8C68B00791D78 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -4160,6 +4180,7 @@
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
 				DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */,
 				A6182F492C9292F70059BFDD /* NavigationButton+macOS.swift in Sources */,
+				B5961B8E2D86B67B00AE6AE9 /* ElDoritoService.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
 				A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */,
@@ -4466,6 +4487,7 @@
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C671352CA3C53800F59B6A /* QRShareSheetImage+macOS.swift in Sources */,
+				B5961B8D2D86B67B00AE6AE9 /* ElDoritoToken.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */,
 				B52196422C1296DF0021D27A /* IntExtension.swift in Sources */,
@@ -4488,6 +4510,7 @@
 				A6BFE1C92D95F538000B73C0 /* SwapCoinCell.swift in Sources */,
 				DEA1C7022DB0CD9900424466 /* TokenMetadata.swift in Sources */,
 				A6C671052CA2792800F59B6A /* OnboardingView1+iOS.swift in Sources */,
+				B5961B882D86B63B00AE6AE9 /* ElDoritoSwapPayload.swift in Sources */,
 				A6182F532C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
 				B590DF862C2E70B800ED934E /* FunctionCallVote.swift in Sources */,
@@ -4552,6 +4575,7 @@
 				A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
+				B5961B8F2D86B67B00AE6AE9 /* ElDoritoQuote.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,

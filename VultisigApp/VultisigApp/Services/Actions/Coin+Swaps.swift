@@ -62,6 +62,9 @@ extension Coin {
                 return [.oneinch(chain), .lifi]
             }
         case .base:
+            if thorBaseTokens.contains(ticker) {
+                return [.thorchain,.oneinch(chain), .lifi]
+            }
             return [.oneinch(chain), .lifi]
         case .optimism, .polygon, .polygonV2, .zksync:
             return [.oneinch(chain), .lifi]

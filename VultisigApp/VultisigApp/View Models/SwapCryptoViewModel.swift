@@ -255,21 +255,44 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return true
 
             case .thorchain(let quote):
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                // Any swap from and to Base chain must be converted to a normal Send transaction or THORChain Deposit
+                if tx.fromCoin.chain == .base || tx.toCoin.chain == .base {
 
-                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: toAddress,
-                    amount: tx.amountInCoinDecimal,
-                    memo: tx.quote?.memo,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
-                        quote: quote,
-                        provider: .thorchain
-                    )),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
+                    let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
+                    
+                    // ETH.USDC -> BASE.ETH
+                    if !tx.fromCoin.isNativeToken {
+                        // If fromCoin is not native token, we need to build an approve payload
+                        throw SwapError.routeUnavailable
+                    }
+                    
+                    keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                        coin: tx.fromCoin,
+                        toAddress: toAddress ?? tx.fromCoin.address,
+                        amount: tx.amountInCoinDecimal,
+                        memo: quote.memo,
+                        chainSpecific: chainSpecific,
+                        swapPayload: nil,
+                        approvePayload: nil,
+                        vault: vault
+                    )
+                    
+                } else {
+                    let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                    keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                        coin: tx.fromCoin,
+                        toAddress: toAddress,
+                        amount: tx.amountInCoinDecimal,
+                        memo: quote.memo,
+                        chainSpecific: chainSpecific,
+                        swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                            quote: quote,
+                            provider: .thorchain
+                        )),
+                        approvePayload: buildApprovePayload(tx: tx),
+                        vault: vault
+                    )
+                }
                 
                 return true
 
@@ -390,6 +413,7 @@ private extension SwapCryptoViewModel {
         case unexpectedError
         case insufficientFunds
         case swapAmountTooSmall
+        case inboundAddress
         
         var errorDescription: String? {
             switch self {
@@ -399,6 +423,8 @@ private extension SwapCryptoViewModel {
                 return "Insufficient funds"
             case .swapAmountTooSmall:
                 return "Swap amount too small"
+            case .inboundAddress:
+                return "Inbound address is invalid"
             }
         }
     }
