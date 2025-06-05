@@ -72,17 +72,8 @@ extension String {
     func parseInput(locale: Locale = Locale.current) -> Decimal? {
         let usLocale = Locale(identifier: "en_US")
         
-        // Attempt 1: Try parsing with "en_US" locale
-        let formatterUS = NumberFormatter()
-        formatterUS.locale = usLocale
-        formatterUS.numberStyle = .decimal
-        
-        if let number = formatterUS.number(from: self) {
-            return number.decimalValue
-        }
-        
-        // Attempt 2: Try parsing with the user's current (or provided default) locale
-        // This is only attempted if the US locale parsing failed and the defaultLocale is different from usLocale
+        // Attempt 1: Try parsing with the user's current (or provided default) locale first
+        // This ensures comma-based locales (Europe/Brazil) work correctly
         if locale.identifier != usLocale.identifier {
             let formatterCurrent = NumberFormatter()
             formatterCurrent.locale = locale
@@ -91,6 +82,15 @@ extension String {
             if let number = formatterCurrent.number(from: self) {
                 return number.decimalValue
             }
+        }
+        
+        // Attempt 2: Fallback to parsing with "en_US" locale
+        let formatterUS = NumberFormatter()
+        formatterUS.locale = usLocale
+        formatterUS.numberStyle = .decimal
+        
+        if let number = formatterUS.number(from: self) {
+            return number.decimalValue
         }
         
         // If both attempts fail
