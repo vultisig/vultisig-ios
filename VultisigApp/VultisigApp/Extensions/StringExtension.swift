@@ -69,26 +69,6 @@ extension String {
 
 // MARK: - Amount Formatter
 extension String {
-    
-    private func getCurrentDecimalPoint() -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current // Ensure it uses system locale
-        return formatter.decimalSeparator ?? "."
-    }
-    
-    func formatCurrency() -> String {
-        let decimalPoint = getCurrentDecimalPoint()
-        return self.replacingOccurrences(of: ",", with: decimalPoint)
-    }
-    
-    func formatCurrencyWithSeparators() -> String {
-        guard let number = parseInput() else {
-            return self
-        }
-        
-        return number.formatToFiat(includeCurrencySymbol: false, useAbbreviation: false)
-    }
-    
     func parseInput(locale: Locale = Locale.current) -> Decimal? {
         let usLocale = Locale(identifier: "en_US")
         
