@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 import SwiftUI
 import BigInt
 
@@ -31,6 +30,7 @@ extension Decimal {
         formatter.minimumFractionDigits = 2
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
+        formatter.roundingMode = .down
         
         let number = NSDecimalNumber(decimal: self)
         return formatter.string(from: number) ?? ""
@@ -42,6 +42,7 @@ extension Decimal {
         formatter.locale = locale
         formatter.maximumFractionDigits = 8
         formatter.minimumFractionDigits = 4
+        formatter.roundingMode = .down
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
@@ -52,6 +53,7 @@ extension Decimal {
         formatter.minimumFractionDigits = 0
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
+        formatter.roundingMode = .down
         
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
         let number = NSDecimalNumber(decimal: self)
@@ -59,8 +61,6 @@ extension Decimal {
         return formatter.string(from: number) ?? ""
     }
     
-
-
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
     }
