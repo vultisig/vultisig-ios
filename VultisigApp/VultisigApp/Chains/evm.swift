@@ -27,8 +27,8 @@ class EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
     
-    func getPreSignedInputData(
-        signingInput: EthereumSigningInput,
+    // method to get thorchain swap payload
+    func getSwapPreSignedInputData(
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
@@ -36,6 +36,17 @@ class EVMHelper {
     {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
+        }
+        
+        guard let swapPayload = keysignPayload.swapPayload else {
+            throw HelperError.runtimeError("swap payload is nil")
+        }
+        
+        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+            throw HelperError.runtimeError("fail to get swap payload")
+        }
+        guard let memo = keysignPayload.memo else {
+            throw HelperError.runtimeError("memo is nil")
         }
 
         guard case .Ethereum(
@@ -49,9 +60,63 @@ class EVMHelper {
 
         let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
 
-        var input = signingInput
-        input.chainID = Data(hexString: Int64(intChainID).hexString())!
-        input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+        var input = EthereumSigningInput.with {
+            $0.chainID = Data(hexString: Int64(intChainID).hexString())!
+            $0.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+            $0.toAddress = thorChainSwapPayload.toAddress
+           
+        }
+        
+        if swapPayload.fromCoin.isNativeToken {
+            input.toAddress = thorChainSwapPayload.vaultAddress
+            // send to asgard
+            input.transaction = EthereumTransaction.with {
+                $0.transfer = EthereumTransaction.Transfer.with {
+                    $0.amount = thorChainSwapPayload.fromAmount.serializeForEvm()
+                    $0.data = Data(memo.utf8)
+                }
+            }
+        } else {
+            guard let routerAddress = thorChainSwapPayload.routerAddress else {
+                throw HelperError.runtimeError("memo is nil")
+            }
+            input.toAddress = routerAddress
+            let abiInput = EthereumAbiFunctionEncodingInput.with{
+                $0.functionName = "depositWithExpiry"
+                $0.tokens = [
+                    EthereumAbiToken.with {
+                        $0.address = thorChainSwapPayload.vaultAddress
+                    },
+                    EthereumAbiToken.with {
+                        $0.address = thorChainSwapPayload.fromCoin.contractAddress
+                    },
+                    EthereumAbiToken.with {
+                        $0.numberUint = TW_EthereumAbi_Proto_NumberNParam.with {
+                            $0.value = thorChainSwapPayload.fromAmount.serializeForEvm()
+                        }
+                    },
+                    EthereumAbiToken.with {
+                        $0.stringValue = memo
+                    },
+                    EthereumAbiToken.with {
+                        $0.numberUint = TW_EthereumAbi_Proto_NumberNParam.with {
+                            $0.value = BigInt(thorChainSwapPayload.expirationTime).serializeForEvm()
+                        }
+                    }
+                ]
+            }
+            input.transaction = try EthereumTransaction.with {
+                $0.contractGeneric = try EthereumTransaction.ContractGeneric.with {
+                    $0.amount = swapPayload.fromAmount.serializeForEvm()
+                    $0.data = try abiInput.serializedData()
+                }
+        }
+        
+        if coinType == .smartChain {
+            input.txMode = .legacy
+        } else {
+            input.txMode = .enveloped
+        }
 
         if let gas, let gasPrice {
             input.gasLimit = gas.serialize()
@@ -66,6 +131,7 @@ class EVMHelper {
 
         return try input.serializedData()
     }
+        
     func getChainId(chain: Chain) -> String {
         if chain == Chain.ethereumSepolia {
             return "11155111"

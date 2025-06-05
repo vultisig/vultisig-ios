@@ -22,31 +22,52 @@ class CosmosHelper {
         self.gasLimit = gasLimit
     }
     
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        guard let swapPayload = keysignPayload.swapPayload else {
+            throw HelperError.runtimeError("swap payload is nil")
+        }
+        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+            throw HelperError.runtimeError("fail to get swap payload")
+        }
+        guard let memo = keysignPayload.memo else {
+            throw HelperError.runtimeError("swap payload memo is nil")
+        }
+        
         guard case .Cosmos(let accountNumber, let sequence,let gas, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = self.gasLimit
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = self.denom
-                $0.amount = String(gas)
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            $0.fee = CosmosFee.with {
+                $0.gas = self.gasLimit
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = self.denom
+                    $0.amount = String(gas)
+                }]
+            }
+            $0.signingMode = .protobuf
+            $0.chainID = coinType.chainId
+            $0.memo = memo
+            $0.messages = [CosmosMessage.with {
+                $0.sendCoinsMessage = CosmosMessage.Send.with {
+                    $0.fromAddress = thorChainSwapPayload.fromAddress
+                    $0.toAddress = thorChainSwapPayload.toAddress
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = "uatom"
+                        $0.amount = String(swapPayload.fromAmount)
+                    }]
+                }
             }]
         }
-        // memo has been set
-        // deposit message has been set
+
         return try input.serializedData()
     }
-    
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue, let ibcDenomTrace) = keysignPayload.chainSpecific else {
