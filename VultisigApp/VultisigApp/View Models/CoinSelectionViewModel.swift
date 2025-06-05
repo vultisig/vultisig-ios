@@ -78,12 +78,4 @@ class CoinSelectionViewModel: ObservableObject {
         }
     }
 
-    func selectWeweIfNeeded(vault: Vault) {
-        guard !selection.contains(TokensStore.Token.baseWewe) else { return }
-
-        Task {
-            selection.insert(TokensStore.Token.baseWewe)
-            await CoinService.saveAssets(for: vault, selection: selection)
-        }
-    }
 }
