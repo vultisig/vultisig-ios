@@ -120,6 +120,9 @@ extension String {
 
 extension String {
     func toDecimal() -> Decimal {
+        if self.isEmpty {
+            return .zero
+        }
         guard let number = parseInput() else {
             print("Failed to convert to Decimal: \(self)")
             return .zero
