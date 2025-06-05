@@ -28,7 +28,7 @@ enum THORChainHelper {
         if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
             chainID = ThorchainService.shared.network
         }
-        var input = CosmosSigningInput.with {
+        let input = CosmosSigningInput.with {
             $0.chainID = chainID
             $0.publicKey = pubKeyData
             $0.accountNumber = accountNumber

@@ -32,7 +32,8 @@ class THORChainSwaps {
             return try THORChainHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
-            return try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+            let swapInput =  try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
+            return try helper.getSigningInputData(keysignPayload: keysignPayload, signingInput: swapInput)
         case .ethereum, .bscChain, .avalanche,.base:
             let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
             let signedEvmTx = try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
@@ -112,24 +113,24 @@ class THORChainSwaps {
         )
             
         switch swapPayload.fromCoin.chain {
-        case .thor:
+        case .thorChain:
             return try THORChainHelper.getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-        case .btc:
+        case .bitcoin:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
             return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-        case .bch:
+        case .bitcoinCash:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
             return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-        case .ltc:
+        case .litecoin:
             let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
             return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-        case .doge:
+        case .dogecoin:
             let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
             return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-        case .eth, .bsc, .avax:
+        case .ethereum,.bscChain, .avalanche , .base:
             let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
             return signedEvmTx
-        case .atom:
+        case .gaiaChain:
             return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         default:
             throw HelperError.runtimeError("not support")

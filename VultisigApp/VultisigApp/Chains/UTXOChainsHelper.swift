@@ -50,7 +50,7 @@ class UTXOChainsHelper {
         return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }.sorted()
     }
     
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> BitcoinSigningInput {
         guard let swapPayload = keysignPayload.swapPayload else {
             throw HelperError.runtimeError("swap payload is nil")
         }
@@ -70,12 +70,12 @@ class UTXOChainsHelper {
             $0.useMaxAmount = false
             $0.amount = Int64(swapPayload.fromAmount)
             $0.coinType = self.coin.rawValue
-            $0.toAddress = thorChainSwapPayload.toAddress
+            $0.toAddress = thorChainSwapPayload.vaultAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.outputOpReturn = memoData
         }
         
-        return try input.serializedData()
+        return input
     }
     
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {

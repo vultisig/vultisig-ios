@@ -26,19 +26,6 @@ struct SwapService {
         switch provider {
         case .thorchain:
             
-            if  fromCoin.chain == Chain.base && !fromCoin.isNativeToken {
-                guard let fromChainID = fromCoin.chain.chainIDElDorito else {
-                    throw SwapError.routeUnavailable
-                }
-                return try await fetchElDoritoQuote(
-                    chain: fromChainID,
-                    amount: amount,
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    isAffiliate: isAffiliate
-                )
-            }
-            
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
                 provider: provider,

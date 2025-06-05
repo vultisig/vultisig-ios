@@ -27,6 +27,53 @@ class EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
     
+    func getChainId(chain: Chain) -> String {
+        if chain == Chain.ethereumSepolia {
+            return "11155111"
+        }
+        return self.coinType.chainId
+    }
+    
+    func getPreSignedInputData(
+        signingInput: EthereumSigningInput,
+        keysignPayload: KeysignPayload,
+        gas: BigUInt? = nil,
+        gasPrice: BigUInt? = nil,
+        incrementNonce: Bool = false) throws -> Data
+    {
+        guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
+            throw HelperError.runtimeError("fail to get chainID")
+        }
+        
+        guard case .Ethereum(
+            let maxFeePerGasWei,
+            let priorityFeeWei,
+            let nonce,
+            let gasLimit
+        ) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Ethereum chain specific")
+        }
+        
+        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
+        
+        var input = signingInput
+        input.chainID = Data(hexString: Int64(intChainID).hexString())!
+        input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+        
+        if let gas, let gasPrice {
+            input.gasLimit = gas.serialize()
+            input.gasPrice = gasPrice.serialize()
+            input.txMode = .legacy
+        } else {
+            input.gasLimit = gasLimit.magnitude.serialize()
+            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+            input.txMode = .enveloped
+        }
+        
+        return try input.serializedData()
+    }
+    
     // method to get thorchain swap payload
     func getSwapPreSignedInputData(
         keysignPayload: KeysignPayload,
@@ -81,35 +128,25 @@ class EVMHelper {
                 throw HelperError.runtimeError("memo is nil")
             }
             input.toAddress = routerAddress
-            let abiInput = EthereumAbiFunctionEncodingInput.with{
-                $0.functionName = "depositWithExpiry"
-                $0.tokens = [
-                    EthereumAbiToken.with {
-                        $0.address = thorChainSwapPayload.vaultAddress
-                    },
-                    EthereumAbiToken.with {
-                        $0.address = thorChainSwapPayload.fromCoin.contractAddress
-                    },
-                    EthereumAbiToken.with {
-                        $0.numberUint = TW_EthereumAbi_Proto_NumberNParam.with {
-                            $0.value = thorChainSwapPayload.fromAmount.serializeForEvm()
-                        }
-                    },
-                    EthereumAbiToken.with {
-                        $0.stringValue = memo
-                    },
-                    EthereumAbiToken.with {
-                        $0.numberUint = TW_EthereumAbi_Proto_NumberNParam.with {
-                            $0.value = BigInt(thorChainSwapPayload.expirationTime).serializeForEvm()
-                        }
-                    }
-                ]
+            let f = EthereumAbiFunction(name: "depositWithExpiry")
+            guard let vaultAddr = AnyAddress(string: thorChainSwapPayload.vaultAddress, coin: .ethereum) else{
+                throw HelperError.runtimeError("invalid vault address")
             }
-            input.transaction = try EthereumTransaction.with {
-                $0.contractGeneric = try EthereumTransaction.ContractGeneric.with {
-                    $0.amount = swapPayload.fromAmount.serializeForEvm()
-                    $0.data = try abiInput.serializedData()
+            guard let contractAddress = AnyAddress(string: thorChainSwapPayload.fromCoin.contractAddress, coin: .ethereum) else {
+                throw HelperError.runtimeError("invalid contract address")
+            }
+            f.addParamAddress(val: vaultAddr.data, isOutput: false)
+            f.addParamAddress(val: contractAddress.data, isOutput: false)
+            f.addParamUInt256(val: thorChainSwapPayload.fromAmount.serializeForEvm(), isOutput: false)
+            f.addParamString(val: memo, isOutput: false)
+            f.addParamUInt256(val: BigInt(thorChainSwapPayload.expirationTime).serializeForEvm(), isOutput: false)
+            let abiData = EthereumAbi.encode(fn: f)
+            input.transaction = EthereumTransaction.with {
+                $0.contractGeneric =  EthereumTransaction.ContractGeneric.with {
+                    $0.amount = BigInt.zero.serializeForEvm()
+                    $0.data = abiData
                 }
+            }
         }
         
         if coinType == .smartChain {
@@ -132,12 +169,7 @@ class EVMHelper {
         return try input.serializedData()
     }
         
-    func getChainId(chain: Chain) -> String {
-        if chain == Chain.ethereumSepolia {
-            return "11155111"
-        }
-        return self.coinType.chainId
-    }
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let intChainID = Int(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
