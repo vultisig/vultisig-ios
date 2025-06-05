@@ -387,6 +387,10 @@ class Endpoint {
         return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
     }
     
+    static func getLifiSwapTracker(txid: String) -> String {
+        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
+    }
+    
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
     
     static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
