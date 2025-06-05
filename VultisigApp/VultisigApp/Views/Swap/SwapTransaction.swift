@@ -40,11 +40,6 @@ class SwapTransaction: ObservableObject {
             return true
         }
         
-        // isDeposit should be true for Thor/Base swaps
-        if (fromCoin.chain == .thorChain && toCoin.chain == .base) {
-            return true
-        }
-        
         return false
     }
 
@@ -68,13 +63,7 @@ class SwapTransaction: ObservableObject {
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
         case .oneinch(let quote, _), .lifi(let quote, _):
-            
-            if self.fromCoin.chain == .base && !self.fromCoin.isNativeToken {
-                let rawAmount = quote.dstAmount.toDecimal() * pow(10, self.toCoin.decimals)
-                let amount = rawAmount.description.toBigInt()
-                return toCoin.decimal(for: amount)
-            }
-            
+
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }

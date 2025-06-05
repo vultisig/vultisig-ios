@@ -29,11 +29,6 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 
-                // swap from / to base asset can't use the THORChainSwaps, instead it should be a normal send
-                if swapPayload.fromCoin.chain == .base || swapPayload.toCoin.chain == .base {
-                    break
-                }
-
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
