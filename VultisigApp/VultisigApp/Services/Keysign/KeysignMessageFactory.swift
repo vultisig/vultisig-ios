@@ -29,7 +29,8 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 
-                if swapPayload.fromCoin.chain == .base && !swapPayload.fromCoin.isNativeToken {
+                // swap from / to base asset can't use the THORChainSwaps, instead it should be a normal send
+                if swapPayload.fromCoin.chain == .base || swapPayload.toCoin.chain == .base {
                     break
                 }
 
