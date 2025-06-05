@@ -31,9 +31,8 @@ extension ThorchainService {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let amountString = json["amount"] as? String,
-                   let stakedAmountInt = UInt64(amountString) {
-                    let stakedAmountDecimal = Decimal(stakedAmountInt) / Decimal(100_000_000)
-                    completion(stakedAmountDecimal)
+                   let amount = UInt64(amountString) {
+                    completion(Decimal(amount))
                 } else {
                     completion(.zero)
                 }
@@ -56,8 +55,8 @@ extension ThorchainService {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let amountString = json["amount"] as? String,
-               let stakedAmountInt = UInt64(amountString) {
-                return Decimal(stakedAmountInt) / Decimal(100_000_000)
+               let amount = UInt64(amountString) {
+                return Decimal(amount)
             } else {
                 return .zero
             }
