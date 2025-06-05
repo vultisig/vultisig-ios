@@ -89,7 +89,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return Endpoint.getSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
-        case .oneinch, .lifi, .none:
+        case .lifi:
+            return Endpoint.getLifiSwapTracker(txid: hash)
+        case .oneinch, .none:
             return nil
         }
     }
