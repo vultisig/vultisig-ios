@@ -32,22 +32,8 @@ extension Decimal {
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         
-        if !useAbbreviation {
-            let number = NSDecimalNumber(decimal: self)
-            return formatter.string(from: number) ?? ""
-        }
-        
-        let abbrevation = getAbbrevationValues()
-        let value = abbrevation.value
-        let prefix = abbrevation.prefix
-        
-        let number = NSDecimalNumber(decimal: value)
-        
-        if let formattedNumber = formatter.string(from: number) {
-            return formattedNumber + prefix
-        }
-        
-        return ""
+        let number = NSDecimalNumber(decimal: self)
+        return formatter.string(from: number) ?? ""
     }
     
     func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
@@ -67,40 +53,13 @@ extension Decimal {
         formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
         formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
         
-        let abbrevation = getAbbrevationValues()
-        let value = abbrevation.value
-        let prefix = abbrevation.prefix
-
-        if !abbrevation.prefix.isEmpty {
-            formatter.maximumFractionDigits = 2
-        }
-
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
-        let number = NSDecimalNumber(decimal: value)
+        let number = NSDecimalNumber(decimal: self)
         
-        return (formatter.string(from: number) ?? "") + prefix
+        return formatter.string(from: number) ?? ""
     }
     
-    private func getAbbrevationValues() -> (value: Decimal, prefix: String) {
-        let millionValue: Decimal = 1_000_000
-        let billionValue: Decimal = 1_000_000_000
-        
-        let value: Decimal
-        let prefix: String
-        
-        if self >= billionValue {
-            value = self/billionValue
-            prefix = "B"
-        } else if self >= millionValue {
-            value = self/millionValue
-            prefix = "M"
-        } else {
-            value = self
-            prefix = ""
-        }
-        
-        return (value: value, prefix: prefix)
-    }
+
 
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
