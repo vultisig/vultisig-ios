@@ -256,7 +256,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var balanceInFiatDecimal: Decimal {
         let combined = combinedBalanceDecimal
         let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
-        print("[DEBUG] Coin \(ticker) balanceInFiatDecimal: combinedBalanceDecimal=\(combined), fiat=\(fiat)")
         return fiat
     }
     
