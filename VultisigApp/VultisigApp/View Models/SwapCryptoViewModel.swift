@@ -258,9 +258,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 // Any swap from and to Base chain must be converted to a normal Send transaction or THORChain Deposit
                 if tx.fromCoin.chain == .base || tx.toCoin.chain == .base {
 
-                    guard let toAddress = quote.inboundAddress else {
-                        throw Errors.inboundAddress
-                    }
+                    let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
+                    
                     // ETH.USDC -> BASE.ETH
                     if !tx.fromCoin.isNativeToken {
                         // If fromCoin is not native token, we need to build an approve payload
@@ -269,7 +268,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     
                     keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                         coin: tx.fromCoin,
-                        toAddress: toAddress,
+                        toAddress: toAddress ?? tx.fromCoin.address,
                         amount: tx.amountInCoinDecimal,
                         memo: quote.memo,
                         chainSpecific: chainSpecific,
