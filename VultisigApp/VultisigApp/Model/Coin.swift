@@ -86,33 +86,23 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     /// Raw balance in display units (converted from base units)
-    var balanceDecimal: Decimal { rawBalanceDecimal }
-    var rawBalanceDecimal: Decimal {
+    var balanceDecimal: Decimal {
         let value = rawBalance.toDecimal() / pow(10, decimals)
-        print("[DEBUG] Coin \(ticker) rawBalanceDecimal: raw=\(rawBalance), decimals=\(decimals), value=\(value)")
         return value
     }
-    /// Staked balance in display units (already converted)
+    /// Staked balance converted from base units to display units
     var stakedBalanceDecimal: Decimal {
-        let value = stakedBalance.toDecimal()
-        print("[DEBUG] Coin \(ticker) stakedBalanceDecimal: staked=\(stakedBalance), value=\(value)")
+        let value = stakedBalance.toDecimal() / pow(10, decimals)
         return value
     }
     /// Combined balance for price/fiat logic only
     var combinedBalanceDecimal: Decimal {
         let combined = balanceDecimal + stakedBalanceDecimal
-        print("[DEBUG] Coin \(ticker) combinedBalanceDecimal: raw=\(balanceDecimal), staked=\(stakedBalanceDecimal), combined=\(combined)")
         return combined
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 8) // Only show spendable
-    }
-    var stakedBalanceString: String {
-        return stakedBalanceDecimal.formatToDecimal(digits: 8)
-    }
-    var combinedBalanceString: String {
-        return combinedBalanceDecimal.formatToDecimal(digits: 8)
+        return balanceDecimal.formatToDecimal(digits: 8)
     }
     
     var balanceInFiat: String {

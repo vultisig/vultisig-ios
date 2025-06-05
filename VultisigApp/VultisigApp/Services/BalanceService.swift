@@ -115,7 +115,7 @@ private extension BalanceService {
                 if let matchedAccount = mergedAccounts.first(where: {
                     $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
                 }) {
-                    let amountInDecimal = matchedAccount.size.amount.toDecimal() / Decimal(100_000_000)
+                    let amountInDecimal = matchedAccount.size.amount.toDecimal()
                     return amountInDecimal.description
                 }
             }

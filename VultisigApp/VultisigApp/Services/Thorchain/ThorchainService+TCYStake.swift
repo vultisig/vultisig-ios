@@ -57,7 +57,8 @@ extension ThorchainService {
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let amountString = json["amount"] as? String,
                let stakedAmountInt = UInt64(amountString) {
-                return Decimal(stakedAmountInt) / Decimal(100_000_000)
+                // Return in base units (don't divide by 10^8)
+                return Decimal(stakedAmountInt)
             } else {
                 return .zero
             }
