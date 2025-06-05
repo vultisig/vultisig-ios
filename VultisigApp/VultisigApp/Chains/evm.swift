@@ -125,7 +125,7 @@ class EVMHelper {
             }
         } else {
             guard let routerAddress = thorChainSwapPayload.routerAddress else {
-                throw HelperError.runtimeError("memo is nil")
+                throw HelperError.runtimeError("router address is nil")
             }
             input.toAddress = routerAddress
             let f = EthereumAbiFunction(name: "depositWithExpiry")
