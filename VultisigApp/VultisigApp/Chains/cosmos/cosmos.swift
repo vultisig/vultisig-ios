@@ -57,7 +57,7 @@ class CosmosHelper {
             $0.messages = [CosmosMessage.with {
                 $0.sendCoinsMessage = CosmosMessage.Send.with {
                     $0.fromAddress = thorChainSwapPayload.fromAddress
-                    $0.toAddress = thorChainSwapPayload.toAddress
+                    $0.toAddress = thorChainSwapPayload.vaultAddress
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "uatom"
                         $0.amount = String(swapPayload.fromAmount)
