@@ -302,6 +302,11 @@ class KeysignViewModel: ObservableObject {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let payload):
+                if (payload.fromCoin.chain == .thorChain && payload.toCoin.chain == .base) ||
+                    (payload.fromCoin.chain == .base) {
+                    break
+                }
+                
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
