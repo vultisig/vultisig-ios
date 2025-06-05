@@ -101,6 +101,12 @@ private extension BalanceService {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
                 return tcyStakedBalance.description
             }
+            
+            // Handle RUNE bonded balance
+            if coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame {
+                let runeBondedBalance = await thor.fetchRuneBondedAmount(address: coin.address)
+                return runeBondedBalance.description
+            }
 
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
