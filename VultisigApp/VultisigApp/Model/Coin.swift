@@ -39,6 +39,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = asset.coinId(address: address)
         
         self.rawBalance = .zero
+        self.stakedBalance = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
@@ -84,14 +85,24 @@ class Coin: ObservableObject, Codable, Hashable {
         return lhs.id == rhs.id
     }
     
+    /// Raw balance in display units (converted from base units)
     var balanceDecimal: Decimal {
-        let tokenBalance = rawBalance.toDecimal()
-        let tokenDecimals = decimals
-        return tokenBalance / pow(10, tokenDecimals)
+        let value = rawBalance.toDecimal() / pow(10, decimals)
+        return value
+    }
+    /// Staked balance converted from base units to display units
+    var stakedBalanceDecimal: Decimal {
+        let value = stakedBalance.toDecimal() / pow(10, decimals)
+        return value
+    }
+    /// Combined balance for price/fiat logic only
+    var combinedBalanceDecimal: Decimal {
+        let combined = balanceDecimal + stakedBalanceDecimal
+        return combined
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 8) // top 8, bc if I use decimals ETH has 18....
+        return balanceDecimal.formatToDecimal(digits: 8)
     }
     
     var balanceInFiat: String {
@@ -243,7 +254,9 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiatDecimal: Decimal {
-        return RateProvider.shared.fiatBalance(for: self)
+        let combined = combinedBalanceDecimal
+        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        return fiat
     }
     
     var blockchairKey: String {
