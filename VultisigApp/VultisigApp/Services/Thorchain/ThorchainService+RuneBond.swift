@@ -19,8 +19,7 @@ extension ThorchainService {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { [weak self] data, response, error in
-            guard let self = self else { return }
+        let task = URLSession.shared.dataTask(with: URLRequest(url: url)) { data, _, error in
             guard let data = data, error == nil else {
                 completion(.zero)
                 return
