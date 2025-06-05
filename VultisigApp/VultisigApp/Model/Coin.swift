@@ -39,6 +39,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = asset.coinId(address: address)
         
         self.rawBalance = .zero
+        self.stakedBalance = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
@@ -84,14 +85,34 @@ class Coin: ObservableObject, Codable, Hashable {
         return lhs.id == rhs.id
     }
     
-    var balanceDecimal: Decimal {
-        let tokenBalance = rawBalance.toDecimal()
-        let tokenDecimals = decimals
-        return tokenBalance / pow(10, tokenDecimals)
+    /// Raw balance in display units (converted from base units)
+    var balanceDecimal: Decimal { rawBalanceDecimal }
+    var rawBalanceDecimal: Decimal {
+        let value = rawBalance.toDecimal() / pow(10, decimals)
+        print("[DEBUG] Coin \(ticker) rawBalanceDecimal: raw=\(rawBalance), decimals=\(decimals), value=\(value)")
+        return value
+    }
+    /// Staked balance in display units (already converted)
+    var stakedBalanceDecimal: Decimal {
+        let value = stakedBalance.toDecimal()
+        print("[DEBUG] Coin \(ticker) stakedBalanceDecimal: staked=\(stakedBalance), value=\(value)")
+        return value
+    }
+    /// Combined balance for price/fiat logic only
+    var combinedBalanceDecimal: Decimal {
+        let combined = balanceDecimal + stakedBalanceDecimal
+        print("[DEBUG] Coin \(ticker) combinedBalanceDecimal: raw=\(balanceDecimal), staked=\(stakedBalanceDecimal), combined=\(combined)")
+        return combined
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 8) // top 8, bc if I use decimals ETH has 18....
+        return balanceDecimal.formatToDecimal(digits: 8) // Only show spendable
+    }
+    var stakedBalanceString: String {
+        return stakedBalanceDecimal.formatToDecimal(digits: 8)
+    }
+    var combinedBalanceString: String {
+        return combinedBalanceDecimal.formatToDecimal(digits: 8)
     }
     
     var balanceInFiat: String {
@@ -243,7 +264,10 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiatDecimal: Decimal {
-        return RateProvider.shared.fiatBalance(for: self)
+        let combined = combinedBalanceDecimal
+        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        print("[DEBUG] Coin \(ticker) balanceInFiatDecimal: combinedBalanceDecimal=\(combined), fiat=\(fiat)")
+        return fiat
     }
     
     var blockchairKey: String {
