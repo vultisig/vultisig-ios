@@ -624,7 +624,7 @@ class Endpoint {
     
     // Referral
     
-    static let ReferralBase = "https://thornode.ninerealms.com/thorchain/network"
+    static let ReferralBase = "https://midgard.ninerealms.com/v2"
     
     static func checkNameAvailability(for code: String) -> String {
         ReferralBase + "/thorname/lookup/\(code)"

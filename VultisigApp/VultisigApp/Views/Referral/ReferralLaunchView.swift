@@ -11,7 +11,13 @@ struct ReferralLaunchView: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        container
+        ZStack {
+            container
+            
+            if referralViewModel.isLoading {
+                loader
+            }
+        }
     }
     
     var main: some View {
@@ -51,7 +57,7 @@ struct ReferralLaunchView: View {
     
     var saveButton: some View {
         Button {
-            referralViewModel.saveReferredCode()
+            referralViewModel.verifyReferredCode()
         } label: {
             saveLabel
         }
@@ -97,6 +103,10 @@ struct ReferralLaunchView: View {
             .resizable()
             .frame(maxWidth: 1024)
             .aspectRatio(contentMode: .fit)
+    }
+    
+    var loader: some View {
+        Loader()
     }
 }
 

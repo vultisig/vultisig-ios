@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@MainActor
 class ReferralViewModel: ObservableObject {
     @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
     @AppStorage("savedReferredCode") var savedReferredCode: Bool = true
@@ -14,6 +15,8 @@ class ReferralViewModel: ObservableObject {
     @Published var showReferralBannerSheet: Bool = false
     @Published var navigationToReferralOverview: Bool = false
     @Published var navigationToCreateReferralView: Bool = false
+    
+    @Published var isLoading: Bool = false
     
     // Referred Code
     @Published var referredCode: String = ""
@@ -31,9 +34,13 @@ class ReferralViewModel: ObservableObject {
         showReferralCodeOnboarding = false
     }
     
-    func saveReferredCode() {
+    func verifyReferredCode() {
         showReferralLaunchViewError = false
         
+        isLoading = true
+        defer { isLoading = false }
+        
+        // Validate input
         guard !referredCode.isEmpty else {
             referralLaunchViewErrorMessage = "emptyField"
             showReferralLaunchViewError = true
@@ -46,10 +53,39 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        verifyReferredCode()
+        Task {
+            await checkNameAvailability()
+        }
     }
     
-    private func verifyReferredCode() {
+    private func checkNameAvailability() async {
+        let urlString = Endpoint.checkNameAvailability(for: referredCode)
+        guard let url = URL(string: urlString) else {
+            referralLaunchViewErrorMessage = "systemErrorMessage"
+            showReferralLaunchViewError = true
+            return
+        }
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    saveReferredCode()
+                } else if httpResponse.statusCode == 404 {
+                    referralLaunchViewErrorMessage = "referralCodeNotFound"
+                    showReferralLaunchViewError = true
+                } else {
+                    referralLaunchViewErrorMessage = "systemErrorMessage"
+                    showReferralLaunchViewError = true
+                }
+            }
+        } catch {
+            referralLaunchViewErrorMessage = "systemErrorMessage"
+            showReferralLaunchViewError = true
+        }
+    }
+    
+    func saveReferredCode() {
         
     }
 }
