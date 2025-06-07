@@ -657,7 +657,7 @@
 "wantToSignPrivately" = "Want to sign privately?";
 "overview" = "Overview";
 "keygenFailedErrorMessage" = "Keygen failed\nPlease try again";
-"useReferralCode" = "Use referral code";
+"useReferralCode" = "Use referred code";
 "enterUpto4Characters" = "Enter up to 4 characters";
 "useReferral" = "Use Referral";
 "sameUseReferralCodeErrorMessage" = "Used referral code can not be the same as your referral code";
@@ -698,7 +698,9 @@
 "referralLaunchCodeLengthError" = "Referral code needs to be 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "Referral code not found";
-"referralCodeAdded" = "Referral code successfully linked";
+"referralCodeAdded" = "Referred code successfully linked";
 "editReferral" = "Edit referral";
 "referralCodeMatch" = "Used referral code can not be the same as your referral code";
 "editReferred" = "Edit referred";
+"editReferredCode" = "Edit referred code";
+"saveReferredCode" = "Save referred code";

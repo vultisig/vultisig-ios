@@ -66,7 +66,7 @@ struct ReferralLaunchView: View {
     }
     
     var saveLabel: some View {
-        OutlineButton(title: "saveReferral", textColor: .solidWhite, gradient: .solidBlue)
+        OutlineButton(title: "saveReferredCode", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var orSeparator: some View {
@@ -142,14 +142,14 @@ struct ReferralLaunchView: View {
     
     var editButton: some View {
         NavigationLink {
-            EditReferredCodeView()
+            EditReferredCodeView(referralViewModel: referralViewModel)
         } label: {
             editLabel
         }
     }
     
     var editLabel: some View {
-        OutlineButton(title: "editReferral", textColor: .solidWhite, gradient: .solidBlue)
+        OutlineButton(title: "editReferredCode", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var loader: some View {

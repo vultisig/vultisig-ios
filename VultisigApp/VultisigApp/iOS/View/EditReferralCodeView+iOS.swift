@@ -11,7 +11,7 @@ import SwiftUI
 extension EditReferredCodeView {
     var container: some View {
         content
-            .navigationTitle(NSLocalizedString("editReferred", comment: ""))
+            .navigationTitle(NSLocalizedString("editReferredCode", comment: ""))
     }
 }
 #endif

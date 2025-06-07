@@ -17,7 +17,7 @@ extension EditReferredCodeView {
     }
     
     var header: some View {
-        GeneralMacHeader(title: "editReferred")
+        GeneralMacHeader(title: "editReferredCode")
     }
 }
 #endif

@@ -8,17 +8,19 @@
 import SwiftUI
 
 struct EditReferredCodeView: View {
-    @State var referralCode: String = ""
-    
-    @State var showError: Bool = false
-    @State var errorMessage: String = ""
-    @State var showSuccess: Bool = false
-    @State var successMessage: String = ""
+    @StateObject var referralViewModel: ReferralViewModel
     
     var body: some View {
         ZStack {
             Background()
             container
+            
+            if referralViewModel.isLoading {
+                loader
+            }
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -48,25 +50,33 @@ struct EditReferredCodeView: View {
     
     var textField: some View {
         ReferralTextField(
-            text: $referralCode,
+            text: $referralViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: showError,
-            errorMessage: errorMessage
+            showError: referralViewModel.showReferralLaunchViewError,
+            errorMessage: referralViewModel.referralLaunchViewErrorMessage
         )
     }
     
     var button: some View {
         Button {
-            
+            referralViewModel.verifyReferredCode()
         } label: {
-            FilledButton(title: "useReferral", textColor: .neutral0, background: .persianBlue400)
+            FilledButton(title: "saveReferredCode", textColor: .neutral0, background: .persianBlue400)
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
     }
+    
+    var loader: some View {
+        Loader()
+    }
+    
+    private func setData() {
+        referralViewModel.referredCode = referralViewModel.savedReferredCode
+    }
 }
 
 #Preview {
-    EditReferredCodeView()
+    EditReferredCodeView(referralViewModel: ReferralViewModel())
 }
