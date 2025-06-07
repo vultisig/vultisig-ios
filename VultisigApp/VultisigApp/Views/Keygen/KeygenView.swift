@@ -5,11 +5,11 @@
 
 import CryptoKit
 import Foundation
-import Mediator
 import OSLog
 import SwiftData
 import SwiftUI
 import Tss
+import RiveRuntime
 
 struct KeygenView: View {
     let vault: Vault
@@ -21,19 +21,23 @@ struct KeygenView: View {
     let encryptionKeyHex: String
     let oldResharePrefix: String
     let fastSignConfig: FastSignConfig?
+    let isInitiateDevice: Bool
     @Binding var hideBackButton: Bool
     
     var selectedTab: SetupVaultState? = nil
 
     @StateObject var viewModel = KeygenViewModel()
     
-    let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
+    @State var showDoneText = false
+    @State var showError = false
     @State var showVerificationView = false
+    @State var vaultCreatedAnimationVM: RiveViewModel? = nil
+    @State var checkmarkAnimationVM: RiveViewModel? = nil
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var context
@@ -41,40 +45,52 @@ struct KeygenView: View {
     
     var body: some View {
         content
+            .sensoryFeedback(.success, trigger: showDoneText)
+            .sensoryFeedback(.error, trigger: showError)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
             .navigationDestination(isPresented: $viewModel.isLinkActive) {
-                if showVerificationView {
-                    ServerBackupVerificationView(
+                if let fastSignConfig, showVerificationView {
+                    FastBackupVaultOverview(
+                        tssType: tssType,
                         vault: vault,
-                        selectedTab: selectedTab,
+                        email: fastSignConfig.email,
                         viewModel: viewModel
                     )
                 } else {
-                    BackupVaultNowView(
-                        vault: vault,
-                        selectedTab: selectedTab
-                    )
+                    if tssType == .Migrate {
+                        BackupSetupView(tssType: tssType, vault: vault, isNewVault: true)
+                    } else {
+                        SecureBackupVaultOverview(vault: vault)
+                    }
                 }
             }
             .onAppear {
                 hideBackButton = true
+                vaultCreatedAnimationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+                checkmarkAnimationVM = RiveViewModel(fileName: "CreatingVaultCheckmark", autoPlay: true)
+            }
+            .onDisappear {
+                vaultCreatedAnimationVM?.stop()
             }
     }
     
-    var fields: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            if showProgressRing {
-                progress
-            }
-            states
-            Spacer()
+    var container: some View {
+        ZStack {
+            fields
+                .opacity(tssType == .Migrate ? 0 : 1)
             
-            if viewModel.status == .KeygenFailed {
-                retryButton
-            } else {
-                keygenViewInstructions
+            if tssType == .Migrate {
+                if viewModel.status == .KeygenFailed {
+                    migrationFailedText
+                } else {
+                    migrateView
+                }
             }
         }
+    }
+    
+    var migrateView: some View {
+        UpgradingVaultView()
     }
     
     var states: some View {
@@ -96,63 +112,109 @@ struct KeygenView: View {
                 keygenFailedView
             }
         }
-        .frame(
-            maxWidth: showProgressRing ? 280 : .infinity,
-            maxHeight: showProgressRing ? 50 : .infinity
-        )
-        .offset(y: -20)
     }
     
-    var progress: some View {
-        ProgressRing(progress: Double(progressCounter/progressTotalCount))
-    }
-    
-    var instructions: some View {
-        WifiInstruction()
-            .padding(.vertical, 20)
+    var title: some View {
+        Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
+            .foregroundColor(.extraLightGray)
+            .font(.body16BrockmannMedium)
     }
     
     var preparingVaultText: some View {
-        KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
-            .onAppear {
-                progressCounter = 1
-            }
+        KeygenStatusText(
+            gradientText: "preparingVaultText1",
+            plainText: "preparingVaultText2"
+        )
+        .onAppear {
+            progressCounter = 1
+        }
     }
     
     var generatingECDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("generatingECDSA", comment: "GENERATING ECDSA KEY"))
-            .onAppear {
-                progressCounter = 2
-            }
+        KeygenStatusText(
+            gradientText: "generatingECDSAText1",
+            plainText: "generatingECDSAText2"
+        )
+        .onAppear {
+            progressCounter = 2
+        }
     }
     
     var generatingEdDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("generatingEdDSA", comment: "GENERATING EdDSA KEY"))
-            .onAppear {
-                progressCounter = 3
-            }
+        KeygenStatusText(
+            gradientText: "generatingEdDSAText1",
+            plainText: "generatingEdDSAText2"
+        )
+        .onAppear {
+            progressCounter = 3
+        }
     }
     
     var reshareECDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("reshareECDSA", comment: "Resharing ECDSA KEY"))
-            .onAppear {
-                progressCounter = 2
-            }
+        KeygenStatusText(
+            gradientText: "",
+            plainText: "reshareECDSA"
+        )
+        .onAppear {
+            progressCounter = 2
+        }
     }
     
     var reshareEdDSAText: some View {
-        KeygenStatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
-            .onAppear {
-                progressCounter = 3
-            }
+        KeygenStatusText(
+            gradientText: "",
+            plainText: "reshareEdDSA"
+        )
+        .onAppear {
+            progressCounter = 3
+        }
+    }
+    
+    var migrationFailedText: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            ErrorMessage(text: viewModel.keygenError)
+            Spacer()
+            appVersion
+            migrateRetryButton
+        }
+        .padding(32)
+        .onAppear {
+            showError = true
+        }
+    }
+    
+    var migrateRetryButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            FilledButton(title: "retry")
+        }
     }
     
     var doneText: some View {
-        Text("DONE")
-            .foregroundColor(.backgroundBlue)
-            .onAppear {
-                setDoneData()
+        VStack(spacing: 18) {
+            vaultCreatedAnimationVM?.view()
+                .scaleEffect(0.8)
+                .frame(maxWidth: 512)
+            
+            VStack {
+                Text(NSLocalizedString("vaultCreated", comment: ""))
+                    .foregroundColor(.neutral0)
+                Text(NSLocalizedString("successfully", comment: ""))
+                    .foregroundStyle(LinearGradient.primaryGradient)
             }
+            .font(.body28BrockmannMedium)
+            .opacity(progressCounter == 4 ? 1 : 0)
+            .animation(.easeInOut, value: progressCounter)
+            .padding(.top, 60)
+            
+            checkmarkAnimationVM?.view()
+                .frame(width: 80, height: 80)
+        }
+        .onAppear {
+            setDoneData()
+        }
     }
     
     var keygenFailedView: some View {
@@ -162,11 +224,27 @@ struct KeygenView: View {
                 keygenFailedText
             case .Reshare:
                 keygenReshareFailedText
+            case .Migrate:
+                migrateFailedText
             }
         }
         .onAppear {
+            showError = true
             hideBackButton = false
             showProgressRing = false
+        }
+    }
+    
+    var migrateFailedText: some View {
+        VStack(spacing: 18) {
+            Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
+                .multilineTextAlignment(.center)
+            Text(viewModel.keygenError)
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
+                .multilineTextAlignment(.center)
         }
     }
     
@@ -207,9 +285,7 @@ struct KeygenView: View {
     
     var button: some View {
         Button {
-            Task {
-                await setData()
-            }
+            dismiss()
         } label: {
             FilledButton(title: "retry")
         }
@@ -224,11 +300,13 @@ struct KeygenView: View {
             mediatorURL: mediatorURL,
             sessionID: sessionID,
             encryptionKeyHex: encryptionKeyHex,
-            oldResharePrefix: oldResharePrefix
+            oldResharePrefix: oldResharePrefix,
+            initiateDevice: isInitiateDevice
         )
     }
     
     private func setDoneData() {
+        showDoneText = true
         checkVaultType()
         
         if tssType == .Reshare {
@@ -263,6 +341,7 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: "",
             fastSignConfig: nil,
+            isInitiateDevice: false,
             hideBackButton: .constant(false),
             selectedTab: SetupVaultState.active
         )

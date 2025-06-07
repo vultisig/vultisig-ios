@@ -24,16 +24,8 @@ extension SetupQRCodeView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "setup")
+        GeneralMacHeader(title: "chooseSetUp")
             .padding(.bottom, 8)
-    }
-    
-    var pairButton: some View {
-        NavigationLink(destination: {
-            MacScannerView(vault: makeVault(), type: .NewVault, sendTx: SendTransaction())
-        }) {
-            OutlineButton(title: "pair")
-        }
     }
 }
 #endif

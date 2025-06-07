@@ -18,7 +18,7 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
-    increment_build_number(build_number:"1",xcodeproj: "VultisigApp.xcodeproj")
+    increment_build_number(build_number:"0",xcodeproj: "VultisigApp.xcodeproj")
     build_app(scheme: "VultisigApp",xcargs: "-allowProvisioningUpdates")
     upload_to_testflight
   end
@@ -40,7 +40,7 @@ platform :mac do
     # remove the dSYM file
     sh "rm -f ../pkgroot/Applications/VultisigApp.app.dSYM.zip"
 
-    sh "pkgbuild --root ../pkgroot --scripts ../scripts --identifier 'com.vultisig.wallet' --version '1.8.1' --install-location / '../VultisigApp.pkg'"
+    sh "pkgbuild --root ../pkgroot --scripts ../scripts --identifier 'com.vultisig.wallet' --version '1.20.0' --install-location / '../VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
@@ -49,7 +49,7 @@ platform :mac do
      bundle_id: "com.vultisig.wallet",
      asc_provider: ENV['APPLE_TEAM_ID'],
      print_log: true,
-     verbose: true) # Optional: only needed if you belong to multiple teams
+     verbose: false) # Optional: only needed if you belong to multiple teams
 
   end
 end

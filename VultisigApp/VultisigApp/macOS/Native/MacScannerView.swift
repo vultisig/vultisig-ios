@@ -14,13 +14,16 @@ struct MacScannerView: View {
     let vault: Vault
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
+    let selectedVault: Vault?
     
     @Query var vaults: [Vault]
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var cameraViewModel: MacCameraServiceViewModel
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
+    @StateObject var cameraViewModel = MacCameraServiceViewModel()
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -29,7 +32,7 @@ struct MacScannerView: View {
             headerMac
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
-            JoinKeygenView(vault: vault)
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -41,9 +44,13 @@ struct MacScannerView: View {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
+                    coin: nil,
                     selectedChain: cameraViewModel.selectedChain
                 )
             }
+        }
+        .alert(isPresented: $cameraViewModel.showAlert) {
+            alert
         }
     }
     
@@ -55,9 +62,9 @@ struct MacScannerView: View {
             cameraViewModel.handleScan(
                 vaults: vaults,
                 sendTx: sendTx,
-                cameraViewModel: cameraViewModel,
                 deeplinkViewModel: deeplinkViewModel,
-                settingsDefaultChainViewModel: settingsDefaultChainViewModel
+                vaultDetailViewModel: vaultDetailViewModel,
+                coinSelectionViewModel: coinSelectionViewModel
             )
         }
     }
@@ -127,7 +134,7 @@ struct MacScannerView: View {
     
     var uploadQRCodeButton: some View {
         NavigationLink {
-            GeneralQRImportMacView(type: type)
+            GeneralQRImportMacView(type: type, sendTx: sendTx, selectedVault: selectedVault)
         } label: {
             FilledButton(title: "uploadQRCodeImage")
         }
@@ -141,6 +148,46 @@ struct MacScannerView: View {
         }
     }
     
+    var alert: Alert {
+        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (cameraViewModel.newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
+        
+        return Alert(
+            title: Text(NSLocalizedString("newChainDetected", comment: "")),
+            message: Text(message),
+            primaryButton: Alert.Button.default(
+                Text(NSLocalizedString("addChain", comment: "")),
+                action: {
+                    cameraViewModel.addNewChain(
+                        coinSelectionViewModel: coinSelectionViewModel,
+                        homeViewModel: homeViewModel
+                    )
+                }
+            ),
+            secondaryButton: Alert.Button.default(
+                Text(NSLocalizedString("cancel", comment: "")),
+                action: {
+                    cameraViewModel.handleCancel()
+                }
+            )
+        )
+    }
+    
+    var background: some View {
+        Image("QRScannerBackgroundImage")
+            .resizable()
+            .scaledToFill()
+            .opacity(0.2)
+    }
+    
+    var overlay: some View {
+        VStack {
+            Spacer()
+            Image("QRScannerOutline")
+            Spacer()
+        }
+        .allowsHitTesting(false)
+    }
+    
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -150,6 +197,11 @@ struct MacScannerView: View {
                 .onDisappear {
                     cameraViewModel.stopSession()
                 }
+                .overlay {
+                    background
+                }
+            
+            overlay
             
             uploadQRCodeButton
                 .padding(40)
@@ -158,10 +210,10 @@ struct MacScannerView: View {
 }
 
 #Preview {
-    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction())
+    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
-        .environmentObject(MacCameraServiceViewModel())
-        .environmentObject(SettingsDefaultChainViewModel())
+        .environmentObject(VaultDetailViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }
 #endif

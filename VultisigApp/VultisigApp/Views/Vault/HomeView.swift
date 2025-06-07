@@ -15,7 +15,6 @@ struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
     
     @State var vaults: [Vault] = []
@@ -36,27 +35,19 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        ZStack {
-            content
-            
-            if isLoading {
-                Loader()
-            }
-        }
+        container
     }
     
     var navigationTitle: some View {
-        ZStack {
-            HStack {
-                title
-                
-                if viewModel.selectedVault != nil {
-                    Image(systemName: "chevron.up")
-                        .font(.body8Menlo)
-                        .bold()
-                        .foregroundColor(.neutral0)
-                        .rotationEffect(.degrees(showVaultsList ? 0 : 180))
-                }
+        HStack {
+            title
+            
+            if viewModel.selectedVault != nil {
+                Image(systemName: "chevron.up")
+                    .font(.body8Menlo)
+                    .bold()
+                    .foregroundColor(.neutral0)
+                    .rotationEffect(.degrees(showVaultsList ? 0 : 180))
             }
         }
         .onTapGesture {
@@ -161,6 +152,5 @@ struct HomeView: View {
     HomeView()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
-        .environmentObject(MacCameraServiceViewModel())
         .environmentObject(MacCheckUpdateViewModel())
 }

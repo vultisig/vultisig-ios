@@ -39,15 +39,30 @@ extension Color {
     static let loadingBlue = Color(hex: "1DA7FA")
     static let loadingGreen = Color(hex: "24D7A6")
     
-    static let alertRed = Color(hex: "#FF4040")
-    static let warningYellow = Color(hex: "#F7961B")
+    static let alertRed = Color(hex: "FF4040")
+    static let alertYellow = Color(hex: "FFC25C")
+    static let alertYellowBackground = Color(hex: "362B17")
+    static let alertTurquoise = Color(hex: "13C89D")
+    static let warningYellow = Color(hex: "F7961B")
     
-    static let logoBlue = Color(hex: "#0D86BB")
+    static let logoBlue = Color(hex: "0D86BB")
+    static let invalidRed = Color(hex: "FF5C5C")
+    static let checkboxBlue = Color(hex: "042436")
     
-    static let miamiMarmalade = Color(hex: "#F7961B")
+    static let miamiMarmalade = Color(hex: "F7961B")
+    static let infoBlue = Color(hex: "5CA7FF")
     
-    static let reshareCellGreen = Color(hex: "#15D7AC")
-    static let reshareCellRed = Color(hex: "#DA2E2E")
+    static let reshareCellGreen = Color(hex: "15D7AC")
+    static let reshareCellRed = Color(hex: "DA2E2E")
+    
+    static let extraLightGray = Color(hex: "8295AE")
+    static let textDisabled = Color(hex: "4D5F75")
+    static let buttonDisabled = Color(hex: "0F1E36")
+    static let lightText = Color(hex: "C9D6E8")
+    static let borderBlue = Color(hex: "1B3F73")
+    static let disabledText = Color(hex: "718096")
+    static let iconLightBlue = Color(hex: "467FF8")
+    static let disabledButtonBackground = Color(hex: "0B1A3A")
     
     // Background
     static let backgroundBlue = Color(hex: "02122B")

@@ -10,6 +10,8 @@ import SwiftData
 
 struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
+    let sendTx: SendTransaction
+    let selectedVault: Vault?
     
     @State var fileName: String? = nil
     @State var alertDescription = ""
@@ -59,7 +61,7 @@ struct GeneralQRImportMacView: View {
         }
         .padding(40)
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: selectedVault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -107,22 +109,30 @@ struct GeneralQRImportMacView: View {
     private func getTitle() -> String {
         let text: String
         
-        if type == .NewVault {
+        switch type {
+        case .NewVault:
             text = "pair"
-        } else {
+        case .SignTransaction:
             text = "keysign"
+        case .Unknown:
+            text = "scanQRCode"
         }
+        
         return NSLocalizedString(text, comment: "")
     }
     
     private func getDescription() -> String {
         let text: String
         
-        if type == .NewVault {
+        switch type {
+        case .NewVault:
             text = "uploadQRCodeImageKeygen"
-        } else {
+        case .SignTransaction:
             text = "uploadQRCodeImageKeysign"
+        case .Unknown:
+            text = "uploadFileWithQRCode"
         }
+        
         return NSLocalizedString(text, comment: "")
     }
     
@@ -157,7 +167,7 @@ struct GeneralQRImportMacView: View {
             }
             
             deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink()
+            presetValuesForDeeplink(result)
         } catch {
             if let description = error as? UtilsQrCodeFromImageError {
                 alertDescription = description.localizedDescription
@@ -167,7 +177,7 @@ struct GeneralQRImportMacView: View {
         }
     }
     
-    private func presetValuesForDeeplink() {
+    private func presetValuesForDeeplink(_ result: String) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -182,7 +192,7 @@ struct GeneralQRImportMacView: View {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            return
+            parseAddress(result)
         }
     }
     
@@ -195,10 +205,14 @@ struct GeneralQRImportMacView: View {
             shouldKeysignTransaction = true
         }
     }
+    
+    private func parseAddress(_ result: String) {
+        sendTx.toAddress = result
+    }
 }
 
 #Preview {
-    GeneralQRImportMacView(type: .NewVault)
+    GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction(), selectedVault: Vault.example)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }

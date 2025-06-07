@@ -21,16 +21,6 @@ struct KeysignPayloadFactory {
         }
     }
     
-    enum TransferPayload {
-        case utxo(amountInSats: Int64, feeInSats: Int64, sendMaxAmount: Bool)
-        case evmTransfer(amountInWei: BigInt, gas: String, priorityFeeWei: Int64, nonce: Int64)
-        case evmERC20(tokenAmountInWei: BigInt, gas: String, priorityFeeWei: Int64, nonce: Int64)
-        case thorchain(amountInSats: Int64, memo: String)
-        case gaiachain(amountInCoinDecimal: Int64, memo: String)
-        case solana(amountInLamports: Int64, memo: String)
-        case ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
-    }
-    
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let gaia = GaiaService.shared
@@ -68,7 +58,8 @@ struct KeysignPayloadFactory {
             swapPayload: swapPayload,
             approvePayload: approvePayload,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
-            vaultLocalPartyID: vault.localPartyID
+            vaultLocalPartyID: vault.localPartyID,
+            libType: (vault.libType ?? .GG20).toString()
         )
     }
 }

@@ -17,8 +17,13 @@ struct SendCryptoDoneView: View {
     
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
+    
+    @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
+    @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
 
     @State var showAlert = false
+    @State var alertTitle = "hashCopied"
+    @State var navigateToHome = false
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -27,7 +32,17 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
+            PopupCapsule(text: alertTitle, showPopup: $showAlert)
+        }
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomeView(selectedVault: vault)
+        }
+    }
+    
+    var sendView: some View {
+        VStack {
+            cards
+            continueButton
         }
     }
     
@@ -77,19 +92,51 @@ struct SendCryptoDoneView: View {
     }
 
     var continueButton: some View {
-        NavigationLink(destination: {
-            HomeView(selectedVault: vault)
-        }, label: {
+        Button {
+            if let send = sendTransaction {
+                send.reset(coin: send.coin)
+            }
+            navigateToHome = true
+        } label: {
             FilledButton(title: "complete")
-        })
-        .id(UUID())
+        }
         .padding(40)
     }
-    
+
     var summaryCard: some View {
         SendCryptoDoneSummary(
             sendTransaction: sendTransaction,
-            swapTransaction: swapTransaction
+            swapTransaction: swapTransaction,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel
+        )
+    }
+    
+    var view: some View {
+        ZStack {
+            if let tx = swapTransaction {
+                getSwapDoneView(tx)
+            } else {
+                sendView
+            }
+        }
+    }
+    
+    private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
+        SwapCryptoDoneView(
+            tx: tx,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            progressLink: progressLink,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel,
+            showAlert: $showAlert,
+            alertTitle: $alertTitle,
+            navigateToHome: $navigateToHome
         )
     }
     
@@ -141,7 +188,7 @@ struct SendCryptoDoneView: View {
     }
 
     func explorerLink(hash: String) -> String {
-        return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
+        return Endpoint.getExplorerURL(chain: chain, txid: hash)
     }
     
     private func shareLink(hash: String) {
@@ -165,7 +212,7 @@ struct SendCryptoDoneView: View {
         approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/",
-        sendTransaction: SendTransaction(),
+        sendTransaction: nil,
         swapTransaction: SwapTransaction()
     )
     .environmentObject(SettingsViewModel())

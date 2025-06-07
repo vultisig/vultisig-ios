@@ -7,9 +7,11 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
+import RiveRuntime
 
 struct JoinKeygenView: View {
     let vault: Vault
+    let selectedVault: Vault?
     
     @Query var vaults: [Vault]
     
@@ -18,6 +20,8 @@ struct JoinKeygenView: View {
     @State var showFileImporter = false
     @State var showInformationNote = false
     @State var hideBackButton: Bool = false
+    
+    @State var loadingAnimationVM: RiveViewModel? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -84,8 +88,9 @@ struct JoinKeygenView: View {
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            oldResharePrefix: viewModel.oldResharePrefix, 
+            oldResharePrefix: viewModel.oldResharePrefix,
             fastSignConfig: nil,
+            isInitiateDevice: false,
             hideBackButton: $hideBackButton
         )
     }
@@ -169,23 +174,24 @@ struct JoinKeygenView: View {
         .cornerRadius(12)
     }
     
+    var shadow: some View {
+        Circle()
+            .frame(width: 360, height: 360)
+            .foregroundColor(.alertTurquoise)
+            .opacity(0.05)
+            .blur(radius: 20)
+    }
+    
     var joinKeygen: some View {
-        VStack {
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("joinKeygen", comment: "Joining key generation, please wait..."))
-                    .onAppear {
-                        viewModel.joinKeygenCommittee()
-                    }
-            }
+        VStack(spacing: 26) {
+            capsule
+            joiningKeygenCardContent
+            animation
         }
-        .font(.body15MenloBold)
-        .multilineTextAlignment(.center)
         .padding(.vertical, 30)
+        .onAppear {
+            viewModel.joinKeygenCommittee()
+        }
     }
     
     var filePicker: some View {
@@ -200,24 +206,32 @@ struct JoinKeygenView: View {
     }
     
     var waitingForKeygenStart: some View {
-        VStack {
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("waitingForKeygenStart", comment: "Waiting for key generation to start..."))
-                ProgressView().progressViewStyle(.circular).padding(2)
-            }
+        VStack(spacing: 26) {
+            capsule
+            waitingForKeygenCardContent
+            animation
         }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
-        .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .task {
             await viewModel.waitForKeygenStart()
         }
+    }
+    
+    var capsule: some View {
+        IconCapsule(title: "secureVault", icon: "shield")
+    }
+    
+    var joiningKeygenCardContent: some View {
+        getKeygenCardContent("joiningKeygen")
+    }
+    
+    var waitingForKeygenCardContent: some View {
+        getKeygenCardContent("joinKeygenViewTitle")
+    }
+    
+    var animation: some View {
+        loadingAnimationVM?.view()
+            .frame(width: 24, height: 24)
     }
     
     var cameraErrorView: some View {
@@ -233,11 +247,17 @@ struct JoinKeygenView: View {
             .padding(1)
     }
     
+    var vaultsMismatchedError: some View {
+        SendCryptoVaultErrorView()
+    }
+    
     private func setData() {
         appViewModel.checkCameraPermission()
+        loadingAnimationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
         
         viewModel.setData(
             vault: vault,
+            selectedVault: selectedVault,
             serviceDelegate: self.serviceDelegate,
             vaults: vaults,
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
@@ -248,10 +268,24 @@ struct JoinKeygenView: View {
             viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
     }
+    
+    private func getKeygenCardContent(_ title: String) -> some View {
+        VStack(spacing: 12) {
+            Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body28BrockmannMedium)
+            
+            Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                .font(.body14BrockmannMedium)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal)
+    }
 }
 
 #Preview {
-    JoinKeygenView(vault: Vault.example)
+    JoinKeygenView(vault: Vault.example, selectedVault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
 }

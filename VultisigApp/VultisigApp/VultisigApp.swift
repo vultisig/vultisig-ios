@@ -3,7 +3,6 @@
 //  VultisigApp
 //
 
-import Mediator
 import SwiftData
 import SwiftUI
 import WalletCore
@@ -23,9 +22,7 @@ struct VultisigApp: App {
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
-    
-    // Mac specific
-    @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
+    @StateObject var globalStateViewModel = GlobalStateViewModel()
     
     var body: some Scene {
         WindowGroup {

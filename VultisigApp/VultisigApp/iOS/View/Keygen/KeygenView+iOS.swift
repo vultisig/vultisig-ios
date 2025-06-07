@@ -12,33 +12,48 @@ extension KeygenView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var content: some View {
-        VStack {
-            fields
-            
-            if viewModel.status != .KeygenFailed {
-                instructions
+        container
+            .navigationTitle(NSLocalizedString(tssType == .Migrate ? "" : "creatingVault", comment: ""))
+            .navigationBarTitleDisplayMode(.inline)
+            .task {
+                await setData()
+                await viewModel.startKeygen(
+                    context: context,
+                    defaultChains: settingsDefaultChainViewModel.defaultChains
+                )
             }
-        }
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await setData()
-            await viewModel.startKeygen(
-                context: context,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
-        }
-        .onAppear {
-            UIApplication.shared.isIdleTimerDisabled = true
-        }
-        .onDisappear(){
-            UIApplication.shared.isIdleTimerDisabled = false
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear(){
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
+    }
+    
+    var fields: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            if showProgressRing {
+                if progressCounter<4 {
+                    title
+                }
+                states
+            }
+            Spacer()
+            
+            if progressCounter < 4 {
+                if viewModel.status == .KeygenFailed {
+                    retryButton
+                } else {
+                    progressContainer
+                }
+            }
         }
     }
     
-    var keygenViewInstructions: some View {
-        KeygenViewInstructions()
-            .padding(.bottom, 30)
+    var progressContainer: some View {
+        KeygenProgressContainer(progressCounter: progressCounter)
+            .padding(.bottom, idiom == .phone ? 10 : 50)
     }
 }
 #endif

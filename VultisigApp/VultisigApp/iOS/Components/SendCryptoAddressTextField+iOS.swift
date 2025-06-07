@@ -94,7 +94,6 @@ extension SendCryptoAddressTextField {
     }
     
     private func handleImageQrCode(image: UIImage) {
-        
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
         
@@ -106,11 +105,11 @@ extension SendCryptoAddressTextField {
             validateAddress(address)
         }
         
-        Task{
-            if !amount.isEmpty {
-                await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
-            }
+        
+        if !amount.isEmpty {
+            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
         }
+        
     }
 }
 #endif

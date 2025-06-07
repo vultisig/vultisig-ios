@@ -10,26 +10,46 @@ import SwiftUI
 
 extension KeygenView {
     var content: some View {
-        VStack {
-            fields
-            
-            if viewModel.status != .KeygenFailed {
-                instructions
+        container
+            .task {
+                await setData()
+                await viewModel.startKeygen(
+                    context: context,
+                    defaultChains: settingsDefaultChainViewModel.defaultChains
+                )
             }
-        }
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
-        .task {
-            await setData()
-            await viewModel.startKeygen(
-                context: context,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
+    }
+    
+    var fields: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            if showProgressRing {
+                if progressCounter<4 {
+                    title
+                }
+                states
+            }
+            
+            if progressCounter < 4 {
+                if viewModel.status == .KeygenFailed {
+                    errorMessage
+                    Spacer()
+                    retryButton
+                        .padding(.bottom)
+                } else {
+                    Spacer()
+                    progressContainer
+                }
+            }
         }
     }
     
-    var keygenViewInstructions: some View {
-        KeygenViewInstructionsMac()
-            .padding(.vertical, 30)
+    var progressContainer: some View {
+        KeygenProgressContainer(progressCounter: progressCounter)
+    }
+    
+    var errorMessage: some View {
+        ErrorMessage(text: "keygenFailedErrorMessage")
     }
 }
 #endif

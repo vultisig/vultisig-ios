@@ -26,7 +26,6 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var isLinkActive: Bool = false
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
-    @Published var alertMessage: String = ""
     @Published var isFileUploaded = false
     @Published var importedFileName: String? = nil
     @Published var selectedVault: Vault? = nil
@@ -47,6 +46,7 @@ class EncryptedBackupViewModel: ObservableObject {
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
+        showAlert = false
     }
     
     // Export
@@ -78,7 +78,7 @@ class EncryptedBackupViewModel: ObservableObject {
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
-
+            
         } catch {
             print(error)
         }
@@ -95,16 +95,29 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
+    func importDragDropFile(content: Data){
+        do {
+            if isBakFile() {
+                try importBakFile(data: content)
+                return
+            }
+            
+            if let decryptedString = decryptOrReadData(data: content, password: "") {
+                decryptedContent = decryptedString
+                isFileUploaded = true
+            } else {
+                promptForPasswordAndImport(from: content)
+            }
+        } catch {
+            print("Error reading file: \(error.localizedDescription)")
+        }
+    }
+    
     // Import
     func importFile(from url: URL) {
-        let success = url.startAccessingSecurityScopedResource()
+        let _ = url.startAccessingSecurityScopedResource()
         defer { url.stopAccessingSecurityScopedResource() }
         
-        guard success else {
-            alertMessage = "Permission denied for accessing the file."
-            showAlert = true
-            return
-        }
         do {
             
             let data = try Data(contentsOf: url)
@@ -133,7 +146,7 @@ class EncryptedBackupViewModel: ObservableObject {
         guard let vsVaultContainer = Data(base64Encoded: data) else {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
-        let vaultContainer = try VSVaultContainer(serializedData: vsVaultContainer)
+        let vaultContainer = try VSVaultContainer(serializedBytes: vsVaultContainer)
         guard let vaultData = Data(base64Encoded: vaultContainer.vault) else {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
@@ -157,11 +170,9 @@ class EncryptedBackupViewModel: ObservableObject {
             decryptedContent = ""
             isFileUploaded = false
             importedFileName = nil
-            alertTitle = "incorrectPassword"
-            alertMessage = "backupDecryptionFailed"
+            alertTitle = "incorrectPasswordTryAgain"
             showAlert = true
         }
-        
     }
     
     func decryptOrReadData(data: Data, password: String) -> String? {
@@ -184,17 +195,31 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
+    func isDKLS(filename: String) -> Bool {
+        do{
+            let regex = try NSRegularExpression(pattern: "share\\d+of\\d+") // share2of3, share3of5
+            let matches = regex.matches(in: filename, range: NSRange(filename.startIndex..., in: filename))
+            return matches.count > 0
+        } catch {
+            print("Error checking if filename is a DKLS backup: \(error.localizedDescription)")
+            return false
+        }
+    }
+    
     func restoreVaultBak(modelContext: ModelContext,vaults: [Vault], vaultData: Data, defaultChains: [CoinMeta]) {
         do{
-            let vsVault = try VSVault(serializedData: vaultData)
+            let vsVault = try VSVault(serializedBytes: vaultData)
             let vault = try Vault(proto: vsVault)
             if !isVaultUnique(backupVault: vault,vaults:vaults){
-                alertTitle = "error"
-                alertMessage = "vaultAlreadyExists"
+                alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isLinkActive = false
                 return
             }
+            if isDKLS(filename: self.importedFileName ?? ""), vault.libType != LibType.GG20 {
+                vault.libType = LibType.DKLS
+            }
+            
             VaultDefaultCoinService(context: modelContext)
                 .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
             modelContext.insert(vault)
@@ -204,7 +229,6 @@ class EncryptedBackupViewModel: ObservableObject {
         catch {
             logger.error("fail to restore vault: \(error.localizedDescription)")
             alertTitle = "vaultRestoreFailed"
-            alertMessage = error.localizedDescription
             showAlert = true
             isLinkActive = false
         }
@@ -212,24 +236,24 @@ class EncryptedBackupViewModel: ObservableObject {
     
     func restoreVault(modelContext: ModelContext, vaults: [Vault], defaultChains: [CoinMeta]) {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
-            alertTitle = "error"
-            alertMessage = "invalidVaultData"
+            alertTitle = "invalidVaultData"
             showAlert = true
             isLinkActive = false
             return
         }
+        
         if isBakFile() {
             restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData, defaultChains: defaultChains)
             return
         }
+        
         let decoder = JSONDecoder()
         do {
             let backupVault = try decoder.decode(BackupVault.self,
                                                  from: vaultData)
             // if version get updated , then we can process the migration here
             if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
-                alertTitle = "error"
-                alertMessage = "vaultAlreadyExists"
+                alertTitle = "vaultAlreadyExists"
                 showAlert = true
                 isLinkActive = false
                 return
@@ -238,17 +262,17 @@ class EncryptedBackupViewModel: ObservableObject {
                 .setDefaultCoinsOnce(vault: backupVault.vault, defaultChains: defaultChains)
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
+            showAlert = false
             isLinkActive = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            
             // fallback
             do{
-                let vault = try decoder.decode(Vault.self,
-                                               from: vaultData)
+                let vault = try decoder.decode(Vault.self, from: vaultData)
                 
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
-                    alertTitle = "error"
-                    alertMessage = "vaultAlreadyExists"
+                    alertTitle = "vaultAlreadyExists"
                     showAlert = true
                     isLinkActive = false
                     return
@@ -257,11 +281,11 @@ class EncryptedBackupViewModel: ObservableObject {
                     .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
                 modelContext.insert(vault)
                 selectedVault = vault
+                showAlert = false
                 isLinkActive = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
                 alertTitle = "vaultRestoreFailed"
-                alertMessage = error.localizedDescription
                 showAlert = true
                 isLinkActive = false
             }
@@ -282,7 +306,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak" ||  fileExtension == "vult" {
+        if fileExtension == "dat" || fileExtension == "bak" || fileExtension == "vult" || fileExtension == "txt" {
             return true
         } else {
             return false
@@ -290,12 +314,13 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     private func showInvalidFormatAlert() {
-        alertTitle = "invalidFileFormat"
-        alertMessage = "invalidFileFormatMessage"
+        alertTitle = "unsupportedFileTypeError"
         showAlert = true
     }
     
     func handleFileImporter(_ result: Result<[URL], Error>) {
+        resetData()
+        
         switch result {
         case .success(let urls):
             if let url = urls.first {
@@ -303,8 +328,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     showInvalidFormatAlert()
                     return
                 }
-                
-                importedFileName = url.lastPathComponent
+                importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
                 importFile(from: url)
             }
         case .failure(let error):
@@ -317,34 +341,39 @@ class EncryptedBackupViewModel: ObservableObject {
             showInvalidFormatAlert()
             return
         }
-        
-        importedFileName = url.lastPathComponent
+        importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
         importFile(from: url)
     }
     
-    func handleOnDrop(providers: [NSItemProvider]) -> Bool {
+    func handleOnDrop(providers: [NSItemProvider]) async {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.data.identifier) }) else {
             print("Invalid file type.")
-            return false
+            return
         }
-
-        provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.data.identifier) { url, success, error in
-            guard let url = url else {
-                print(error?.localizedDescription ?? "Failed to load file.")
-                return
-            }
-            
-            DispatchQueue.main.async {
-                guard self.isValidFormat(url) else {
-                    self.showInvalidFormatAlert()
-                    return
+        do{
+            let dragDropData = try await provider.loadItem(forTypeIdentifier: UTType.data.identifier)
+            if let urlData = dragDropData as? NSURL {
+                print("File Path as NSURL: \(urlData)")
+                provider.loadDataRepresentation(forTypeIdentifier: UTType.data.identifier) { data,err in
+                    if let data {
+                        let url = urlData as URL
+                        DispatchQueue.main.async {
+                            guard self.isValidFormat(url) else {
+                                self.showInvalidFormatAlert()
+                                return
+                            }    
+                            self.importedFileName = url.lastPathComponent.replacingOccurrences(of: ".txt", with: ".vult")
+                            self.importDragDropFile(content: data)
+                        }
+                    }
                 }
-                
-                self.importedFileName = url.lastPathComponent
-                self.importFile(from: url)
             }
+        } catch {
+            DispatchQueue.main.async{
+                self.alertTitle = "failedToLoadFileData"
+                self.showAlert = true
+            }
+            print("fail to process drag and drop file: \(error.localizedDescription)")
         }
-
-        return true
     }
 }

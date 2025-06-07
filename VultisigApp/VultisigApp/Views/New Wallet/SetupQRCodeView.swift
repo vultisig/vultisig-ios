@@ -12,21 +12,21 @@ struct SetupQRCodeView: View {
     let tssType: TssType
     let vault: Vault?
 
-    @State var selectedTab: SetupVaultState = .secure
+    @State var selectedTab: SetupVaultState = .fast
     @State var showSheet: Bool = false
     @State var shouldJoinKeygen = false
 
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
         content
+            .sensoryFeedback(.selection, trigger: selectedTab)
     }
     
     var view: some View {
         VStack {
             tabView
-            buttons
+            button
         }
     }
     
@@ -34,15 +34,10 @@ struct SetupQRCodeView: View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     
-    var buttons: some View {
-        VStack(spacing: 16) {
-            startButton
-            if selectedTab.hasOtherDevices {
-                pairButton
-            }
-        }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 40)
+    var button: some View {
+        startButton
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
     }
     
     var startButton: some View {
@@ -51,7 +46,6 @@ struct SetupQRCodeView: View {
                 NewWalletNameView(
                     tssType: tssType,
                     selectedTab: selectedTab,
-                    header: selectedTab == .secure ? "setup" : "name", 
                     name: Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
                 )
             } else if let vault {
@@ -71,13 +65,8 @@ struct SetupQRCodeView: View {
                 }
             }
         } label: {
-            FilledButton(title: "start".uppercased())
+            FilledButton(title: "next")
         }
-    }
-
-    func makeVault() -> Vault {
-        let vaultName = Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
-        return Vault(name: vaultName)
     }
 }
 

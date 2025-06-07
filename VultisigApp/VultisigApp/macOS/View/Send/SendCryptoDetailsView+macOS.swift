@@ -16,23 +16,16 @@ extension SendCryptoDetailsView {
     var view: some View {
         VStack {
             fields
-            button
+            buttonContainer
                 .padding(.horizontal, 8)
                 .padding(.vertical, -12)
         }
     }
     
-    var button: some View {
-        Button {
-            Task{
-                await validateForm()
-            }
-        } label: {
-            FilledButton(title: "continue")
-        }
-        .padding(.horizontal, 40)
-        .padding(.top, 20)
-        .padding(.bottom, 40)
+    var buttonContainer: some View {
+        button
+            .padding(.horizontal, 40)
+            .padding(.bottom, 40)
     }
     
     var fields: some View {
@@ -43,7 +36,7 @@ extension SendCryptoDetailsView {
                     fromField
                     toField
                     
-                    if tx.coin.isNativeToken {
+                    if tx.coin.isNativeToken || tx.coin.chainType == .Cosmos || tx.coin.ticker == "TCY" {
                         memoField
                     }
                     

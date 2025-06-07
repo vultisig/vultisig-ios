@@ -32,6 +32,8 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var sessionID: String? = nil
     @Published var hexChainCode: String = ""
     @Published var isCameraPermissionGranted: Bool? = nil
+    @Published var selectedVault: Vault? = nil
+    @Published var areVaultsMismatched: Bool = false
     
     @Published var netService: NetService? = nil
     @Published var status = JoinKeygenStatus.DiscoverSessionID
@@ -42,6 +44,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
     @Published var oldResharePrefix: String = ""
+    
     var encryptionKeyHex: String = ""
     var vaults: [Vault] = []
     
@@ -49,8 +52,9 @@ class JoinKeygenViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
+    func setData(vault: Vault, selectedVault: Vault?,serviceDelegate: ServiceDelegate, vaults: [Vault], isCameraPermissionGranted: Bool) {
         self.vault = vault
+        self.selectedVault = selectedVault
         self.vaults = vaults
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
@@ -174,13 +178,14 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = keygenMsg.encryptionKeyHex
                 useVultisigRelay = keygenMsg.useVultisigRelay
                 vault.name = keygenMsg.vaultName
+                vault.libType = keygenMsg.libType
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
-                    errorMessage = "Vault with name:\(keygenMsg.vaultName) already exist"
+                    errorMessage = NSLocalizedString("vaultExistsError", comment: "")
                     logger.error("\(self.errorMessage)")
                     status = .FailToStart
                     return
                 }
-            case .Reshare:
+            case .Reshare,.Migrate:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
                     base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties
@@ -190,6 +195,12 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
+                
+                guard let selectedVaultKey = selectedVault?.pubKeyECDSA, selectedVaultKey == reshareMsg.pubKeyECDSA else {
+                    areVaultsMismatched = true
+                    return
+                }
+                
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
                     if !reshareMsg.pubKeyECDSA.isEmpty {
@@ -198,9 +209,10 @@ class JoinKeygenViewModel: ObservableObject {
                             self.localPartyID = reshareVault.localPartyID
                         } else {
                             vault.hexChainCode = reshareMsg.hexChainCode
+                            vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = "Vault with name:\(reshareMsg.vaultName) already exist"
+                                errorMessage = NSLocalizedString("vaultExistsError", comment: "")
                                 logger.error("\(self.errorMessage)")
                                 status = .FailToStart
                                 return
@@ -212,6 +224,11 @@ class JoinKeygenViewModel: ObservableObject {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
                         errorMessage = "You choose the wrong vault"
                         logger.error("The vault's public key doesn't match the reshare message's public key")
+                        status = .FailToStart
+                        return
+                    }
+                    if vault.libType != reshareMsg.libType {
+                        errorMessage = "Vault type doesn't match, initiate device and pair device's vault type are different"
                         status = .FailToStart
                         return
                     }

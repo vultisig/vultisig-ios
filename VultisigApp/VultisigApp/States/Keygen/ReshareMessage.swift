@@ -15,4 +15,5 @@ struct ReshareMessage {
     let useVultisigRelay: Bool
     let oldResharePrefix: String
     let vaultName: String
+    let libType: LibType
 }

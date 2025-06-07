@@ -11,7 +11,8 @@ struct CoinDetailView: View {
     let coin: Coin
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @ObservedObject var sendTx: SendTransaction
+    @StateObject var sendTx: SendTransaction
+    @Binding var resetActive: Bool
     
     @State var isLoading = false
     
@@ -24,16 +25,18 @@ struct CoinDetailView: View {
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: coin
                 )
             }
             .navigationDestination(isPresented: $isSwapLinkActive) {
                 SwapCryptoView(fromCoin: coin, vault: vault)
             }
             .navigationDestination(isPresented: $isMemoLinkActive) {
-                TransactionMemoView(
+                FunctionCallView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: coin
                 )
             }
             .onAppear {
@@ -44,6 +47,11 @@ struct CoinDetailView: View {
                     sendTx.reset(coin: coin)
                 }
             }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    sendTx.coin = coin
+                }
+            }
     }
     
     var loader: some View {
@@ -52,8 +60,9 @@ struct CoinDetailView: View {
     
     var actionButtons: some View {
         ChainDetailActionButtons(
+            isChainDetail: true,
             group: group,
-            sendTx: sendTx,
+            isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive
@@ -68,7 +77,7 @@ struct CoinDetailView: View {
     }
     
     var cell: some View {
-        CoinCell(coin: coin, group: group, vault: vault)
+        CoinCell(coin: coin)
     }
     
     func refreshData() async {
@@ -79,5 +88,5 @@ struct CoinDetailView: View {
 }
 
 #Preview {
-    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction())
+    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction(), resetActive: .constant(false))
 }

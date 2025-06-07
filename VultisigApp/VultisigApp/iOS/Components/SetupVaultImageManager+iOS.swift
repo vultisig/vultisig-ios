@@ -8,9 +8,9 @@
 #if os(iOS)
 import SwiftUI
 
-extension SetupVaultImageManager {
+extension SetupVaultAnimationManager {
     var imageContainer: some View {
-        imageContent
+        animation
     }
 }
 #endif

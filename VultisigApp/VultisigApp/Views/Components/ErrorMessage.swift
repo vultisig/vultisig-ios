@@ -19,15 +19,15 @@ struct ErrorMessage: View {
     }
     
     var logo: some View {
-        Image(systemName: "exclamationmark.triangle.fill")
-            .font(.title80Menlo)
-            .symbolRenderingMode(.multicolor)
+        Image(systemName: "exclamationmark.circle.fill")
+            .font(.body24MontserratBold)
+            .foregroundColor(.alertYellow)
     }
     
     var title: some View {
         Text(NSLocalizedString(text, comment: ""))
             .font(.body16MenloBold)
-            .foregroundColor(.neutral0)
+            .foregroundColor(.alertYellow)
             .frame(maxWidth: width)
             .multilineTextAlignment(.center)
     }

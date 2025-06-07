@@ -14,7 +14,8 @@ extension FastVaultEmailView {
             Background()
             main
         }
-        .navigationTitle(NSLocalizedString("email", comment: ""))
+        .navigationBarBackButtonHidden(backButtonHidden)
+        .navigationTitle(NSLocalizedString("", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -28,27 +29,48 @@ extension FastVaultEmailView {
     var view: some View {
         VStack {
             emailField
-            emailMismatchLabel
+            
+            if isEmptyEmail {
+                emptyEmailLabel
+            } else if isInvalidEmail {
+                validEmailLabel
+            }
+            
             Spacer()
-            buttons
+            button
         }
     }
     
     func textfield(title: String, text: Binding<String>) -> some View {
-        TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Color.neutral500)
-            .font(.body12Menlo)
-        )
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-        .submitLabel(.done)
-        .padding(12)
+        HStack {
+            TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(Color.neutral500)
+                .font(.body16BrockmannMedium)
+            )
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .submitLabel(.done)
+            .focused($isEmailFocused)
+            .onSubmit {
+                handleTap()
+            }
+            if !email.isEmpty {
+                clearButton
+            }
+        }
+        .frame(height: 56)
+        .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(getBorderColor(), lineWidth: 1)
+        )
         .textInputAutocapitalization(.never)
         .keyboardType(.emailAddress)
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
+        .padding(.top, 32)
     }
 }
 #endif

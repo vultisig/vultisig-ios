@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 import SwiftUI
 import BigInt
 
@@ -19,26 +18,32 @@ extension Decimal {
         return truncated
     }
     
-    func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
+    func formatToFiat(includeCurrencySymbol: Bool = true, useAbbreviation: Bool = false) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
             formatter.currencyCode = SettingsCurrency.current.rawValue
         } else {
             formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ","
         }
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
+        formatter.roundingMode = .down
         
-        let abbrevation = getAbbrevationValues()
-        let value = abbrevation.value
-        let prefix = abbrevation.prefix
-        
-        // Convert Decimal to NSDecimalNumber before using with NumberFormatter
-        let number = NSDecimalNumber(decimal: value)
-        return (formatter.string(from: number) ?? "") + prefix
+        let number = NSDecimalNumber(decimal: self)
+        return formatter.string(from: number) ?? ""
+    }
+    
+    func formatDecimalToLocale(locale: Locale = Locale.current) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.maximumFractionDigits = 8
+        formatter.minimumFractionDigits = 4
+        formatter.roundingMode = .down
+        return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
     func formatToDecimal(digits: Int) -> String {
@@ -46,40 +51,16 @@ extension Decimal {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = digits
         formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
-        formatter.decimalSeparator = "."
-        
-        let abbrevation = getAbbrevationValues()
-        let value = abbrevation.value
-        let prefix = abbrevation.prefix
+        formatter.decimalSeparator = Locale.current.decimalSeparator ?? "."
+        formatter.groupingSeparator = Locale.current.groupingSeparator ?? ","
+        formatter.roundingMode = .down
         
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
-        let number = NSDecimalNumber(decimal: value)
+        let number = NSDecimalNumber(decimal: self)
         
-        return (formatter.string(from: number) ?? "") + prefix
+        return formatter.string(from: number) ?? ""
     }
     
-    private func getAbbrevationValues() -> (value: Decimal, prefix: String) {
-        let millionValue: Decimal = 1_000_000
-        let billionValue: Decimal = 1_000_000_000
-        
-        let value: Decimal
-        let prefix: String
-        
-        if self > billionValue {
-            value = self/billionValue
-            prefix = "B"
-        } else if self > millionValue {
-            value = self/millionValue
-            prefix = "M"
-        } else {
-            value = self
-            prefix = ""
-        }
-        
-        return (value: value, prefix: prefix)
-    }
-
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
     }

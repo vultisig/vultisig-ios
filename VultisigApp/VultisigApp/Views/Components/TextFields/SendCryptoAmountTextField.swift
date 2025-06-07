@@ -14,12 +14,15 @@ struct SendCryptoAmountTextField: View {
     var onMaxPressed: (() -> Void)?
     
     @Environment(\.isEnabled) private var isEnabled
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         HStack(spacing: 0) {
+#if os(iOS)
+            container.keyboardType(.decimalPad)
+#endif
+#if os(macOS)
             container
-            
+#endif
             if showButton {
                 maxButton
             }
@@ -37,7 +40,7 @@ struct SendCryptoAmountTextField: View {
         TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
+                let newValue = $0
                 
                 guard amount != newValue else { return }
                 amount = newValue
@@ -56,7 +59,7 @@ struct SendCryptoAmountTextField: View {
         .maxLength(Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.formatCurrency(settingsViewModel.selectedCurrency)
+                let newValue = $0
                 
                 guard amount != newValue else { return }
                 amount = newValue

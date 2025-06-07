@@ -13,74 +13,119 @@ struct FastVaultEmailView: View {
     let selectedTab: SetupVaultState
 
     var fastVaultExist: Bool = false
+    var backButtonHidden: Bool = false
 
     @State var email: String = ""
-    @State var verifyEmail: String = ""
     @State var isLinkActive = false
-
+    
+    @State var isEmptyEmail: Bool = false
+    @State var isInvalidEmail: Bool = false
+    @FocusState var isEmailFocused: Bool
+    
     var body: some View {
-        content
+        content.onAppear(){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isEmailFocused = true
+            }
+        }
     }
 
     var emailField: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("fastVaultEmailBackup", comment: ""))
-                .font(.body14MontserratMedium)
+        VStack(alignment: .leading, spacing: 16) {
+            Text(NSLocalizedString("enterYourEmail", comment: ""))
+                .font(.body34BrockmannMedium)
                 .foregroundColor(.neutral0)
-
+                .padding(.top, 16)
+            
+            Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+            
             textfield(title: NSLocalizedString("email", comment: ""), text: $email)
-            textfield(title: NSLocalizedString("verifyEmail", comment: ""), text: $verifyEmail)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 30)
+        .animation(.easeInOut, value: isEmptyEmail)
+        .animation(.easeInOut, value: isInvalidEmail)
+        
     }
 
-    @ViewBuilder
-    var emailMismatchLabel: some View {
-        if isMismatchError {
-            HStack {
-                Text(NSLocalizedString("emailMismatch", comment: ""))
-                    .foregroundColor(.red)
-                    .font(.body14Montserrat)
-                    .frame(height: 40)
-                Spacer()
-            }
+    var emptyEmailLabel: some View {
+        HStack {
+            Text(NSLocalizedString("emptyEmailPleaseCheck", comment: ""))
+                .foregroundColor(.alertRed)
+                .font(.body14Montserrat)
+                .frame(height: 40)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+    }
+    
+    var validEmailLabel: some View {
+        HStack {
+            Text(NSLocalizedString("invalidEmailPleaseCheck", comment: ""))
+                .foregroundColor(.alertRed)
+                .font(.body14Montserrat)
+                .frame(height: 40)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+    }
+
+    var button: some View {
+        continueButton
+            .padding(.top, 16)
+            .padding(.bottom, 40)
             .padding(.horizontal, 16)
-        }
-    }
-
-    var buttons: some View {
-        VStack(spacing: 20) {
-            disclaimer
-            continueButton
-        }
-        .padding(.top, 16)
-        .padding(.bottom, 40)
-        .padding(.horizontal, 16)
     }
 
     var continueButton: some View {
         Button(action: {
-            isLinkActive = true
+            handleTap()
         }) {
-            FilledButton(title: "continue")
+            FilledButton(title: "next")
         }
-        .opacity(isValid ? 1 : 0.5)
-        .disabled(!isValid)
     }
     
-    var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("fastVaultEmailDisclaimer", comment: ""))
+    var clearButton: some View {
+        Button {
+            email = ""
+        } label: {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundColor(.neutral500)
+        }
+    }
+    
+    func handleTap() {
+        guard isEmptyEmailCheck() else {
+            isEmptyEmail = true
+            return
+        }
+        
+        isEmptyEmail = false
+        guard isValidEmailCheck() else {
+            isInvalidEmail = true
+            return
+        }
+        
+        isInvalidEmail = false
+        isLinkActive = true
+    }
+    
+    private func isEmptyEmailCheck() -> Bool {
+        return !email.isEmpty
     }
 
-    var isMismatchError: Bool {
-        return !email.isEmpty && !verifyEmail.isEmpty && email != verifyEmail
-    }
-
-    var isValid: Bool {
-        return !email.trimmingCharacters(in: .whitespaces).isEmpty && 
+    private func isValidEmailCheck() -> Bool {
+        return !email.trimmingCharacters(in: .whitespaces).isEmpty &&
                !email.isEmpty &&
-                email.isValidEmail &&
-                email == verifyEmail
+                email.isValidEmail
+    }
+    
+    func getBorderColor() -> Color {
+        if isEmptyEmail || isInvalidEmail {
+            return .alertRed
+        } else {
+            return .blue200
+        }
     }
 }

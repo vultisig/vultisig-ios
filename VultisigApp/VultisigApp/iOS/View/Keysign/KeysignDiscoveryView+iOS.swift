@@ -30,118 +30,80 @@ extension KeysignDiscoveryView {
         .blur(radius: isLoading ? 1 : 0)
     }
     
+    var background: some View {
+        Background()
+    }
+    
     var orientedContent: some View {
-        ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
+        portraitContent
     }
     
-    var list: some View {
-        VStack(spacing: 4) {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
-    }
-    
-    var paringQRCode: some View {
+    var QRCodeContent: some View {
         VStack {
-            networkPrompts
-            qrCode
+            paringQRCode
+            disclaimer
         }
-        .foregroundColor(.neutral0)
-        .cornerRadius(10)
     }
     
     var qrCode: some View {
-        ZStack {
-            qrCodeImage?
-                .resizable()
-                .frame(width: getQRSize())
-                .frame(height: getQRSize())
-                .scaledToFit()
-                .padding(2)
-                .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding(4)
-                .padding(12)
-                .background(Color.blue600)
-                .cornerRadius(30)
-                .padding(1)
-            
-            Image("QRScannerOutline")
-                .resizable()
-                .frame(width: getQROutline(), height: getQROutline())
-        }
+        qrCodeImage?
+            .resizable()
+            .frame(maxWidth: 500, maxHeight: 500)
+            .aspectRatio(contentMode: .fill)
+            .padding(24)
     }
     
-    var bottomButtons: some View {
+    var signButton: some View {
         let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
-        return Button {
+        return Button(action: {
             isLoading = true
             startKeysign()
-        } label: {
-            FilledButton(title: "sign")
+        }) {
+            FilledButton(
+                title: isDisabled ? "waitingOnDevices..." : "sign",
+                textColor: isDisabled ? .textDisabled : .blue600,
+                background: isDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.8 : 1)
-        .grayscale(isDisabled ? 1 : 0)
-        .padding(.horizontal, 16)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .padding(.horizontal, 32)
         .edgesIgnoringSafeArea(.bottom)
-        .padding(.bottom, idiom == .pad ? 30 : 0)
+        .padding(2)
     }
     
     var deviceList: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 24) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                    .onAppear {
-                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                            handleSelection(peer)
-                        }
-                    }
+        VStack {
+            listTitle
+            
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
+                devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
+            }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 120)
+        }
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
                 }
             }
-            .padding(.horizontal, 24)
-            .frame(maxHeight: .infinity)
         }
+        .padding(idiom == .phone ? 0 : 8)
     }
     
-    private func getQRSize() -> CGFloat {
-        guard !isPhoneSE else {
-            return 250
-        }
-        
-        guard idiom == .phone else {
-            return screenWidth-335
-        }
-        
-        return screenWidth-80
-    }
-    
-    private func getQROutline() -> CGFloat {
-        guard !isPhoneSE else {
-            return 280
-        }
-        
-        guard idiom == .phone else {
-            return screenWidth-300
-        }
-        
-        return screenWidth-45
+    var switchLink: some View {
+        SwitchToLocalLink(isForKeygen: false, selectedNetwork: $selectedNetwork)
     }
 }
 #endif

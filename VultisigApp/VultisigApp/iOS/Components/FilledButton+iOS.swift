@@ -11,8 +11,8 @@ import SwiftUI
 extension FilledButton {
     var text: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
-            .foregroundColor(.blue600)
-            .font(.body16MontserratBold)
+            .foregroundColor(textColor)
+            .font(.body16MontserratSemiBold)
     }
 }
 #endif

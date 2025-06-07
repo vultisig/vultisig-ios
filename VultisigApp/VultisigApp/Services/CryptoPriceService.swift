@@ -14,7 +14,6 @@ public class CryptoPriceService: ObservableObject {
     
     func fetchPrices(vault: Vault) async throws {
         try await fetchPrices(coins: vault.coins)
-        
         await refresh(vault: vault)
         await refresh(coins: vault.coins)
     }
@@ -81,38 +80,85 @@ private extension CryptoPriceService {
             ids: idsQuery,
             currencies: currencies
         )
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-        
-        try await RateProvider.shared.save(rates: mapRates(response: response))
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
+            
+            try await RateProvider.shared.save(rates: mapRates(response: response))
+        } catch {
+            if let error = error as? URLError, error.code == .cancelled {
+                print("request cancelled")
+            } else {
+                throw error
+            }
+        }
     }
     
     func fetchPrices(contracts: [String], chain: Chain) async throws {
-        let currencies = SettingsCurrency.allCases
-            .map { $0.rawValue }
-            .joined(separator: ",")
         
-        let url = Endpoint.fetchTokenPrice(
-            network: coinGeckoPlatform(chain: chain),
-            addresses: contracts,
-            currencies: currencies
-        )
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
-        
-        let contractsNotFoundOnCoingecko = contracts.filter{ !response.keys.contains($0) }
-        
-        var rates = mapRates(response: response)
-        
-        // now lets try to find the price for the notFoundPricesOnCoingecko
-        for contract in contractsNotFoundOnCoingecko {
-            let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
-            rates.append(lifiRate)
+        if chain == .solana {
+            
+            var rates: [Rate] = []
+            for contract in contracts {
+                let poolPrice = await SolanaService.getTokenUSDValue(contractAddress: contract)
+                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                rates.append(poolRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
+
+            
+        } else if chain == .sui {
+            
+            var rates: [Rate] = []
+            for contract in contracts {
+                let poolPrice = await SuiService.getTokenUSDValue(contractAddress: contract)
+                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                rates.append(poolRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
+            
+        } else if chain == .thorChain {
+            
+            var rates: [Rate] = []
+            for contract in contracts {
+                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: contract)
+                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                rates.append(poolRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
+            
+        } else {
+            
+            let currencies = SettingsCurrency.allCases
+                .map { $0.rawValue }
+                .joined(separator: ",")
+            
+            let url = Endpoint.fetchTokenPrice(
+                network: coinGeckoPlatform(chain: chain),
+                addresses: contracts,
+                currencies: currencies
+            )
+            
+            let (data, _) = try await URLSession.shared.data(from: url)
+            
+            let response = try JSONDecoder().decode([String: [String: Double]].self, from: data)
+            
+            
+            let contractsNotFoundOnCoingecko = contracts.filter{ !response.keys.contains($0) }
+            
+            var rates = mapRates(response: response)
+            
+            // now lets try to find the price for the notFoundPricesOnCoingecko
+            for contract in contractsNotFoundOnCoingecko {
+                let lifiRate = try await fetchLifiTokenPrice(contract: contract, chain: chain)
+                rates.append(lifiRate)
+            }
+            
+            try await RateProvider.shared.save(rates: rates)
         }
-                
-        try await RateProvider.shared.save(rates: rates)
     }
     
     func fetchLifiTokenPrice(contract: String, chain: Chain) async throws -> Rate {
@@ -145,7 +191,7 @@ private extension CryptoPriceService {
     
     private func coinGeckoPlatform(chain: Chain) -> String {
         switch chain {
-        case .ethereum:
+        case .ethereum,.ethereumSepolia:
             return "ethereum"
         case .avalanche:
             return "avalanche"
@@ -155,7 +201,7 @@ private extension CryptoPriceService {
             return "blast"
         case .arbitrum:
             return "arbitrum-one"
-        case .polygon:
+        case .polygon, .polygonV2:
             return "polygon-pos"
         case .optimism:
             return "optimistic-ethereum"
@@ -163,7 +209,7 @@ private extension CryptoPriceService {
             return "binance-smart-chain"
         case .zksync:
             return "zksync"
-        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .cardano:
+        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
             return .empty
         }
     }

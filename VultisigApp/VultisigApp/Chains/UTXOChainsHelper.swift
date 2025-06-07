@@ -48,11 +48,39 @@ class UTXOChainsHelper {
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
-        let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+        let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
         if !preSignOutputs.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSignOutputs.errorMessage)
         }
         return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }.sorted()
+    }
+    
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> BitcoinSigningInput {
+        guard let swapPayload = keysignPayload.swapPayload else {
+            throw HelperError.runtimeError("swap payload is nil")
+        }
+        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+            throw HelperError.runtimeError("fail to get swap payload")
+        }
+        guard let memo = keysignPayload.memo else {
+            throw HelperError.runtimeError("swap payload memo is nil")
+        }
+        guard let memoData = memo.data(using: .utf8) else {
+            throw HelperError.runtimeError("fail to encode memo to utf8")
+        }
+        
+        let input = BitcoinSigningInput.with {
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
+            $0.byteFee = 1
+            $0.useMaxAmount = false
+            $0.amount = Int64(swapPayload.fromAmount)
+            $0.coinType = self.coin.rawValue
+            $0.toAddress = thorChainSwapPayload.vaultAddress
+            $0.changeAddress = keysignPayload.coin.address
+            $0.outputOpReturn = memoData
+        }
+        
+        return input
     }
     
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {
@@ -74,7 +102,7 @@ class UTXOChainsHelper {
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
-            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
+            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash, CoinType.zcash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
                     throw HelperError.runtimeError("fail to get key hash from lock script")
@@ -98,7 +126,12 @@ class UTXOChainsHelper {
             input.utxo.append(utxo)
         }
         
-        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        
+        if coin == .zcash {
+            plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
+        }
+        
         input.plan = plan
         return try input.serializedData()
     }
@@ -140,7 +173,7 @@ class UTXOChainsHelper {
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
-            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
+            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash, CoinType.zcash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
                     throw HelperError.runtimeError("fail to get key hash from lock script")
@@ -167,17 +200,27 @@ class UTXOChainsHelper {
         return input
     }
     
+    
     func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) throws -> Data {
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+
+        if coin == .zcash {
+            plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
+        }
+
         input.plan = plan
-        let inputData = try input.serializedData()
-        return inputData
+        return try input.serializedData()
     }
-    
+
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
         let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+
+        if coin == .zcash {
+            plan .branchID = Data(hexString: "5510e7c8")! // Correct hex string
+        }
+        
         return plan
     }
     
@@ -196,7 +239,7 @@ class UTXOChainsHelper {
         
         do {
             let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
-            let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+            let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -210,7 +253,7 @@ class UTXOChainsHelper {
                 publicKeys.add(data: pubkeyData)
             }
             let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: coin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
-            let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
+            let output = try BitcoinSigningOutput(serializedBytes: compileWithSignatures)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString, transactionHash: output.transactionID)
             return result
         } catch {

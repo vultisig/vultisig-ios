@@ -18,7 +18,8 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
-    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = .distantPast
+    @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
+    @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
 
     @State var showSheet = false
     @State var isLoading = true
@@ -26,12 +27,16 @@ struct VaultDetailView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
+    @State private var shouldShowPasswordVerify = false
 
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
+    @State var isBiweeklyPasswordVerifyLinkActive = false
     @State var isBackupLinkActive = false
+    @State var showUpgradeYourVaultSheet = false
+    @State var upgradeYourVaultLinkActive = false
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -44,6 +49,7 @@ struct VaultDetailView: View {
             popup
             shadowView
         }
+        .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
             onAppear()
@@ -62,7 +68,8 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
@@ -71,14 +78,22 @@ struct VaultDetailView: View {
             }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
-            TransactionMemoView(
+            FunctionCallView(
                 tx: sendTx,
-                vault: vault
+                vault: vault,
+                coin: viewModel.selectedGroup?.nativeCoin
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupPasswordSetupView(vault: vault)
+            BackupSetupView(tssType: .Keygen, vault: vault)
         }
+        .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
+            if vault.isFastVault {
+                VaultShareBackupsView(vault: vault)
+            } else {
+                AllDevicesUpgradeView(vault: vault)
+            }
+        })
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
@@ -88,13 +103,24 @@ struct VaultDetailView: View {
             MonthlyBackupView(isPresented: $isMonthlyBackupWarningLinkActive, isBackupPresented: $isBackupLinkActive)
                 .presentationDetents([.height(224)])
         }
-
+        .sheet(isPresented: $showUpgradeYourVaultSheet) {
+            UpgradeYourVaultView(
+                showSheet: $showUpgradeYourVaultSheet,
+                navigationLinkActive: $upgradeYourVaultLinkActive
+            )
+        }
+        .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
+            PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
+                .presentationDetents([.height(260)])
+                .interactiveDismissDisabled()
+        }
     }
 
     var shadowView: some View {
         Background()
-            .opacity(isMonthlyBackupWarningLinkActive ? 0.5 : 0)
+            .opacity(getBackgroundOpacity())
             .animation(.default, value: isMonthlyBackupWarningLinkActive)
+            .animation(.default, value: isBiweeklyPasswordVerifyLinkActive)
     }
 
     var emptyList: some View {
@@ -167,6 +193,13 @@ struct VaultDetailView: View {
         )
     }
     
+    var upgradeVaultBanner: some View {
+        UpgradeFromGG20HomeBanner()
+            .onTapGesture {
+                showUpgradeYourVaultSheet = true
+            }
+    }
+    
     private func onAppear() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isLoading = false
@@ -176,32 +209,42 @@ struct VaultDetailView: View {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             showMonthlyReminderIfNeeded()
+            showBiweeklyPasswordVerificationIfNeeded()
         }
     }
     
-    private func setData() {
+    func setData() {
+        
         if homeViewModel.selectedVault == nil {
             return
         }
-        
-        viewModel.updateBalance(vault: vault)
-        viewModel.getGroupAsync(tokenSelectionViewModel)
-        
-        tokenSelectionViewModel.setData(for: vault)
-        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
-        viewModel.categorizeCoins(vault: vault)
+        Task{
+            viewModel.updateBalance(vault: vault)
+            viewModel.getGroupAsync(tokenSelectionViewModel)
+            
+            tokenSelectionViewModel.setData(for: vault)
+            settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
+            viewModel.categorizeCoins(vault: vault)
+        }
     }
     
     func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
-        return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, sendTx: sendTx, isSendLinkActive: $isSendLinkActive, isSwapLinkActive: $isSwapLinkActive, isMemoLinkActive: $isMemoLinkActive)
-            .padding(16)
-            .padding(.horizontal, 12)
-            .redacted(reason: selectedGroup == nil ? .placeholder : [])
-            .background(Color.backgroundBlue)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
+        return ChainDetailActionButtons(
+            isChainDetail:false,
+            group: selectedGroup ?? GroupedChain.example,
+            isLoading: $isLoading,
+            isSendLinkActive: $isSendLinkActive,
+            isSwapLinkActive: $isSwapLinkActive,
+            isMemoLinkActive: $isMemoLinkActive
+        )
+        .padding(16)
+        .padding(.horizontal, 12)
+        .redacted(reason: selectedGroup == nil ? .placeholder : [])
+        .background(Color.backgroundBlue)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
     }
 
     private func showMonthlyReminderIfNeeded() {
@@ -209,6 +252,38 @@ struct VaultDetailView: View {
 
         if let days = diff.day, days >= 30 {
             isMonthlyBackupWarningLinkActive = true
+        }
+    }
+    
+    private func showBiweeklyPasswordVerificationIfNeeded() {
+        guard vault.isFastVault else { return }
+        
+        // If no verification has been done yet, show the prompt
+        guard let lastVerifyTimestamp = biweeklyPasswordVerifyDate else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isBiweeklyPasswordVerifyLinkActive = true
+            }
+            return
+        }
+        
+        let lastVerifyDate = Date(timeIntervalSince1970: lastVerifyTimestamp)
+        let currentDate = Date()
+        
+        let calendar = Calendar.current
+        let difference = calendar.dateComponents([.day], from: calendar.startOfDay(for: lastVerifyDate), to: calendar.startOfDay(for: currentDate))
+        
+        if let days = difference.day, days >= 15 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isBiweeklyPasswordVerifyLinkActive = true
+            }
+        }
+    }
+    
+    func getBackgroundOpacity() -> CGFloat {
+        if isMonthlyBackupWarningLinkActive || isBiweeklyPasswordVerifyLinkActive {
+            0.5
+        } else {
+            0
         }
     }
 }

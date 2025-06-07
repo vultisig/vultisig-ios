@@ -2,20 +2,18 @@
 //  JoinKeysignView.swift
 //  VultisigApp
 
-import OSLog
 import SwiftUI
 
 struct JoinKeysignView: View {
     let vault: Vault
-       
+    
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
+    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
-    let logger = Logger(subsystem: "join-keysign", category: "communication")
-
     var body: some View {
         content
             .onAppear {
@@ -54,7 +52,10 @@ struct JoinKeysignView: View {
                 KeysignSameDeviceShareErrorView()
             case .KeysignNoCameraAccess:
                 NoCameraPermissionView()
+            case .VaultTypeDoesntMatch:
+                KeysignWrongVaultTypeErrorView()
             }
+            
         }
         .padding()
         .cornerRadius(10)
@@ -83,9 +84,11 @@ struct JoinKeysignView: View {
             sessionID: viewModel.sessionID,
             keysignType: viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
             messsageToSign: viewModel.keysignMessages,
-            keysignPayload: viewModel.keysignPayload,
+            keysignPayload: viewModel.keysignPayload, 
+            customMessagePayload: viewModel.customMessagePayload,
             transferViewModel: nil,
-            encryptionKeyHex: viewModel.encryptionKeyHex
+            encryptionKeyHex: viewModel.encryptionKeyHex,
+            isInitiateDevice: false
         )
     }
     
@@ -100,15 +103,18 @@ struct JoinKeysignView: View {
         .padding(.horizontal, 30)
     }
     
-    @ViewBuilder
     var keysignMessageConfirm: some View {
-        if viewModel.keysignPayload?.swapPayload != nil {
-            KeysignSwapConfirmView(viewModel: viewModel)
-        } else {
-            KeysignMessageConfirmView(viewModel: viewModel)
+        ZStack {
+            if viewModel.keysignPayload?.swapPayload != nil {
+                KeysignSwapConfirmView(viewModel: viewModel)
+            } else if viewModel.customMessagePayload != nil {
+                KeysignCustomMessageConfirmView(viewModel: viewModel)
+            } else {
+                KeysignMessageConfirmView(viewModel: viewModel)
+            }
         }
     }
-
+    
     var waitingForKeySignStart: some View {
         KeysignStartView(viewModel: viewModel)
     }
@@ -144,4 +150,5 @@ struct JoinKeysignView: View {
     JoinKeysignView(vault: Vault.example)
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())
+        .environmentObject(GlobalStateViewModel())
 }

@@ -209,6 +209,10 @@ FOUNDATION_EXPORT NSString* _Nonnull TssGetDerivedPubKey(NSString* _Nullable hex
 // skipped function GetHexEncodedPubKey with unsupported parameter or return types
 
 
+FOUNDATION_EXPORT NSString* _Nonnull TssGetLocalUIEcdsa(NSString* _Nullable keyshare, NSError* _Nullable* _Nullable error);
+
+FOUNDATION_EXPORT NSString* _Nonnull TssGetLocalUIEddsa(NSString* _Nullable keyshare, NSError* _Nullable* _Nullable error);
+
 /**
  * GetThreshold calculates the threshold value based on the input value.
 It takes an integer value as input and returns the threshold value and an error.

@@ -11,6 +11,7 @@ struct KeysignMessage: Codable, Hashable {
     var sessionID: String
     let serviceName: String
     let payload: KeysignPayload?
+    let customMessagePayload: CustomMessagePayload?
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
     let payloadID: String

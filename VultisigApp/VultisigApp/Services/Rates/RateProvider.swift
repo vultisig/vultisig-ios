@@ -29,8 +29,8 @@ final class RateProvider {
 
     static func cryptoId(for coin: Coin) -> CryptoId {
         switch coin.chain.chainType {
-        case .EVM:
-            if coin.isNativeToken {
+        case .EVM, .Solana, .Sui, .THORChain:
+            if coin.isNativeToken || !coin.priceProviderId.isEmpty {
                 return .priceProvider(coin.priceProviderId)
             } else {
                 return .contract(coin.contractAddress)
@@ -42,7 +42,6 @@ final class RateProvider {
 
     /// Should be updated manually
     private var rates = Set<Rate>()
-    private var cancallables = Set<AnyCancellable>()
 
     private init() {
         let descriptor = FetchDescriptor<DatabaseRate>()

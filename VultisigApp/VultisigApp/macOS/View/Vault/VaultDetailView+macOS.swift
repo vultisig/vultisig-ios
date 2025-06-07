@@ -11,9 +11,10 @@ import SwiftUI
 extension VaultDetailView {
     var view: some View {
         list
+            .blur(radius: getBackgroundOpacity()*2)
             .opacity(showVaultsList ? 0 : 1)
             .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"))
+                JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: vault)
             }
             .navigationDestination(isPresented: $shouldKeysignTransaction) {
                 if let vault = homeViewModel.selectedVault {
@@ -24,6 +25,7 @@ extension VaultDetailView {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
+                    coin: nil,
                     selectedChain: selectedChain
                 )
             }
@@ -62,9 +64,10 @@ extension VaultDetailView {
     var list: some View {
         ScrollView {
             VStack(spacing: 4) {
-                if isLoading {
-                    loader
-                } else if viewModel.groups.count >= 1 {
+                if viewModel.groups.count >= 1 {
+                    if vault.libType == .GG20 {
+                        upgradeVaultBanner
+                    }
                     
                     if !vault.isBackedUp {
                         backupNowWidget

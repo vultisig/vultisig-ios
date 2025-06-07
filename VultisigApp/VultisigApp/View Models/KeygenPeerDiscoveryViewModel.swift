@@ -11,7 +11,6 @@ import Combine
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
-    case Summary
     case Keygen
     case Failure
 }
@@ -32,8 +31,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
     @Published var serverAddr = "http://127.0.0.1:18080"
-    @Published var vaultDetail = String.empty
-    @Published var selectedNetwork = NetworkPromptType.Internet
+    @Published var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local {
+        didSet {
+            print("selected network changed: \(selectedNetwork)")
+            VultisigRelay.IsRelayEnabled = NetworkPromptType.Internet == selectedNetwork
+        }
+    }
     
     private var cancellables = Set<AnyCancellable>()
     private let mediator = Mediator.shared
@@ -103,7 +106,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         if let config = fastSignConfig {
             switch tssType {
             case .Keygen:
-                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: config.password, email: config.email)
+                fastVaultService.create(name: vault.name,
+                                        sessionID: sessionID,
+                                        hexEncryptionKey: encryptionKeyHex!,
+                                        hexChainCode: vault.hexChainCode,
+                                        encryptionPassword: config.password,
+                                        email: config.email,
+                                        lib_type: vault.libType == .DKLS ? 1 : 0)
             case .Reshare:
                 let pubKeyECDSA = config.isExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
@@ -114,7 +123,10 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                          encryptionPassword: config.password,
                                          email: config.email,
                                          oldParties: vault.signers,
-                                         oldResharePrefix: vault.resharePrefix ?? "")
+                                         oldResharePrefix: vault.resharePrefix ?? "",
+                                         lib_type: vault.libType == .DKLS ? 1 : 0)
+            case .Migrate:
+                fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
             }
         }
         
@@ -134,12 +146,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func handleSelection(_ peer: String) {
-        if selections.contains(peer) {
-            if peer != localPartyID {
-                selections.remove(peer)
+        withAnimation {
+            if selections.contains(peer) {
+                if peer != localPartyID {
+                    selections.remove(peer)
+                }
+            } else {
+                selections.insert(peer)
             }
-        } else {
-            selections.insert(peer)
         }
     }
     
@@ -179,14 +193,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.participantDiscovery?.peersFound = [String]()
         self.startSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
-                                                   sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
-    }
-    
-    func showSummary() {
-        self.status = .Summary
+        self.participantDiscovery?.getParticipants(
+            serverAddr: self.serverAddr,
+            sessionID: self.sessionID,
+            localParty: self.localPartyID,
+            pubKeyECDSA: vault.pubKeyECDSA
+        )
     }
     
     func startKeygen() {
@@ -235,11 +247,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     serviceName: serviceName,
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
-                    vaultName: vault.name
+                    vaultName: vault.name,
+                    libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
                 jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
-            case .Reshare:
+            case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,
@@ -249,10 +262,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     oldResharePrefix: vault.resharePrefix ?? "",
-                    vaultName: vault.name
+                    vaultName: vault.name,
+                    libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
-                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Reshare.rawValue)&jsonData=\(data)"
+                jsonData = "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             }
             return Utils.generateQRCodeImage(from: jsonData)
         } catch {

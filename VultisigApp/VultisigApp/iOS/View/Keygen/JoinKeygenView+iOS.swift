@@ -13,7 +13,13 @@ extension JoinKeygenView {
     var content: some View {
         ZStack {
             Background()
-            main
+            shadow
+            
+            if viewModel.areVaultsMismatched {
+                vaultsMismatchedError
+            } else {
+                main
+            }
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarTitleDisplayMode(.inline)

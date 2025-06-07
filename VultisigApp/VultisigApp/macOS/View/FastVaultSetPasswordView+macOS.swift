@@ -25,22 +25,17 @@ extension FastVaultSetPasswordView {
             headerMac
             view
         }
-        .navigationDestination(isPresented: $isLinkActive) {
-            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastSignConfig: fastSignConfig)
-        }
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "password")
+        GeneralMacHeader(title: "")
     }
     
     var view: some View {
         VStack {
             passwordField
-            hintField
             Spacer()
-            disclaimer
-            buttons
+            button
         }
         .padding(.horizontal, 25)
     }

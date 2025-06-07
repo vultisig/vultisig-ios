@@ -3,8 +3,8 @@
 //  VultisigApp
 //
 
-import OSLog
 import SwiftUI
+import RiveRuntime
 
 struct PeerDiscoveryView: View {
     let tssType: TssType
@@ -17,14 +17,13 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State var isLandscape: Bool = true
-    @State var isPhoneSE = false
+    
+    @State var showInfoSheet: Bool = false
+    @State var hideBackButton: Bool = false
+    @State var showDisclaimer: Bool = true
     
     @State var screenWidth: CGFloat = .zero
     @State var screenHeight: CGFloat = .zero
-    
-    @State var hideBackButton: Bool = false
-    @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
     
@@ -32,13 +31,15 @@ struct PeerDiscoveryView: View {
     @State var orientation = UIDevice.current.orientation
 #endif
     
-    let columns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
+    @State var animationVM: RiveViewModel? = nil
+    
+    let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
     ]
     
-    let logger = Logger(subsystem: "peers-discory", category: "communication")
+    let adaptiveColumnsMac = [
+        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+    ]
     
     var body: some View {
         content
@@ -46,6 +47,7 @@ struct PeerDiscoveryView: View {
                 viewModel.startDiscovery()
             }
             .onAppear {
+                animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
                 viewModel.setData(
                     vault: vault,
                     tssType: tssType, 
@@ -57,6 +59,18 @@ struct PeerDiscoveryView: View {
             }
             .onDisappear {
                 viewModel.stopMediator()
+                animationVM?.stop()
+            }
+            .onFirstAppear {
+                showInfo()
+            }
+            .sheet(isPresented: $showInfoSheet) {
+                PeerDiscoveryInfoBanner(isPresented: $showInfoSheet)
+                    .presentationDetents([.height(450)])
+            }
+            .onChange(of: viewModel.selectedNetwork) {
+                viewModel.restartParticipantDiscovery()
+                setData()
             }
     }
     
@@ -73,8 +87,6 @@ struct PeerDiscoveryView: View {
                 }
             case (.WaitingForDevices, true):
                 waitingForDevices
-            case (.Summary, _):
-                summary
             case (.Keygen, _):
                 keygenView
             case (.Failure, _):
@@ -82,62 +94,33 @@ struct PeerDiscoveryView: View {
             }
         }
         .foregroundColor(.neutral0)
+        .blur(radius: showInfoSheet ? 1 : 0)
+        .animation(.easeInOut, value: showInfoSheet)
     }
 
     var waitingForDevices: some View {
         VStack(spacing: 0) {
             views
             bottomButton
+            switchLink
         }
-    }
-    
-    var summary: some View {
-        KeyGenSummaryView(
-            state: selectedTab,
-            tssType: tssType,
-            viewModel: viewModel
-        )
     }
     
     var views: some View {
-        ZStack {
-            if isLandscape {
-                landscapeContent
-            } else {
-                portraitContent
-            }
-        }
-    }
-    
-    var portraitContent: some View {
-        VStack(spacing: 0) {
-            if selectedTab == .secure {
-                networkPrompts
-            }
-            
-            qrCode
-            list
-        }
+        portraitContent
     }
     
     var qrCode: some View {
-        paringBarcode
+        VStack(spacing: 0) {
+            paringBarcode
+            disclaimer
+        }
     }
     
     var list: some View {
-        VStack(spacing: isPhoneSE ? 4 : 12) {
-            deviceContent
-        }
-    }
-    
-    var deviceContent: some View {
-        ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
-            }
-        }
+        scrollList
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 24)
     }
     
     var lookingForDevices: some View {
@@ -147,25 +130,19 @@ struct PeerDiscoveryView: View {
         )
     }
     
-    var deviceList: some View {
-        ZStack {
-            if isLandscape {
-                gridList
-            } else {
-                scrollList
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
     func disableContinueButton() -> Bool {
-        switch selectedTab {
-        case .fast:
-            return viewModel.selections.count < 2
-        case .active:
-            return viewModel.selections.count < 3
-        case .secure:
-            return viewModel.selections.count < 2
+        switch viewModel.tssType {
+        case .Keygen,.Reshare:
+            switch selectedTab {
+            case .fast:
+                return viewModel.selections.count < 2
+            case .active:
+                return viewModel.selections.count < 3
+            case .secure:
+                return viewModel.selections.count < 2
+            }
+        case .Migrate:
+            return Set(viewModel.selections) != Set(viewModel.vault.signers)
         }
     }
     
@@ -178,8 +155,9 @@ struct PeerDiscoveryView: View {
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
+            oldResharePrefix: viewModel.vault.resharePrefix ?? "",
             fastSignConfig: fastSignConfig,
+            isInitiateDevice: true,
             hideBackButton: $hideBackButton,
             selectedTab: selectedTab
         )
@@ -195,30 +173,35 @@ struct PeerDiscoveryView: View {
     }
     
     var listTitle: some View {
-        Text(NSLocalizedString("selectPairingDevices", comment: ""))
-            .font(.body14MontserratSemiBold)
-            .foregroundColor(.neutral0)
-            .padding(.bottom, 8)
+        HStack(spacing: 8) {
+            Text(NSLocalizedString("devices", comment: ""))
+            
+            if tssType == .Migrate {
+                Text("(\(viewModel.selections.count)/\(vault.signers.count))")
+            } else {
+                Text("(\(viewModel.selections.count) \(NSLocalizedString("Selected", comment: "")))")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body22BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 8)
     }
     
-    func getTitle() -> String {
-        guard tssType == .Keygen else {
-            return NSLocalizedString("resharingTheVault", comment: "")
+    private func showInfo() {
+        guard selectedTab == .secure else {
+            showInfoSheet = false
+            return
         }
         
-        return NSLocalizedString("keygenFor", comment: "") +
-        " " +
-        selectedTab.title +
-        " " +
-        NSLocalizedString("vault", comment: "")
-    }
-    
-    func setData(_ proxy: GeometryProxy) {
-        screenWidth = proxy.size.width
-        screenHeight = proxy.size.height
-        
-        if screenWidth<380 {
-            isPhoneSE = true
+        switch self.tssType {
+        case .Keygen:
+            showInfoSheet = true
+        case .Reshare:
+            showInfoSheet = false
+        case .Migrate:
+            showInfoSheet = false
         }
     }
 }

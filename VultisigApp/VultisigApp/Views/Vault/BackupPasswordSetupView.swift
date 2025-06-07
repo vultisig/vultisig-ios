@@ -8,11 +8,14 @@
 import SwiftUI
 
 struct BackupPasswordSetupView: View {
+    let tssType: TssType
     let vault: Vault
     var isNewVault = false
+    var showSkipPasswordButton = true
     
     @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
+    @State var homeLinkActive = false
     @State var alreadyShowingPopup = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
@@ -26,6 +29,7 @@ struct BackupPasswordSetupView: View {
             mainContent
             popup
         }
+        .sensoryFeedback(.success, trigger: vault.isBackedUp)
     }
     
     var mainContent: some View {
@@ -77,7 +81,10 @@ struct BackupPasswordSetupView: View {
     var buttons: some View {
         VStack(spacing: 20) {
             saveButton
-            skipButton
+            
+            if showSkipPasswordButton {
+                skipButton
+            }
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
@@ -87,7 +94,6 @@ struct BackupPasswordSetupView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
-            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -116,14 +122,12 @@ struct BackupPasswordSetupView: View {
         
         guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
             backupViewModel.alertTitle = "emptyField"
-            backupViewModel.alertMessage = "checkEmptyField"
             backupViewModel.showAlert = true
             return
         }
         
         guard backupViewModel.encryptionPassword == verifyPassword else {
             backupViewModel.alertTitle = "passwordMismatch"
-            backupViewModel.alertMessage = "verifyPasswordMismatch"
             backupViewModel.showAlert = true
             return
         }
@@ -137,6 +141,7 @@ struct BackupPasswordSetupView: View {
     
     func fileSaved() {
         vault.isBackedUp = true
+        FileManager.default.clearTmpDirectory()
     }
     
     func dismissView() {
@@ -144,11 +149,11 @@ struct BackupPasswordSetupView: View {
         if isNewVault {
             navigationLinkActive = true
         } else {
-            dismiss()
+            homeLinkActive = true
         }
     }
 }
 
 #Preview {
-    BackupPasswordSetupView(vault: Vault.example)
+    BackupPasswordSetupView(tssType: .Keygen, vault: Vault.example)
 }

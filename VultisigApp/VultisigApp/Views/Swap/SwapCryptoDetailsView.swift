@@ -14,33 +14,38 @@ struct SwapCryptoDetailsView: View {
     @State var buttonRotated = false
     @State var isFromPickerActive = false
     @State var isToPickerActive = false
+    
+    @StateObject var keyboardObserver = KeyboardObserver()
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     let vault: Vault
 
     var body: some View {
-        ZStack {
-            Background()
-            view
-
-            if swapViewModel.isLoading {
-                Loader()
+        container
+            .onAppear {
+                setData()
             }
-        }
-        .navigationDestination(isPresented: $isFromPickerActive) {
-            CoinPickerView(coins: tx.fromCoins) { coin in
-                swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
-                swapViewModel.updateCoinLists(tx: tx)
+            .onReceive(timer) { input in
+                swapViewModel.updateTimer(tx: tx, vault: vault)
             }
-        }
-        .navigationDestination(isPresented: $isToPickerActive) {
-            CoinPickerView(coins: tx.toCoins) { coin in
-                swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
+            .onChange(of: tx.fromCoin, { oldValue, newValue in
+                handleFromCoinUpdate()
+            })
+            .onChange(of: tx.toCoin, { oldValue, newValue in
+                handleToCoinUpdate()
+            })
+            .navigationDestination(isPresented: $isFromPickerActive) {
+                CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
+                    swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
+                    swapViewModel.updateCoinLists(tx: tx)
+                }
             }
-        }
-    }
-    
-    var view: some View {
-       container
+            .navigationDestination(isPresented: $isToPickerActive) {
+                CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
+                    swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
+                }
+            }
     }
     
     var content: some View {
@@ -50,92 +55,89 @@ struct SwapCryptoDetailsView: View {
         }
     }
     
-    var fields: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                fromCoinField
-                swapContent
-                toCoinField
-                summary
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-    
     var swapContent: some View {
         ZStack {
             amountFields
             swapButton
+            
+            filler
+                .offset(x: -28)
+            
+            filler
+                .offset(x: 28)
         }
     }
     
     var amountFields: some View {
-        VStack(spacing: 8) {
-            fromAmountField
-            toAmountField
+        VStack(spacing: 12) {
+            swapFromField
+            swapToField
         }
     }
     
-    var fromCoinField: some View {
-        VStack(spacing: 8) {
-            TokenSelectorDropdown(
-                coin: tx.fromCoin,
-                onPress: {
-                    isFromPickerActive = true
-                }
-            )
-        }
-    }
-    
-    var fromAmountField: some View {
-        SwapCryptoAmountTextField(
+    var swapFromField: some View {
+        SwapFromToField(
             title: "from",
+            vault: vault,
+            coin: tx.fromCoin,
             fiatAmount: swapViewModel.fromFiatAmount(tx: tx),
-            amount: $tx.fromAmount
-        ) { _ in
-            swapViewModel.updateFromAmount(tx: tx, vault: vault)
-        }
+            amount: $tx.fromAmount,
+            selectedChain: $swapViewModel.fromChain,
+            showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
+            showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
+            tx: tx,
+            swapViewModel: swapViewModel
+        )
+    }
+    
+    var swapToField: some View {
+        SwapFromToField(
+            title: "to",
+            vault: vault,
+            coin: tx.toCoin,
+            fiatAmount: swapViewModel.toFiatAmount(tx: tx),
+            amount: .constant(tx.toAmountDecimal.formatDecimalToLocale()),
+            selectedChain: $swapViewModel.toChain,
+            showNetworkSelectSheet: $swapViewModel.showToChainSelector,
+            showCoinSelectSheet: $swapViewModel.showToCoinSelector,
+            tx: tx,
+            swapViewModel: swapViewModel
+        )
     }
     
     var swapButton: some View {
         Button {
-            buttonRotated.toggle()
-            swapViewModel.switchCoins(tx: tx, vault: vault)
-            swapViewModel.updateCoinLists(tx: tx)
+            handleSwapTap()
         } label: {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.body16MontserratMedium)
-                .foregroundColor(.neutral0)
-                .frame(width: 38, height: 38)
-                .background(Color.persianBlue400)
-                .cornerRadius(50)
-                .padding(2)
-                .background(Color.black.opacity(0.2))
-                .cornerRadius(50)
-                .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-                .animation(.spring, value: buttonRotated)
+            swapLabel
         }
-    }
-    
-    var toCoinField: some View {
-        VStack(spacing: 8) {
-            TokenSelectorDropdown(
-                coin: tx.toCoin,
-                onPress: {
-                    isToPickerActive = true
-                }
-            )
-        }
-    }
-    
-    var toAmountField: some View {
-        SwapCryptoAmountTextField(
-            title: "to",
-            fiatAmount: swapViewModel.toFiatAmount(tx: tx),
-            amount: .constant(tx.toAmountDecimal.description),
-            onChange: { _ in }
+        .padding(8)
+        .background(Color.backgroundBlue)
+        .cornerRadius(60)
+        .overlay(
+            Circle()
+                .stroke(Color.blue400, lineWidth: 1)
         )
-        .disabled(true)
+    }
+    
+    var swapLabel: some View {
+        Image(systemName: "arrow.up.arrow.down")
+            .font(.body16MontserratMedium)
+            .foregroundColor(.neutral0)
+            .frame(width: 38, height: 38)
+            .background(Color.persianBlue400)
+            .cornerRadius(50)
+            .padding(2)
+            .background(Color.black.opacity(0.2))
+            .cornerRadius(50)
+            .rotationEffect(.degrees(buttonRotated ? 180 : 0))
+            .animation(.spring, value: buttonRotated)
+    }
+    
+    var filler: some View {
+        Rectangle()
+            .frame(width: 12, height: 10)
+            .foregroundColor(Color.backgroundBlue)
     }
     
     var summary: some View {
@@ -143,16 +145,86 @@ struct SwapCryptoDetailsView: View {
     }
     
     var continueButton: some View {
-        Button {
+        let isDisabled = !swapViewModel.validateForm(tx: tx)
+        
+        return Button {
             Task {
                 swapViewModel.moveToNextView()
             }
         } label: {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: "continue",
+                textColor: isDisabled ? .textDisabled : .blue600,
+                background: isDisabled ? .buttonDisabled : .turquoise600
+            )
         }
-        .disabled(!swapViewModel.validateForm(tx: tx))
+        .disabled(isDisabled)
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
+    }
+    
+    var loader: some View {
+        VStack {
+            Spacer()
+            Loader()
+            Spacer()
+        }
+    }
+    
+    var refreshCounter: some View {
+        SwapRefreshQuoteCounter(timer: swapViewModel.timer)
+    }
+    
+    private func setData() {
+        swapViewModel.fromChain = tx.fromCoin.chain
+        swapViewModel.toChain = tx.toCoin.chain
+    }
+    
+    private func handleFromCoinUpdate() {
+        swapViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault)
+    }
+    
+    private func handleToCoinUpdate() {
+        swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault)
+    }
+    
+    private func handleSwapTap() {
+        swapViewModel.error = nil
+        buttonRotated.toggle()
+        swapViewModel.switchCoins(tx: tx, vault: vault)
+        let fromChain = swapViewModel.fromChain
+        swapViewModel.fromChain = swapViewModel.toChain
+        swapViewModel.toChain = fromChain
+        swapViewModel.refreshData(tx: tx, vault: vault)
+    }
+    
+    func showSheet() -> Bool {
+        swapViewModel.showFromChainSelector || swapViewModel.showToChainSelector || swapViewModel.showFromCoinSelector || swapViewModel.showToCoinSelector
+    }
+}
+
+extension SwapCryptoDetailsView {
+    public func handlePercentageSelection(_ percentage: Int) {
+        swapViewModel.showAllPercentageButtons = false
+        switch percentage {
+        case 25:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 4)
+            handleFromCoinUpdate()
+        case 50:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 4)
+            handleFromCoinUpdate()
+        case 75:
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 4)
+            handleFromCoinUpdate()
+        case 100:
+            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 4)
+            handleFromCoinUpdate()
+            let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
+            let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
+            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 4)
+        default:
+            break
+        }
     }
 }
 

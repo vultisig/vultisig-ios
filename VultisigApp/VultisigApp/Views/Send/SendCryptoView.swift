@@ -16,6 +16,7 @@ struct SendCryptoView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
+    @State var coin: Coin? = nil
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var selectedChain: Chain? = nil
@@ -33,19 +34,20 @@ struct SendCryptoView: View {
             Background()
             main
             
-            if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
+            if showLoader() {
                 loader
             }
         }
         .ignoresSafeArea(.keyboard)
-        .onAppear {
+        .onFirstAppear {
             Task {
                 await setData()
+                await loadGasInfo()
             }
         }
         .onChange(of: tx.coin) {
             Task {
-                await setData()
+                await loadGasInfo()
             }
         }
         .onDisappear(){
@@ -73,7 +75,6 @@ struct SendCryptoView: View {
             
             tabView
         }
-        .blur(radius: sendCryptoViewModel.isLoading ? 1 : 0)
     }
     
     var tabView: some View {
@@ -119,8 +120,9 @@ struct SendCryptoView: View {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(
                     vault: vault,
-                    keysignPayload: keysignPayload,
-                    transferViewModel: sendCryptoViewModel, 
+                    keysignPayload: keysignPayload, 
+                    customMessagePayload: nil,
+                    transferViewModel: sendCryptoViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
@@ -186,9 +188,24 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
+        guard !sendCryptoViewModel.isLoading else { return }
+        
+        if let coin = coin {
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+            self.coin = nil
+        }
+        
         presetData()
-        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        
         await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+    }
+    
+    private func loadGasInfo() async {
+        guard !sendCryptoViewModel.isLoading else { return }
+        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
     }
     
     private func presetData() {
@@ -197,14 +214,23 @@ struct SendCryptoView: View {
             return
         }
         
-        guard let selectedCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+        guard let selectedCoin = vault.coins.first(where: { $0.chain == chain}) else {
             selectedChain = nil
             return
         }
         
-        tx.coin = selectedCoin
-        tx.toAddress = deeplinkViewModel.address ?? ""
-        selectedChain = nil
+        if let coin = coin {
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+        } else {
+            tx.coin = selectedCoin
+            tx.fromAddress = selectedCoin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            selectedChain = nil
+        }
+        
         DebounceHelper.shared.debounce {
             validateAddress(deeplinkViewModel.address ?? "")
         }
@@ -213,11 +239,19 @@ struct SendCryptoView: View {
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
+    
+    private func showLoader() -> Bool {
+        guard sendCryptoViewModel.currentIndex>1 else {
+            return false
+        }
+        
+        return sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading
+    }
 }
 
 extension SendCryptoView: SendGasSettingsOutput {
 
-    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt, byteFee: BigInt) {
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
         switch chain.chainType {
         case .EVM:
             tx.customGasLimit = gasLimit
@@ -238,7 +272,8 @@ extension SendCryptoView: SendGasSettingsOutput {
 #Preview {
     SendCryptoView(
         tx: SendTransaction(),
-        vault: Vault.example
+        vault: Vault.example,
+        coin: .example
     )
     .environmentObject(DeeplinkViewModel())
 }

@@ -10,8 +10,11 @@ import SwiftUI
 struct SendCryptoDoneSummary: View {
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
-    
-    let viewModel = SendSummaryViewModel()
+    let vault: Vault
+    let hash: String
+    let approveHash: String?
+    let sendSummaryViewModel: SendSummaryViewModel
+    let swapSummaryViewModel: SwapCryptoViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -29,38 +32,49 @@ struct SendCryptoDoneSummary: View {
     
     private func getSendCard(_ tx: SendTransaction) -> some View {
         VStack(spacing: 18) {
-            Separator()
-            getGeneralCell(
-                title: "from",
-                description: tx.fromAddress,
-                isVerticalStacked: true
-            )
             
-            Separator()
-            getGeneralCell(
-                title: "to",
-                description: tx.toAddress,
-                isVerticalStacked: true
-            )
+            if !tx.fromAddress.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "from",
+                    description: tx.fromAddress,
+                    isVerticalStacked: true
+                )
+            }
             
-            Separator()
-            getGeneralCell(
-                title: "memo",
-                description: tx.memo.isEmpty ? "None" : tx.memo,
-                isBold: false
-            )
+            if !tx.toAddress.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "to",
+                    description: tx.toAddress,
+                    isVerticalStacked: true
+                )
+            }
             
-            Separator()
-            getGeneralCell(
-                title: "amount",
-                description: getSendAmount(for: tx)
-            )
+            if !tx.memo.isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "memo",
+                    description: tx.memo,
+                    isBold: false
+                )
+            }
             
-            Separator()
-            getGeneralCell(
-                title: "value",
-                description: getSendFiatAmount(for: tx)
-            )
+            if !getSendAmount(for: tx).isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "amount",
+                    description: getSendAmount(for: tx)
+                )
+            }
+            
+            if !getSendFiatAmount(for: tx).isEmpty {
+                Separator()
+                getGeneralCell(
+                    title: "value",
+                    description: getSendFiatAmount(for: tx)
+                )
+            }
             
             Separator()
             getGeneralCell(
@@ -75,7 +89,7 @@ struct SendCryptoDoneSummary: View {
             Separator()
             getGeneralCell(
                 title: "from",
-                description: viewModel.getFromAmount(
+                description: sendSummaryViewModel.getFromAmount(
                     tx,
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
@@ -84,17 +98,35 @@ struct SendCryptoDoneSummary: View {
             Separator()
             getGeneralCell(
                 title: "to",
-                description: viewModel.getToAmount(
+                description: sendSummaryViewModel.getToAmount(
                     tx,
                     selectedCurrency: settingsViewModel.selectedCurrency
                 )
             )
             
-            Separator()
-            getGeneralCell(
-                title: "networkFee",
-                description: viewModel.swapFeeString(tx)
-            )
+            if swapSummaryViewModel.showFees(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "swapFee",
+                    description: swapSummaryViewModel.swapFeeString(tx: tx)
+                )
+            }
+            
+            if swapSummaryViewModel.showGas(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "networkFee",
+                    description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
+                )
+            }
+            
+            if swapSummaryViewModel.showTotalFees(tx: tx) {
+                Separator()
+                getGeneralCell(
+                    title: "totalFee",
+                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
+                )
+            }
         }
     }
     
@@ -127,11 +159,11 @@ struct SendCryptoDoneSummary: View {
     }
     
     private func getSendAmount(for tx: SendTransaction) -> String {
-        tx.amount.formatCurrencyWithSeparators(settingsViewModel.selectedCurrency) + " " + tx.coin.ticker
+        tx.amount.formatToDecimal(digits: 8) + " " + tx.coin.ticker
     }
     
     private func getSendFiatAmount(for tx: SendTransaction) -> String {
-        tx.amountInFiat.formatToFiat().formatCurrencyWithSeparators(settingsViewModel.selectedCurrency)
+        tx.amountInFiat.formatToFiat()
     }
 }
 
@@ -139,8 +171,13 @@ struct SendCryptoDoneSummary: View {
     ZStack {
         Background()
         SendCryptoDoneSummary(
-            sendTransaction: SendTransaction(),
-            swapTransaction: SwapTransaction()
+            sendTransaction: nil,
+            swapTransaction: SwapTransaction(),
+            vault: Vault.example,
+            hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+            approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+            sendSummaryViewModel: SendSummaryViewModel(),
+            swapSummaryViewModel: SwapCryptoViewModel()
         )
     }
     .environmentObject(SettingsViewModel())

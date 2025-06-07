@@ -7,22 +7,17 @@
 
 #if os(iOS)
 import SwiftUI
+import RiveRuntime
 
 extension PeerDiscoveryView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-            }
-            
+            Background()
             main
         }
-        .navigationTitle(getTitle())
+        .navigationTitle("scanQR")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(hideBackButton)
         .detectOrientation($orientation)
@@ -53,77 +48,53 @@ extension PeerDiscoveryView {
         states
     }
     
-    var landscapeContent: some View {
-        HStack {
+    var portraitContent: some View {
+        ScrollView {
             qrCode
-            
-            VStack {
-                list
-                    .padding(20)
-                
-                if selectedTab == .secure {
-                    networkPrompts
-                }
-            }
+            list
         }
     }
     
     var paringBarcode: some View {
         ZStack {
-            qrCodeImage?
-                .resizable()
-                .background(Color.blue600)
-                .frame(maxWidth: 500, maxHeight: 500)
-                .aspectRatio(contentMode: .fill)
-                .padding(2)
-                .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding()
-                .background(Color.blue600)
-                .cornerRadius(15)
-            
-            outline
+            animation
+            qrCodeContent
         }
-        .cornerRadius(22)
-        .shadow(radius: 5)
-        .padding(isPhoneSE ? 8 : 20)
+        .padding(8)
     }
     
-    var outline: some View {
-        Image("QRScannerOutline")
+    var qrCodeContent: some View {
+        qrCodeImage?
             .resizable()
-            .frame(maxWidth: 540, maxHeight: 540)
+            .frame(maxWidth: 500, maxHeight: 500)
+            .aspectRatio(contentMode: .fill)
+            .padding(16)
+            .background(Color.clear)
+            .cornerRadius(38)
+            .padding(2)
+    }
+    
+    var animation: some View {
+        animationVM?.view()
     }
     
     var scrollList: some View {
         VStack {
             listTitle
             
-            ScrollView(.horizontal) {
-                HStack(spacing: 18) {
-                    devices
-                }
-                .padding(.horizontal, 30)
-            }
-        }
-        .padding(idiom == .phone ? 0 : 20)
-    }
-    
-    var gridList: some View {
-        ScrollView {
-            listTitle
-            LazyVGrid(columns: columns, spacing: 8) {
+            LazyVGrid(columns: adaptiveColumns, spacing: 18) {
+                ThisDevicePeerCell(deviceName: idiom == .phone ? "iPhone" : "iPad")
                 devices
+                EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(idiom == .phone ? 0 : 20)
+            .padding(.horizontal, 12)
         }
-        .scrollIndicators(.hidden)
+        .frame(maxWidth: .infinity)
     }
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
                 setData()
             }
@@ -142,17 +113,41 @@ extension PeerDiscoveryView {
     }
     
     var bottomButton: some View {
-        Button(action: {
-            viewModel.showSummary()
+        let isButtonDisabled = disableContinueButton()
+        
+        return Button(action: {
+            viewModel.startKeygen()
         }) {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: isButtonDisabled ? "waitingOnDevices..." : "next",
+                textColor: isButtonDisabled ? .textDisabled : .blue600,
+                background: isButtonDisabled ? .buttonDisabled : .turquoise600
+            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
-        .padding(.bottom, 10)
-        .disabled(disableContinueButton())
-        .opacity(disableContinueButton() ? 0.8 : 1)
-        .grayscale(disableContinueButton() ? 1 : 0)
+        .padding(.bottom, idiom == .phone ? 10 : 30)
+        .disabled(isButtonDisabled)
+    }
+    
+    var disclaimer: some View {
+        ZStack {
+            if viewModel.selectedNetwork == .Local {
+                LocalModeDisclaimer()
+            } else if showDisclaimer {
+                if tssType != .Migrate {
+                    PeerDiscoveryScanDeviceDisclaimer(showAlert: $showDisclaimer)
+                } else {
+                    Spacer()
+                        .frame(height: 24)
+                }
+            }
+        }
+        .padding(.horizontal, idiom == .pad ? 24 : 12)
+    }
+    
+    var switchLink: some View {
+        SwitchToLocalLink(isForKeygen: true, selectedNetwork: $viewModel.selectedNetwork)
     }
 
     var isShareButtonVisible: Bool {
@@ -160,8 +155,8 @@ extension PeerDiscoveryView {
     }
 
     func setData() {
-        updateScreenSize()
         qrCodeImage = viewModel.getQrImage(size: 100)
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         
         guard let qrCodeImage else {
             return
@@ -172,16 +167,6 @@ extension PeerDiscoveryView {
             displayScale: displayScale, 
             type: .Keygen
         )
-    }
-    
-    private func updateScreenSize() {
-        screenWidth = UIScreen.main.bounds.size.width
-        
-        if screenWidth>1100 && idiom == .pad {
-            isLandscape = true
-        } else {
-            isLandscape = false
-        }
     }
 }
 #endif

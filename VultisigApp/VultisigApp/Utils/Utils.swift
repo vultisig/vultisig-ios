@@ -455,7 +455,7 @@ enum Utils {
         return data
     }
     
-    public static func generateQRCodeImage(from string: String, tint: Color = .neutral900, background: Color = .neutral0) -> Image {
+    public static func generateQRCodeImage(from string: String, tint: Color = .neutral0, background: Color = .clear) -> Image {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
@@ -471,7 +471,7 @@ enum Utils {
             if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
                 return Image(uiImage: UIImage(cgImage: cgImage))
                     .interpolation(.none)
-
+                
             }
         }
         
@@ -490,12 +490,12 @@ enum Utils {
                 "inputColor0": CIColor(color: tintColor) ?? .black,
                 "inputColor1": CIColor(color: backgroundColor) ?? .white
             ])
-            .transformed(by: transform) {
-                if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
-                    return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
-                        .interpolation(.none)
-                }
+                .transformed(by: transform) {
+            if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+                return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
+                    .interpolation(.none)
             }
+        }
         
         let image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil) ?? NSImage()
         return Image(nsImage: image)
@@ -518,7 +518,7 @@ enum Utils {
         }
         return Data()
     }
-
+    
     public static func detectQRCode(_ image: UIImage?) -> [String] {
         var detectedStrings = [String]()
         guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
@@ -582,11 +582,11 @@ enum Utils {
         
         return detectedStrings
     }
-
+    
     public static func getUniqueIdentifier() -> String {
         let userDefaults = UserDefaults.standard
         let uuidKey = "com.vultisig.wallet"
-
+        
         // Check if a UUID already exists in UserDefaults
         if let uuid = userDefaults.string(forKey: uuidKey) {
             return uuid
@@ -606,15 +606,15 @@ enum Utils {
             let success = url.startAccessingSecurityScopedResource()
             defer { url.stopAccessingSecurityScopedResource() }
             
+#if os(iOS)
             guard success else {
                 print("Failed to access URL")
                 throw UtilsQrCodeFromImageError.URLInaccessible
             }
             
-#if os(iOS)
             if let imageData = try? Data(contentsOf: url), let selectedImage = UIImage(data: imageData) {
                 let qrStrings = Utils.detectQRCode(selectedImage)
-            
+                
                 if qrStrings.isEmpty {
                     print("No QR codes detected.")
                     throw UtilsQrCodeFromImageError.NoQRCodesDetected
@@ -630,7 +630,7 @@ enum Utils {
 #elseif os(macOS)
             if let imageData = try? Data(contentsOf: url), let selectedImage = NSImage(data: imageData) {
                 let qrStrings = Utils.detectQRCode(selectedImage)
-            
+                
                 if qrStrings.isEmpty {
                     print("No QR codes detected.")
                     throw UtilsQrCodeFromImageError.NoQRCodesDetected
@@ -668,5 +668,14 @@ enum Utils {
 #elseif os(macOS)
         return Host.current().localizedName ?? "Mac"
 #endif
+    }
+    
+    public static func sanitizeAddress(address: String) -> String {
+        let sanitizedAddress = address
+        if sanitizedAddress.hasPrefix("ethereum:") {
+            return String(sanitizedAddress.dropFirst(9))
+        }
+        
+        return sanitizedAddress
     }
 }

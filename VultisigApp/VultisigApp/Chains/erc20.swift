@@ -20,10 +20,16 @@ class ERC20Helper {
         return ERC20Helper(coinType: coin.coinType)
     }
     
+    func getChainId(chain: Chain) -> String {
+        if chain == Chain.ethereumSepolia {
+            return "11155111"
+        }
+        return self.coinType.chainId
+    }
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
-        let coin = self.coinType
-        guard let intChainID = Int64(coin.chainId) else {
+        guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,
@@ -56,7 +62,7 @@ class ERC20Helper {
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -77,7 +83,7 @@ class ERC20Helper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -95,7 +101,7 @@ class ERC20Helper {
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
-            let output = try EthereumSigningOutput(serializedData: compileWithSignature)
+            let output = try EthereumSigningOutput(serializedBytes: compileWithSignature)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                  transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
             return result

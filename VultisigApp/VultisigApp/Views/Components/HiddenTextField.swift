@@ -11,14 +11,29 @@ struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
     var showHideOption: Bool = true
+    var errorMessage: String = ""
     
     @State var isPasswordVisible: Bool = false
     
     var body: some View {
-        field
-            .onAppear {
-                setData()
+        VStack {
+            field
+            
+            if !errorMessage.isEmpty {
+                error
             }
+        }
+        .animation(.easeInOut, value: errorMessage)
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var error: some View {
+        Text(NSLocalizedString(errorMessage, comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertRed)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var field: some View {
@@ -29,10 +44,14 @@ struct HiddenTextField: View {
                 button
             }
         }
-        .frame(height: 44)
+        .frame(height: 56)
         .padding(.horizontal, 16)
         .background(Color.blue600)
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(errorMessage.isEmpty ? Color.blue200 : Color.alertRed, lineWidth: 1)
+        )
     }
     
     var textfield: some View {
@@ -41,7 +60,6 @@ struct HiddenTextField: View {
                 HStack {
                     Text(NSLocalizedString(placeholder, comment: ""))
                         .foregroundColor(Color.neutral500)
-                        .font(.body12Menlo)
                     Spacer()
                 }
             }
@@ -56,7 +74,7 @@ struct HiddenTextField: View {
         }
         .submitLabel(.done)
         .colorScheme(.dark)
-        .font(.body16Menlo)
+        .font(.body16BrockmannMedium)
         .foregroundColor(.neutral0)
     }
     

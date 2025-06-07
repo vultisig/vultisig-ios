@@ -1,0 +1,126 @@
+//
+//  FunctionCallUnbond.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza Soares on 17/05/24.
+//
+
+import SwiftUI
+import Foundation
+import Combine
+
+class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
+    @Published var isTheFormValid: Bool = false
+    
+    @Published var nodeAddress: String = ""
+    @Published var amount: Decimal = 0.0
+    @Published var provider: String = ""
+    
+    // Internal
+    @Published var nodeAddressValid: Bool = false
+    @Published var amountValid: Bool = true // if ZERO it will unbond all.
+    @Published var providerValid: Bool = true
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    var addressFields: [String: String] {
+        get {
+            var fields = ["nodeAddress": nodeAddress]
+            if !provider.isEmpty {
+                fields["provider"] = provider
+            }
+            return fields
+        }
+        set {
+            if let value = newValue["nodeAddress"] {
+                nodeAddress = value
+            }
+            if let value = newValue["provider"] {
+                provider = value
+            }
+        }
+    }
+    
+    required init() {
+        setupValidation()
+    }
+    
+    init(nodeAddress: String, amount: Decimal = 0.0, provider: String = "") {
+        self.nodeAddress = nodeAddress
+        self.amount = amount
+        self.provider = provider
+        setupValidation()
+    }
+    
+    private func setupValidation() {
+        Publishers.CombineLatest3($nodeAddressValid, $amountValid, $providerValid)
+            .map { $0 && $1 && $2 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    var description: String {
+        return toString()
+    }
+    
+    var amountInUnits: String {
+        let amountInSats = self.amount * pow(10, 8)
+        return amountInSats.description
+    }
+    
+    func toString() -> String {
+        var memo = "UNBOND:\(self.nodeAddress):\(amountInUnits)"
+        if !self.provider.isEmpty {
+            memo += ":\(self.provider)"
+        }
+        return memo
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("nodeAddress", self.nodeAddress)
+        dict.set("Unbond amount", "\(self.amount)")
+        dict.set("provider", self.provider)
+        dict.set("memo", self.toString())
+        return dict
+    }
+    
+    func getView() -> AnyView {
+        AnyView(VStack {
+
+            FunctionCallAddressTextField(
+                memo: self,
+                addressKey: "nodeAddress",
+                isAddressValid: Binding(
+                    get: { self.nodeAddressValid },
+                    set: { self.nodeAddressValid = $0 }
+                )
+            )
+
+            StyledFloatingPointField(
+                placeholder: Binding(
+                    get: { "Amount" },
+                    set: { _ in }
+                ),
+                value: Binding(
+                    get: { self.amount },
+                    set: { self.amount = $0 }
+                ),
+                isValid: Binding(
+                    get: { true },
+                    set: { _ in }
+                )
+            )
+
+            FunctionCallAddressTextField(
+                memo: self,
+                addressKey: "provider",
+                isOptional: true,
+                isAddressValid: Binding(
+                    get: { self.providerValid },
+                    set: { self.providerValid = $0 }
+                )
+            )
+        })
+    }
+}

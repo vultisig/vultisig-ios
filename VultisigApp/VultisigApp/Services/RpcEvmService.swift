@@ -13,8 +13,6 @@ enum RpcEvmServiceError: Error {
 }
 
 class RpcEvmService: RpcService {
-    
-    private let oneInchService = OneInchService.shared
 
     func getBalance(coin: Coin) async throws -> String {
         if coin.isNativeToken {
@@ -156,6 +154,34 @@ class RpcEvmService: RpcService {
         return try await intRpcCall(method: "eth_call", params: params)
     }
     
+    func fetchTRC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
+        
+        // Add "41" prefix after padding with zeros
+        let paddedWalletAddress = "0000000000000000000000" + walletAddress.dropFirst(2)
+        
+        // Prepare the data field using the function signature of `balanceOf(address)`
+        let data = "0x70a08231" + paddedWalletAddress
+        
+        // Build the params for the RPC call
+        let fromAddress = "0x" + walletAddress.dropFirst(4) // Keep "0x", remove "41"
+        let toAddress = "0x" + contractAddress.dropFirst(4) // Keep "0x", remove "41"
+        
+        let params: [Any] = [
+            [
+                "from": fromAddress,
+                "to": toAddress,
+                "gas": "0x0",
+                "gasPrice": "0x0",
+                "value": "0x0",
+                "data": data
+            ],
+            "latest"
+        ]
+        
+        // Call the RPC method
+        return try await intRpcCall(method: "eth_call", params: params)
+    }
+    
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
@@ -282,20 +308,71 @@ class RpcEvmService: RpcService {
     
     func getTokens(nativeToken: Coin) async -> [CoinMeta] {
         do {
-            guard let oneInchChainId = nativeToken.chain.chainID else {
-                return []
+            // First RPC call to get token balances
+            let tokenBalances: [[String: Any]] = try await sendRPCRequest(
+                method: "alchemy_getTokenBalances",
+                params: [nativeToken.address]
+            ) { result in
+                guard
+                    let response = result as? [String: Any],
+                    let tokenBalances = response["tokenBalances"] as? [[String: Any]]
+                else {
+                    return []
+                }
+                
+                return tokenBalances
             }
-
-            let oneInchTokens = try await oneInchService.fetchNonZeroBalanceTokens(
-                chainId: oneInchChainId,
-                walletAddress: nativeToken.address
-            )
-
-            return oneInchTokens.map { $0.toCoinMeta(chain: nativeToken.chain) }
+            
+            // Now we have our token balances array synchronously.
+            var tokenMetadata: [CoinMeta] = []
+            
+            // For each token, we need to fetch metadata
+            for tokenBalance in tokenBalances {
+                guard
+                    let contractAddress = tokenBalance["contractAddress"] as? String
+                else {
+                    // Skip invalid entries if needed
+                    continue
+                }
+                
+                // Fetch metadata for each token
+                let meta: CoinMeta? = try await sendRPCRequest(
+                    method: "alchemy_getTokenMetadata",
+                    params: [contractAddress]
+                ) { result in
+                    guard
+                        let response = result as? [String: Any],
+                        let symbol = response["symbol"] as? String,
+                        let decimalsString = response["decimals"] as? Int64,
+                        let logo = response["logo"] as? String?
+                    else {
+                        return nil
+                    }
+                    
+                    return CoinMeta(
+                        chain: nativeToken.chain,
+                        ticker: symbol,
+                        logo: logo ?? "",
+                        decimals: Int(decimalsString),
+                        priceProviderId: "",
+                        contractAddress: contractAddress,
+                        isNativeToken: false
+                    )
+                }
+                
+                if let coinMeta = meta {
+                    tokenMetadata.append(coinMeta)
+                }
+                
+            }
+            
+            return tokenMetadata
+            
         } catch {
             print("Error fetching tokens: \(error)")
             return []
         }
     }
+
     
 }

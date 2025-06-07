@@ -26,7 +26,7 @@ extension JoinKeysignView {
     }
     
     var headerMac: some View {
-        JoinKeygenHeader(title: "joinKeySign")
+        JoinKeygenHeader(title: globalStateViewModel.showKeysignDoneView ? "transactionComplete" : "joinKeySign", hideBackButton: globalStateViewModel.showKeysignDoneView)
     }
 }
 #endif

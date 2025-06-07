@@ -15,49 +15,82 @@ struct LiFiService {
     private let integratorName: String = "vultisig-iOS"
     private let integratorFee: String = "0.005"
 
-    func fetchQuotes(fromCoin: Coin, toCoin: Coin, fromAmount: BigInt) async throws -> OneInchQuote {
+    func fetchQuotes(
+        fromCoin: Coin,
+        toCoin: Coin,
+        fromAmount: BigInt
+    ) async throws -> (quote: OneInchQuote, fee: BigInt?) {
+
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
         }
         let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
         let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
+        let integrator = fromCoin.isLifiFeesSupported ? integratorName : nil
+        let fee = fromCoin.isLifiFeesSupported ? integratorFee : nil
 
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),
             fromToken: fromToken,
+            toAddress: toCoin.address,
             toToken: toToken,
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address,
-            integrator: integratorName,
-            fee: integratorFee
+            integrator: integrator,
+            fee: fee
         )
 
         let (data, _) = try await URLSession.shared.data(from: endpoint)
-        let response = try JSONDecoder().decode(QuoteResponse.self, from: data)
+        let response: LifiQuoteResponse
 
-        guard 
-            let value = BigInt(response.transactionRequest.value.stripHexPrefix(), radix: 16),
-            let gasPrice = BigInt(response.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
-            let gas = Int64(response.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
-            throw Errors.unexpectedError
+        do {
+            response = try JSONDecoder().decode(LifiQuoteResponse.self, from: data)
+        } catch {
+            let error = try JSONDecoder().decode(LiFiSwapError.self, from: data)
+            throw error
         }
 
-        let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
+        switch response {
+        case .evm(let quote):
+            guard
+                let value = BigInt(quote.transactionRequest.value.stripHexPrefix(), radix: 16),
+                let gasPrice = BigInt(quote.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
+                let gas = Int64(quote.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
+                throw Errors.unexpectedError
+            }
 
-        let quote = OneInchQuote(
-            dstAmount: response.estimate.toAmount,
-            tx: OneInchQuote.Transaction(
-                from: response.transactionRequest.from,
-                to: response.transactionRequest.to,
-                data: response.transactionRequest.data,
-                value: String(value),
-                gasPrice: String(gasPrice),
-                gas: normalizedGas
+            let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
+
+            let quote = OneInchQuote(
+                dstAmount: quote.estimate.toAmount,
+                tx: OneInchQuote.Transaction(
+                    from: quote.transactionRequest.from,
+                    to: quote.transactionRequest.to,
+                    data: quote.transactionRequest.data,
+                    value: String(value),
+                    gasPrice: String(gasPrice),
+                    gas: normalizedGas
+                )
             )
-        )
 
-        return quote
+            return (quote, response.fee)
+
+        case .solana(let quote):
+            let quote = OneInchQuote(
+                dstAmount: quote.estimate.toAmount,
+                tx: OneInchQuote.Transaction(
+                    from: .empty,
+                    to: .empty,
+                    data: quote.transactionRequest.data,
+                    value: .empty,
+                    gasPrice: .empty,
+                    gas: 0
+                )
+            )
+
+            return (quote, response.fee)
+        }
     }
 }
 
@@ -65,24 +98,5 @@ private extension LiFiService {
 
     enum Errors: Error {
         case unexpectedError
-    }
-
-    struct QuoteResponse: Codable {
-        struct Estimate: Codable {
-            let toAmount: String
-            let toAmountMin: String
-            let executionDuration: Decimal
-        }
-        struct TransactionRequest: Codable {
-            let data: String
-            let to: String
-            let value: String
-            let from: String
-            let chainId: Int
-            let gasLimit: String
-            let gasPrice: String
-        }
-        let estimate: Estimate
-        let transactionRequest: TransactionRequest
     }
 }

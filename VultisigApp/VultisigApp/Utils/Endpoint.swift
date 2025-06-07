@@ -31,16 +31,9 @@ class Endpoint {
     
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
+    static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
     
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
-    
-    static func fetchBlowfishTransactions(chain: String, network: String) -> String {
-        "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
-    }
-    
-    static func fetchBlowfishSolanaTransactions() -> String {
-        "\(vultisigApiProxy)/blowfish/solana/v0/mainnet/scan/transactions?language=en"
-    }
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
@@ -48,6 +41,8 @@ class Endpoint {
     
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
     static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
+    
+    static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
     
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
@@ -57,6 +52,23 @@ class Endpoint {
     }
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    
+    // Fetch pool info for any THORChain asset
+    static func fetchPoolInfo(asset: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+    }
+    
+    static func fetchTcyStakedAmount(address: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
+    }
+    
+    static func fetchRuneBondedAmount(address: String) -> String {
+        return "https://midgard.ninerealms.com/v2/bonds/\(address)"
+    }
+    
+    static func fetchThorchainMergedAssets() -> String {
+        "https://api.rujira.network/api/graphiql"
     }
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
@@ -78,8 +90,14 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
     
-    static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String, fee: String) -> URL {
-        return "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&integrator=\(integrator)&fee=\(fee)".asUrl
+    static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
+        let url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
+        
+        if let integrator, let fee {
+            return (url + "&integrator=\(integrator)&fee=\(fee)").asUrl
+        }
+        
+        return url.asUrl
     }
     
     static func fetchTokens(chain: Int) -> String {
@@ -99,29 +117,29 @@ class Endpoint {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
     
-    static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
+    static let avalancheServiceRpcService = "https://api.vultisig.com/avax/"
     
-    static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
+    static let bscServiceRpcService = "https://api.vultisig.com/bsc/"
     
     static let baseServiceRpcService = "https://api.vultisig.com/base/"
     
-    static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
+    static let arbitrumOneServiceRpcService = "https://api.vultisig.com/arb/"
     
-    static let polygonServiceRpcService = "https://polygon-bor-rpc.publicnode.com"
+    static let polygonServiceRpcService = "https://api.vultisig.com/polygon/"
     
-    static let optimismServiceRpcService = "https://optimism-rpc.publicnode.com"
+    static let optimismServiceRpcService = "https://api.vultisig.com/opt/"
     
     static let cronosServiceRpcService = "https://cronos-evm-rpc.publicnode.com"
     
-    static let blastServiceRpcService = "https://rpc.ankr.com/blast"
+    static let blastServiceRpcService = "https://api.vultisig.com/blast/"
     
-    static let zksyncServiceRpcService = "https://mainnet.era.zksync.io"
+    static let zksyncServiceRpcService = "https://api.vultisig.com/zksync/"
     
-    static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
+    static let ethServiceRpcService = "https://api.vultisig.com/eth/"
     
-    static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
+    static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
     
-    static let solanaServiceRpc2 = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
@@ -132,6 +150,16 @@ class Endpoint {
     static func solanaTokenInfoList() -> String {
         "https://tokens.jup.ag/tokens?tags=verified"
     }
+    
+    static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
+        "https://quote-api.jup.ag/v6/quote?inputMint=\(inputMint)&outputMint=\(outputMint)&amount=\(amount)&slippageBps=\(slippageBps)"
+    }
+    
+    static func suiTokenQuote() -> String {
+        "https://api-sui.cetus.zone/v2/sui/swap/count"
+    }
+    
+    static let rippleServiceRpc = "https://xrplcluster.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
@@ -148,7 +176,7 @@ class Endpoint {
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
-
+    
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }
@@ -175,7 +203,7 @@ class Endpoint {
     
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
+        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
     }
     
     static func ethereumLabelTxHash(_ value: String) -> String {
@@ -227,6 +255,27 @@ class Endpoint {
     
     static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchOsmosisWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://osmosis-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchOsmosisIbcDenomTraces(hash: String) -> String{
+        "https://osmosis-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
+    static func fetchOsmosisLatestBlock() -> String{
+        "https://osmosis-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
+    
+    static func fetchAkashAccountBalance(address: String) -> String{
+        "https://akash-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchAkashAccountNumber(_ address: String) -> String {
+        "https://akash-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchNobleAccountBalance(address: String) -> String{
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -244,6 +293,18 @@ class Endpoint {
     }
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
+    static func fetchCosmosWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
+        "https://cosmos-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
+    }
+    
+    static func fetchCosmosIbcDenomTraces(hash: String) -> String{
+        "https://cosmos-rest.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
+    }
+    
+    static func fetchCosmosLatestBlock() -> String{
+        "https://cosmos-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
     
     
     static func fetchTerraAccountBalance(address: String) -> String{
@@ -323,147 +384,131 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
     }
     
-    static func getExplorerURL(chainTicker: String, txid: String) -> String {
-        switch chainTicker {
-        case "BTC":
-            return "https://mempool.space/tx/\(txid)"
-        case "BCH":
-            return "https://blockchair.com/bitcoin-cash/transaction/\(txid)"
-        case "LTC":
-            return "https://blockchair.com/litecoin/transaction/\(txid)"
-        case "DOGE":
-            return "https://blockchair.com/dogecoin/transaction/\(txid)"
-        case "DASH":
-            return "https://blockchair.com/dash/transaction/\(txid)"
-        case "ADA":
-            return "https://blockchair.com/cardano/transaction/\(txid)"
-        case "RUNE":
-            return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
-        case "SOL":
-            return "https://explorer.solana.com/tx/\(txid)"
-        case "ETH":
-            return "https://etherscan.io/tx/\(txid)"
-        case "UATOM":
-            return "https://www.mintscan.io/cosmos/tx/\(txid)"
-        case "ADYDX":
-            return "https://www.mintscan.io/dydx/tx/\(txid)"
-        case "UKUJI":
-            return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
-        case "AVAX":
-            return "https://snowtrace.io/tx/\(txid)"
-        case "BNB":
-            return "https://bscscan.com/tx/\(txid)"
-        case "CACAO":
-            return "https://www.mayascan.org/tx/\(txid)"
-        case "ARB":
-            return "https://arbiscan.io/tx/\(txid)"
-        case "BASE":
-            return "https://basescan.org/tx/\(txid)"
-        case "OP":
-            return "https://optimistic.etherscan.io/tx/\(txid)"
-        case "MATIC":
-            return "https://polygonscan.com/tx/\(txid)"
-        case "BLAST":
-            return "https://blastscan.io/tx/\(txid)"
-        case "CRO":
-            return "https://cronoscan.com/tx/\(txid)"
-        case "SUI":
-            return "https://suiscan.xyz/mainnet/tx/\(txid)"
-        case "DOT":
-            return "https://polkadot.subscan.io/extrinsic/\(txid)"
-        case "ZK":
-            return "https://explorer.zksync.io/tx/\(txid)"
-        case "TON":
-            return "https://tonviewer.com/transaction/\(txid)"
-        case "UOSMO":
-            return "https://www.mintscan.io/osmosis/tx/\(txid)"
-        case "ULUNA":
-            return "https://www.mintscan.io/terra/tx/\(txid)"
-        case "ULUNC":
-            return "https://finder.terra.money/classic/tx/\(txid)"
-        case "USDC":
-            return "https://www.mintscan.io/noble/tx/\(txid)"
-        default:
-            return ""
-        }
+    static func getLifiSwapTracker(txid: String) -> String {
+        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
     }
     
-    static func getExplorerByAddressURL(chainTicker:String, address:String) -> String? {
-        switch chainTicker {
-        case "BTC":
-            return "https://mempool.space/address/\(address)"
-        case "BCH":
-            return "https://blockchair.com/bitcoin-cash/address/\(address)"
-        case "LTC":
-            return "https://blockchair.com/litecoin/address/\(address)"
-        case "DOGE":
-            return "https://blockchair.com/dogecoin/address/\(address)"
-        case "DASH":
-            return "https://blockchair.com/dash/address/\(address)"
-        case "ADA":
-            return "https://blockchair.com/cardano/address/\(address)"
-        case "RUNE":
-            return "https://runescan.io/address/\(address)"
-        case "SOL":
-            return "https://explorer.solana.com/address/\(address)"
-        case "ETH":
-            return "https://etherscan.io/address/\(address)"
-        case "UATOM":
-            return "https://www.mintscan.io/cosmos/address/\(address)"
-        case "ADYDX":
-            return "https://www.mintscan.io/dydx/address/\(address)"
-        case "UKUJI":
-            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
-        case "AVAX":
-            return "https://snowtrace.io/address/\(address)"
-        case "BNB":
-            return "https://bscscan.com/address/\(address)"
-        case "CACAO":
-            return "https://www.mayascan.org/address/\(address)"
-        case "ARB":
-            return "https://arbiscan.io/address/\(address)"
-        case "BASE":
-            return "https://basescan.org/address/\(address)"
-        case "OP":
-            return "https://optimistic.etherscan.io/address/\(address)"
-        case "MATIC":
-            return "https://polygonscan.com/address/\(address)"
-        case "BLAST":
-            return "https://blastscan.io/address/\(address)"
-        case "CRO":
-            return "https://cronoscan.com/address/\(address)"
-        case "SUI":
-            return "https://suiscan.xyz/mainnet/address/\(address)"
-        case "DOT":
-            return "https://polkadot.subscan.io/account/\(address)"
-        case "ZK":
-            return "https://explorer.zksync.io/address/\(address)"
-        case "TON":
-            return "https://tonviewer.com/\(address)"
-        case "UOSMO":
-            return "https://www.mintscan.io/osmosis/address/\(address)"
-        case "ULUNA":
-            return "https://www.mintscan.io/terra/address/\(address)"
-        case "ULUNC":
-            return "https://finder.terra.money/classic/address/\(address)"
-        case "USDC":
-            return "https://www.mintscan.io/noble/address/\(address)"
-        default:
-            return nil
-        }
+    static let tronServiceRpc = "https://tron-rpc.publicnode.com"
+    
+    static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
+    
+    static let fetchBlockNowInfoTron = "https://tron-rpc.publicnode.com/wallet/getnowblock"
+    
+    static func fetchAccountInfoTron() -> String {
+        "https://tron-rpc.publicnode.com/wallet/getaccount"
     }
     
-    static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
+    static func triggerConstantContractTron() -> String {
+        "https://api.trongrid.io/wallet/triggerconstantcontract"
+    }
+    
+    static func triggerSolidityConstantContractTron() -> String {
+        "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
+    }
+    static func moonPaySignatureUrl() -> URL {
+      return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
+    }
+    
+    static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    
+    static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
+        case .bitcoin:
+            return "https://mempool.space/tx/\(txid)"
+        case .bitcoinCash:
+            return "https://blockchair.com/bitcoin-cash/transaction/\(txid)"
+        case .litecoin:
+            return "https://blockchair.com/litecoin/transaction/\(txid)"
+        case .dogecoin:
+            return "https://blockchair.com/dogecoin/transaction/\(txid)"
+        case .dash:
+            return "https://blockchair.com/dash/transaction/\(txid)"
+        case .zcash:
+            return "https://blockchair.com/zcash/transaction/\(txid)"
         case .thorChain:
-            return "https://thorchain.net/address/\(address)"
+            return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case .solana:
-            return "https://explorer.solana.com/address/\(address)"
+            return "https://solscan.io/tx/\(txid)"
+        case .ethereum:
+            return "https://etherscan.io/tx/\(txid)"
+        case .gaiaChain:
+            return "https://www.mintscan.io/cosmos/tx/\(txid)"
+        case .dydx:
+            return "https://www.mintscan.io/dydx/tx/\(txid)"
+        case .kujira:
+            return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
+        case .avalanche:
+            return "https://snowtrace.io/tx/\(txid)"
+        case .bscChain:
+            return "https://bscscan.com/tx/\(txid)"
+        case .mayaChain:
+            return "https://www.mayascan.org/tx/\(txid)"
+        case .arbitrum:
+            return "https://arbiscan.io/tx/\(txid)"
+        case .base:
+            return "https://basescan.org/tx/\(txid)"
+        case .optimism:
+            return "https://optimistic.etherscan.io/tx/\(txid)"
+        case .polygon,.polygonV2:
+            return "https://polygonscan.com/tx/\(txid)"
+        case .blast:
+            return "https://blastscan.io/tx/\(txid)"
+        case .cronosChain:
+            return "https://cronoscan.com/tx/\(txid)"
+        case .sui:
+            return "https://suiscan.xyz/mainnet/tx/\(txid)"
+        case .polkadot:
+            return "https://polkadot.subscan.io/extrinsic/\(txid)"
+        case .zksync:
+            return "https://explorer.zksync.io/tx/\(txid)"
+        case .ton:
+            return "https://tonviewer.com/transaction/\(txid)"
+        case .osmosis:
+            return "https://www.mintscan.io/osmosis/tx/\(txid)"
+        case .terra:
+            return "https://www.mintscan.io/terra/tx/\(txid)"
+        case .terraClassic:
+            return "https://finder.terra.money/classic/tx/\(txid)"
+        case .noble:
+            return "https://www.mintscan.io/noble/tx/\(txid)"
+        case .ripple:
+            return "https://xrpscan.com/tx/\(txid)"
+        case .akash:
+            return "https://www.mintscan.io/akash/tx/\(txid)"
+        case .tron:
+            return "https://tronscan.org/#/transaction/\(txid)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/tx/\(txid)"
+        case .cardano:
+            return "https://cardanoscan.io/transaction/\(txid)"
+        }
+    }
+    
+    static func getExplorerByAddressURL(chain: Chain, address:String) -> String? {
+        switch chain {
+        case .bitcoin:
+            return "https://mempool.space/address/\(address)"
+        case .bitcoinCash:
+            return "https://blockchair.com/bitcoin-cash/address/\(address)"
+        case .litecoin:
+            return "https://blockchair.com/litecoin/address/\(address)"
+        case .dogecoin:
+            return "https://blockchair.com/dogecoin/address/\(address)"
+        case .dash:
+            return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
+        case .thorChain:
+            return "https://runescan.io/address/\(address)"
+        case .solana:
+            return "https://solscan.io/account/\(address)"
         case .ethereum:
             return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .dydx:
@@ -474,27 +519,15 @@ class Endpoint {
             return "https://snowtrace.io/address/\(address)"
         case .bscChain:
             return "https://bscscan.com/address/\(address)"
-        case .bitcoin:
-            return "https://mempool.space/address/\(address)"
-        case .bitcoinCash:
-            return "https://explorer.bitcoin.com/bch/address/\(address)"
-        case .litecoin:
-            return "https://blockchair.com/litecoin/address/\(address)"
-        case .dogecoin:
-            return "https://blockchair.com/dogecoin/address/\(address)"
-        case .dash:
-            return "https://blockchair.com/dash/address/\(address)"
-        case .cardano:
-            return "https://blockchair.com/cardano/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
         case .arbitrum:
             return "https://arbiscan.io/address/\(address)"
         case .base:
-            return "https://basescan.org/address/\(address)" // Hypothetical URL
+            return "https://basescan.org/address/\(address)"
         case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon:
+        case .polygon,.polygonV2:
             return "https://polygonscan.com/address/\(address)"
         case .blast:
             return "https://blastscan.io/address/\(address)"
@@ -516,6 +549,88 @@ class Endpoint {
             return "https://finder.terra.money/classic/address/\(address)"
         case .noble:
             return "https://www.mintscan.io/noble/address/\(address)"
+        case .ripple:
+            return "https://xrpscan.com/account/\(address)"
+        case .akash:
+            return "https://www.mintscan.io/akash/address/\(address)"
+        case .tron:
+            return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
+        
+        }
+    }
+    
+    static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
+        switch chain {
+        case .thorChain:
+            return "https://thorchain.net/address/\(address)"
+        case .solana:
+            return "https://solscan.io/account/\(address)"
+        case .ethereum:
+            return "https://etherscan.io/address/\(address)"
+        case .ethereumSepolia:
+            return "https://sepolia.etherscan.io/address/\(address)"
+        case .gaiaChain:
+            return "https://www.mintscan.io/cosmos/address/\(address)"
+        case .dydx:
+            return "https://www.mintscan.io/dydx/address/\(address)"
+        case .kujira:
+            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
+        case .avalanche:
+            return "https://snowtrace.io/address/\(address)"
+        case .bscChain:
+            return "https://bscscan.com/address/\(address)"
+        case .bitcoin:
+            return "https://mempool.space/address/\(address)"
+        case .bitcoinCash:
+            return "https://explorer.bitcoin.com/bch/address/\(address)"
+        case .litecoin:
+            return "https://blockchair.com/litecoin/address/\(address)"
+        case .dogecoin:
+            return "https://blockchair.com/dogecoin/address/\(address)"
+        case .dash:
+            return "https://blockchair.com/dash/address/\(address)"
+        case .zcash:
+            return "https://blockchair.com/zcash/address/\(address)"
+        case .mayaChain:
+            return "https://www.mayascan.org/address/\(address)"
+        case .arbitrum:
+            return "https://arbiscan.io/address/\(address)"
+        case .base:
+            return "https://basescan.org/address/\(address)" // Hypothetical URL
+        case .optimism:
+            return "https://optimistic.etherscan.io/address/\(address)"
+        case .polygon, .polygonV2:
+            return "https://polygonscan.com/address/\(address)"
+        case .blast:
+            return "https://blastscan.io/address/\(address)"
+        case .cronosChain:
+            return "https://cronoscan.com/address/\(address)"
+        case .sui:
+            return "https://suiscan.xyz/mainnet/address/\(address)"
+        case .polkadot:
+            return "https://polkadot.subscan.io/account/\(address)"
+        case .zksync:
+            return "https://explorer.zksync.io/address/\(address)"
+        case .ton:
+            return "https://tonviewer.com/\(address)"
+        case .osmosis:
+            return "https://www.mintscan.io/osmosis/address/\(address)"
+        case .terra:
+            return "https://www.mintscan.io/terra/address/\(address)"
+        case .terraClassic:
+            return "https://finder.terra.money/classic/address/\(address)"
+        case .noble:
+            return "https://www.mintscan.io/noble/address/\(address)"
+        case .ripple:
+            return "https://xrpscan.com/account/\(address)"
+        case .akash:
+            return "https://www.mintscan.io/akash/address/\(address)"
+        case .tron:
+            return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
         case .none:
             return nil
         }

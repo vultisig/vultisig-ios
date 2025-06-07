@@ -12,13 +12,16 @@ import BigInt
 
 enum TonHelper {
     
+    // The official Telegram Wallet chages a transaction fee of 0.05 TON. So we do it as well.
+    static let defaultFee: BigInt = BigInt(0.05 * pow(10, 9))
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
         guard keysignPayload.coin.chain.ticker == "TON" else {
             throw HelperError.runtimeError("coin is not TON")
         }
         
-        guard case .Ton(let sequenceNumber, let expireAt, _) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, _, let sendMaxAmount) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
@@ -30,10 +33,15 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
+        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+        if sendMaxAmount {
+            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue)
+        }
+        
         let transfer = TheOpenNetworkTransfer.with {
             $0.dest = toAddress.description
             $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
-            $0.mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+            $0.mode = sendMode
             
             if let memo = keysignPayload.memo  {
                 $0.comment = memo
@@ -60,7 +68,7 @@ enum TonHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
@@ -81,7 +89,7 @@ enum TonHelper {
         
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -97,7 +105,7 @@ enum TonHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         
-        let output = try TheOpenNetworkSigningOutput(serializedData: compileWithSignature)
+        let output = try TheOpenNetworkSigningOutput(serializedBytes: compileWithSignature)
         
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: output.hash.hexString)

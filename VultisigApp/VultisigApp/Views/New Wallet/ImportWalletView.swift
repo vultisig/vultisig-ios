@@ -18,6 +18,10 @@ struct ImportWalletView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     
+    var isButtonEnabled: Bool {
+        backupViewModel.isFileUploaded && !backupViewModel.showAlert
+    }
+    
     var body: some View {
         content
             .fileImporter(
@@ -44,34 +48,31 @@ struct ImportWalletView: View {
     
     var view: some View {
         VStack(spacing: 15) {
-            instruction
+            Spacer()
             uploadSection
-            
-            if let filename = backupViewModel.importedFileName, backupViewModel.isFileUploaded {
-                fileCell(filename)
-            }
-            
+            instruction
             Spacer()
             continueButton
         }
         .padding(.top, 30)
         .padding(.horizontal, 30)
-        .alert(isPresented: $backupViewModel.showAlert) {
-            alert
-        }
     }
     
     var instruction: some View {
-        Text(NSLocalizedString("enterPreviousVault", comment: "Import Vault instruction"))
+        Text(NSLocalizedString("supportedFileTypesUpload", comment: ""))
             .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .foregroundColor(.extraLightGray)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var uploadSection: some View {
         Button {
             backupViewModel.showVaultImporter.toggle()
         } label: {
-            ImportWalletUploadSection(viewModel: backupViewModel, isUploading: isUploading)
+            ImportWalletUploadSection(
+                viewModel: backupViewModel,
+                isUploading: isUploading
+            )
         }
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
@@ -79,32 +80,18 @@ struct ImportWalletView: View {
     
     var continueButton: some View {
         Button {
-            backupViewModel.restoreVault(
-                modelContext: context,
-                vaults: vaults,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
+            handleButtonTap()
         } label: {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: "continue",
+                textColor: isButtonEnabled ? .backgroundBlue : .disabledText,
+                background: isButtonEnabled ? .turquoise600 : .disabledButtonBackground)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
         .disabled(!backupViewModel.isFileUploaded)
-        .grayscale(backupViewModel.isFileUploaded ? 0 : 1)
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
-            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
-    private func fileCell(_ name: String) -> some View {
-        ImportFileCell(name: name, resetData: resetData)
     }
     
     private func setData() {
@@ -121,6 +108,18 @@ struct ImportWalletView: View {
     
     private func resetData() {
         backupViewModel.resetData()
+    }
+    
+    private func handleButtonTap() {
+        backupViewModel.restoreVault(
+            modelContext: context,
+            vaults: vaults,
+            defaultChains: settingsDefaultChainViewModel.defaultChains
+        )
+        
+        if !backupViewModel.showAlert {
+            vultExtensionViewModel.showImportView = false
+        }
     }
 }
 

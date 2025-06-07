@@ -111,7 +111,6 @@ class SettingsOptionsStore {
         (question: "setupVaultFAQQuestion", answer: "setupVaultFAQAnswer"),
         (question: "supportedCryptoFAQQuestion", answer: "supportedCryptoFAQAnswer"),
         (question: "vaultSecurityFAQQuestion", answer: "vaultSecurityFAQAnswer"),
-        (question: "moneyFAQQuestion", answer: "moneyFAQAnswer"),
         (question: "assetRecoveryFAQQuestion", answer: "assetRecoveryFAQAnswer"),
         (question: "registerFAQQuestion", answer: "registerFAQAnswer")
     ]

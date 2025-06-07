@@ -13,10 +13,6 @@ extension CoinDetailView {
         ZStack {
             Background()
             main
-            
-            if isLoading {
-                loader
-            }
         }
     }
     
@@ -24,6 +20,13 @@ extension CoinDetailView {
         VStack {
             headerMac
             view
+        }
+        .onChange(of: isSendLinkActive) { oldValue, newValue in
+            if isSendLinkActive {
+                resetActive = false
+            } else {
+                resetActive = true
+            }
         }
     }
     

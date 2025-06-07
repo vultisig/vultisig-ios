@@ -13,35 +13,44 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
+    let customMessagePayload: CustomMessagePayload?
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
-    
+    let isInitiateDevice: Bool
     @StateObject var viewModel = KeysignViewModel()
     
     @State var showAlert = false
+    @State var showDoneText = false
+    @State var showError = false
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
     var body: some View {
         container
+            .sensoryFeedback(.success, trigger: showDoneText)
+            .sensoryFeedback(.error, trigger: showError)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: viewModel.status)
     }
     
     var content: some View {
         ZStack {
             switch viewModel.status {
             case .CreatingInstance:
-                SendCryptoKeysignView(title: "creatingTssInstance")
+                SendCryptoKeysignView()
             case .KeysignECDSA:
-                SendCryptoKeysignView(title: "signingWithECDSA")
+                SendCryptoKeysignView()
             case .KeysignEdDSA:
-                SendCryptoKeysignView(title: "signingWithEdDSA")
+                SendCryptoKeysignView()
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
-                SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+                sendCryptoKeysignView
             case .KeysignVaultMismatch:
-                KeysignVaultMismatchErrorView()
+                keysignVaultMismatchErrorView
             }
             
-            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
+            PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
         .task {
             await setData()
@@ -54,11 +63,14 @@ struct KeysignView: View {
     
     var keysignFinished: some View {
         ZStack {
-            if transferViewModel != nil {
+            if transferViewModel != nil, keysignPayload != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
             }
+        }
+        .onAppear {
+            showDoneText = true
         }
     }
     
@@ -68,14 +80,34 @@ struct KeysignView: View {
     
     var forJoinKeysign: some View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
+            .onAppear {
+                globalStateViewModel.showKeysignDoneView = true
+            }
+            .onDisappear {
+                globalStateViewModel.showKeysignDoneView = false
+            }
+    }
+    
+    var sendCryptoKeysignView: some View {
+        SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+            .onAppear {
+                showError = true
+            }
+    }
+    
+    var keysignVaultMismatchErrorView: some View {
+        KeysignVaultMismatchErrorView()
+            .onAppear {
+                showError = true
+            }
     }
     
     func setData() async {
-        guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+        if let keysignPayload, keysignPayload.vaultPubKeyECDSA != vault.pubKeyECDSA {
             viewModel.status = .KeysignVaultMismatch
             return
         }
-        
+
         await viewModel.setData(
             keysignCommittee: self.keysignCommittee,
             mediatorURL: self.mediatorURL,
@@ -84,7 +116,9 @@ struct KeysignView: View {
             messagesToSign: self.messsageToSign,
             vault: self.vault,
             keysignPayload: keysignPayload,
-            encryptionKeyHex: encryptionKeyHex
+            customMessagePayload: customMessagePayload,
+            encryptionKeyHex: encryptionKeyHex,
+            isInitiateDevice: self.isInitiateDevice
         )
     }
     
@@ -110,9 +144,13 @@ struct KeysignView: View {
             sessionID: "session",
             keysignType: .ECDSA,
             messsageToSign: ["message"],
-            keysignPayload: nil,
+            keysignPayload: nil, 
+            customMessagePayload: nil,
             transferViewModel: nil,
-            encryptionKeyHex: ""
+            encryptionKeyHex: "",
+            isInitiateDevice: false
         )
     }
+    .environmentObject(HomeViewModel())
+    .environmentObject(GlobalStateViewModel())
 }

@@ -21,32 +21,6 @@ class TerraHelper {
     
     static let GasLimit:UInt64 = 300000
     
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        
-        guard case .Cosmos(let accountNumber, let sequence,let gas, _, let ibc) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get account number and sequence")
-        }
-        
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("invalid hex public key")
-        }
-        
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = TerraHelper.GasLimit
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = self.denom
-                $0.amount = String(gas)
-            }]
-        }
-        return try input.serializedData()
-    }
-    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
         guard case .Cosmos(let accountNumber, let sequence , let gas, _, _) = keysignPayload.chainSpecific else {
@@ -191,7 +165,7 @@ class TerraHelper {
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -222,7 +196,7 @@ class TerraHelper {
         
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -237,7 +211,7 @@ class TerraHelper {
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
-            let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+            let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
             let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
             let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())

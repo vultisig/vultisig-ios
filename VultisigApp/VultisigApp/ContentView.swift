@@ -14,7 +14,6 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var appViewModel: ApplicationState
 
     var body: some View {
         ZStack {
@@ -45,8 +44,6 @@ struct ContentView: View {
                 splashView
             } else if accountViewModel.showCover {
                 coverView
-            } else if accountViewModel.showOnboarding {
-                onboardingView
             } else if vaults.count>0 {
                 homeView
             } else {
@@ -71,16 +68,12 @@ struct ContentView: View {
         CoverView()
     }
     
-    var onboardingView: some View {
-        OnboardingView()
-    }
-    
     var homeView: some View {
         HomeView()
     }
     
     var createVaultView: some View {
-        CreateVaultView()
+        CreateVaultView(selectedVault: nil, showBackButton: false)
     }
     
     private func setData() {

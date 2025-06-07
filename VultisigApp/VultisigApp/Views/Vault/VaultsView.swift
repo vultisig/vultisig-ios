@@ -43,6 +43,9 @@ struct VaultsView: View {
             .onDisappear {
                 isEditingVaults = false
             }
+            .onChange(of: folders.count) { oldValue, newValue in
+                setData()
+            }
         }
     }
     
@@ -141,7 +144,7 @@ struct VaultsView: View {
     
     var addVaultButton: some View {
         NavigationLink {
-            CreateVaultView(showBackButton: true)
+            CreateVaultView(selectedVault: nil, showBackButton: true)
         } label: {
             FilledButton(title: "addNewVault", icon: "plus")
         }

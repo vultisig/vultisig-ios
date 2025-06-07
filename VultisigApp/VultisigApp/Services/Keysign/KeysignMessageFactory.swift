@@ -28,11 +28,18 @@ struct KeysignMessageFactory {
             switch swapPayload {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
+                
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
-                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                switch payload.coin.chain {
+                case .solana:
+                    let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
+                    messages = try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload)
+                default:
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
+                }
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -43,13 +50,13 @@ struct KeysignMessageFactory {
         }
 
         switch payload.coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .cardano:
             let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
@@ -82,6 +89,12 @@ struct KeysignMessageFactory {
             return try DydxHelper().getPreSignedImageHash(keysignPayload: payload)
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .ripple:
+            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload, vault: vault)
+        case .akash:
+            return try AkashHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .tron:
+            return try TronHelper.getPreSignedImageHash(keysignPayload: payload)
         }
     }
 }

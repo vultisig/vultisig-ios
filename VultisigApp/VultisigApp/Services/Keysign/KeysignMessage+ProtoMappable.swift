@@ -19,6 +19,11 @@ extension KeysignMessage: ProtoMappable {
         } else {
             self.payload = nil
         }
+        if proto.hasCustomMessagePayload {
+            self.customMessagePayload = try CustomMessagePayload(proto: proto.customMessagePayload)
+        } else {
+            self.customMessagePayload = nil
+        }
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
         self.payloadID =  proto.payloadID
@@ -31,11 +36,29 @@ extension KeysignMessage: ProtoMappable {
             if let payload {
                 $0.keysignPayload = payload.mapToProtobuff()
             }
+            if let customMessagePayload {
+                $0.customMessagePayload = customMessagePayload.mapToProtobuff()
+            }
             if !payloadID.isEmpty {
                 $0.payloadID = payloadID
             }
             $0.encryptionKeyHex = encryptionKeyHex
             $0.useVultisigRelay = useVultisigRelay
+        }
+    }
+}
+
+extension CustomMessagePayload: ProtoMappable {
+    
+    init(proto: VSCustomMessagePayload) throws {
+        self.method = proto.method
+        self.message = proto.message
+    }
+    
+    func mapToProtobuff() -> VSCustomMessagePayload {
+        return VSCustomMessagePayload.with {
+            $0.method = method
+            $0.message = message
         }
     }
 }
@@ -57,6 +80,7 @@ extension KeysignPayload: ProtoMappable {
         self.vaultLocalPartyID = proto.vaultLocalPartyID
         self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0) }
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
+        self.libType = proto.libType
     }
     
     func mapToProtobuff() -> VSKeysignPayload {
@@ -70,7 +94,7 @@ extension KeysignPayload: ProtoMappable {
             $0.vaultPublicKeyEcdsa = vaultPubKeyECDSA
             $0.vaultLocalPartyID = vaultLocalPartyID
             $0.swapPayload = swapPayload?.mapToProtobuff()
-            
+            $0.libType = libType
             if let approvePayload {
                 $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
             }
@@ -243,7 +267,8 @@ extension BlockChainSpecific {
                 recentBlockHash: value.recentBlockHash,
                 priorityFee: BigInt(stringLiteral: value.priorityFee),
                 fromAddressPubKey: value.fromTokenAssociatedAddress,
-                toAddressPubKey: value.toTokenAssociatedAddress
+                toAddressPubKey: value.toTokenAssociatedAddress,
+                hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
             self = .Polkadot(
@@ -260,7 +285,8 @@ extension BlockChainSpecific {
                     "objectID": coin.coinObjectID,
                     "version": coin.version,
                     "objectDigest": coin.digest,
-                    "balance": coin.balance
+                    "balance": coin.balance,
+                    "coinType": coin.coinType
                 ]
             }
             
@@ -270,9 +296,28 @@ extension BlockChainSpecific {
             )
         case .tonSpecific(let value):
             self = .Ton(
-                sequenceNumber: value.sequenceNumber, expireAt: value.expireAt, bounceable: value.bounceable
+                sequenceNumber: value.sequenceNumber, expireAt: value.expireAt, bounceable: value.bounceable, sendMaxAmount: value.sendMaxAmount
+            )
+        case .rippleSpecific(let value):
+            self = .Ripple(
+                sequence: value.sequence,
+                gas: value.gas,
+                lastLedgerSequence: value.lastLedgerSequence
+            )
+        case .tronSpecific(let value):
+            self = .Tron(
+                timestamp: value.timestamp,
+                expiration: value.expiration,
+                blockHeaderTimestamp: value.blockHeaderTimestamp,
+                blockHeaderNumber: value.blockHeaderNumber,
+                blockHeaderVersion: value.blockHeaderVersion,
+                blockHeaderTxTrieRoot: value.blockHeaderTxTrieRoot,
+                blockHeaderParentHash: value.blockHeaderParentHash,
+                blockHeaderWitnessAddress: value.blockHeaderWitnessAddress,
+                gasFeeEstimation: value.gasEstimation
             )
         }
+        
     }
     
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
@@ -314,12 +359,13 @@ extension BlockChainSpecific {
                     $0.latestBlock = ibc?.height ?? "0"
                 }
             })
-        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
+        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress, let tokenProgramId):
             return .solanaSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.priorityFee = String(priorityFee)
                 $0.fromTokenAssociatedAddress = fromTokenAssociatedAddress ?? .empty
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
+                $0.programID = tokenProgramId
             })
         case .Sui(let referenceGasPrice, let coins):
             // `coins` is of type `[[String: String]]`
@@ -329,6 +375,7 @@ extension BlockChainSpecific {
                 suiCoin.version = coinDict["version"] ?? ""
                 suiCoin.digest = coinDict["objectDigest"] ?? ""
                 suiCoin.balance = coinDict["balance"] ?? ""
+                suiCoin.coinType = coinDict["coinType"] ?? ""
                 return suiCoin
             }
             
@@ -337,11 +384,12 @@ extension BlockChainSpecific {
                 $0.coins = suiCoins
             })
             
-        case .Ton(let sequenceNumber, let expireAt, let bounceable):
+        case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount):
             return .tonSpecific(.with {
                 $0.sequenceNumber = sequenceNumber
                 $0.expireAt = expireAt
                 $0.bounceable = bounceable
+                $0.sendMaxAmount = sendMaxAmount
             })
             
             
@@ -353,6 +401,35 @@ extension BlockChainSpecific {
                 $0.specVersion = specVersion
                 $0.transactionVersion = transactionVersion
                 $0.genesisHash = genesisHash
+            })
+        case .Ripple(let sequence, let gas, let lastLedgerSequence):
+            return .rippleSpecific(.with {
+                $0.sequence = sequence
+                $0.gas = gas
+                $0.lastLedgerSequence = lastLedgerSequence
+            })
+            
+        case .Tron(
+            let timestamp,
+            let expiration,
+            let blockHeaderTimestamp,
+            let blockHeaderNumber,
+            let blockHeaderVersion,
+            let blockHeaderTxTrieRoot,
+            let blockHeaderParentHash,
+            let blockHeaderWitnessAddress,
+            let gasEstimation
+        ):
+            return .tronSpecific(.with {
+                $0.timestamp = timestamp
+                $0.expiration = expiration
+                $0.blockHeaderTimestamp = blockHeaderTimestamp
+                $0.blockHeaderNumber = blockHeaderNumber
+                $0.blockHeaderVersion = blockHeaderVersion
+                $0.blockHeaderParentHash = blockHeaderParentHash
+                $0.blockHeaderTxTrieRoot = blockHeaderTxTrieRoot
+                $0.blockHeaderWitnessAddress = blockHeaderWitnessAddress
+                $0.gasEstimation = gasEstimation
             })
         }
     }

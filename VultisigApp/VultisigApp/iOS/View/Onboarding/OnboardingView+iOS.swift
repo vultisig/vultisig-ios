@@ -9,35 +9,59 @@
 import SwiftUI
 
 extension OnboardingView {
-   
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var container: some View {
         content
             .toolbar(.hidden, for: .navigationBar)
     }
     
-    var tabs: some View {
+    var text: some View {
         TabView(selection: $tabIndex) {
-            OnboardingView1(tabIndex: .constant(1)).tag(0)
-            OnboardingView2(tabIndex: .constant(2)).tag(1)
-            OnboardingView3(tabIndex: .constant(3)).tag(2)
-            OnboardingView4(tabIndex: .constant(4)).tag(3)
+            ForEach(0..<totalTabCount, id: \.self) { index in
+                VStack {
+                    Spacer()
+                    OnboardingTextCard(
+                        index: index,
+                        textPrefix: "OnboardingCard"
+                    )
+                }
+            }
         }
-        .tabViewStyle(PageTabViewStyle())
-        .frame(maxHeight: .infinity)
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .frame(maxWidth: .infinity)
     }
     
-    var buttons: some View {
-        VStack(spacing: 15) {
-            nextButton
-            skipButton
-        }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 10)
+    var button: some View {
+        nextButton
+            .padding(.horizontal, 40)
+            .padding(.bottom, 10)
     }
     
-    func tabViewSetup() {
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise600)
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.turquoise600).withAlphaComponent(0.2)
+    var animation: some View {
+        animationVM?.view()
+            .scaleEffect(animationScale)
+            .padding(.bottom, idiom == .pad ? 100 : 0)
+            .onAppear {
+                getScale()
+            }
+            .onChange(of: orientation, { oldValue, newValue in
+                getScale()
+            })
+    }
+    
+    func getBottomPadding() -> CGFloat {
+        idiom == .phone ? 0 : 50
+    }
+    
+    private func getScale() {
+        let screenWidth = UIScreen.main.bounds.size.width
+        
+        if screenWidth>1050 && idiom == .pad {
+            animationScale = 0.8
+        } else {
+            animationScale = 1
+        }
     }
 }
 #endif

@@ -9,6 +9,17 @@
 import SwiftUI
 
 extension HomeView {
+    var container: some View {
+        ZStack {
+            content
+            
+            if isLoading {
+                Loader()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
     var content: some View {
         ZStack {
             Background()
@@ -61,6 +72,8 @@ extension HomeView {
                 editButton
             }
         }
+        .toolbarBackground(Color.backgroundBlue, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             setData()
         }
@@ -68,7 +81,7 @@ extension HomeView {
             checkUpdate()
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: viewModel.selectedVault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {

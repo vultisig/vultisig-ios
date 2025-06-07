@@ -12,10 +12,11 @@ struct SwapCryptoView: View {
     let toCoin: Coin?
     let vault: Vault
     
+    @State var keysignView: KeysignView?
+    
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    @State var keysignView: KeysignView?
     
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
@@ -25,6 +26,9 @@ struct SwapCryptoView: View {
     
     var body: some View {
         content
+            .onAppear {
+                swapViewModel.fetchFees(tx: tx, vault: vault)
+            }
     }
     
     var view: some View {
@@ -70,7 +74,8 @@ struct SwapCryptoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    transferViewModel: swapViewModel, 
+                    customMessagePayload: nil,
+                    transferViewModel: swapViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
@@ -125,7 +130,6 @@ struct SwapCryptoView: View {
             swapViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
-                .offset(x: -8)
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)

@@ -15,4 +15,5 @@ struct VaultCreateRequest : Hashable,Codable{
     let local_party_id: String
     let encryption_password: String
     let email: String
+    let lib_type:Int
 }

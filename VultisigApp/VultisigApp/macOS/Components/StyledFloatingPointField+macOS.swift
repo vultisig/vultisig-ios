@@ -9,8 +9,8 @@
 import SwiftUI
 
 extension StyledFloatingPointField {
-    var container: some View {
-        textField
-    }
+   var container: some View {
+       textField
+   }
 }
 #endif

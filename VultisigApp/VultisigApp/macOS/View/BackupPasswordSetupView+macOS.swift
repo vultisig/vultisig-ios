@@ -22,7 +22,10 @@ extension BackupPasswordSetupView {
             view
         }
         .navigationDestination(isPresented: $navigationLinkActive) {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            BackupVaultSuccessView(tssType: tssType, vault: vault)
+        }
+        .navigationDestination(isPresented: $homeLinkActive) {
+            HomeView(selectedVault: vault)
         }
     }
     
@@ -60,7 +63,6 @@ extension BackupPasswordSetupView {
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
                 backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
         }
@@ -70,7 +72,7 @@ extension BackupPasswordSetupView {
         Button(action: {
             showSkipShareSheet = true
         }) {
-            OutlineButton(title: "skip")
+            OutlineButton(title: "skipPassword")
         }
         .fileExporter(
             isPresented: $showSkipShareSheet,
@@ -86,7 +88,6 @@ extension BackupPasswordSetupView {
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
                 backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
         }

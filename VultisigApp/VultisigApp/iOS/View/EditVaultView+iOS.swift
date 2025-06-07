@@ -15,7 +15,7 @@ extension EditVaultView {
     
     var navigation: some View {
         base
-            .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
+            .navigationTitle(NSLocalizedString("vaultSettings", comment: "Edit Vault View title"))
             .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -26,10 +26,18 @@ extension EditVaultView {
                 vaultDetails
                 backupVault
                 editVault
+                
+                if vault.libType == nil || vault.libType == .GG20 {
+                    migrateVault
+                }
+                
                 reshareVault
+                
                 if vault.isFastVault {
                     biometrySelectionCell
                 }
+                
+                customMessage
                 deleteVault
             }
         }

@@ -13,6 +13,8 @@ class EvmServiceFactory {
         switch chain {
         case .ethereum:
             return EthService.shared
+        case .ethereumSepolia:
+            return EthSepoliaService.shared
         case .bscChain:
             return BSCService.shared
         case .avalanche:
@@ -21,7 +23,7 @@ class EvmServiceFactory {
             return BaseService.shared
         case .arbitrum:
             return ArbitrumService.shared
-        case .polygon:
+        case .polygon, .polygonV2:
             return PolygonService.shared
         case .optimism:
             return OptimismService.shared

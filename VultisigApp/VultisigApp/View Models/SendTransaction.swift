@@ -18,7 +18,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var customGasLimit: BigInt?
     @Published var customByteFee: BigInt?
     @Published var fee: BigInt = .zero
-    @Published var feeMode: FeeMode = .normal
+    @Published var feeMode: FeeMode = .default
     @Published var sendMaxAmount: Bool = false
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
@@ -26,21 +26,21 @@ class SendTransaction: ObservableObject, Hashable {
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
-
+    
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
     }
-
+    
     var byteFee: BigInt {
         return customByteFee ?? gas
     }
-
+    
     var isAmountExceeded: Bool {
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
-
+        
         let totalTransactionCost = amountInRaw + gas
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         return comparison
@@ -51,7 +51,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var canBeReaped: Bool {
-        if coin.ticker != Chain.polkadot.ticker {
+        
+        let tickers = [Chain.polkadot.ticker, Chain.ripple.ticker]
+        if !tickers.contains(coin.ticker) {
             return false
         }
         
@@ -59,7 +61,14 @@ class SendTransaction: ObservableObject, Hashable {
         let totalTransactionCost = amountInRaw + gas
         let remainingBalance = totalBalance - totalTransactionCost
         
-        return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+        switch coin.chainType {
+        case .Polkadot:
+            return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+        case .Ripple:
+            return remainingBalance < RippleHelper.defaultExistentialDeposit
+        default:
+            return false
+        }
     }
     
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
@@ -148,9 +157,9 @@ class SendTransaction: ObservableObject, Hashable {
         
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
-
+    
     init() { }
-
+    
     init(coin: Coin) {
         self.reset(coin: coin)
     }
@@ -182,14 +191,14 @@ class SendTransaction: ObservableObject, Hashable {
         self.estematedGasLimit = nil
         self.customGasLimit = nil
         self.customByteFee = nil
-        self.feeMode = .normal
+        self.feeMode = .default
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address
     }
     
     func parseCryptoURI(_ uri: String) {
-        guard let url = URLComponents(string: uri) else {
+        guard URLComponents(string: uri) != nil else {
             print("Invalid URI")
             return
         }

@@ -9,3 +9,12 @@ class EthService: RpcEvmService, EvmTokenServiceProtocol {
         return await super.getTokens(nativeToken: nativeToken)
     }
 }
+
+class EthSepoliaService: RpcEvmService, EvmTokenServiceProtocol {
+    static let ethRpcEndpoint = Endpoint.ethSepoliaServiceRpcService
+    static let shared = EthSepoliaService(ethRpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return [TokensStore.Token.ethSepolia]
+    }
+}

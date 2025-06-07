@@ -9,6 +9,16 @@
 import SwiftUI
 
 extension HomeView {
+    var container: some View {
+        ZStack {
+            content
+            
+            if isLoading {
+                Loader()
+            }
+        }
+    }
+    
     var content: some View {
         ZStack {
             Background()
@@ -18,7 +28,7 @@ extension HomeView {
             NSLocalizedString("newUpdateAvailable", comment: ""),
             isPresented: $macCheckUpdateViewModel.showUpdateAlert
         ) {
-            Link(destination: URL(string: Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase)!) {
+            Link(destination: URL(string: Endpoint.githubMacDownloadBase + macCheckUpdateViewModel.latestVersionBase + macCheckUpdateViewModel.latestPackageName)!) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
             
@@ -71,7 +81,7 @@ extension HomeView {
             checkUpdate()
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: Vault(name: "Main Vault"), selectedVault: viewModel.selectedVault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
@@ -87,8 +97,6 @@ extension HomeView {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-     
-        macCameraServiceViewModel.stopSession()
         
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)

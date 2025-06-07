@@ -6,18 +6,16 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct RenameVaultView: View {
     let vaults: [Vault]
+    let folders: [Folder]
     let vault: Vault
     
     @State var name = ""
     @Environment(\.dismiss) var dismiss
     @State var showAlert: Bool = false
     @State var errorMessage: String = ""
-    
-    @Query var folders: [Folder]
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -94,6 +92,6 @@ struct RenameVaultView: View {
 }
 
 #Preview {
-    RenameVaultView(vaults:[],vault: Vault.example)
+    RenameVaultView(vaults:[], folders: [], vault: Vault.example)
         .environmentObject(HomeViewModel())
 }

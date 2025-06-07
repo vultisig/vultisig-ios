@@ -13,32 +13,6 @@ import CryptoSwift
 enum MayaChainHelper {
     static let MayaChainGas: UInt64 = 2000000000
     
-    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
-        guard case .MayaChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
-        }
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
-        }
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        // THORChain fee is 0.02 RUNE
-        input.fee = CosmosFee.with {
-            $0.gas = MayaChainGas
-        }
-        // memo has been set
-        // deposit message has been set
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
-    }
-    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
@@ -113,7 +87,7 @@ enum MayaChainHelper {
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -144,7 +118,7 @@ enum MayaChainHelper {
         
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
@@ -159,7 +133,7 @@ enum MayaChainHelper {
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
-            let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+            let output = try CosmosSigningOutput(serializedBytes: compileWithSignature)
             let serializedData = output.serialized
             let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
             let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())

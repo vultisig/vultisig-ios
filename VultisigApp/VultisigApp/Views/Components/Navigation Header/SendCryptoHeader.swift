@@ -95,7 +95,7 @@ struct SendCryptoHeader: View {
             return
         }
         
-        sendCryptoViewModel.handleBackTap()
+        sendCryptoViewModel.handleBackTap(dismiss)
     }
     
     private func refreshData() {

@@ -27,25 +27,15 @@ struct ChainSelectionCell: View {
     
     var content: some View {
         ZStack {
-            if selectedTokensCount>1, isSelected {
-                disabledContent
-            } else {
-                enabledContent
-            }
+            
+            // This allow to remove the chains even with tokens
+            enabledContent
+            
         }
     }
     
     var enabledContent: some View {
         cell
-    }
-    
-    var disabledContent: some View {
-        Button {
-            showAlert = true
-        } label: {
-            cell
-                .disabled(true)
-        }
     }
     
     var cell: some View {
@@ -60,7 +50,7 @@ struct ChainSelectionCell: View {
         }
         
         if tokenSelectionViewModel.selection.contains(where: { cm in
-            cm.chain == nativeAsset.chain && cm.ticker == nativeAsset.ticker
+            cm.chain == nativeAsset.chain && cm.ticker.lowercased() == nativeAsset.ticker.lowercased()
         }) {
             isSelected = true
         } else {
@@ -74,7 +64,7 @@ struct ChainSelectionCell: View {
         selectedTokensCount = 0
         for asset in assets {
             if tokenSelectionViewModel.selection.contains(where: { cm in
-                cm.chain == asset.chain && cm.ticker == asset.ticker
+                cm.chain == asset.chain && cm.ticker.lowercased() == asset.ticker.lowercased()
             }) {
                 selectedTokensCount += 1
             }

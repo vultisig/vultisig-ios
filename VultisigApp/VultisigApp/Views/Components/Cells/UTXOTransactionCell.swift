@@ -32,7 +32,7 @@ struct UTXOTransactionCell: View {
     
     var transactionIDCell: some View {
         let id = transaction.txid
-        let url = Endpoint.getExplorerURL(chainTicker: tx.coin.ticker, txid: id)
+        let url = Endpoint.getExplorerURL(chain: tx.coin.chain, txid: id)
         let image = transaction.isSent ? "arrow.up.circle" : "arrow.down.circle"
         
         return TransactionCell(
@@ -55,7 +55,7 @@ struct UTXOTransactionCell: View {
             address = id
         }
         
-        let url = Endpoint.getExplorerByAddressURL(chainTicker: tx.coin.ticker, address: address) ?? ""
+        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
         
         return TransactionCell(
             title: "from",
@@ -76,7 +76,7 @@ struct UTXOTransactionCell: View {
             address = transaction.receivedFrom.first ?? ""
         }
         
-        let url = Endpoint.getExplorerByAddressURL(chainTicker: tx.coin.ticker, address: address) ?? ""
+        let url = Endpoint.getExplorerByAddressURL(chain: tx.coin.chain, address: address) ?? ""
         
         return TransactionCell(
             title: "to",

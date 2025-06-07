@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
-struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
-    let placeholder: String
-    @Binding var value: Value
-    let format: FloatingPointFormatStyle<Value>
-    
+struct StyledFloatingPointField: View {
+    @Binding var placeholder: String
+    @Binding var value: Decimal
     @Binding var isValid: Bool
+    
     var isOptional: Bool = false
     
+    @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
     
     var body: some View {
@@ -26,17 +26,22 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                     .foregroundColor(.neutral0)
                 if !localIsValid {
                     Text("*")
-                        .font(.body14MontserratMedium)
+                        .font(.body8Menlo)
                         .foregroundColor(.red)
                 }
             }
             
             container
         }
+        .id(placeholder)
     }
     
     var textField: some View {
-        TextField(placeholder.capitalized, value: customBinding, format: format)
+        TextField("", text: $textFieldValue)
+            .placeholder(when: textFieldValue.isEmpty) {
+                Text(placeholder.capitalized)
+                    .foregroundColor(.gray)
+            }
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -44,35 +49,58 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
-            .onAppear {
-                localIsValid = isValid
-                validate(value)
+            .onChange(of: textFieldValue) { oldValue, newValue in
+                updateValue(newValue)
             }
+            .onAppear {
+                textFieldValue = value.formatDecimalToLocale()
+                localIsValid = isValid
+            }
+            .onChange(of: placeholder) { _, _ in
+                textFieldValue = value.formatDecimalToLocale()
+                localIsValid = isValid
+            }
+            .id(placeholder)
     }
     
-    var customBinding: Binding<Value> {
-        Binding<Value>(
-            get: { value },
-            set: { newValue in
-                value = newValue
-                validate(newValue)
-            }
-        )
+    private func updateValue(_ newValue: String) {        
+        textFieldValue = newValue
+        
+        if newValue.isValidDecimal() {
+            value = newValue.toDecimal()
+            validate(value)
+        } else {
+            value = 0
+            validate(value)
+        }
+    }
+    
+    private func validate(_ newValue: Decimal) {
+        if isOptional {
+            isValid = (newValue == 0) || (newValue >= 0)
+        } else {
+            isValid = newValue > 0
+        }
+        localIsValid = isValid
     }
     
     var optionalMessage: String {
-        if isOptional {
-            return " (optional)"
-        }
-        return ""
+        return isOptional ? " (optional)" : ""
     }
-    
-    private func validate(_ newValue: Value) {
-        if isOptional {
-            isValid = String(describing: newValue).isEmpty || newValue >= 0
-        } else {
-            isValid = !String(describing: newValue).isEmpty && newValue > 0
+}
+
+// Placeholder helper stays the same
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content
+    ) -> some View {
+        ZStack(alignment: alignment) {
+            self
+            if shouldShow {
+                placeholder()
+            }
         }
-        localIsValid = isValid
     }
 }

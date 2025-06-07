@@ -63,6 +63,7 @@ struct TokenSelectionView: View {
         }
         .background(Color.blue600)
         .cornerRadius(12)
+        .colorScheme(.dark)
     }
     
     func errorView(error: Error) -> some View {
@@ -87,18 +88,23 @@ struct TokenSelectionView: View {
 
     var list: some View {
         VStack(alignment: .leading, spacing: 24) {
-            if !tokenViewModel.selectedTokens.isEmpty {
-                Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
-                    ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
-                        TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    }
-                }
-            }
-            
             if tokenViewModel.searchText.isEmpty {
-                Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                if !tokenViewModel.selectedTokens.isEmpty {
+                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
+                        .background(Color.backgroundBlue)) {
+                            ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
+                                TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                            }
+                        }
+                }
+
+                Section(
+                    header:
+                        Text(NSLocalizedString("tokens", comment:"Tokens"))
+                        .foregroundColor(.neutral0)
+                ) {
                     ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
                         TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                             .listRowBackground(Color.clear)

@@ -17,7 +17,7 @@ extension EditVaultView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "editVault")
+        GeneralMacHeader(title: "vaultSettings")
     }
     
     var navigation: some View {
@@ -31,13 +31,22 @@ extension EditVaultView {
                 vaultDetails
                 backupVault
                 editVault
+                
+                if vault.libType == nil || vault.libType == .GG20 {
+                    migrateVault
+                }
+                
                 reshareVault
+                
                 if vault.isFastVault {
                     biometrySelectionCell
                 }
+                
+                customMessage
                 deleteVault
             }
-            .padding(.horizontal, 25)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
         }
     }
 }

@@ -14,6 +14,7 @@ struct NavigationQRCodeButton: View {
         Image(systemName: "qrcode")
             .font(.body18MenloBold)
             .foregroundColor(tint)
+            .offset(x: 8)
     }
 }
 

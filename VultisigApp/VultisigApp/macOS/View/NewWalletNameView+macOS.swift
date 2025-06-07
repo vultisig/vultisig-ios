@@ -20,23 +20,12 @@ extension NewWalletNameView {
         VStack {
             headerMac
             view
+                .padding(.horizontal, 24)
         }
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: header)
-    }
-    
-    var fields: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("vaultName", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            textfield
-        }
-        .padding(.horizontal, 40)
-        .padding(.top, 30)
+        GeneralMacHeader(title: "")
     }
 }
 #endif

@@ -8,6 +8,5 @@
 import Foundation
 
 class THORChainAccountNumberResponse: Codable {
-    var height: String
     var result: THORChainAccountResult
 }

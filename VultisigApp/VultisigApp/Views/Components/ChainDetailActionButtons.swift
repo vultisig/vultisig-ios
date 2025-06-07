@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct ChainDetailActionButtons: View {
+    var isChainDetail: Bool
     @ObservedObject var group: GroupedChain
-    @ObservedObject var sendTx: SendTransaction
-    
-    @State var actions: [CoinAction] = []
+    @Binding var isLoading: Bool
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
     @Binding var isMemoLinkActive: Bool
+    
+    @State var actions: [CoinAction] = []
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -30,9 +31,15 @@ struct ChainDetailActionButtons: View {
                     memoButton
                 case .deposit, .bridge:
                     ActionButton(title: "function", fontColor: action.color)
+                case .buy:
+                    buyButton
+                case .sell:
+                    sellButton
                 }
             }
         }
+        .redacted(reason: isLoading ? .placeholder : [])
+        .disabled(isLoading)
         .frame(height: 28)
         .frame(maxWidth: .infinity)
         .onAppear {
@@ -46,14 +53,13 @@ struct ChainDetailActionButtons: View {
             }
         }
     }
-    
+
     var memoButton: some View {
         Button {
             isMemoLinkActive = true
         } label: {
             ActionButton(title: "function", fontColor: .turquoise600)
         }
-
     }
     
     var sendButton: some View {
@@ -64,6 +70,7 @@ struct ChainDetailActionButtons: View {
         }
     }
     
+    
     var swapButton: some View {
         Button {
             isSwapLinkActive = true
@@ -72,22 +79,20 @@ struct ChainDetailActionButtons: View {
         }
     }
     
-    private func depositButton(_ action: CoinAction) -> some View {
-        ActionButton(title: action.title, fontColor: action.color)
-    }
     
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
-        
-        guard let activeCoin = group.coins.first(where: { $0.isNativeToken }) else {
-            return
-        }
-        
-        sendTx.reset(coin: activeCoin)
     }
 }
 
 #Preview {
-    ChainDetailActionButtons(group: GroupedChain.example, sendTx: SendTransaction(), isSendLinkActive: .constant(false),isSwapLinkActive: .constant(false), isMemoLinkActive: .constant(false))
-        .environmentObject(CoinSelectionViewModel())
+    ChainDetailActionButtons(
+        isChainDetail:false,
+        group: GroupedChain.example,
+        isLoading: .constant(false),
+        isSendLinkActive: .constant(false),
+        isSwapLinkActive: .constant(false),
+        isMemoLinkActive: .constant(false)
+    )
+    .environmentObject(CoinSelectionViewModel())
 }

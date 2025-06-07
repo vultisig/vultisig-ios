@@ -11,7 +11,6 @@ struct ChainDetailView: View {
             .sorted()
     }
 
-    @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
@@ -19,8 +18,8 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-    @State var isWeweLinkActive = false
     @State var showAlert = false
+    @State var resetActive = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -35,26 +34,24 @@ struct ChainDetailView: View {
     
     var body: some View {
         content
+            .sensoryFeedback(showAlert ? .stop : .impact, trigger: showAlert)
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: group.nativeCoin
                 )
             }
             .navigationDestination(isPresented: $isSwapLinkActive) {
                 if let fromCoin = tokens.first {
                     SwapCryptoView(fromCoin: fromCoin, vault: vault)
                 }
-            }
-            .navigationDestination(isPresented: $isWeweLinkActive) {
-                if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
-                    SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
-                }
-            }
+            } 
             .navigationDestination(isPresented: $isMemoLinkActive) {
-                TransactionMemoView(
+                FunctionCallView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    coin: group.nativeCoin
                 )
             }
             .refreshable {
@@ -90,17 +87,18 @@ struct ChainDetailView: View {
                 }
             }
             .onAppear {
-                Task {
-                    await updateBalances()
-                    await setData()
-                }
+                setupView()
+            }
+            .onDisappear {
+                resetActive = false
             }
     }
     
     var actionButtons: some View {
         ChainDetailActionButtons(
+            isChainDetail: true,
             group: group,
-            sendTx: sendTx,
+            isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive
@@ -166,38 +164,55 @@ struct ChainDetailView: View {
         VStack(spacing: 0) {
             Separator()
             NavigationLink {
-                CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx)
+                CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx, resetActive: $resetActive)
             } label: {
-                CoinCell(coin: coin, group: group, vault: vault)
+                CoinCell(coin: coin)
+            }
+        }
+    }
+    
+    private func setupView() {
+        Task {
+            await updateBalances()
+            await setData()
+            await MainActor.run {
+                resetActive = true
             }
         }
     }
     
     private func setData() async {
-        isLoading = false
-        viewModel.setData(for: vault)
+        await MainActor.run {
+            isLoading = false
+            viewModel.setData(for: vault)
+        }
         
-        if let coin = group.coins.first {
-            sendTx.reset(coin: coin)
+        guard resetActive else {
+            return
         }
     }
 
     private func updateBalances() async {
-        for coin in group.coins {
-            await viewModel.loadData(coin: coin)
+        await withTaskGroup(of: Void.self) { taskGroup in
+            for coin in group.coins {
+                taskGroup.addTask {
+                    await viewModel.loadData(coin: coin)
+                    if coin.isNativeToken {
+                        await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                    }
+                }
+            }
         }
     }
 
-    func refreshAction(){
+    func refreshAction() {
         Task {
             isLoading = true
-
             await updateBalances()
-
-            for coin in group.coins where coin.isNativeToken {
-                await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+            await setData()
+            await MainActor.run {
+                isLoading = false
             }
-            isLoading = false
         }
     }
 }

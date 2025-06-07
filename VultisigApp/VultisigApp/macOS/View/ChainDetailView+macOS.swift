@@ -14,18 +14,7 @@ extension ChainDetailView {
             Background()
             main
             
-            if isLoading {
-                Loader()
-            }
-            
             PopupCapsule(text: "addressCopied", showPopup: $showAlert)
-        }
-        .safeAreaInset(edge: .bottom) {
-            if group.chain == .base {
-                #if DEBUG
-                weweButton()
-                #endif
-            }
         }
     }
     
@@ -70,22 +59,5 @@ extension ChainDetailView {
         }
     }
     
-    func weweButton() -> some View {
-        Button {
-            viewModel.selectWeweIfNeeded(vault: vault)
-            isWeweLinkActive = true
-        } label: {
-            FilledLabelButton {
-                HStack(spacing: 10) {
-                    Image("BuyWewe")
-                    Text("BUY $WEWE")
-                        .foregroundColor(.blue600)
-                        .font(.body14MontserratBold)
-                }
-                .frame(height: 44)
-            }
-        }
-        .padding(40)
-    }
 }
 #endif

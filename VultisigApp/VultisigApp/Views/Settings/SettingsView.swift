@@ -11,8 +11,26 @@ struct SettingsView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    @State var tapCount = 0
+    @State var scale: CGFloat = 1
+    @State var showAdvancedSettings: Bool = false
+    
+    @StateObject var referralViewModel = ReferralViewModel()
+    
     var body: some View {
         content
+            .navigationDestination(isPresented: $showAdvancedSettings) {
+                SettingsAdvancedView()
+            }
+            .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
+                ReferralOnboardingView(referralViewModel: referralViewModel)
+            })
+            .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
+                ReferralLaunchView()
+            })
+            .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
+                referralOverviewSheet
+            }
     }
     
     var mainSection: some View {
@@ -22,6 +40,7 @@ struct SettingsView: View {
             currencySelectionCell
             addressBookCell
             defaultChainsSelectionCell
+//            referralCodeCell
             faqCell
         }
     }
@@ -87,7 +106,7 @@ struct SettingsView: View {
             SettingCell(title: "defaultChains", icon: "circle.hexagonpath")
         }
     }
-    
+
     var addressBookCell: some View {
         NavigationLink {
             AddressBookView(
@@ -97,6 +116,36 @@ struct SettingsView: View {
         } label: {
             SettingCell(title: "addressBook", icon: "text.book.closed")
         }
+    }
+    
+    var referralCodeCell: some View {
+        ZStack {
+            if referralViewModel.showReferralCodeOnboarding {
+                referralCodeButton
+            } else {
+                referralCodeNavigationLink
+            }
+        }
+    }
+    
+    var referralCodeNavigationLink: some View {
+        NavigationLink {
+            ReferralLaunchView()
+        } label: {
+            referralCodeLabel
+        }
+    }
+    
+    var referralCodeButton: some View {
+        Button {
+            referralViewModel.showReferralBannerSheet = true
+        } label: {
+            referralCodeLabel
+        }
+    }
+    
+    var referralCodeLabel: some View {
+        SettingCell(title: "referralCode", icon: "horn")
     }
     
     var faqCell: some View {
@@ -182,6 +231,34 @@ struct SettingsView: View {
         .textCase(.uppercase)
         .font(.body14Menlo)
         .foregroundColor(.turquoise600)
+        .scaleEffect(scale)
+        .onTapGesture {
+            handleVersionTap()
+        }
+    }
+    
+    var referralOverviewSheet: some View {
+        ReferralOnboardingBanner(referralViewModel: referralViewModel)
+            .presentationDetents([.height(400)])
+    }
+    
+    private func handleVersionTap() {
+        tapCount += 1
+        
+        withAnimation(.spring(duration: 0.1)) {
+            scale = 1.1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(duration: 0.1)) {
+                scale = 1
+            }
+            
+            if tapCount > 4 {
+                tapCount = 0
+                showAdvancedSettings = true
+            }
+        }
     }
     
     private func getTitle(_ title: String) -> some View {

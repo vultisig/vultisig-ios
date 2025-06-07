@@ -21,7 +21,10 @@ extension BackupPasswordSetupView {
     var main: some View {
         view
             .navigationDestination(isPresented: $navigationLinkActive) {
-                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+                BackupVaultSuccessView(tssType: tssType, vault: vault)
+            }
+            .navigationDestination(isPresented: $homeLinkActive) {
+                HomeView(selectedVault: vault)
             }
     }
     

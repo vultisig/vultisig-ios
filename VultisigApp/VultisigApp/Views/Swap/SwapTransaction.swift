@@ -13,7 +13,6 @@ class SwapTransaction: ObservableObject {
 
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
-    @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
     @Published var isFastVault: Bool = false
@@ -36,15 +35,20 @@ class SwapTransaction: ObservableObject {
     }
 
     var isDeposit: Bool {
-        return fromCoin.chain == .mayaChain
+        // isDeposit should be true for Maya chain swaps
+        if fromCoin.chain == .mayaChain {
+            return true
+        }
+        
+        return false
     }
 
     var fee: BigInt {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch, .lifi:
-            return oneInchFee
+        case .oneinch(_ , let fee), .lifi(_, let fee):
+            return fee ?? 0
         case nil:
             return .zero
         }
@@ -56,9 +60,10 @@ class SwapTransaction: ObservableObject {
         }
         switch quote {
         case .mayachain(let quote), .thorchain(let quote):
-            let expected = Decimal(string: quote.expectedAmountOut) ?? 0
+            let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
-        case .oneinch(let quote), .lifi(let quote):
+        case .oneinch(let quote, _), .lifi(let quote, _):
+
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }
@@ -86,12 +91,11 @@ class SwapTransaction: ObservableObject {
 extension SwapTransaction {
     
     var fromAmountDecimal: Decimal {
-        let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
-        return Decimal(string: amountString) ?? .zero
+        return fromAmount.toDecimal()
     }
 
     var amountInCoinDecimal: BigInt {
-        return fromCoin.raw(for: fromAmountDecimal)
+        return fromCoin.raw(for: fromAmount.toDecimal())
     }
 
     func buildThorchainSwapPayload(quote: ThorchainSwapQuote, provider: SwapProvider) -> THORChainSwapPayload {

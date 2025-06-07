@@ -41,7 +41,8 @@ struct SendCryptoDetailsView: View {
             view
         }
         .gesture(DragGesture())
-        .onAppear {
+        .onFirstAppear {
+            focusedField = .toAddress
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
@@ -51,7 +52,7 @@ struct SendCryptoDetailsView: View {
             alert
         }
         .navigationDestination(isPresented: $isCoinPickerActive) {
-            CoinPickerView(coins: vault.coins) { coin in
+            CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
                 tx.coin = coin
                 tx.fromAddress = coin.address
             }
@@ -65,7 +66,7 @@ struct SendCryptoDetailsView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-
+    
     var coinSelector: some View {
         TokenSelectorDropdown(
             coin: tx.coin,
@@ -172,22 +173,24 @@ struct SendCryptoDetailsView: View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
             onChange: {
-                await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
+                sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
             },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
         .id(Field.amount)
         .onChange(of: tx.coin) { oldValue, newValue in
-            Task {
-                await sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
-            }
+            sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
         }
     }
     
     var existentialDepositTextMessage: some View {
         HStack {
-            Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
+            if tx.coin.chain == .polkadot {
+                Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
+            } else if tx.coin.chain == .ripple {
+                Text(NSLocalizedString("rippleExistentialDepositError", comment: ""))
+            }
         }
         .font(.body8Menlo)
         .foregroundColor(.red)
@@ -219,12 +222,31 @@ struct SendCryptoDetailsView: View {
     var textFiatField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amountInFiat,
-            onChange: { await sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
+            onChange: { sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
         )
         .focused($focusedField, equals: .amountInFiat)
         .id(Field.amountInFiat)
     }
-
+    
+    var button: some View {
+        Button {
+            Task{
+                await validateForm()
+            }
+        } label: {
+            HStack {
+                FilledButton(
+                    title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
+                    textColor: sendCryptoViewModel.isLoading ? .textDisabled : .blue600,
+                    background: sendCryptoViewModel.isLoading ? .buttonDisabled : .turquoise600,
+                    showLoader: sendCryptoViewModel.isLoading
+                )
+            }
+        }
+        .padding(.top, 20)
+        .disabled(sendCryptoViewModel.isLoading)
+    }
+    
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(leadingText)
@@ -234,7 +256,7 @@ struct SendCryptoDetailsView: View {
         .font(.body14MenloBold)
         .foregroundColor(.neutral0)
     }
-    
+
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
@@ -259,6 +281,7 @@ struct SendCryptoDetailsView: View {
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
+            sendCryptoViewModel.isLoading = false
         }
     }
     

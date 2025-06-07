@@ -49,3 +49,13 @@ struct CoinMeta : Hashable, Codable{
     static var example = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "btc", decimals: 1, priceProviderId: "provider", contractAddress: "123456789", isNativeToken: true)
 }
 
+extension CoinMeta: Equatable {
+    static func == (lhs: CoinMeta, rhs: CoinMeta) -> Bool {
+        return lhs.chain == rhs.chain && lhs.ticker == rhs.ticker
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(chain)
+        hasher.combine(ticker)
+    }
+}

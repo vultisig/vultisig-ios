@@ -13,13 +13,10 @@ struct TokenSelectorDropdown: View {
     let onPress: (() -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            cell
-            balanceContent
-        }
-        .onTapGesture {
-            onPress?()
-        }
+        cell
+            .onTapGesture {
+                onPress?()
+            }
     }
     
     var cell: some View {
@@ -27,6 +24,7 @@ struct TokenSelectorDropdown: View {
             image
             ticker
             Spacer()
+            balanceContent
             arrow
         }
         .redacted(reason: coin.balanceString.isEmpty ? .placeholder : [])
@@ -50,6 +48,7 @@ struct TokenSelectorDropdown: View {
     var ticker: some View {
         Text("\(coin.ticker)")
             .font(.body16MenloBold)
+            .foregroundColor(.neutral0)
     }
 
     var arrow: some View {
@@ -74,24 +73,6 @@ struct TokenSelectorDropdown: View {
         .foregroundColor(.neutral200)
     }
     
-    private func getCell(for coin: Coin) -> some View {
-        HStack(spacing: 12) {
-            AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
-            
-            Text(coin.ticker)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-
-            if let schema = coin.tokenSchema {
-                Text("(\(schema))")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-            }
-
-            Spacer()
-        }
-        .frame(height: 48)
-    }
 }
 
 #Preview {

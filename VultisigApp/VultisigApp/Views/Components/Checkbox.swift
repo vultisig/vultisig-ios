@@ -10,7 +10,7 @@ import SwiftUI
 struct Checkbox: View {
     @Binding var isChecked: Bool
     let text: String
-    var font: Font = .body14MenloBold
+    var font: Font = .body14MontserratMedium
     var alignment: TextAlignment = .leading
     var isExtended: Bool = true
     
@@ -23,6 +23,7 @@ struct Checkbox: View {
                 Spacer()
             }
         }
+        .sensoryFeedback(.selection, trigger: isChecked)
         .onTapGesture {
             isChecked.toggle()
         }
@@ -30,11 +31,15 @@ struct Checkbox: View {
     
     var check: some View {
         Image(systemName: isChecked ? "checkmark" : "")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(width: 18, height: 18)
-            .background(isChecked ? Color.turquoise600 : Color.blue200)
-            .cornerRadius(2)
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.alertTurquoise)
+            .frame(width: 24, height: 24)
+            .background(Color.checkboxBlue)
+            .cornerRadius(20)
+            .overlay(
+                Circle()
+                    .stroke(isChecked ? Color.alertTurquoise : Color.borderBlue, lineWidth: 1)
+            )
     }
     
     var description: some View {

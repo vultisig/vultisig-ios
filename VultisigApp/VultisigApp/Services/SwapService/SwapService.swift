@@ -15,7 +15,7 @@ struct SwapService {
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
     private let lifiService: LiFiService = LiFiService.shared
-
+    
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
@@ -24,6 +24,7 @@ struct SwapService {
 
         switch provider {
         case .thorchain:
+            
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
                 provider: provider,
@@ -101,8 +102,12 @@ private extension SwapService {
                 return .thorchain(quote)
             }
         }
-        catch _ as ThorchainSwapError {
-            throw SwapError.routeUnavailable
+        catch let error as ThorchainSwapError {
+            if error.message.contains("not enough asset to pay for fees") {
+                throw SwapError.swapAmountTooSmall
+            } else {
+                throw SwapError.routeUnavailable
+            }
         }
         catch let error as SwapError {
             throw error
@@ -114,7 +119,7 @@ private extension SwapService {
 
     func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
-        let quote = try await oneInchService.fetchQuotes(
+        let response = try await oneInchService.fetchQuotes(
             chain: String(chain),
             source: fromCoin.contractAddress,
             destination: toCoin.contractAddress,
@@ -122,16 +127,16 @@ private extension SwapService {
             from: fromCoin.address,
             isAffiliate: isAffiliate
         )
-        return .oneinch(quote)
+        return .oneinch(response.quote, fee: response.fee)
     }
-
+    
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
-        let quote = try await lifiService.fetchQuotes(
+        let response = try await lifiService.fetchQuotes(
             fromCoin: fromCoin,
             toCoin: toCoin,
             fromAmount: fromAmount
         )
-        return .lifi(quote)
+        return .lifi(response.quote, fee: response.fee)
     }
 }

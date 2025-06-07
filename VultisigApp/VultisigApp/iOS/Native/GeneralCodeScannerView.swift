@@ -17,6 +17,7 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldKeysignTransaction: Bool
     @Binding var shouldSendCrypto: Bool
     @Binding var selectedChain: Chain?
+    
     let sendTX: SendTransaction
     var showButtons: Bool = true
     
@@ -25,25 +26,24 @@ struct GeneralCodeScannerView: View {
     
     @Query var vaults: [Vault]
     
+    @State var showAlert: Bool = false
+    @State var newCoinMeta: CoinMeta? = nil
+    
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var body: some View {
         ZStack {
-            CodeScannerView(
-                codeTypes: [.qr],
-                isGalleryPresented: $isGalleryPresented,
-                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
-                completion: handleScan
-            )
-            
-            overlay
-            
-            if showButtons {
-                buttonsStack
-            }
+            cameraView
+            content
         }
+        .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
         .ignoresSafeArea()
         .fileImporter(
             isPresented: $isFilePresented,
@@ -63,50 +63,141 @@ struct GeneralCodeScannerView: View {
                 print(error)
             }
         }
+        .alert(isPresented: $showAlert) {
+            alert
+        }
+        .overlay {
+            background
+        }
+    }
+    
+    var background: some View {
+        Image("QRScannerBackgroundImage")
+            .resizable()
+            .scaledToFill()
+            .opacity(0.2)
+    }
+    
+    var content: some View {
+        VStack {
+            header
+            Spacer()
+            if showButtons {
+                menubuttons
+            }
+        }
+        .padding(.vertical, 8)
+    }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            title
+            Spacer()
+            helpButton
+        }
+        .foregroundColor(.neutral0)
+        .font(.body18BrockmannMedium)
+        .padding(16)
+        .offset(y: 8)
+    }
+    
+    var backButton: some View {
+        Button {
+            showSheet = false
+        } label: {
+            getIcon(for: "xmark")
+        }
+    }
+    
+    var title: some View {
+        Text(NSLocalizedString("scanQRStartScreen", comment: ""))
+    }
+    
+    var helpButton: some View {
+        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
+            getIcon(for: "questionmark.circle")
+        }
+    }
+    
+    var cameraView: some View {
+        ZStack {
+            CodeScannerView(
+                codeTypes: [.qr],
+                isGalleryPresented: $isGalleryPresented,
+                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
+                completion: handleScan
+            )
+            
+            overlay
+        }
+    }
+    
+    var border: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .stroke(Color.neutral0, lineWidth: 1)
+            .opacity(0.2)
     }
     
     var overlay: some View {
         Image("QRScannerOutline")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
             .padding(60)
-            .offset(y: -50)
-            .allowsHitTesting(false)
     }
     
-    var buttonsStack: some View {
-        VStack {
-            Spacer()
-            buttons
-        }
-    }
-    
-    var buttons: some View {
-        HStack(spacing: 0) {
-            galleryButton
-                .frame(maxWidth: .infinity)
-
-            fileButton
-                .frame(maxWidth: .infinity)
-        }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 50)
-    }
-    
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
+    var menubuttons: some View {
+        Menu {
+            Button {
+                isGalleryPresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("photoLibrary", comment: ""),
+                    systemImage: "photo.on.rectangle.angled"
+                )
+            }
+            
+            Button {
+                isFilePresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("chooseFiles", comment: ""),
+                    systemImage: "folder"
+                )
+            }
         } label: {
-            OpenButton(buttonIcon: "photo", buttonLabel: "uploadFromGallery")
+            uploadButton
         }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 30)
     }
     
-    var fileButton: some View {
-        Button {
-            isFilePresented.toggle()
-        } label: {
-            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
-        }
+    var uploadButton: some View {
+        FilledButton(title: "uploadQR", icon: "arrow.up.document")
+    }
+    
+    var alert: Alert {
+        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
+        
+        return Alert(
+            title: Text(NSLocalizedString("newChainDetected", comment: "")),
+            message: Text(message),
+            primaryButton: Alert.Button.default(
+                Text(NSLocalizedString("addChain", comment: "")),
+                action: {
+                    addNewChain()
+                }
+            ),
+            secondaryButton: Alert.Button.default(
+                Text(NSLocalizedString("cancel", comment: "")),
+                action: {
+                    handleCancel()
+                }
+            )
+        )
+    }
+    
+    private func getIcon(for icon: String) -> some View {
+        Image(systemName: icon)
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
@@ -156,29 +247,92 @@ struct GeneralCodeScannerView: View {
     }
     
     private func moveToSendView() {
-        shouldJoinKeygen = false
-        showSheet = false
-        checkForAddress()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = false
+            showSheet = false
+            checkForAddress()
+        }
     }
     
     private func checkForAddress() {
         let address = deeplinkViewModel.address ?? ""
         sendTX.toAddress = address
         
-        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
-            $0.chain.name > $1.chain.name
-        })
-        
-        for asset in sortedAssets {
+        for asset in vaultDetailViewModel.groups {
+            if checkForMAYAChain(asset: asset, address: address) {
+                return
+            }
+            
             let isValid = asset.chain.coinType.validate(address: address)
             
             if isValid {
                 selectedChain = asset.chain
                 shouldSendCrypto = true
+                
                 return
             }
         }
-        shouldSendCrypto = true
+        
+        checkForRemainingChains(address)
+    }
+    
+    private func checkForMAYAChain(asset: GroupedChain, address: String) -> Bool {
+        if asset.name.lowercased().contains("maya") && address.lowercased().contains("maya") {
+            selectedChain = asset.chain
+            shouldSendCrypto = true
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func checkForRemainingChains(_ address: String) {
+        showSheet = true
+        
+        let chains = coinSelectionViewModel.groupedAssets.values.flatMap { $0 }
+        
+        for asset in chains.sorted(by: {
+            $0.chain.name < $1.chain.name
+        }) {
+            let isValid = asset.coinType.validate(address: address)
+            
+            if isValid {
+                newCoinMeta = asset
+                showAlert = true
+                return
+            }
+        }
+    }
+    
+    private func handleCancel() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showSheet = false
+            shouldSendCrypto = true
+        }
+    }
+    
+    private func addNewChain() {
+        guard let chain = newCoinMeta else {
+            return
+        }
+        
+        selectedChain = chain.chain
+        saveAssets(chain)
+    }
+    
+    private func saveAssets(_ chain: CoinMeta) {
+        var selection = coinSelectionViewModel.selection
+        selection.insert(chain)
+        
+        guard let vault = homeViewModel.selectedVault else {
+            return
+        }
+        
+        Task{
+            await CoinService.saveAssets(for: vault, selection: selection)
+            
+            handleCancel()
+        }
     }
 }
 
@@ -193,6 +347,9 @@ struct GeneralCodeScannerView: View {
     )
     .environmentObject(DeeplinkViewModel())
     .environmentObject(SettingsDefaultChainViewModel())
+    .environmentObject(HomeViewModel())
+    .environmentObject(VaultDetailViewModel())
+    .environmentObject(CoinSelectionViewModel())
     .environmentObject(HomeViewModel())
 }
 #endif

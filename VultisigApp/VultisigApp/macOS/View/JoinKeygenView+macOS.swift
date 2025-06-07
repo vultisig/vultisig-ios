@@ -12,6 +12,7 @@ extension JoinKeygenView {
     var content: some View {
         ZStack {
             Background()
+            shadow
             main
         }
     }

@@ -33,6 +33,14 @@ extension SendCryptoAddressTextField {
             .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
                 OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
             }
+            .navigationDestination(isPresented: $showCameraScanView) {
+                MacAddressScannerView(
+                    tx: tx,
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    showCameraScanView: $showCameraScanView,
+                    selectedVault: nil
+                )
+            }
     }
     
     var field: some View {
@@ -62,10 +70,21 @@ extension SendCryptoAddressTextField {
             ))
             
             pasteButton
-            fileButton
+            cameraScanButton
             addressBookButton
         }
         .padding(.horizontal, 12)
+    }
+    
+    var cameraScanButton: some View {
+        Button {
+            showCameraScanView = true
+        } label: {
+            Image(systemName: "camera")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
     
     func pasteAddress() {
@@ -90,11 +109,11 @@ extension SendCryptoAddressTextField {
             validateAddress(address)
         }
         
-        Task{
-            if !amount.isEmpty {
-                await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
-            }
+        
+        if !amount.isEmpty {
+            sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
         }
+        
     }
 }
 #endif

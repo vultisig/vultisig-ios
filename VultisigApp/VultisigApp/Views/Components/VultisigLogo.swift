@@ -26,7 +26,6 @@ struct VultisigLogo: View {
             
             if showTexts {
                 title
-                description
             }
         }
     }
@@ -56,7 +55,7 @@ struct VultisigLogo: View {
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
             .animation(
-                isAnimated ? .spring(duration: 0.5).delay(0.2) : .none,
+                isAnimated ? .spring(duration: 0.2).delay(0.1) : .none,
                 value: didAppear
             )
     }
@@ -69,7 +68,7 @@ struct VultisigLogo: View {
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
             .animation(
-                isAnimated ? .spring(duration: 0.5).delay(0.3) : .none,
+                isAnimated ? .spring(duration: 0.2).delay(0.2) : .none,
                 value: didAppear
             )
     }
@@ -82,30 +81,19 @@ struct VultisigLogo: View {
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
             .animation(
-                isAnimated ? .spring(duration: 0.5).delay(0.4) : .none,
+                isAnimated ? .spring(duration: 0.2).delay(0.3) : .none,
                 value: didAppear
             )
     }
     
     var title: some View {
         Text("Vultisig")
-            .font(.title40MontserratBold)
+            .font(.title40MontserratSemiBold)
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .animation(
                 isAnimated ? .easeIn(duration: 1) : .none,
                 value: didAppear)
-    }
-    
-    var description: some View {
-        descriptionContainer
-    }
-    
-    var descriptionContent: some View {
-        Text("secureCryptoVault")
-            .foregroundColor(.neutral0)
-            .opacity(didAppear ? 1 : 0)
-            .font(.body16MontserratBold)
     }
     
     private func setData() {

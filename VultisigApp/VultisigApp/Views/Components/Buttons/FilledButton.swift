@@ -8,16 +8,25 @@
 import SwiftUI
 
 struct FilledButton: View {
-    let title: String
+    var title: String = ""
     var icon: String = ""
+    var textColor: Color = Color.blue600
     var background: Color = Color.turquoise600
+    var showLoader: Bool = false
     
     var body: some View {
         HStack(spacing: 10) {
             if !icon.isEmpty {
                 image
             }
-            text
+            
+            if !title.isEmpty {
+                text
+            }
+            
+            if showLoader {
+                loader
+            }
         }
         .padding(12)
         .frame(maxWidth: .infinity)
@@ -27,8 +36,13 @@ struct FilledButton: View {
     
     var image: some View {
         Image(systemName: icon)
-            .font(.body16Menlo)
+            .font(.body14BrockmannSemiBold)
             .foregroundColor(.blue600)
+    }
+    
+    var loader: some View {
+        ProgressView()
+            .scaleEffect(0.7)
     }
 }
 

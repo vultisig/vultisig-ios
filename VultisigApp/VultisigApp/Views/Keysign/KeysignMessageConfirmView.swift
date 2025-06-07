@@ -9,7 +9,6 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    @StateObject var blowfishViewModel = BlowfishWarningViewModel()
     
     var body: some View {
         ZStack {
@@ -19,21 +18,11 @@ struct KeysignMessageConfirmView: View {
                 button
             }
             .foregroundColor(.neutral0)
-            .onAppear {
-                viewModel.blowfishTransactionScan()
-                blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
-            }
             .task {
                 await viewModel.loadThorchainID()
                 await viewModel.loadFunctionName()
             }
         }
-    }
-    
-    var blowfishView: some View {
-        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
     }
     
     var title: some View {
@@ -45,32 +34,44 @@ struct KeysignMessageConfirmView: View {
     var summary: some View {
         ScrollView {
             VStack(spacing: 16) {
-                fromField
-                Separator()
-                toField
-                Separator()
-                amountField
+                
+                if let from = viewModel.keysignPayload?.coin.address, !from.isEmpty {
+                    fromField
+                    Separator()
+                }
+
+                if let to = viewModel.keysignPayload?.toAddress, !to.isEmpty {
+                    toField
+                    Separator()
+                }
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
-                    Separator()
                     getSummaryCell(title: "memo", value: memo)
-                }
-
-                if let decodedMemo = viewModel.decodedMemo {
                     Separator()
+                }
+                
+                if let decodedMemo = viewModel.decodedMemo {
                     functionField(decodedMemo: decodedMemo)
+                    Separator()
+                }
+                
+                if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
+                    amountField
+                    Separator()
                 }
 
-                Separator()
+                if let fiat = viewModel.keysignPayload?.toAmountFiatString, !fiat.isEmpty {
+                    valueField
+                    Separator()
+                }
+                
+                networkFeeField
             }
             .padding(16)
             .background(Color.blue600)
             .cornerRadius(10)
             .padding(16)
             
-            if viewModel.blowfishShow {
-                blowfishView
-            }
         }
     }
     
@@ -81,15 +82,23 @@ struct KeysignMessageConfirmView: View {
     var toField: some View {
         getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "")
     }
-
+    
+    var valueField: some View {
+        getSummaryCell(title: "value", value: viewModel.keysignPayload?.toAmountFiatString ?? "")
+    }
+    
+    var networkFeeField: some View {
+        getSummaryCell(title: "networkFee", value: viewModel.getCalculatedNetworkFee())
+    }
+    
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-
+    
     func functionField(decodedMemo: String) -> some View {
         getSummaryCell(title: "function", value: decodedMemo)
     }
-
+    
     var button: some View {
         Button(action: {
             self.viewModel.joinKeysignCommittee()
@@ -105,7 +114,7 @@ struct KeysignMessageConfirmView: View {
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             Text(value)
-                .font(.body12Menlo)
+                .font(.body13MenloBold)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

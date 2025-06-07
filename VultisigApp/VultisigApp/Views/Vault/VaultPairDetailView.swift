@@ -30,6 +30,8 @@ struct VaultPairDetailView: View {
                     isBold: true
                 )
                 
+                VaultPairDetailCell(title: NSLocalizedString("vaultLibType", comment: ""), description: getVaultLibType())
+                
                 VaultPairDetailCell(
                     title: NSLocalizedString("ECDSA", comment: ""),
                     description: vault.pubKeyECDSA
@@ -58,7 +60,7 @@ struct VaultPairDetailView: View {
     }
     
     private func getDeviceCell(for device: DeviceInfo) -> some View {
-        let part = "Part \(device.Index+1) of \(vault.signers.count): "
+        let part = "Share \(device.Index+1) of \(vault.signers.count): "
         let signer = device.Signer
         
         return ZStack {
@@ -78,9 +80,20 @@ struct VaultPairDetailView: View {
             }
         }
     }
-    
+    private func getVaultLibType() -> String{
+        guard let libType = vault.libType else {
+            return "GG20"
+        }
+        switch libType {
+        case .DKLS:
+            return "DKLS"
+        case .GG20:
+            return "GG20"
+        }
+        
+    }
     private func titlePartText() -> String {
-        let part = NSLocalizedString("part", comment: "")
+        let part = NSLocalizedString("share", comment: "")
         let of = NSLocalizedString("of", comment: "")
         let space = " "
         let vaultIndex = "\(deviceIndex)"

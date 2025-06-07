@@ -13,10 +13,6 @@ extension CoinDetailView {
         ZStack {
             Background()
             main
-            
-            if isLoading {
-                loader
-            }
         }
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .navigationBarTitleDisplayMode(.inline)

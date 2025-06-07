@@ -22,7 +22,7 @@ struct OneInchSwaps {
             incrementNonce: incrementNonce
         )
         let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         if !preSigningOutput.errorMessage.isEmpty {
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
@@ -60,7 +60,10 @@ private extension OneInchSwaps {
         }
 
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-        let gas = BigUInt(quote.tx.gas)
+        // sometimes the `gas` field in oneinch tx is 0
+        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
+        let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
+        let gas = BigUInt(normalizedGas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed

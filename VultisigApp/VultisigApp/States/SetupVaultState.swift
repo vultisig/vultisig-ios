@@ -41,28 +41,6 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("secureModeTitle", comment: "")
         }
     }
-
-    var label: String {
-        switch self {
-        case .fast:
-            return NSLocalizedString("fastModeDescription", comment: "")
-        case .active:
-            return NSLocalizedString("activeModeDescription", comment: "")
-        case .secure:
-            return NSLocalizedString("secureModeDescription", comment: "")
-        }
-    }
-    
-    var image: String {
-        switch self {
-        case .fast:
-            return "SetupVaultImage1"
-        case .active:
-            return "SetupVaultImage2"
-        case .secure:
-            return "SetupVaultImage3"
-        }
-    }
     
     var loaderTitle: String {
         switch self {
@@ -72,6 +50,24 @@ enum SetupVaultState: CaseIterable {
             return NSLocalizedString("activeLoaderTitle", comment: "")
         case .secure:
             return NSLocalizedString("secureLoaderTitle", comment: "")
+        }
+    }
+    
+    var secureTextTitle: String {
+        switch self {
+        case .secure:
+            return NSLocalizedString("ultimateSecurity", comment: "")
+        case .fast, .active:
+            return NSLocalizedString("fastSetUp", comment: "")
+        }
+    }
+    
+    var secureTextDecription: String {
+        switch self {
+        case .secure:
+            return NSLocalizedString("secureVaultSecureTextDescription", comment: "")
+        case .fast, .active:
+            return NSLocalizedString("fastVaultSecureTextDescription", comment: "")
         }
     }
 }

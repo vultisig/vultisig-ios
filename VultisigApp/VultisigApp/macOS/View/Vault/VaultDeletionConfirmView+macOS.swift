@@ -74,7 +74,11 @@ extension VaultDeletionConfirmView {
         Button {
             delete()
         } label: {
-            FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
+            FilledButton(
+                title: "deleteVaultTitle",
+                textColor: allFieldsChecked() ? .backgroundBlue : .disabledText,
+                background: allFieldsChecked() ? Color.alertRed : .disabledButtonBackground
+            )
         }
         .padding(.top, 25)
         .padding(.bottom, 40)

@@ -46,11 +46,6 @@ struct VaultCell: View {
             .clipped()
     }
     
-    var folder: some View {
-        Image(systemName: "folder")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
-    }
     
     var title: some View {
         Text(vault.name.capitalized)
@@ -66,9 +61,14 @@ struct VaultCell: View {
     }
     
     var partAssignedCell: some View {
-        Text("Part \(viewModel.order)of\(viewModel.totalSigners)")
-            .font(.body14Menlo)
-            .foregroundColor(.body)
+        Group {
+            Text(NSLocalizedString("share", comment: "")) +
+            Text(" \(viewModel.order)") +
+            Text(NSLocalizedString("of", comment: "")) +
+            Text("\(viewModel.totalSigners)")
+        }
+        .font(.body14Menlo)
+        .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
