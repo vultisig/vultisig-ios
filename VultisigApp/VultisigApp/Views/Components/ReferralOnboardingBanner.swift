@@ -11,10 +11,10 @@ struct ReferralOnboardingBanner: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             Background()
             content
-            closeButton
+            closeButtonContainer
         }
     }
     
@@ -62,6 +62,17 @@ struct ReferralOnboardingBanner: View {
         FilledButton(title: "next")
             .padding(.bottom, 24)
             .padding(.top, 12)
+    }
+    
+    var closeButtonContainer: some View {
+        HStack {
+            Spacer()
+            VStack {
+                closeButton
+                
+                Spacer()
+            }
+        }
     }
     
     var closeButton: some View {

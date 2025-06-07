@@ -22,6 +22,9 @@ struct EditReferredCodeView: View {
         .onAppear {
             setData()
         }
+        .onDisappear {
+            resetData()
+        }
     }
     
     var content: some View {
@@ -73,7 +76,12 @@ struct EditReferredCodeView: View {
     }
     
     private func setData() {
+        resetData()
         referralViewModel.referredCode = referralViewModel.savedReferredCode
+    }
+    
+    private func resetData() {
+        referralViewModel.resetReferralData()
     }
 }
 
