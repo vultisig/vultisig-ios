@@ -16,13 +16,20 @@ struct EditReferralCodeView: View {
     @State var successMessage: String = ""
     
     var body: some View {
-        VStack {
-            content
-            button
+        ZStack {
+            Background()
+            container
         }
     }
     
     var content: some View {
+        VStack {
+            main
+            button
+        }
+    }
+    
+    var main: some View {
         ScrollView {
             VStack(spacing: 8) {
                 title

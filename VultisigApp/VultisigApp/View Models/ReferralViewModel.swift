@@ -40,17 +40,18 @@ class ReferralViewModel: ObservableObject {
         resetReferralData()
         
         isLoading = true
-        defer { isLoading = false }
         
         guard !referredCode.isEmpty else {
             referralLaunchViewErrorMessage = "emptyField"
             showReferralLaunchViewError = true
+            isLoading = false
             return
         }
         
         guard referredCode.count == 4 else {
             referralLaunchViewErrorMessage = "referralLaunchCodeLengthError"
             showReferralLaunchViewError = true
+            isLoading = false
             return
         }
         
@@ -64,6 +65,7 @@ class ReferralViewModel: ObservableObject {
         guard let url = URL(string: urlString) else {
             referralLaunchViewErrorMessage = "systemErrorMessage"
             showReferralLaunchViewError = true
+            isLoading = false
             return
         }
         
@@ -75,14 +77,17 @@ class ReferralViewModel: ObservableObject {
                 } else if httpResponse.statusCode == 404 {
                     referralLaunchViewErrorMessage = "referralCodeNotFound"
                     showReferralLaunchViewError = true
+                    isLoading = false
                 } else {
                     referralLaunchViewErrorMessage = "systemErrorMessage"
                     showReferralLaunchViewError = true
+                    isLoading = false
                 }
             }
         } catch {
             referralLaunchViewErrorMessage = "systemErrorMessage"
             showReferralLaunchViewError = true
+            isLoading = false
         }
     }
     
@@ -90,6 +95,7 @@ class ReferralViewModel: ObservableObject {
         savedReferredCode = referredCode
         referralLaunchViewSuccessMessage = "referralCodeAdded"
         showReferralLaunchViewSuccess = true
+        isLoading = false
     }
     
     func resetReferralData() {
