@@ -462,7 +462,7 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
             return tx.fromCoin
         case .EVM, .Solana:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }

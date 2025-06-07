@@ -119,6 +119,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
+        case .cardano:
+            return .Cardano
         case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return .Cosmos
         case .sui:
@@ -167,7 +169,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .zksync:
             return "200000"
-        case .bitcoin,.bitcoinCash,.dash:
+        case .bitcoin,.bitcoinCash,.dash, .cardano:
             return "20"
         case .zcash:
             return "1000" // "2000" for faster confirmation

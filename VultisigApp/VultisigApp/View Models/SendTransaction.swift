@@ -36,7 +36,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
-        if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
+        if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano)) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }

@@ -80,6 +80,19 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 isLoading = false
             }
+        case .cardano:
+            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
+            Task {
+                await BalanceService.shared.updateBalance(for: tx.coin)
+                
+                var gas = BigInt.zero
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                
+                isLoading = false
+            }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia:
             Task {
                 do {

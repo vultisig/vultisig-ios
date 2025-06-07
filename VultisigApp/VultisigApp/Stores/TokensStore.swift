@@ -391,6 +391,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .cardano,
+            ticker: "ADA",
+            logo: "ada",
+            decimals: 6,
+            priceProviderId: "cardano",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .blast,
             ticker: "AI",
             logo: "anyinu",

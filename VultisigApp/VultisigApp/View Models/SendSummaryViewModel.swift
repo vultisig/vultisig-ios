@@ -36,7 +36,7 @@ class SendSummaryViewModel: ObservableObject {
     
     private func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
