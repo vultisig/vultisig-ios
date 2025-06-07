@@ -356,7 +356,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "validAddressError"
             showAlert = true
-            logger.log("Invalid address for \(tx.coin.chain.name): \(tx.toAddress). isValidAddress=\(self.isValidAddress), isNamespaceResolved=\(self.isNamespaceResolved)")
+            logger.log("Invalid address.")
             isValidForm = false
         }
         
@@ -377,7 +377,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
             showAlert = true
-            logger.log("No gas estimation for \(tx.coin.chain.name). tx.gas=\(tx.gas), tx.fee=\(tx.fee)")
+            logger.log("No gas estimation.")
             isValidForm = false
             isLoading = false
             return isValidForm
@@ -397,7 +397,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "walletBalanceExceededError"
             showAlert = true
-            logger.log("Total transaction cost exceeds wallet balance. Amount: \(tx.amountInRaw), Gas: \(tx.gas), Total: \(tx.amountInRaw + tx.gas), Balance: \(tx.coin.rawBalance)")
+            logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
         }
         

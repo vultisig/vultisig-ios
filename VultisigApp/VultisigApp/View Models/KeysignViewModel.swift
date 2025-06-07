@@ -189,7 +189,6 @@ class KeysignViewModel: ObservableObject {
     // Return value bool indicate whether keysign should be retried
     func keysignOneMessageWithRetry(msg: String, attempt: UInt8) async throws {
         logger.info("signing message:\(msg)")
-        
         let msgHash = Utils.getMessageBodyHash(msg: msg)
         let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                           sessionID: self.sessionID)
@@ -253,7 +252,6 @@ class KeysignViewModel: ObservableObject {
             }
             if let service = self.tssService {
                 let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
-                
                 if resp.r.isEmpty || resp.s.isEmpty {
                     throw TssKeysignError.keysignFail
                 }
@@ -267,7 +265,6 @@ class KeysignViewModel: ObservableObject {
             self.messagePuller?.stop()
             // Check whether the other party already have the signature
             logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
-            
             let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
             if resp != nil {
                 self.signatures[msg] = resp
@@ -296,7 +293,6 @@ class KeysignViewModel: ObservableObject {
                 return try service.keysignEdDSA(req)
             }
         }
-        
         return try await t.value
     }
     
@@ -469,8 +465,6 @@ class KeysignViewModel: ObservableObject {
                         }
                     }
                 case .cardano:
-                    // TODO: Implement proper Cardano broadcast service
-                    // For now, use UTXOTransactionsService as fallback until CardanoService.broadcastTransaction is implemented
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {

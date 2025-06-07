@@ -58,10 +58,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
             )
             
         } catch {
-            print("=== KeysignPayloadFactory Error ===")
-            print("Error: \(error)")
-            print("Error description: \(error.localizedDescription)")
-            print("===================================")
             self.errorMessage = error.localizedDescription
             showAlert = true
             isLoading = false

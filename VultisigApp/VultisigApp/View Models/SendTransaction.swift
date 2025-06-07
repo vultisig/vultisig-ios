@@ -36,7 +36,6 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
-        // CRITICAL: Cardano must follow the same rules as UTXO chains for send max
         if (sendMaxAmount && (coin.chainType == .UTXO || coin.chainType == .Cardano)) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
@@ -122,27 +121,19 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInRaw: BigInt {
-        let sendAmountDecimal = amount.toDecimal()
-        let sendAmountBigInt = coin.raw(for: sendAmountDecimal)
-        return sendAmountBigInt
+        let decimals = coin.decimals
+        let amountInDecimals = amountDecimal * pow(10, decimals)
+        return amountInDecimals.description.toBigInt(decimals: decimals)
     }
     
     var amountDecimal: Decimal {
-        let sendAmountDecimal = amount.toDecimal()
-        return sendAmountDecimal
+        let decimalValue = amount.toDecimal()
+        let truncatedDecimal = decimalValue.truncated(toPlaces: coin.decimals)
+        return truncatedDecimal
     }
     
     var gasDecimal: Decimal {
-        var decimals = coin.decimals
-        // If not a native token we need to get the decimals from the native token
-        if !coin.isNativeToken {
-            if let vault = ApplicationState.shared.currentVault {
-                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
-                    decimals = nativeToken.decimals
-                }
-            }
-        }
-        return gas.toDecimal(decimals: decimals)
+        return Decimal(gas)
     }
     
     var gasInReadable: String {

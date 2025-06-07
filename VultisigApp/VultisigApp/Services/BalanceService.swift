@@ -273,6 +273,4 @@ private extension BalanceService {
         
         coin.stakedBalance = stakedBalance
     }
-    
-
 }

@@ -126,7 +126,6 @@ final class SchnorrKeysign {
         var msgSlice = msgArr.to_dkls_goslice()
         
         let err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
-        
         if err != LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, error:\(err)")
         }
