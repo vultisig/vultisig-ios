@@ -37,22 +37,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         var keysignPayload: KeysignPayload?
         
-        // DEBUG: Print all tx properties
-        print("=== SendTransaction Debug Info ===")
-        print("Chain: \(tx.coin.chain)")
-        print("ChainType: \(tx.coin.chainType)")
-        print("Ticker: \(tx.coin.ticker)")
-        print("Amount: \(tx.amount)")
-        print("AmountInRaw: \(tx.amountInRaw)")
-        print("ToAddress: \(tx.toAddress)")
-        print("FromAddress: \(tx.fromAddress)")
-        print("Gas: \(tx.gas)")
-        print("Fee: \(tx.fee)")
-        print("SendMaxAmount: \(tx.sendMaxAmount)")
-        print("Coin.rawBalance: \(tx.coin.rawBalance)")
-        print("Coin.isNativeToken: \(tx.coin.isNativeToken)")
-        print("===================================")
-        
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
@@ -63,13 +47,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
-            
-            // DEBUG: Print chainSpecific properties
-            print("=== ChainSpecific Debug Info ===")
-            print("ChainSpecific: \(chainSpecific)")
-            print("ChainSpecific.gas: \(chainSpecific.gas)")
-            print("ChainSpecific.fee: \(chainSpecific.fee)")
-            print("================================")
             
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.coin,

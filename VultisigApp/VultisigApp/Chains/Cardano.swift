@@ -13,12 +13,6 @@ import BigInt
 enum CardanoHelper {
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        print("=== CardanoHelper.getPreSignedInputData ===")
-        print("Chain: \(keysignPayload.coin.chain)")
-        print("ToAddress: \(keysignPayload.toAddress)")
-        print("Amount: \(keysignPayload.toAmount)")
-        print("UTXOs count: \(keysignPayload.utxos.count)")
-        
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
         }
@@ -27,13 +21,9 @@ enum CardanoHelper {
             throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
         
-        print("ByteFee: \(byteFee), SendMaxAmount: \(sendMaxAmount)")
-        
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .cardano) else {
             throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
         }
-        
-        print("Address validation successful")
         
         // Prevent from accidentally sending all balance
         var safeGuardMaxAmount = false
@@ -43,8 +33,6 @@ enum CardanoHelper {
            rawBalance == Int64(keysignPayload.toAmount) {
             safeGuardMaxAmount = true
         }
-        
-        print("SafeGuardMaxAmount: \(safeGuardMaxAmount)")
         
         // For Cardano, we don't use UTXOs from Blockchair since it doesn't support Cardano
         // Instead, we create a simplified input structure
@@ -66,12 +54,8 @@ enum CardanoHelper {
             }
         }
         
-        print("CardanoSigningInput created successfully")
-        print("UTXOs being processed: \(keysignPayload.utxos.count)")
-        
-        // Note: For Cardano, keysignPayload.utxos should be empty since we skip Blockchair
-        for (index, inputUtxo) in keysignPayload.utxos.enumerated() {
-            print("Processing UTXO \(index): hash=\(inputUtxo.hash), amount=\(inputUtxo.amount), index=\(inputUtxo.index)")
+        // Add UTXOs to the input
+        for inputUtxo in keysignPayload.utxos {
             let utxo = CardanoTxInput.with {
                 $0.outPoint = CardanoOutPoint.with {
                     $0.txHash = Data(hexString: inputUtxo.hash)!
@@ -83,11 +67,7 @@ enum CardanoHelper {
             input.utxos.append(utxo)
         }
         
-        let serializedData = try input.serializedData()
-        print("Serialized input data size: \(serializedData.count) bytes")
-        print("=== CardanoHelper.getPreSignedInputData completed ===")
-        
-        return serializedData
+        return try input.serializedData()
     }
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
