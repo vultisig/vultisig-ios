@@ -31,21 +31,54 @@ struct KeysignPayloadFactory {
         var utxos: [UtxoInfo] = []
         
         if case let .UTXO(byteFee, _) = chainSpecific {
-            // 148 is estimate vbytes for every input
-            // estimate we will use maximum 10 utxos
-            let totalAmount = amount + BigInt(byteFee * 1480)
-            guard let info = utxo.blockchairData
-                .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
-                .map({
-                    UtxoInfo(
-                        hash: $0.transactionHash ?? "",
-                        amount: Int64($0.value ?? 0),
-                        index: UInt32($0.index ?? -1)
-                    )
-                }), !info.isEmpty else {
-                throw Errors.notEnoughBalanceError
+            if coin.chain == .cardano {
+                // Fetch UTXOs for Cardano using Koios API
+                do {
+                    let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: coin)
+                    
+                    // Select UTXOs with enough value for the transaction
+                    let totalNeeded = amount + BigInt(byteFee)
+                    var selectedUTXOs: [UtxoInfo] = []
+                    var totalSelected: Int64 = 0
+                    
+                    // Sort UTXOs by amount (smallest first for better UTXO management)
+                    let sortedUTXOs = cardanoUTXOs.sorted { $0.amount < $1.amount }
+                    
+                    for utxo in sortedUTXOs {
+                        selectedUTXOs.append(utxo)
+                        totalSelected += utxo.amount
+                        
+                        if totalSelected >= Int64(totalNeeded) {
+                            break
+                        }
+                    }
+                    
+                    guard !selectedUTXOs.isEmpty && totalSelected >= Int64(totalNeeded) else {
+                        throw Errors.notEnoughBalanceError
+                    }
+                    
+                    utxos = selectedUTXOs
+                } catch {
+                    throw Errors.notEnoughBalanceError
+                }
+            } else {
+                // Bitcoin, Litecoin etc. - use Blockchair
+                // 148 is estimate vbytes for every input
+                // estimate we will use maximum 10 utxos
+                let totalAmount = amount + BigInt(byteFee * 1480)
+                guard let info = utxo.blockchairData
+                    .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
+                    .map({
+                        UtxoInfo(
+                            hash: $0.transactionHash ?? "",
+                            amount: Int64($0.value ?? 0),
+                            index: UInt32($0.index ?? -1)
+                        )
+                    }), !info.isEmpty else {
+                    throw Errors.notEnoughBalanceError
+                }
+                utxos = info
             }
-            utxos = info
         }
         
         return KeysignPayload(

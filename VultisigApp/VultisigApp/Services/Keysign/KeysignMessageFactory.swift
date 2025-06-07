@@ -54,8 +54,7 @@ struct KeysignMessageFactory {
             let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .cardano:
-            let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode)
-            return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
+            return try CardanoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)

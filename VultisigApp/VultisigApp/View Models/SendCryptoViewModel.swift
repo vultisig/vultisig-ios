@@ -72,12 +72,28 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         switch tx.coin.chain {
-        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash, .cardano:
+        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash, .zcash:
             tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             setPercentageAmount(tx: tx, for: percentage)
             Task{
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                isLoading = false
+            }
+        case .cardano:
+            Task {
+                await BalanceService.shared.updateBalance(for: tx.coin)
+                
+                var gas = BigInt.zero
+                if percentage == 100 {
+                    gas = tx.coin.feeDefault.toBigInt()
+                }
+                
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                setPercentageAmount(tx: tx, for: percentage)
+                
+                convertToFiat(newValue: tx.amount, tx: tx)
+                
                 isLoading = false
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia:
@@ -343,7 +359,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "validAddressError"
             showAlert = true
-            logger.log("Invalid address.")
+            logger.log("Invalid address for \(tx.coin.chain.name): \(tx.toAddress). isValidAddress=\(self.isValidAddress), isNamespaceResolved=\(self.isNamespaceResolved)")
             isValidForm = false
         }
         
@@ -364,7 +380,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
             showAlert = true
-            logger.log("No gas estimation.")
+            logger.log("No gas estimation for \(tx.coin.chain.name). tx.gas=\(tx.gas), tx.fee=\(tx.fee)")
             isValidForm = false
             isLoading = false
             return isValidForm
@@ -384,7 +400,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             errorTitle = "error"
             errorMessage = "walletBalanceExceededError"
             showAlert = true
-            logger.log("Total transaction cost exceeds wallet balance.")
+            logger.log("Total transaction cost exceeds wallet balance. Amount: \(tx.amountInRaw), Gas: \(tx.gas), Total: \(tx.amountInRaw + tx.gas), Balance: \(tx.coin.rawBalance)")
             isValidForm = false
         }
         

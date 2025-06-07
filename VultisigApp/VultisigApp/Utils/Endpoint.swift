@@ -414,6 +414,17 @@ class Endpoint {
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     
+    // Cardano endpoints - Using Koios API (free, open source, no API key required)
+    static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
+    
+    static func fetchCardanoBalance(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_info"
+    }
+    
+    static func fetchCardanoUTXOs(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_utxos"
+    }
+    
     static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
         case .bitcoin:

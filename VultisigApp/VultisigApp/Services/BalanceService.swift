@@ -25,6 +25,8 @@ class BalanceService {
     private let osmo = OsmosisService.shared
     private let ripple = RippleService.shared
     private let tron = TronService.shared
+    private let cardano = CardanoService.shared
+
     
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
@@ -184,8 +186,7 @@ private extension BalanceService {
             return blockChairData.address?.balance?.description ?? "0"
             
         case .cardano:
-            // TODO: Implement Cardano balance service
-            return "0"
+            return try await cardano.getBalance(coin: coin)
             
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
@@ -272,4 +273,6 @@ private extension BalanceService {
         
         coin.stakedBalance = stakedBalance
     }
+    
+
 }
