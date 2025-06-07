@@ -25,8 +25,7 @@ struct ReferralLaunchView: View {
             Spacer()
             image
             Spacer()
-            referralCodeTextField
-            saveButton
+            referredContent
             orSeparator
             createButton
         }
@@ -105,6 +104,51 @@ struct ReferralLaunchView: View {
             .resizable()
             .frame(maxWidth: 1024)
             .aspectRatio(contentMode: .fit)
+    }
+    
+    var referredContent: some View {
+        VStack(spacing: 16) {
+            if referralViewModel.savedReferredCode.isEmpty {
+                referralCodeTextField
+                saveButton
+            } else {
+                referralCodeText
+                editButton
+            }
+        }
+    }
+    
+    var referralCodeText: some View {
+        HStack {
+            Text(referralViewModel.savedReferredCode)
+            Spacer()
+        }
+        .foregroundColor(.neutral0)
+        .colorScheme(.dark)
+        .frame(height: 56)
+        .font(.body16BrockmannMedium)
+        .padding(.horizontal, 12)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue200, lineWidth: 1)
+        )
+        .autocorrectionDisabled()
+        .borderlessTextFieldStyle()
+        .padding(1)
+    }
+    
+    var editButton: some View {
+        NavigationLink {
+            EditReferralCodeView()
+        } label: {
+            editLabel
+        }
+    }
+    
+    var editLabel: some View {
+        OutlineButton(title: "editReferral", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var loader: some View {

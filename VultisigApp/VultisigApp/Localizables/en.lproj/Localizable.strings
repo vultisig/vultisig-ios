@@ -699,3 +699,4 @@
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "Referral code not found";
 "referralCodeAdded" = "Referral code successfully linked";
+"editReferral" = "Edit referral";
