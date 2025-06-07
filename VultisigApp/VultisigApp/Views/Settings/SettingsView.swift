@@ -15,21 +15,10 @@ struct SettingsView: View {
     @State var scale: CGFloat = 1
     @State var showAdvancedSettings: Bool = false
     
-    @StateObject var referralViewModel = ReferralViewModel()
-    
     var body: some View {
         content
             .navigationDestination(isPresented: $showAdvancedSettings) {
                 SettingsAdvancedView()
-            }
-            .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
-                ReferralOnboardingView(referralViewModel: referralViewModel)
-            })
-            .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
-                ReferralLaunchView()
-            })
-            .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
-                referralOverviewSheet
             }
     }
     
@@ -119,33 +108,7 @@ struct SettingsView: View {
     }
     
     var referralCodeCell: some View {
-        ZStack {
-            if referralViewModel.showReferralCodeOnboarding {
-                referralCodeButton
-            } else {
-                referralCodeNavigationLink
-            }
-        }
-    }
-    
-    var referralCodeNavigationLink: some View {
-        NavigationLink {
-            ReferralLaunchView()
-        } label: {
-            referralCodeLabel
-        }
-    }
-    
-    var referralCodeButton: some View {
-        Button {
-            referralViewModel.showReferralBannerSheet = true
-        } label: {
-            referralCodeLabel
-        }
-    }
-    
-    var referralCodeLabel: some View {
-        SettingCell(title: "referralCode", icon: "horn")
+        ReferralView()
     }
     
     var faqCell: some View {
@@ -235,11 +198,6 @@ struct SettingsView: View {
         .onTapGesture {
             handleVersionTap()
         }
-    }
-    
-    var referralOverviewSheet: some View {
-        ReferralOnboardingBanner(referralViewModel: referralViewModel)
-            .presentationDetents([.height(400)])
     }
     
     private func handleVersionTap() {

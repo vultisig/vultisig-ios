@@ -650,3 +650,10 @@
 "referralOnboardingDescription4" = "Iskoristi kod prijatelja i uštedi na naknadama.";
 "referral" = "Preporuka";
 "vultisig-referrals" = "Vultisig – Preporuke";
+"referralLaunchCodeLengthError" = "Referalni kod mora imati 4 znaka";
+"systemErrorMessage" = "Sistemska greška. Pokušajte ponovno.";
+"referralCodeNotFound" = "Referalni kod nije pronađen";
+"referralCodeAdded" = "Referalni kod uspješno povezan";
+"editReferral" = "Uredi preporuku";
+"editReferredCode" = "Uredi referalni kod";
+"saveReferredCode" = "Spremi referalni kod";
