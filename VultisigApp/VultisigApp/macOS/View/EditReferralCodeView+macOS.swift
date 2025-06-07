@@ -8,7 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension EditReferralCodeView {
+extension EditReferredCodeView {
     var container: some View {
         VStack(spacing: 0) {
             header
@@ -17,7 +17,7 @@ extension EditReferralCodeView {
     }
     
     var header: some View {
-        GeneralMacHeader(title: "editReferral")
+        GeneralMacHeader(title: "editReferred")
     }
 }
 #endif

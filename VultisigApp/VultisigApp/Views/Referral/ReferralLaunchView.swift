@@ -142,7 +142,7 @@ struct ReferralLaunchView: View {
     
     var editButton: some View {
         NavigationLink {
-            EditReferralCodeView()
+            EditReferredCodeView()
         } label: {
             editLabel
         }

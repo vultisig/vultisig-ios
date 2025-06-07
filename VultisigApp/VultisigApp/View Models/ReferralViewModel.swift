@@ -10,7 +10,6 @@ import SwiftUI
 @MainActor
 class ReferralViewModel: ObservableObject {
     @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
-    
     @Published var showReferralBannerSheet: Bool = false
     @Published var navigationToReferralOverview: Bool = false
     @Published var navigationToCreateReferralView: Bool = false
@@ -24,6 +23,10 @@ class ReferralViewModel: ObservableObject {
     @Published var showReferralLaunchViewSuccess: Bool = false
     @Published var referralLaunchViewErrorMessage: String = ""
     @Published var referralLaunchViewSuccessMessage: String = ""
+    
+    // Generated Referral Code
+    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
+    @Published var referralCode: String = ""
     
     func closeBannerSheet() {
         showReferralBannerSheet = false
@@ -43,6 +46,13 @@ class ReferralViewModel: ObservableObject {
         
         guard !referredCode.isEmpty else {
             referralLaunchViewErrorMessage = "emptyField"
+            showReferralLaunchViewError = true
+            isLoading = false
+            return
+        }
+        
+        guard referredCode != savedGeneratedReferralCode else {
+            referralLaunchViewErrorMessage = "referralCodeMatch"
             showReferralLaunchViewError = true
             isLoading = false
             return

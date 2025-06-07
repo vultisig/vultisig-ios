@@ -1,5 +1,5 @@
 //
-//  EditReferralCodeView.swift
+//  EditReferredCodeView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EditReferralCodeView: View {
+struct EditReferredCodeView: View {
     @State var referralCode: String = ""
     
     @State var showError: Bool = false
@@ -68,5 +68,5 @@ struct EditReferralCodeView: View {
 }
 
 #Preview {
-    EditReferralCodeView()
+    EditReferredCodeView()
 }

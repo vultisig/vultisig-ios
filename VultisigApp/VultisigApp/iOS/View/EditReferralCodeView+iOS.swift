@@ -8,10 +8,10 @@
 #if os(iOS)
 import SwiftUI
 
-extension EditReferralCodeView {
+extension EditReferredCodeView {
     var container: some View {
         content
-            .navigationTitle(NSLocalizedString("editReferral", comment: ""))
+            .navigationTitle(NSLocalizedString("editReferred", comment: ""))
     }
 }
 #endif
