@@ -667,3 +667,8 @@
 "referralOnboardingDescription4" = "Nutze den Code deines Freundes und spare Gebühren beim Swappen.";
 "referral" = "Empfehlung";
 "vultisig-referrals" = "Vultisig – Empfehlungen";
+"referralLaunchCodeLengthError" = "Empfehlungscode muss 4 Zeichen lang sein";
+"systemErrorMessage" = "Systemfehler. Bitte versuche es erneut.";
+"referralCodeNotFound" = "Empfehlungscode nicht gefunden";
+"referralCodeAdded" = "Empfehlungscode erfolgreich verknüpft";
+"editReferral" = "Empfehlung bearbeiten";

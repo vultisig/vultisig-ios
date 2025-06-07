@@ -650,3 +650,8 @@
 "referralOnboardingDescription4" = "Usa il codice di un amico e risparmia sulle commissioni.";
 "referral" = "Invito";
 "vultisig-referrals" = "Vultisig - Inviti";
+"referralLaunchCodeLengthError" = "Il codice di invito deve contenere 4 caratteri";
+"systemErrorMessage" = "Errore di sistema. Riprova.";
+"referralCodeNotFound" = "Codice di invito non trovato";
+"referralCodeAdded" = "Codice di invito collegato con successo";
+"editReferral" = "Modifica invito";

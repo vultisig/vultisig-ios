@@ -1,5 +1,5 @@
 //
-//  UseReferralCodeView.swift
+//  EditReferralCodeView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-26.
@@ -7,20 +7,29 @@
 
 import SwiftUI
 
-struct UseReferralCodeView: View {
+struct EditReferralCodeView: View {
     @State var referralCode: String = ""
     
     @State var showError: Bool = false
     @State var errorMessage: String = ""
+    @State var showSuccess: Bool = false
+    @State var successMessage: String = ""
     
     var body: some View {
-        VStack {
-            content
-            button
+        ZStack {
+            Background()
+            container
         }
     }
     
     var content: some View {
+        VStack {
+            main
+            button
+        }
+    }
+    
+    var main: some View {
         ScrollView {
             VStack(spacing: 8) {
                 title
@@ -38,11 +47,12 @@ struct UseReferralCodeView: View {
     }
     
     var textField: some View {
-        ReferralTextFieldWithCopy(
-            placeholderText: "enterUpto4Characters",
+        ReferralTextField(
             text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            placeholderText: "enterUpto4Characters",
+            action: .Paste,
+            showError: showError,
+            errorMessage: errorMessage
         )
     }
     
@@ -58,5 +68,5 @@ struct UseReferralCodeView: View {
 }
 
 #Preview {
-    UseReferralCodeView()
+    EditReferralCodeView()
 }
