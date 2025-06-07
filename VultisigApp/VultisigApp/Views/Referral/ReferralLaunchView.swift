@@ -87,6 +87,14 @@ struct ReferralLaunchView: View {
     }
     
     var createButton: some View {
+        NavigationLink {
+            CreateReferralView()
+        } label: {
+            createLabel
+        }
+    }
+    
+    var createLabel: some View {
         FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
     }
     

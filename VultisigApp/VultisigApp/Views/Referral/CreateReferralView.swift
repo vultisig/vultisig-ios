@@ -17,17 +17,21 @@ struct CreateReferralView: View {
     @State var expireInCount: Int = 0
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             
             VStack {
-                content
+                main
                 button
             }
         }
     }
     
-    var content: some View {
+    var main: some View {
         ScrollView {
             VStack(spacing: 16) {
                 pickReferralCode
