@@ -18,6 +18,9 @@ struct ReferralLaunchView: View {
                 loader
             }
         }
+        .alert(isPresented: $referralViewModel.showReferralLaunchViewSuccess) {
+            alert
+        }
     }
     
     var main: some View {
@@ -93,9 +96,7 @@ struct ReferralLaunchView: View {
             placeholderText: "enterUpto4Characters",
             action: .Paste,
             showError: referralViewModel.showReferralLaunchViewError,
-            errorMessage: referralViewModel.referralLaunchViewErrorMessage,
-            showSuccess: referralViewModel.showReferralLaunchViewSuccess,
-            successMessage: referralViewModel.referralLaunchViewSuccessMessage
+            errorMessage: referralViewModel.referralLaunchViewErrorMessage
         )
     }
     
@@ -153,6 +154,14 @@ struct ReferralLaunchView: View {
     
     var loader: some View {
         Loader()
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("success", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralLaunchViewSuccessMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
 }
 

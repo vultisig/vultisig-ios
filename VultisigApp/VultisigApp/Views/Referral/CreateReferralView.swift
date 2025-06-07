@@ -66,9 +66,7 @@ struct CreateReferralView: View {
             placeholderText: "enterUpto4Characters",
             action: .Clear,
             showError: showError,
-            errorMessage: errorMessage,
-            showSuccess: showSuccess,
-            successMessage: successMessage
+            errorMessage: errorMessage
         )
     }
     

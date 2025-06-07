@@ -52,9 +52,7 @@ struct EditReferralCodeView: View {
             placeholderText: "enterUpto4Characters",
             action: .Paste,
             showError: showError,
-            errorMessage: errorMessage,
-            showSuccess: showSuccess,
-            successMessage: successMessage
+            errorMessage: errorMessage
         )
     }
     

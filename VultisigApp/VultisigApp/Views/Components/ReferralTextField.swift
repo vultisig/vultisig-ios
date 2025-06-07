@@ -13,16 +13,12 @@ struct ReferralTextField: View {
     let action: ReferralTextFieldAction
     let showError: Bool
     let errorMessage: String
-    let showSuccess: Bool
-    let successMessage: String
     
     var body: some View {
         VStack(spacing: 8) {
             textField
             
-            if showSuccess {
-                successText
-            } else if showError {
+            if showError {
                 errorText
             }
         }
@@ -101,21 +97,12 @@ struct ReferralTextField: View {
             .foregroundColor(.invalidRed)
     }
     
-    var successText: some View {
-        Text(NSLocalizedString(successMessage, comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.alertTurquoise)
-    }
-    
     private func clearCode() {
         text = ""
     }
     
     private func getOutlineColor() -> Color {
-        if showSuccess {
-            Color.alertTurquoise
-        } else if showError {
+        if showError {
             Color.invalidRed
         } else {
             Color.blue200
@@ -129,8 +116,6 @@ struct ReferralTextField: View {
         placeholderText: "enterUpto4Characters",
         action: .Copy,
         showError: false,
-        errorMessage: "",
-        showSuccess: false,
-        successMessage: ""
+        errorMessage: ""
     )
 }
