@@ -54,9 +54,16 @@ enum CardanoHelper {
                 $0.changeAddress = keysignPayload.coin.address
                 $0.amount = UInt64(keysignPayload.toAmount)
                 $0.useMaxAmount = safeGuardMaxAmount
-                $0.forceFee = UInt64(byteFee)
+                //$0.forceFee = UInt64(byteFee)
             }
             $0.ttl = 1736265600 // Fixed TTL for testing (2025-01-07 16:00:00 UTC) - REPLACE WITH DYNAMIC VALUE LATER
+            
+            // TODO: Add memo as transaction metadata if provided
+            // Cardano memo support requires investigation of WalletCore protobuf structure
+            // to find the correct metadata field (e.g., auxiliaryData, metadata, etc.)
+            if let memo = keysignPayload.memo, !memo.isEmpty {
+                print("Cardano memo provided but not yet implemented: \(memo)")
+            }
         }
         
         print("CardanoSigningInput created successfully")

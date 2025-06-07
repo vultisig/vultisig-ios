@@ -81,18 +81,15 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 isLoading = false
             }
         case .cardano:
+            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
                 var gas = BigInt.zero
-                if percentage == 100 {
-                    gas = tx.coin.feeDefault.toBigInt()
-                }
-                
                 tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
-                convertToFiat(newValue: tx.amount, tx: tx)
+                convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 
                 isLoading = false
             }

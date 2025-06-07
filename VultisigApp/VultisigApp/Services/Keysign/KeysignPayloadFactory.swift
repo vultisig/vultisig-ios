@@ -30,14 +30,21 @@ struct KeysignPayloadFactory {
         
         var utxos: [UtxoInfo] = []
         
-        if case let .UTXO(byteFee, _) = chainSpecific {
+        if case let .UTXO(byteFee, sendMaxAmount) = chainSpecific {
             if coin.chain == .cardano {
                 // Fetch UTXOs for Cardano using Koios API
                 do {
                     let cardanoUTXOs = try await CardanoService.shared.getUTXOs(coin: coin)
                     
-                    // Select UTXOs with enough value for the transaction
-                    let totalNeeded = amount + BigInt(byteFee)
+                    // For send max, don't add fees - let WalletCore handle it
+                    // For regular sends, add estimated fees to ensure we have enough
+                    let totalNeeded: BigInt
+                    if sendMaxAmount {
+                        totalNeeded = amount // Don't add fees for send max
+                    } else {
+                        totalNeeded = amount + BigInt(byteFee) // Add fees for regular sends
+                    }
+                    
                     var selectedUTXOs: [UtxoInfo] = []
                     var totalSelected: Int64 = 0
                     
@@ -53,7 +60,7 @@ struct KeysignPayloadFactory {
                         }
                     }
                     
-                    guard !selectedUTXOs.isEmpty && totalSelected >= Int64(totalNeeded) else {
+                    guard !selectedUTXOs.isEmpty && (sendMaxAmount || totalSelected >= Int64(totalNeeded)) else {
                         throw Errors.notEnoughBalanceError
                     }
                     
