@@ -655,3 +655,5 @@
 "referralCodeNotFound" = "Referalni kod nije pronađen";
 "referralCodeAdded" = "Referalni kod uspješno povezan";
 "editReferral" = "Uredi preporuku";
+"editReferredCode" = "Uredi referalni kod";
+"saveReferredCode" = "Spremi referalni kod";

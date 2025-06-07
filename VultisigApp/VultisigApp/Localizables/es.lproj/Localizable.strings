@@ -655,3 +655,5 @@
 "referralCodeNotFound" = "Código de referido no encontrado";
 "referralCodeAdded" = "Código de referido vinculado con éxito";
 "editReferral" = "Editar referido";
+"editReferredCode" = "Editar código de referido";
+"saveReferredCode" = "Guardar código de referido";

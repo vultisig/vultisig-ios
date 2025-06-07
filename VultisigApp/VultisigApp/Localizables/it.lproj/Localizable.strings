@@ -655,3 +655,5 @@
 "referralCodeNotFound" = "Codice di invito non trovato";
 "referralCodeAdded" = "Codice di invito collegato con successo";
 "editReferral" = "Modifica invito";
+"editReferredCode" = "Modifica codice di invito";
+"saveReferredCode" = "Salva codice di invito";

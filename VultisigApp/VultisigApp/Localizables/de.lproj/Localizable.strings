@@ -672,3 +672,5 @@
 "referralCodeNotFound" = "Empfehlungscode nicht gefunden";
 "referralCodeAdded" = "Empfehlungscode erfolgreich verknüpft";
 "editReferral" = "Empfehlung bearbeiten";
+"editReferredCode" = "Empfehlungscode bearbeiten";
+"saveReferredCode" = "Empfehlungscode speichern";

@@ -656,3 +656,5 @@
 "referralCodeNotFound" = "Código de indicação não encontrado";
 "referralCodeAdded" = "Código de indicação vinculado com sucesso";
 "editReferral" = "Editar indicação";
+"editReferredCode" = "Editar código de indicação";
+"saveReferredCode" = "Salvar código de indicação";
