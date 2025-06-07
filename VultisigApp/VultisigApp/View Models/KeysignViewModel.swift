@@ -69,19 +69,6 @@ class KeysignViewModel: ObservableObject {
                  encryptionKeyHex: String,
                  isInitiateDevice: Bool
     ) async {
-        // Debug logging for Cardano
-        if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-            print("=== KeysignViewModel.setData Debug ===")
-            print("Chain: \(keysignPayload.coin.chain)")
-            print("ChainType: \(keysignPayload.coin.chainType)")
-            print("Expected signingKeyType: \(keysignPayload.coin.chain.signingKeyType)")
-            print("Passed keysignType: \(keysignType)")
-            print("Vault pubKeyECDSA: \(vault.pubKeyECDSA)")
-            print("Vault pubKeyEdDSA: \(vault.pubKeyEdDSA)")
-            print("Messages to sign: \(messagesToSign)")
-            print("=====================================")
-        }
-        
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -97,14 +84,8 @@ class KeysignViewModel: ObservableObject {
         let pubKeyForMessagePuller: String
         if keysignType == .EdDSA {
             pubKeyForMessagePuller = vault.pubKeyEdDSA
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("Using EdDSA pubKey for MessagePuller: \(vault.pubKeyEdDSA)")
-            }
         } else {
             pubKeyForMessagePuller = vault.pubKeyECDSA
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("⚠️ WARNING: Using ECDSA pubKey for MessagePuller on Cardano!")
-            }
         }
         
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: pubKeyForMessagePuller, encryptGCM: isEncryptGCM)
@@ -136,22 +117,11 @@ class KeysignViewModel: ObservableObject {
     }
     
     func startKeysignDKLS() async {
-        print("=== DKLS Keysign Started ===")
-        print("Vault libType: \(vault.libType?.toString() ?? "nil")")
-        if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-            print("🔵 Starting DKLS Keysign for Cardano")
-            print("Chain: \(keysignPayload.coin.chain)")
-            print("KeysignType: \(self.keysignType)")
-            print("Messages to sign: \(self.messsageToSign)")
-        }
-        print("============================")
-        
         let derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
         
         do {
             switch self.keysignType {
             case .ECDSA:
-                print("🔑 Starting DKLS ECDSA Keysign")
                 status = .KeysignECDSA
                 let dklsKeysign = DKLSKeysign(keysignCommittee: self.keysignCommittee,
                                               mediatorURL: self.mediatorURL,
@@ -161,69 +131,32 @@ class KeysignViewModel: ObservableObject {
                                               encryptionKeyHex: self.encryptionKeyHex,
                                               chainPath: keysignPayload?.coin.coinType.derivationPath() ?? derivePath,
                                               isInitiateDevice: self.isInitiateDevice)
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("⚠️ WARNING: Using DKLS ECDSA for Cardano - should be EdDSA!")
-                }
                 try await dklsKeysign.DKLSKeysignWithRetry()
                 self.signatures = dklsKeysign.getSignatures()
-                print("DKLS ECDSA signatures received: \(self.signatures.count)")
                 if self.signatures.count == 0 {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             case .EdDSA:
-                print("🔑 Starting DKLS EdDSA (Schnorr) Keysign")
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("✅ Correctly using DKLS EdDSA for Cardano")
-                    print("Cardano chainPath: \(keysignPayload.coin.coinType.derivationPath())")
-                }
                 status = .KeysignEdDSA
-                
-                // Only use chainPath for Cardano - other EdDSA chains (Solana, Polkadot, Sui, Ton) use raw keys
-                let chainPathForSchnorr: String?
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    chainPathForSchnorr = keysignPayload.coin.coinType.derivationPath()
-                    print("Using chainPath for Cardano: \(chainPathForSchnorr!)")
-                } else {
-                    chainPathForSchnorr = nil
-                    if let keysignPayload = keysignPayload {
-                        print("Using nil chainPath for \(keysignPayload.coin.chain) (raw EdDSA key)")
-                    }
-                }
-                
                 let schnorrKeysign = SchnorrKeysign(keysignCommittee: self.keysignCommittee,
                                                     mediatorURL: self.mediatorURL,
                                                     sessionID: self.sessionID,
                                                     messsageToSign: self.messsageToSign,
                                                     vault: self.vault,
                                                     encryptionKeyHex: self.encryptionKeyHex,
-                                                    chainPath: chainPathForSchnorr,
                                                     isInitiateDevice: self.isInitiateDevice)
-                print("SchnorrKeysign object created, starting keysign...")
                 try await schnorrKeysign.KeysignWithRetry()
-                print("SchnorrKeysign completed, getting signatures...")
                 self.signatures = schnorrKeysign.getSignatures()
-                print("DKLS EdDSA signatures received: \(self.signatures.count)")
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("🔵 Cardano DKLS EdDSA signatures: \(self.signatures)")
-                }
                 if self.signatures.count == 0 {
                     throw HelperError.runtimeError("fail to sign transaction")
                 }
             }
-            print("✅ DKLS Keysign completed successfully, broadcasting transaction...")
             await broadcastTransaction()
             if let customMessagePayload {
                 txid = customMessagePayload.message
             }
             status = .KeysignFinished
         } catch {
-            print("=== DKLS Keysign Error ===")
-            print("Error: \(error)")
-            print("Error description: \(error.localizedDescription)")
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("🔴 Cardano DKLS Keysign Error")
-            }
-            print("==========================")
             logger.error("TSS keysign failed, error: \(error.localizedDescription)")
             keysignError = error.localizedDescription
             status = .KeysignFailed
@@ -257,18 +190,6 @@ class KeysignViewModel: ObservableObject {
     func keysignOneMessageWithRetry(msg: String, attempt: UInt8) async throws {
         logger.info("signing message:\(msg)")
         
-        // Debug logging for Cardano
-        if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-            print("=== Cardano Keysign Debug ===")
-            print("Chain: \(keysignPayload.coin.chain)")
-            print("ChainType: \(keysignPayload.coin.chainType)")
-            print("KeysignType: \(self.keysignType)")
-            print("Expected KeyType: \(keysignPayload.coin.chain.signingKeyType)")
-            print("Derivation Path: \(keysignPayload.coin.coinType.derivationPath())")
-            print("Vault pubKeyECDSA: \(vault.pubKeyECDSA)")
-            print("Vault pubKeyEdDSA: \(vault.pubKeyEdDSA)")
-        }
-        
         let msgHash = Utils.getMessageBodyHash(msg: msg)
         let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
                                           sessionID: self.sessionID)
@@ -276,14 +197,8 @@ class KeysignViewModel: ObservableObject {
         switch self.keysignType {
         case .ECDSA:
             pubkey = vault.pubKeyECDSA
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("⚠️  WARNING: Using ECDSA for Cardano - should be EdDSA!")
-            }
         case .EdDSA:
             pubkey = vault.pubKeyEdDSA
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("✅ Correctly using EdDSA for Cardano")
-            }
         }
         let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
@@ -316,15 +231,9 @@ class KeysignViewModel: ObservableObject {
         
         if let keysignPayload {
             keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
-            if keysignPayload.coin.chain == .cardano {
-                print("Cardano derivation path: \(keysignPayload.coin.coinType.derivationPath())")
-            }
         } else {
             // TODO: Should we use Ether as default derivationPath?
             keysignReq.derivePath = TokensStore.Token.ethereum.coinType.derivationPath()
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("⚠️  WARNING: Using Ethereum derivation path for Cardano!")
-            }
         }
         
         // sign messages one by one , since the msg is in hex format , so we need convert it to base64
@@ -338,48 +247,17 @@ class KeysignViewModel: ObservableObject {
             case .ECDSA:
                 keysignReq.pubKey = self.vault.pubKeyECDSA
                 self.status = .KeysignECDSA
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("Setting ECDSA pubKey for Cardano: \(self.vault.pubKeyECDSA)")
-                }
             case .EdDSA:
                 keysignReq.pubKey = self.vault.pubKeyEdDSA
                 self.status = .KeysignEdDSA
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("Setting EdDSA pubKey for Cardano: \(self.vault.pubKeyEdDSA)")
-                }
             }
             if let service = self.tssService {
-                print("=== TSS Keysign Request ===")
-                print("LocalPartyKey: \(keysignReq.localPartyKey)")
-                print("KeysignType: \(keysignType)")
-                print("DerivePath: \(keysignReq.derivePath)")
-                print("PubKey: \(keysignReq.pubKey)")
-                print("MessageToSign: \(keysignReq.messageToSign)")
-                print("Committee: \(keysignReq.keysignCommitteeKeys)")
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("🔵 Cardano TSS Request initiated")
-                }
-                print("============================")
-                
                 let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
                 
-                print("=== TSS Keysign Response ===")
-                print("Response received for message: \(msg)")
-                print("R value: \(resp.r)")
-                print("S value: \(resp.s)")
-                print("R isEmpty: \(resp.r.isEmpty)")
-                print("S isEmpty: \(resp.s.isEmpty)")
-                if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                    print("🔵 Cardano TSS Response received")
-                }
-                print("============================")
-                
                 if resp.r.isEmpty || resp.s.isEmpty {
-                    print("❌ TSS Keysign failed: R or S value is empty")
                     throw TssKeysignError.keysignFail
                 }
                 self.signatures[msg] = resp
-                print("✅ TSS Signature stored successfully for message: \(msg)")
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
             }
             
@@ -388,32 +266,18 @@ class KeysignViewModel: ObservableObject {
         } catch {
             self.messagePuller?.stop()
             // Check whether the other party already have the signature
-            print("=== TSS Keysign Error ===")
-            print("Error: \(error)")
-            print("Error description: \(error.localizedDescription)")
-            print("Attempt: \(attempt)")
-            print("Message: \(msg)")
-            if let keysignPayload = keysignPayload, keysignPayload.coin.chain == .cardano {
-                print("🔴 Cardano TSS Keysign Error")
-            }
-            print("=========================")
             logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
             
             let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
             if resp != nil {
-                print("✅ Found existing signature from other party")
                 self.signatures[msg] = resp
                 return
-            } else {
-                print("❌ No existing signature found from other parties")
             }
             
             if attempt < 3 {
-                print("🔄 Retrying keysign (attempt \(attempt + 1))")
                 logger.info("retry keysign")
                 try await keysignOneMessageWithRetry(msg: msg, attempt: attempt + 1)
             } else {
-                print("❌ Max retries reached, throwing error")
                 throw error
             }
         }
@@ -424,31 +288,16 @@ class KeysignViewModel: ObservableObject {
     }
     
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
-        print("=== TSS Service Call ===")
-        print("KeysignType: \(keysignType)")
-        print("Starting TSS task...")
-        
         let t = Task.detached(priority: .high) {
-            print("📞 Calling TSS service with \(keysignType)")
             switch keysignType {
             case .ECDSA:
-                print("🔑 Executing ECDSA keysign")
                 return try service.keysignECDSA(req)
             case .EdDSA:
-                print("🔑 Executing EdDSA keysign")
                 return try service.keysignEdDSA(req)
             }
         }
         
-        do {
-            let result = try await t.value
-            print("✅ TSS task completed successfully")
-            return result
-        } catch {
-            print("❌ TSS task failed with error: \(error)")
-            print("Error description: \(error.localizedDescription)")
-            throw error
-        }
+        return try await t.value
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload) throws -> SignedTransactionType {
@@ -497,14 +346,7 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
             
         case .Cardano:
-            print("=== Calling CardanoHelper.getSignedTransaction ===")
-            print("vaultHexPubKey: \(vault.pubKeyEdDSA)")
-            print("vaultHexChainCode: \(vault.hexChainCode)")
-            print("signatures count: \(signatures.count)")
             let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
-            print("CardanoHelper.getSignedTransaction completed successfully")
-            print("rawTransaction: \(transaction.rawTransaction)")
-            print("transactionHash: \(transaction.transactionHash)")
             return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {

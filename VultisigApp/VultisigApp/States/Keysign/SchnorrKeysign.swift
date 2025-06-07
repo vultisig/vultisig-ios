@@ -21,7 +21,6 @@ final class SchnorrKeysign {
     let encryptionKeyHex: String
     let isInitiateDevice: Bool
     let localPartyID: String
-    let chainPath: String?
     let publicKeyEdDSA: String
     var messenger: DKLSMessenger? = nil
     var keysignDoneIndicator = false
@@ -36,7 +35,6 @@ final class SchnorrKeysign {
          messsageToSign: [String],
          vault: Vault,
          encryptionKeyHex: String,
-         chainPath: String?,
          isInitiateDevice: Bool) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -44,7 +42,6 @@ final class SchnorrKeysign {
         self.messsageToSign = messsageToSign
         self.vault = vault
         self.encryptionKeyHex = encryptionKeyHex
-        self.chainPath = chainPath
         self.isInitiateDevice = isInitiateDevice
         self.localPartyID = vault.localPartyID
         self.publicKeyEdDSA = vault.pubKeyEdDSA
@@ -128,16 +125,7 @@ final class SchnorrKeysign {
         let msgArr = [UInt8](decodedMsgData)
         var msgSlice = msgArr.to_dkls_goslice()
         
-        let err: goschnorr.schnorr_lib_error
-        if let chainPath = self.chainPath {
-            // Use chainPath for Cardano (HD derivation)
-            let chainPathArr = [UInt8](chainPath.replacingOccurrences(of: "'", with: "").data(using: .utf8)!)
-            var chainPathSlice = chainPathArr.to_dkls_goslice()
-            err = schnorr_sign_setupmsg_new(&keyIdSlice, &chainPathSlice, &msgSlice, &ids, &buf)
-        } else {
-            // Use nil chainPath for other EdDSA chains (raw key)
-            err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
-        }
+        let err = schnorr_sign_setupmsg_new(&keyIdSlice, nil, &msgSlice, &ids, &buf)
         
         if err != LIB_OK {
             throw HelperError.runtimeError("fail to setup keysign message, error:\(err)")
