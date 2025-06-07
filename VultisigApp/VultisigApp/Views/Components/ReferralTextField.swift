@@ -8,21 +8,24 @@
 import SwiftUI
 
 struct ReferralTextField: View {
+    @Binding var text: String
     let placeholderText: String
     let action: ReferralTextFieldAction
-    @Binding var text: String
-    @Binding var showError: Bool
-    @Binding var errorMessage: String
+    let showError: Bool
+    let errorMessage: String
+    let showSuccess: Bool
+    let successMessage: String
     
     var body: some View {
         VStack(spacing: 8) {
             textField
             
-            if showError {
+            if showSuccess {
+                successText
+            } else if showError {
                 errorText
             }
         }
-        .animation(.easeInOut, value: showError)
     }
     
     var textField: some View {
@@ -42,7 +45,7 @@ struct ReferralTextField: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.blue200, lineWidth: 1)
+                .stroke(getOutlineColor(), lineWidth: 1)
         )
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
@@ -98,11 +101,36 @@ struct ReferralTextField: View {
             .foregroundColor(.invalidRed)
     }
     
+    var successText: some View {
+        Text(NSLocalizedString(successMessage, comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertTurquoise)
+    }
+    
     private func clearCode() {
         text = ""
+    }
+    
+    private func getOutlineColor() -> Color {
+        if showSuccess {
+            Color.alertTurquoise
+        } else if showError {
+            Color.invalidRed
+        } else {
+            Color.blue200
+        }
     }
 }
 
 #Preview {
-    ReferralTextField(placeholderText: "enterUpto4Characters", action: .Copy, text: .constant("ABCD"), showError: .constant(false), errorMessage: .constant(""))
+    ReferralTextField(
+        text: .constant("ABCD"),
+        placeholderText: "enterUpto4Characters",
+        action: .Copy,
+        showError: false,
+        errorMessage: "",
+        showSuccess: false,
+        successMessage: ""
+    )
 }

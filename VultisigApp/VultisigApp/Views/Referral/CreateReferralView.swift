@@ -10,6 +10,8 @@ import SwiftUI
 struct CreateReferralView: View {
     @State var referralCode: String = ""
     
+    @State var showSuccess: Bool = false
+    @State var successMessage: String = ""
     @State var showError: Bool = false
     @State var errorMessage: String = ""
     @State var expireInCount: Int = 0
@@ -60,11 +62,13 @@ struct CreateReferralView: View {
     
     var pickReferralTextfield: some View {
         ReferralTextField(
+            text: $referralCode,
             placeholderText: "enterUpto4Characters",
             action: .Clear,
-            text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            showError: showError,
+            errorMessage: errorMessage,
+            showSuccess: showSuccess,
+            successMessage: successMessage
         )
     }
     

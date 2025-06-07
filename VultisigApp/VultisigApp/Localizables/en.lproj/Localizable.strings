@@ -698,3 +698,4 @@
 "referralLaunchCodeLengthError" = "Referral code needs to be 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "Referral code not found";
+"referralCodeAdded" = "Referral code successfully linked";

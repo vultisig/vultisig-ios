@@ -12,6 +12,8 @@ struct UseReferralCodeView: View {
     
     @State var showError: Bool = false
     @State var errorMessage: String = ""
+    @State var showSuccess: Bool = false
+    @State var successMessage: String = ""
     
     var body: some View {
         VStack {
@@ -39,11 +41,13 @@ struct UseReferralCodeView: View {
     
     var textField: some View {
         ReferralTextField(
+            text: $referralCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            showError: showError,
+            errorMessage: errorMessage,
+            showSuccess: showSuccess,
+            successMessage: successMessage
         )
     }
     

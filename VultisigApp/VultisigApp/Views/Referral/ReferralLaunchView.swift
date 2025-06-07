@@ -90,11 +90,13 @@ struct ReferralLaunchView: View {
     
     var textField: some View {
         ReferralTextField(
+            text: $referralViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            text: $referralViewModel.referredCode,
-            showError: $referralViewModel.showReferralLaunchViewError,
-            errorMessage: $referralViewModel.referralLaunchViewErrorMessage
+            showError: referralViewModel.showReferralLaunchViewError,
+            errorMessage: referralViewModel.referralLaunchViewErrorMessage,
+            showSuccess: referralViewModel.showReferralLaunchViewSuccess,
+            successMessage: referralViewModel.referralLaunchViewSuccessMessage
         )
     }
     
