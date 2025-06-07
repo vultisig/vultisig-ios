@@ -63,6 +63,10 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
     }
     
+    static func fetchRuneBondedAmount(address: String) -> String {
+        return "https://midgard.ninerealms.com/v2/bonds/\(address)"
+    }
+    
     static func fetchThorchainMergedAssets() -> String {
         "https://api.rujira.network/api/graphiql"
     }
@@ -381,6 +385,10 @@ class Endpoint {
     
     static func getMayaSwapTracker(txid: String) -> String {
         return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+    }
+    
+    static func getLifiSwapTracker(txid: String) -> String {
+        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"

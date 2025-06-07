@@ -69,40 +69,11 @@ extension String {
 
 // MARK: - Amount Formatter
 extension String {
-    
-    private func getCurrentDecimalPoint() -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current // Ensure it uses system locale
-        return formatter.decimalSeparator ?? "."
-    }
-    
-    func formatCurrency() -> String {
-        let decimalPoint = getCurrentDecimalPoint()
-        return self.replacingOccurrences(of: ",", with: decimalPoint)
-    }
-    
-    func formatCurrencyWithSeparators() -> String {
-        guard let number = parseInput() else {
-            return self
-        }
-        
-        return number.formatToFiat(includeCurrencySymbol: false, useAbbreviation: false)
-    }
-    
     func parseInput(locale: Locale = Locale.current) -> Decimal? {
         let usLocale = Locale(identifier: "en_US")
         
-        // Attempt 1: Try parsing with "en_US" locale
-        let formatterUS = NumberFormatter()
-        formatterUS.locale = usLocale
-        formatterUS.numberStyle = .decimal
-        
-        if let number = formatterUS.number(from: self) {
-            return number.decimalValue
-        }
-        
-        // Attempt 2: Try parsing with the user's current (or provided default) locale
-        // This is only attempted if the US locale parsing failed and the defaultLocale is different from usLocale
+        // Attempt 1: Try parsing with the user's current (or provided default) locale first
+        // This ensures comma-based locales (Europe/Brazil) work correctly
         if locale.identifier != usLocale.identifier {
             let formatterCurrent = NumberFormatter()
             formatterCurrent.locale = locale
@@ -113,6 +84,15 @@ extension String {
             }
         }
         
+        // Attempt 2: Fallback to parsing with "en_US" locale
+        let formatterUS = NumberFormatter()
+        formatterUS.locale = usLocale
+        formatterUS.numberStyle = .decimal
+        
+        if let number = formatterUS.number(from: self) {
+            return number.decimalValue
+        }
+        
         // If both attempts fail
         return nil
     }
@@ -120,6 +100,9 @@ extension String {
 
 extension String {
     func toDecimal() -> Decimal {
+        if self.isEmpty {
+            return .zero
+        }
         guard let number = parseInput() else {
             print("Failed to convert to Decimal: \(self)")
             return .zero

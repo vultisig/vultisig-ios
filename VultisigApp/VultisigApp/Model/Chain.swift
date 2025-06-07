@@ -327,7 +327,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return nil
         }
     }
-    
     var coinType: CoinType {
         switch self {
         case .bitcoin:

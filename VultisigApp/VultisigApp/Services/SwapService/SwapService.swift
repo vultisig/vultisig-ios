@@ -15,7 +15,7 @@ struct SwapService {
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
     private let lifiService: LiFiService = LiFiService.shared
-
+    
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
@@ -24,6 +24,7 @@ struct SwapService {
 
         switch provider {
         case .thorchain:
+            
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
                 provider: provider,
@@ -128,7 +129,7 @@ private extension SwapService {
         )
         return .oneinch(response.quote, fee: response.fee)
     }
-
+    
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await lifiService.fetchQuotes(

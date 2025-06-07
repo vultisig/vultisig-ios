@@ -50,6 +50,34 @@ class UTXOChainsHelper {
         return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }.sorted()
     }
     
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> BitcoinSigningInput {
+        guard let swapPayload = keysignPayload.swapPayload else {
+            throw HelperError.runtimeError("swap payload is nil")
+        }
+        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+            throw HelperError.runtimeError("fail to get swap payload")
+        }
+        guard let memo = keysignPayload.memo else {
+            throw HelperError.runtimeError("swap payload memo is nil")
+        }
+        guard let memoData = memo.data(using: .utf8) else {
+            throw HelperError.runtimeError("fail to encode memo to utf8")
+        }
+        
+        let input = BitcoinSigningInput.with {
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
+            $0.byteFee = 1
+            $0.useMaxAmount = false
+            $0.amount = Int64(swapPayload.fromAmount)
+            $0.coinType = self.coin.rawValue
+            $0.toAddress = thorChainSwapPayload.vaultAddress
+            $0.changeAddress = keysignPayload.coin.address
+            $0.outputOpReturn = memoData
+        }
+        
+        return input
+    }
+    
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {
         guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
