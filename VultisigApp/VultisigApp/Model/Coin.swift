@@ -296,7 +296,9 @@ class Coin: ObservableObject, Codable, Hashable {
     
     /// Total sum of bonded RUNE
     var totalBondedAmount: Decimal {
-        return bondedNodes.reduce(Decimal.zero) { $0 + $1.bond }
+        // Convert from base units (divide by 10^8)
+        let bondTotal = bondedNodes.reduce(Decimal.zero) { $0 + $1.bond }
+        return bondTotal / Foundation.pow(10, decimals)
     }
     
     /// Total sum of bonded RUNE in fiat currency

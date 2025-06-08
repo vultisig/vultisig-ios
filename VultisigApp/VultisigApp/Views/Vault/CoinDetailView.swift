@@ -95,17 +95,6 @@ struct CoinDetailView: View {
     
     var bondCells: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Bonded Nodes")
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
-                .padding(.horizontal, 16)
-            
-            Text("Total Bonded: \(coin.totalBondedAmountString) RUNE (\(coin.totalBondedAmountInFiatString))")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-            
             LazyVStack(spacing: 12) {
                 ForEach(coin.bondedNodes) { node in
                     RuneBondCell(bondNode: node, coin: coin)

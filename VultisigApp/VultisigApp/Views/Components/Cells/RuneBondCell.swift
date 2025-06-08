@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct RuneBondCell: View {
+    @Environment(\.openURL) private var openURL
     let bondNode: RuneBondNode
     let coin: Coin
     
     private var nodeIdentifier: String {
-        return "[\(bondNode.shortAddress)]"
+        return bondNode.shortAddress.lowercased()
     }
     
     private var nodeStatus: String {
@@ -28,8 +29,8 @@ struct RuneBondCell: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(nodeIdentifier)
-                    .font(.body16Menlo)
-                    .foregroundColor(.persianBlue200)
+                    .font(.body20Menlo)
+                    .foregroundColor(.neutral0)
                 
                 Text(nodeStatus)
                     .font(.body16Menlo)
@@ -40,6 +41,13 @@ struct RuneBondCell: View {
                 Text(bondValueInFiat)
                     .font(.body16MenloBold)
                     .foregroundColor(.neutral0)
+                
+                Button(action: openExplorer) {
+                    Image(systemName: "link")
+                        .font(.body18Menlo)
+                        .foregroundColor(.neutral0)
+                }
+                .padding(.leading, 8)
             }
             
             HStack {
@@ -78,6 +86,14 @@ struct RuneBondCell: View {
     private func convertFromBaseUnits(_ value: Decimal) -> Decimal {
         // Convert using the same approach as in Coin.balanceDecimal
         return value / Foundation.pow(10, coin.decimals)
+    }
+    
+    /// Opens the THORChain explorer to view node details
+    private func openExplorer() {
+        if let explorerURLString = Endpoint.getExplorerByAddressURLByGroup(chain: .thorChain, address: bondNode.address),
+           let url = URL(string: explorerURLString) {
+            openURL(url)
+        }
     }
 }
 
