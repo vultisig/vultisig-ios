@@ -377,30 +377,33 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
             
         case .Cosmos:
-            if keysignPayload.coin.chain == .gaiaChain {
+            switch keysignPayload.coin.chain {
+            case .gaiaChain:
                 let transaction = try ATOMHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .kujira {
+            case .kujira:
                 let transaction = try KujiraHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .dydx {
+            case .dydx:
                 let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .osmosis {
+            case .osmosis:
                 let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .terra {
+            case .terra:
                 let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .terraClassic {
+            case .terraClassic:
                 let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .noble {
+            case .noble:
                 let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .akash {
+            case .akash:
                 let transaction = try AkashHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            default:
+                throw HelperError.runtimeError("Unsupported Cosmos chain: \(keysignPayload.coin.chain)")
             }
             
             
