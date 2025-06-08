@@ -40,6 +40,8 @@ class THORChainSwaps {
             return signedEvmTx
         case .gaiaChain:
             return try ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload)
+        case .ripple:
+            return try RippleHelper.getSwapPreSignedInputData(keysignPayload: keysignPayload, vault: ApplicationState.shared.currentVault!)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -63,6 +65,8 @@ class THORChainSwaps {
                 throw HelperError.runtimeError(preSigningOutput.errorMessage)
             }
             return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
+        case .ripple:
+            return try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload, vault: ApplicationState.shared.currentVault!)
         default:
             throw HelperError.runtimeError("not support yet")
         }
@@ -132,6 +136,8 @@ class THORChainSwaps {
             return signedEvmTx
         case .gaiaChain:
             return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        case .ripple:
+            return try RippleHelper.getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, keysignPayload: keysignPayload, signatures: signatures, vault: ApplicationState.shared.currentVault!)
         default:
             throw HelperError.runtimeError("not support")
         }
