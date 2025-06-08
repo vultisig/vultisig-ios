@@ -19,6 +19,9 @@ class Coin: ObservableObject, Codable, Hashable {
     var rawBalance: String = ""
     var stakedBalance: String = ""
     
+    // Store bonded nodes data for RUNE coins
+    @Transient var bondedNodes: [RuneBondNode] = []
+    
     var decimals: Int {
         get {
             return Int(strDecimals) ?? 0
@@ -284,6 +287,36 @@ class Coin: ObservableObject, Codable, Hashable {
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }
         return chain.logo
+    }
+    
+    /// Returns true if this coin is RUNE from THORChain
+    var isRune: Bool {
+        return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
+    }
+    
+    /// Total sum of bonded RUNE
+    var totalBondedAmount: Decimal {
+        return bondedNodes.reduce(Decimal.zero) { $0 + $1.bond }
+    }
+    
+    /// Total sum of bonded RUNE in fiat currency
+    var totalBondedAmountInFiat: Decimal {
+        return RateProvider.shared.fiatBalance(value: totalBondedAmount, coin: self)
+    }
+    
+    /// Returns formatted total bonded amount string
+    var totalBondedAmountString: String {
+        return totalBondedAmount.formatToDecimal(digits: 8)
+    }
+    
+    /// Returns formatted total bonded amount in fiat
+    var totalBondedAmountInFiatString: String {
+        return totalBondedAmountInFiat.formatToFiat()
+    }
+    
+    /// Checks if the coin has any bonded nodes
+    var hasBondedNodes: Bool {
+        return !bondedNodes.isEmpty
     }
     
     static let example: Coin = {

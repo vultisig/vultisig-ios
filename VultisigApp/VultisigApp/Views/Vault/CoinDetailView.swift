@@ -15,6 +15,7 @@ struct CoinDetailView: View {
     @Binding var resetActive: Bool
     
     @State var isLoading = false
+    @State var isLoadingBonds = false
     
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
@@ -41,6 +42,11 @@ struct CoinDetailView: View {
             }
             .onAppear {
                 sendTx.reset(coin: coin)
+            }
+            .task {
+                if coin.isRune {
+                    await fetchBondData()
+                }
             }
             .onChange(of: isSendLinkActive) { oldValue, newValue in
                 if newValue {
@@ -70,8 +76,15 @@ struct CoinDetailView: View {
     }
     
     var cells: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             cell
+            
+            if coin.isRune && coin.hasBondedNodes {
+                bondCells
+            } else if coin.isRune && isLoadingBonds {
+                ProgressView()
+                    .padding(.vertical, 8)
+            }
         }
         .cornerRadius(10)
     }
@@ -80,10 +93,51 @@ struct CoinDetailView: View {
         CoinCell(coin: coin)
     }
     
+    var bondCells: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Bonded Nodes")
+                .font(.body16MenloBold)
+                .foregroundColor(.neutral0)
+                .padding(.horizontal, 16)
+            
+            Text("Total Bonded: \(coin.totalBondedAmountString) RUNE (\(coin.totalBondedAmountInFiatString))")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+            
+            LazyVStack(spacing: 12) {
+                ForEach(coin.bondedNodes) { node in
+                    RuneBondCell(bondNode: node, coin: coin)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .padding(.vertical, 16)
+        .background(Color.blue600)
+        .cornerRadius(10)
+    }
+    
     func refreshData() async {
         isLoading = true
         await BalanceService.shared.updateBalance(for: coin)
+        
+        if coin.isRune {
+            await fetchBondData()
+        }
+        
         isLoading = false
+    }
+    
+    func fetchBondData() async {
+        isLoadingBonds = true
+        
+        if let address = coin.address.isEmpty ? nil : coin.address {
+            let bondedNodes = await ThorchainService.shared.fetchRuneBondNodes(address: address)
+            coin.bondedNodes = bondedNodes
+        }
+        
+        isLoadingBonds = false
     }
 }
 
