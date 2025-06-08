@@ -18,6 +18,13 @@ enum RippleHelper {
      */
     static let defaultExistentialDeposit: BigInt = pow(10, 6).description.toBigInt() // 1 XRP
 
+    static func getSwapPreSignedInputData(
+        keysignPayload: KeysignPayload, vault: Vault
+    ) throws -> Data {
+        // For XRP swaps, we use the same logic as regular transactions but with swap memo
+        return try getPreSignedInputData(keysignPayload: keysignPayload, vault: vault)
+    }
+
     static func getPreSignedInputData(
         keysignPayload: KeysignPayload, vault: Vault
     ) throws -> Data {
