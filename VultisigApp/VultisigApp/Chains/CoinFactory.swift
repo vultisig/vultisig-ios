@@ -60,32 +60,11 @@ extension CoinFactory {
         case .EdDSA:
             
             if asset.chain == .cardano {
-                // Proper Cardano key derivation using TSS-derived EdDSA key + chain code
-                guard let pubKeyData = Data(hexString: vault.pubKeyEdDSA) else {
-                    print("Public key: \(vault.pubKeyEdDSA) is invalid hex for ADA chain")
-                    throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
-                }
-                
-                guard let chainCodeData = Data(hexString: vault.hexChainCode) else {
-                    print("Chain code: \(vault.hexChainCode) is invalid hex for ADA chain")
-                    throw Errors.invalidPublicKey(pubKey: "Invalid chain code")
-                }
-                
-                // Cardano V2 approach: Use raw EdDSA key + chain code (no derivation needed)
-                // According to Cardano V2 spec: Public key is 64-byte (32-byte ED25519 + 32-byte chain code)
-                
-                // For Cardano, construct the 64-byte public key first (EdDSA + chain code)
-                var cardano64ByteKey = Data()
-                cardano64ByteKey.append(pubKeyData)    // 32 bytes: ED25519 public key
-                cardano64ByteKey.append(chainCodeData) // 32 bytes: chain code
-                
-                // Then extend to 128 bytes for WalletCore compatibility
-                // Construct proper 128-byte Cardano extended public key structure
-                var cardanoExtendedKey = Data()
-                cardanoExtendedKey.append(pubKeyData)    // 32 bytes: spending key (raw EdDSA)
-                cardanoExtendedKey.append(pubKeyData)    // 32 bytes: staking key (same key for simplicity)
-                cardanoExtendedKey.append(chainCodeData) // 32 bytes: chain code
-                cardanoExtendedKey.append(chainCodeData) // 32 bytes: additional chain code
+                // Use the helper function to create the extended key
+                let cardanoExtendedKey = try CardanoHelper.createCardanoExtendedKey(
+                    spendingKeyHex: vault.pubKeyEdDSA, 
+                    chainCodeHex: vault.hexChainCode
+                )
                 
                 // Create ed25519Cardano public key
                 guard let cardanoKey = PublicKey(data: cardanoExtendedKey, type: .ed25519Cardano) else {
@@ -93,7 +72,6 @@ extension CoinFactory {
                     throw Errors.invalidPublicKey(pubKey: "Failed to create Cardano extended key")
                 }
                 
-
                 return cardanoKey
             }
             
