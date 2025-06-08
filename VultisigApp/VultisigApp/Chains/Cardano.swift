@@ -14,46 +14,9 @@ enum CardanoHelper {
     
     // MARK: - Helper Functions
     
-    /// Creates a proper Cardano V2 extended key structure (128 bytes total)
-    static func createCardanoExtendedKey(spendingKeyHex: String, chainCodeHex: String) throws -> Data {
-        guard let spendingKeyData = Data(hexString: spendingKeyHex) else {
-            throw HelperError.runtimeError("public key \(spendingKeyHex) is invalid")
-        }
-        guard let chainCodeData = Data(hexString: chainCodeHex) else {
-            throw HelperError.runtimeError("chain code \(chainCodeHex) is invalid")
-        }
-        
-        // Ensure we have 32-byte keys
-        guard spendingKeyData.count == 32 else {
-            throw HelperError.runtimeError("spending key must be 32 bytes, got \(spendingKeyData.count)")
-        }
-        guard chainCodeData.count == 32 else {
-            throw HelperError.runtimeError("chain code must be 32 bytes, got \(chainCodeData.count)")
-        }
-        
-        // Build 128-byte extended key following Cardano V2 specification
-        var extendedKeyData = Data()
-        extendedKeyData.append(spendingKeyData)     // 32 bytes: EdDSA spending key
-        extendedKeyData.append(spendingKeyData)     // 32 bytes: EdDSA staking key (reuse spending key)
-        extendedKeyData.append(chainCodeData)       // 32 bytes: Chain code
-        extendedKeyData.append(chainCodeData)       // 32 bytes: Additional chain code
-        
-        // Verify we have correct 128-byte structure
-        guard extendedKeyData.count == 128 else {
-            throw HelperError.runtimeError("extended key must be 128 bytes, got \(extendedKeyData.count)")
-        }
-        
-        return extendedKeyData
-    }
+
     
-    /// Calculate dynamic TTL (Time To Live) for Cardano transactions
-    /// TTL should be current slot + buffer (typically 1 hour = 3600 slots)
-    static func calculateDynamicTTL() -> UInt64 {
-        // Current time + 1 hour buffer
-        let currentTime = UInt64(Date().timeIntervalSince1970)
-        let bufferSeconds: UInt64 = 3600 // 1 hour
-        return currentTime + bufferSeconds
-    }
+
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .cardano else {
@@ -87,22 +50,13 @@ enum CardanoHelper {
                 $0.useMaxAmount = safeGuardMaxAmount
                 //$0.forceFee = UInt64(byteFee)
             }
-            // Use dynamic TTL instead of fixed value
-            $0.ttl = calculateDynamicTTL()
+            // Fixed TTL for testing (2025-01-07 16:00:00 UTC) - ensures all devices use same value
+            $0.ttl = 1736265600
             
-            // Add memo as transaction metadata if provided
-            if let memo = keysignPayload.memo, !memo.isEmpty {
-                // Cardano metadata implementation
-                // WalletCore supports metadata through auxiliaryData field
-                $0.auxiliaryData = CardanoAuxiliaryData.with {
-                    $0.metadata = CardanoTransactionMetadata.with {
-                        // Use metadata label 674 (commonly used for transaction messages)
-                        $0.intMap[UInt64(674)] = CardanoTransactionMetadataValue.with {
-                            $0.text = memo
-                        }
-                    }
-                }
-            }
+            // TODO: Implement memo support when WalletCore adds Cardano metadata support
+            // Investigation shows WalletCore Signer.cpp already reserves space for auxiliary_data (line 305)
+            // but protobuf definitions (Cardano.proto) don't expose metadata/memo fields yet
+            // Would need: CardanoAuxiliaryData, CardanoTransactionMetadata, CardanoTransactionMetadataValue types
         }
         
         // Add UTXOs to the input
@@ -137,7 +91,7 @@ enum CardanoHelper {
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         
         // Use the helper function to create extended key
-        let extendedKeyData = try createCardanoExtendedKey(spendingKeyHex: vaultHexPubKey, chainCodeHex: vaultHexChainCode)
+        let extendedKeyData = try CoinFactory.createCardanoExtendedKey(spendingKeyHex: vaultHexPubKey, chainCodeHex: vaultHexChainCode)
         
         // For signature verification, use the raw 32-byte EdDSA key (matching TSS output)
         guard let spendingKeyData = Data(hexString: vaultHexPubKey),
