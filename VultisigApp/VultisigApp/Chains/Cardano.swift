@@ -14,9 +14,20 @@ enum CardanoHelper {
     
     // MARK: - Helper Functions
     
-
-    
-
+    /// Calculate deterministic TTL: today at 00:00:00 UTC (midnight)
+    /// Example: if today is 8.6.2025 (any time), TTL will be 8.6.2025 00:00:00
+    /// This ensures all devices on the same day get the exact same TTL value
+    /// Time left until midnight is sufficient for transaction completion
+    private static func calculateDeterministicTTL() -> UInt64 {
+        let calendar = Calendar(identifier: .gregorian)
+        let utcTimeZone = TimeZone(secondsFromGMT: 0)!
+        var components = calendar.dateComponents(in: utcTimeZone, from: Date())
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+        let todayMidnight = calendar.date(from: components)!
+        return UInt64(todayMidnight.timeIntervalSince1970)
+    }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .cardano else {
@@ -48,10 +59,8 @@ enum CardanoHelper {
                 $0.changeAddress = keysignPayload.coin.address
                 $0.amount = UInt64(keysignPayload.toAmount)
                 $0.useMaxAmount = safeGuardMaxAmount
-                //$0.forceFee = UInt64(byteFee)
             }
-            // Fixed TTL for testing (2025-01-07 16:00:00 UTC) - ensures all devices use same value
-            $0.ttl = 1736265600
+            $0.ttl = calculateDeterministicTTL()
             
             // TODO: Implement memo support when WalletCore adds Cardano metadata support
             // Investigation shows WalletCore Signer.cpp already reserves space for auxiliary_data (line 305)
