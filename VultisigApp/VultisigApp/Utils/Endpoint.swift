@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Endpoint {
+class Endpoint { 
     
     enum SwapChain {
         case thorchain
@@ -381,6 +381,10 @@ class Endpoint {
     
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
+    }
+
+    static func thorchainNodeExplorerURL(_ address: String) -> String {
+        return "https://thorchain.net/node/\(address)"
     }
     
     static func getMayaSwapTracker(txid: String) -> String {

@@ -93,18 +93,25 @@ struct CoinDetailView: View {
         CoinCell(coin: coin)
     }
     
+    @State private var selectedBondNode: RuneBondNode? = nil
+    
     var bondCells: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            LazyVStack(spacing: 12) {
-                ForEach(coin.bondedNodes) { node in
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(coin.bondedNodes.indices, id: \ .self) { index in
+                let node = coin.bondedNodes[index]
+                Group {
+                    if index > 0 {
+                        Separator()
+                    }
                     RuneBondCell(bondNode: node, coin: coin)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedBondNode = node
+                            isMemoLinkActive = true
+                        }
                 }
             }
-            .padding(.horizontal, 16)
         }
-        .padding(.vertical, 16)
-        .background(Color.blue600)
-        .cornerRadius(10)
     }
     
     func refreshData() async {
