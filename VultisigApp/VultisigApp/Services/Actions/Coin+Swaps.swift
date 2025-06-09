@@ -62,6 +62,9 @@ extension Coin {
                 return [.oneinch(chain), .lifi]
             }
         case .base:
+            if thorBaseTokens.contains(ticker) {
+                return [.thorchain,.oneinch(chain), .lifi]
+            }
             return [.oneinch(chain), .lifi]
         case .optimism, .polygon, .polygonV2, .zksync:
             return [.oneinch(chain), .lifi]
@@ -75,7 +78,9 @@ extension Coin {
             return [.lifi]
         case .zcash:
             return [.mayachain]
-        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron,.ethereumSepolia:
+        case .ripple:
+            return [.thorchain]
+        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron,.ethereumSepolia:
             return []
         }
     }

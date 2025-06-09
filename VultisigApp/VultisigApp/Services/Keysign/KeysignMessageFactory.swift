@@ -28,6 +28,7 @@ struct KeysignMessageFactory {
             switch swapPayload {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
+                
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
@@ -86,7 +87,7 @@ struct KeysignMessageFactory {
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ripple:
-            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload, vault: vault)
+            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload)
         case .akash:
             return try AkashHelper().getPreSignedImageHash(keysignPayload: payload)
         case .tron:

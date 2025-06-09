@@ -57,22 +57,5 @@ extension ChainDetailView {
         }
     }
     
-    func weweButton() -> some View {
-        Button {
-            viewModel.selectWeweIfNeeded(vault: vault)
-            isWeweLinkActive = true
-        } label: {
-            FilledLabelButton {
-                HStack(spacing: 10) {
-                    Image("BuyWewe")
-                    Text("BUY $WEWE")
-                        .foregroundColor(.blue600)
-                        .font(.body16MontserratBold)
-                }
-                .frame(height: 44)
-            }
-        }
-        .padding(40)
-    }
 }
 #endif

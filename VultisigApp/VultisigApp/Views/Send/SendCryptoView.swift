@@ -11,12 +11,12 @@ import BigInt
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
-    let coin: Coin?
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
+    @State var coin: Coin? = nil
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var selectedChain: Chain? = nil
@@ -39,7 +39,7 @@ struct SendCryptoView: View {
             }
         }
         .ignoresSafeArea(.keyboard)
-        .onAppear {
+        .onFirstAppear {
             Task {
                 await setData()
                 await loadGasInfo()
@@ -195,6 +195,7 @@ struct SendCryptoView: View {
             tx.fromAddress = coin.address
             tx.toAddress = deeplinkViewModel.address ?? ""
             selectedChain = nil
+            self.coin = nil
         }
         
         presetData()

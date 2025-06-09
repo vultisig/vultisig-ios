@@ -29,6 +29,13 @@ class SolanaService {
             if let errorMessage = Utils.extractResultFromJson(
                 fromData: data, path: "error.message") as? String
             {
+                let lowercaseError = errorMessage.lowercased()
+                if lowercaseError.contains("blockhash") ||
+                   lowercaseError.contains("simulation failed") ||
+                   lowercaseError.contains("time out") ||
+                   lowercaseError.contains("expired") {
+                    return "Transaction time out due to slow signing. Please try again."
+                }
                 return errorMessage
             }
             
