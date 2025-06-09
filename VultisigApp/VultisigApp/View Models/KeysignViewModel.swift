@@ -79,16 +79,7 @@ class KeysignViewModel: ObservableObject {
         self.customMessagePayload = customMessagePayload
         self.encryptionKeyHex = encryptionKeyHex
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
-        
-        // Use the correct public key based on signing type
-        let pubKeyForMessagePuller: String
-        if keysignType == .EdDSA {
-            pubKeyForMessagePuller = vault.pubKeyEdDSA
-        } else {
-            pubKeyForMessagePuller = vault.pubKeyECDSA
-        }
-        
-        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex, pubKey: pubKeyForMessagePuller, encryptGCM: isEncryptGCM)
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
     }
     
