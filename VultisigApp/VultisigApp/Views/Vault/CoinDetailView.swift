@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct CoinDetailView: View {
     let coin: Coin
@@ -39,6 +40,11 @@ struct CoinDetailView: View {
                     vault: vault,
                     coin: coin
                 )
+                .onAppear {
+                    if let memo = selectedMemoNodeMaintenance {
+                        sendTx.memoFunctionDictionary = memo.toDictionary()
+                    }
+                }
             }
             .onAppear {
                 sendTx.reset(coin: coin)
@@ -94,6 +100,7 @@ struct CoinDetailView: View {
     }
     
     @State private var selectedBondNode: RuneBondNode? = nil
+@State private var selectedMemoNodeMaintenance: FunctionCallNodeMaintenance? = nil
     
     var bondCells: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -106,6 +113,11 @@ struct CoinDetailView: View {
                     RuneBondCell(bondNode: node, coin: coin)
                         .contentShape(Rectangle())
                         .onTapGesture {
+                            let status = node.status.lowercased()
+                            let action: FunctionCallNodeMaintenance.NodeAction =
+                                (status == "active") ? .bond : .unbond
+                            let memo = FunctionCallNodeMaintenance(nodeAddress: node.address, action: action)
+                            selectedMemoNodeMaintenance = memo
                             selectedBondNode = node
                             isMemoLinkActive = true
                         }

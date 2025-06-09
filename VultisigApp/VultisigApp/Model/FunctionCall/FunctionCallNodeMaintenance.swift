@@ -1,5 +1,5 @@
 //
-//  TransactionMemoNodeMaintenance.swift
+//  FunctionCallNodeMaintenance.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.
@@ -9,11 +9,17 @@ import SwiftUI
 import Foundation
 import Combine
 
-class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObject {
+class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
+    @Published var isTheFormValid: Bool = false
+    @Published var isNodeAddressValid: Bool = false
+    @Published var isProviderValid: Bool = false
+    @Published var isAmountValid: Bool = false
+    @Published var isFeeValid: Bool = false
+    
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
-    @Published var fee: Double = 0.0
-    @Published var amount: Double = 0.0
+    @Published var fee: Decimal = 0.0
+    @Published var amount: Decimal = 0.0
     @Published var action: NodeAction = .bond
     
     enum NodeAction: String, CaseIterable, Identifiable {
@@ -39,14 +45,21 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
         }
     }
     
-    required init() {}
+    required init() {
+        // Properties already initialized with default values
+    }
     
-    init(nodeAddress: String, provider: String = "", fee: Double = 0.0, amount: Double = 0.0, action: NodeAction = .bond) {
+    init(nodeAddress: String, provider: String = "", fee: Decimal = 0.0, amount: Decimal = 0.0, action: NodeAction = .bond) {
         self.nodeAddress = nodeAddress
         self.provider = provider
         self.fee = fee
         self.amount = amount
         self.action = action
+        self.isNodeAddressValid = !nodeAddress.isEmpty
+        self.isProviderValid = true // Provider is optional
+        self.isFeeValid = true      // Fee validation logic could be added
+        self.isAmountValid = true   // Amount validation logic could be added
+        self.isTheFormValid = self.isNodeAddressValid
     }
     
     var description: String {
@@ -92,16 +105,45 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
     
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
-            TransactionMemoAddressTextField(memo: self, addressKey: "provider")
-            StyledFloatingPointField(placeholder: "Fee", value: Binding(
-                get: { self.fee },
-                set: { self.fee = $0 }
-            ), format: .number)
-            StyledFloatingPointField(placeholder: "Amount", value: Binding(
-                get: { self.amount },
-                set: { self.amount = $0 }
-            ), format: .number)
+            FunctionCallAddressTextField(
+                memo: self, 
+                addressKey: "nodeAddress", 
+                isAddressValid: Binding<Bool>(
+                    get: { self.isNodeAddressValid },
+                    set: { self.isNodeAddressValid = $0 }
+                )
+            )
+            FunctionCallAddressTextField(
+                memo: self, 
+                addressKey: "provider", 
+                isOptional: true, 
+                isAddressValid: Binding<Bool>(
+                    get: { self.isProviderValid },
+                    set: { self.isProviderValid = $0 }
+                )
+            )
+            StyledFloatingPointField(
+                placeholder: .constant("Fee"),
+                value: Binding<Decimal>(
+                    get: { self.fee },
+                    set: { self.fee = $0 }
+                ),
+                isValid: Binding<Bool>(
+                    get: { self.isFeeValid },
+                    set: { self.isFeeValid = $0 }
+                )
+            )
+            StyledFloatingPointField(
+                placeholder: .constant("Amount"),
+                value: Binding<Decimal>(
+                    get: { self.amount },
+                    set: { self.amount = $0 }
+                ),
+                isValid: Binding<Bool>(
+                    get: { self.isAmountValid },
+                    set: { self.isAmountValid = $0 }
+                )
+            )
             
             Picker(selection: Binding(
                 get: { self.action },
