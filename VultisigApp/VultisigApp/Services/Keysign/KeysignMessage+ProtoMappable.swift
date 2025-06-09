@@ -231,8 +231,14 @@ extension BlockChainSpecific {
         switch proto {
         case .utxoSpecific(let value):
             self = .UTXO(
-                byteFee: BigInt(stringLiteral: value.byteFee),
+                byteFee: value.byteFee.toBigInt(),
                 sendMaxAmount: value.sendMaxAmount
+            )
+        case .cardano(let value):
+            self = .Cardano(
+                byteFee: BigInt(value.byteFee),
+                sendMaxAmount: value.sendMaxAmount,
+                ttl: value.ttl
             )
         case .ethereumSpecific(let value):
             self = .Ethereum(
@@ -324,8 +330,14 @@ extension BlockChainSpecific {
         switch self {
         case .UTXO(let byteFee, let sendMaxAmount):
             return .utxoSpecific(.with {
-                $0.byteFee = String(byteFee)
+                $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount
+            })
+        case .Cardano(let byteFee, let sendMaxAmount, let ttl):
+            return .cardano(.with {
+                $0.byteFee = Int64(byteFee)
+                $0.sendMaxAmount = sendMaxAmount
+                $0.ttl = ttl
             })
         case .Ethereum(let maxFeePerGasWei, let priorityFeeWei, let nonce, let gasLimit):
             return .ethereumSpecific(.with {

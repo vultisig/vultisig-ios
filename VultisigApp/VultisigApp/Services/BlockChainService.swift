@@ -230,7 +230,8 @@ private extension BlockChainService {
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let estimatedFee = cardano.estimateTransactionFee()
-            return .UTXO(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount)
+            let ttl = try await cardano.calculateDynamicTTL()
+            return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain:
             _ = try await thor.getTHORChainChainID()
             let account = try await thor.fetchAccountNumber(coin.address)

@@ -118,4 +118,60 @@ class CardanoService {
         return 180000 // 0.18 ADA - middle of typical range
     }
     
+    /// Fetch current Cardano slot from Koios API
+    /// This is used for dynamic TTL calculation to ensure all TSS devices use the same slot reference
+    func getCurrentSlot() async throws -> UInt64 {
+        let url = URL(string: "https://api.koios.rest/api/v1/tip")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(domain: "CardanoServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+        }
+        
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "CardanoServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode)"])
+        }
+        
+        // Koios API returns an array with one object
+        guard let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let tipInfo = jsonArray.first,
+              let absSlot = tipInfo["abs_slot"] as? UInt64 else {
+            throw NSError(domain: "CardanoServiceError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to parse slot from response"])
+        }
+        
+        return absSlot
+    }
+    
+    /// Calculate TTL as current slot + 720 slots (approximately 12 minutes)
+    /// This ensures all TSS devices get the same TTL when fetching chain specific data
+    func calculateDynamicTTL() async throws -> UInt64 {
+        let currentSlot = try await getCurrentSlot()
+        return currentSlot + 720 // Add 720 slots (~12 minutes at 1 slot per second)
+    }
+    
+    /// Validate Cardano chain specific parameters
+    func validateChainSpecific(_ chainSpecific: BlockChainSpecific) throws {
+        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = chainSpecific else {
+            throw NSError(domain: "CardanoServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid chain specific type for Cardano"])
+        }
+        
+        guard byteFee > 0 else {
+            throw NSError(domain: "CardanoServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Cardano byte fee must be positive"])
+        }
+        
+        guard ttl > getCurrentUNIXTimestamp() else {
+            throw NSError(domain: "CardanoServiceError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Cardano TTL must be in the future"])
+        }
+    }
+    
+    /// Get current UNIX timestamp (used for TTL validation)
+    private func getCurrentUNIXTimestamp() -> UInt64 {
+        return UInt64(Date().timeIntervalSince1970)
+    }
+    
 } 

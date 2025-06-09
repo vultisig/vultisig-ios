@@ -14,28 +14,15 @@ enum CardanoHelper {
     
     // MARK: - Helper Functions
     
-    /// Calculate deterministic TTL: today at 00:00:00 UTC (midnight)
-    /// Example: if today is 8.6.2025 (any time), TTL will be 8.6.2025 00:00:00
-    /// This ensures all devices on the same day get the exact same TTL value
-    /// Time left until midnight is sufficient for transaction completion
-    private static func calculateDeterministicTTL() -> UInt64 {
-        let calendar = Calendar(identifier: .gregorian)
-        let utcTimeZone = TimeZone(secondsFromGMT: 0)!
-        var components = calendar.dateComponents(in: utcTimeZone, from: Date())
-        components.hour = 0
-        components.minute = 0
-        components.second = 0
-        let todayMidnight = calendar.date(from: components)!
-        return UInt64(todayMidnight.timeIntervalSince1970)
-    }
+
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
         }
         
-        guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
+        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
         
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .cardano) else {
@@ -60,7 +47,7 @@ enum CardanoHelper {
                 $0.amount = UInt64(keysignPayload.toAmount)
                 $0.useMaxAmount = safeGuardMaxAmount
             }
-            $0.ttl = calculateDeterministicTTL()
+            $0.ttl = ttl
             
             // TODO: Implement memo support when WalletCore adds Cardano metadata support
             // Investigation shows WalletCore Signer.cpp already reserves space for auxiliary_data (line 305)
