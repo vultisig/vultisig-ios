@@ -1,10 +1,3 @@
-//
-//  CoinDetailView.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-05-22.
-//
-
 import SwiftUI
 import Foundation
 
@@ -40,11 +33,7 @@ struct CoinDetailView: View {
                     vault: vault,
                     coin: coin
                 )
-                .onAppear {
-                    if let memo = selectedMemoNodeMaintenance {
-                        sendTx.memoFunctionDictionary = memo.toDictionary()
-                    }
-                }
+
             }
             .onAppear {
                 sendTx.reset(coin: coin)
@@ -100,7 +89,7 @@ struct CoinDetailView: View {
     }
     
     @State private var selectedBondNode: RuneBondNode? = nil
-@State private var selectedMemoNodeMaintenance: FunctionCallNodeMaintenance? = nil
+    @State private var selectedMemoNodeMaintenance: FunctionCallNodeMaintenance? = nil
     
     var bondCells: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -119,6 +108,9 @@ struct CoinDetailView: View {
                             let memo = FunctionCallNodeMaintenance(nodeAddress: node.address, action: action)
                             selectedMemoNodeMaintenance = memo
                             selectedBondNode = node
+                            
+                            sendTx.memoFunctionDictionary = memo.toDictionary()
+                            
                             isMemoLinkActive = true
                         }
                 }
@@ -149,6 +141,3 @@ struct CoinDetailView: View {
     }
 }
 
-#Preview {
-    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction(), resetActive: .constant(false))
-}

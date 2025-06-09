@@ -1,20 +1,11 @@
-//
-//  ThorchainService+RuneBond.swift
-//  VultisigApp
-//
-//  Created on 05/06/2025.
-//
-
 import Foundation
-
-/// Represents a bonded node from the THORChain bonds endpoint
 public struct RuneBondNode: Identifiable {
     public var id: String { address }
     public let status: String
     public let address: String
     public let bond: Decimal
     
-    /// Returns the last 4 characters of the node address as a short identifier
+
     public var shortAddress: String {
         guard address.count > 4 else { return address }
         return String(address.suffix(4))
@@ -24,9 +15,6 @@ public struct RuneBondNode: Identifiable {
 extension ThorchainService {
     
     // MARK: - Public Methods
-    
-    /// Fetches the total bonded RUNE amount for a given address using completion handler
-    /// Fetches the total bonded RUNE amount for a given address using completion handler
     func fetchRuneBondedAmount(address: String, completion: @escaping (Decimal) -> Void) {
         fetchRuneBondNodes(address: address) { nodes in
             let totalBond = nodes.reduce(Decimal.zero) { $0 + $1.bond }
@@ -34,13 +22,13 @@ extension ThorchainService {
         }
     }
     
-    /// Fetches the total bonded RUNE amount for a given address using async/await
+
     func fetchRuneBondedAmount(address: String) async -> Decimal {
         let nodes = await fetchRuneBondNodes(address: address)
         return nodes.reduce(Decimal.zero) { $0 + $1.bond }
     }
     
-    /// Fetches the bonded nodes for a given address using completion handler
+
     func fetchRuneBondNodes(address: String, completion: @escaping ([RuneBondNode]) -> Void) {
         let urlString = Endpoint.fetchRuneBondedAmount(address: address)
         guard let url = URL(string: urlString) else {
@@ -59,7 +47,7 @@ extension ThorchainService {
         task.resume()
     }
     
-    /// Fetches the bonded nodes for a given address using async/await
+
     func fetchRuneBondNodes(address: String) async -> [RuneBondNode] {
         let urlString = Endpoint.fetchRuneBondedAmount(address: address)
         guard let url = URL(string: urlString) else { return [] }
@@ -74,14 +62,12 @@ extension ThorchainService {
     }
     
     // MARK: - Private Helpers
-    
-    // Kept for backward compatibility
     private func parseRuneBondedAmount(from data: Data) -> Decimal {
         let nodes = parseRuneBondNodes(from: data)
         return nodes.reduce(Decimal.zero) { $0 + $1.bond }
     }
     
-    /// Parses the API response and returns an array of RuneBondNode objects
+
     private func parseRuneBondNodes(from data: Data) -> [RuneBondNode] {
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let nodes = json["nodes"] as? [[String: Any]] else {

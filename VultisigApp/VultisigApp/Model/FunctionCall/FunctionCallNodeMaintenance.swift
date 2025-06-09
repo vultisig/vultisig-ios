@@ -1,10 +1,3 @@
-//
-//  FunctionCallNodeMaintenance.swift
-//  VultisigApp
-//
-//  Created by Enrique Souza Soares on 15/05/24.
-//
-
 import SwiftUI
 import Foundation
 import Combine
@@ -46,7 +39,6 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
     }
     
     required init() {
-        // Properties already initialized with default values
     }
     
     init(nodeAddress: String, provider: String = "", fee: Decimal = 0.0, amount: Decimal = 0.0, action: NodeAction = .bond) {
@@ -56,9 +48,9 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
         self.amount = amount
         self.action = action
         self.isNodeAddressValid = !nodeAddress.isEmpty
-        self.isProviderValid = true // Provider is optional
-        self.isFeeValid = true      // Fee validation logic could be added
-        self.isAmountValid = true   // Amount validation logic could be added
+        self.isProviderValid = true 
+        self.isFeeValid = true      
+        self.isAmountValid = true   
         self.isTheFormValid = self.isNodeAddressValid
     }
     

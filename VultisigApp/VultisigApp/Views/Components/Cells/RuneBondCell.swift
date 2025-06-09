@@ -29,8 +29,7 @@ struct RuneBondCell: View {
             contentView
         }
         .padding(16)
-        .background(Color.blue600) // Consistent with CoinCell
-        // Corner radius removed, to be handled by parent for a group of cells
+        .background(Color.blue600)
     }
     
     var logoView: some View {
@@ -38,7 +37,7 @@ struct RuneBondCell: View {
     }
 
     var contentView: some View {
-        VStack(alignment: .leading, spacing: 15) { // Consistent spacing with CoinCell
+        VStack(alignment: .leading, spacing: 15) { 
             headerView
             detailsView
         }
@@ -49,17 +48,19 @@ struct RuneBondCell: View {
             Text(nodeIdentifier)
                 .font(.body20Menlo)
                 .foregroundColor(.neutral0)
-            Spacer()
-            Text(bondValueInFiat)
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
             
             Button(action: openExplorer) {
                 Image(systemName: "link")
-                    .font(.body18Menlo) // Adjusted font size slightly for balance
+                    .font(.body18Menlo) 
                     .foregroundColor(.neutral0)
             }
-            .padding(.leading, 4) // Minimal padding to separate from fiat value
+            .padding(.leading, 4) 
+            
+            Spacer()
+            
+            Text(bondValueInFiat)
+                .font(.body16MenloBold)
+                .foregroundColor(.neutral0)
         }
     }
 
@@ -71,11 +72,11 @@ struct RuneBondCell: View {
             Spacer()
             Text(nodeStatus)
                 .font(.body16Menlo)
-                .foregroundColor(statusColor) // statusColor logic remains
+                .foregroundColor(statusColor) 
         }
     }
     
-    // Retain existing statusColor, convertFromBaseUnits, and openExplorer methods
+
     private var statusColor: Color {
         switch bondNode.status.lowercased() {
         case "active":

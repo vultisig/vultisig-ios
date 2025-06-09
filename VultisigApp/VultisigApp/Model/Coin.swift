@@ -19,7 +19,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var rawBalance: String = ""
     var stakedBalance: String = ""
     
-    // Store bonded nodes data for RUNE coins
     @Transient var bondedNodes: [RuneBondNode] = []
     
     var decimals: Int {
@@ -88,17 +87,15 @@ class Coin: ObservableObject, Codable, Hashable {
         return lhs.id == rhs.id
     }
     
-    /// Raw balance in display units (converted from base units)
     var balanceDecimal: Decimal {
         let value = rawBalance.toDecimal() / pow(10, decimals)
         return value
     }
-    /// Staked balance converted from base units to display units
+    
     var stakedBalanceDecimal: Decimal {
         let value = stakedBalance.toDecimal() / pow(10, decimals)
         return value
     }
-    /// Combined balance for price/fiat logic only
     var combinedBalanceDecimal: Decimal {
         let combined = balanceDecimal + stakedBalanceDecimal
         return combined
@@ -255,7 +252,7 @@ class Coin: ObservableObject, Codable, Hashable {
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
         
-        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1) //the max value must be less than the balance, so we need to reduce the precision.
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1)
     }
     
     var balanceInFiatDecimal: Decimal {
@@ -289,34 +286,33 @@ class Coin: ObservableObject, Codable, Hashable {
         return chain.logo
     }
     
-    /// Returns true if this coin is RUNE from THORChain
+
     var isRune: Bool {
         return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
     }
     
     /// Total sum of bonded RUNE
     var totalBondedAmount: Decimal {
-        // Convert from base units (divide by 10^8)
+
         let bondTotal = bondedNodes.reduce(Decimal.zero) { $0 + $1.bond }
         return bondTotal / Foundation.pow(10, decimals)
     }
     
-    /// Total sum of bonded RUNE in fiat currency
+
     var totalBondedAmountInFiat: Decimal {
         return RateProvider.shared.fiatBalance(value: totalBondedAmount, coin: self)
     }
     
-    /// Returns formatted total bonded amount string
+
     var totalBondedAmountString: String {
         return totalBondedAmount.formatToDecimal(digits: 8)
     }
     
-    /// Returns formatted total bonded amount in fiat
+
     var totalBondedAmountInFiatString: String {
         return totalBondedAmountInFiat.formatToFiat()
     }
     
-    /// Checks if the coin has any bonded nodes
     var hasBondedNodes: Bool {
         return !bondedNodes.isEmpty
     }

@@ -22,6 +22,51 @@ struct FunctionCallDetailsView: View {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         let defaultCoin = tx.coin
+        
+        let dict = tx.memoFunctionDictionary
+        if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
+            if let actionStr = dict.get("action") {
+                let functionType: FunctionCallType
+                
+                switch actionStr.lowercased() {
+                case "bond":
+                    functionType = .bond
+                    self._selectedFunctionMemoType = State(initialValue: functionType)
+                    self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
+                    
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    bondInstance.nodeAddress = nodeAddress
+                    bondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
+                                                 AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
+                                                 AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
+                        bondInstance.fee = feeInt
+                        bondInstance.feeValid = true
+                    }
+                    self._fnCallInstance = State(initialValue: .bond(bondInstance))
+                    return
+                    
+                case "unbond":
+                    functionType = .unbond
+                    self._selectedFunctionMemoType = State(initialValue: functionType)
+                    self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
+                    
+                    let unbondInstance = FunctionCallUnbond()
+                    unbondInstance.nodeAddress = nodeAddress
+                    unbondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
+                                                  AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
+                                                  AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
+                        unbondInstance.amount = amountDecimal
+                        unbondInstance.amountValid = true
+                    }
+                    self._fnCallInstance = State(initialValue: .unbond(unbondInstance))
+                    return
+                default:
+                    break
+                }
+            }
+        }
         self._selectedFunctionMemoType = State(
             initialValue: FunctionCallType.getDefault(for: defaultCoin))
         self._selectedContractMemoType = State(
@@ -40,11 +85,30 @@ struct FunctionCallDetailsView: View {
                 invalidFormAlert
             }
             .onChange(of: selectedFunctionMemoType) {
+                let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
+                
                 switch selectedFunctionMemoType {
                 case .bond:
-                    fnCallInstance = .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        bondInstance.nodeAddress = nodeAddress
+                        bondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
+                                               AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
+                                               AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    }
+                    fnCallInstance = .bond(bondInstance)
                 case .unbond:
-                    fnCallInstance = .unbond(FunctionCallUnbond())
+                    let unbondInstance = FunctionCallUnbond()
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        unbondInstance.nodeAddress = nodeAddress
+                        unbondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
+                                                AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
+                                                AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    }
+                    
+                    fnCallInstance = .unbond(unbondInstance)
                 case .bondMaya:
 
                     DispatchQueue.main.async {
@@ -78,7 +142,18 @@ struct FunctionCallDetailsView: View {
                     }
 
                 case .leave:
-                    fnCallInstance = .leave(FunctionCallLeave())
+                    let leaveInstance = FunctionCallLeave()
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        leaveInstance.nodeAddress = nodeAddress
+                        leaveInstance.addressFields["nodeAddress"] = nodeAddress
+                        
+                        leaveInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
+                                                AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
+                                                AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    }
+                    
+                    fnCallInstance = .leave(leaveInstance)
                 case .custom:
                     fnCallInstance = .custom(FunctionCallCustom())
                 case .vote:
@@ -139,7 +214,20 @@ struct FunctionCallDetailsView: View {
             dismissButton: .default(Text("OK"))
         )
     }
-
+    
+    private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
+        switch instance {
+        case .bond(let bond):
+            return bond.nodeAddress
+        case .unbond(let unbond):
+            return unbond.nodeAddress
+        case .leave(let leave):
+            return leave.nodeAddress
+        default:
+            return nil
+        }
+    }
+    
     var functionSelector: some View {
         FunctionCallSelectorDropdown(
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
