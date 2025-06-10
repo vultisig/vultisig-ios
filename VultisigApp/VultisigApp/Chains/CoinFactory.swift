@@ -25,19 +25,17 @@ struct CoinFactory {
             // Always create Enterprise address to avoid "stake address" component
             // Use WalletCore's proper Blake2b hashing for deterministic results across all devices
             address = try createCardanoEnterpriseAddress(spendingKeyHex: vault.pubKeyEdDSA)
+            
+            // Validate Cardano address using WalletCore's own validation
+            guard let _ = AnyAddress(string: address, coin: .cardano) else {
+                throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
+            }
         default:
             address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
         
         if asset.chain == .bitcoinCash {
             address = address.replacingOccurrences(of: "bitcoincash:", with: "")
-        }
-        
-        // Validate Cardano address using WalletCore's own validation
-        if asset.chain == .cardano {
-            guard let _ = AnyAddress(string: address, coin: .cardano) else {
-                throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
-            }
         }
         
         return Coin(asset: asset, address: address, hexPublicKey: publicKey.data.hexString)

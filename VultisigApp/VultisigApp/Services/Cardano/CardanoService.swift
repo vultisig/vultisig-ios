@@ -155,7 +155,7 @@ class CardanoService {
     }
     
     /// Validate Cardano chain specific parameters
-    func validateChainSpecific(_ chainSpecific: BlockChainSpecific) throws {
+    func validateChainSpecific(_ chainSpecific: BlockChainSpecific) async throws {
         guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = chainSpecific else {
             throw NSError(domain: "CardanoServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid chain specific type for Cardano"])
         }
@@ -164,14 +164,11 @@ class CardanoService {
             throw NSError(domain: "CardanoServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Cardano byte fee must be positive"])
         }
         
-        guard ttl > getCurrentUNIXTimestamp() else {
-            throw NSError(domain: "CardanoServiceError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Cardano TTL must be in the future"])
+        // TTL is an absolute slot number, so compare with current slot, not UNIX timestamp
+        let currentSlot = try await getCurrentSlot()
+        guard ttl > currentSlot else {
+            throw NSError(domain: "CardanoServiceError", code: 5, userInfo: [NSLocalizedDescriptionKey: "Cardano TTL must be greater than current slot"])
         }
-    }
-    
-    /// Get current UNIX timestamp (used for TTL validation)
-    private func getCurrentUNIXTimestamp() -> UInt64 {
-        return UInt64(Date().timeIntervalSince1970)
     }
     
 } 
