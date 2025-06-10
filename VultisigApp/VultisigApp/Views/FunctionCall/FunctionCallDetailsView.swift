@@ -22,6 +22,47 @@ struct FunctionCallDetailsView: View {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         let defaultCoin = tx.coin
+        
+        let dict = tx.memoFunctionDictionary
+        if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
+            if let actionStr = dict.get("action") {
+                let functionType: FunctionCallType
+                
+                switch actionStr.lowercased() {
+                case "bond":
+                    functionType = .bond
+                    self._selectedFunctionMemoType = State(initialValue: functionType)
+                    self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
+                    
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    bondInstance.nodeAddress = nodeAddress
+                    bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
+                        bondInstance.fee = feeInt
+                        bondInstance.feeValid = true
+                    }
+                    self._fnCallInstance = State(initialValue: .bond(bondInstance))
+                    return
+                    
+                case "unbond":
+                    functionType = .unbond
+                    self._selectedFunctionMemoType = State(initialValue: functionType)
+                    self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
+                    
+                    let unbondInstance = FunctionCallUnbond()
+                    unbondInstance.nodeAddress = nodeAddress
+                    unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
+                        unbondInstance.amount = amountDecimal
+                        unbondInstance.amountValid = true
+                    }
+                    self._fnCallInstance = State(initialValue: .unbond(unbondInstance))
+                    return
+                default:
+                    break
+                }
+            }
+        }
         self._selectedFunctionMemoType = State(
             initialValue: FunctionCallType.getDefault(for: defaultCoin))
         self._selectedContractMemoType = State(
@@ -30,7 +71,13 @@ struct FunctionCallDetailsView: View {
         self._fnCallInstance = State(
             initialValue: FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
     }
-
+    
+    private static func validateNodeAddress(_ address: String) -> Bool {
+        return AddressService.validateAddress(address: address, chain: .thorChain) ||
+        AddressService.validateAddress(address: address, chain: .mayaChain) ||
+        AddressService.validateAddress(address: address, chain: .ton)
+    }
+    
     var body: some View {
         content
             .alert(isPresented: $functionCallViewModel.showAlert) {
@@ -40,11 +87,26 @@ struct FunctionCallDetailsView: View {
                 invalidFormAlert
             }
             .onChange(of: selectedFunctionMemoType) {
+                let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
+                
                 switch selectedFunctionMemoType {
                 case .bond:
-                    fnCallInstance = .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        bondInstance.nodeAddress = nodeAddress
+                        bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    }
+                    fnCallInstance = .bond(bondInstance)
                 case .unbond:
-                    fnCallInstance = .unbond(FunctionCallUnbond())
+                    let unbondInstance = FunctionCallUnbond()
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        unbondInstance.nodeAddress = nodeAddress
+                        unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    }
+                    
+                    fnCallInstance = .unbond(unbondInstance)
                 case .bondMaya:
 
                     DispatchQueue.main.async {
@@ -78,7 +140,16 @@ struct FunctionCallDetailsView: View {
                     }
 
                 case .leave:
-                    fnCallInstance = .leave(FunctionCallLeave())
+                    let leaveInstance = FunctionCallLeave()
+                    
+                    if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
+                        leaveInstance.nodeAddress = nodeAddress
+                        leaveInstance.addressFields["nodeAddress"] = nodeAddress
+                        
+                        leaveInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
+                    }
+                    
+                    fnCallInstance = .leave(leaveInstance)
                 case .custom:
                     fnCallInstance = .custom(FunctionCallCustom())
                 case .vote:
@@ -139,7 +210,20 @@ struct FunctionCallDetailsView: View {
             dismissButton: .default(Text("OK"))
         )
     }
-
+    
+    private func extractNodeAddress(from instance: FunctionCallInstance) -> String? {
+        switch instance {
+        case .bond(let bond):
+            return bond.nodeAddress
+        case .unbond(let unbond):
+            return unbond.nodeAddress
+        case .leave(let leave):
+            return leave.nodeAddress
+        default:
+            return nil
+        }
+    }
+    
     var functionSelector: some View {
         FunctionCallSelectorDropdown(
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
