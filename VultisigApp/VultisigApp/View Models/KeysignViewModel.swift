@@ -332,6 +332,9 @@ class KeysignViewModel: ObservableObject {
             let transaction = try utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
             
+        case .Cardano:
+            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+            return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {
                 let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
@@ -446,6 +449,16 @@ class KeysignViewModel: ObservableObject {
                     let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+                    let chainName = keysignPayload.coin.chain.name.lowercased()
+                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
+                        switch result {
+                        case .success(let transactionHash):
+                            self.txid = transactionHash
+                        case .failure(let error):
+                            self.handleBroadcastError(error: error, transactionType: transactionType)
+                        }
+                    }
+                case .cardano:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {

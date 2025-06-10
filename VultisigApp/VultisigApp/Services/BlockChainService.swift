@@ -60,6 +60,7 @@ final class BlockChainService {
     private let terraClassic = TerraClassicService.shared
     private let noble = NobleService.shared
     private let akash = AkashService.shared
+    private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
@@ -217,7 +218,6 @@ private extension BlockChainService {
                        toAddress: String?,
                        feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
-            
         case .zcash:
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
@@ -228,6 +228,10 @@ private extension BlockChainService {
                 byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
             }
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
+        case .cardano:
+            let estimatedFee = cardano.estimateTransactionFee()
+            let ttl = try await cardano.calculateDynamicTTL()
+            return .Cardano(byteFee: BigInt(estimatedFee), sendMaxAmount: sendMaxAmount, ttl: ttl)
         case .thorChain:
             _ = try await thor.getTHORChainChainID()
             let account = try await thor.fetchAccountNumber(coin.address)

@@ -733,6 +733,8 @@
 		B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* FunctionCallLeave.swift */; };
 		B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */; };
 		B541C9262CF04C4700335933 /* FunctionCallUnbondMayaChain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B541C9252CF04C4700335933 /* FunctionCallUnbondMayaChain.swift */; };
+		B547A3FC2DF3EF6A0052164D /* Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B547A3FB2DF3EF6A0052164D /* Cardano.swift */; };
+		B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B547A3FD2DF3F9220052164D /* CardanoService.swift */; };
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
@@ -776,6 +778,7 @@
 		B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
 		B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */; };
+		B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */; };
 		B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
 		B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AC2C1A556D005DB485 /* DydxService.swift */; };
@@ -1646,6 +1649,8 @@
 		B53D8CCB2BF7F22F00B795D3 /* FunctionCallLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallLeave.swift; sourceTree = "<group>"; };
 		B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmTokenServiceProtocol.swift; sourceTree = "<group>"; };
 		B541C9252CF04C4700335933 /* FunctionCallUnbondMayaChain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnbondMayaChain.swift; sourceTree = "<group>"; };
+		B547A3FB2DF3EF6A0052164D /* Cardano.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cardano.swift; sourceTree = "<group>"; };
+		B547A3FD2DF3F9220052164D /* CardanoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardanoService.swift; sourceTree = "<group>"; };
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
@@ -1689,6 +1694,7 @@
 		B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosSwitch.swift; sourceTree = "<group>"; };
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 		B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeAccountResponse.swift; sourceTree = "<group>"; };
+		B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinFactory+Cardano.swift"; sourceTree = "<group>"; };
 		B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+RuneBond.swift"; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
 		B5E476AC2C1A556D005DB485 /* DydxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DydxService.swift; sourceTree = "<group>"; };
@@ -1929,6 +1935,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B547A3FE2DF3F9220052164D /* Cardano */,
 				DE1509C32DCD93150030C9A0 /* MoonPay.swift */,
 				B5E654E92D277CD5003A037C /* Tron */,
 				B5A80F192D0645BC00DC9069 /* Ripple */,
@@ -3243,6 +3250,14 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		B547A3FE2DF3F9220052164D /* Cardano */ = {
+			isa = PBXGroup;
+			children = (
+				B547A3FD2DF3F9220052164D /* CardanoService.swift */,
+			);
+			path = Cardano;
+			sourceTree = "<group>";
+		};
 		B54B01982BDE0A0F00FDA472 /* Polkadot */ = {
 			isa = PBXGroup;
 			children = (
@@ -3550,6 +3565,8 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */,
+				B547A3FB2DF3EF6A0052164D /* Cardano.swift */,
 				B5BC37572CECF21D005A1C76 /* cosmos */,
 				B571384C2CC560F0000E925B /* Ton.swift */,
 				B5E654EC2D2788CC003A037C /* Tron.swift */,
@@ -4109,6 +4126,7 @@
 				A6C670B32C9D12CF00F59B6A /* VaultPairDetailView+macOS.swift in Sources */,
 				A51AE8C22C931C6000EF9A7A /* FastVaultEnterPasswordView.swift in Sources */,
 				A6F7B7392D4EF7BB00AC8104 /* FastBackupVaultOverview.swift in Sources */,
+				B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */,
 				A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */,
 				A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
@@ -4581,6 +4599,7 @@
 				A6C344982D642AD20072B528 /* ThisDevicePeerCell.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
+				B547A3FC2DF3EF6A0052164D /* Cardano.swift in Sources */,
 				A6C6710B2CA27D1400F59B6A /* OnboardingView2+macOS.swift in Sources */,
 				A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */,
 				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
@@ -4588,6 +4607,7 @@
 				A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */,
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
+				B547A3FF2DF3F9220052164D /* CardanoService.swift in Sources */,
 				A6C670F52CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift in Sources */,
 				B55246CB2CF5643800E3532C /* noble.swift in Sources */,
 				A6BFE1BF2D94663E000B73C0 /* SwapChainPickerView.swift in Sources */,

@@ -462,7 +462,7 @@ private extension SwapCryptoViewModel {
     
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
             return tx.fromCoin
         case .EVM, .Solana:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
@@ -493,7 +493,7 @@ private extension SwapCryptoViewModel {
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
             return BigInt(plan.fee)
             
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:
             return chainSpecific.gas
         }
     }

@@ -7,6 +7,7 @@
 
 import Foundation
 import WalletCore
+import CryptoKit
 
 struct CoinFactory {
     
@@ -20,6 +21,15 @@ struct CoinFactory {
         case .mayaChain:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
             address = anyAddress.description
+        case .cardano:
+            // Always create Enterprise address to avoid "stake address" component
+            // Use WalletCore's proper Blake2b hashing for deterministic results across all devices
+            address = try createCardanoEnterpriseAddress(spendingKeyHex: vault.pubKeyEdDSA)
+            
+            // Validate Cardano address using WalletCore's own validation
+            guard let _ = AnyAddress(string: address, coin: .cardano) else {
+                throw Errors.invalidPublicKey(pubKey: "WalletCore validation failed for Cardano address: \(address)")
+            }
         default:
             address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
@@ -45,9 +55,29 @@ extension CoinFactory {
         }
     }
     
+
+    
     static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
         switch asset.chain.signingKeyType {
         case .EdDSA:
+            
+            if asset.chain == .cardano {
+                // For Cardano, we still need to create a proper PublicKey for transaction signing
+                // even though we're creating the address manually
+                let cardanoExtendedKey = try createCardanoExtendedKey(
+                    spendingKeyHex: vault.pubKeyEdDSA, 
+                    chainCodeHex: vault.hexChainCode
+                )
+                
+                // Create ed25519Cardano public key
+                guard let cardanoKey = PublicKey(data: cardanoExtendedKey, type: .ed25519Cardano) else {
+                    print("Failed to create ed25519Cardano key from properly structured data")
+                    throw Errors.invalidPublicKey(pubKey: "Failed to create Cardano extended key")
+                }
+                
+                return cardanoKey
+            }
+            
             guard
                 let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
