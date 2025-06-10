@@ -36,9 +36,7 @@ struct FunctionCallDetailsView: View {
                     
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
                     bondInstance.nodeAddress = nodeAddress
-                    bondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
-                                                 AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
-                                                 AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
                         bondInstance.fee = feeInt
                         bondInstance.feeValid = true
@@ -53,9 +51,7 @@ struct FunctionCallDetailsView: View {
                     
                     let unbondInstance = FunctionCallUnbond()
                     unbondInstance.nodeAddress = nodeAddress
-                    unbondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
-                                                  AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
-                                                  AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                    unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
                         unbondInstance.amount = amountDecimal
                         unbondInstance.amountValid = true
@@ -75,7 +71,13 @@ struct FunctionCallDetailsView: View {
         self._fnCallInstance = State(
             initialValue: FunctionCallInstance.getDefault(for: defaultCoin, tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
     }
-
+    
+    private static func validateNodeAddress(_ address: String) -> Bool {
+        return AddressService.validateAddress(address: address, chain: .thorChain) ||
+        AddressService.validateAddress(address: address, chain: .mayaChain) ||
+        AddressService.validateAddress(address: address, chain: .ton)
+    }
+    
     var body: some View {
         content
             .alert(isPresented: $functionCallViewModel.showAlert) {
@@ -93,9 +95,7 @@ struct FunctionCallDetailsView: View {
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         bondInstance.nodeAddress = nodeAddress
-                        bondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
-                                               AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
-                                               AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                        bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
                     fnCallInstance = .bond(bondInstance)
                 case .unbond:
@@ -103,9 +103,7 @@ struct FunctionCallDetailsView: View {
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         unbondInstance.nodeAddress = nodeAddress
-                        unbondInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
-                                                AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
-                                                AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                        unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
                     
                     fnCallInstance = .unbond(unbondInstance)
@@ -148,9 +146,7 @@ struct FunctionCallDetailsView: View {
                         leaveInstance.nodeAddress = nodeAddress
                         leaveInstance.addressFields["nodeAddress"] = nodeAddress
                         
-                        leaveInstance.nodeAddressValid = AddressService.validateAddress(address: nodeAddress, chain: .thorChain) || 
-                                                AddressService.validateAddress(address: nodeAddress, chain: .mayaChain) || 
-                                                AddressService.validateAddress(address: nodeAddress, chain: .ton)
+                        leaveInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     }
                     
                     fnCallInstance = .leave(leaveInstance)

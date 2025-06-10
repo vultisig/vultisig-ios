@@ -88,8 +88,8 @@ struct CoinDetailView: View {
         CoinCell(coin: coin)
     }
     
-    @State private var selectedBondNode: RuneBondNode? = nil
-    @State private var selectedMemoNodeMaintenance: FunctionCallNodeMaintenance? = nil
+    @State private var selectedBondNode: RuneBondNode?
+    @State private var selectedMemoNodeMaintenance: FunctionCallNodeMaintenance?
     
     var bondCells: some View {
         VStack(alignment: .leading, spacing: 0) {
