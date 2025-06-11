@@ -24,6 +24,12 @@ struct CreateReferralView: View {
                     )
                 }
             })
+            .alert(isPresented: $referralViewModel.showReferralAlert) {
+                alert
+            }
+            .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
+                ReferralSendOverviewView()
+            }
     }
     
     var content: some View {
@@ -163,8 +169,24 @@ struct CreateReferralView: View {
     }
     
     var button: some View {
+        Button {
+            referralViewModel.verifyReferralEntries()
+        } label: {
+            label
+        }
+        .padding(24)
+    }
+    
+    var label: some View {
         FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
-            .padding(24)
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     var selectedAsset: some View {

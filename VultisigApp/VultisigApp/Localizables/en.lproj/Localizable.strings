@@ -709,4 +709,7 @@
 "status" = "Status";
 "invalid" = "Invalid";"enter4Characters";
 "enter4Characters" = "Enter 4 characters";
+"pickValidCode" = "Please pick a valid referral code";
+"pickValidExpiration" = "Please set a valid expiration duration";
+"pickPayoutAsset" = "Please pick a payout asset option from the selection";
 "sendOverview" = "Send overview";

@@ -679,3 +679,6 @@
 "status" = "Status";
 "invalid" = "Ungültig";
 "enter4Characters" = "Gib 4 Zeichen ein";
+"pickValidCode" = "Bitte wählen Sie einen gültigen Empfehlungscode";
+"pickValidExpiration" = "Bitte legen Sie eine gültige Ablaufdauer fest";
+"pickPayoutAsset" = "Bitte wählen Sie eine Auszahlungsoption";

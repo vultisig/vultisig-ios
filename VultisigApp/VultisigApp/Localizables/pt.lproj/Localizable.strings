@@ -663,3 +663,6 @@
 "status" = "Status";
 "invalid" = "Inválido";
 "enter4Characters" = "Digite 4 caracteres";
+"pickValidCode" = "Escolha um código de indicação válido";
+"pickValidExpiration" = "Defina uma duração de expiração válida";
+"pickPayoutAsset" = "Escolha uma opção de ativo para pagamento";

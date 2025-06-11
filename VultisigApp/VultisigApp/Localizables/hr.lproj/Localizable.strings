@@ -662,3 +662,6 @@
 "status" = "Status";
 "invalid" = "Nevažeće";
 "enter4Characters" = "Unesi 4 znaka";
+"pickValidCode" = "Odaberi važeći referalni kod";
+"pickValidExpiration" = "Postavi valjano vrijeme isteka";
+"pickPayoutAsset" = "Odaberi način isplate s popisa";
