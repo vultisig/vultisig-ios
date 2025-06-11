@@ -126,8 +126,8 @@ struct CreateReferralView: View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "$12.304")
-            getCell(title: NSLocalizedString("costs", comment: ""), description1: "10 RUNE", description2: "$12.304")
+            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFee)")
+            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFee)")
         }
     }
     

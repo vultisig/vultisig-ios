@@ -33,6 +33,14 @@ class ReferralViewModel: ObservableObject {
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 0
     
+    var registrationFee: String {
+        getFiatAmount(for: 10)
+    }
+    
+    var totalFee: String {
+        getFiatAmount(for: getTotalFee())
+    }
+    
     func closeBannerSheet() {
         showReferralBannerSheet = false
         navigationToReferralOverview = true
@@ -177,5 +185,18 @@ class ReferralViewModel: ObservableObject {
             showReferredLaunchViewError = true
         }
         isLoading = false
+    }
+    
+    func getTotalFee() -> Int {
+        10 + expireInCount
+    }
+    
+    func getFiatAmount(for amount: Int) -> String {
+        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+            return ""
+        }
+        
+        let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
+        return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
 }
