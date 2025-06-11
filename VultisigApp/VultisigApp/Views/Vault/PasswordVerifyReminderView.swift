@@ -151,7 +151,7 @@ struct PasswordVerifyReminderView: View {
     
     var closeButton: some View {
         Button {
-            isSheetPresented = false
+            handleCloseTap()
         } label: {
             Image(systemName: "xmark")
         }
@@ -179,7 +179,7 @@ struct PasswordVerifyReminderView: View {
     
     var closeFilledButton: some View {
         Button {
-            isSheetPresented = false
+            handleCloseTap()
         } label: {
             FilledButton(title: "close")
         }
@@ -213,5 +213,12 @@ struct PasswordVerifyReminderView: View {
         }
         
         isLoading = false
+    }
+    
+    private func handleCloseTap() {
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
+        isSheetPresented = false
     }
 }
