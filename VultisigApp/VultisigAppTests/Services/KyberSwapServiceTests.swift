@@ -620,28 +620,28 @@ final class KyberSwapServiceTests: XCTestCase {
     }
     
     func testServiceChainConversion() throws {
-        // Test that service correctly converts Chain enum to chain ID
+        // Test that service correctly converts Chain enum to chain names (not IDs)
         let service = KyberSwapService.shared
         
         let testCases: [(Chain, String)] = [
-            (.ethereum, "1"),
-            (.bscChain, "56"),
-            (.polygon, "137"),
-            (.arbitrum, "42161"),
-            (.avalanche, "43114"),
-            (.optimism, "10"),
-            (.base, "8453"),
-            (.zksync, "324")
+            (.ethereum, "ethereum"),
+            (.bscChain, "bsc"),
+            (.polygon, "polygon"),
+            (.arbitrum, "arbitrum"),
+            (.avalanche, "avalanche"),
+            (.optimism, "optimism"),
+            (.base, "base"),
+            (.zksync, "zksync")
         ]
         
-        for (chain, expectedId) in testCases {
-            let actualId = service.getChainId(for: chain)
-            XCTAssertEqual(actualId, expectedId, "Chain \(chain) should map to ID \(expectedId), but got \(actualId)")
+        for (chain, expectedName) in testCases {
+            let actualName = service.getChainId(for: chain)
+            XCTAssertEqual(actualName, expectedName, "Chain \(chain) should map to name \(expectedName), but got \(actualName)")
         }
         
         // Test default fallback
-        let defaultId = service.getChainId(for: .bitcoin)
-        XCTAssertEqual(defaultId, "1", "Unsupported chains should fallback to Ethereum (ID: 1)")
+        let defaultName = service.getChainId(for: .bitcoin)
+        XCTAssertEqual(defaultName, "ethereum", "Unsupported chains should fallback to ethereum")
     }
     
     // MARK: - Gas Price Calculation Tests

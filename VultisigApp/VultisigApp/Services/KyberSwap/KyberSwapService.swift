@@ -29,7 +29,7 @@ struct KyberSwapService {
             amountIn: amount,
             saveGas: false,
             gasInclude: true,
-            slippageTolerance: 50, // 0.5% in basis points
+            slippageTolerance: 100, // 1.0% in basis points (increased from 50 for better execution)
             isAffiliate: isAffiliate
         )
         
@@ -49,7 +49,7 @@ struct KyberSwapService {
             routeSummary: routeResponse.data.routeSummary,
             sender: from,
             recipient: from,
-            slippageTolerance: 50,
+            slippageTolerance: 100, // 1.0% to match route request
             deadline: Int(Date().timeIntervalSince1970) + 1200 // 20 minutes from now
         )
         
@@ -71,10 +71,62 @@ struct KyberSwapService {
         let gasPrice = routeResponse.data.routeSummary.gasPrice
         buildResponse.data.gasPrice = gasPrice
         
-        // Calculate fee from route response
-        let gas = BigInt(routeResponse.data.routeSummary.gas) ?? BigInt.zero
+        // Calculate fee using the SAME gas source as the transaction construction
+        // Use build response gas (more accurate) instead of route response gas
+        let baseGas = BigInt(buildResponse.data.gas) ?? BigInt.zero
+        
+        // Add debug logging to diagnose zero fee issue
+        print("🔍 KyberSwap Fee Debug:")
+        print("   Route Gas: '\(routeResponse.data.routeSummary.gas)'")
+        print("   Build Gas: '\(buildResponse.data.gas)'")
+        print("   GasPrice from API: '\(gasPrice)'")
+        print("   BaseGas parsed: \(baseGas)")
+        
+        // Chain-specific gas buffer based on gas costs and execution characteristics
+        // Ethereum: Expensive gas, conservative buffer
+        // L2s: Cheap gas, can afford larger buffer for complex routing
+        let gasMultiplier: Double
+        switch chain {
+        case "ethereum":
+            gasMultiplier = 1.4 // 40% buffer - conservative for expensive Ethereum gas
+        case "arbitrum", "optimism", "base", "polygon", "avalanche", "bsc":
+            gasMultiplier = 2.0 // 100% buffer - L2s have cheap gas and complex routing
+        default:
+            gasMultiplier = 1.6 // 60% buffer - reasonable default for other chains
+        }
+        
+        // Add debug logging to show chain-specific buffer
+        print("   Chain: \(chain)")
+        print("   Gas Multiplier: \(gasMultiplier)x")
+        
+        // Apply chain-specific gas buffer
+        let gasBuffer = Double(baseGas.description) ?? 0.0
+        let bufferedGasAmount = gasBuffer * gasMultiplier
+        let gas = BigInt(bufferedGasAmount)
+        
+        // If gas is still zero after calculation, use a reasonable default for EVM swaps
+        let finalGas: BigInt
+        if gas.isZero {
+            finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit) // Use same default as transaction construction
+            print("   ⚠️  Using fallback gas limit: \(finalGas)")
+        } else {
+            finalGas = gas
+        }
+        
         let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000") // Use provided gasPrice or 20 Gwei default
-        let fee = gas * gasPriceValue
+        
+        // Ensure minimum gas price of 1 GWEI (1,000,000,000 wei)
+        let minGasPrice = BigInt("1000000000") // 1 GWEI minimum
+        let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue
+        
+        let fee = finalGas * finalGasPrice
+        
+        print("   Buffered Gas: \(gas)")
+        print("   Final Gas Used: \(finalGas)")
+        print("   Gas Price Value: \(gasPriceValue)")
+        print("   Final Gas Price (min 1 GWEI): \(finalGasPrice)")
+        print("   Calculated Fee: \(fee)")
+        print("🔍 End Debug")
         
         return (buildResponse, fee)
     }
@@ -88,27 +140,28 @@ struct KyberSwapService {
     }
     
     func getChainId(for chain: Chain) -> String {
+        // KyberSwap API uses chain names, not chain IDs in the URL path
         switch chain {
         case .ethereum:
-            return "1"
+            return "ethereum"
         case .bscChain:
-            return "56"
+            return "bsc"
         case .polygon:
-            return "137"
+            return "polygon"
         case .arbitrum:
-            return "42161"
+            return "arbitrum"
         case .avalanche:
-            return "43114"
+            return "avalanche"
         case .optimism:
-            return "10"
+            return "optimism"
         case .base:
-            return "8453"
+            return "base"
         case .zksync:
-            return "324"
+            return "zksync"
         case .blast:
-            return "81457"
+            return "blast"
         default:
-            return "1" // Default to Ethereum
+            return "ethereum" // Default to Ethereum
         }
     }
 }

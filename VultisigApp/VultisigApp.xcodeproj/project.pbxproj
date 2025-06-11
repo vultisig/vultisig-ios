@@ -5287,7 +5287,7 @@ KyberSwap = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = kyber;
 				kind = branch;
 			};
 		};

@@ -98,10 +98,23 @@ private extension KyberSwaps {
         }
 
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt("20000000000") // Use gasPrice from quote or 20 Gwei default
-        // Sometimes the `gas` field in kyberswap tx is 0
-        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
-        let normalizedGas = quote.tx.gas == 0 ? 600000 : quote.tx.gas
-        let gas = BigUInt(normalizedGas)
+        
+        // Apply chain-specific gas buffer based on chain costs and execution characteristics
+        let baseGas = Int64(quote.data.gas) ?? 600000 // Use raw API gas, not pre-buffered quote.tx.gas
+        let gasMultiplier: Double
+        
+        switch keysignPayload.coin.chain {
+        case .ethereum:
+            gasMultiplier = 1.4 // 40% buffer - conservative for expensive Ethereum gas
+        case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
+            gasMultiplier = 2.0 // 100% buffer - L2s have cheap gas and complex routing
+        default:
+            gasMultiplier = 1.6 // 60% buffer - reasonable default for other chains
+        }
+        
+        let bufferedGas = Int64(Double(baseGas) * gasMultiplier)
+        let gas = BigUInt(bufferedGas)
+        
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
