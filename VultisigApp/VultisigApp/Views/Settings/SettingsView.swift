@@ -29,7 +29,7 @@ struct SettingsView: View {
             currencySelectionCell
             addressBookCell
             defaultChainsSelectionCell
-//            referralCodeCell
+            referralCodeCell
             faqCell
         }
     }
