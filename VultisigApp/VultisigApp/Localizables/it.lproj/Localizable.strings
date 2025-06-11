@@ -657,3 +657,8 @@
 "editReferral" = "Modifica invito";
 "editReferredCode" = "Modifica codice di invito";
 "saveReferredCode" = "Salva codice di invito";
+"alreadyTaken" = "Già utilizzato";
+"available" = "Disponibile";
+"status" = "Stato";
+"invalid" = "Non valido";
+"enter4Characters" = "Inserisci 4 caratteri";

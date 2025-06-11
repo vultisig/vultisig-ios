@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SwapCoinPickerView: View {
     let vault: Vault
-    let selectedNetwork: Chain?
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
     @Binding var selectedChain: Chain?
@@ -136,11 +135,11 @@ struct SwapCoinPickerView: View {
     
     var chainSelectorLabel: some View {
         HStack(spacing: 4) {
-            Image(selectedNetwork?.logo ?? "")
+            Image(selectedChain?.logo ?? "")
                 .resizable()
                 .frame(width: 16, height: 16)
             
-            Text(selectedNetwork?.name ?? "")
+            Text(selectedChain?.name ?? "")
             
             Image(systemName: "chevron.down")
         }
@@ -165,7 +164,7 @@ struct SwapCoinPickerView: View {
     
     private func getCoins() -> [Coin] {
         let availableCoins = vault.coins.filter { coin in
-            coin.chain == selectedNetwork
+            coin.chain == selectedChain
         }.sorted {
             $0.ticker < $1.ticker
         }
@@ -178,5 +177,5 @@ struct SwapCoinPickerView: View {
 }
 
 #Preview {
-    SwapCoinPickerView(vault: Vault.example, selectedNetwork: Chain.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example))
+    SwapCoinPickerView(vault: Vault.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example))
 }

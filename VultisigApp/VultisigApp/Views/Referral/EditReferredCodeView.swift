@@ -56,8 +56,8 @@ struct EditReferredCodeView: View {
             text: $referralViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referralViewModel.showReferralLaunchViewError,
-            errorMessage: referralViewModel.referralLaunchViewErrorMessage
+            showError: referralViewModel.showReferredLaunchViewError,
+            errorMessage: referralViewModel.referredLaunchViewErrorMessage
         )
     }
     
@@ -81,7 +81,7 @@ struct EditReferredCodeView: View {
     }
     
     private func resetData() {
-        referralViewModel.resetReferralData()
+        referralViewModel.resetReferredData()
     }
 }
 

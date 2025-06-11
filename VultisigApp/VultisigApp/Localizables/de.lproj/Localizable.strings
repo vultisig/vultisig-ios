@@ -674,3 +674,8 @@
 "editReferral" = "Empfehlung bearbeiten";
 "editReferredCode" = "Empfehlungscode bearbeiten";
 "saveReferredCode" = "Empfehlungscode speichern";
+"alreadyTaken" = "Bereits vergeben";
+"available" = "Verfügbar";
+"status" = "Status";
+"invalid" = "Ungültig";
+"enter4Characters" = "Gib 4 Zeichen ein";
