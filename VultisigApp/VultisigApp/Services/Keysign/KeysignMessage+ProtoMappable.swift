@@ -168,7 +168,30 @@ extension SwapPayload {
                     )
                 )
             ))
-
+        case .kyberswapSwapPayload(let value):
+            self = .kyberSwap(KyberSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                quote: KyberSwapQuote(
+                    code: 0,
+                    message: "Success",
+                    data: KyberSwapQuote.Data(
+                        amountIn: value.fromAmount,
+                        amountInUsd: "0",
+                        amountOut: value.quote.dstAmount,
+                        amountOutUsd: "0",
+                        gas: String(value.quote.tx.gas),
+                        gasUsd: "0",
+                        data: value.quote.tx.data,
+                        routerAddress: value.quote.tx.to,
+                        transactionValue: value.quote.tx.value,
+                        gasPrice: value.quote.tx.gasPrice
+                    ),
+                    requestId: ""
+                )
+            ))
         }
     }
     
@@ -222,10 +245,24 @@ extension SwapPayload {
                     }
                 }
             })
-        case .kyberSwap:
-            // KyberSwap protobuf support will be added in a future update
-            // For now, fallback to oneInch format for compatibility
-            fatalError("KyberSwap protobuf serialization not yet supported")
+        case .kyberSwap(let payload):
+            return .kyberswapSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.quote = .with {
+                    $0.dstAmount = payload.quote.dstAmount
+                    $0.tx = .with {
+                        $0.from = payload.quote.tx.from
+                        $0.to = payload.quote.tx.to
+                        $0.data = payload.quote.tx.data
+                        $0.value = payload.quote.tx.value
+                        $0.gasPrice = payload.quote.tx.gasPrice
+                        $0.gas = payload.quote.tx.gas
+                    }
+                }
+            })
         }
     }
 }
@@ -239,12 +276,7 @@ extension BlockChainSpecific {
                 byteFee: value.byteFee.toBigInt(),
                 sendMaxAmount: value.sendMaxAmount
             )
-        case .cardano(let value):
-            self = .Cardano(
-                byteFee: BigInt(value.byteFee),
-                sendMaxAmount: value.sendMaxAmount,
-                ttl: value.ttl
-            )
+
         case .ethereumSpecific(let value):
             self = .Ethereum(
                 maxFeePerGasWei: BigInt(stringLiteral: value.maxFeePerGasWei),
@@ -334,15 +366,15 @@ extension BlockChainSpecific {
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
         case .UTXO(let byteFee, let sendMaxAmount):
-            return .utxoSpecific(.with {
+                        return .utxoSpecific(.with {
                 $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount
             })
-        case .Cardano(let byteFee, let sendMaxAmount, let ttl):
-            return .cardano(.with {
-                $0.byteFee = Int64(byteFee)
+        case .Cardano(let byteFee, let sendMaxAmount, _):
+            // Cardano is not supported in proto, mapping to UTXO for compatibility
+            return .utxoSpecific(.with {
+                $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount
-                $0.ttl = ttl
             })
         case .Ethereum(let maxFeePerGasWei, let priorityFeeWei, let nonce, let gasLimit):
             return .ethereumSpecific(.with {
