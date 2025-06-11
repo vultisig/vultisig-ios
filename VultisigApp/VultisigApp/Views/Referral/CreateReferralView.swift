@@ -8,12 +8,8 @@
 import SwiftUI
 
 struct CreateReferralView: View {
-    @State var referralCode: String = ""
+    @StateObject var referralViewModel = ReferralViewModel()
     
-    @State var showSuccess: Bool = false
-    @State var successMessage: String = ""
-    @State var showError: Bool = false
-    @State var errorMessage: String = ""
     @State var expireInCount: Int = 0
     
     var body: some View {
@@ -47,48 +43,7 @@ struct CreateReferralView: View {
     }
     
     var pickReferralCode: some View {
-        VStack(spacing: 8) {
-            pickReferralTitle
-            
-            HStack(spacing: 8) {
-                pickReferralTextfield
-                searchButton
-            }
-        }
-    }
-    
-    var pickReferralTitle: some View {
-        Text(NSLocalizedString("pickReferralCode", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var pickReferralTextfield: some View {
-        ReferralTextField(
-            text: $referralCode,
-            placeholderText: "enterUpto4Characters",
-            action: .Clear,
-            showError: showError,
-            errorMessage: errorMessage
-        )
-    }
-    
-    var searchButton: some View {
-        Button {
-            
-        } label: {
-            searchButtonLabel
-        }
-    }
-    
-    var searchButtonLabel: some View {
-        Text(NSLocalizedString("search", comment: ""))
-            .foregroundColor(.lightText)
-            .font(.body14BrockmannSemiBold)
-            .frame(width: 100, height: 60)
-            .background(Color.persianBlue400)
-            .cornerRadius(16)
+        PickReferralCode(referralViewModel: referralViewModel)
     }
     
     var setExpiration: some View {
@@ -164,7 +119,7 @@ struct CreateReferralView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.blue200, lineWidth: 1)
+                .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
     }

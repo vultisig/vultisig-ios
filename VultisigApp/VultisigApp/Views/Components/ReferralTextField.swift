@@ -14,6 +14,8 @@ struct ReferralTextField: View {
     let showError: Bool
     let errorMessage: String
     
+    var showSuccess: Bool = false
+    
     var body: some View {
         VStack(spacing: 8) {
             textField
@@ -102,7 +104,9 @@ struct ReferralTextField: View {
     }
     
     private func getOutlineColor() -> Color {
-        if showError {
+        if showSuccess {
+            Color.alertTurquoise
+        } else if showError {
             Color.invalidRed
         } else {
             Color.blue200
