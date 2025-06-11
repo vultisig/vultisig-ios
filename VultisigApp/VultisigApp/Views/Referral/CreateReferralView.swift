@@ -8,10 +8,22 @@
 import SwiftUI
 
 struct CreateReferralView: View {
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     @StateObject var referralViewModel = ReferralViewModel()
     
     var body: some View {
         container
+            .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
+                if let vault = homeViewModel.selectedVault {
+                    SwapCoinPickerView(
+                        vault: vault,
+                        showSheet: $referralViewModel.showCoinSelector,
+                        selectedCoin: $referralViewModel.selectedPayoutCoin,
+                        selectedChain: $referralViewModel.selectedPayoutChain
+                    )
+                }
+            })
     }
     
     var content: some View {
@@ -122,6 +134,9 @@ struct CreateReferralView: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
+        .onTapGesture {
+            referralViewModel.showCoinSelector.toggle()
+        }
     }
     
     var summary: some View {
@@ -198,4 +213,5 @@ struct CreateReferralView: View {
 
 #Preview {
     CreateReferralView()
+        .environmentObject(HomeViewModel())
 }

@@ -33,6 +33,10 @@ class ReferralViewModel: ObservableObject {
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 0
     
+    @Published var selectedPayoutChain: Chain? = .example
+    @Published var selectedPayoutCoin: Coin = .example
+    @Published var showCoinSelector = false
+    
     var registrationFee: String {
         getFiatAmount(for: 10)
     }
