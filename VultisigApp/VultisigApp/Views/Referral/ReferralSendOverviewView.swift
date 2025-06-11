@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @State var isAmountCorrect: Bool = false
-    @State var isAddressCorrect: Bool = false
+    @ObservedObject var referralViewModel: ReferralViewModel
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         ZStack {
@@ -43,8 +44,8 @@ struct ReferralSendOverviewView: View {
     
     var checkboxes: some View {
         VStack(spacing: 12) {
-            Checkbox(isChecked: $isAmountCorrect, text: "referralOverviewCheckbox1")
-            Checkbox(isChecked: $isAddressCorrect, text: "referralOverviewCheckbox2")
+            Checkbox(isChecked: $referralViewModel.isAmountCorrect, text: "referralOverviewCheckbox1")
+            Checkbox(isChecked: $referralViewModel.isAddressCorrect, text: "referralOverviewCheckbox2")
         }
     }
     
@@ -57,10 +58,12 @@ struct ReferralSendOverviewView: View {
     
     var assetDetail: some View {
         HStack {
-            Circle()
+            Image("rune")
+                .resizable()
                 .frame(width: 24, height: 24)
+                .cornerRadius(32)
             
-            Text("12")
+            Text("\(referralViewModel.getTotalFee())")
                 .foregroundColor(.neutral0)
             
             Text("RUNE")
@@ -79,8 +82,8 @@ struct ReferralSendOverviewView: View {
         VStack(spacing: 12) {
             getCell(
                 title: "from",
-                description: "Main Vault",
-                bracketValue: "0xF42...9Ac5"
+                description: homeViewModel.selectedVault?.name ?? "",
+                bracketValue: getVaultAddress()
             )
             
             separator
@@ -95,7 +98,7 @@ struct ReferralSendOverviewView: View {
             getCell(
                 title: "network",
                 description: "THORChain",
-                icon: "0xF42...9Ac5"
+                icon: "rune"
             )
             
             separator
@@ -115,27 +118,43 @@ struct ReferralSendOverviewView: View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             Spacer()
             
             if let icon {
-                Circle()
-                    .foregroundColor(.black)
+                Image(icon)
+                    .resizable()
                     .frame(width: 16, height: 16)
+                    .cornerRadius(16)
             }
             
             Text(description)
                 .foregroundColor(.neutral0)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             if let bracketValue {
-                Text("(\(title))")
+                Text("(\(bracketValue))")
                     .foregroundColor(.extraLightGray)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
         }
         .font(.body14BrockmannMedium)
     }
+    
+    private func getVaultAddress() -> String? {
+        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+            return nil
+        }
+        
+        return nativeCoin.address
+    }
 }
 
 #Preview {
-    ReferralSendOverviewView()
+    ReferralSendOverviewView(referralViewModel: ReferralViewModel())
+        .environmentObject(HomeViewModel())
 }

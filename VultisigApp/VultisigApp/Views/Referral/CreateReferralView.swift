@@ -28,7 +28,7 @@ struct CreateReferralView: View {
                 alert
             }
             .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
-                ReferralSendOverviewView()
+                ReferralSendOverviewView(referralViewModel: referralViewModel)
             }
     }
     
@@ -146,8 +146,8 @@ struct CreateReferralView: View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFee)")
-            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFee)")
+            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFeeFiat)")
+            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFeeFiat)")
         }
     }
     

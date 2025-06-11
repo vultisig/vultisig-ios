@@ -40,11 +40,15 @@ class ReferralViewModel: ObservableObject {
     @Published var referralAlertMessage = ""
     @Published var navigateToOverviewView = false
     
-    var registrationFee: String {
+    // Send Overview
+    @Published var isAmountCorrect: Bool = false
+    @Published var isAddressCorrect: Bool = false
+    
+    var registrationFeeFiat: String {
         getFiatAmount(for: 10)
     }
     
-    var totalFee: String {
+    var totalFeeFiat: String {
         getFiatAmount(for: getTotalFee())
     }
     
