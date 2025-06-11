@@ -662,3 +662,6 @@
 "status" = "Estado";
 "invalid" = "Inválido";
 "enter4Characters" = "Ingresa 4 caracteres";
+"pickValidCode" = "Elige un código de referido válido";
+"pickValidExpiration" = "Configura una duración de expiración válida";
+"pickPayoutAsset" = "Elige una opción de activo para el pago";
