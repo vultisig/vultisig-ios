@@ -657,3 +657,8 @@
 "editReferral" = "Uredi preporuku";
 "editReferredCode" = "Uredi referalni kod";
 "saveReferredCode" = "Spremi referalni kod";
+"alreadyTaken" = "Već zauzeto";
+"available" = "Dostupno";
+"status" = "Status";
+"invalid" = "Nevažeće";
+"enter4Characters" = "Unesi 4 znaka";
