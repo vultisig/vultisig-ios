@@ -103,7 +103,7 @@ struct JoinKeysignDoneSummary: View {
                 getGeneralCell(
                     title: "memo",
                     description: memo,
-                    isVerticalStacked: true
+                    isVerticalStacked: false
                 )
             }
             

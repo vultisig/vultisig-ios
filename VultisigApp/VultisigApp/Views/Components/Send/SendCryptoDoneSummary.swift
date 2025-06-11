@@ -67,7 +67,6 @@ struct SendCryptoDoneSummary: View {
                 getGeneralCell(
                     title: "memo",
                     description: tx.memo,
-                    isVerticalStacked: (decodedMemo?.isEmpty == false),
                     isBold: false
                 )
             }
