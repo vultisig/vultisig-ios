@@ -89,22 +89,23 @@ struct JoinKeysignDoneSummary: View {
                 
             }
             
-            if let decodedMemo = viewModel.decodedMemo, !decodedMemo.isEmpty {
-                Separator()
-                getGeneralCell(
-                    title: "action",
-                    description: decodedMemo,
-                    isVerticalStacked: false
-                )
-            }
-            
             if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                 Separator()
-                getGeneralCell(
-                    title: "memo",
-                    description: memo,
-                    isVerticalStacked: false
-                )
+                
+                // Show decoded memo if available, otherwise show original memo
+                if let decodedMemo = viewModel.decodedMemo, !decodedMemo.isEmpty {
+                    getGeneralCell(
+                        title: "action",
+                        description: decodedMemo,
+                        isVerticalStacked: false
+                    )
+                } else {
+                    getGeneralCell(
+                        title: "memo",
+                        description: memo,
+                        isVerticalStacked: false
+                    )
+                }
             }
             
             if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {

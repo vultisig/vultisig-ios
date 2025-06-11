@@ -54,21 +54,22 @@ struct SendCryptoDoneSummary: View {
             if !tx.memo.isEmpty {
                 let decodedMemo = tx.memo.decodedExtensionMemo
                 
+                Separator()
+                
+                // Show decoded memo if available, otherwise show original memo
                 if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
-                    Separator()
                     getGeneralCell(
                         title: "action",
                         description: decodedMemo,
                         isBold: true
                     )
+                } else {
+                    getGeneralCell(
+                        title: "memo",
+                        description: tx.memo,
+                        isBold: false
+                    )
                 }
-                
-                Separator()
-                getGeneralCell(
-                    title: "memo",
-                    description: tx.memo,
-                    isBold: false
-                )
             }
             
             if !getSendAmount(for: tx).isEmpty {
