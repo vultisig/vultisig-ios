@@ -122,6 +122,7 @@
 		A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */; };
 		A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */; };
 		A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* EtherfaceService.swift */; };
+		626926A01BF04B61AB7C4D99 /* ExtensionMemoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62867D832E347968D43D578 /* ExtensionMemoService.swift */; };
 		A5AB69C32D63E07D00E54DEB /* BackupSetupView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */; };
 		A5AB69C42D63E07D00E54DEB /* BackupSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */; };
 		A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */; };
@@ -853,6 +854,7 @@
 		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
 		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
 		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
+		744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */; };
 		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
 		DE8B69992CD4603500F53E14 /* PayloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8B69982CD4602500F53E14 /* PayloadService.swift */; };
 		DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */; };
@@ -1041,6 +1043,7 @@
 		A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+iOS.swift"; sourceTree = "<group>"; };
 		A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+MacOS.swift"; sourceTree = "<group>"; };
 		A598FD792CE2098800F26516 /* EtherfaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherfaceService.swift; sourceTree = "<group>"; };
+		D62867D832E347968D43D578 /* ExtensionMemoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoService.swift; sourceTree = "<group>"; };
 		A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSetupView.swift; sourceTree = "<group>"; };
 		A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+iOS.swift"; sourceTree = "<group>"; };
 		A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+macOS.swift"; sourceTree = "<group>"; };
@@ -1772,6 +1775,7 @@
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
+		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
 		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
 		DE8B69982CD4602500F53E14 /* PayloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayloadService.swift; sourceTree = "<group>"; };
 		DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
@@ -1971,6 +1975,7 @@
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
 				A598FD792CE2098800F26516 /* EtherfaceService.swift */,
+				D62867D832E347968D43D578 /* ExtensionMemoService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
@@ -3723,6 +3728,7 @@
 			isa = PBXGroup;
 			children = (
 				DE8AD7492BC7A86200339775 /* EncryptionTest.swift */,
+		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -4094,6 +4100,7 @@
 				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				A6505ADB2CA66CC20002FBF4 /* Placement+macOS.swift in Sources */,
 				A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */,
+				626926A01BF04B61AB7C4D99 /* ExtensionMemoService.swift in Sources */,
 				A6505AF52CA678530002FBF4 /* ImageFileDocument+iOS.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
@@ -4788,6 +4795,7 @@
 				B5293CDB2DBC00C300C6C66A /* StringExtensionTests.swift in Sources */,
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
+				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 			);

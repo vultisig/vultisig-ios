@@ -16,6 +16,8 @@ struct SendCryptoDoneSummary: View {
     let sendSummaryViewModel: SendSummaryViewModel
     let swapSummaryViewModel: SwapCryptoViewModel
     
+    private let extensionMemoService = ExtensionMemoService.shared
+    
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
@@ -52,10 +54,22 @@ struct SendCryptoDoneSummary: View {
             }
             
             if !tx.memo.isEmpty {
+                let decodedMemo = extensionMemoService.decodeExtensionMemo(tx.memo)
+                
+                if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
+                    Separator()
+                    getGeneralCell(
+                        title: "action",
+                        description: decodedMemo,
+                        isBold: true
+                    )
+                }
+                
                 Separator()
                 getGeneralCell(
-                    title: "memo",
+                    title: decodedMemo != nil ? "raw memo" : "memo",
                     description: tx.memo,
+                    isVerticalStacked: decodedMemo != nil,
                     isBold: false
                 )
             }
