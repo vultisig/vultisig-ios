@@ -10,8 +10,6 @@ import SwiftUI
 struct CreateReferralView: View {
     @StateObject var referralViewModel = ReferralViewModel()
     
-    @State var expireInCount: Int = 0
-    
     var body: some View {
         container
     }
@@ -70,19 +68,21 @@ struct CreateReferralView: View {
     
     var decreaseExpirationButton: some View {
         Button {
-            
+            referralViewModel.handleCounterDecrease()
         } label: {
             getExpirationCounterButton(icon: "minus.circle")
         }
+        .disabled(referralViewModel.expireInCount == 0)
+        .opacity(referralViewModel.expireInCount == 0 ? 0.2 : 1)
     }
     
     var expiratingInCounter: some View {
-        getExpirationCounterButton(value: "\(expireInCount)")
+        getExpirationCounterButton(value: "\(referralViewModel.expireInCount)")
     }
     
     var increaseExpirationButton: some View {
         Button {
-            
+            referralViewModel.handleCounterIncrease()
         } label: {
             getExpirationCounterButton(icon: "plus.circle")
         }

@@ -31,6 +31,7 @@ class ReferralViewModel: ObservableObject {
     @Published var referralAvailabilityErrorMessage: String = ""
     @Published var showReferralAvailabilitySuccess: Bool = false
     @Published var isReferralCodeVerified: Bool = false
+    @Published var expireInCount: Int = 0
     
     func closeBannerSheet() {
         showReferralBannerSheet = false
@@ -78,6 +79,18 @@ class ReferralViewModel: ObservableObject {
         showReferredLaunchViewSuccess = false
         referredLaunchViewErrorMessage = ""
         referredLaunchViewSuccessMessage = ""
+    }
+    
+    func handleCounterIncrease() {
+        expireInCount += 1
+    }
+    
+    func handleCounterDecrease() {
+        guard expireInCount > 0 else {
+            return
+        }
+        
+        expireInCount -= 1
     }
     
     private func checkNameAvailability(code: String, forReferralCode: Bool) async {

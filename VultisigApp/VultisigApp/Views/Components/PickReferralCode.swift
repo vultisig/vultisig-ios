@@ -11,7 +11,9 @@ struct PickReferralCode: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        VStack(spacing: 8) {
+        let isVisible = referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess
+        
+        return VStack(spacing: 8) {
             pickReferralTitle
             
             HStack(spacing: 8) {
@@ -19,7 +21,10 @@ struct PickReferralCode: View {
                 searchButton
             }
             
-            status
+            if isVisible {
+                status
+                    .animation(.easeInOut, value: isVisible)
+            }
         }
     }
     
@@ -66,9 +71,7 @@ struct PickReferralCode: View {
     }
     
     var status: some View {
-        let isVisible = referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess
-        
-        return HStack {
+        HStack {
             Text(NSLocalizedString("status", comment: ""))
                 .foregroundColor(.extraLightGray)
             
@@ -77,8 +80,6 @@ struct PickReferralCode: View {
             statusCapsule
         }
         .font(.body14MontserratMedium)
-        .opacity(isVisible ? 1 : 0)
-        .animation(.easeInOut, value: isVisible)
         .padding(.top, 2)
     }
     
