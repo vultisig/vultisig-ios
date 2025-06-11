@@ -91,7 +91,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return Endpoint.getMayaSwapTracker(txid: hash)
         case .lifi:
             return Endpoint.getLifiSwapTracker(txid: hash)
-        case .oneinch, .none:
+        case .oneinch, .kyberswap, .none:
             return nil
         }
     }
@@ -289,6 +289,28 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     memo: nil,
                     chainSpecific: chainSpecific,
                     swapPayload: .oneInch(payload),
+                    approvePayload: buildApprovePayload(tx: tx),
+                    vault: vault
+                )
+                
+                return true
+                
+            case .kyberswap(let quote, _):
+                let keysignFactory = KeysignPayloadFactory()
+                let payload = KyberSwapPayload(
+                    fromCoin: tx.fromCoin,
+                    toCoin: tx.toCoin,
+                    fromAmount: tx.amountInCoinDecimal,
+                    toAmountDecimal: tx.toAmountDecimal,
+                    quote: quote
+                )
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: quote.tx.to,
+                    amount: tx.amountInCoinDecimal,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .kyberSwap(payload),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )

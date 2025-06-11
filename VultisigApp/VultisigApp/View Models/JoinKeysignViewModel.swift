@@ -365,6 +365,8 @@ class JoinKeysignViewModel: ObservableObject {
         switch keysignPayload?.swapPayload {
         case .oneInch:
             return "1Inch"
+        case .kyberSwap:
+            return "KyberSwap"
         case .thorchain:
             return "THORChain"
         case .mayachain:

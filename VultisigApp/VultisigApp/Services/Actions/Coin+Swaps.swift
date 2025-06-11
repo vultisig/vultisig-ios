@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WalletCore
 
 extension Coin {
     
@@ -23,12 +24,25 @@ extension Coin {
     }
     
     var swapProviders: [SwapProvider] {
+        // 🧪 DEBUG: Force KyberSwap only for testing
+        #if DEBUG
+        let debugKyberOnly = true // Set to true to enable KyberSwap-only testing
+        if debugKyberOnly {
+            switch chain.chainType {
+            case .EVM:
+                return [.kyberswap(chain)]
+            default:
+                return [] // Non-EVM chains don't support KyberSwap
+            }
+        }
+        #endif
         switch chain {
         case .mayaChain, .dash, .kujira:
             return [.mayachain]
         case .ethereum:
             let defaultProviders: [SwapProvider] = [
                 .oneinch(chain),
+                .kyberswap(chain),
                 .lifi
             ]
             
@@ -45,36 +59,40 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi]
+                return [.thorchain, .oneinch(chain), .kyberswap(chain), .lifi]
             } else {
-                return [.oneinch(chain), .lifi]
+                return [.oneinch(chain), .kyberswap(chain), .lifi]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi]
+                return [.thorchain, .oneinch(chain), .kyberswap(chain), .lifi]
             } else {
-                return [.oneinch(chain), .lifi]
+                return [.oneinch(chain), .kyberswap(chain), .lifi]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .lifi]
+                return [.mayachain, .oneinch(chain), .kyberswap(chain), .lifi]
             } else {
-                return [.oneinch(chain), .lifi]
+                return [.oneinch(chain), .kyberswap(chain), .lifi]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
-                return [.thorchain,.oneinch(chain), .lifi]
+                return [.thorchain,.oneinch(chain), .lifi] // KyberSwap not supported
             }
-            return [.oneinch(chain), .lifi]
-        case .optimism, .polygon, .polygonV2, .zksync:
-            return [.oneinch(chain), .lifi]
+            return [.oneinch(chain), .lifi] // KyberSwap not supported
+        case .optimism, .polygon, .polygonV2:
+            return [.oneinch(chain), .kyberswap(chain), .lifi] // KyberSwap supported
+        case .zksync:
+            return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
+        case .blast:
+            return [.lifi] // KyberSwap not supported on Blast
         case .thorChain:
             return [.thorchain, .mayachain]
         case .bitcoin:
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
-        case .blast, .solana:
+        case .solana:
             return [.lifi]
         case .zcash:
             return [.mayachain]

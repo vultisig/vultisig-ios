@@ -168,6 +168,7 @@ extension SwapPayload {
                     )
                 )
             ))
+
         }
     }
     
@@ -221,6 +222,10 @@ extension SwapPayload {
                     }
                 }
             })
+        case .kyberSwap:
+            // KyberSwap protobuf support will be added in a future update
+            // For now, fallback to oneInch format for compatibility
+            fatalError("KyberSwap protobuf serialization not yet supported")
         }
     }
 }

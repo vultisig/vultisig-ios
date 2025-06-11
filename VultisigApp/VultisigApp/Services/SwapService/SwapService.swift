@@ -14,6 +14,7 @@ struct SwapService {
     private let thorchainService: ThorchainSwapProvider = ThorchainService.shared
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
+    private let kyberSwapService: KyberSwapService = KyberSwapService.shared
     private let lifiService: LiFiService = LiFiService.shared
     
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
@@ -49,6 +50,16 @@ struct SwapService {
             }
             return try await fetchOneInchQuote(
                 chain: fromChainID,
+                amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
+        case .kyberswap(let chain):
+            guard let fromChainID = fromCoin.chain.chainID,
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
+                  throw SwapError.routeUnavailable
+            }
+            return try await fetchKyberSwapQuote(
+                chain: chain.rawValue,
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
@@ -128,6 +139,19 @@ private extension SwapService {
             isAffiliate: isAffiliate
         )
         return .oneinch(response.quote, fee: response.fee)
+    }
+    
+    func fetchKyberSwapQuote(chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+        let rawAmount = fromCoin.raw(for: amount)
+        let response = try await kyberSwapService.fetchQuotes(
+            chain: chain,
+            source: fromCoin.contractAddress,
+            destination: toCoin.contractAddress,
+            amount: String(rawAmount),
+            from: fromCoin.address,
+            isAffiliate: isAffiliate
+        )
+        return .kyberswap(response.quote, fee: response.fee)
     }
     
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
