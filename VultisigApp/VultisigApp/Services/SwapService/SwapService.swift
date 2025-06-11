@@ -15,7 +15,6 @@ struct SwapService {
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
     private let lifiService: LiFiService = LiFiService.shared
-    private let eldoritoService: ElDoritoService = ElDoritoService.shared
     
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
@@ -25,19 +24,6 @@ struct SwapService {
 
         switch provider {
         case .thorchain:
-            
-            if  fromCoin.chain == Chain.base && !fromCoin.isNativeToken {
-                guard let fromChainID = fromCoin.chain.chainIDElDorito else {
-                    throw SwapError.routeUnavailable
-                }
-                return try await fetchElDoritoQuote(
-                    chain: fromChainID,
-                    amount: amount,
-                    fromCoin: fromCoin,
-                    toCoin: toCoin,
-                    isAffiliate: isAffiliate
-                )
-            }
             
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
@@ -141,26 +127,6 @@ private extension SwapService {
             from: fromCoin.address,
             isAffiliate: isAffiliate
         )
-        return .oneinch(response.quote, fee: response.fee)
-    }
-    
-    func fetchElDoritoQuote(chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
-        let (fromCoinIdentifier, toCoinIdentifier) = try await eldoritoService.getTokenIdentifier(fromCoin: fromCoin, toCoin: toCoin)
-        
-        guard !fromCoinIdentifier.isEmpty, !toCoinIdentifier.isEmpty else {
-            throw SwapError.routeUnavailable
-        }
-        
-        let response = try await eldoritoService.fetchQuotes(
-            chain: String(chain),
-            source: fromCoinIdentifier,
-            destination: toCoinIdentifier,
-            amount: amount.description,
-            from: fromCoin.address,
-            to: toCoin.address,
-            isAffiliate: isAffiliate
-        )
-        
         return .oneinch(response.quote, fee: response.fee)
     }
     

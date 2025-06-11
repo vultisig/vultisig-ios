@@ -29,11 +29,6 @@ struct KeysignMessageFactory {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
                 
-                // swap from / to base asset can't use the THORChainSwaps, instead it should be a normal send
-                if swapPayload.fromCoin.chain == .base || swapPayload.toCoin.chain == .base {
-                    break
-                }
-
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
@@ -58,7 +53,9 @@ struct KeysignMessageFactory {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let utxoHelper = UTXOChainsHelper(coin: payload.coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync,.ethereumSepolia:
+        case .cardano:
+            return try CardanoHelper.getPreSignedImageHash(keysignPayload: payload)
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
@@ -92,7 +89,7 @@ struct KeysignMessageFactory {
         case .ton:
             return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ripple:
-            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload, vault: vault)
+            return try RippleHelper.getPreSignedImageHash(keysignPayload: payload)
         case .akash:
             return try AkashHelper().getPreSignedImageHash(keysignPayload: payload)
         case .tron:

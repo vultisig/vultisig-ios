@@ -302,11 +302,6 @@ class KeysignViewModel: ObservableObject {
             let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let payload):
-                if (payload.fromCoin.chain == .thorChain && payload.toCoin.chain == .base) ||
-                    (payload.fromCoin.chain == .base) {
-                    break
-                }
-                
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
@@ -337,6 +332,9 @@ class KeysignViewModel: ObservableObject {
             let transaction = try utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
             
+        case .Cardano:
+            let transaction = try CardanoHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
+            return .regular(transaction)
         case .EVM:
             if keysignPayload.coin.isNativeToken {
                 let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
@@ -370,30 +368,33 @@ class KeysignViewModel: ObservableObject {
             return .regular(transaction)
             
         case .Cosmos:
-            if keysignPayload.coin.chain == .gaiaChain {
+            switch keysignPayload.coin.chain {
+            case .gaiaChain:
                 let transaction = try ATOMHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .kujira {
+            case .kujira:
                 let transaction = try KujiraHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .dydx {
+            case .dydx:
                 let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .osmosis {
+            case .osmosis:
                 let transaction = try OsmoHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .terra {
+            case .terra:
                 let transaction = try TerraHelper(coinType: .terraV2, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .terraClassic {
+            case .terraClassic:
                 let transaction = try TerraHelper(coinType: .terra, denom: "uluna").getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .noble {
+            case .noble:
                 let transaction = try NobleHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
-            } else if keysignPayload.coin.chain == .akash {
+            case .akash:
                 let transaction = try AkashHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
+            default:
+                throw HelperError.runtimeError("Unsupported Cosmos chain: \(keysignPayload.coin.chain)")
             }
             
             
@@ -401,7 +402,7 @@ class KeysignViewModel: ObservableObject {
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Ripple:
-            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA,keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA,keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Tron:
             let transaction = try TronHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
@@ -448,6 +449,16 @@ class KeysignViewModel: ObservableObject {
                     let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+                    let chainName = keysignPayload.coin.chain.name.lowercased()
+                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
+                        switch result {
+                        case .success(let transactionHash):
+                            self.txid = transactionHash
+                        case .failure(let error):
+                            self.handleBroadcastError(error: error, transactionType: transactionType)
+                        }
+                    }
+                case .cardano:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {

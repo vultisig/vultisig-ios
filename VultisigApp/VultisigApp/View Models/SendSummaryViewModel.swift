@@ -11,17 +11,17 @@ import Foundation
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount.formatCurrencyWithSeparators()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker)"
+            return "\(tx.toAmountDecimal.formatDecimalToLocale()) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.description.formatCurrencyWithSeparators()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(tx.toAmountDecimal.formatDecimalToLocale()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
     
@@ -36,7 +36,7 @@ class SendSummaryViewModel: ObservableObject {
     
     private func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Ripple, .Tron:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }

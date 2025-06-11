@@ -201,12 +201,20 @@ class SuiService {
                         "logo": Utils.extractResultFromJson(fromData: metadata, path: "result.iconUrl") as? String ?? ""
                     ]
                     
+                    // Search TokensStore by ticker for any token with a valid priceProviderId
+                    let knownTokenByTicker = TokensStore.TokenSelectionAssets.first { knownAsset in
+                        knownAsset.ticker.uppercased() == tokenData["symbol"]?.uppercased() &&
+                        !knownAsset.priceProviderId.isEmpty
+                    }
+                    
+
+                    
                     let coinMeta = CoinMeta(
                         chain: .sui,
                         ticker: tokenData["symbol"]!,
                         logo: tokenData["logo"]!,
                         decimals: Int(tokenData["decimals"] ?? "0")!,
-                        priceProviderId: "",
+                        priceProviderId: knownTokenByTicker?.priceProviderId ?? "", // Use price provider ID from any matching token
                         contractAddress: objType,
                         isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false
                     )

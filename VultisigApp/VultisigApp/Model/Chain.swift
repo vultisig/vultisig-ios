@@ -23,6 +23,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case litecoin
     case dogecoin
     case dash
+    case cardano
     case gaiaChain
     case kujira
     case mayaChain
@@ -61,6 +62,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .gaiaChain: return "Cosmos"
         case .kujira: return "Kujira"
         case .dash: return "Dash"
+        case .cardano: return "Cardano"
         case .mayaChain: return "MayaChain"
         case .arbitrum: return "Arbitrum"
         case .base: return "Base"
@@ -95,6 +97,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC/vbyte"
         case .dogecoin: return "DOGE/vbyte"
         case .dash: return "DASH/vbyte"
+        case .cardano: return "ADA/vbyte"
         case .gaiaChain: return "uatom"
         case .kujira: return "ukuji"
         case .mayaChain: return "CACAO"
@@ -127,6 +130,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .gaiaChain: return "UATOM"
         case .kujira: return "UKUJI"
         case .dash: return "DASH"
+        case .cardano: return "ADA"
         case .mayaChain: return "CACAO"
         case .arbitrum: return "ARB"
         case .base: return "BASE" //Base does not have a coin
@@ -165,6 +169,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .kujira: return "KUJI"
         case .solana: return "SOL"
         case .dash: return "DASH"
+        case .cardano: return "ADA"
         case .mayaChain: return "MAYA"
         case .arbitrum: return "ARB"
         case .base: return "BASE"
@@ -194,7 +199,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO, .Ripple, .Tron:
             return .ECDSA
-        case .Solana, .Polkadot, .Sui, .Ton:
+        case .Solana, .Polkadot, .Sui, .Ton, .Cardano:
             return .EdDSA
         }
     }
@@ -209,6 +214,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Solana
         case .sui:
             return .Sui
+        case .cardano:
+            return .Cardano
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             return .UTXO
         case .gaiaChain, .kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
@@ -258,6 +265,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "doge"
         case .dash:
             return "dash"
+        case .cardano:
+            return "ada"
         case .gaiaChain:
             return "atom"
         case .kujira:
@@ -323,44 +332,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 1151111081099710
         case .ethereumSepolia:
             return 11155111
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash:
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
             return nil
         }
     }
-    
-    var chainIDElDorito: String? {
-        switch self {
-        case .ethereum:
-            return "1"
-        case .avalanche:
-            return "43114"
-        case .base:
-            return "8453"
-        case .blast:
-            return "81457"
-        case .arbitrum:
-            return "42161"
-        case .polygon:
-            return "137"
-        case .polygonV2:
-            return "137" // TODO: find the new id
-        case .optimism:
-            return "10"
-        case .bscChain:
-            return "56"
-        case .cronosChain:
-            return "25"
-        case .zksync:
-            return "324"
-        case .solana:
-            return "solana"
-        case .thorChain:
-            return "thorchain-1"
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .ethereumSepolia, .zcash:
-            return nil
-        }
-    }
-    
     var coinType: CoinType {
         switch self {
         case .bitcoin:
@@ -387,6 +362,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.kujira
         case .dash:
             return CoinType.dash
+        case .cardano:
+            return CoinType.cardano
         case .mayaChain:
             return CoinType.thorchain
         case .arbitrum:
