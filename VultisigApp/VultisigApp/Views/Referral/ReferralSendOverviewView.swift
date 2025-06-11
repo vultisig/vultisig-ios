@@ -12,7 +12,10 @@ struct ReferralSendOverviewView: View {
     @State var isAddressCorrect: Bool = false
     
     var body: some View {
-        container
+        ZStack {
+            Background()
+            container
+        }
     }
     
     var content: some View {
