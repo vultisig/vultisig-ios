@@ -14,9 +14,7 @@ struct SendCryptoDoneSummary: View {
     let hash: String
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
-    
-    private let extensionMemoService = ExtensionMemoService.shared
+        let swapSummaryViewModel: SwapCryptoViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -54,7 +52,7 @@ struct SendCryptoDoneSummary: View {
             }
             
             if !tx.memo.isEmpty {
-                let decodedMemo = extensionMemoService.decodeExtensionMemo(tx.memo)
+                let decodedMemo = tx.memo.decodedExtensionMemo
                 
                 if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
                     Separator()

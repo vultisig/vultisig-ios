@@ -28,8 +28,7 @@ class JoinKeysignViewModel: ObservableObject {
     var vault: Vault
     var serviceDelegate: ServiceDelegate?
     
-    private let etherfaceService = EtherfaceService.shared
-    private let extensionMemoService = ExtensionMemoService.shared
+        private let etherfaceService = EtherfaceService.shared
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -319,7 +318,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         // First try to decode as Extension memo (works for all chains)
-        if let extensionDecoded = extensionMemoService.decodeExtensionMemo(memo) {
+        if let extensionDecoded = memo.decodedExtensionMemo {
             decodedMemo = extensionDecoded
             return
         }

@@ -24,7 +24,7 @@ enum TssKeysignError: Error {
 @MainActor
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
-    private let extensionMemoService = ExtensionMemoService.shared
+    
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
@@ -110,7 +110,7 @@ class KeysignViewModel: ObservableObject {
         }
         
         // First try to decode as Extension memo (works for all chains)
-        if let extensionDecoded = extensionMemoService.decodeExtensionMemo(memo) {
+        if let extensionDecoded = memo.decodedExtensionMemo {
             decodedMemo = extensionDecoded
             return
         }
