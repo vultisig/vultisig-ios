@@ -65,7 +65,7 @@ struct SendCryptoDoneSummary: View {
                 
                 Separator()
                 getGeneralCell(
-                    title: (decodedMemo?.isEmpty == false) ? "raw memo" : "memo",
+                    title: "memo",
                     description: tx.memo,
                     isVerticalStacked: (decodedMemo?.isEmpty == false),
                     isBold: false
