@@ -679,6 +679,6 @@
 "status" = "Status";
 "invalid" = "Ungültig";
 "enter4Characters" = "Gib 4 Zeichen ein";
-"pickValidCode" = "Please pick a valid referral code";
-"pickValidExpiration" = "Please set a valid expiration duration";
-"pickPayoutAsset" = "Please pick a payout asset option from the selection";
+"pickValidCode" = "Bitte wählen Sie einen gültigen Empfehlungscode";
+"pickValidExpiration" = "Bitte legen Sie eine gültige Ablaufdauer fest";
+"pickPayoutAsset" = "Bitte wählen Sie eine Auszahlungsoption";

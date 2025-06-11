@@ -108,7 +108,7 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEnteries() {
+    func verifyReferralEntries() {
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
