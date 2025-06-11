@@ -80,7 +80,7 @@ extension Coin {
             return [.mayachain]
         case .ripple:
             return [.thorchain]
-        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron,.ethereumSepolia:
+        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron, .ethereumSepolia, .cardano:
             return []
         }
     }

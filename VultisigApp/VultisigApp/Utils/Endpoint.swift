@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Endpoint {
+class Endpoint { 
     
     enum SwapChain {
         case thorchain
@@ -382,6 +382,10 @@ class Endpoint {
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
     }
+
+    static func thorchainNodeExplorerURL(_ address: String) -> String {
+        return "https://thorchain.net/node/\(address)"
+    }
     
     static func getMayaSwapTracker(txid: String) -> String {
         return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
@@ -413,6 +417,17 @@ class Endpoint {
     }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    
+    // Cardano endpoints - Using Koios API (free, open source, no API key required)
+    static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
+    
+    static func fetchCardanoBalance(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_info"
+    }
+    
+    static func fetchCardanoUTXOs(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_utxos"
+    }
     
     static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
@@ -482,6 +497,8 @@ class Endpoint {
             return "https://tronscan.org/#/transaction/\(txid)"
         case .ethereumSepolia:
             return "https://sepolia.etherscan.io/tx/\(txid)"
+        case .cardano:
+            return "https://cardanoscan.io/transaction/\(txid)"
         }
     }
     
@@ -553,6 +570,8 @@ class Endpoint {
             return "https://www.mintscan.io/akash/address/\(address)"
         case .tron:
             return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
         
         }
     }
@@ -625,6 +644,8 @@ class Endpoint {
             return "https://www.mintscan.io/akash/address/\(address)"
         case .tron:
             return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
         case .none:
             return nil
         }
