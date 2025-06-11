@@ -8,13 +8,19 @@
 import SwiftUI
 
 struct ReferralLaunchView: View {
-    @State var referralCode: String = ""
-    
-    @State var showError: Bool = false
-    @State var errorMessage: String = ""
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        container
+        ZStack {
+            container
+            
+            if referralViewModel.isLoading {
+                loader
+            }
+        }
+        .alert(isPresented: $referralViewModel.showReferralLaunchViewSuccess) {
+            alert
+        }
     }
     
     var main: some View {
@@ -22,8 +28,7 @@ struct ReferralLaunchView: View {
             Spacer()
             image
             Spacer()
-            referralCodeTextField
-            saveButton
+            referredContent
             orSeparator
             createButton
         }
@@ -44,8 +49,24 @@ struct ReferralLaunchView: View {
             .foregroundColor(.neutral0)
     }
     
+    var errorText: some View {
+        Text(NSLocalizedString(referralViewModel.referralLaunchViewErrorMessage, comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertRed)
+            .opacity(referralViewModel.showReferralLaunchViewError ? 1 : 0)
+    }
+    
     var saveButton: some View {
-        FilledButton(title: "saveReferral", textColor: .neutral0, background: .blue400)
+        Button {
+            referralViewModel.verifyReferredCode()
+        } label: {
+            saveLabel
+        }
+    }
+    
+    var saveLabel: some View {
+        OutlineButton(title: "saveReferredCode", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var orSeparator: some View {
@@ -66,15 +87,24 @@ struct ReferralLaunchView: View {
     }
     
     var createButton: some View {
-        FilledButton(title: "createNewVault", textColor: .neutral0, background: .persianBlue400)
+        NavigationLink {
+            CreateReferralView()
+        } label: {
+            createLabel
+        }
+    }
+    
+    var createLabel: some View {
+        FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
     }
     
     var textField: some View {
-        ReferralTextFieldWithCopy(
+        ReferralTextField(
+            text: $referralViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
-            text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            action: .Paste,
+            showError: referralViewModel.showReferralLaunchViewError,
+            errorMessage: referralViewModel.referralLaunchViewErrorMessage
         )
     }
     
@@ -84,8 +114,65 @@ struct ReferralLaunchView: View {
             .frame(maxWidth: 1024)
             .aspectRatio(contentMode: .fit)
     }
+    
+    var referredContent: some View {
+        VStack(spacing: 16) {
+            if referralViewModel.savedReferredCode.isEmpty {
+                referralCodeTextField
+                saveButton
+            } else {
+                referralCodeText
+                editButton
+            }
+        }
+    }
+    
+    var referralCodeText: some View {
+        HStack {
+            Text(referralViewModel.savedReferredCode)
+            Spacer()
+        }
+        .foregroundColor(.neutral0)
+        .colorScheme(.dark)
+        .frame(height: 56)
+        .font(.body16BrockmannMedium)
+        .padding(.horizontal, 12)
+        .background(Color.blue600)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.blue200, lineWidth: 1)
+        )
+        .autocorrectionDisabled()
+        .borderlessTextFieldStyle()
+        .padding(1)
+    }
+    
+    var editButton: some View {
+        NavigationLink {
+            EditReferredCodeView(referralViewModel: referralViewModel)
+        } label: {
+            editLabel
+        }
+    }
+    
+    var editLabel: some View {
+        OutlineButton(title: "editReferredCode", textColor: .solidWhite, gradient: .solidBlue)
+    }
+    
+    var loader: some View {
+        Loader()
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("success", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralLaunchViewSuccessMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
 }
 
 #Preview {
-    ReferralLaunchView()
+    ReferralLaunchView(referralViewModel: ReferralViewModel())
 }
