@@ -12,6 +12,8 @@ struct CreateReferralView: View {
     
     @StateObject var referralViewModel = ReferralViewModel()
     
+    @State var showTooltip = false
+    
     var body: some View {
         container
             .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
@@ -37,6 +39,7 @@ struct CreateReferralView: View {
             Background()
             
             VStack {
+                tooltip
                 main
                 button
             }
@@ -205,6 +208,36 @@ struct CreateReferralView: View {
                 }
             }
         }
+    }
+    
+    var infoLabel: some View {
+        Image(systemName: "info.circle")
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var tooltip: some View {
+        VStack(alignment: .leading) {
+            Text(NSLocalizedString("referralProgram", comment: ""))
+                .foregroundColor(.neutral900)
+                .font(.body16BrockmannMedium)
+            
+             Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                    .font(.body14BrockmannMedium)
+        }
+        .animation(.easeInOut, value: showTooltip)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.neutral0)
+        .cornerRadius(8)
+        .padding(.horizontal, 24)
+        .onTapGesture {
+            showTooltip = false
+        }
+        .frame(maxHeight: showTooltip ? nil : 0)
+        .clipped()
     }
     
     private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
