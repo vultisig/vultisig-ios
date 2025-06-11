@@ -14,33 +14,21 @@ extension String {
     var decodedExtensionMemo: String? {
         // Check if this is a Vultisig Extension memo format
         guard isExtensionMemo else {
-            print("🔍 ExtensionMemo: Memo '\(prefix(50))...' is not recognized as extension memo")
             return nil
         }
         
-        print("🔍 ExtensionMemo: Processing extension memo: '\(prefix(50))...'")
-        print("📝 ExtensionMemo: Original memo text: '\(self)'")
-        
         // Handle different extension memo formats - prioritize JSON over text patterns
         if let decodedContract = decodedContractInteraction {
-            print("✅ ExtensionMemo: Successfully decoded using CONTRACT INTERACTION method")
-            print("🎯 ExtensionMemo: Final decoded result: '\(decodedContract)'")
             return decodedContract
         }
         
         if let decodedAction = decodedActionMemo {
-            print("✅ ExtensionMemo: Successfully decoded using ACTION MEMO method")
-            print("🎯 ExtensionMemo: Final decoded result: '\(decodedAction)'")
             return decodedAction
         }
         
         if let decodedTransaction = decodedTransactionMemo {
-            print("✅ ExtensionMemo: Successfully decoded using TRANSACTION MEMO method")
-            print("🎯 ExtensionMemo: Final decoded result: '\(decodedTransaction)'")
             return decodedTransaction
         }
-        
-        print("❌ ExtensionMemo: Failed to decode memo despite being recognized as extension memo")
         return nil
     }
     
@@ -77,74 +65,53 @@ extension String {
     
     /// Attempts to decode as a contract interaction memo
     private var decodedContractInteraction: String? {
-        print("🔍 ExtensionMemo: Attempting CONTRACT INTERACTION decoding...")
-        
         // Handle contract interaction memos
         if contains("{") && contains("}") {
-            print("🔍 ExtensionMemo: Detected JSON format, attempting JSON parsing")
             if let jsonData = data(using: .utf8),
                let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
-                print("✅ ExtensionMemo: Successfully parsed JSON, formatting contract interaction")
                 return json.formattedContractInteraction
-            } else {
-                print("❌ ExtensionMemo: Failed to parse JSON in CONTRACT INTERACTION decoding")
             }
         }
         
-        print("❌ ExtensionMemo: No JSON structure found in CONTRACT INTERACTION decoding")
         return nil
     }
     
     /// Attempts to decode as an action-based memo
     private var decodedActionMemo: String? {
-        print("🔍 ExtensionMemo: Attempting ACTION MEMO decoding...")
-        
         // Decode common action-based memos
         if hasPrefix("0x") {
-            print("🔍 ExtensionMemo: Detected hex format, using HEX MEMO decoding")
             return decodedHexMemo
         }
         
         // Handle specific action patterns
         if lowercased().contains("approve") {
-            print("🔍 ExtensionMemo: Detected approval pattern, using APPROVAL DETAILS extraction")
             return extractedApprovalDetails
         }
         
         if lowercased().contains("transfer") {
-            print("🔍 ExtensionMemo: Detected transfer pattern, using TRANSFER DETAILS extraction")
             return extractedTransferDetails
         }
         
         if lowercased().contains("swap") {
-            print("🔍 ExtensionMemo: Detected swap pattern, using SWAP DETAILS extraction")
             return extractedSwapDetails
         }
         
-        print("❌ ExtensionMemo: No action patterns matched in ACTION MEMO decoding")
         return nil
     }
     
     /// Attempts to decode as a transaction memo
     private var decodedTransactionMemo: String? {
-        print("🔍 ExtensionMemo: Attempting TRANSACTION MEMO decoding...")
-        
         // Handle transaction-specific memos
         if let decodedBase64 = decodedBase64Memo {
-            print("✅ ExtensionMemo: Successfully decoded using BASE64 MEMO method")
             return decodedBase64
         }
         
-        print("❌ ExtensionMemo: No transaction memo patterns matched")
         return nil
     }
     
     /// Attempts to decode as hex memo
     private var decodedHexMemo: String? {
-        print("🔍 ExtensionMemo: Starting HEX MEMO decoding...")
-        
         guard hasPrefix("0x") && count > 2 else {
-            print("❌ ExtensionMemo: Invalid hex format in HEX MEMO decoding")
             return nil
         }
         
@@ -153,101 +120,69 @@ extension String {
         // Try to decode as function selector + parameters
         if hexString.count >= 8 {
             let selector = String(hexString.prefix(8))
-            let parameters = String(hexString.dropFirst(8))
-            
-            print("🔍 ExtensionMemo: Analyzing function selector: \(selector)")
             
             // Common function selectors
             switch selector.lowercased() {
             case "a9059cbb": // transfer(address,uint256)
-                print("✅ ExtensionMemo: Matched TRANSFER function selector (a9059cbb)")
                 return "Transfer Token"
             case "095ea7b3": // approve(address,uint256)
-                print("✅ ExtensionMemo: Matched APPROVE function selector (095ea7b3)")
                 return "Approve Token Spending"
             case "18160ddd": // totalSupply()
-                print("✅ ExtensionMemo: Matched TOTAL SUPPLY function selector (18160ddd)")
                 return "Get Total Supply"
             case "70a08231": // balanceOf(address)
-                print("✅ ExtensionMemo: Matched BALANCE OF function selector (70a08231)")
                 return "Get Balance"
             case "dd62ed3e": // allowance(address,address)
-                print("✅ ExtensionMemo: Matched ALLOWANCE function selector (dd62ed3e)")
                 return "Get Allowance"
             default:
-                print("⚠️ ExtensionMemo: Unknown function selector (\(selector)), returning generic contract call")
                 return "Contract Function Call (\(selector))"
             }
         }
-        
-        print("🔍 ExtensionMemo: Attempting to decode hex as UTF-8 text...")
         
         // Try to decode as UTF-8 text
         if let data = Data(hexString: hexString),
            let text = String(data: data, encoding: .utf8),
            !text.isEmpty {
-            print("✅ ExtensionMemo: Successfully decoded hex as UTF-8 text")
             return text
         }
         
-        print("⚠️ ExtensionMemo: Returning truncated hex data")
         return "Hex Data (\(hexString.prefix(16))...)"
     }
     
     /// Extracts approval details from text
     private var extractedApprovalDetails: String {
-        print("🔍 ExtensionMemo: Extracting APPROVAL DETAILS...")
-        
         if let range = range(of: "approve", options: .caseInsensitive) {
             let remainder = String(self[range.upperBound...])
-            let result = "Token Approval\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
-            print("✅ ExtensionMemo: Extracted approval details: '\(result)'")
-            return result
+            return "Token Approval\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
         }
-        print("⚠️ ExtensionMemo: Fallback to generic Token Approval")
         return "Token Approval"
     }
     
     /// Extracts transfer details from text
     private var extractedTransferDetails: String {
-        print("🔍 ExtensionMemo: Extracting TRANSFER DETAILS...")
-        
         if let range = range(of: "transfer", options: .caseInsensitive) {
             let remainder = String(self[range.upperBound...])
-            let result = "Token Transfer\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
-            print("✅ ExtensionMemo: Extracted transfer details: '\(result)'")
-            return result
+            return "Token Transfer\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
         }
-        print("⚠️ ExtensionMemo: Fallback to generic Token Transfer")
         return "Token Transfer"
     }
     
     /// Extracts swap details from text
     private var extractedSwapDetails: String {
-        print("🔍 ExtensionMemo: Extracting SWAP DETAILS...")
-        
         if let range = range(of: "swap", options: .caseInsensitive) {
             let remainder = String(self[range.upperBound...])
-            let result = "Token Swap\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
-            print("✅ ExtensionMemo: Extracted swap details: '\(result)'")
-            return result
+            return "Token Swap\(remainder.isEmpty ? "" : ": \(remainder.trimmingCharacters(in: .whitespaces))")"
         }
-        print("⚠️ ExtensionMemo: Fallback to generic Token Swap")
         return "Token Swap"
     }
     
     /// Attempts to decode as base64
     private var decodedBase64Memo: String? {
-        print("🔍 ExtensionMemo: Attempting BASE64 MEMO decoding...")
-        
         guard let data = Data(base64Encoded: self),
               let text = String(data: data, encoding: .utf8),
               !text.isEmpty else {
-            print("❌ ExtensionMemo: Failed to decode as base64 or resulted in empty text")
             return nil
         }
         
-        print("✅ ExtensionMemo: Successfully decoded base64 to: '\(text)'")
         return text
     }
     
@@ -266,11 +201,8 @@ private extension Dictionary where Key == String, Value == Any {
     
     /// Formats contract interaction JSON into readable string
     var formattedContractInteraction: String {
-        print("🔍 ExtensionMemo: Formatting CONTRACT INTERACTION from JSON...")
-        
         if let method = self["method"] as? String {
             var details = "Contract: \(method)"
-            print("✅ ExtensionMemo: Found contract method: \(method)")
             
             if let params = self["params"] as? [String: Any], !params.isEmpty {
                 let paramStrings = params.compactMap { key, value in
@@ -278,14 +210,12 @@ private extension Dictionary where Key == String, Value == Any {
                 }
                 if !paramStrings.isEmpty {
                     details += "\nParameters: \(paramStrings.joined(separator: ", "))"
-                    print("✅ ExtensionMemo: Added \(paramStrings.count) parameters")
                 }
             }
             
             return details
         }
         
-        print("⚠️ ExtensionMemo: No method found in JSON, returning generic Contract Interaction")
         return "Contract Interaction"
     }
 }
@@ -294,19 +224,26 @@ private extension Dictionary where Key == String, Value == Any {
 
 private extension Data {
     init?(hexString: String) {
-        let len = hexString.count / 2
-        var data = Data(capacity: len)
-        var i = hexString.startIndex
-        for _ in 0..<len {
-            let j = hexString.index(i, offsetBy: 2)
-            let bytes = hexString[i..<j]
-            if var num = UInt8(bytes, radix: 16) {
-                data.append(&num, count: 1)
-            } else {
+        // Validate input
+        guard !hexString.isEmpty,
+              hexString.count % 2 == 0,
+              hexString.allSatisfy({ $0.isHexDigit }) else {
+            return nil
+        }
+        
+        // Use safer implementation without problematic append pattern
+        var data = Data()
+        var index = hexString.startIndex
+        for _ in 0..<(hexString.count / 2) {
+            let nextIndex = hexString.index(index, offsetBy: 2)
+            let byteString = String(hexString[index..<nextIndex])
+            guard let byte = UInt8(byteString, radix: 16) else {
                 return nil
             }
-            i = j
+            data.append(byte)  // Use safe append method
+            index = nextIndex
         }
+        
         self = data
     }
 } 
