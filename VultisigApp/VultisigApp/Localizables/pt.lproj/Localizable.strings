@@ -651,3 +651,10 @@
 "referralOnboardingDescription4" = "Use o código de um amigo e economize nas taxas.";
 "referral" = "Indicação";
 "vultisig-referrals" = "Vultisig - Indicações";
+"referralLaunchCodeLengthError" = "O código de indicação deve ter 4 caracteres";
+"systemErrorMessage" = "Erro do sistema. Tente novamente.";
+"referralCodeNotFound" = "Código de indicação não encontrado";
+"referralCodeAdded" = "Código de indicação vinculado com sucesso";
+"editReferral" = "Editar indicação";
+"editReferredCode" = "Editar código de indicação";
+"saveReferredCode" = "Salvar código de indicação";

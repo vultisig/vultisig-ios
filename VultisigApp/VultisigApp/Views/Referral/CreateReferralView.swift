@@ -10,22 +10,28 @@ import SwiftUI
 struct CreateReferralView: View {
     @State var referralCode: String = ""
     
+    @State var showSuccess: Bool = false
+    @State var successMessage: String = ""
     @State var showError: Bool = false
     @State var errorMessage: String = ""
     @State var expireInCount: Int = 0
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             
             VStack {
-                content
+                main
                 button
             }
         }
     }
     
-    var content: some View {
+    var main: some View {
         ScrollView {
             VStack(spacing: 16) {
                 pickReferralCode
@@ -59,11 +65,12 @@ struct CreateReferralView: View {
     }
     
     var pickReferralTextfield: some View {
-        ReferralTextFieldWithCopy(
-            placeholderText: "enterUpto4Characters",
+        ReferralTextField(
             text: $referralCode,
-            showError: $showError,
-            errorMessage: $errorMessage
+            placeholderText: "enterUpto4Characters",
+            action: .Clear,
+            showError: showError,
+            errorMessage: errorMessage
         )
     }
     

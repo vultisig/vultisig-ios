@@ -651,6 +651,21 @@ class Endpoint {
         }
     }
     
+    // Referral
+    
+    static let ReferralBase = "https://midgard.ninerealms.com/v2"
+    
+    static func checkNameAvailability(for code: String) -> String {
+        ReferralBase + "/thorname/lookup/\(code)"
+    }
+    
+    static func getUserDetails(for code: String) -> String {
+        ReferralBase + "/thorname/\(code)"
+    }
+    
+    static func reverseLookup(for address: String) -> String {
+        ReferralBase + "/thorname/lookup/\(address)"
+    }
 }
 
 fileprivate extension String {
