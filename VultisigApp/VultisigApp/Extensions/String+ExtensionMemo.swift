@@ -138,12 +138,8 @@ extension String {
             }
         }
         
-        // Try to decode as UTF-8 text
-        if let data = Data(hexString: hexString),
-           let text = String(data: data, encoding: .utf8),
-           !text.isEmpty {
-            return text
-        }
+        // Skip hex-to-text decoding for now - will implement properly with WalletCore
+        // return nil for unknown function selectors
         
         return "Hex Data (\(hexString.prefix(16))...)"
     }
@@ -217,33 +213,5 @@ private extension Dictionary where Key == String, Value == Any {
         }
         
         return "Contract Interaction"
-    }
-}
-
-// MARK: - Data Extension for Hex Decoding
-
-private extension Data {
-    init?(hexString: String) {
-        // Validate input
-        guard !hexString.isEmpty,
-              hexString.count % 2 == 0,
-              hexString.allSatisfy({ $0.isHexDigit }) else {
-            return nil
-        }
-        
-        // Use safer implementation without problematic append pattern
-        var data = Data()
-        var index = hexString.startIndex
-        for _ in 0..<(hexString.count / 2) {
-            let nextIndex = hexString.index(index, offsetBy: 2)
-            let byteString = String(hexString[index..<nextIndex])
-            guard let byte = UInt8(byteString, radix: 16) else {
-                return nil
-            }
-            data.append(byte)  // Use safe append method
-            index = nextIndex
-        }
-        
-        self = data
     }
 } 
