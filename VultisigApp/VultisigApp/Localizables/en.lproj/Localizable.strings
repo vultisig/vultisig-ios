@@ -712,3 +712,4 @@
 "pickValidCode" = "Please pick a valid referral code";
 "pickValidExpiration" = "Please set a valid expiration duration";
 "pickPayoutAsset" = "Please pick a payout asset option from the selection";
+"whitespaceNotAllowed" = "Whitespace character is not allowed";

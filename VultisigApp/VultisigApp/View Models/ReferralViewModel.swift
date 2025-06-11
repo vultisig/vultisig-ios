@@ -203,6 +203,11 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
+        guard !containsWhitespace(code) else {
+            showNameError(forReferralCode: forReferralCode, with: "whitespaceNotAllowed")
+            return
+        }
+        
         if !forReferralCode {
             guard code != savedGeneratedReferralCode else {
                 showNameError(forReferralCode: forReferralCode, with: "referralCodeMatch")
@@ -229,5 +234,9 @@ class ReferralViewModel: ObservableObject {
             showReferredLaunchViewError = true
         }
         isLoading = false
+    }
+    
+    private func containsWhitespace(_ text: String) -> Bool {
+        return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 }
