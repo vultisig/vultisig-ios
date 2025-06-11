@@ -12,6 +12,10 @@ struct ReferralSendOverviewView: View {
     @State var isAddressCorrect: Bool = false
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         VStack(spacing: 16) {
             Spacer()
             summary
@@ -27,7 +31,7 @@ struct ReferralSendOverviewView: View {
             title
             assetDetail
             separator
-            content
+            overview
         }
         .padding(24)
         .background(Color.blue600)
@@ -68,7 +72,7 @@ struct ReferralSendOverviewView: View {
         Separator()
     }
     
-    var content: some View {
+    var overview: some View {
         VStack(spacing: 12) {
             getCell(
                 title: "from",
