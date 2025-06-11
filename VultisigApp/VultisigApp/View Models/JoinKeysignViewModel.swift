@@ -26,9 +26,7 @@ class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
     
     var vault: Vault
-    var serviceDelegate: ServiceDelegate?
-    
-        private let etherfaceService = EtherfaceService.shared
+        var serviceDelegate: ServiceDelegate?
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -329,7 +327,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         do {
-            decodedMemo = try await etherfaceService.decode(memo: memo)
+            decodedMemo = try await EtherfaceService.shared.decode(memo: memo)
         } catch {
             print("EVM memo decoding error: \(error.localizedDescription)")
         }

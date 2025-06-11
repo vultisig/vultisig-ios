@@ -88,6 +88,29 @@ class KeysignViewModel: ObservableObject {
         await loadFunctionName()
     }
     
+    func loadFunctionName() async {
+        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+            return
+        }
+        
+        // First try to decode as Extension memo (works for all chains)
+        if let extensionDecoded = memo.decodedExtensionMemo {
+            decodedMemo = extensionDecoded
+            return
+        }
+        
+        // Fall back to EVM-specific decoding for EVM chains
+        guard keysignPayload?.coin.chainType == .EVM else {
+            return
+        }
+        
+        do {
+            decodedMemo = try await EtherfaceService.shared.decode(memo: memo)
+        } catch {
+            print("EVM memo decoding error: \(error.localizedDescription)")
+        }
+    }
+    
     func getTransactionExplorerURL(txid: String) -> String {
         guard let keysignPayload else { return .empty }
         return Endpoint.getExplorerURL(chain: keysignPayload.coin.chain, txid: txid)
@@ -104,20 +127,7 @@ class KeysignViewModel: ObservableObject {
         }
     }
     
-    func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
-            return
-        }
-        
-        // First try to decode as Extension memo (works for all chains)
-        if let extensionDecoded = memo.decodedExtensionMemo {
-            decodedMemo = extensionDecoded
-            return
-        }
-        
-        // Extension memo decoding is the primary method for all chains
-        // If it's not an extension memo, keep the original memo as-is
-    }
+
     func startKeysign() async {
         switch vault.libType {
         case .GG20,.none:

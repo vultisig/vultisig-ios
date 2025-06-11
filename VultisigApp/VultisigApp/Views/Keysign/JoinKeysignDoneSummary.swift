@@ -101,7 +101,7 @@ struct JoinKeysignDoneSummary: View {
             if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                 Separator()
                 getGeneralCell(
-                    title: viewModel.decodedMemo != nil ? "raw memo" : "memo",
+                    title: (viewModel.decodedMemo?.isEmpty == false) ? "raw memo" : "memo",
                     description: memo,
                     isVerticalStacked: true
                 )
