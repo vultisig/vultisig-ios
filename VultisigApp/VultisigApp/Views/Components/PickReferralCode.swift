@@ -19,9 +19,7 @@ struct PickReferralCode: View {
                 searchButton
             }
             
-            if referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess {
-                status
-            }
+            status
         }
     }
     
@@ -35,11 +33,12 @@ struct PickReferralCode: View {
     var pickReferralTextfield: some View {
         ReferralTextField(
             text: $referralViewModel.referralCode,
-            placeholderText: "enterUpto4Characters",
+            placeholderText: "enter4Characters",
             action: .Clear,
             showError: referralViewModel.showReferralAvailabilityError,
             errorMessage: "",
-            showSuccess: referralViewModel.showReferralAvailabilityError
+            showSuccess: referralViewModel.showReferralAvailabilitySuccess,
+            isErrorLabelVisible: false
         )
     }
     
@@ -67,7 +66,9 @@ struct PickReferralCode: View {
     }
     
     var status: some View {
-        HStack {
+        let isVisible = referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess
+        
+        return HStack {
             Text(NSLocalizedString("status", comment: ""))
                 .foregroundColor(.extraLightGray)
             
@@ -76,6 +77,9 @@ struct PickReferralCode: View {
             statusCapsule
         }
         .font(.body14MontserratMedium)
+        .opacity(isVisible ? 1 : 0)
+        .animation(.easeInOut, value: isVisible)
+        .padding(.top, 2)
     }
     
     var statusCapsule: some View {

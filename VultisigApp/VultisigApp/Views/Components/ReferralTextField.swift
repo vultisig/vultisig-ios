@@ -15,12 +15,13 @@ struct ReferralTextField: View {
     let errorMessage: String
     
     var showSuccess: Bool = false
+    var isErrorLabelVisible: Bool = true
     
     var body: some View {
         VStack(spacing: 8) {
             textField
             
-            if showError {
+            if isErrorLabelVisible && showError {
                 errorText
             }
         }

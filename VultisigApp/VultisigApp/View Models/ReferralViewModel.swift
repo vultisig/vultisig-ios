@@ -50,8 +50,26 @@ class ReferralViewModel: ObservableObject {
         
         nameErrorCheck(code: referredCode, forReferralCode: false)
         
+        guard !showReferredLaunchViewError else {
+            return
+        }
+        
         Task {
             await checkNameAvailability(code: referredCode, forReferralCode: false)
+        }
+    }
+    
+    func verifyReferralCode() {
+        isLoading = true
+        resetReferralData()
+        nameErrorCheck(code: referralCode, forReferralCode: true)
+        
+        guard !showReferralAvailabilityError else {
+            return
+        }
+        
+        Task {
+            await checkNameAvailability(code: referralCode, forReferralCode: true)
         }
     }
     
@@ -104,6 +122,7 @@ class ReferralViewModel: ObservableObject {
         isReferralCodeVerified = true
         showReferralAvailabilitySuccess = true
         isLoading = false
+        isReferralCodeVerified = true
     }
     
     private func resetReferralData() {
@@ -111,20 +130,6 @@ class ReferralViewModel: ObservableObject {
         referralAvailabilityErrorMessage = ""
         showReferralAvailabilitySuccess = false
         isReferralCodeVerified = false
-    }
-    
-    func verifyReferralCode() {
-        isLoading = true
-        resetReferralData()
-        nameErrorCheck(code: referralCode, forReferralCode: true)
-        
-        guard !showReferralAvailabilityError else {
-            return
-        }
-        
-        Task {
-            await checkNameAvailability(code: referralCode, forReferralCode: true)
-        }
     }
     
     private func nameErrorCheck(code: String, forReferralCode: Bool) {

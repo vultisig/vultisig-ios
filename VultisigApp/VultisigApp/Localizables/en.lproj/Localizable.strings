@@ -707,3 +707,5 @@
 "alreadyTaken" = "Already taken";
 "available" = "Available";
 "status" = "Status";
+"invalid" = "Invalid";"enter4Characters";
+"enter4Characters" = "Enter 4 characters";
