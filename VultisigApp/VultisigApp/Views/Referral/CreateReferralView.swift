@@ -116,8 +116,7 @@ struct CreateReferralView: View {
     
     var choosePayoutAssetSelection: some View {
         HStack {
-            Text(NSLocalizedString("select", comment: ""))
-                .foregroundColor(.extraLightGray)
+            selectedAsset
             
             Spacer()
             
@@ -166,6 +165,24 @@ struct CreateReferralView: View {
     var button: some View {
         FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
             .padding(24)
+    }
+    
+    var selectedAsset: some View {
+        ZStack {
+            if referralViewModel.selectedPayoutCoin == .example {
+                Text(NSLocalizedString("select", comment: ""))
+                    .foregroundColor(.extraLightGray)
+            } else {
+                HStack(spacing: 8) {
+                    let coin = referralViewModel.selectedPayoutCoin
+                    AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
+                    
+                    Text(coin.ticker)
+                        .font(.body16BrockmannMedium)
+                        .foregroundColor(.neutral0)
+                }
+            }
+        }
     }
     
     private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
