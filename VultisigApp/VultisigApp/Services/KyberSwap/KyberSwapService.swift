@@ -40,6 +40,15 @@ struct KyberSwapService {
         ]
         
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
+        
+        // Check for API errors in route response
+        if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: routeData) {
+            if errorResponse.code != 0 {
+                print("🚨 KyberSwap Route Error: \(errorResponse)")
+                throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
+            }
+        }
+        
         let routeResponse = try JSONDecoder().decode(KyberSwapRouteResponse.self, from: routeData)
         
         // Now build the transaction
@@ -64,6 +73,14 @@ struct KyberSwapService {
         let (buildData, _) = try await URLSession.shared.data(for: buildRequest)
         
         print(String(data: buildData, encoding: .utf8) ?? "No data")
+        
+        // Check for API errors in build response
+        if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: buildData) {
+            if errorResponse.code != 0 {
+                print("🚨 KyberSwap Build Error: \(errorResponse)")
+                throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
+            }
+        }
         
         var buildResponse = try JSONDecoder().decode(KyberSwapQuote.self, from: buildData)
         
@@ -274,6 +291,27 @@ private extension KyberSwapService {
         
         struct TokensData: Codable {
             let tokens: [KyberSwapToken]
+        }
+    }
+    
+    // Error handling types
+    struct KyberSwapErrorResponse: Codable {
+        let code: Int
+        let message: String
+        let details: String?
+        let requestId: String?
+    }
+}
+
+// KyberSwap specific errors
+enum KyberSwapError: Error, LocalizedError {
+    case apiError(code: Int, message: String, details: String?)
+    
+    var errorDescription: String? {
+        switch self {
+        case .apiError(let code, let message, let details):
+            let detailsStr = details?.isEmpty == false ? " - \(details!)" : ""
+            return "KyberSwap API Error \(code): \(message)\(detailsStr)"
         }
     }
 } 
