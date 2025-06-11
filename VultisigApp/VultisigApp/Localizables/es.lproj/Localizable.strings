@@ -657,3 +657,8 @@
 "editReferral" = "Editar referido";
 "editReferredCode" = "Editar código de referido";
 "saveReferredCode" = "Guardar código de referido";
+"alreadyTaken" = "Ya usado";
+"available" = "Disponible";
+"status" = "Estado";
+"invalid" = "Inválido";
+"enter4Characters" = "Ingresa 4 caracteres";

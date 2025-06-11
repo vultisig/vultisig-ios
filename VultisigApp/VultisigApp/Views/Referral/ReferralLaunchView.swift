@@ -18,7 +18,7 @@ struct ReferralLaunchView: View {
                 loader
             }
         }
-        .alert(isPresented: $referralViewModel.showReferralLaunchViewSuccess) {
+        .alert(isPresented: $referralViewModel.showReferredLaunchViewSuccess) {
             alert
         }
     }
@@ -50,11 +50,11 @@ struct ReferralLaunchView: View {
     }
     
     var errorText: some View {
-        Text(NSLocalizedString(referralViewModel.referralLaunchViewErrorMessage, comment: ""))
+        Text(NSLocalizedString(referralViewModel.referredLaunchViewErrorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.body14BrockmannMedium)
             .foregroundColor(.alertRed)
-            .opacity(referralViewModel.showReferralLaunchViewError ? 1 : 0)
+            .opacity(referralViewModel.showReferredLaunchViewError ? 1 : 0)
     }
     
     var saveButton: some View {
@@ -103,8 +103,8 @@ struct ReferralLaunchView: View {
             text: $referralViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referralViewModel.showReferralLaunchViewError,
-            errorMessage: referralViewModel.referralLaunchViewErrorMessage
+            showError: referralViewModel.showReferredLaunchViewError,
+            errorMessage: referralViewModel.referredLaunchViewErrorMessage
         )
     }
     
@@ -167,7 +167,7 @@ struct ReferralLaunchView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("success", comment: "")),
-            message: Text(NSLocalizedString(referralViewModel.referralLaunchViewSuccessMessage, comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referredLaunchViewSuccessMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }

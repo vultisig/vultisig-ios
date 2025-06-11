@@ -658,3 +658,8 @@
 "editReferral" = "Editar indicação";
 "editReferredCode" = "Editar código de indicação";
 "saveReferredCode" = "Salvar código de indicação";
+"alreadyTaken" = "Já utilizado";
+"available" = "Disponível";
+"status" = "Status";
+"invalid" = "Inválido";
+"enter4Characters" = "Digite 4 caracteres";
