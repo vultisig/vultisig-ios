@@ -15,7 +15,6 @@ struct PasswordVerifyReminderView: View {
     
     @State var showError = false
     @State var errorText = ""
-    @State var passwordVerified = false
     
     @State var isLoading = false
     @State var verifyPassword = ""
@@ -53,26 +52,12 @@ struct PasswordVerifyReminderView: View {
     var view: some View {
         VStack(spacing: 28) {
             header
-            
-            if passwordVerified {
-                passwordVerifiedText
-                closeFilledButton
-            } else {
-                field
-                verifyButton
-            }
+            field
+            verifyButton
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
         .blur(radius: isLoading ? 1 : 0)
-    }
-    
-    var passwordVerifiedText: some View {
-        Text(NSLocalizedString("passwordVerifiedSuccessfully", comment: ""))
-            .font(.body16BrockmannMedium)
-            .foregroundColor(.extraLightGray)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 24)
     }
 
     var header: some View {
@@ -177,15 +162,6 @@ struct PasswordVerifyReminderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    var closeFilledButton: some View {
-        Button {
-            handleCloseTap()
-        } label: {
-            FilledButton(title: "close")
-        }
-        .buttonStyle(.plain)
-    }
-    
     private func verifyPasswordIsValid() async {
         guard !verifyPassword.isEmpty else {
             errorText = "emptyField"
@@ -202,11 +178,7 @@ struct PasswordVerifyReminderView: View {
         )
         
         if isValid {
-            passwordVerified = true
-            // Store the verification time using a fixed reference point
-            let calendar = Calendar.current
-            let startOfToday = calendar.startOfDay(for: Date())
-            biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
+            handleCloseTap()
         } else {
             errorText = "incorrectPassword"
             showError = true
