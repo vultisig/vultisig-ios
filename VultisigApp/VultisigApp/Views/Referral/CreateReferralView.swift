@@ -8,16 +8,30 @@
 import SwiftUI
 
 struct CreateReferralView: View {
-    @State var referralCode: String = ""
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @State var showSuccess: Bool = false
-    @State var successMessage: String = ""
-    @State var showError: Bool = false
-    @State var errorMessage: String = ""
-    @State var expireInCount: Int = 0
+    @StateObject var referralViewModel = ReferralViewModel()
+    
+    @State var showTooltip = false
     
     var body: some View {
         container
+            .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
+                if let vault = homeViewModel.selectedVault {
+                    SwapCoinPickerView(
+                        vault: vault,
+                        showSheet: $referralViewModel.showCoinSelector,
+                        selectedCoin: $referralViewModel.selectedPayoutCoin,
+                        selectedChain: $referralViewModel.selectedPayoutChain
+                    )
+                }
+            })
+            .alert(isPresented: $referralViewModel.showReferralAlert) {
+                alert
+            }
+            .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
+                ReferralSendOverviewView()
+            }
     }
     
     var content: some View {
@@ -25,6 +39,7 @@ struct CreateReferralView: View {
             Background()
             
             VStack {
+                tooltip
                 main
                 button
             }
@@ -47,48 +62,7 @@ struct CreateReferralView: View {
     }
     
     var pickReferralCode: some View {
-        VStack(spacing: 8) {
-            pickReferralTitle
-            
-            HStack(spacing: 8) {
-                pickReferralTextfield
-                searchButton
-            }
-        }
-    }
-    
-    var pickReferralTitle: some View {
-        Text(NSLocalizedString("pickReferralCode", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var pickReferralTextfield: some View {
-        ReferralTextField(
-            text: $referralCode,
-            placeholderText: "enterUpto4Characters",
-            action: .Clear,
-            showError: showError,
-            errorMessage: errorMessage
-        )
-    }
-    
-    var searchButton: some View {
-        Button {
-            
-        } label: {
-            searchButtonLabel
-        }
-    }
-    
-    var searchButtonLabel: some View {
-        Text(NSLocalizedString("search", comment: ""))
-            .foregroundColor(.lightText)
-            .font(.body14BrockmannSemiBold)
-            .frame(width: 100, height: 60)
-            .background(Color.persianBlue400)
-            .cornerRadius(16)
+        PickReferralCode(referralViewModel: referralViewModel)
     }
     
     var setExpiration: some View {
@@ -115,19 +89,21 @@ struct CreateReferralView: View {
     
     var decreaseExpirationButton: some View {
         Button {
-            
+            referralViewModel.handleCounterDecrease()
         } label: {
             getExpirationCounterButton(icon: "minus.circle")
         }
+        .disabled(referralViewModel.expireInCount == 0)
+        .opacity(referralViewModel.expireInCount == 0 ? 0.2 : 1)
     }
     
     var expiratingInCounter: some View {
-        getExpirationCounterButton(value: "\(expireInCount)")
+        getExpirationCounterButton(value: "\(referralViewModel.expireInCount)")
     }
     
     var increaseExpirationButton: some View {
         Button {
-            
+            referralViewModel.handleCounterIncrease()
         } label: {
             getExpirationCounterButton(icon: "plus.circle")
         }
@@ -149,8 +125,7 @@ struct CreateReferralView: View {
     
     var choosePayoutAssetSelection: some View {
         HStack {
-            Text(NSLocalizedString("select", comment: ""))
-                .foregroundColor(.extraLightGray)
+            selectedAsset
             
             Spacer()
             
@@ -164,15 +139,18 @@ struct CreateReferralView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.blue200, lineWidth: 1)
+                .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
+        .onTapGesture {
+            referralViewModel.showCoinSelector.toggle()
+        }
     }
     
     var summary: some View {
         VStack(spacing: 16) {
-            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "$12.304")
-            getCell(title: NSLocalizedString("costs", comment: ""), description1: "10 RUNE", description2: "$12.304")
+            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFee)")
+            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFee)")
         }
     }
     
@@ -194,8 +172,72 @@ struct CreateReferralView: View {
     }
     
     var button: some View {
+        Button {
+            referralViewModel.verifyReferralEntries()
+        } label: {
+            label
+        }
+        .padding(24)
+    }
+    
+    var label: some View {
         FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
-            .padding(24)
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    var selectedAsset: some View {
+        ZStack {
+            if referralViewModel.selectedPayoutCoin == .example {
+                Text(NSLocalizedString("select", comment: ""))
+                    .foregroundColor(.extraLightGray)
+            } else {
+                HStack(spacing: 8) {
+                    let coin = referralViewModel.selectedPayoutCoin
+                    AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
+                    
+                    Text(coin.ticker)
+                        .font(.body16BrockmannMedium)
+                        .foregroundColor(.neutral0)
+                }
+            }
+        }
+    }
+    
+    var infoLabel: some View {
+        Image(systemName: "info.circle")
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var tooltip: some View {
+        VStack(alignment: .leading) {
+            Text(NSLocalizedString("referralProgram", comment: ""))
+                .foregroundColor(.neutral900)
+                .font(.body16BrockmannMedium)
+            
+             Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                    .font(.body14BrockmannMedium)
+        }
+        .animation(.easeInOut, value: showTooltip)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.neutral0)
+        .cornerRadius(8)
+        .padding(.horizontal, 24)
+        .onTapGesture {
+            showTooltip = false
+        }
+        .frame(maxHeight: showTooltip ? nil : 0)
+        .clipped()
     }
     
     private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
@@ -243,4 +285,5 @@ struct CreateReferralView: View {
 
 #Preview {
     CreateReferralView()
+        .environmentObject(HomeViewModel())
 }
