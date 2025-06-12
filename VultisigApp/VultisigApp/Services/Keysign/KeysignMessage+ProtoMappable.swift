@@ -276,7 +276,12 @@ extension BlockChainSpecific {
                 byteFee: value.byteFee.toBigInt(),
                 sendMaxAmount: value.sendMaxAmount
             )
-
+        case .cardano(let value):
+            self = .Cardano(
+                byteFee: BigInt(value.byteFee),
+                sendMaxAmount: value.sendMaxAmount,
+                ttl: value.ttl
+            )
         case .ethereumSpecific(let value):
             self = .Ethereum(
                 maxFeePerGasWei: BigInt(stringLiteral: value.maxFeePerGasWei),
@@ -366,15 +371,15 @@ extension BlockChainSpecific {
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
         case .UTXO(let byteFee, let sendMaxAmount):
-                        return .utxoSpecific(.with {
-                $0.byteFee = byteFee.description
-                $0.sendMaxAmount = sendMaxAmount
-            })
-        case .Cardano(let byteFee, let sendMaxAmount, _):
-            // Cardano is not supported in proto, mapping to UTXO for compatibility
             return .utxoSpecific(.with {
                 $0.byteFee = byteFee.description
                 $0.sendMaxAmount = sendMaxAmount
+            })
+        case .Cardano(let byteFee, let sendMaxAmount, let ttl):
+            return .cardano(.with {
+                $0.byteFee = Int64(byteFee)
+                $0.sendMaxAmount = sendMaxAmount
+                $0.ttl = ttl
             })
         case .Ethereum(let maxFeePerGasWei, let priorityFeeWei, let nonce, let gasLimit):
             return .ethereumSpecific(.with {
