@@ -52,8 +52,7 @@ struct KyberSwapQuote: Codable, Hashable {
         // Apply conservative universal buffer for quote display
         // Chain-specific buffers are handled in KyberSwapService for actual transactions
         let baseGas = Int64(data.gas) ?? 600000 // Use 600k fallback (same as EVMHelper.defaultETHSwapGasUnit)
-        let gasBuffer = Double(baseGas) * 0.4 // 40% conservative buffer for display
-        let bufferedGas = Int64(Double(baseGas) + gasBuffer)
+        let bufferedGas = (baseGas * 14) / 10 // 40% conservative buffer for display using integer math
         
         return Transaction(
             from: "", // Will be filled by the service

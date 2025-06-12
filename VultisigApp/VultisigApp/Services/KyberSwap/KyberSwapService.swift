@@ -72,8 +72,6 @@ struct KyberSwapService {
         
         let (buildData, _) = try await URLSession.shared.data(for: buildRequest)
         
-        print(String(data: buildData, encoding: .utf8) ?? "No data")
-        
         // Check for API errors in build response
         if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: buildData) {
             if errorResponse.code != 0 {
@@ -102,24 +100,22 @@ struct KyberSwapService {
         // Chain-specific gas buffer based on gas costs and execution characteristics
         // Ethereum: Expensive gas, conservative buffer
         // L2s: Cheap gas, can afford larger buffer for complex routing
-        let gasMultiplier: Double
+        let gasMultiplierTimes10: Int
         switch chain {
         case "ethereum":
-            gasMultiplier = 1.4 // 40% buffer - conservative for expensive Ethereum gas
+            gasMultiplierTimes10 = 14 // 40% buffer - conservative for expensive Ethereum gas
         case "arbitrum", "optimism", "base", "polygon", "avalanche", "bsc":
-            gasMultiplier = 2.0 // 100% buffer - L2s have cheap gas and complex routing
+            gasMultiplierTimes10 = 20 // 100% buffer - L2s have cheap gas and complex routing
         default:
-            gasMultiplier = 1.6 // 60% buffer - reasonable default for other chains
+            gasMultiplierTimes10 = 16 // 60% buffer - reasonable default for other chains
         }
         
         // Add debug logging to show chain-specific buffer
         print("   Chain: \(chain)")
-        print("   Gas Multiplier: \(gasMultiplier)x")
+        print("   Gas Multiplier: \(Double(gasMultiplierTimes10) / 10.0)x")
         
-        // Apply chain-specific gas buffer
-        let gasBuffer = Double(baseGas.description) ?? 0.0
-        let bufferedGasAmount = gasBuffer * gasMultiplier
-        let gas = BigInt(bufferedGasAmount)
+        // Apply chain-specific gas buffer using integer arithmetic to prevent precision loss
+        let gas = (baseGas * BigInt(gasMultiplierTimes10)) / BigInt(10)
         
         // If gas is still zero after calculation, use a reasonable default for EVM swaps
         let finalGas: BigInt
@@ -149,14 +145,14 @@ struct KyberSwapService {
     }
     
     func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {
-        // Convert chain to chain ID like OneInch does
-        let chainId = getChainId(for: chain)
-        let url = Endpoint.fetchKyberSwapTokens(chainId: chainId)
+        // Convert chain to chain name for KyberSwap API
+        let chainName = getChainName(for: chain)
+        let url = Endpoint.fetchKyberSwapTokens(chainId: chainName)
         let response: KyberSwapTokensResponse = try await Utils.fetchObject(from: url.absoluteString)
         return response.data.tokens
     }
     
-    func getChainId(for chain: Chain) -> String {
+    func getChainName(for chain: Chain) -> String {
         // KyberSwap API uses chain names, not chain IDs in the URL path
         switch chain {
         case .ethereum:

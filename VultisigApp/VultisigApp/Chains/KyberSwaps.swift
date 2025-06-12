@@ -101,18 +101,18 @@ private extension KyberSwaps {
         
         // Apply chain-specific gas buffer based on chain costs and execution characteristics
         let baseGas = Int64(quote.data.gas) ?? 600000 // Use raw API gas, not pre-buffered quote.tx.gas
-        let gasMultiplier: Double
+        let gasMultiplierTimes10: Int64
         
         switch keysignPayload.coin.chain {
         case .ethereum:
-            gasMultiplier = 1.4 // 40% buffer - conservative for expensive Ethereum gas
+            gasMultiplierTimes10 = 14 // 40% buffer - conservative for expensive Ethereum gas
         case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
-            gasMultiplier = 2.0 // 100% buffer - L2s have cheap gas and complex routing
+            gasMultiplierTimes10 = 20 // 100% buffer - L2s have cheap gas and complex routing
         default:
-            gasMultiplier = 1.6 // 60% buffer - reasonable default for other chains
+            gasMultiplierTimes10 = 16 // 60% buffer - reasonable default for other chains
         }
         
-        let bufferedGas = Int64(Double(baseGas) * gasMultiplier)
+        let bufferedGas = (baseGas * gasMultiplierTimes10) / 10
         let gas = BigUInt(bufferedGas)
         
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
