@@ -2,7 +2,7 @@
 //  KyberSwapServiceTests.swift
 //  VultisigAppTests
 //
-//  Created by AI Assistant on [Current Date].
+//  Created by Enrique Souza on 11.06.2025.
 //
 
 import XCTest
