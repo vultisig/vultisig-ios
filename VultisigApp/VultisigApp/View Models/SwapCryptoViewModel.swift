@@ -191,7 +191,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }
-        let amount = tx.amountInCoinDecimal
+        // Add 10% buffer to prevent approval issues
+        let amount = tx.amountInCoinDecimal * BigInt(115) / BigInt(100)
         let payload = ERC20ApprovePayload(amount: amount, spender: spender)
         return payload
     }
