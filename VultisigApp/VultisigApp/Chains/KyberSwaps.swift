@@ -71,6 +71,9 @@ struct KyberSwaps {
         )
         let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [preSigningOutput.dataHash.hexString]
     }
 
