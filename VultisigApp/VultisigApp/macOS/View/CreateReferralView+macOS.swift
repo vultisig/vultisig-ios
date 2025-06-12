@@ -16,8 +16,21 @@ extension CreateReferralView {
         }
     }
     
+    var infoButton: some View {
+        Button {
+            showTooltip.toggle()
+        } label: {
+            infoLabel
+        }
+        .padding(.trailing, 24)
+    }
+    
     var header: some View {
-        GeneralMacHeader(title: "createReferral")
+        HStack {
+            GeneralMacHeader(title: "createReferral")
+            infoButton
+        }
+        .background(Color.backgroundBlue)
     }
 }
 #endif
