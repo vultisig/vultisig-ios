@@ -14,7 +14,7 @@ struct SendCryptoDoneSummary: View {
     let hash: String
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
-    let swapSummaryViewModel: SwapCryptoViewModel
+        let swapSummaryViewModel: SwapCryptoViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -52,12 +52,24 @@ struct SendCryptoDoneSummary: View {
             }
             
             if !tx.memo.isEmpty {
+                let decodedMemo = tx.memo.decodedExtensionMemo
+                
                 Separator()
-                getGeneralCell(
-                    title: "memo",
-                    description: tx.memo,
-                    isBold: false
-                )
+                
+                // Show decoded memo if available, otherwise show original memo
+                if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
+                    getGeneralCell(
+                        title: "action",
+                        description: decodedMemo,
+                        isBold: true
+                    )
+                } else {
+                    getGeneralCell(
+                        title: "memo",
+                        description: tx.memo,
+                        isBold: false
+                    )
+                }
             }
             
             if !getSendAmount(for: tx).isEmpty {

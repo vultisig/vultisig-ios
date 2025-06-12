@@ -26,9 +26,7 @@ class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
     
     var vault: Vault
-    var serviceDelegate: ServiceDelegate?
-    
-    private let etherfaceService = EtherfaceService.shared
+        var serviceDelegate: ServiceDelegate?
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -313,14 +311,25 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, keysignPayload?.coin.chainType == .EVM else {
+        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+            return
+        }
+        
+        // First try to decode as Extension memo (works for all chains)
+        if let extensionDecoded = memo.decodedExtensionMemo {
+            decodedMemo = extensionDecoded
+            return
+        }
+        
+        // Fall back to EVM-specific decoding for EVM chains
+        guard keysignPayload?.coin.chainType == .EVM else {
             return
         }
         
         do {
-            decodedMemo = try await etherfaceService.decode(memo: memo)
+            decodedMemo = try await EtherfaceService.shared.decode(memo: memo)
         } catch {
-            print("Memo decoding error: \(error.localizedDescription)")
+            print("EVM memo decoding error: \(error.localizedDescription)")
         }
     }
     
