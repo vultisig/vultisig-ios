@@ -17,6 +17,9 @@ struct ReferralSendOverviewView: View {
             Background()
             container
         }
+        .alert(isPresented: $referralViewModel.showSendOverviewAlert) {
+            alert
+        }
     }
     
     var content: some View {
@@ -111,7 +114,23 @@ struct ReferralSendOverviewView: View {
     }
     
     var button: some View {
+        Button {
+            referralViewModel.verifySendOverviewDetails()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         FilledButton(title: "signTransaction")
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {

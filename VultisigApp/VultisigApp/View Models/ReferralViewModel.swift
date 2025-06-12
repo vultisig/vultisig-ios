@@ -43,6 +43,8 @@ class ReferralViewModel: ObservableObject {
     // Send Overview
     @Published var isAmountCorrect: Bool = false
     @Published var isAddressCorrect: Bool = false
+    @Published var showSendOverviewAlert = false
+    @Published var navigateToSendView = false
     
     var registrationFeeFiat: String {
         getFiatAmount(for: 10)
@@ -142,6 +144,20 @@ class ReferralViewModel: ObservableObject {
         
         let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
+    
+    func verifySendOverviewDetails() {
+        guard isAmountCorrect else {
+            showSendOverviewAlert = true
+            return
+        }
+        
+        guard isAddressCorrect else {
+            showSendOverviewAlert = true
+            return
+        }
+        
+        navigateToSendView = true
     }
     
     private func showAlert(with message: String) {

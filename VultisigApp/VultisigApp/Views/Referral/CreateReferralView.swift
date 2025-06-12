@@ -184,7 +184,7 @@ struct CreateReferralView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
+            message: Text(NSLocalizedString("mustAgreeTermsError", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
