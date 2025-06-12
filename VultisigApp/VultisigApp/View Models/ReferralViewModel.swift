@@ -36,6 +36,9 @@ class ReferralViewModel: ObservableObject {
     @Published var selectedPayoutChain: Chain? = .example
     @Published var selectedPayoutCoin: Coin = .example
     @Published var showCoinSelector = false
+    @Published var showReferralAlert = false
+    @Published var referralAlertMessage = ""
+    @Published var navigateToOverviewView = false
     
     var registrationFee: String {
         getFiatAmount(for: 10)
@@ -105,6 +108,43 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
+    func verifyReferralEntries() {
+        guard isReferralCodeVerified else {
+            showAlert(with: "pickValidCode")
+            return
+        }
+        
+        guard expireInCount>0 else {
+            showAlert(with: "pickValidExpiration")
+            return
+        }
+        
+        guard selectedPayoutCoin != .example else {
+            showAlert(with: "pickPayoutAsset")
+            return
+        }
+        
+        navigateToOverviewView = true
+    }
+    
+    func getTotalFee() -> Int {
+        10 + expireInCount
+    }
+    
+    func getFiatAmount(for amount: Int) -> String {
+        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+            return ""
+        }
+        
+        let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
+        return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
+    
+    private func showAlert(with message: String) {
+        referralAlertMessage = message
+        showReferralAlert = true
+    }
+    
     private func checkNameAvailability(code: String, forReferralCode: Bool) async {
         let urlString = Endpoint.checkNameAvailability(for: code)
         guard let url = URL(string: urlString) else {
@@ -163,6 +203,11 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
+        guard !containsWhitespace(code) else {
+            showNameError(forReferralCode: forReferralCode, with: "whitespaceNotAllowed")
+            return
+        }
+        
         if !forReferralCode {
             guard code != savedGeneratedReferralCode else {
                 showNameError(forReferralCode: forReferralCode, with: "referralCodeMatch")
@@ -191,16 +236,7 @@ class ReferralViewModel: ObservableObject {
         isLoading = false
     }
     
-    func getTotalFee() -> Int {
-        10 + expireInCount
-    }
-    
-    func getFiatAmount(for amount: Int) -> String {
-        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
-            return ""
-        }
-        
-        let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
-        return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    private func containsWhitespace(_ text: String) -> Bool {
+        return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 }
