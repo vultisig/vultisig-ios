@@ -662,3 +662,9 @@
 "status" = "Stato";
 "invalid" = "Non valido";
 "enter4Characters" = "Inserisci 4 caratteri";
+"pickValidCode" = "Scegli un codice di invito valido";
+"pickValidExpiration" = "Imposta una durata di scadenza valida";
+"pickPayoutAsset" = "Scegli un'opzione di pagamento dall'elenco";
+"whitespaceNotAllowed" = "I caratteri di spazio non sono consentiti.";
+"referralProgram" = "Programma di riferimento";
+"referralProgramTooltipDescription" = "Il programma di riferimento si applica agli swap THORChain su base best-effort. Per utilizzare il referral Vultisig, è necessario registrare un THORName. La tariffa di registrazione è di 10 RUNE, più 1 RUNE all'anno, pagata alla rete THORChain.";

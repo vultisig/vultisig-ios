@@ -662,3 +662,12 @@
 "status" = "Estado";
 "invalid" = "Inválido";
 "enter4Characters" = "Ingresa 4 caracteres";
+"pickValidCode" = "Elige un código de referido válido";
+"pickValidExpiration" = "Configura una duración de expiración válida";
+"pickPayoutAsset" = "Elige una opción de activo para el pago";
+"whitespaceNotAllowed" = "No se permiten caracteres de espacio.";
+"referralProgram" = "Programa de Referidos";
+"referralProgramTooltipDescription" = "El programa de referidos se aplica a los intercambios de THORChain en base a mejor esfuerzo. Para usar el referido de Vultisig, debes registrar un THORName. La tarifa de registro es de 10 RUNE y 1 RUNE por cada año, pagados a la red de THORChain.";
+"whitespaceNotAllowed" = "Razmak nije dopušten.";
+"referralProgram" = "Program preporuke";
+"referralProgramTooltipDescription" = "Program preporuke primjenjuje se na THORChain zamjene temeljem najboljeg pokušaja. Da biste koristili Vultisig preporuku, potrebno je registrirati THORName. Naknada za registraciju iznosi 10 RUNE, uz 1 RUNE godišnje, plaćeno THORChain mreži.";
