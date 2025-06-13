@@ -311,6 +311,7 @@ final class SchnorrKeygen {
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
                 self.setKeygenDone(status: true)
+                try await Task.sleep(for: .seconds(1))
             }
         }
         catch {
@@ -480,6 +481,7 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                try await Task.sleep(for: .seconds(1))
             }
         }
         catch {

@@ -355,6 +355,7 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .seconds(1))
             }
         }
         catch {
@@ -537,7 +538,7 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .milliseconds(500))
+                try await Task.sleep(for: .seconds(1))
                 self.setKeygenDone(status: true)
             }
         }
