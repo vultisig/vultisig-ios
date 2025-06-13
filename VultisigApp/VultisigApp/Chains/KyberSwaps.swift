@@ -127,8 +127,8 @@ struct KyberSwaps {
         
         // Apply 1 GWEI minimum for KyberSwap transactions
         let oneGweiInWei = BigInt(1_000_000_000) // 1 GWEI = 10^9 Wei
-        let correctedMaxFeePerGas = max(maxFeePerGasWei, oneGweiInWei)
         let correctedPriorityFee = max(priorityFeeWei, oneGweiInWei)
+        let correctedMaxFeePerGas = max(maxFeePerGasWei, correctedPriorityFee, oneGweiInWei)
         
         let chainIdString = keysignPayload.coin.chain == .ethereumSepolia ? "11155111" : keysignPayload.coin.coinType.chainId
         guard let intChainID = Int(chainIdString) else {
