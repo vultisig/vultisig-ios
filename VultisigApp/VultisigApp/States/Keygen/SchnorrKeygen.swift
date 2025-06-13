@@ -254,6 +254,9 @@ final class SchnorrKeygen {
     
     func SchnorrKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
+        defer {
+            self.setKeygenDone(status: true)
+        }
         var task: Task<(), any Error>? = nil
         do {
             var decodedSetupMsg = self.setupMessage.to_dkls_goslice()
@@ -298,7 +301,6 @@ final class SchnorrKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                
                 var keyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -310,12 +312,11 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
-                self.setKeygenDone(status: true)
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
@@ -413,6 +414,9 @@ final class SchnorrKeygen {
     
     func SchnorrReshareWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
+        defer {
+            self.setKeygenDone(status: true)
+        }
         var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = goschnorr.Handle()
@@ -466,7 +470,6 @@ final class SchnorrKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
                 var newKeyshareHandler = goschnorr.Handle()
                 let keyShareResult = schnorr_qc_session_finish(handler,&newKeyshareHandler)
                 if keyShareResult != LIB_OK {
@@ -480,11 +483,11 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
