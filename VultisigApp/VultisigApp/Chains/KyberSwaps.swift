@@ -47,56 +47,6 @@ struct KyberSwaps {
 
     // MARK: - ERC20 Approval Methods
     
-    /// Check if the spender has sufficient allowance to spend the required amount
-    func checkAllowance(coin: Coin, spender: String, requiredAmount: BigInt) async throws -> (hasAllowance: Bool, currentAllowance: BigInt) {
-        guard !coin.isNativeToken else {
-            // Native tokens don't require allowances
-            return (true, BigInt.zero)
-        }
-        
-        let service = try EvmServiceFactory.getService(forChain: coin.chain)
-        let currentAllowance = try await service.fetchAllowance(
-            contractAddress: coin.contractAddress,
-            owner: coin.address,
-            spender: spender
-        )
-        
-        let hasAllowance = currentAllowance >= requiredAmount
-        return (hasAllowance, currentAllowance)
-    }
-    
-    /// Check if approval is needed for a KyberSwap transaction
-    func checkKyberSwapAllowance(payload: KyberSwapPayload, requiredAmount: BigInt) async throws -> (needsApproval: Bool, currentAllowance: BigInt) {
-        let (hasAllowance, currentAllowance) = try await checkAllowance(
-            coin: payload.fromCoin,
-            spender: payload.quote.tx.to,
-            requiredAmount: requiredAmount
-        )
-        
-        return (!hasAllowance, currentAllowance)
-    }
-
-    /// Validate that sufficient allowance exists before executing swap transaction
-    /// This should be called before the second transaction (swap) to ensure approval was successful
-    func validateAllowanceBeforeSwap(payload: KyberSwapPayload, requiredAmount: BigInt) async throws {
-        guard !payload.fromCoin.isNativeToken else {
-            // Native tokens don't need allowance validation
-            return
-        }
-        
-        let (hasAllowance, currentAllowance) = try await checkAllowance(
-            coin: payload.fromCoin,
-            spender: payload.quote.tx.to,
-            requiredAmount: requiredAmount
-        )
-        
-        if !hasAllowance {
-            throw HelperError.runtimeError(
-                "Insufficient allowance for swap. Required: \(requiredAmount), Current: \(currentAllowance). Please approve tokens first."
-            )
-        }
-    }
-
     func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> Data {
         let approveInput = EthereumSigningInput.with {
             $0.transaction = .with {

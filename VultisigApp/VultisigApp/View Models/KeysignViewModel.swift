@@ -564,37 +564,10 @@ class KeysignViewModel: ObservableObject {
                 
             case .regularWithApprove(let approve, let transaction):
                 let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
-                
-                // Step 1: Broadcast approval transaction
                 let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                self.approveTxid = approveTxHash
-                print("🔒 Approval transaction broadcast: \(approveTxHash)")
-                
-                // Step 2: Wait for approval confirmation
-                print("⏳ Waiting for approval confirmation...")
-                try await Task.sleep(for: .seconds(8)) // Wait for approval confirmation
-                
-                // Step 3: Validate allowance for KyberSwap transactions
-                if let swapPayload = keysignPayload.swapPayload,
-                   case .kyberSwap(let payload) = swapPayload {
-                    
-                    do {
-                        let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                        try await swaps.validateAllowanceBeforeSwap(
-                            payload: payload,
-                            requiredAmount: payload.fromAmount
-                        )
-                        print("✅ KyberSwap allowance validated after approval")
-                    } catch {
-                        print("❌ KyberSwap allowance validation failed: \(error.localizedDescription)")
-                        throw error
-                    }
-                }
-                
-                // Step 4: Broadcast swap transaction
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
+                self.approveTxid = approveTxHash
                 self.txid = regularTxHash
-                print("🔄 Swap transaction broadcast: \(regularTxHash)")
             }
         } catch {
             handleBroadcastError(error: error, transactionType: transactionType)
