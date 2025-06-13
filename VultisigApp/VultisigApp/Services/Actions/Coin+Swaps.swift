@@ -23,18 +23,6 @@ extension Coin {
     }
     
     var swapProviders: [SwapProvider] {
-        // 🧪 DEBUG: Force KyberSwap only for testing
-        #if DEBUG
-        let debugKyberOnly = true // Set to true to enable KyberSwap-only testing
-        if debugKyberOnly {
-            switch chain.chainType {
-            case .EVM:
-                return [.kyberswap(chain)]
-            default:
-                return [] // Non-EVM chains don't support KyberSwap
-            }
-        }
-        #endif
         switch chain {
         case .mayaChain, .dash, .kujira:
             return [.mayachain]
