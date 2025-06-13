@@ -59,7 +59,7 @@ struct SwapService {
                   throw SwapError.routeUnavailable
             }
             return try await fetchKyberSwapQuote(
-                chain: KyberSwapService.shared.getChainName(for: fromCoin.chain),
+                chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate

@@ -144,7 +144,7 @@ struct KyberSwapService {
         // Update gasPrice from route response
         buildResponse.data.gasPrice = gasPrice
         
-        guard let chainEnum = Chain.allCases.first(where: { $0.name.lowercased() == chain.lowercased() }) else {
+        guard let chainEnum = Chain.allCases.first(where: { (try? getChainName(for: $0)) == chain }) else {
             throw KyberSwapError.apiError(code: -1, message: "Unknown chain: \(chain)", details: nil)
         }
         let calculatedGas = buildResponse.gasForChain(chainEnum)
@@ -166,13 +166,13 @@ struct KyberSwapService {
     }
     
     func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {
-        let chainName = getChainName(for: chain)
+        let chainName = try getChainName(for: chain)
         let url = Endpoint.fetchKyberSwapTokens(chainId: chainName)
         let response: KyberSwapTokensResponse = try await Utils.fetchObject(from: url.absoluteString)
         return response.data.tokens
     }
     
-    func getChainName(for chain: Chain) -> String {
+    func getChainName(for chain: Chain) throws -> String {
         switch chain {
         case .ethereum:
             return "ethereum"
@@ -193,7 +193,7 @@ struct KyberSwapService {
         case .blast:
             return "blast"
         default:
-            fatalError("Unsupported chain for KyberSwap: \(chain)")
+            throw KyberSwapError.apiError(code: -1, message: "Unsupported chain for KyberSwap: \(chain)", details: nil)
         }
     }
 }
