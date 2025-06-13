@@ -381,7 +381,6 @@ final class DKLSKeysign {
             }
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                self.setKeysignDone(status: true)
                 let sig = try dklsSignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
@@ -395,7 +394,7 @@ final class DKLSKeysign {
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
-                
+                self.setKeysignDone(status: true)
             }
         }
         catch {

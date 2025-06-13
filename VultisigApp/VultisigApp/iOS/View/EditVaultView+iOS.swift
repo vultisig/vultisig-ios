@@ -32,7 +32,7 @@ extension EditVaultView {
                 }
                 
                 // ONLY DKLS VAULTS CAN BE RESHARED
-                if vault.libType != nil && vault.libType == .DKLS {
+                if vault.libType == .DKLS {
                     reshareVault
                 }
                 

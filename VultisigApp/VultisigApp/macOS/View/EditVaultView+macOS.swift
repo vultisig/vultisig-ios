@@ -36,7 +36,7 @@ extension EditVaultView {
                     migrateVault
                 }
                 
-                if vault.libType != nil && vault.libType == .DKLS {
+                if vault.libType == .DKLS {
                     reshareVault
                 }
                 

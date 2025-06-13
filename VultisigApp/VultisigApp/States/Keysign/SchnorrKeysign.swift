@@ -364,7 +364,7 @@ final class SchnorrKeysign {
             }
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                self.setKeysignDone(status: true)
+                
                 let sig = try SignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
@@ -381,6 +381,7 @@ final class SchnorrKeysign {
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
+                self.setKeysignDone(status: true)
                 
             }
         }
