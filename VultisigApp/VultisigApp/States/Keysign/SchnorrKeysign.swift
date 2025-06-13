@@ -306,6 +306,9 @@ final class SchnorrKeysign {
     
     func KeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
+        defer {
+            self.setKeysignDone(status: true)
+        }
         var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
         let localMessenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
@@ -364,7 +367,6 @@ final class SchnorrKeysign {
             }
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                self.setKeysignDone(status: true)
                 let sig = try SignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
