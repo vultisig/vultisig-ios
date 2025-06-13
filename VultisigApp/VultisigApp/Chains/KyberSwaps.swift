@@ -86,9 +86,6 @@ struct KyberSwaps {
         let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         return signedEvmTx
     }
-}
-
-private extension KyberSwaps {
 
     func getPreSignedInputData(quote: KyberSwapQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         let input = EthereumSigningInput.with {
