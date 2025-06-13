@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "kyber",
-        "revision" : "352ffc791a1388fa93d9760bf830bbe1989d0597"
+        "branch" : "main",
+        "revision" : "24470283641cb2ff5b05203af4c5397d5eb3ec39"
       }
     },
     {
