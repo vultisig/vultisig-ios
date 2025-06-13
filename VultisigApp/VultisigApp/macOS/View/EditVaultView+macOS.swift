@@ -36,7 +36,9 @@ extension EditVaultView {
                     migrateVault
                 }
                 
-                reshareVault
+                if vault.libType != nil && vault.libType == .DKLS {
+                    reshareVault
+                }
                 
                 if vault.isFastVault {
                     biometrySelectionCell
