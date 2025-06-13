@@ -53,13 +53,13 @@ struct SwapService {
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
-        case .kyberswap(let chain):
+        case .kyberswap(_):
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
                   throw SwapError.routeUnavailable
             }
             return try await fetchKyberSwapQuote(
-                chain: chain.rawValue,
+                chain: KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate

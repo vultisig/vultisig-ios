@@ -144,7 +144,9 @@ struct KyberSwapService {
         // Update gasPrice from route response
         buildResponse.data.gasPrice = gasPrice
         
-        let chainEnum = Chain.allCases.first { getChainName(for: $0) == chain } ?? .ethereum
+        guard let chainEnum = Chain.allCases.first(where: { $0.name.lowercased() == chain.lowercased() }) else {
+            throw KyberSwapError.apiError(code: -1, message: "Unknown chain: \(chain)", details: nil)
+        }
         let calculatedGas = buildResponse.gasForChain(chainEnum)
         
         let finalGas: BigInt
@@ -191,7 +193,7 @@ struct KyberSwapService {
         case .blast:
             return "blast"
         default:
-            return "ethereum"
+            fatalError("Unsupported chain for KyberSwap: \(chain)")
         }
     }
 }

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WalletCore
 
 extension Coin {
     
