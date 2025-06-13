@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LAUNCHD_PLIST = "/Library/LaunchAgents/com.vultisig.setenv.plist"
+LAUNCHD_PLIST="/Library/LaunchAgents/com.vultisig.setenv.plist"
 
 if [ -f "$LAUNCHD_PLIST" ]; then
     /bin/launchctl load -w "$LAUNCHD_PLIST"
