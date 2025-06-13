@@ -21,7 +21,6 @@ struct KyberSwapService {
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
         
-        // First get the route summary
         let routeUrl = Endpoint.fetchKyberSwapRoute(
             chain: chain,
             tokenIn: sourceAddress,
@@ -29,7 +28,7 @@ struct KyberSwapService {
             amountIn: amount,
             saveGas: false,
             gasInclude: true,
-            slippageTolerance: 100, // 1.0% in basis points (increased from 50 for better execution)
+            slippageTolerance: 100,
             isAffiliate: isAffiliate
         )
         
@@ -41,25 +40,21 @@ struct KyberSwapService {
         
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
         
-        // Check for API errors in route response
         if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: routeData) {
             if errorResponse.code != 0 {
-                print("🚨 KyberSwap Route Error: \(errorResponse)")
                 throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
             }
         }
         
         let routeResponse = try JSONDecoder().decode(KyberSwapRouteResponse.self, from: routeData)
-        
-        // Now build the transaction
         let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
         
         let buildPayload = KyberSwapBuildRequest(
             routeSummary: routeResponse.data.routeSummary,
             sender: from,
             recipient: from,
-            slippageTolerance: 100, // 1.0% to match route request
-            deadline: Int(Date().timeIntervalSince1970) + 1200 // 20 minutes from now
+            slippageTolerance: 100,
+            deadline: Int(Date().timeIntervalSince1970) + 1200
         )
         
         var buildRequest = URLRequest(url: buildUrl)
@@ -72,80 +67,48 @@ struct KyberSwapService {
         
         let (buildData, _) = try await URLSession.shared.data(for: buildRequest)
         
-        // Check for API errors in build response
         if let errorResponse = try? JSONDecoder().decode(KyberSwapErrorResponse.self, from: buildData) {
             if errorResponse.code != 0 {
-                print("🚨 KyberSwap Build Error: \(errorResponse)")
                 throw KyberSwapError.apiError(code: errorResponse.code, message: errorResponse.message, details: errorResponse.details)
             }
         }
         
         var buildResponse = try JSONDecoder().decode(KyberSwapQuote.self, from: buildData)
         
-        // Add gas price from route response to the build response
         let gasPrice = routeResponse.data.routeSummary.gasPrice
         buildResponse.data.gasPrice = gasPrice
         
-        // Calculate fee using the SAME gas source as the transaction construction
-        // Use build response gas (more accurate) instead of route response gas
         let baseGas = BigInt(buildResponse.data.gas) ?? BigInt.zero
-        
-        // Add debug logging to diagnose zero fee issue
-        print("🔍 KyberSwap Fee Debug:")
-        print("   Route Gas: '\(routeResponse.data.routeSummary.gas)'")
-        print("   Build Gas: '\(buildResponse.data.gas)'")
-        print("   GasPrice from API: '\(gasPrice)'")
-        print("   BaseGas parsed: \(baseGas)")
-        
-        // Chain-specific gas buffer based on gas costs and execution characteristics
-        // Ethereum: Expensive gas, conservative buffer
-        // L2s: Cheap gas, can afford larger buffer for complex routing
+                
         let gasMultiplierTimes10: Int
         switch chain {
         case "ethereum":
-            gasMultiplierTimes10 = 14 // 40% buffer - conservative for expensive Ethereum gas
+            gasMultiplierTimes10 = 14
         case "arbitrum", "optimism", "base", "polygon", "avalanche", "bsc":
-            gasMultiplierTimes10 = 20 // 100% buffer - L2s have cheap gas and complex routing
+            gasMultiplierTimes10 = 20
         default:
-            gasMultiplierTimes10 = 16 // 60% buffer - reasonable default for other chains
+            gasMultiplierTimes10 = 16
         }
         
-        // Add debug logging to show chain-specific buffer
-        print("   Chain: \(chain)")
-        print("   Gas Multiplier: \(Double(gasMultiplierTimes10) / 10.0)x")
-        
-        // Apply chain-specific gas buffer using integer arithmetic to prevent precision loss
         let gas = (baseGas * BigInt(gasMultiplierTimes10)) / BigInt(10)
         
-        // If gas is still zero after calculation, use a reasonable default for EVM swaps
         let finalGas: BigInt
         if gas.isZero {
-            finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit) // Use same default as transaction construction
-            print("   ⚠️  Using fallback gas limit: \(finalGas)")
+            finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit)
         } else {
             finalGas = gas
         }
         
-        let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000") // Use provided gasPrice or 20 Gwei default
-        
-        // Ensure minimum gas price of 1 GWEI (1,000,000,000 wei)
-        let minGasPrice = BigInt("1000000000") // 1 GWEI minimum
+        let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
+        let minGasPrice = BigInt("1000000000")
         let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue
         
         let fee = finalGas * finalGasPrice
-        
-        print("   Buffered Gas: \(gas)")
-        print("   Final Gas Used: \(finalGas)")
-        print("   Gas Price Value: \(gasPriceValue)")
-        print("   Final Gas Price (min 1 GWEI): \(finalGasPrice)")
-        print("   Calculated Fee: \(fee)")
-        print("🔍 End Debug")
         
         return (buildResponse, fee)
     }
     
     func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {
-        // Convert chain to chain name for KyberSwap API
         let chainName = getChainName(for: chain)
         let url = Endpoint.fetchKyberSwapTokens(chainId: chainName)
         let response: KyberSwapTokensResponse = try await Utils.fetchObject(from: url.absoluteString)
@@ -153,7 +116,6 @@ struct KyberSwapService {
     }
     
     func getChainName(for chain: Chain) -> String {
-        // KyberSwap API uses chain names, not chain IDs in the URL path
         switch chain {
         case .ethereum:
             return "ethereum"
@@ -174,7 +136,7 @@ struct KyberSwapService {
         case .blast:
             return "blast"
         default:
-            return "ethereum" // Default to Ethereum
+            return "ethereum"
         }
     }
 }
@@ -231,7 +193,6 @@ private extension KyberSwapService {
         }
     }
     
-    // Helper for handling arbitrary JSON structures in poolExtra and extra
     struct AnyCodable: Codable {
         let value: Any
         
@@ -290,7 +251,6 @@ private extension KyberSwapService {
         }
     }
     
-    // Error handling types
     struct KyberSwapErrorResponse: Codable {
         let code: Int
         let message: String
@@ -299,7 +259,6 @@ private extension KyberSwapService {
     }
 }
 
-// KyberSwap specific errors
 enum KyberSwapError: Error, LocalizedError {
     case apiError(code: Int, message: String, details: String?)
     

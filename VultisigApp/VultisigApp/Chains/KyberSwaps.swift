@@ -57,8 +57,9 @@ struct KyberSwaps {
             }
             $0.toAddress = keysignPayload.coin.contractAddress
         }
+        
         let inputData = try EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
-            signingInput: approveInput,
+            signingInput: approveInput, 
             keysignPayload: keysignPayload
         )
         return inputData
@@ -100,26 +101,61 @@ private extension KyberSwaps {
             }
         }
 
-        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt("20000000000") // Use gasPrice from quote or 20 Gwei default
-        
-        // Apply chain-specific gas buffer based on chain costs and execution characteristics
-        let baseGas = Int64(quote.data.gas) ?? 600000 // Use raw API gas, not pre-buffered quote.tx.gas
+        let baseGas = Int64(quote.data.gas) ?? 600000
         let gasMultiplierTimes10: Int64
         
         switch keysignPayload.coin.chain {
         case .ethereum:
-            gasMultiplierTimes10 = 14 // 40% buffer - conservative for expensive Ethereum gas
+            gasMultiplierTimes10 = 14
         case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
-            gasMultiplierTimes10 = 20 // 100% buffer - L2s have cheap gas and complex routing
+            gasMultiplierTimes10 = 20
         default:
-            gasMultiplierTimes10 = 16 // 60% buffer - reasonable default for other chains
+            gasMultiplierTimes10 = 16
         }
         
         let bufferedGas = (baseGas * gasMultiplierTimes10) / 10
         let gas = BigUInt(bufferedGas)
         
-        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
+        let signed = try getPreSignedInputDataWithCustomGasLimit(
+            input: input,
+            keysignPayload: keysignPayload,
+            customGasLimit: gas,
+            incrementNonce: incrementNonce
+        )
+        
         return signed
+    }
+    
+    func getPreSignedInputDataWithCustomGasLimit(
+        input: EthereumSigningInput,
+        keysignPayload: KeysignPayload,
+        customGasLimit: BigUInt,
+        incrementNonce: Bool
+    ) throws -> Data {
+        guard case .Ethereum(
+            let maxFeePerGasWei,
+            let priorityFeeWei,
+            let nonce,
+            _
+        ) = keysignPayload.chainSpecific else {
+            throw HelperError.runtimeError("fail to get Ethereum chain specific")
+        }
+        
+        let chainIdString = keysignPayload.coin.chain == .ethereumSepolia ? "11155111" : keysignPayload.coin.coinType.chainId
+        guard let intChainID = Int(chainIdString) else {
+            throw HelperError.runtimeError("fail to get chainID")
+        }
+        
+        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
+        
+        var modifiedInput = input
+        modifiedInput.chainID = Data(hexString: Int64(intChainID).hexString())!
+        modifiedInput.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
+        modifiedInput.gasLimit = customGasLimit.serialize()
+        modifiedInput.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+        modifiedInput.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+        modifiedInput.txMode = .enveloped
+        
+        return try modifiedInput.serializedData()
     }
 } 

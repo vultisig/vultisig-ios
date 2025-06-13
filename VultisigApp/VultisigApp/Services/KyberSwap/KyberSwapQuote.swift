@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 struct KyberSwapQuote: Codable, Hashable {
     struct Data: Codable, Hashable {
@@ -43,29 +44,30 @@ struct KyberSwapQuote: Codable, Hashable {
     var data: Data
     let requestId: String
     
-    // Computed properties to match OneInch interface for compatibility
     var dstAmount: String {
         return data.amountOut
     }
     
     var tx: Transaction {
-        // Apply conservative universal buffer for quote display
-        // Chain-specific buffers are handled in KyberSwapService for actual transactions
-        let baseGas = Int64(data.gas) ?? 600000 // Use 600k fallback (same as EVMHelper.defaultETHSwapGasUnit)
-        let bufferedGas = (baseGas * 14) / 10 // 40% conservative buffer for display using integer math
+        let baseGas = Int64(data.gas) ?? 600000
+        let bufferedGas = (baseGas * 14) / 10
+        
+        let gasPriceValue = data.gasPrice ?? "20000000000"
+        let gasPriceBigInt = BigInt(gasPriceValue) ?? BigInt("20000000000")
+        let minGasPrice = BigInt("1000000000")
+        let finalGasPrice = gasPriceBigInt < minGasPrice ? minGasPrice : gasPriceBigInt
         
         return Transaction(
-            from: "", // Will be filled by the service
+            from: "",
             to: data.routerAddress,
             data: data.data,
             value: data.transactionValue,
-            gasPrice: data.gasPrice ?? "20000000000", // Use provided gasPrice or 20 Gwei default
+            gasPrice: finalGasPrice.description,
             gas: bufferedGas
         )
     }
 }
 
-// Transaction structure to maintain compatibility with OneInch interface
 extension KyberSwapQuote {
     struct Transaction: Codable, Hashable {
         let from: String
@@ -81,7 +83,7 @@ extension KyberSwapQuote {
             self.data = data
             self.value = value
             self.gasPrice = gasPrice
-            self.gas = gas == 0 ? 600000 : gas // Use 600k fallback (same as EVMHelper.defaultETHSwapGasUnit)
+            self.gas = gas == 0 ? 600000 : gas
         }
     }
 } 
