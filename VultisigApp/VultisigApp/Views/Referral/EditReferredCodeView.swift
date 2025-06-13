@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct EditReferredCodeView: View {
-    @StateObject var referralViewModel: ReferralViewModel
+    @StateObject var referralViewModel: ReferredViewModel
     
     var body: some View {
         ZStack {
@@ -86,5 +86,5 @@ struct EditReferredCodeView: View {
 }
 
 #Preview {
-    EditReferredCodeView(referralViewModel: ReferralViewModel())
+    EditReferredCodeView(referralViewModel: ReferredViewModel())
 }

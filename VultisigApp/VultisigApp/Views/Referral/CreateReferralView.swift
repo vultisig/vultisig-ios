@@ -10,7 +10,7 @@ import SwiftUI
 struct CreateReferralView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @StateObject var referralViewModel = ReferralViewModel()
+    @StateObject var referralViewModel = ReferredViewModel()
     
     var body: some View {
         container

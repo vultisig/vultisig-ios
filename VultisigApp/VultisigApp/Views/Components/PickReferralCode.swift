@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PickReferralCode: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var referralViewModel: ReferredViewModel
     
     var body: some View {
         let isVisible = referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess
@@ -104,5 +104,5 @@ struct PickReferralCode: View {
 }
 
 #Preview {
-    PickReferralCode(referralViewModel: ReferralViewModel())
+    PickReferralCode(referralViewModel: ReferredViewModel())
 }

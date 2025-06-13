@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralOnboardingView: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var referralViewModel: ReferredViewModel
     
     var body: some View {
         container
@@ -51,5 +51,5 @@ struct ReferralOnboardingView: View {
 }
 
 #Preview {
-    ReferralOnboardingView(referralViewModel: ReferralViewModel())
+    ReferralOnboardingView(referralViewModel: ReferredViewModel())
 }

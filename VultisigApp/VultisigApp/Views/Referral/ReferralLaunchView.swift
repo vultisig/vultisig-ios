@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralLaunchView: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var referralViewModel: ReferredViewModel
     
     var body: some View {
         ZStack {
@@ -174,5 +174,5 @@ struct ReferralLaunchView: View {
 }
 
 #Preview {
-    ReferralLaunchView(referralViewModel: ReferralViewModel())
+    ReferralLaunchView(referralViewModel: ReferredViewModel())
 }

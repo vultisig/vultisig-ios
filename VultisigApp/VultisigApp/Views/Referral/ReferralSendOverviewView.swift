@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var referralViewModel: ReferredViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -174,6 +174,6 @@ struct ReferralSendOverviewView: View {
 }
 
 #Preview {
-    ReferralSendOverviewView(referralViewModel: ReferralViewModel())
+    ReferralSendOverviewView(referralViewModel: ReferredViewModel())
         .environmentObject(HomeViewModel())
 }

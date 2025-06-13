@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralView: View {
-    @StateObject var referralViewModel = ReferralViewModel()
+    @StateObject var referralViewModel = ReferredViewModel()
     
     var body: some View {
         ZStack {

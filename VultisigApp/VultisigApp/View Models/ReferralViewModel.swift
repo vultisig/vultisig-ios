@@ -2,27 +2,14 @@
 //  ReferralViewModel.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-06-03.
+//  Created by Amol Kumar on 2025-06-13.
 //
 
 import SwiftUI
 
 @MainActor
 class ReferralViewModel: ObservableObject {
-    @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
-    @Published var showReferralBannerSheet: Bool = false
-    @Published var navigationToReferralOverview: Bool = false
-    @Published var navigationToCreateReferralView: Bool = false
-    
     @Published var isLoading: Bool = false
-    
-    // Referred Code
-    @AppStorage("savedReferredCode") var savedReferredCode: String = ""
-    @Published var referredCode: String = ""
-    @Published var showReferredLaunchViewError: Bool = false
-    @Published var showReferredLaunchViewSuccess: Bool = false
-    @Published var referredLaunchViewErrorMessage: String = ""
-    @Published var referredLaunchViewSuccessMessage: String = ""
     
     // Generated Referral Code
     @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
@@ -54,33 +41,6 @@ class ReferralViewModel: ObservableObject {
         getFiatAmount(for: getTotalFee())
     }
     
-    func closeBannerSheet() {
-        showReferralBannerSheet = false
-        navigationToReferralOverview = true
-    }
-    
-    func showReferralDashboard() {
-        navigationToReferralOverview = false
-        navigationToCreateReferralView = true
-        showReferralCodeOnboarding = false
-    }
-    
-    func verifyReferredCode() {
-        resetReferredData()
-        
-        isLoading = true
-        
-        nameErrorCheck(code: referredCode, forReferralCode: false)
-        
-        guard !showReferredLaunchViewError else {
-            return
-        }
-        
-        Task {
-            await checkNameAvailability(code: referredCode, forReferralCode: false)
-        }
-    }
-    
     func verifyReferralCode() {
         isLoading = true
         resetReferralData()
@@ -93,13 +53,6 @@ class ReferralViewModel: ObservableObject {
         Task {
             await checkNameAvailability(code: referralCode, forReferralCode: true)
         }
-    }
-    
-    func resetReferredData() {
-        showReferredLaunchViewError = false
-        showReferredLaunchViewSuccess = false
-        referredLaunchViewErrorMessage = ""
-        referredLaunchViewSuccessMessage = ""
     }
     
     func handleCounterIncrease() {
@@ -165,41 +118,14 @@ class ReferralViewModel: ObservableObject {
         showReferralAlert = true
     }
     
-    private func checkNameAvailability(code: String, forReferralCode: Bool) async {
-        let urlString = Endpoint.checkNameAvailability(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-            return
+    private func showNameError(with message: String) {
+        if message == "alreadyTaken" {
+            referralAvailabilityErrorMessage = message
+        } else {
+            referralAvailabilityErrorMessage = "invalid"
         }
         
-        do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    if forReferralCode {
-                        showNameError(forReferralCode: forReferralCode, with: "alreadyTaken")
-                    } else {
-                        saveReferredCode()
-                    }
-                } else if httpResponse.statusCode == 404 {
-                    if forReferralCode {
-                        saveReferralCode()
-                    } else {
-                        showNameError(forReferralCode: forReferralCode, with: "referralCodeNotFound")
-                    }
-                } else {
-                    showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-                }
-            }
-        } catch {
-            showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-        }
-    }
-    
-    private func saveReferredCode() {
-        savedReferredCode = referredCode
-        referredLaunchViewSuccessMessage = "referralCodeAdded"
-        showReferredLaunchViewSuccess = true
+        showReferralAvailabilityError = true
         isLoading = false
     }
     
@@ -219,35 +145,47 @@ class ReferralViewModel: ObservableObject {
     
     private func nameErrorCheck(code: String, forReferralCode: Bool) {
         guard !code.isEmpty else {
-            showNameError(forReferralCode: forReferralCode, with: "emptyField")
+            showNameError(with: "emptyField")
             return
         }
         
         if !forReferralCode {
             guard code != savedGeneratedReferralCode else {
-                showNameError(forReferralCode: forReferralCode, with: "referralCodeMatch")
+                showNameError(with: "referralCodeMatch")
                 return
             }
         }
         
         guard code.count == 4 else {
-            showNameError(forReferralCode: forReferralCode, with: "referralLaunchCodeLengthError")
+            showNameError(with: "referralLaunchCodeLengthError")
             return
         }
     }
     
-    private func showNameError(forReferralCode: Bool, with message: String) {
-        if forReferralCode {
-            if message == "alreadyTaken" {
-                referralAvailabilityErrorMessage = message
-            } else {
-                referralAvailabilityErrorMessage = "invalid"
-            }
-            showReferralAvailabilityError = true
-        } else {
-            referredLaunchViewErrorMessage = message
-            showReferredLaunchViewError = true
+    private func checkNameAvailability(code: String, forReferralCode: Bool) async {
+        let urlString = Endpoint.checkNameAvailability(for: code)
+        guard let url = URL(string: urlString) else {
+            showNameError(with: "systemErrorMessage")
+            return
         }
-        isLoading = false
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    showNameError(with: "alreadyTaken")
+                } else if httpResponse.statusCode == 404 {
+                    if forReferralCode {
+                        saveReferralCode()
+                    } else {
+                        showNameError(with: "referralCodeNotFound")
+                    }
+                } else {
+                    showNameError(with: "systemErrorMessage")
+                }
+            }
+        } catch {
+            showNameError(with: "systemErrorMessage")
+        }
     }
 }
