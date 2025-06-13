@@ -16,16 +16,6 @@ struct CreateReferralView: View {
     
     var body: some View {
         container
-            .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $referralViewModel.showCoinSelector,
-                        selectedCoin: $referralViewModel.selectedPayoutCoin,
-                        selectedChain: $referralViewModel.selectedPayoutChain
-                    )
-                }
-            })
             .alert(isPresented: $referralViewModel.showReferralAlert) {
                 alert
             }
@@ -126,11 +116,7 @@ struct CreateReferralView: View {
     var choosePayoutAssetSelection: some View {
         HStack {
             selectedAsset
-            
             Spacer()
-            
-            Image(systemName: "chevron.forward")
-                .foregroundColor(.neutral0)
         }
         .frame(height: 56)
         .font(.body16BrockmannMedium)
@@ -142,9 +128,6 @@ struct CreateReferralView: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
-        .onTapGesture {
-            referralViewModel.showCoinSelector.toggle()
-        }
     }
     
     var summary: some View {
@@ -193,20 +176,14 @@ struct CreateReferralView: View {
     }
     
     var selectedAsset: some View {
-        ZStack {
-            if referralViewModel.selectedPayoutCoin == .example {
-                Text(NSLocalizedString("select", comment: ""))
-                    .foregroundColor(.extraLightGray)
-            } else {
-                HStack(spacing: 8) {
-                    let coin = referralViewModel.selectedPayoutCoin
-                    AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
-                    
-                    Text(coin.ticker)
-                        .font(.body16BrockmannMedium)
-                        .foregroundColor(.neutral0)
-                }
-            }
+        HStack(spacing: 8) {
+            Image("rune")
+                .resizable()
+                .frame(width: 32, height: 32)
+            
+            Text("RUNE")
+                .font(.body16BrockmannMedium)
+                .foregroundColor(.neutral0)
         }
     }
     

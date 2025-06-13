@@ -33,9 +33,6 @@ class ReferralViewModel: ObservableObject {
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 0
     
-    @Published var selectedPayoutChain: Chain? = .example
-    @Published var selectedPayoutCoin: Coin = .example
-    @Published var showCoinSelector = false
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
     @Published var navigateToOverviewView = false
@@ -116,11 +113,6 @@ class ReferralViewModel: ObservableObject {
         
         guard expireInCount>0 else {
             showAlert(with: "pickValidExpiration")
-            return
-        }
-        
-        guard selectedPayoutCoin != .example else {
-            showAlert(with: "pickPayoutAsset")
             return
         }
         
