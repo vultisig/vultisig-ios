@@ -320,6 +320,9 @@ final class DKLSKeysign {
     
     func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
+        defer {
+            setKeysignDone(status: true)
+        }
         var task: Task<(),any Error>? = nil
         let msgHash = Utils.getMessageBodyHash(msg: messageToSign)
         let localMessenger = DKLSMessenger(mediatorUrl: self.mediatorURL,
@@ -381,7 +384,6 @@ final class DKLSKeysign {
             }
             let isFinished = try await pullInboundMessages(handle: h, messageID: msgHash)
             if isFinished {
-                self.setKeysignDone(status: true)
                 let sig = try dklsSignSessionFinish(handle: h)
                 let resp = TssKeysignResponse()
                 resp.msg = messageToSign
