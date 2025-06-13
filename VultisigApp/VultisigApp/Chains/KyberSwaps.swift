@@ -101,20 +101,7 @@ private extension KyberSwaps {
             }
         }
 
-        let baseGas = Int64(quote.data.gas) ?? 600000
-        let gasMultiplierTimes10: Int64
-        
-        switch keysignPayload.coin.chain {
-        case .ethereum:
-            gasMultiplierTimes10 = 14
-        case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
-            gasMultiplierTimes10 = 20
-        default:
-            gasMultiplierTimes10 = 16
-        }
-        
-        let bufferedGas = (baseGas * gasMultiplierTimes10) / 10
-        let gas = BigUInt(bufferedGas)
+        let gas = BigUInt(quote.gasForChain(keysignPayload.coin.chain))
         
         let signed = try getPreSignedInputDataWithCustomGasLimit(
             input: input,
@@ -141,6 +128,11 @@ private extension KyberSwaps {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
         
+        // Apply 1 GWEI minimum for KyberSwap transactions
+        let oneGweiInWei = BigInt(1_000_000_000) // 1 GWEI = 10^9 Wei
+        let correctedMaxFeePerGas = max(maxFeePerGasWei, oneGweiInWei)
+        let correctedPriorityFee = max(priorityFeeWei, oneGweiInWei)
+        
         let chainIdString = keysignPayload.coin.chain == .ethereumSepolia ? "11155111" : keysignPayload.coin.coinType.chainId
         guard let intChainID = Int(chainIdString) else {
             throw HelperError.runtimeError("fail to get chainID")
@@ -152,8 +144,8 @@ private extension KyberSwaps {
         modifiedInput.chainID = Data(hexString: Int64(intChainID).hexString())!
         modifiedInput.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
         modifiedInput.gasLimit = customGasLimit.serialize()
-        modifiedInput.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-        modifiedInput.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+        modifiedInput.maxFeePerGas = correctedMaxFeePerGas.magnitude.serialize()
+        modifiedInput.maxInclusionFeePerGas = correctedPriorityFee.magnitude.serialize()
         modifiedInput.txMode = .enveloped
         
         return try modifiedInput.serializedData()

@@ -19,24 +19,7 @@ struct KyberSwapQuote: Codable, Hashable {
         let data: String
         let routerAddress: String
         let transactionValue: String
-        let additionalCostUsd: String?
-        let additionalCostMessage: String?
         var gasPrice: String?
-        
-        init(amountIn: String, amountInUsd: String, amountOut: String, amountOutUsd: String, gas: String, gasUsd: String, data: String, routerAddress: String, transactionValue: String, additionalCostUsd: String? = nil, additionalCostMessage: String? = nil, gasPrice: String? = nil) {
-            self.amountIn = amountIn
-            self.amountInUsd = amountInUsd
-            self.amountOut = amountOut
-            self.amountOutUsd = amountOutUsd
-            self.gas = gas
-            self.gasUsd = gasUsd
-            self.data = data
-            self.routerAddress = routerAddress
-            self.transactionValue = transactionValue
-            self.additionalCostUsd = additionalCostUsd
-            self.additionalCostMessage = additionalCostMessage
-            self.gasPrice = gasPrice
-        }
     }
     
     let code: Int
@@ -48,21 +31,33 @@ struct KyberSwapQuote: Codable, Hashable {
         return data.amountOut
     }
     
-    var tx: Transaction {
+    func gasForChain(_ chain: Chain) -> Int64 {
         let baseGas = Int64(data.gas) ?? 600000
-        let bufferedGas = (baseGas * 14) / 10
+        let gasMultiplierTimes10: Int64
+        
+        switch chain {
+        case .ethereum:
+            gasMultiplierTimes10 = 14
+        case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
+            gasMultiplierTimes10 = 20
+        default:
+            gasMultiplierTimes10 = 16
+        }
+        
+        return (baseGas * gasMultiplierTimes10) / 10
+    }
+    
+    var tx: Transaction {
+        let bufferedGas = gasForChain(.ethereum)
         
         let gasPriceValue = data.gasPrice ?? "20000000000"
-        let gasPriceBigInt = BigInt(gasPriceValue) ?? BigInt("20000000000")
-        let minGasPrice = BigInt("1000000000")
-        let finalGasPrice = gasPriceBigInt < minGasPrice ? minGasPrice : gasPriceBigInt
         
         return Transaction(
             from: "",
             to: data.routerAddress,
             data: data.data,
             value: data.transactionValue,
-            gasPrice: finalGasPrice.description,
+            gasPrice: gasPriceValue,
             gas: bufferedGas
         )
     }

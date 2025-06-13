@@ -76,27 +76,18 @@ struct KyberSwapService {
         var buildResponse = try JSONDecoder().decode(KyberSwapQuote.self, from: buildData)
         
         let gasPrice = routeResponse.data.routeSummary.gasPrice
+        
+        // Update gasPrice from route response
         buildResponse.data.gasPrice = gasPrice
         
-        let baseGas = BigInt(buildResponse.data.gas) ?? BigInt.zero
-                
-        let gasMultiplierTimes10: Int
-        switch chain {
-        case "ethereum":
-            gasMultiplierTimes10 = 14
-        case "arbitrum", "optimism", "base", "polygon", "avalanche", "bsc":
-            gasMultiplierTimes10 = 20
-        default:
-            gasMultiplierTimes10 = 16
-        }
-        
-        let gas = (baseGas * BigInt(gasMultiplierTimes10)) / BigInt(10)
+        let chainEnum = Chain.allCases.first { getChainName(for: $0) == chain } ?? .ethereum
+        let calculatedGas = buildResponse.gasForChain(chainEnum)
         
         let finalGas: BigInt
-        if gas.isZero {
+        if calculatedGas == 0 {
             finalGas = BigInt(EVMHelper.defaultETHSwapGasUnit)
         } else {
-            finalGas = gas
+            finalGas = BigInt(calculatedGas)
         }
         
         let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
