@@ -2,7 +2,7 @@
 //  Cardano.swift
 //  VultisigApp
 //
-//  Created by AI Assistant
+//  Created by Enrique Souza on 11.06.2025.
 //
 
 import Foundation
