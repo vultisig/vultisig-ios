@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReferralOnboardingBanner: View {
-    @ObservedObject var referralViewModel: ReferredViewModel
+    @ObservedObject var referredViewModel: ReferredViewModel
     
     var body: some View {
         ZStack {
@@ -77,7 +77,7 @@ struct ReferralOnboardingBanner: View {
     
     var closeButton: some View {
         Button {
-            referralViewModel.showReferralBannerSheet = false
+            referredViewModel.showReferralBannerSheet = false
         } label: {
             closeLabel
         }
@@ -92,10 +92,10 @@ struct ReferralOnboardingBanner: View {
     }
     
     private func handleTap() {
-        referralViewModel.closeBannerSheet()
+        referredViewModel.closeBannerSheet()
     }
 }
 
 #Preview {
-    ReferralOnboardingBanner(referralViewModel: ReferredViewModel())
+    ReferralOnboardingBanner(referredViewModel: ReferredViewModel())
 }

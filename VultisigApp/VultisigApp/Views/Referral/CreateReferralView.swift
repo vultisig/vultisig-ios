@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct CreateReferralView: View {
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @ObservedObject var referralViewModel: ReferralViewModel
     
-    @StateObject var referralViewModel = ReferredViewModel()
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         container
@@ -251,6 +251,6 @@ struct CreateReferralView: View {
 }
 
 #Preview {
-    CreateReferralView()
+    CreateReferralView(referralViewModel: ReferralViewModel())
         .environmentObject(HomeViewModel())
 }

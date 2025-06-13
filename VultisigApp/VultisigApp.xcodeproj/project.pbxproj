@@ -628,8 +628,8 @@
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* EditReferredCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */; };
 		A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */; };
-		A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */; };
-		A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */; };
+		A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */; };
+		A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */; };
 		A6E0C91B2DE6BC8500A01543 /* ReferralOnboardingBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */; };
 		A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */; };
 		A6E0C91F2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */; };
@@ -1558,8 +1558,8 @@
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferredCodeView.swift; sourceTree = "<group>"; };
 		A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextField.swift; sourceTree = "<group>"; };
-		A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingView.swift; sourceTree = "<group>"; };
-		A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
+		A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingView.swift; sourceTree = "<group>"; };
+		A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
 		A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingBanner.swift; sourceTree = "<group>"; };
 		A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralSendOverviewView.swift; sourceTree = "<group>"; };
 		A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionOverviewView.swift; sourceTree = "<group>"; };
@@ -1946,7 +1946,7 @@
 				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 				A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */,
 				A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */,
-				A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */,
+				A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */,
 				A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */,
 				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
 			);
@@ -3168,7 +3168,7 @@
 			isa = PBXGroup;
 			children = (
 				A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */,
-				A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */,
+				A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */,
 				A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */,
 				A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */,
 				A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */,
@@ -4241,7 +4241,7 @@
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
 				A6C670982C9D09EF00F59B6A /* AddressQRCodeView+iOS.swift in Sources */,
 				B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */,
-				A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */,
+				A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
@@ -4628,7 +4628,7 @@
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
-				A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */,
+				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,

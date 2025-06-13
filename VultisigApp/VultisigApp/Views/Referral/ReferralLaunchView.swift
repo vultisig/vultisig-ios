@@ -8,17 +8,19 @@
 import SwiftUI
 
 struct ReferralLaunchView: View {
-    @ObservedObject var referralViewModel: ReferredViewModel
+    @ObservedObject var referredViewModel: ReferredViewModel
+    
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
         ZStack {
             container
             
-            if referralViewModel.isLoading {
+            if referredViewModel.isLoading {
                 loader
             }
         }
-        .alert(isPresented: $referralViewModel.showReferredLaunchViewSuccess) {
+        .alert(isPresented: $referredViewModel.showReferredLaunchViewSuccess) {
             alert
         }
     }
@@ -50,16 +52,16 @@ struct ReferralLaunchView: View {
     }
     
     var errorText: some View {
-        Text(NSLocalizedString(referralViewModel.referredLaunchViewErrorMessage, comment: ""))
+        Text(NSLocalizedString(referredViewModel.referredLaunchViewErrorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.body14BrockmannMedium)
             .foregroundColor(.alertRed)
-            .opacity(referralViewModel.showReferredLaunchViewError ? 1 : 0)
+            .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
     }
     
     var saveButton: some View {
         Button {
-            referralViewModel.verifyReferredCode()
+            referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
         } label: {
             saveLabel
         }
@@ -88,7 +90,7 @@ struct ReferralLaunchView: View {
     
     var createButton: some View {
         NavigationLink {
-            CreateReferralView()
+            CreateReferralView(referralViewModel: referralViewModel)
         } label: {
             createLabel
         }
@@ -100,11 +102,11 @@ struct ReferralLaunchView: View {
     
     var textField: some View {
         ReferralTextField(
-            text: $referralViewModel.referredCode,
+            text: $referredViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referralViewModel.showReferredLaunchViewError,
-            errorMessage: referralViewModel.referredLaunchViewErrorMessage
+            showError: referredViewModel.showReferredLaunchViewError,
+            errorMessage: referredViewModel.referredLaunchViewErrorMessage
         )
     }
     
@@ -117,7 +119,7 @@ struct ReferralLaunchView: View {
     
     var referredContent: some View {
         VStack(spacing: 16) {
-            if referralViewModel.savedReferredCode.isEmpty {
+            if referredViewModel.savedReferredCode.isEmpty {
                 referralCodeTextField
                 saveButton
             } else {
@@ -129,7 +131,7 @@ struct ReferralLaunchView: View {
     
     var referralCodeText: some View {
         HStack {
-            Text(referralViewModel.savedReferredCode)
+            Text(referredViewModel.savedReferredCode)
             Spacer()
         }
         .foregroundColor(.neutral0)
@@ -150,7 +152,7 @@ struct ReferralLaunchView: View {
     
     var editButton: some View {
         NavigationLink {
-            EditReferredCodeView(referralViewModel: referralViewModel)
+            EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         } label: {
             editLabel
         }
@@ -167,12 +169,12 @@ struct ReferralLaunchView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("success", comment: "")),
-            message: Text(NSLocalizedString(referralViewModel.referredLaunchViewSuccessMessage, comment: "")),
+            message: Text(NSLocalizedString(referredViewModel.referredLaunchViewSuccessMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
 }
 
 #Preview {
-    ReferralLaunchView(referralViewModel: ReferredViewModel())
+    ReferralLaunchView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
 }
