@@ -10,6 +10,8 @@ if [ -f "$LAUNCHD_PLIST" ]; then
     /bin/launchctl load -w "$LAUNCHD_PLIST"
 fi
 
+/bin/launchctl setenv GODEBUG asyncpreemptoff=1
+
 # Check if the file exists
 if [ -f "$INSTALL_FLAG_FILE" ]; then
     echo "The file $INSTALL_FLAG_FILE exists. This is an update."
