@@ -16,7 +16,10 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
         if let addresses = sender.addresses {
             for addressData in addresses {
                 addressData.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) in
-                    let sockaddrPtr = pointer.baseAddress!.assumingMemoryBound(to: sockaddr.self)
+                    guard let baseAddress = pointer.baseAddress else {
+                        return
+                    }
+                    let sockaddrPtr = baseAddress.assumingMemoryBound(to: sockaddr.self)
                     if sockaddrPtr.pointee.sa_family == sa_family_t(AF_INET) {
                         var hostBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                         if getnameinfo(sockaddrPtr, socklen_t(addressData.count), &hostBuffer, socklen_t(hostBuffer.count), nil, 0, NI_NUMERICHOST) == 0 {
