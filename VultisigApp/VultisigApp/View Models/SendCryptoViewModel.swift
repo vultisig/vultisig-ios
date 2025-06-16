@@ -422,17 +422,35 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         }
         
-        // Cardano-specific validation: Check minimum UTXO value
+        // Cardano-specific validation: Check minimum UTXO value for amount and remaining balance
         if tx.coin.chain == .cardano {
             let amountInLovelaces = tx.amountInRaw
-            let minUTXOValue = CardanoHelper.defaultMinUTXOValue
+            let totalBalance = tx.coin.rawBalance
+            let estimatedFee = tx.fee
             
-            if amountInLovelaces < minUTXOValue {
-                let minAmountADA = minUTXOValue.toDecimal(decimals: tx.coin.decimals) / pow(10, tx.coin.decimals)
+            // First check if we should proactively recommend "Send Max" for low balance
+            let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
+                totalBalance: totalBalance.toBigInt(),
+                estimatedFee: estimatedFee
+            )
+            
+            if sendMaxRecommendation.shouldRecommend {
+                // Show recommendation as warning (not blocking)
+                logger.log("Cardano: \(sendMaxRecommendation.message ?? "Consider Send Max")")
+                // You could show this as a non-blocking alert or banner if needed
+            }
+            
+            let validation = CardanoHelper.validateUTXORequirements(
+                sendAmount: amountInLovelaces,
+                totalBalance: totalBalance.toBigInt(), 
+                estimatedFee: estimatedFee
+            )
+            
+            if !validation.isValid {
                 errorTitle = "error"
-                errorMessage = "Minimum amount required is \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires each UTXO to contain at least this amount to prevent spam and maintain network efficiency."
+                errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
                 showAlert = true
-                logger.log("Cardano amount \(tx.amount) ADA is below minimum UTXO requirement of \(minAmountADA) ADA")
+                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
                 isValidForm = false
             }
         }

@@ -174,6 +174,41 @@ class CardanoService {
         }
     }
     
+    /// Comprehensive validation for Cardano transactions including change/remaining balance validation
+    /// - Parameters:
+    ///   - sendAmount: Amount to send in lovelaces
+    ///   - totalBalance: Total available balance in lovelaces
+    ///   - estimatedFee: Estimated transaction fee in lovelaces
+    /// - Throws: Error if transaction would violate minimum UTXO requirements
+    func validateTransaction(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt) throws {
+        let validation = CardanoHelper.validateUTXORequirements(
+            sendAmount: sendAmount,
+            totalBalance: totalBalance,
+            estimatedFee: estimatedFee
+        )
+        
+        if !validation.isValid {
+            throw NSError(
+                domain: "CardanoServiceError",
+                code: 9,
+                userInfo: [
+                    NSLocalizedDescriptionKey: validation.errorMessage ?? "Cardano UTXO validation failed"
+                ]
+            )
+        }
+        
+        // Also check for proactive "Send Max" recommendations
+        let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
+            totalBalance: totalBalance,
+            estimatedFee: estimatedFee
+        )
+        
+        if sendMaxRecommendation.shouldRecommend {
+            // Log recommendation but don't throw error
+            print("Cardano Service: \(sendMaxRecommendation.message ?? "Consider Send Max")")
+        }
+    }
+    
     /// Validate Cardano chain specific parameters
     func validateChainSpecific(_ chainSpecific: BlockChainSpecific) async throws {
         guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = chainSpecific else {
