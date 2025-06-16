@@ -469,6 +469,9 @@ class KeysignViewModel: ObservableObject {
                         case .success(let transactionHash):
                             self.txid = transactionHash
                         case .failure(let error):
+                            print("Transaction Type: \(transactionType)")
+                            
+                            print("Transaction has : \(transactionType.transactionHash)")
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
                     }
@@ -602,6 +605,14 @@ class KeysignViewModel: ObservableObject {
                 return
             }
         default:
+            
+            // Check for Cardano "already broadcasted" errors
+            if error.localizedDescription.contains("BadInputsUTxO") {
+                print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
+                self.txid = transactionType.transactionHash
+                return
+            }
+            
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
         print(errMessage)
