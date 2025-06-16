@@ -118,12 +118,8 @@ enum CardanoHelper {
                                                                              publicKeys: publicKeys)
         let output = try CardanoSigningOutput(serializedBytes: compileWithSignature)
         
-        print("Cardano.swift WalletCore transaction hash: \(output.txID.hexString)")
-        
         // Calculate transaction hash manually since WalletCore output.txID is empty for Cardano
         let transactionHash = calculateCardanoTransactionHash(from: output.encoded)
-        
-        print("Cardano.swift calculated transaction hash: \(transactionHash)")
         
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                            transactionHash: transactionHash)
@@ -134,22 +130,15 @@ enum CardanoHelper {
     /// Cardano TX ID = Blake2b-256 hash of the transaction BODY only (not complete transaction)
     /// Transaction CBOR structure: [body, witness_set, valid_script?, metadata?]
     private static func calculateCardanoTransactionHash(from transactionData: Data) -> String {
-        print("🔍 Cardano TX Hash Calculation:")
-        print("📦 Complete transaction size: \(transactionData.count) bytes")
-        print("📦 Complete transaction hex: \(transactionData.hexString.prefix(100))...")
         
         do {
             // Parse CBOR to extract transaction body (first element)
             let transactionBodyData = try extractCardanoTransactionBody(from: transactionData)
             
-            print("🎯 Transaction body size: \(transactionBodyData.count) bytes")
-            print("🎯 Transaction body hex: \(transactionBodyData.hexString.prefix(100))...")
-            
             // Cardano Transaction ID = Blake2b-256 hash (32 bytes) of the BODY only
             let txidHash = Hash.blake2b(data: transactionBodyData, size: 32)
             let finalHash = txidHash.hexString
             
-            print("✅ Calculated TX ID from BODY: \(finalHash)")
             return finalHash
         } catch {
             print("❌ Error parsing Cardano CBOR: \(error)")
