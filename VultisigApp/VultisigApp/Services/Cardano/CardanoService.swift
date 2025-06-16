@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import BigInt
 
 class CardanoService {
     
@@ -152,6 +153,25 @@ class CardanoService {
     func calculateDynamicTTL() async throws -> UInt64 {
         let currentSlot = try await getCurrentSlot()
         return currentSlot + 720 // Add 720 slots (~12 minutes at 1 slot per second)
+    }
+    
+    /// Validate that the amount meets Cardano's minimum UTXO requirements (Alonzo Era)
+    /// Current protocol: minUTxO = utxoEntrySize × coinsPerUTxOWord ≈ 0.93 ADA for simple transactions
+    /// - Parameter amountInLovelaces: The amount to send in lovelaces (smallest Cardano unit)
+    /// - Throws: Error if amount is below minimum UTXO value
+    func validateMinimumAmount(_ amountInLovelaces: BigInt) throws {
+        let minUTXOValue = CardanoHelper.defaultMinUTXOValue
+        
+        guard amountInLovelaces >= minUTXOValue else {
+            let minAmountADA = Double(minUTXOValue) / 1_000_000.0
+            throw NSError(
+                domain: "CardanoServiceError", 
+                code: 5, 
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Amount \(Double(amountInLovelaces) / 1_000_000.0) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
+                ]
+            )
+        }
     }
     
     /// Validate Cardano chain specific parameters

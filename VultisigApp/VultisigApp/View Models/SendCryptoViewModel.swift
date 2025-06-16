@@ -422,6 +422,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         }
         
+        // Cardano-specific validation: Check minimum UTXO value
+        if tx.coin.chain == .cardano {
+            let amountInLovelaces = tx.amountInRaw
+            let minUTXOValue = CardanoHelper.defaultMinUTXOValue
+            
+            if amountInLovelaces < minUTXOValue {
+                let minAmountADA = minUTXOValue.toDecimal(decimals: tx.coin.decimals) / pow(10, tx.coin.decimals)
+                errorTitle = "error"
+                errorMessage = "Minimum amount required is \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires each UTXO to contain at least this amount to prevent spam and maintain network efficiency."
+                showAlert = true
+                logger.log("Cardano amount \(tx.amount) ADA is below minimum UTXO requirement of \(minAmountADA) ADA")
+                isValidForm = false
+            }
+        }
+        
         isLoading = false
         return isValidForm
     }

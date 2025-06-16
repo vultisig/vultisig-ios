@@ -12,10 +12,18 @@ import BigInt
 
 enum CardanoHelper {
     
+    /*
+     Cardano minimum UTXO value requirement (Alonzo Era)
+     According to current Cardano protocol (Alonzo era):
+     - minUTxO = utxoEntrySize × coinsPerUTxOWord
+     - For ADA-only UTXOs: 27 words × 34,482 lovelace = ~930,000 lovelace ≈ 0.93 ADA
+     This prevents spam and ensures network sustainability
+     https://cardano-ledger.readthedocs.io/en/latest/explanations/min-utxo-alonzo.html
+     */
+    static let defaultMinUTXOValue: BigInt = 930_000 // ~0.93 ADA in lovelaces (Alonzo era)
+    
     // MARK: - Helper Functions
-    
-
-    
+        
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain == .cardano else {
             throw HelperError.runtimeError("coin is not ADA")
