@@ -76,8 +76,9 @@ enum CardanoHelper {
         if totalBalance < totalNeeded {
             let totalBalanceADA = Double(totalBalance) / 1_000_000.0
             
-            // Recommend Send Max for insufficient balance
-            if totalBalance > estimatedFee && totalBalance > 0 {
+            // Only recommend Send Max if the result would meet minimum UTXO requirement
+            if totalBalance > estimatedFee && 
+               (totalBalance - estimatedFee) >= minUTXOValue {
                 return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(totalBalanceADA) ADA instead.")
             } else {
                 let availableADA = Double(totalBalance) / 1_000_000.0
@@ -136,7 +137,10 @@ enum CardanoHelper {
         // This helps avoid change issues with the 1.4 ADA minimum
         let lowBalanceThreshold: BigInt = 3_500_000 // 3.5 ADA in lovelaces
         
-        if totalBalance <= lowBalanceThreshold && totalBalance > estimatedFee {
+        // Only recommend Send Max if the result would meet minimum UTXO requirement
+        if totalBalance <= lowBalanceThreshold && 
+           totalBalance > estimatedFee &&
+           (totalBalance - estimatedFee) >= minUTXOValue {
             let totalBalanceADA = Double(totalBalance) / 1_000_000.0
             
             return (true, "💡 Low balance detected. Consider 'Send Max' (\(totalBalanceADA) ADA) to avoid change issues.")
