@@ -30,7 +30,7 @@ import BigInt
  ✅ Send 2 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 2.83 ADA (valid)
  ✅ Send 3.2 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 1.63 ADA (valid)
  ❌ Send 4.0 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 0.83 ADA (invalid - below 1.4 ADA)
- ✅ Send Max 4.83 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 0 ADA (valid)
+ ✅ Send Max 5 ADA, Balance 5 ADA → WalletCore subtracts fee automatically (valid)
  */
 
 enum CardanoHelper {
@@ -55,7 +55,7 @@ enum CardanoHelper {
     /// Examples:
     /// - Send 2 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 2.83 ADA ✅ (valid)
     /// - Send 4.0 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 0.83 ADA ❌ (invalid - change < 1.4)
-    /// - Send 4.83 ADA, Balance 5 ADA, Fee 0.17 ADA → Change 0 ADA ✅ (valid - no change)
+    /// - Send Max 5 ADA, Balance 5 ADA → WalletCore subtracts fee automatically ✅ (valid)
     ///
     /// - Parameters:
     ///   - sendAmount: Amount to send in lovelaces
@@ -74,11 +74,11 @@ enum CardanoHelper {
         // 2. Check sufficient balance
         let totalNeeded = sendAmount + estimatedFee
         if totalBalance < totalNeeded {
-            let maxSendADA = Double(totalBalance - estimatedFee) / 1_000_000.0
+            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
             
             // Recommend Send Max for insufficient balance
-            if totalBalance > estimatedFee && maxSendADA > 0 {
-                return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(maxSendADA) ADA instead.")
+            if totalBalance > estimatedFee && totalBalance > 0 {
+                return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(totalBalanceADA) ADA instead.")
             } else {
                 let availableADA = Double(totalBalance) / 1_000_000.0
                 return (false, "Insufficient balance (\(availableADA) ADA). You need more ADA to complete this transaction.")
@@ -88,10 +88,10 @@ enum CardanoHelper {
         // 3. Check remaining balance (change) meets minimum UTXO requirement
         let remainingBalance = totalBalance - sendAmount - estimatedFee
         if remainingBalance > 0 && remainingBalance < minUTXOValue {
-            let sendAllAmount = Double(totalBalance - estimatedFee) / 1_000_000.0
+            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
             
             // Always recommend Send Max for change issues - simplest solution
-            return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(sendAllAmount) ADA) to avoid this issue.")
+            return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(totalBalanceADA) ADA) to avoid this issue.")
         }
         
         return (true, nil)
@@ -109,14 +109,14 @@ enum CardanoHelper {
         let minSendAmount = minUTXOValue
         
         // Maximum send amount scenarios:
-        // 1. Send all (no change): totalBalance - estimatedFee
+        // 1. Send Max (total balance): WalletCore automatically subtracts fee
         // 2. Send leaving exactly minUTXO as change: totalBalance - estimatedFee - minUTXOValue
         
-        let sendAllAmount = totalBalance - estimatedFee
+        let sendMaxAmount = totalBalance // "Send Max" sends total balance, WalletCore handles fee
         let sendLeavingMinChangeAmount = totalBalance - estimatedFee - minUTXOValue
         
         // The maximum valid send is the higher of these two valid options
-        let maxSendAmount = max(sendAllAmount, sendLeavingMinChangeAmount)
+        let maxSendAmount = max(sendMaxAmount, sendLeavingMinChangeAmount)
         
         let minSendADA = Double(minSendAmount) / 1_000_000.0
         let maxSendADA = Double(maxSendAmount) / 1_000_000.0
@@ -131,16 +131,15 @@ enum CardanoHelper {
     /// - Returns: Tuple indicating if balance is low and recommendation message
     static func shouldRecommendSendMax(totalBalance: BigInt, estimatedFee: BigInt) -> (shouldRecommend: Bool, message: String?) {
         let minUTXOValue = defaultMinUTXOValue
-        let maxSendAmount = totalBalance - estimatedFee
         
         // Balance is considered "low" if total balance is less than 3.5 ADA
         // This helps avoid change issues with the 1.4 ADA minimum
         let lowBalanceThreshold: BigInt = 3_500_000 // 3.5 ADA in lovelaces
         
-        if totalBalance <= lowBalanceThreshold && maxSendAmount > 0 {
-            let maxSendADA = Double(maxSendAmount) / 1_000_000.0
+        if totalBalance <= lowBalanceThreshold && totalBalance > estimatedFee {
+            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
             
-            return (true, "💡 Low balance detected. Consider 'Send Max' (\(maxSendADA) ADA) to avoid change issues.")
+            return (true, "💡 Low balance detected. Consider 'Send Max' (\(totalBalanceADA) ADA) to avoid change issues.")
         }
         
         return (false, nil)
