@@ -67,20 +67,20 @@ enum CardanoHelper {
         
         // 1. Check send amount meets minimum
         if sendAmount < minUTXOValue {
-            let minAmountADA = Double(minUTXOValue) / 1_000_000.0
+            let minAmountADA = minUTXOValue.toADAString
             return (false, "Minimum send amount is \(minAmountADA) ADA. Cardano requires this to prevent spam.")
         }
         
         // 2. Check sufficient balance
         let totalNeeded = sendAmount + estimatedFee
         if totalBalance < totalNeeded {
-            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
+            let totalBalanceADA = totalBalance.toADAString
             
             // Recommend Send Max for insufficient balance
             if totalBalance > estimatedFee && totalBalance > 0 {
                 return (false, "Insufficient balance. 💡 Try 'Send Max' to send \(totalBalanceADA) ADA instead.")
             } else {
-                let availableADA = Double(totalBalance) / 1_000_000.0
+                let availableADA = totalBalance.toADAString
                 return (false, "Insufficient balance (\(availableADA) ADA). You need more ADA to complete this transaction.")
             }
         }
@@ -88,7 +88,7 @@ enum CardanoHelper {
         // 3. Check remaining balance (change) meets minimum UTXO requirement
         let remainingBalance = totalBalance - sendAmount - estimatedFee
         if remainingBalance > 0 && remainingBalance < minUTXOValue {
-            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
+            let totalBalanceADA = totalBalance.toADAString
             
             // Always recommend Send Max for change issues - simplest solution
             return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(totalBalanceADA) ADA) to avoid this issue.")
@@ -102,7 +102,7 @@ enum CardanoHelper {
     ///   - totalBalance: Total available balance in lovelaces
     ///   - estimatedFee: Estimated transaction fee in lovelaces
     /// - Returns: Tuple with suggested minimum and maximum valid amounts in ADA format
-    static func suggestValidSendAmounts(totalBalance: BigInt, estimatedFee: BigInt) -> (minSendADA: Double, maxSendADA: Double) {
+    static func suggestValidSendAmounts(totalBalance: BigInt, estimatedFee: BigInt) -> (minSendADA: Decimal, maxSendADA: Decimal) {
         let minUTXOValue = defaultMinUTXOValue
         
         // Minimum send amount is always the minUTXO value
@@ -118,8 +118,8 @@ enum CardanoHelper {
         // The maximum valid send is the higher of these two valid options
         let maxSendAmount = max(sendMaxAmount, sendLeavingMinChangeAmount)
         
-        let minSendADA = Double(minSendAmount) / 1_000_000.0
-        let maxSendADA = Double(maxSendAmount) / 1_000_000.0
+        let minSendADA = minSendAmount.toADA
+        let maxSendADA = maxSendAmount.toADA
         
         return (minSendADA, max(minSendADA, maxSendADA))
     }
@@ -137,7 +137,7 @@ enum CardanoHelper {
         let lowBalanceThreshold: BigInt = 3_500_000 // 3.5 ADA in lovelaces
         
         if totalBalance <= lowBalanceThreshold && totalBalance > estimatedFee {
-            let totalBalanceADA = Double(totalBalance) / 1_000_000.0
+            let totalBalanceADA = totalBalance.toADAString
             
             return (true, "💡 Low balance detected. Consider 'Send Max' (\(totalBalanceADA) ADA) to avoid change issues.")
         }
@@ -251,5 +251,23 @@ enum CardanoHelper {
         let result = SignedTransactionResult(rawTransaction: output.encoded.hexString, 
                                            transactionHash: output.txID.hexString)
         return result
+    }
+} 
+
+// MARK: - BigInt Extension for ADA Formatting
+extension BigInt {
+    /// Safely convert lovelaces to ADA using Decimal for precision
+    var toADA: Decimal {
+        return Decimal(string: self.description)! / 1_000_000
+    }
+    
+    /// Format as ADA string with appropriate decimal places
+    var toADAString: String {
+        let decimal = self.toADA
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 6
+        formatter.numberStyle = .decimal
+        return formatter.string(from: decimal as NSDecimalNumber) ?? "0"
     }
 } 

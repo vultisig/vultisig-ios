@@ -163,12 +163,13 @@ class CardanoService {
         let minUTXOValue = CardanoHelper.defaultMinUTXOValue
         
         guard amountInLovelaces >= minUTXOValue else {
-            let minAmountADA = Double(minUTXOValue) / 1_000_000.0
+            let minAmountADA = minUTXOValue.toADAString
+            let sendAmountADA = amountInLovelaces.toADAString
             throw NSError(
                 domain: "CardanoServiceError", 
                 code: 5, 
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Amount \(Double(amountInLovelaces) / 1_000_000.0) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
+                    NSLocalizedDescriptionKey: "Amount \(sendAmountADA) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
                 ]
             )
         }
