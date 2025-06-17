@@ -85,11 +85,6 @@ final class Vault: ObservableObject, Codable {
         try container.encodeIfPresent(libType, forKey: .libType)
     }
     
-    func addKeyshare(pubkey: String, keyshare: String) {
-        let share = KeyShare(pubkey: pubkey, keyshare: keyshare)
-        keyshares.append(share)
-    }
-    
     func setOrder(_ index: Int) {
         order = index
     }
@@ -124,12 +119,6 @@ final class Vault: ObservableObject, Codable {
     
     func getKeyshare(pubKey: String) -> String? {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
-    }
-    
-    static func predicate(searchName: String) -> Predicate<Vault> {
-        #Predicate<Vault> { vault in
-            searchName.isEmpty || vault.name == searchName
-        }
     }
 
     static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState? = nil) -> String {

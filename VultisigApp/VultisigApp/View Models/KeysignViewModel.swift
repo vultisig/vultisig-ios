@@ -406,10 +406,10 @@ class KeysignViewModel: ObservableObject {
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Ripple:
-            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA,keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Tron:
-            let transaction = try TronHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
             return .regular(transaction)
         }
         

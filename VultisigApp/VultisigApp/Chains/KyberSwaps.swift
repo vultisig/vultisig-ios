@@ -45,48 +45,6 @@ struct KyberSwaps {
         return transaction
     }
 
-    // MARK: - ERC20 Approval Methods
-    
-    func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> Data {
-        let approveInput = EthereumSigningInput.with {
-            $0.transaction = .with {
-                $0.erc20Approve = .with {
-                    $0.amount = approvePayload.amount.magnitude.serialize()
-                    $0.spender = approvePayload.spender
-                }
-            }
-            $0.toAddress = keysignPayload.coin.contractAddress
-        }
-        
-        let inputData = try EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
-            signingInput: approveInput, 
-            keysignPayload: keysignPayload
-        )
-        return inputData
-    }
-
-    func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) throws -> [String] {
-        let inputData = try getPreSignedApproveInputData(
-            approvePayload: approvePayload,
-            keysignPayload: keysignPayload
-        )
-        let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: inputData)
-        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
-        if !preSigningOutput.errorMessage.isEmpty {
-            throw HelperError.runtimeError(preSigningOutput.errorMessage)
-        }
-        return [preSigningOutput.dataHash.hexString]
-    }
-
-    func getSignedApproveTransaction(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
-        let inputData = try getPreSignedApproveInputData(
-            approvePayload: approvePayload,
-            keysignPayload: keysignPayload
-        )
-        let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-        return signedEvmTx
-    }
-
     func getPreSignedInputData(quote: KyberSwapQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
