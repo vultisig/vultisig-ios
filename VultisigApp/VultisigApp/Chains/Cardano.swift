@@ -21,11 +21,11 @@ enum CardanoHelper {
             throw HelperError.runtimeError("coin is not ADA")
         }
         
-        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
+        guard case .Cardano(_, let sendMaxAmount, let ttl) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Cardano chain specific parameters")
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .cardano) else {
+        guard AnyAddress(string: keysignPayload.toAddress, coin: .cardano) != nil else {
             throw HelperError.runtimeError("fail to get to address: \(keysignPayload.toAddress)")
         }
         

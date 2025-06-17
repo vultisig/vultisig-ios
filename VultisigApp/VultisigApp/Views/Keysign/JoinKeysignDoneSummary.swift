@@ -14,13 +14,8 @@ struct JoinKeysignDoneSummary: View {
     @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let summaryViewModel = JoinKeysignSummaryViewModel()
-    
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
     
     var body: some View {
         ZStack {

@@ -10,10 +10,6 @@ import BigInt
 
 struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
 
     var body: some View {
         VStack {

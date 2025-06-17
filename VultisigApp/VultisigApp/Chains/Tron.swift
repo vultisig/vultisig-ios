@@ -119,7 +119,6 @@ enum TronHelper {
     }
     
     static func getSignedTransaction(
-        vaultHexPubKey: String,
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse],
         vault: Vault
