@@ -422,6 +422,27 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         }
         
+        // Cardano-specific validation: Check minimum UTXO value for amount and remaining balance
+        if tx.coin.chain == .cardano {
+            let amountInLovelaces = tx.amountInRaw
+            let totalBalance = tx.coin.rawBalance
+            let estimatedFee = tx.fee
+            
+            let validation = CardanoHelper.validateUTXORequirements(
+                sendAmount: amountInLovelaces,
+                totalBalance: totalBalance.toBigInt(), 
+                estimatedFee: estimatedFee
+            )
+            
+            if !validation.isValid {
+                errorTitle = "error"
+                errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
+                showAlert = true
+                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
+                isValidForm = false
+            }
+        }
+        
         isLoading = false
         return isValidForm
     }
