@@ -66,6 +66,8 @@ final class DKLSMessenger {
                 return try await downloadSetupMessage(additionalHeader)
             } catch {
                 print("fail to download setup message,error \(error), attempt: \(attempt)")
+                //backoff 1s
+                try await Task.sleep(for: .seconds(1))
             }
             attempt = attempt + 1
         } while attempt < 10

@@ -11,9 +11,9 @@ import Foundation
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+            return "\(tx.fromAmountDecimal.formatDecimalToLocale()) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(tx.fromAmountDecimal.formatDecimalToLocale()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 

@@ -152,7 +152,6 @@ enum RippleHelper {
     }
     
     static func getSignedTransaction(
-        vaultHexPubKey: String,
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         

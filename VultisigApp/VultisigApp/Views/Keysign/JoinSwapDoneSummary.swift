@@ -19,7 +19,6 @@ struct JoinSwapDoneSummary: View {
     @State var animationVM: RiveViewModel? = nil
     
     @Environment(\.openURL) var openURL
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
         VStack(spacing: 0) {

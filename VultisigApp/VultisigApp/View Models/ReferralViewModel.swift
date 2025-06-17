@@ -20,9 +20,6 @@ class ReferralViewModel: ObservableObject {
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 0
     
-    @Published var selectedPayoutChain: Chain? = .example
-    @Published var selectedPayoutCoin: Coin = .example
-    @Published var showCoinSelector = false
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
     @Published var navigateToOverviewView = false
@@ -80,11 +77,6 @@ class ReferralViewModel: ObservableObject {
         
         guard expireInCount>0 else {
             showAlert(with: "pickValidExpiration")
-            return
-        }
-        
-        guard selectedPayoutCoin != .example else {
-            showAlert(with: "pickPayoutAsset")
             return
         }
         
@@ -158,6 +150,11 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
+        guard !containsWhitespace(code) else {
+            showNameError(forReferralCode: forReferralCode, with: "whitespaceNotAllowed")
+            return
+        }
+        
         if !forReferralCode {
             guard code != savedGeneratedReferralCode else {
                 showNameError(with: "referralCodeMatch")
@@ -196,6 +193,7 @@ class ReferralViewModel: ObservableObject {
         } catch {
             showNameError(with: "systemErrorMessage")
         }
+        isLoading = false
     }
     
     func calculateFees() async {
@@ -218,6 +216,10 @@ class ReferralViewModel: ObservableObject {
             print("Network or decoding error: \(error)")
             isFeesLoading = false
         }
+    }
+    
+    private func containsWhitespace(_ text: String) -> Bool {
+        return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
 
 // Codable struct for all relevant fields from the endpoint

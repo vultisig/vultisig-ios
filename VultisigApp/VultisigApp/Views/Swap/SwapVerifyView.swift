@@ -17,8 +17,6 @@ struct SwapVerifyView: View {
 
     @State var fastPasswordPresented = false
     
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {

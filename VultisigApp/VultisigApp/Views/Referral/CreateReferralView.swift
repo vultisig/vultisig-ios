@@ -12,6 +12,10 @@ struct CreateReferralView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    @StateObject var referralViewModel = ReferralViewModel()
+    
+    @State var showTooltip = false
+    
     var body: some View {
         container
             .onAppear {
@@ -43,6 +47,7 @@ struct CreateReferralView: View {
             Background()
             
             VStack {
+                tooltip
                 main
                 button
             }
@@ -129,11 +134,7 @@ struct CreateReferralView: View {
     var choosePayoutAssetSelection: some View {
         HStack {
             selectedAsset
-            
             Spacer()
-            
-            Image(systemName: "chevron.forward")
-                .foregroundColor(.neutral0)
         }
         .frame(height: 56)
         .font(.body16BrockmannMedium)
@@ -145,9 +146,6 @@ struct CreateReferralView: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
-        .onTapGesture {
-            referralViewModel.showCoinSelector.toggle()
-        }
     }
     
     var summary: some View {
@@ -205,21 +203,45 @@ struct CreateReferralView: View {
     }
     
     var selectedAsset: some View {
-        ZStack {
-            if referralViewModel.selectedPayoutCoin == .example {
-                Text(NSLocalizedString("select", comment: ""))
-                    .foregroundColor(.extraLightGray)
-            } else {
-                HStack(spacing: 8) {
-                    let coin = referralViewModel.selectedPayoutCoin
-                    AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
-                    
-                    Text(coin.ticker)
-                        .font(.body16BrockmannMedium)
-                        .foregroundColor(.neutral0)
-                }
-            }
+        HStack(spacing: 8) {
+            Image("rune")
+                .resizable()
+                .frame(width: 32, height: 32)
+            
+            Text("RUNE")
+                .font(.body16BrockmannMedium)
+                .foregroundColor(.neutral0)
         }
+    }
+    
+    var infoLabel: some View {
+        Image(systemName: "info.circle")
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var tooltip: some View {
+        VStack(alignment: .leading) {
+            Text(NSLocalizedString("referralProgram", comment: ""))
+                .foregroundColor(.neutral900)
+                .font(.body16BrockmannMedium)
+            
+             Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
+                .foregroundColor(.extraLightGray)
+                    .font(.body14BrockmannMedium)
+        }
+        .animation(.easeInOut, value: showTooltip)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.neutral0)
+        .cornerRadius(8)
+        .padding(.horizontal, 24)
+        .onTapGesture {
+            showTooltip = false
+        }
+        .frame(maxHeight: showTooltip ? nil : 0)
+        .clipped()
     }
     
     private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
