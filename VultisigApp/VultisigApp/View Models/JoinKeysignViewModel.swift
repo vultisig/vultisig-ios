@@ -334,7 +334,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         do {
-            let evmDecoded = try await EtherfaceService.shared.decode(memo: memo)
+            let evmDecoded = try await MemoDecodingService.shared.decode(memo: memo)
             decodedMemo = evmDecoded
         } catch {
             print("EVM memo decoding error: \(error.localizedDescription)")

@@ -105,7 +105,7 @@ class KeysignViewModel: ObservableObject {
         }
         
         do {
-            decodedMemo = try await EtherfaceService.shared.decode(memo: memo)
+            decodedMemo = try await MemoDecodingService.shared.decode(memo: memo)
         } catch {
             print("EVM memo decoding error: \(error.localizedDescription)")
         }

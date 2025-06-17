@@ -196,7 +196,7 @@ extension String {
             }
             
             // For unknown selectors, try async decoding via 4byte.directory
-            if let parsedMemo = await EtherfaceService.shared.getParsedMemo(memo: self) {
+            if let parsedMemo = await MemoDecodingService.shared.getParsedMemo(memo: self) {
                 var result = parsedMemo.functionSignature
                 if !parsedMemo.functionArguments.isEmpty {
                     result += "\n\nParameters:\n" + parsedMemo.functionArguments

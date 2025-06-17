@@ -222,7 +222,7 @@ final class ExtensionMemoServiceTests: XCTestCase {
         ]
         
         print("\n🚀 Real-World DEX Memo Integration Test:")
-        print("=" * 60)
+        
         
         for (index, testCase) in realWorldMemos.enumerated() {
             let decoded = testCase.memo.decodedExtensionMemo
@@ -247,7 +247,7 @@ final class ExtensionMemoServiceTests: XCTestCase {
         // Test with a real unknown function selector
         let unknownMemo = "0x07ed2379000000000000000000000000742F8C1dF7B6A2C1E0b56C4d7F9a7a7b8c3e2A1b"
         
-        let parsedMemo = await EtherfaceService.shared.getParsedMemo(memo: unknownMemo)
+        let parsedMemo = await MemoDecodingService.shared.getParsedMemo(memo: unknownMemo)
         
         if let parsed = parsedMemo {
             print("🎯 4byte.directory API Test Success:")

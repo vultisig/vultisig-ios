@@ -13,9 +13,9 @@ struct ParsedMemoParams {
     let functionArguments: String
 }
 
-final class EtherfaceService {
+final class MemoDecodingService {
 
-    static let shared = EtherfaceService()
+    static let shared = MemoDecodingService()
 
     func decode(memo: String) async throws -> String? {
         guard memo.count >= 8 else { return nil }
