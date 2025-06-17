@@ -428,18 +428,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             let totalBalance = tx.coin.rawBalance
             let estimatedFee = tx.fee
             
-            // First check if we should proactively recommend "Send Max" for low balance
-            let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
-                totalBalance: totalBalance.toBigInt(),
-                estimatedFee: estimatedFee
-            )
-            
-            if sendMaxRecommendation.shouldRecommend {
-                // Show recommendation as warning (not blocking)
-                logger.log("Cardano: \(sendMaxRecommendation.message ?? "Consider Send Max")")
-                // You could show this as a non-blocking alert or banner if needed
-            }
-            
             let validation = CardanoHelper.validateUTXORequirements(
                 sendAmount: amountInLovelaces,
                 totalBalance: totalBalance.toBigInt(), 
