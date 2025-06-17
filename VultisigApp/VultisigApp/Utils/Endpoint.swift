@@ -105,8 +105,13 @@ class Endpoint {
     }
     
     static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool) -> URL {
-        let url = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
-        return url.asUrl
+        let baseUrl = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
+        
+        let affiliateParams = isAffiliate
+        ? "&source=vultisig-ios&referral=0xa4a4f610e89488eb4ecc6c63069f241a54485269"
+        : .empty
+        
+        return (baseUrl + affiliateParams).asUrl
     }
     
     static func buildKyberSwapTransaction(chain: String) -> URL {
