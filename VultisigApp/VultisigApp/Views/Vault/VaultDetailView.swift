@@ -27,7 +27,6 @@ struct VaultDetailView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
-    @State private var shouldShowPasswordVerify = false
 
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
