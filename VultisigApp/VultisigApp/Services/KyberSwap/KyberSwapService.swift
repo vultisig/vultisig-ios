@@ -12,12 +12,11 @@ struct KyberSwapService {
     
     static let shared = KyberSwapService()
     
+    static let sourceIdentifier = "vultisig-ios"
+    static let referrerAddress = "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
+    
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-    }
-    
-    private var referrerAddress: String {
-        return "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
     }
     
     func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
@@ -33,14 +32,16 @@ struct KyberSwapService {
             saveGas: false,
             gasInclude: true,
             slippageTolerance: 100,
-            isAffiliate: isAffiliate
+            isAffiliate: isAffiliate,
+            sourceIdentifier: isAffiliate ? KyberSwapService.sourceIdentifier : nil,
+            referrerAddress: isAffiliate ? KyberSwapService.referrerAddress : nil
         )
         
         var routeRequest = URLRequest(url: routeUrl)
         routeRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": "vultisig-ios"
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
         
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -108,8 +109,8 @@ struct KyberSwapService {
             slippageTolerance: 100,
             deadline: Int(Date().timeIntervalSince1970) + 1200,
             enableGasEstimation: enableGasEstimation,
-            source: "vultisig-ios",
-            referral: isAffiliate ? referrerAddress : nil,
+            source: KyberSwapService.sourceIdentifier,
+            referral: isAffiliate ? KyberSwapService.referrerAddress : nil,
             ignoreCappedSlippage: false
         )
         
@@ -118,7 +119,7 @@ struct KyberSwapService {
         buildRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": "vultisig-ios"
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
         buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
         
@@ -371,7 +372,7 @@ private extension KyberSwapService {
         let referral: String?
         let ignoreCappedSlippage: Bool?
         
-        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = "vultisig-ios", referral: String? = nil, ignoreCappedSlippage: Bool? = false) {
+        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = KyberSwapService.sourceIdentifier, referral: String? = nil, ignoreCappedSlippage: Bool? = false) {
             self.routeSummary = routeSummary
             self.sender = sender
             self.recipient = recipient
