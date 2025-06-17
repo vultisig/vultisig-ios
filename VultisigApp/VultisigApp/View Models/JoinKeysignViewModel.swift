@@ -216,6 +216,13 @@ class JoinKeysignViewModel: ObservableObject {
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
             
+            // Decode custom message if present
+            if let customMessage = keysignMsg.customMessagePayload {
+                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
+                    self.customMessagePayload?.decodedMessage = decodedMessage
+                }
+            }
+            
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
@@ -315,8 +322,8 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
         
-        // First try to decode as Extension memo (works for all chains)
-        if let extensionDecoded = memo.decodedExtensionMemo {
+        // Use async decoding for proper function selector resolution
+        if let extensionDecoded = await memo.decodedExtensionMemoAsync() {
             decodedMemo = extensionDecoded
             return
         }
@@ -327,7 +334,8 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         do {
-            decodedMemo = try await EtherfaceService.shared.decode(memo: memo)
+            let evmDecoded = try await EtherfaceService.shared.decode(memo: memo)
+            decodedMemo = evmDecoded
         } catch {
             print("EVM memo decoding error: \(error.localizedDescription)")
         }

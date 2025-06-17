@@ -138,11 +138,20 @@ struct JoinKeysignDoneSummary: View {
             )
             
             Separator()
-            getGeneralCell(
-                title: "Message",
-                description: viewModel.customMessagePayload?.message ?? "",
-                isVerticalStacked: true
-            )
+            // Show decoded message if available, otherwise show raw message
+            if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
+                getGeneralCell(
+                    title: "Transaction Details",
+                    description: decodedMessage,
+                    isVerticalStacked: true
+                )
+            } else {
+                getGeneralCell(
+                    title: "Message",
+                    description: viewModel.customMessagePayload?.message ?? "",
+                    isVerticalStacked: true
+                )
+            }
             Separator()
             getGeneralCell(
                 title: "Signature",
