@@ -607,7 +607,7 @@ class KeysignViewModel: ObservableObject {
         default:
             
             // Check for Cardano "already broadcasted" errors
-            if error.localizedDescription.contains("BadInputsUTxO") {
+            if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
                 print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
                 self.txid = transactionType.transactionHash
                 return
