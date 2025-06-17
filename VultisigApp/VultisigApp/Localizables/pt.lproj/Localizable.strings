@@ -658,3 +658,14 @@
 "editReferral" = "Editar indicação";
 "editReferredCode" = "Editar código de indicação";
 "saveReferredCode" = "Salvar código de indicação";
+"alreadyTaken" = "Já utilizado";
+"available" = "Disponível";
+"status" = "Status";
+"invalid" = "Inválido";
+"enter4Characters" = "Digite 4 caracteres";
+"pickValidCode" = "Escolha um código de indicação válido";
+"pickValidExpiration" = "Defina uma duração de expiração válida";
+"pickPayoutAsset" = "Escolha uma opção de ativo para pagamento";
+"whitespaceNotAllowed" = "Caracteres de espaço não são permitidos.";
+"referralProgram" = "Programa de Indicação";
+"referralProgramTooltipDescription" = "O programa de indicação aplica-se a swaps na THORChain com base no melhor esforço. Para usar o referral da Vultisig, você precisa registrar um THORName. A taxa de registro é de 10 RUNE, mais 1 RUNE por ano, paga à rede THORChain.";

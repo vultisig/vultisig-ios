@@ -30,13 +30,6 @@ public class UTXOTransactionsService: ObservableObject {
         return false
     }
     
-    // Return success indicator for Cardano BadInputsUTxO errors - KeysignViewModel will use correct hash
-    private static func cardanoTransactionAlreadyBroadcasted() -> String {
-        // Return the same pattern used by RpcService and other services
-        // KeysignViewModel will detect this and use transactionType.transactionHash (from WalletCore)
-        return "Transaction already broadcasted."
-    }
-	
     func fetchTransactions(_ userAddress: String, endpointUrl: String) async {
         // Use cache if it's valid for the requested userAddress
         if isCacheValid(for: userAddress), let cachedData = cache[userAddress]?.data {
@@ -108,16 +101,7 @@ public class UTXOTransactionsService: ObservableObject {
                     if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
                        let context = json["context"] as? [String: Any],
                        let errorDescription = context["error"] as? String
-                    {
-                        // For Cardano, check if transaction is already broadcasted
-                        if chain.lowercased() == "cardano" && errorDescription.contains("BadInputsUTxO") {
-                            let transactionHash = cardanoTransactionAlreadyBroadcasted()
-                            DispatchQueue.main.async {
-                                completion(.success(transactionHash))
-                            }
-                            return
-                        }
-                        
+                    {                        
                         DispatchQueue.main.async {
                             completion(.failure(NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to broadcast transaction. Error: \(errorDescription)"])))
                         }

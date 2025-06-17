@@ -104,6 +104,19 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
     
+    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool) -> URL {
+        let url = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
+        return url.asUrl
+    }
+    
+    static func buildKyberSwapTransaction(chain: String) -> URL {
+        return "https://aggregator-api.kyberswap.com/\(chain)/api/v1/route/build".asUrl
+    }
+    
+    static func fetchKyberSwapTokens(chainId: String) -> URL {
+        return "https://ks-setting.kyberswap.com/api/v1/tokens?chainIds=\(chainId)&isWhitelisted=true&pageSize=100".asUrl
+    }
+    
     static func fetch1InchsTokensBalance(chain: String, address: String) -> String {
         return "\(vultisigApiProxy)/1inch/balance/v1.2/\(chain)/balances/\(address)"
     }
