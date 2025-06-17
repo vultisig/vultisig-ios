@@ -14,6 +14,9 @@ struct CreateReferralView: View {
     
     var body: some View {
         container
+            .onAppear {
+                calculateFees()
+            }
             .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
                 if let vault = homeViewModel.selectedVault {
                     SwapCoinPickerView(
@@ -29,6 +32,9 @@ struct CreateReferralView: View {
             }
             .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
                 ReferralSendOverviewView(referralViewModel: referralViewModel)
+            }
+            .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
+                calculateFees()
             }
     }
     
@@ -146,8 +152,17 @@ struct CreateReferralView: View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFeeFiat)")
-            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFeeFiat)")
+            getCell(
+                title: NSLocalizedString("registrationFee", comment: ""),
+                description1: "\(referralViewModel.getRegistrationFee()) RUNE",
+                description2: "\(referralViewModel.registrationFeeFiat)"
+            )
+            
+            getCell(
+                title: NSLocalizedString("totalFee", comment: ""),
+                description1: "\(referralViewModel.getTotalFee()) RUNE",
+                description2: "\(referralViewModel.totalFeeFiat)"
+            )
         }
     }
     
@@ -245,8 +260,15 @@ struct CreateReferralView: View {
                 Text(description2)
                     .foregroundColor(.extraLightGray)
             }
+            .redacted(reason: referralViewModel.isFeesLoading ? .placeholder : [])
         }
         .font(.body14BrockmannMedium)
+    }
+    
+    private func calculateFees() {
+        Task {
+            await referralViewModel.calculateFees()
+        }
     }
 }
 

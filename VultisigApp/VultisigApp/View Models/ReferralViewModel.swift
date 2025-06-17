@@ -27,6 +27,11 @@ class ReferralViewModel: ObservableObject {
     @Published var referralAlertMessage = ""
     @Published var navigateToOverviewView = false
     
+    // Fees
+    @Published var registrationFee: Decimal = 0
+    @Published var totalFee: Decimal = 0
+    @Published var isFeesLoading: Bool = false
+    
     // Send Overview
     @Published var isAmountCorrect: Bool = false
     @Published var isAddressCorrect: Bool = false
@@ -34,7 +39,7 @@ class ReferralViewModel: ObservableObject {
     @Published var navigateToSendView = false
     
     var registrationFeeFiat: String {
-        getFiatAmount(for: 10)
+        getFiatAmount(for: getRegistrationFee())
     }
     
     var totalFeeFiat: String {
@@ -86,16 +91,20 @@ class ReferralViewModel: ObservableObject {
         navigateToOverviewView = true
     }
     
-    func getTotalFee() -> Int {
-        10 + expireInCount
+    func getRegistrationFee() -> Decimal {
+        registrationFee / 100_000_000
     }
     
-    func getFiatAmount(for amount: Int) -> String {
+    func getTotalFee() -> Decimal {
+        Decimal(10 + expireInCount)
+    }
+    
+    func getFiatAmount(for amount: Decimal) -> String {
         guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
             return ""
         }
         
-        let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
+        let fiatAmount = RateProvider.shared.fiatBalance(value: amount, coin: nativeCoin)
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
     
@@ -188,4 +197,33 @@ class ReferralViewModel: ObservableObject {
             showNameError(with: "systemErrorMessage")
         }
     }
+    
+    func calculateFees() async {
+        isFeesLoading = true
+        
+        guard let url = URL(string: Endpoint.ReferralFees) else {
+            print("Invalid URL")
+            isFeesLoading = false
+            return
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decoder = JSONDecoder()
+            let info = try decoder.decode(ThorchainNetworkAllFees.self, from: data)
+            registrationFee = Decimal(string: info.tns_register_fee_rune) ?? 0
+            totalFee = Decimal(string: info.tns_fee_per_block_rune) ?? 0
+            isFeesLoading = false
+        } catch {
+            print("Network or decoding error: \(error)")
+            isFeesLoading = false
+        }
+    }
+
+// Codable struct for all relevant fields from the endpoint
+struct ThorchainNetworkAllFees: Codable {
+    let tns_register_fee_rune: String
+    let tns_fee_per_block_rune: String
+}
+
 }
