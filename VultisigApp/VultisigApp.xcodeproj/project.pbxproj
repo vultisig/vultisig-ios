@@ -110,6 +110,11 @@
 		A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */; };
 		A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760572CBD3F1A0070956A /* KeychainService.swift */; };
 		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
+		A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094C350D73AC732DEC57FD6B /* KyberSwaps.swift */; };
+		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
+		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
+		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
+		8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */; };
 		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
 		A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */; };
 		A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34A2C32FA760086D16B /* ProtoMappable.swift */; };
@@ -1040,6 +1045,11 @@
 		A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainIdentifier.swift; sourceTree = "<group>"; };
 		A58760572CBD3F1A0070956A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchSwapPayload.swift; sourceTree = "<group>"; };
+		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
+		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
+		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
+		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
+		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageFactory.swift; sourceTree = "<group>"; };
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
 		A58CC34C2C32FB800086D16B /* KeysignMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessage.swift; sourceTree = "<group>"; };
@@ -1979,6 +1989,7 @@
 				A50E79382BFE30170031DB47 /* Storage */,
 				A543B39E2BEA72BA003FB989 /* SwapService */,
 				A543B3992BEA6E3E003FB989 /* 1inch */,
+				KyberSwap,
 				A5D49F542BE26BA7001766C8 /* Actions */,
 				B5A51B532BD8C68B00791D78 /* Sui */,
 				B54B01982BDE0A0F00FDA472 /* Polkadot */,
@@ -2214,6 +2225,16 @@
 			path = 1inch;
 			sourceTree = "<group>";
 		};
+KyberSwap = {
+	isa = PBXGroup;
+	children = (
+		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */,
+		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */,
+		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */,
+	);
+	path = KyberSwap;
+	sourceTree = "<group>";
+};
 		A543B39E2BEA72BA003FB989 /* SwapService */ = {
 			isa = PBXGroup;
 			children = (
@@ -2268,6 +2289,7 @@
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
+				ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 			);
 			path = Keysign;
@@ -3620,6 +3642,8 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */,
 				A5D0C9362BEE778F0022D421 /* OneInchSwaps.swift */,
+				094C350D73AC732DEC57FD6B /* KyberSwaps.swift */,
+				094C350D73AC732DEC57FD6B /* KyberSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
@@ -4806,6 +4830,11 @@
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
+				A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */,
+				CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */,
+				3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */,
+				6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */,
+				8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6C670BD2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift in Sources */,

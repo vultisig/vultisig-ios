@@ -12,6 +12,7 @@ enum SwapQuote {
     case thorchain(ThorchainSwapQuote)
     case mayachain(ThorchainSwapQuote)
     case oneinch(OneInchQuote, fee: BigInt?)
+    case kyberswap(KyberSwapQuote, fee: BigInt?)
     case lifi(OneInchQuote, fee: BigInt?)
 
     var router: String? {
@@ -20,6 +21,8 @@ enum SwapQuote {
             return quote.router
         case .oneinch(let quote, _), .lifi(let quote, _):
             return quote.tx.to
+        case .kyberswap(let quote, _):
+            return quote.tx.to
         }
     }
 
@@ -27,7 +30,7 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.totalSwapSeconds
-        case .oneinch, .lifi:
+        case .oneinch, .kyberswap, .lifi:
             return nil
         }
     }
@@ -37,6 +40,8 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.inboundAddress
         case .oneinch(let quote, _), .lifi(let quote, _):
+            return quote.tx.to
+        case .kyberswap(let quote, _):
             return quote.tx.to
         }
     }
@@ -49,6 +54,8 @@ enum SwapQuote {
             return "Maya protocol"
         case .oneinch:
             return "1Inch"
+        case .kyberswap:
+            return "KyberSwap"
         case .lifi:
             return "LI.FI"
         }
@@ -59,7 +66,7 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             guard let fees = Decimal(string: quote.fees.total) else { return nil }
             return fees / toCoin.thorswapMultiplier
-        case .oneinch, .lifi:
+        case .oneinch, .kyberswap, .lifi:
             return .zero
         }
     }
@@ -68,7 +75,7 @@ enum SwapQuote {
         switch self {
         case .mayachain(let quote):
             return quote.memo
-        case .thorchain, .oneinch, .lifi:
+        case .thorchain, .oneinch, .kyberswap, .lifi:
             return nil
         }
     }

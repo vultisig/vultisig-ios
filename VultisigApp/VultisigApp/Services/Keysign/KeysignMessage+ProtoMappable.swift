@@ -168,6 +168,30 @@ extension SwapPayload {
                     )
                 )
             ))
+        case .kyberswapSwapPayload(let value):
+            self = .kyberSwap(KyberSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                quote: KyberSwapQuote(
+                    code: 0,
+                    message: "Success",
+                    data: KyberSwapQuote.Data(
+                        amountIn: value.fromAmount,
+                        amountInUsd: "0",
+                        amountOut: value.quote.dstAmount,
+                        amountOutUsd: "0",
+                        gas: String(value.quote.tx.gas),
+                        gasUsd: "0",
+                        data: value.quote.tx.data,
+                        routerAddress: value.quote.tx.to,
+                        transactionValue: value.quote.tx.value,
+                        gasPrice: value.quote.tx.gasPrice
+                    ),
+                    requestId: ""
+                )
+            ))
         }
     }
     
@@ -205,6 +229,24 @@ extension SwapPayload {
             })
         case .oneInch(let payload):
             return .oneinchSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.quote = .with {
+                    $0.dstAmount = payload.quote.dstAmount
+                    $0.tx = .with {
+                        $0.from = payload.quote.tx.from
+                        $0.to = payload.quote.tx.to
+                        $0.data = payload.quote.tx.data
+                        $0.value = payload.quote.tx.value
+                        $0.gasPrice = payload.quote.tx.gasPrice
+                        $0.gas = payload.quote.tx.gas
+                    }
+                }
+            })
+        case .kyberSwap(let payload):
+            return .kyberswapSwapPayload(.with {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.fromAmount = String(payload.fromAmount)

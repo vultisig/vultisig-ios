@@ -122,7 +122,7 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .oneInch, .none:
+        case .oneInch, .kyberSwap, .none:
             return nil
         }
     }
@@ -347,6 +347,10 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
+            case .kyberSwap(let payload):
+                let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                signedTransactions.append(transaction)
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -495,6 +499,9 @@ class KeysignViewModel: ObservableObject {
                         case .success(let transactionHash):
                             self.txid = transactionHash
                         case .failure(let error):
+                            print("Transaction Type: \(transactionType)")
+                            
+                            print("Transaction has : \(transactionType.transactionHash)")
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
                     }
@@ -628,6 +635,14 @@ class KeysignViewModel: ObservableObject {
                 return
             }
         default:
+            
+            // Check for Cardano "already broadcasted" errors
+            if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
+                print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
+                self.txid = transactionType.transactionHash
+                return
+            }
+            
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
         print(errMessage)

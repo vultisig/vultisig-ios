@@ -91,7 +91,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return Endpoint.getMayaSwapTracker(txid: hash)
         case .lifi:
             return Endpoint.getLifiSwapTracker(txid: hash)
-        case .oneinch, .none:
+        case .oneinch, .kyberswap, .none:
             return nil
         }
     }
@@ -144,13 +144,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         
         let decimals = coin.decimals
         
+        // Use tx.fee for swap quotes (which includes corrected gas price calculations)
+        // Fall back to tx.gas for other transaction types
+        let gasValue = tx.quote != nil ? tx.fee : tx.gas
+        
         if coin.chain.chainType == .EVM {
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\(Decimal(tx.gas) / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
+            return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
         } else {
-            return "\((Decimal(tx.gas) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
         }
     }
     
@@ -191,8 +195,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }
-        let amount = tx.amountInCoinDecimal
-        let payload = ERC20ApprovePayload(amount: amount, spender: spender)
+        // Approve exact amount - no buffer needed for KyberSwap precision
+        let payload = ERC20ApprovePayload(amount: tx.amountInCoinDecimal, spender: spender)
         return payload
     }
     
@@ -289,6 +293,28 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     memo: nil,
                     chainSpecific: chainSpecific,
                     swapPayload: .oneInch(payload),
+                    approvePayload: buildApprovePayload(tx: tx),
+                    vault: vault
+                )
+                
+                return true
+                
+            case .kyberswap(let quote, _):
+                let keysignFactory = KeysignPayloadFactory()
+                let payload = KyberSwapPayload(
+                    fromCoin: tx.fromCoin,
+                    toCoin: tx.toCoin,
+                    fromAmount: tx.amountInCoinDecimal,
+                    toAmountDecimal: tx.toAmountDecimal,
+                    quote: quote
+                )
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: quote.tx.to,
+                    amount: tx.amountInCoinDecimal,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .kyberSwap(payload),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
