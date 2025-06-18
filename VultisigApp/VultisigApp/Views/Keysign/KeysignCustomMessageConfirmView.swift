@@ -47,7 +47,12 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var message: some View {
-        getSummaryCell(title: "Message", value: viewModel.customMessagePayload?.message ?? "")
+        // Show decoded message if available, otherwise show raw message
+        if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
+            getPrimaryCell(title: "Transaction Details", value: decodedMessage)
+        } else {
+            getPrimaryCell(title: "Message", value: viewModel.customMessagePayload?.message ?? "")
+        }
     }
 
     var button: some View {

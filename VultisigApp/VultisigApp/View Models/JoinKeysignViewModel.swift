@@ -26,9 +26,7 @@ class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
     
     var vault: Vault
-    var serviceDelegate: ServiceDelegate?
-    
-    private let etherfaceService = EtherfaceService.shared
+        var serviceDelegate: ServiceDelegate?
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
@@ -218,6 +216,13 @@ class JoinKeysignViewModel: ObservableObject {
             self.encryptionKeyHex = keysignMsg.encryptionKeyHex
             self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
             
+            // Decode custom message if present
+            if let customMessage = keysignMsg.customMessagePayload {
+                if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
+                    self.customMessagePayload?.decodedMessage = decodedMessage
+                }
+            }
+            
             if let payload = keysignMsg.payload {
                 self.prepareKeysignMessages(keysignPayload: payload)
             }
@@ -313,14 +318,26 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func loadFunctionName() async {
-        guard let memo = keysignPayload?.memo, keysignPayload?.coin.chainType == .EVM else {
+        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+            return
+        }
+        
+        // Use async decoding for proper function selector resolution
+        if let extensionDecoded = await memo.decodedExtensionMemoAsync() {
+            decodedMemo = extensionDecoded
+            return
+        }
+        
+        // Fall back to EVM-specific decoding for EVM chains
+        guard keysignPayload?.coin.chainType == .EVM else {
             return
         }
         
         do {
-            decodedMemo = try await etherfaceService.decode(memo: memo)
+            let evmDecoded = try await MemoDecodingService.shared.decode(memo: memo)
+            decodedMemo = evmDecoded
         } catch {
-            print("Memo decoding error: \(error.localizedDescription)")
+            print("EVM memo decoding error: \(error.localizedDescription)")
         }
     }
     
