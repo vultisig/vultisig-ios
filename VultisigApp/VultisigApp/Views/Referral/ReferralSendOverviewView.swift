@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
+    @ObservedObject var sendTx: SendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -104,6 +105,13 @@ struct ReferralSendOverviewView: View {
                 title: "registrationFee",
                 description: "\(referralViewModel.getRegistrationFee()) RUNE"
             )
+            
+            separator
+            
+            getCell(
+                title: "gas",
+                description: "\(sendTx.gasInReadable)"
+            )
         }
     }
     
@@ -168,6 +176,6 @@ struct ReferralSendOverviewView: View {
 }
 
 #Preview {
-    ReferralSendOverviewView(referralViewModel: ReferralViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
         .environmentObject(HomeViewModel())
 }

@@ -14,16 +14,18 @@ struct CreateReferralView: View {
     
     @State var showTooltip = false
     
+    @StateObject var sendTx = SendTransaction()
+    
     var body: some View {
         container
             .onAppear {
-                calculateFees()
+                setData()
             }
             .alert(isPresented: $referralViewModel.showReferralAlert) {
                 alert
             }
             .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
-                ReferralSendOverviewView(referralViewModel: referralViewModel)
+                ReferralSendOverviewView(sendTx: sendTx, referralViewModel: referralViewModel)
             }
             .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
                 calculateFees()
@@ -275,6 +277,18 @@ struct CreateReferralView: View {
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
         .font(.body14BrockmannMedium)
+    }
+    
+    private func setData() {
+        referralViewModel.getNativeCoin(tx: sendTx)
+        loadGas()
+        calculateFees()
+    }
+    
+    private func loadGas() {
+        Task {
+            await referralViewModel.loadGasInfoForSending(tx: sendTx)
+        }
     }
     
     private func calculateFees() {

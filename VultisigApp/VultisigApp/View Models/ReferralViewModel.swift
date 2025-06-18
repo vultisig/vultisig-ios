@@ -25,6 +25,7 @@ class ReferralViewModel: ObservableObject {
     @Published var navigateToOverviewView = false
     
     // Fees
+    @Published var nativeCoin: Coin? = nil
     @Published var registrationFee: Decimal = 0
     @Published var feePerBlock: Decimal = 0
     @Published var isFeesLoading: Bool = false
@@ -34,6 +35,8 @@ class ReferralViewModel: ObservableObject {
     @Published var isAddressCorrect: Bool = false
     @Published var showSendOverviewAlert = false
     @Published var navigateToSendView = false
+    
+    let blockchainService = BlockChainService.shared
     
     var registrationFeeFiat: String {
         getFiatAmount(for: getRegistrationFee())
@@ -105,7 +108,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getFiatAmount(for amount: Decimal) -> String {
-        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+        guard let nativeCoin else {
             return ""
         }
         
@@ -125,6 +128,23 @@ class ReferralViewModel: ObservableObject {
         }
         
         navigateToSendView = true
+    }
+    
+    func getNativeCoin(tx: SendTransaction) {
+        nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+        
+        if let nativeCoin {
+            tx.coin = nativeCoin
+        }
+    }
+    
+    func loadGasInfoForSending(tx: SendTransaction) async{
+        do {
+            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+            tx.gas = chainSpecific.gas
+        } catch {
+            print("error fetching data: \(error.localizedDescription)")
+        }
     }
     
     private func showAlert(with message: String) {
@@ -234,11 +254,4 @@ class ReferralViewModel: ObservableObject {
     private func containsWhitespace(_ text: String) -> Bool {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
-
-// Codable struct for all relevant fields from the endpoint
-struct ThorchainNetworkAllFees: Codable {
-    let tns_register_fee_rune: String
-    let tns_fee_per_block_rune: String
-}
-
 }
