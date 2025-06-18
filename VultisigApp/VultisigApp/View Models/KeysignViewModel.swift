@@ -24,11 +24,13 @@ enum TssKeysignError: Error {
 @MainActor
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
+    
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
     @Published var txid: String = .empty
     @Published var approveTxid: String?
+    @Published var decodedMemo: String?
     
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -81,6 +83,32 @@ class KeysignViewModel: ObservableObject {
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
+        
+        // Load extension memo decoding
+        await loadFunctionName()
+    }
+    
+    func loadFunctionName() async {
+        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+            return
+        }
+        
+        // First try to decode as Extension memo (works for all chains)
+        if let extensionDecoded = memo.decodedExtensionMemo {
+            decodedMemo = extensionDecoded
+            return
+        }
+        
+        // Fall back to EVM-specific decoding for EVM chains
+        guard keysignPayload?.coin.chainType == .EVM else {
+            return
+        }
+        
+        do {
+            decodedMemo = try await MemoDecodingService.shared.decode(memo: memo)
+        } catch {
+            print("EVM memo decoding error: \(error.localizedDescription)")
+        }
     }
     
     func getTransactionExplorerURL(txid: String) -> String {
@@ -98,6 +126,8 @@ class KeysignViewModel: ObservableObject {
             return nil
         }
     }
+    
+
     func startKeysign() async {
         switch vault.libType {
         case .GG20,.none:
