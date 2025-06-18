@@ -6,6 +6,8 @@
 import Foundation
 import OSLog
 import BigInt
+import SwiftData
+import SwiftUI
 
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
@@ -63,6 +65,16 @@ class JoinKeysignViewModel: ObservableObject {
         }
 
         return "\(fromCoin.decimal(for: amount).formatDecimalToLocale()) \(fromCoin.ticker)"
+    }
+    
+    private func fetchVaults() -> [Vault] {
+        let fetchVaultDescriptor = FetchDescriptor<Vault>()
+        do {
+            return try Storage.shared.modelContext.fetch(fetchVaultDescriptor)
+        } catch {
+            logger.error("Failed to fetch vaults: \(error.localizedDescription)")
+            return []
+        }
     }
     
     func setData(vault: Vault, serviceDelegate: ServiceDelegate, isCameraPermissionGranted: Bool) {
@@ -220,6 +232,17 @@ class JoinKeysignViewModel: ObservableObject {
             if let customMessage = keysignMsg.customMessagePayload {
                 if let decodedMessage = await customMessage.message.decodedExtensionMemoAsync() {
                     self.customMessagePayload?.decodedMessage = decodedMessage
+                }
+            }
+            
+            // Auto-select correct vault BEFORE preparing messages
+            if let keysignPayload = keysignMsg.payload {
+                if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
+                    if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA }) {
+                        self.vault = correctVault
+                        self.localPartyID = correctVault.localPartyID.isEmpty ? Utils.getLocalDeviceIdentity() : correctVault.localPartyID
+                        logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
+                    }
                 }
             }
             
