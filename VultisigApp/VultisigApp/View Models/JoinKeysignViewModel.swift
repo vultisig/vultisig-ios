@@ -238,9 +238,10 @@ class JoinKeysignViewModel: ObservableObject {
             // Auto-select correct vault BEFORE preparing messages
             if let keysignPayload = keysignMsg.payload {
                 if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
-                    if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA }) {
+                    if let correctVault = fetchVaults().first(where: { $0.pubKeyECDSA == keysignPayload.vaultPubKeyECDSA }),
+                       !correctVault.localPartyID.isEmpty {
                         self.vault = correctVault
-                        self.localPartyID = correctVault.localPartyID.isEmpty ? Utils.getLocalDeviceIdentity() : correctVault.localPartyID
+                        self.localPartyID = correctVault.localPartyID
                         logger.info("Auto-selected correct vault: \(correctVault.name) with pubKey: \(correctVault.pubKeyECDSA)")
                     }
                 }
