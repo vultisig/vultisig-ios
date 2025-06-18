@@ -222,7 +222,9 @@ class Endpoint {
     static func blockchairBroadcast(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
     }
-    
+    static func bitcoinBroadcast() -> URL {
+        "\(vultisigApiProxy)/bitcoin/".asUrl
+    }
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
         "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
