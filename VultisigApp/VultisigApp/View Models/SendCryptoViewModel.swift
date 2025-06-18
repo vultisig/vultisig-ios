@@ -46,11 +46,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async {
         guard !isLoading else {
-            print("Already loading gas info, skipping...")
             return
         }
         isLoading = true
-        
+        defer {
+            isLoading = false
+        }
         do {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
@@ -59,7 +60,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-        isLoading = false
+        
     }
     
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
