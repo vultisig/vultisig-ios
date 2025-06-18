@@ -75,6 +75,8 @@ var fields: some View {
     
     var summary: some View {
         VStack(spacing: 16) {
+            getDetailsCell(for: "vault", with: vault.name)
+            Separator()
             getAddressCell(for: "from", with: tx.fromAddress)
             Separator()
             getAddressCell(for: "to", with: tx.toAddress)
