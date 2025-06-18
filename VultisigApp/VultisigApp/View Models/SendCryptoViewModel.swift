@@ -45,7 +45,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func loadGasInfoForSending(tx: SendTransaction) async {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            print("Already loading gas info, skipping...")
+            return
+        }
         isLoading = true
         
         do {
@@ -85,7 +88,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
-                var gas = BigInt.zero
+                let gas = BigInt.zero
                 tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
