@@ -89,6 +89,12 @@ struct SwapVerifyView: View {
                     with: swapViewModel.totalFeeString(tx: tx)
                 )
             }
+            
+            separator
+            getValueCell(
+                for: "vault",
+                with: vault.name
+            )
         }
         .padding(16)
         .background(Color.blue600)
