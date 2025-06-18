@@ -45,9 +45,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func loadGasInfoForSending(tx: SendTransaction) async {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            return
+        }
         isLoading = true
-        
+        defer {
+            isLoading = false
+        }
         do {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
@@ -56,7 +60,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-        isLoading = false
+        
     }
     
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
@@ -85,7 +89,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
-                var gas = BigInt.zero
+                let gas = BigInt.zero
                 tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
