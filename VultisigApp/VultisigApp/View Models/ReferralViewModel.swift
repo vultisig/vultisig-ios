@@ -84,7 +84,7 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries() {
+    func verifyReferralEntries(tx: SendTransaction) {
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
@@ -92,6 +92,11 @@ class ReferralViewModel: ObservableObject {
         
         guard expireInCount>0 else {
             showAlert(with: "pickValidExpiration")
+            return
+        }
+        
+        guard enoughGas(tx: tx) else {
+            showAlert(with: "insufficientBalance")
             return
         }
         
@@ -253,5 +258,18 @@ class ReferralViewModel: ObservableObject {
     
     private func containsWhitespace(_ text: String) -> Bool {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
+    }
+    
+    private func enoughGas(tx: SendTransaction) -> Bool {
+        var decimals = tx.coin.decimals
+        let gas = Decimal(tx.gas) / pow(10,decimals)
+        let amount = totalFee + gas
+        let vaultAmount = nativeCoin?.balanceDecimal ?? 0
+        
+        if vaultAmount >= amount {
+            return true
+        } else {
+            return false
+        }
     }
 }

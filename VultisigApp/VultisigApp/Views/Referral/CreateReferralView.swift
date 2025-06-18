@@ -175,7 +175,7 @@ struct CreateReferralView: View {
     
     var button: some View {
         Button {
-            referralViewModel.verifyReferralEntries()
+            referralViewModel.verifyReferralEntries(tx: sendTx)
         } label: {
             label
         }
