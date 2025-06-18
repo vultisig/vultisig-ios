@@ -8,30 +8,32 @@
 import SwiftUI
 
 struct ReferralView: View {
+    @StateObject var referredViewModel = ReferredViewModel()
+    
     @StateObject var referralViewModel = ReferralViewModel()
     
     var body: some View {
         ZStack {
-            if referralViewModel.showReferralCodeOnboarding {
+            if referredViewModel.showReferralCodeOnboarding {
                 referralCodeButton
             } else {
                 referralCodeNavigationLink
             }
         }
-        .navigationDestination(isPresented: $referralViewModel.navigationToReferralOverview, destination: {
-            ReferralOnboardingView(referralViewModel: referralViewModel)
+        .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview, destination: {
+            ReferredOnboardingView(referredViewModel: referredViewModel)
         })
-        .navigationDestination(isPresented: $referralViewModel.navigationToCreateReferralView, destination: {
-            ReferralLaunchView(referralViewModel: referralViewModel)
+        .navigationDestination(isPresented: $referredViewModel.navigationToCreateReferralView, destination: {
+            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         })
-        .sheet(isPresented: $referralViewModel.showReferralBannerSheet) {
+        .sheet(isPresented: $referredViewModel.showReferralBannerSheet) {
             referralOverviewSheet
         }
     }
     
     var referralCodeNavigationLink: some View {
         NavigationLink {
-            ReferralLaunchView(referralViewModel: referralViewModel)
+            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         } label: {
             referralCodeLabel
         }
@@ -39,7 +41,7 @@ struct ReferralView: View {
     
     var referralCodeButton: some View {
         Button {
-            referralViewModel.showReferralBannerSheet = true
+            referredViewModel.showReferralBannerSheet = true
         } label: {
             referralCodeLabel
         }
@@ -50,7 +52,7 @@ struct ReferralView: View {
     }
     
     var referralOverviewSheet: some View {
-        ReferralOnboardingBanner(referralViewModel: referralViewModel)
+        ReferralOnboardingBanner(referredViewModel: referredViewModel)
             .presentationDetents([.height(400)])
     }
 }

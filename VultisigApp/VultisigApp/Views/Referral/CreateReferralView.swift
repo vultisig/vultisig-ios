@@ -8,19 +8,25 @@
 import SwiftUI
 
 struct CreateReferralView: View {
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @ObservedObject var referralViewModel: ReferralViewModel
     
-    @StateObject var referralViewModel = ReferralViewModel()
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var showTooltip = false
     
     var body: some View {
         container
+            .onAppear {
+                calculateFees()
+            }
             .alert(isPresented: $referralViewModel.showReferralAlert) {
                 alert
             }
             .navigationDestination(isPresented: $referralViewModel.navigateToOverviewView) {
-                ReferralSendOverviewView()
+                ReferralSendOverviewView(referralViewModel: referralViewModel)
+            }
+            .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
+                calculateFees()
             }
     }
     
@@ -132,8 +138,19 @@ struct CreateReferralView: View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getCell(title: NSLocalizedString("registrationFee", comment: ""), description1: "10 RUNE", description2: "\(referralViewModel.registrationFee)")
-            getCell(title: NSLocalizedString("totalFee", comment: ""), description1: "\(referralViewModel.getTotalFee()) RUNE", description2: "\(referralViewModel.totalFee)")
+            getCell(
+                title: NSLocalizedString("registrationFee", comment: ""),
+                description1: "\(referralViewModel.getRegistrationFee()) RUNE",
+                description2: "\(referralViewModel.registrationFeeFiat)",
+                isPlaceholder: referralViewModel.isFeesLoading
+            )
+            
+            getCell(
+                title: NSLocalizedString("totalFee", comment: ""),
+                description1: "\(referralViewModel.getTotalFee()) RUNE",
+                description2: "\(referralViewModel.totalFeeFiat)",
+                isPlaceholder: referralViewModel.isTotalFeesLoading
+            )
         }
     }
     
@@ -241,7 +258,7 @@ struct CreateReferralView: View {
         )
     }
     
-    private func getCell(title: String, description1: String, description2: String) -> some View {
+    private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
@@ -255,12 +272,19 @@ struct CreateReferralView: View {
                 Text(description2)
                     .foregroundColor(.extraLightGray)
             }
+            .redacted(reason: isPlaceholder ? .placeholder : [])
         }
         .font(.body14BrockmannMedium)
+    }
+    
+    private func calculateFees() {
+        Task {
+            await referralViewModel.calculateFees()
+        }
     }
 }
 
 #Preview {
-    CreateReferralView()
+    CreateReferralView(referralViewModel: ReferralViewModel())
         .environmentObject(HomeViewModel())
 }

@@ -2,27 +2,14 @@
 //  ReferralViewModel.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-06-03.
+//  Created by Amol Kumar on 2025-06-13.
 //
 
 import SwiftUI
 
 @MainActor
 class ReferralViewModel: ObservableObject {
-    @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
-    @Published var showReferralBannerSheet: Bool = false
-    @Published var navigationToReferralOverview: Bool = false
-    @Published var navigationToCreateReferralView: Bool = false
-    
     @Published var isLoading: Bool = false
-    
-    // Referred Code
-    @AppStorage("savedReferredCode") var savedReferredCode: String = ""
-    @Published var referredCode: String = ""
-    @Published var showReferredLaunchViewError: Bool = false
-    @Published var showReferredLaunchViewSuccess: Bool = false
-    @Published var referredLaunchViewErrorMessage: String = ""
-    @Published var referredLaunchViewSuccessMessage: String = ""
     
     // Generated Referral Code
     @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
@@ -37,39 +24,35 @@ class ReferralViewModel: ObservableObject {
     @Published var referralAlertMessage = ""
     @Published var navigateToOverviewView = false
     
-    var registrationFee: String {
-        getFiatAmount(for: 10)
+    // Fees
+    @Published var registrationFee: Decimal = 0
+    @Published var feePerBlock: Decimal = 0
+    @Published var isFeesLoading: Bool = false
+    
+    // Send Overview
+    @Published var isAmountCorrect: Bool = false
+    @Published var isAddressCorrect: Bool = false
+    @Published var showSendOverviewAlert = false
+    @Published var navigateToSendView = false
+    
+    var registrationFeeFiat: String {
+        getFiatAmount(for: getRegistrationFee())
     }
     
-    var totalFee: String {
+    var totalFee: Decimal {
+        getTotalFee()
+    }
+    
+    var totalFeeFiat: String {
         getFiatAmount(for: getTotalFee())
     }
     
-    func closeBannerSheet() {
-        showReferralBannerSheet = false
-        navigationToReferralOverview = true
-    }
-    
-    func showReferralDashboard() {
-        navigationToReferralOverview = false
-        navigationToCreateReferralView = true
-        showReferralCodeOnboarding = false
-    }
-    
-    func verifyReferredCode() {
-        resetReferredData()
-        
-        isLoading = true
-        
-        nameErrorCheck(code: referredCode, forReferralCode: false)
-        
-        guard !showReferredLaunchViewError else {
-            return
+    var isTotalFeesLoading: Bool {
+        guard expireInCount>0 else {
+            return true
         }
         
-        Task {
-            await checkNameAvailability(code: referredCode, forReferralCode: false)
-        }
+        return isFeesLoading
     }
     
     func verifyReferralCode() {
@@ -84,13 +67,6 @@ class ReferralViewModel: ObservableObject {
         Task {
             await checkNameAvailability(code: referralCode, forReferralCode: true)
         }
-    }
-    
-    func resetReferredData() {
-        showReferredLaunchViewError = false
-        showReferredLaunchViewSuccess = false
-        referredLaunchViewErrorMessage = ""
-        referredLaunchViewSuccessMessage = ""
     }
     
     func handleCounterIncrease() {
@@ -119,17 +95,36 @@ class ReferralViewModel: ObservableObject {
         navigateToOverviewView = true
     }
     
-    func getTotalFee() -> Int {
-        10 + expireInCount
+    func getRegistrationFee() -> Decimal {
+        registrationFee / 100_000_000
     }
     
-    func getFiatAmount(for amount: Int) -> String {
+    func getTotalFee() -> Decimal {
+        let amount = registrationFee + (feePerBlock * Decimal(expireInCount) * 5256000)
+        return amount / 100_000_000
+    }
+    
+    func getFiatAmount(for amount: Decimal) -> String {
         guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
             return ""
         }
         
-        let fiatAmount = RateProvider.shared.fiatBalance(value: Decimal(amount), coin: nativeCoin)
+        let fiatAmount = RateProvider.shared.fiatBalance(value: amount, coin: nativeCoin)
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
+    }
+    
+    func verifySendOverviewDetails() {
+        guard isAmountCorrect else {
+            showSendOverviewAlert = true
+            return
+        }
+        
+        guard isAddressCorrect else {
+            showSendOverviewAlert = true
+            return
+        }
+        
+        navigateToSendView = true
     }
     
     private func showAlert(with message: String) {
@@ -137,41 +132,14 @@ class ReferralViewModel: ObservableObject {
         showReferralAlert = true
     }
     
-    private func checkNameAvailability(code: String, forReferralCode: Bool) async {
-        let urlString = Endpoint.checkNameAvailability(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-            return
+    private func showNameError(with message: String) {
+        if message == "alreadyTaken" {
+            referralAvailabilityErrorMessage = message
+        } else {
+            referralAvailabilityErrorMessage = "invalid"
         }
         
-        do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    if forReferralCode {
-                        showNameError(forReferralCode: forReferralCode, with: "alreadyTaken")
-                    } else {
-                        saveReferredCode()
-                    }
-                } else if httpResponse.statusCode == 404 {
-                    if forReferralCode {
-                        saveReferralCode()
-                    } else {
-                        showNameError(forReferralCode: forReferralCode, with: "referralCodeNotFound")
-                    }
-                } else {
-                    showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-                }
-            }
-        } catch {
-            showNameError(forReferralCode: forReferralCode, with: "systemErrorMessage")
-        }
-    }
-    
-    private func saveReferredCode() {
-        savedReferredCode = referredCode
-        referredLaunchViewSuccessMessage = "referralCodeAdded"
-        showReferredLaunchViewSuccess = true
+        showReferralAvailabilityError = true
         isLoading = false
     }
     
@@ -191,44 +159,86 @@ class ReferralViewModel: ObservableObject {
     
     private func nameErrorCheck(code: String, forReferralCode: Bool) {
         guard !code.isEmpty else {
-            showNameError(forReferralCode: forReferralCode, with: "emptyField")
+            showNameError(with: "emptyField")
             return
         }
         
         guard !containsWhitespace(code) else {
-            showNameError(forReferralCode: forReferralCode, with: "whitespaceNotAllowed")
+            showNameError(with: "whitespaceNotAllowed")
             return
         }
         
         if !forReferralCode {
             guard code != savedGeneratedReferralCode else {
-                showNameError(forReferralCode: forReferralCode, with: "referralCodeMatch")
+                showNameError(with: "referralCodeMatch")
                 return
             }
         }
         
         guard code.count == 4 else {
-            showNameError(forReferralCode: forReferralCode, with: "referralLaunchCodeLengthError")
+            showNameError(with: "referralLaunchCodeLengthError")
             return
         }
     }
     
-    private func showNameError(forReferralCode: Bool, with message: String) {
-        if forReferralCode {
-            if message == "alreadyTaken" {
-                referralAvailabilityErrorMessage = message
-            } else {
-                referralAvailabilityErrorMessage = "invalid"
+    private func checkNameAvailability(code: String, forReferralCode: Bool) async {
+        let urlString = Endpoint.checkNameAvailability(for: code)
+        guard let url = URL(string: urlString) else {
+            showNameError(with: "systemErrorMessage")
+            return
+        }
+        
+        do {
+            let (_, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 200 {
+                    showNameError(with: "alreadyTaken")
+                } else if httpResponse.statusCode == 404 {
+                    if forReferralCode {
+                        saveReferralCode()
+                    } else {
+                        showNameError(with: "referralCodeNotFound")
+                    }
+                } else {
+                    showNameError(with: "systemErrorMessage")
+                }
             }
-            showReferralAvailabilityError = true
-        } else {
-            referredLaunchViewErrorMessage = message
-            showReferredLaunchViewError = true
+        } catch {
+            showNameError(with: "systemErrorMessage")
         }
         isLoading = false
+    }
+    
+    func calculateFees() async {
+        isFeesLoading = true
+        
+        guard let url = URL(string: Endpoint.ReferralFees) else {
+            print("Invalid URL")
+            isFeesLoading = false
+            return
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decoder = JSONDecoder()
+            let info = try decoder.decode(ThorchainNetworkAllFees.self, from: data)
+            registrationFee = Decimal(string: info.tns_register_fee_rune) ?? 0
+            feePerBlock = Decimal(string: info.tns_fee_per_block_rune) ?? 0
+            isFeesLoading = false
+        } catch {
+            print("Network or decoding error: \(error)")
+            isFeesLoading = false
+        }
     }
     
     private func containsWhitespace(_ text: String) -> Bool {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
+
+// Codable struct for all relevant fields from the endpoint
+struct ThorchainNetworkAllFees: Codable {
+    let tns_register_fee_rune: String
+    let tns_fee_per_block_rune: String
+}
+
 }

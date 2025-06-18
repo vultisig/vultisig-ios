@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct EditReferredCodeView: View {
-    @StateObject var referralViewModel: ReferralViewModel
+    @ObservedObject var referredViewModel: ReferredViewModel
+    
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
         ZStack {
             Background()
             container
             
-            if referralViewModel.isLoading {
+            if referredViewModel.isLoading {
                 loader
             }
         }
@@ -53,17 +55,17 @@ struct EditReferredCodeView: View {
     
     var textField: some View {
         ReferralTextField(
-            text: $referralViewModel.referredCode,
+            text: $referredViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referralViewModel.showReferredLaunchViewError,
-            errorMessage: referralViewModel.referredLaunchViewErrorMessage
+            showError: referredViewModel.showReferredLaunchViewError,
+            errorMessage: referredViewModel.referredLaunchViewErrorMessage
         )
     }
     
     var button: some View {
         Button {
-            referralViewModel.verifyReferredCode()
+            referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
         } label: {
             FilledButton(title: "saveReferredCode", textColor: .neutral0, background: .persianBlue400)
         }
@@ -77,14 +79,14 @@ struct EditReferredCodeView: View {
     
     private func setData() {
         resetData()
-        referralViewModel.referredCode = referralViewModel.savedReferredCode
+        referredViewModel.referredCode = referredViewModel.savedReferredCode
     }
     
     private func resetData() {
-        referralViewModel.resetReferredData()
+        referredViewModel.resetReferredData()
     }
 }
 
 #Preview {
-    EditReferredCodeView(referralViewModel: ReferralViewModel())
+    EditReferredCodeView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
 }
