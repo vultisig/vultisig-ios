@@ -26,7 +26,7 @@ class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
     
     var vault: Vault
-        var serviceDelegate: ServiceDelegate?
+    var serviceDelegate: ServiceDelegate?
     
     @Published var isShowingScanner = false
     @Published var sessionID: String = ""
