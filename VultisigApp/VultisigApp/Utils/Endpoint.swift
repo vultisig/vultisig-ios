@@ -190,6 +190,10 @@ class Endpoint {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
     
+    static func fetchFourByteSignature(hexSignature: String) -> URL {
+        return "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at".asUrl
+    }
+    
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }

@@ -1,8 +1,6 @@
 //
-//  EtherfaceService.swift
+//  MemoDecodingService.swift
 //  VultisigApp
-//
-//  Created by Artur Guseinov on 11.11.2024.
 //
 
 import Foundation
@@ -47,10 +45,7 @@ final class MemoDecodingService {
         
         do {
             // Query 4byte.directory for function signature
-            let urlString = "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at"
-            guard let url = URL(string: urlString) else {
-                return nil
-            }
+            let url = Endpoint.fetchFourByteSignature(hexSignature: hexSignature)
             
             let (data, _) = try await URLSession.shared.data(from: url)
             
