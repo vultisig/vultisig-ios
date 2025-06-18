@@ -78,7 +78,7 @@ struct JoinKeysignView: View {
     
     var keysignView: some View {
         KeysignView(
-            vault: vault,
+            vault: viewModel.vault,
             keysignCommittee: viewModel.keysignCommittee,
             mediatorURL: viewModel.serverAddress ?? "",
             sessionID: viewModel.sessionID,
