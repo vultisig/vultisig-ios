@@ -400,12 +400,15 @@
 		A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D962C671F11002029E1 /* SettingsHeader.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
 		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
+		A685245F2DFCD47E00FEE2E4 /* ReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */; };
 		A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */; };
 		A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */; };
 		A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */; };
 		A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696592C1F72FF004EDE0B /* HiddenTextField.swift */; };
 		A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */; };
 		A68C00A52DF7B78C00FDE2AD /* PickReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */; };
+		A68C00A72DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */; };
+		A68C00A92DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */; };
 		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
 		A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */; };
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
@@ -630,15 +633,15 @@
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* EditReferredCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */; };
 		A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */; };
-		A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */; };
-		A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */; };
+		A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */; };
+		A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */; };
 		A6E0C91B2DE6BC8500A01543 /* ReferralOnboardingBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */; };
 		A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */; };
 		A6E0C91F2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */; };
 		A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */; };
 		A6E0C9232DE968AB00A01543 /* ReferralTransactionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */; };
 		A6E0C9252DEA3C4900A01543 /* CreateReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9242DEA3C4900A01543 /* CreateReferralView.swift */; };
-		A6E0C92A2DEF717500A01543 /* ReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */; };
+		A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */; };
 		A6E0C92C2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C92B2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift */; };
 		A6E0C92E2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */; };
 		A6E0C9342DF00CC600A01543 /* ReferralLaunchView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */; };
@@ -1334,12 +1337,15 @@
 		A6833D962C671F11002029E1 /* SettingsHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHeader.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
 		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
+		A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralViewModel.swift; sourceTree = "<group>"; };
 		A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPasswordSetupView.swift; sourceTree = "<group>"; };
 		A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedBackupViewModel.swift; sourceTree = "<group>"; };
 		A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedDataFile.swift; sourceTree = "<group>"; };
 		A68696592C1F72FF004EDE0B /* HiddenTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenTextField.swift; sourceTree = "<group>"; };
 		A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupCard.swift; sourceTree = "<group>"; };
 		A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickReferralCode.swift; sourceTree = "<group>"; };
+		A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralSendOverviewView+iOS.swift"; sourceTree = "<group>"; };
+		A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralSendOverviewView+macOS.swift"; sourceTree = "<group>"; };
 		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
@@ -1561,15 +1567,15 @@
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferredCodeView.swift; sourceTree = "<group>"; };
 		A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextField.swift; sourceTree = "<group>"; };
-		A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingView.swift; sourceTree = "<group>"; };
-		A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
+		A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingView.swift; sourceTree = "<group>"; };
+		A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
 		A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingBanner.swift; sourceTree = "<group>"; };
 		A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralSendOverviewView.swift; sourceTree = "<group>"; };
 		A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionOverviewView.swift; sourceTree = "<group>"; };
 		A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralLaunchView.swift; sourceTree = "<group>"; };
 		A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionDetailsView.swift; sourceTree = "<group>"; };
 		A6E0C9242DEA3C4900A01543 /* CreateReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateReferralView.swift; sourceTree = "<group>"; };
-		A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralViewModel.swift; sourceTree = "<group>"; };
+		A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredViewModel.swift; sourceTree = "<group>"; };
 		A6E0C92B2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralOnboardingView+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralOnboardingView+macOS.swift"; sourceTree = "<group>"; };
 		A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralLaunchView+iOS.swift"; sourceTree = "<group>"; };
@@ -1954,7 +1960,7 @@
 				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 				A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */,
 				A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */,
-				A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */,
+				A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */,
 				A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */,
 				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
 			);
@@ -2842,7 +2848,8 @@
 				A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */,
 				A672643E2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift */,
 				A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */,
-				A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */,
+				A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */,
+				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -3029,6 +3036,7 @@
 				A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */,
 				A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */,
 				A6E0C94C2DF49E1900A01543 /* CreateReferralView+iOS.swift */,
+				A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* FunctionCall */,
@@ -3102,6 +3110,7 @@
 				A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */,
 				A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */,
 				A6E0C94E2DF49E2700A01543 /* CreateReferralView+macOS.swift */,
+				A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3176,7 +3185,7 @@
 			isa = PBXGroup;
 			children = (
 				A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */,
-				A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */,
+				A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */,
 				A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */,
 				A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */,
 				A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */,
@@ -4021,6 +4030,7 @@
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
+				A68C00A92DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
@@ -4260,7 +4270,7 @@
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
 				A6C670982C9D09EF00F59B6A /* AddressQRCodeView+iOS.swift in Sources */,
 				B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */,
-				A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */,
+				A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
@@ -4429,6 +4439,7 @@
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
 				A6C670B12C9D12C700F59B6A /* VaultPairDetailView+iOS.swift in Sources */,
 				A6C670C32C9D16C600F59B6A /* CustomTokenView+macOS.swift in Sources */,
+				A68C00A72DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift in Sources */,
 				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
 				A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
@@ -4603,7 +4614,7 @@
 				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
 				A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */,
 				A6C670882C9CFA9B00F59B6A /* KeysignDiscoveryView+iOS.swift in Sources */,
-				A6E0C92A2DEF717500A01543 /* ReferralViewModel.swift in Sources */,
+				A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
@@ -4647,7 +4658,7 @@
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
-				A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */,
+				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
@@ -4776,6 +4787,7 @@
 				A622C85E2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
 				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
+				A685245F2DFCD47E00FEE2E4 /* ReferralViewModel.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
 				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,

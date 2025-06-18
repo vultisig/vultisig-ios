@@ -1,5 +1,5 @@
 //
-//  ReferralOnboardingView.swift
+//  ReferredOnboardingView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-27.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct ReferralOnboardingView: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+struct ReferredOnboardingView: View {
+    @ObservedObject var referredViewModel: ReferredViewModel
     
     var body: some View {
         container
@@ -24,7 +24,7 @@ struct ReferralOnboardingView: View {
     
     var button: some View {
         Button {
-            referralViewModel.showReferralDashboard()
+            referredViewModel.showReferralDashboard()
         } label: {
             label
         }
@@ -40,7 +40,7 @@ struct ReferralOnboardingView: View {
     var main: some View {
         VStack {
             ScrollView {
-                ReferralOnboardingGuideAnimation()
+                ReferredOnboardingGuideAnimation()
                     .padding(.horizontal, 24)
             }
             
@@ -51,5 +51,5 @@ struct ReferralOnboardingView: View {
 }
 
 #Preview {
-    ReferralOnboardingView(referralViewModel: ReferralViewModel())
+    ReferredOnboardingView(referredViewModel: ReferredViewModel())
 }

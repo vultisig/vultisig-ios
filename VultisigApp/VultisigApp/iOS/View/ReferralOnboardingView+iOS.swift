@@ -1,5 +1,5 @@
 //
-//  ReferralOnboardingView+iOS.swift
+//  ReferredOnboardingView+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-06-04.
@@ -8,7 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
-extension ReferralOnboardingView {
+extension ReferredOnboardingView {
     var container: some View {
         content
             .navigationTitle(NSLocalizedString("referral", comment: ""))
