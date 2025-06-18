@@ -56,6 +56,9 @@ public class UTXOTransactionsService: ObservableObject {
             errorMessage = Utils.handleJsonDecodingError(error)
         }
     }
+    
+    
+
     // Currently there is a bug in Blockchair API that broadcasting Bitcoin transactions sometimes doesn't sync with bitcoin network
     public static func broadcastBitcoinTransaction(signedTransaction: String,completion: @escaping (Result<String, Error>) -> Void){
         let url = Endpoint.bitcoinBroadcast()
@@ -64,12 +67,17 @@ public class UTXOTransactionsService: ObservableObject {
         request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         request.httpBody = signedTransaction.data(using: .utf8)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            func finish(_ result: Result<String, Error>) {
+                DispatchQueue.main.async {
+                    completion(result)
+                }
+            }
             if let data = data, let txid = String(data: data, encoding: .utf8) {
                 print("Broadcasted TXID: \(txid)")
-                completion(.success(txid))
+                finish(.success(txid))
             } else if let error = error {
                 print("Error: \(error)")
-                completion(.failure(error))
+                finish(.failure(error))
             }
         }
         task.resume()
@@ -89,13 +97,18 @@ public class UTXOTransactionsService: ObservableObject {
         request.httpBody = httpBody
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            func finish(_ result: Result<String, Error>) {
+                DispatchQueue.main.async {
+                    completion(result)
+                }
+            }
             if let error = error {
-                completion(.failure(error))
+                finish(.failure(error))
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(NSError(domain: "BlockchairServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid response received"])))
+                finish(.failure(NSError(domain: "BlockchairServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid response received"])))
                 return
             }
             
@@ -105,14 +118,12 @@ public class UTXOTransactionsService: ObservableObject {
                        let transactionData = json["data"] as? [String: Any],
                        let transactionHash = transactionData["transaction_hash"] as? String
                     {
-                        DispatchQueue.main.async {
-                            completion(.success(transactionHash))
-                        }
+                        finish(.success(transactionHash))
                     } else {
-                        completion(.failure(NSError(domain: "BlockchairServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])))
+                        finish(.failure(NSError(domain: "BlockchairServiceError", code: 4, userInfo: [NSLocalizedDescriptionKey: "Unexpected response format"])))
                     }
                 } catch {
-                    completion(.failure(error))
+                    finish(.failure(error))
                 }
             } else if httpResponse.statusCode == 400, let jsonData = data {
                 do {
@@ -120,15 +131,13 @@ public class UTXOTransactionsService: ObservableObject {
                        let context = json["context"] as? [String: Any],
                        let errorDescription = context["error"] as? String
                     {
-                        DispatchQueue.main.async {
-                            completion(.failure(NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to broadcast transaction. Error: \(errorDescription)"])))
-                        }
+                        finish(.failure(NSError(domain: "BlockchairServiceError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to broadcast transaction. Error: \(errorDescription)"])))
                     }
                 } catch {
-                    completion(.failure(error))
+                    finish(.failure(error))
                 }
             } else {
-                completion(.failure(NSError(domain: "BlockchairServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Received HTTP \(httpResponse.statusCode)"])))
+                finish(.failure(NSError(domain: "BlockchairServiceError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Received HTTP \(httpResponse.statusCode)"])))
             }
         }
         
