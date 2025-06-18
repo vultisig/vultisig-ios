@@ -12,6 +12,9 @@ struct KyberSwapService {
     
     static let shared = KyberSwapService()
     
+    static let sourceIdentifier = "vultisig-ios"
+    static let referrerAddress = "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
+    
     private var nullAddress: String {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
@@ -29,14 +32,16 @@ struct KyberSwapService {
             saveGas: false,
             gasInclude: true,
             slippageTolerance: 100,
-            isAffiliate: isAffiliate
+            isAffiliate: isAffiliate,
+            sourceIdentifier: isAffiliate ? KyberSwapService.sourceIdentifier : nil,
+            referrerAddress: isAffiliate ? KyberSwapService.referrerAddress : nil
         )
         
         var routeRequest = URLRequest(url: routeUrl)
         routeRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": "vultisig-ios"
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
         
         let (routeData, _) = try await URLSession.shared.data(for: routeRequest)
@@ -53,14 +58,16 @@ struct KyberSwapService {
         return try await buildTransactionWithFallback(
             chain: chain,
             routeResponse: routeResponse,
-            from: from
+            from: from,
+            isAffiliate: isAffiliate
         )
     }
     
     private func buildTransactionWithFallback(
         chain: String,
         routeResponse: KyberSwapRouteResponse,
-        from: String
+        from: String,
+        isAffiliate: Bool
     ) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
         
         // First attempt with gas estimation enabled
@@ -69,7 +76,8 @@ struct KyberSwapService {
                 chain: chain,
                 routeResponse: routeResponse,
                 from: from,
-                enableGasEstimation: true
+                enableGasEstimation: true,
+                isAffiliate: isAffiliate
             )
         } catch KyberSwapError.transactionWillRevert(let message) where message.contains("TransferHelper") {
             // TransferHelper error likely due to insufficient allowance during gas estimation
@@ -78,7 +86,8 @@ struct KyberSwapService {
                 chain: chain,
                 routeResponse: routeResponse,
                 from: from,
-                enableGasEstimation: false
+                enableGasEstimation: false,
+                isAffiliate: isAffiliate
             )
         }
     }
@@ -87,7 +96,8 @@ struct KyberSwapService {
         chain: String,
         routeResponse: KyberSwapRouteResponse,
         from: String,
-        enableGasEstimation: Bool
+        enableGasEstimation: Bool,
+        isAffiliate: Bool
     ) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
         
         let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
@@ -99,7 +109,9 @@ struct KyberSwapService {
             slippageTolerance: 100,
             deadline: Int(Date().timeIntervalSince1970) + 1200,
             enableGasEstimation: enableGasEstimation,
-            source: "vultisig-ios"
+            source: KyberSwapService.sourceIdentifier,
+            referral: isAffiliate ? KyberSwapService.referrerAddress : nil,
+            ignoreCappedSlippage: false
         )
         
         var buildRequest = URLRequest(url: buildUrl)
@@ -107,7 +119,7 @@ struct KyberSwapService {
         buildRequest.allHTTPHeaderFields = [
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": "vultisig-ios"
+            "x-client-id": KyberSwapService.sourceIdentifier
         ]
         buildRequest.httpBody = try JSONEncoder().encode(buildPayload)
         
@@ -357,9 +369,10 @@ private extension KyberSwapService {
         let deadline: Int
         let enableGasEstimation: Bool
         let source: String?
+        let referral: String?
         let ignoreCappedSlippage: Bool?
         
-        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = "vultisig-ios", ignoreCappedSlippage: Bool? = false) {
+        init(routeSummary: KyberSwapRouteResponse.RouteSummary, sender: String, recipient: String, slippageTolerance: Int = 100, deadline: Int? = nil, enableGasEstimation: Bool = true, source: String? = KyberSwapService.sourceIdentifier, referral: String? = nil, ignoreCappedSlippage: Bool? = false) {
             self.routeSummary = routeSummary
             self.sender = sender
             self.recipient = recipient
@@ -367,6 +380,7 @@ private extension KyberSwapService {
             self.deadline = deadline ?? Int(Date().timeIntervalSince1970) + 1200
             self.enableGasEstimation = enableGasEstimation
             self.source = source
+            self.referral = referral
             self.ignoreCappedSlippage = ignoreCappedSlippage
         }
     }

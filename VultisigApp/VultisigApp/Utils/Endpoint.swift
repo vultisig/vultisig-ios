@@ -104,9 +104,14 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
     
-    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool) -> URL {
-        let url = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
-        return url.asUrl
+    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool, sourceIdentifier: String? = nil, referrerAddress: String? = nil) -> URL {
+        let baseUrl = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
+        
+        let affiliateParams = isAffiliate && sourceIdentifier != nil && referrerAddress != nil
+        ? "&source=\(sourceIdentifier!)&referral=\(referrerAddress!)"
+        : .empty
+        
+        return (baseUrl + affiliateParams).asUrl
     }
     
     static func buildKyberSwapTransaction(chain: String) -> URL {
