@@ -83,5 +83,6 @@ final class RateProvider {
     @MainActor func save(rates newRates: [Rate]) async throws {
         rates = rates.union(newRates)
         await Storage.shared.insert(newRates.map { $0.mapToObject() })
+        try Storage.shared.modelContext.save()
     }
 }
