@@ -130,7 +130,6 @@ enum CardanoHelper {
     ///   - estimatedFee: Estimated transaction fee in lovelaces
     /// - Returns: Tuple indicating if balance is low and recommendation message
     static func shouldRecommendSendMax(totalBalance: BigInt, estimatedFee: BigInt) -> (shouldRecommend: Bool, message: String?) {
-        let minUTXOValue = defaultMinUTXOValue
         
         // Balance is considered "low" if total balance is less than 3.5 ADA
         // This helps avoid change issues with the 1.4 ADA minimum

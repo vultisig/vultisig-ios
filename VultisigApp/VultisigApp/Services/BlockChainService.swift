@@ -139,7 +139,7 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    feeMode: tx.feeMode)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
+        if let localCacheItem =  self.localCache.get(cacheKey) {            
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
                 return localCacheItem.blockSpecific
@@ -221,12 +221,8 @@ private extension BlockChainService {
         case .zcash:
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            let byteFeeValue: BigInt
-            if let byteFee, !byteFee.isZero {
-                byteFeeValue = byteFee
-            } else {
-                byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
-            }
+            let  byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
+            print("byteFeeValue: \(byteFeeValue)")
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let estimatedFee = cardano.estimateTransactionFee()
