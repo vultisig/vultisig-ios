@@ -16,13 +16,12 @@ struct TokenSelectionView: View {
     
     var body: some View {
         content
-            .task {
-                await tokenViewModel.loadData(groupedChain: group)
-            }
             .onAppear {
+                tokenViewModel.loadData(groupedChain: group)
                 isSearchFieldFocused = true
             }
             .onDisappear {
+                tokenViewModel.cancelLoading()
                 saveAssets()
             }
             .onReceive(tokenViewModel.$searchText) {newVault in
@@ -76,7 +75,7 @@ struct TokenSelectionView: View {
             
             if tokenViewModel.showRetry {
                 Button {
-                    Task { await tokenViewModel.loadData(groupedChain: group) }
+                    tokenViewModel.loadData(groupedChain: group)
                 } label: {
                     FilledButton(title: "Retry")
                 }
@@ -91,7 +90,11 @@ struct TokenSelectionView: View {
             if tokenViewModel.searchText.isEmpty {
                 if !tokenViewModel.selectedTokens.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
-                        .background(Color.backgroundBlue)) {
+                        .font(.body16MenloBold)
+                        .foregroundColor(.neutral0)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)) {
                             ForEach(tokenViewModel.selectedTokens, id: \.self) { asset in
                                 TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                     .listRowBackground(Color.clear)
@@ -103,7 +106,10 @@ struct TokenSelectionView: View {
                 Section(
                     header:
                         Text(NSLocalizedString("tokens", comment:"Tokens"))
+                        .font(.body16MenloBold)
                         .foregroundColor(.neutral0)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                 ) {
                     ForEach(tokenViewModel.preExistTokens, id: \.self) { asset in
                         TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
@@ -112,17 +118,33 @@ struct TokenSelectionView: View {
                     }
                 }
             } else {
-                Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)) {
                     if !tokenViewModel.searchedTokens.isEmpty {
                         ForEach(tokenViewModel.searchedTokens, id: \.self) { asset in
                             TokenSelectionCell(chain: group.chain, address: address, asset: asset, isSelected: isTokenSelected(asset: asset))
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
+                    } else if tokenViewModel.isLoading {
+                        // Show loading indicator while searching
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Searching...")
+                                .font(.body14Menlo)
+                                .foregroundColor(.neutral0)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
                 }
             }
         }
+        .padding(.horizontal, 16)
     }
 
     var address: String {
@@ -137,7 +159,7 @@ struct TokenSelectionView: View {
         }
     }
 
-    private func saveAssets() {
+    func saveAssets() {
         Task {
             await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
         }

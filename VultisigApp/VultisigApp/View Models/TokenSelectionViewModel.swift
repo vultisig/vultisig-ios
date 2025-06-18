@@ -2,8 +2,6 @@
 //  TokenSelectionViewModel.swift
 //  VultisigApp
 //
-//  Created by Artur Guseinov on 30.05.2024.
-//
 
 import SwiftUI
 
@@ -16,9 +14,12 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var preExistTokens: [CoinMeta] = []
     @Published var searchedTokens: [CoinMeta] = []
     @Published var isLoading: Bool = false
+    @Published var isLoadingEVMTokens: Bool = false
+    @Published var isLoadingSolanaTokens: Bool = false
     @Published var error: Error?
     
     private let oneInchservice = OneInchService.shared
+    private var loadingTask: Task<Void, Never>?
     
     func selectedTokens(groupedChain: GroupedChain) -> [CoinMeta] {
         let tickers = groupedChain.coins
@@ -78,18 +79,52 @@ class TokenSelectionViewModel: ObservableObject {
         }
     }
     
-    func loadData(groupedChain: GroupedChain) async {
-        error = nil
-        // always keep those tokens in vultisig tokenstore
-        await loadOtherTokens(chain: groupedChain.chain)
+    func loadData(groupedChain: GroupedChain) {
+        // Cancel any existing loading task
+        loadingTask?.cancel()
         
-        if groupedChain.chain.chainType == .EVM {
-            await loadEVMTokens(chain: groupedChain.chain)
-        } else if groupedChain.chain.chainType == .Solana {
-            await loadSolanaTokens(chain: groupedChain.chain)
-        }
+        // Reset error state
+        error = nil
+        
+        // Load basic tokens immediately (synchronous)
+        loadOtherTokens(chain: groupedChain.chain)
         selectedTokens = selectedTokens(groupedChain: groupedChain)
         preExistTokens = preExistingTokens(groupedChain: groupedChain)
+        
+        // Start async loading of external tokens
+        loadingTask = Task {
+            await loadExternalTokens(groupedChain: groupedChain)
+        }
+    }
+    
+    func cancelLoading() {
+        loadingTask?.cancel()
+        isLoading = false
+        isLoadingEVMTokens = false
+        isLoadingSolanaTokens = false
+    }
+    
+    private func loadExternalTokens(groupedChain: GroupedChain) async {
+        guard !Task.isCancelled else { return }
+        
+        isLoading = true
+        
+        switch groupedChain.chain.chainType {
+        case .EVM:
+            await loadTokens(for: groupedChain.chain, type: .evm)
+        case .Solana:
+            await loadTokens(for: groupedChain.chain, type: .solana)
+        default:
+            break
+        }
+        
+        // Update selected and preExist tokens after loading external tokens
+        if !Task.isCancelled {
+            selectedTokens = selectedTokens(groupedChain: groupedChain)
+            preExistTokens = preExistingTokens(groupedChain: groupedChain)
+        }
+        
+        isLoading = false
     }
 }
 
@@ -109,48 +144,64 @@ private extension TokenSelectionViewModel {
         }
     }
     
-    func loadEVMTokens(chain: Chain) async {
-        guard let chainID = chain.chainID else { return }
-        isLoading = true
+    enum TokenLoadingType {
+        case evm
+        case solana
+    }
+    
+    func loadTokens(for chain: Chain, type: TokenLoadingType) async {
+        guard !Task.isCancelled else { return }
+        
+        // Set chain-specific loading flag
+        setLoadingFlag(for: type, isLoading: true)
+        
         do {
+            let newTokens = try await fetchTokens(for: chain, type: type)
+            
+            guard !Task.isCancelled else { return }
+            
+            // Filter out duplicates
+            let uniqueTokens = newTokens.filter { item in
+                !tokens.contains { $0.ticker == item.ticker }
+            }
+            
+            tokens.append(contentsOf: uniqueTokens)
+            
+        } catch {
+            if !Task.isCancelled {
+                self.error = Errors.networkError
+            }
+        }
+        
+        // Reset chain-specific loading flag
+        setLoadingFlag(for: type, isLoading: false)
+    }
+    
+    func fetchTokens(for chain: Chain, type: TokenLoadingType) async throws -> [CoinMeta] {
+        switch type {
+        case .evm:
+            guard let chainID = chain.chainID else { return [] }
             let oneInchTokens = try await oneInchservice.fetchTokens(chain: chainID)
                 .sorted(by: { $0.name < $1.name })
                 .map { $0.toCoinMeta(chain: chain) }
-
-            let uniqueTokens = oneInchTokens.filter { item in
-                !tokens.contains { $0.ticker == item.ticker }
-            }
-
-            tokens.append(contentsOf: uniqueTokens)
+            return oneInchTokens
             
-        } catch {
-            self.error = Errors.networkError
-        }
-        
-        
-        isLoading = false
-    }
-    
-    func loadSolanaTokens(chain: Chain) async {
-        isLoading = true
-        do {
+        case .solana:
             let jupTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
-            
-            let uniqueTokens = jupTokens.filter { item in
-                !tokens.contains { $0.ticker == item.ticker }
-            }
-
-            tokens.append(contentsOf: uniqueTokens)
-            
-        } catch {
-            self.error = Errors.networkError
+            return jupTokens
         }
-        
-        
-        isLoading = false
     }
     
-    func loadOtherTokens(chain: Chain) async {
+    func setLoadingFlag(for type: TokenLoadingType, isLoading: Bool) {
+        switch type {
+        case .evm:
+            isLoadingEVMTokens = isLoading
+        case .solana:
+            isLoadingSolanaTokens = isLoading
+        }
+    }
+    
+    func loadOtherTokens(chain: Chain) {
         tokens = TokensStore.TokenSelectionAssets
             .filter { $0.chain == chain && !$0.isNativeToken }
     }
