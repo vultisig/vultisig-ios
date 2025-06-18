@@ -26,7 +26,7 @@ class ReferralViewModel: ObservableObject {
     
     // Fees
     @Published var registrationFee: Decimal = 0
-    @Published var totalFee: Decimal = 0
+    @Published var feePerBlock: Decimal = 0
     @Published var isFeesLoading: Bool = false
     
     // Send Overview
@@ -39,8 +39,20 @@ class ReferralViewModel: ObservableObject {
         getFiatAmount(for: getRegistrationFee())
     }
     
+    var totalFee: Decimal {
+        getTotalFee()
+    }
+    
     var totalFeeFiat: String {
         getFiatAmount(for: getTotalFee())
+    }
+    
+    var isTotalFeesLoading: Bool {
+        guard expireInCount>0 else {
+            return true
+        }
+        
+        return isFeesLoading
     }
     
     func verifyReferralCode() {
@@ -88,7 +100,8 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getTotalFee() -> Decimal {
-        Decimal(10 + expireInCount)
+        let amount = registrationFee + (feePerBlock * Decimal(expireInCount) * 5256000)
+        return amount / 100_000_000
     }
     
     func getFiatAmount(for amount: Decimal) -> String {
@@ -151,7 +164,7 @@ class ReferralViewModel: ObservableObject {
         }
         
         guard !containsWhitespace(code) else {
-            showNameError(forReferralCode: forReferralCode, with: "whitespaceNotAllowed")
+            showNameError(with: "whitespaceNotAllowed")
             return
         }
         
@@ -210,7 +223,7 @@ class ReferralViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let info = try decoder.decode(ThorchainNetworkAllFees.self, from: data)
             registrationFee = Decimal(string: info.tns_register_fee_rune) ?? 0
-            totalFee = Decimal(string: info.tns_fee_per_block_rune) ?? 0
+            feePerBlock = Decimal(string: info.tns_fee_per_block_rune) ?? 0
             isFeesLoading = false
         } catch {
             print("Network or decoding error: \(error)")

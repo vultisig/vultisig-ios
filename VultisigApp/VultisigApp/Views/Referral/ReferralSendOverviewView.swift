@@ -37,7 +37,6 @@ struct ReferralSendOverviewView: View {
         VStack(alignment: .leading ,spacing: 24) {
             title
             assetDetail
-            separator
             overview
         }
         .padding(24)
@@ -83,17 +82,12 @@ struct ReferralSendOverviewView: View {
     
     var overview: some View {
         VStack(spacing: 12) {
+            separator
+            
             getCell(
                 title: "from",
                 description: homeViewModel.selectedVault?.name ?? "",
                 bracketValue: getVaultAddress()
-            )
-            
-            separator
-            
-            getCell(
-                title: "to",
-                description: "0xF43jf9840fkfjn38fk0dk9Ac5"
             )
             
             separator
@@ -107,8 +101,8 @@ struct ReferralSendOverviewView: View {
             separator
             
             getCell(
-                title: "estNetworkFee",
-                description: "1 RUNE"
+                title: "registrationFee",
+                description: "\(referralViewModel.getRegistrationFee()) RUNE"
             )
         }
     }

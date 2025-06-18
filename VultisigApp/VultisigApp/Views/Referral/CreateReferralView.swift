@@ -12,8 +12,6 @@ struct CreateReferralView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @StateObject var referralViewModel = ReferralViewModel()
-    
     @State var showTooltip = false
     
     var body: some View {
@@ -21,16 +19,6 @@ struct CreateReferralView: View {
             .onAppear {
                 calculateFees()
             }
-            .sheet(isPresented: $referralViewModel.showCoinSelector, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $referralViewModel.showCoinSelector,
-                        selectedCoin: $referralViewModel.selectedPayoutCoin,
-                        selectedChain: $referralViewModel.selectedPayoutChain
-                    )
-                }
-            })
             .alert(isPresented: $referralViewModel.showReferralAlert) {
                 alert
             }
@@ -153,13 +141,15 @@ struct CreateReferralView: View {
             getCell(
                 title: NSLocalizedString("registrationFee", comment: ""),
                 description1: "\(referralViewModel.getRegistrationFee()) RUNE",
-                description2: "\(referralViewModel.registrationFeeFiat)"
+                description2: "\(referralViewModel.registrationFeeFiat)",
+                isPlaceholder: referralViewModel.isFeesLoading
             )
             
             getCell(
                 title: NSLocalizedString("totalFee", comment: ""),
                 description1: "\(referralViewModel.getTotalFee()) RUNE",
-                description2: "\(referralViewModel.totalFeeFiat)"
+                description2: "\(referralViewModel.totalFeeFiat)",
+                isPlaceholder: referralViewModel.isTotalFeesLoading
             )
         }
     }
@@ -197,7 +187,7 @@ struct CreateReferralView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString("mustAgreeTermsError", comment: "")),
+            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -268,7 +258,7 @@ struct CreateReferralView: View {
         )
     }
     
-    private func getCell(title: String, description1: String, description2: String) -> some View {
+    private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
@@ -282,7 +272,7 @@ struct CreateReferralView: View {
                 Text(description2)
                     .foregroundColor(.extraLightGray)
             }
-            .redacted(reason: referralViewModel.isFeesLoading ? .placeholder : [])
+            .redacted(reason: isPlaceholder ? .placeholder : [])
         }
         .font(.body14BrockmannMedium)
     }
