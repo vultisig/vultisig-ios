@@ -17,14 +17,48 @@ struct ReferralSendOverviewView: View {
     var body: some View {
         ZStack {
             Background()
-            container
+            
+            VStack {
+                header
+                content
+            }
+            .navigationBarBackButtonHidden(true)
         }
+    }
+    
+    var header: some View {
+        HStack {
+            backButton
+            Spacer()
+            headerTitle
+            Spacer()
+            backButton
+                .opacity(0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+    
+    var backButton: some View {
+        Button {
+            functionCallViewModel.currentIndex -= 1
+        } label: {
+            NavigationBlankBackButton()
+        }
+    }
+    
+    var headerTitle: some View {
+        Text(NSLocalizedString("sendOverview", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body18BrockmannMedium)
     }
     
     var content: some View {
         VStack(spacing: 16) {
+            Spacer()
             summary
             checkboxes
+            Spacer()
         }
         .padding(24)
     }

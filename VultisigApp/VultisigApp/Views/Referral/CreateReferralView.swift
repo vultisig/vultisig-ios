@@ -21,24 +21,23 @@ struct CreateReferralView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-//        ZStack {
-//            switch functionCallViewModel.currentIndex {
-//            case 1:
-//                detailsView
-//            case 2:
-//                verifyView
-//            case 3:
-//                pairView
-//            case 4:
-//                keysign
-//            case 5:
-//                doneView
-//            default:
-//                errorView
-//            }
-//        }
-//        .frame(maxHeight: .infinity)
-        ReferralTransactionOverviewView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
+        ZStack {
+            switch functionCallViewModel.currentIndex {
+            case 1:
+                detailsView
+            case 2:
+                verifyView
+            case 3:
+                pairView
+            case 4:
+                keysign
+            case 5:
+                doneView
+            default:
+                errorView
+            }
+        }
+        .frame(maxHeight: .infinity)
     }
     
     var detailsView: some View {
