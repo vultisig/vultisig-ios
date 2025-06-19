@@ -22,7 +22,6 @@ class ReferralViewModel: ObservableObject {
     
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
-    @Published var navigateToOverviewView = false
     
     // Fees
     @Published var nativeCoin: Coin? = nil
@@ -34,7 +33,6 @@ class ReferralViewModel: ObservableObject {
     @Published var isAmountCorrect: Bool = false
     @Published var isAddressCorrect: Bool = false
     @Published var showSendOverviewAlert = false
-    @Published var navigateToSendView = false
     
     let blockchainService = BlockChainService.shared
     
@@ -84,7 +82,7 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries(tx: SendTransaction) {
+    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
@@ -100,7 +98,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        createTransaction(tx: tx)
+        createTransaction(tx: tx, functionCallViewModel: functionCallViewModel)
     }
     
     func getRegistrationFee() -> Decimal {
@@ -121,7 +119,7 @@ class ReferralViewModel: ObservableObject {
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
     
-    func verifySendOverviewDetails() {
+    func verifySendOverviewDetails(functionCallViewModel: FunctionCallViewModel) {
         guard isAmountCorrect else {
             showSendOverviewAlert = true
             return
@@ -132,7 +130,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        navigateToSendView = true
+        functionCallViewModel.currentIndex = 3
     }
     
     func getNativeCoin(tx: SendTransaction) {
@@ -152,9 +150,9 @@ class ReferralViewModel: ObservableObject {
         }
     }
     
-    func createTransaction(tx: SendTransaction) {
+    func createTransaction(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
         setupTransaction(tx: tx)
-        navigateToOverviewView = true
+        functionCallViewModel.currentIndex = 2
     }
     
     private func setupTransaction(tx: SendTransaction) {

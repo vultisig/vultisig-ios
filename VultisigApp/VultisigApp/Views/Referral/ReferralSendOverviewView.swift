@@ -10,6 +10,7 @@ import SwiftUI
 struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var functionCallViewModel: FunctionCallViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -117,7 +118,7 @@ struct ReferralSendOverviewView: View {
     
     var button: some View {
         Button {
-            referralViewModel.verifySendOverviewDetails()
+            referralViewModel.verifySendOverviewDetails(functionCallViewModel: functionCallViewModel)
         } label: {
             label
         }
@@ -176,6 +177,6 @@ struct ReferralSendOverviewView: View {
 }
 
 #Preview {
-    ReferralSendOverviewView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel(), functionCallViewModel: FunctionCallViewModel())
         .environmentObject(HomeViewModel())
 }
