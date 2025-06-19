@@ -126,6 +126,14 @@ struct ReferralTransactionDetailsView: View {
     }
     
     var button: some View {
+        NavigationLink {
+            HomeView()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         FilledButton(title: "done")
     }
 }

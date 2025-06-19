@@ -29,7 +29,13 @@ struct ReferralTransactionOverviewView: View {
         VStack(spacing: 0) {
             animation
             payoutAsset
-            transactionDetails
+            
+            NavigationLink {
+                detailView
+            } label: {
+                transactionDetails
+            }
+
             Spacer()
             button
         }
@@ -82,6 +88,14 @@ struct ReferralTransactionOverviewView: View {
     }
     
     var button: some View {
+        NavigationLink {
+            HomeView()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         FilledButton(title: "done")
     }
     
@@ -99,6 +113,10 @@ struct ReferralTransactionOverviewView: View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(.body18BrockmannMedium)
+    }
+    
+    var detailView: some View {
+        ReferralTransactionDetailsView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
     }
     
     private func setData() {
