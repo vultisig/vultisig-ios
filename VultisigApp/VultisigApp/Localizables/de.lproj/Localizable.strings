@@ -685,3 +685,4 @@
 "whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
 "referralProgram" = "Empfehlungsprogramm";
 "referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps auf Best-Effort-Basis. Um das Vultisig-Empfehlungsprogramm zu nutzen, müssen Sie einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
+"insufficientBalance" = "Unzureichendes Guthaben";
