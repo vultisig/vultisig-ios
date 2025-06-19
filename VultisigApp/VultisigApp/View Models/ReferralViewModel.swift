@@ -100,7 +100,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        navigateToOverviewView = true
+        createTransaction(tx: tx)
     }
     
     func getRegistrationFee() -> Decimal {
@@ -150,6 +150,18 @@ class ReferralViewModel: ObservableObject {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
+    }
+    
+    func createTransaction(tx: SendTransaction) {
+        setupTransaction(tx: tx)
+        navigateToOverviewView = true
+    }
+    
+    private func setupTransaction(tx: SendTransaction) {
+        tx.amount = totalFee.formatDecimalToLocale()
+        let memo = "~:\(referralCode):THOR:\(nativeCoin?.address ?? "")"
+        tx.memo = memo
+        print(memo)
     }
     
     private func showAlert(with message: String) {
