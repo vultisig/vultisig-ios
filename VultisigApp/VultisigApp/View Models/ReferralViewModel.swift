@@ -138,9 +138,15 @@ class ReferralViewModel: ObservableObject {
     
     private func setupTransaction(tx: SendTransaction) {
         tx.amount = totalFee.formatDecimalToLocale()
-        let memo = "~:\(referralCode):THOR:\(nativeCoin?.address ?? "")"
+        
+        guard let nativeCoin else {
+            return
+        }
+        
+        let memo = "~:\(referralCode):THOR:\(nativeCoin.address)"
         tx.memo = memo
-        print(memo)
+        tx.coin = nativeCoin
+        tx.fromAddress = nativeCoin.address
     }
     
     private func showAlert(with message: String) {

@@ -27,8 +27,8 @@ struct CreateReferralView: View {
                 detailsView
             case 2:
                 verifyView
-//            case 3:
-//                pairView
+            case 3:
+                pairView
 //            case 4:
 //                keysign
 //            case 5:
@@ -54,6 +54,24 @@ struct CreateReferralView: View {
             isForReferral: true,
             referralViewModel: referralViewModel
         )
+    }
+    
+    var pairView: some View {
+        ZStack {
+            if let keysignPayload = keysignPayload {
+                KeysignDiscoveryView(
+                    vault: homeViewModel.selectedVault ?? .example,
+                    keysignPayload: keysignPayload,
+                    customMessagePayload: nil,
+                    transferViewModel: functionCallViewModel,
+                    fastVaultPassword: sendTx.fastVaultPassword.nilIfEmpty,
+                    keysignView: $keysignView,
+                    shareSheetViewModel: shareSheetViewModel
+                )
+            } else {
+                SendCryptoVaultErrorView()
+            }
+        }
     }
 }
 
