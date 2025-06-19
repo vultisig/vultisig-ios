@@ -12,6 +12,7 @@ struct ReferralTransactionDetailsView: View {
     let sendTx: SendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
     
+    @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
@@ -59,10 +60,7 @@ struct ReferralTransactionDetailsView: View {
     
     var summary: some View {
         VStack(spacing: 12) {
-            getCell(
-                title: "transactionHash",
-                description: hash
-            )
+            transactionHashLink
             
             separator
             
@@ -100,6 +98,35 @@ struct ReferralTransactionDetailsView: View {
         Separator()
     }
     
+    var transactionHashLink: some View {
+        Button {
+            openLink()
+        } label: {
+            transactionHashLabel
+        }
+    }
+    
+    var transactionHashLabel: some View {
+        HStack {
+            getCell(
+                title: "transactionHash",
+                description: hash
+            )
+            
+            Image(systemName: "arrow.up.forward.app")
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.neutral0)
+        }
+    }
+    
+    func openLink() {
+        let urlString = "https://thorchain.net/tx/\(hash)"
+        
+        if let url = URL(string: urlString) {
+            openURL(url)
+        }
+    }
+    
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
@@ -123,6 +150,7 @@ struct ReferralTransactionDetailsView: View {
             }
         }
         .font(.body14BrockmannMedium)
+        .foregroundColor(.neutral0)
     }
     
     var button: some View {
