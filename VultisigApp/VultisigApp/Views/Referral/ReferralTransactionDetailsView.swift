@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct ReferralTransactionDetailsView: View {
+    let hash: String
+    let sendTx: SendTransaction
+    @ObservedObject var referralViewModel: ReferralViewModel
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
         ZStack {
             Background()
@@ -27,16 +33,17 @@ struct ReferralTransactionDetailsView: View {
     
     var payoutAsset: some View {
         VStack(spacing: 2) {
-            Circle()
-                .foregroundColor(.black)
+            Image("rune")
+                .resizable()
                 .frame(width: 36, height: 36)
+                .cornerRadius(32)
             
-            Text("12 RUNE")
+            Text("\(sendTx.amount) RUNE")
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 12)
             
-            Text("$12345")
+            Text("\(referralViewModel.totalFeeFiat)")
                 .font(.body10BrockmannMedium)
                 .foregroundColor(.extraLightGray)
         }
@@ -54,22 +61,15 @@ struct ReferralTransactionDetailsView: View {
         VStack(spacing: 12) {
             getCell(
                 title: "transactionHash",
-                description: "0xF42...9Ac5"
+                description: hash
             )
             
             separator
             
             getCell(
                 title: "from",
-                description: "Main Vault",
-                bracketValue: "0xF42...9Ac5"
-            )
-            
-            separator
-            
-            getCell(
-                title: "to",
-                description: "0xF43jf9840fkfjn38fk0dk9Ac5"
+                description: homeViewModel.selectedVault?.name ?? "",
+                bracketValue: referralViewModel.nativeCoin?.address
             )
             
             separator
@@ -77,14 +77,14 @@ struct ReferralTransactionDetailsView: View {
             getCell(
                 title: "network",
                 description: "THORChain",
-                icon: "0xF42...9Ac5"
+                icon: "rune"
             )
             
             separator
             
             getCell(
                 title: "estNetworkFee",
-                description: "1 RUNE"
+                description: sendTx.gasInReadable
             )
         }
         .padding(24)
@@ -108,16 +108,17 @@ struct ReferralTransactionDetailsView: View {
             Spacer()
             
             if let icon {
-                Circle()
-                    .foregroundColor(.black)
+                Image(icon)
+                    .resizable()
                     .frame(width: 16, height: 16)
+                    .cornerRadius(32)
             }
             
             Text(description)
                 .foregroundColor(.neutral0)
             
             if let bracketValue {
-                Text("(\(title))")
+                Text("(\(bracketValue))")
                     .foregroundColor(.extraLightGray)
             }
         }
@@ -130,5 +131,5 @@ struct ReferralTransactionDetailsView: View {
 }
 
 #Preview {
-    ReferralTransactionDetailsView()
+    ReferralTransactionDetailsView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
 }
