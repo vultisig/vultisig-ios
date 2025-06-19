@@ -42,8 +42,8 @@ enum THORChainHelper {
                     $0.coins = [TW_Cosmos_Proto_THORChainCoin.with {
                         $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                             $0.chain = "THOR"
-                            $0.symbol = swapPayload.fromCoin.ticker.uppercased()
-                            $0.ticker = swapPayload.fromCoin.ticker.uppercased()
+                            $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/RUJI", with: "RUJI")
+                            $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/RUJI", with: "RUJI")
                             $0.synth = false
                         }
                         $0.amount = String(swapPayload.fromAmount)
@@ -140,8 +140,8 @@ enum THORChainHelper {
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
-                    $0.symbol = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
-                    $0.ticker = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
+                    $0.symbol = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased().replacingOccurrences(of: "X/RUJI", with: "RUJI")
+                    $0.ticker = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased().replacingOccurrences(of: "X/RUJI", with: "RUJI")
                     $0.synth = false
                 }
                 if keysignPayload.toAmount > 0 {
