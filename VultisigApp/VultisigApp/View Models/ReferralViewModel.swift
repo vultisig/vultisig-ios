@@ -139,6 +139,10 @@ class ReferralViewModel: ObservableObject {
     private func setupTransaction(tx: SendTransaction) {
         tx.amount = totalFee.formatDecimalToLocale()
         
+        let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom())
+        tx.memoFunctionDictionary = fnCallInstance.toDictionary()
+        tx.transactionType = fnCallInstance.getTransactionType()
+        
         guard let nativeCoin else {
             return
         }
