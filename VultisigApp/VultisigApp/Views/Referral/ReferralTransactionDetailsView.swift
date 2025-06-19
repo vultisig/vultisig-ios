@@ -20,10 +20,12 @@ struct ReferralTransactionDetailsView: View {
             Background()
             content
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     var content: some View {
         VStack(spacing: 16) {
+            headerTitle
             payoutAsset
             summary
             Spacer()
@@ -117,6 +119,14 @@ struct ReferralTransactionDetailsView: View {
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.neutral0)
         }
+    }
+    
+    var headerTitle: some View {
+        Text(NSLocalizedString("transactionDetails", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body18BrockmannMedium)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
     }
     
     func openLink() {

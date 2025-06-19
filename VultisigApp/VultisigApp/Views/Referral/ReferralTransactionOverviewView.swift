@@ -20,6 +20,7 @@ struct ReferralTransactionOverviewView: View {
             Background()
             content
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             setData()
         }
@@ -27,6 +28,7 @@ struct ReferralTransactionOverviewView: View {
     
     var content: some View {
         VStack(spacing: 0) {
+            headerTitle
             animation
             payoutAsset
             
@@ -117,6 +119,14 @@ struct ReferralTransactionOverviewView: View {
     
     var detailView: some View {
         ReferralTransactionDetailsView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
+    }
+    
+    var headerTitle: some View {
+        Text(NSLocalizedString("overview", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body18BrockmannMedium)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
     }
     
     private func setData() {
