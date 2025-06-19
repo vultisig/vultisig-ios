@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VultisigLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
+		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
 		461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
 		461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */; };
@@ -44,7 +45,11 @@
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
 		46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
+		6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8C796F13B6313681B4F992A /* KyberSwapToken.swift */; };
+		744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */; };
+		8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
+		A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094C350D73AC732DEC57FD6B /* KyberSwaps.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */; };
@@ -121,7 +126,7 @@
 		A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */; };
 		A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */; };
 		A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */; };
-		A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* EtherfaceService.swift */; };
+		A598FD7A2CE2098800F26516 /* MemoDecodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* MemoDecodingService.swift */; };
 		A5AB69C32D63E07D00E54DEB /* BackupSetupView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */; };
 		A5AB69C42D63E07D00E54DEB /* BackupSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */; };
 		A5AB69C52D63E07D00E54DEB /* BackupSetupView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */; };
@@ -281,6 +286,7 @@
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
 		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
 		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
+		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -378,6 +384,7 @@
 		A67530642CB0716300B1E344 /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530632CB0716300B1E344 /* FolderDetailView.swift */; };
 		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */; };
+		A67EC5B22E0399290031A22A /* CreateReferralDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67EC5B12E0399290031A22A /* CreateReferralDetailsView.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68125D52C8812B60049660E /* UIImageExtension.swift */; };
@@ -395,11 +402,15 @@
 		A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D962C671F11002029E1 /* SettingsHeader.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
 		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
+		A685245F2DFCD47E00FEE2E4 /* ReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */; };
 		A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */; };
 		A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */; };
 		A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */; };
 		A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696592C1F72FF004EDE0B /* HiddenTextField.swift */; };
 		A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */; };
+		A68C00A52DF7B78C00FDE2AD /* PickReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */; };
+		A68C00A72DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */; };
+		A68C00A92DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */; };
 		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
 		A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */; };
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
@@ -624,15 +635,15 @@
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* EditReferredCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */; };
 		A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */; };
-		A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */; };
-		A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */; };
+		A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */; };
+		A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */; };
 		A6E0C91B2DE6BC8500A01543 /* ReferralOnboardingBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */; };
 		A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */; };
 		A6E0C91F2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */; };
 		A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */; };
 		A6E0C9232DE968AB00A01543 /* ReferralTransactionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */; };
 		A6E0C9252DEA3C4900A01543 /* CreateReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9242DEA3C4900A01543 /* CreateReferralView.swift */; };
-		A6E0C92A2DEF717500A01543 /* ReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */; };
+		A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */; };
 		A6E0C92C2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C92B2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift */; };
 		A6E0C92E2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */; };
 		A6E0C9342DF00CC600A01543 /* ReferralLaunchView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */; };
@@ -643,8 +654,8 @@
 		A6E0C9472DF3EE7400A01543 /* EditReferralCodeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */; };
 		A6E0C9492DF3EE8500A01543 /* EditReferralCodeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */; };
 		A6E0C94B2DF4992B00A01543 /* ReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94A2DF4992B00A01543 /* ReferralView.swift */; };
-		A6E0C94D2DF49E1900A01543 /* CreateReferralView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94C2DF49E1900A01543 /* CreateReferralView+iOS.swift */; };
-		A6E0C94F2DF49E2700A01543 /* CreateReferralView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94E2DF49E2700A01543 /* CreateReferralView+macOS.swift */; };
+		A6E0C94D2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */; };
+		A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6ECA1842C93F36200456110 /* NavigationQRShareButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */; };
@@ -792,10 +803,12 @@
 		B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AC2C1A556D005DB485 /* DydxService.swift */; };
 		B5E654EB2D277CE2003A037C /* TronService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EA2D277CE0003A037C /* TronService.swift */; };
 		B5E654ED2D2788CC003A037C /* Tron.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E654EC2D2788CC003A037C /* Tron.swift */; };
+		B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
+		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
 		D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70D65FB2DF48824001C4492 /* RuneBondCell.swift */; };
 		D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
@@ -931,6 +944,7 @@
 /* Begin PBXFileReference section */
 		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
+		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
@@ -972,6 +986,7 @@
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
+		5E7878748BB9E16298184860 /* KyberSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapQuote.swift; sourceTree = "<group>"; };
 		8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokensStore+Token.swift"; sourceTree = "<group>"; };
 		A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapProvider.swift; sourceTree = "<group>"; };
 		A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifiQuoteResponse.swift; sourceTree = "<group>"; };
@@ -1048,7 +1063,7 @@
 		A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCustomMessageViewModel.swift; sourceTree = "<group>"; };
 		A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+iOS.swift"; sourceTree = "<group>"; };
 		A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+MacOS.swift"; sourceTree = "<group>"; };
-		A598FD792CE2098800F26516 /* EtherfaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherfaceService.swift; sourceTree = "<group>"; };
+		A598FD792CE2098800F26516 /* MemoDecodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoDecodingService.swift; sourceTree = "<group>"; };
 		A5AB69C02D63E07D00E54DEB /* BackupSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSetupView.swift; sourceTree = "<group>"; };
 		A5AB69C12D63E07D00E54DEB /* BackupSetupView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+iOS.swift"; sourceTree = "<group>"; };
 		A5AB69C22D63E07D00E54DEB /* BackupSetupView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupSetupView+macOS.swift"; sourceTree = "<group>"; };
@@ -1211,6 +1226,7 @@
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
 		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
+		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -1307,6 +1323,7 @@
 		A67530632CB0716300B1E344 /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeader.swift; sourceTree = "<group>"; };
+		A67EC5B12E0399290031A22A /* CreateReferralDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateReferralDetailsView.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A68125D52C8812B60049660E /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
@@ -1324,11 +1341,15 @@
 		A6833D962C671F11002029E1 /* SettingsHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsHeader.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
 		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
+		A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralViewModel.swift; sourceTree = "<group>"; };
 		A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPasswordSetupView.swift; sourceTree = "<group>"; };
 		A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedBackupViewModel.swift; sourceTree = "<group>"; };
 		A68696242C1B777A004EDE0B /* EncryptedDataFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptedDataFile.swift; sourceTree = "<group>"; };
 		A68696592C1F72FF004EDE0B /* HiddenTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenTextField.swift; sourceTree = "<group>"; };
 		A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupCard.swift; sourceTree = "<group>"; };
+		A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickReferralCode.swift; sourceTree = "<group>"; };
+		A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralSendOverviewView+iOS.swift"; sourceTree = "<group>"; };
+		A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralSendOverviewView+macOS.swift"; sourceTree = "<group>"; };
 		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
@@ -1550,15 +1571,15 @@
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferredCodeView.swift; sourceTree = "<group>"; };
 		A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextField.swift; sourceTree = "<group>"; };
-		A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingView.swift; sourceTree = "<group>"; };
-		A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
+		A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingView.swift; sourceTree = "<group>"; };
+		A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredOnboardingGuideAnimation.swift; sourceTree = "<group>"; };
 		A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralOnboardingBanner.swift; sourceTree = "<group>"; };
 		A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralSendOverviewView.swift; sourceTree = "<group>"; };
 		A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionOverviewView.swift; sourceTree = "<group>"; };
 		A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralLaunchView.swift; sourceTree = "<group>"; };
 		A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionDetailsView.swift; sourceTree = "<group>"; };
 		A6E0C9242DEA3C4900A01543 /* CreateReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateReferralView.swift; sourceTree = "<group>"; };
-		A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralViewModel.swift; sourceTree = "<group>"; };
+		A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredViewModel.swift; sourceTree = "<group>"; };
 		A6E0C92B2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralOnboardingView+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralOnboardingView+macOS.swift"; sourceTree = "<group>"; };
 		A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralLaunchView+iOS.swift"; sourceTree = "<group>"; };
@@ -1569,8 +1590,8 @@
 		A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditReferralCodeView+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditReferralCodeView+macOS.swift"; sourceTree = "<group>"; };
 		A6E0C94A2DF4992B00A01543 /* ReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralView.swift; sourceTree = "<group>"; };
-		A6E0C94C2DF49E1900A01543 /* CreateReferralView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralView+iOS.swift"; sourceTree = "<group>"; };
-		A6E0C94E2DF49E2700A01543 /* CreateReferralView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralView+macOS.swift"; sourceTree = "<group>"; };
+		A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+iOS.swift"; sourceTree = "<group>"; };
+		A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+macOS.swift"; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationQRShareButton+iOS.swift"; sourceTree = "<group>"; };
@@ -1643,6 +1664,7 @@
 		A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEditButton.swift; sourceTree = "<group>"; };
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
+		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
 		B50F46742DA9A308007B16DE /* Chain+ibc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+ibc.swift"; sourceTree = "<group>"; };
@@ -1718,10 +1740,12 @@
 		B5E476AC2C1A556D005DB485 /* DydxService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DydxService.swift; sourceTree = "<group>"; };
 		B5E654EA2D277CE0003A037C /* TronService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TronService.swift; sourceTree = "<group>"; };
 		B5E654EC2D2788CC003A037C /* Tron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tron.swift; sourceTree = "<group>"; };
+		B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtensionMemo.swift"; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
+		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D70D65FB2DF48824001C4492 /* RuneBondCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuneBondCell.swift; sourceTree = "<group>"; };
 		D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallNodeMaintenance.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
@@ -1834,6 +1858,8 @@
 		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
 		DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeDictionary.swift; sourceTree = "<group>"; };
 		DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedTransactionResult.swift; sourceTree = "<group>"; };
+		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
+		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1938,8 +1964,9 @@
 				A66729CA2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift */,
 				A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */,
 				A6E0C9102DE4F89100A01543 /* ReferralTextField.swift */,
-				A6E0C9182DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift */,
+				A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */,
 				A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */,
+				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1972,6 +1999,7 @@
 				A50E79382BFE30170031DB47 /* Storage */,
 				A543B39E2BEA72BA003FB989 /* SwapService */,
 				A543B3992BEA6E3E003FB989 /* 1inch */,
+				KyberSwap /* KyberSwap */,
 				A5D49F542BE26BA7001766C8 /* Actions */,
 				B5A51B532BD8C68B00791D78 /* Sui */,
 				B54B01982BDE0A0F00FDA472 /* Polkadot */,
@@ -1986,7 +2014,7 @@
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
-				A598FD792CE2098800F26516 /* EtherfaceService.swift */,
+				A598FD792CE2098800F26516 /* MemoDecodingService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
@@ -2261,6 +2289,7 @@
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
+				ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 			);
 			path = Keysign;
@@ -2823,7 +2852,8 @@
 				A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */,
 				A672643E2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift */,
 				A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */,
-				A6E0C9292DEF717500A01543 /* ReferralViewModel.swift */,
+				A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */,
+				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -2831,6 +2861,7 @@
 		A65649D62B96602700E4B329 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */,
 				465036BA2BCF968E00856B34 /* BigInt.swift */,
 				A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */,
 				A65649D82B96602700E4B329 /* BigUIntExtension.swift */,
@@ -3008,7 +3039,8 @@
 				A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */,
 				A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */,
 				A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */,
-				A6E0C94C2DF49E1900A01543 /* CreateReferralView+iOS.swift */,
+				A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */,
+				A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* FunctionCall */,
@@ -3081,7 +3113,8 @@
 				A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */,
 				A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */,
 				A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */,
-				A6E0C94E2DF49E2700A01543 /* CreateReferralView+macOS.swift */,
+				A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */,
+				A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3156,13 +3189,14 @@
 			isa = PBXGroup;
 			children = (
 				A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */,
-				A6E0C9162DE6B59D00A01543 /* ReferralOnboardingView.swift */,
+				A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */,
 				A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */,
 				A6E0C91E2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift */,
 				A6E0C9202DE9013A00A01543 /* ReferralLaunchView.swift */,
 				A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */,
 				A6E0C9242DEA3C4900A01543 /* CreateReferralView.swift */,
 				A6E0C94A2DF4992B00A01543 /* ReferralView.swift */,
+				A67EC5B12E0399290031A22A /* CreateReferralDetailsView.swift */,
 			);
 			path = Referral;
 			sourceTree = "<group>";
@@ -3455,6 +3489,7 @@
 				DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */,
 				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
 				A67530612CAFBDC200B1E344 /* Folder.swift */,
+				A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -3612,6 +3647,7 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */,
 				A5D0C9362BEE778F0022D421 /* OneInchSwaps.swift */,
+				094C350D73AC732DEC57FD6B /* KyberSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
@@ -3747,6 +3783,7 @@
 			isa = PBXGroup;
 			children = (
 				DE8AD7492BC7A86200339775 /* EncryptionTest.swift */,
+				E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3770,6 +3807,16 @@
 				DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */,
 			);
 			path = Chains;
+			sourceTree = "<group>";
+		};
+		KyberSwap /* KyberSwap */ = {
+			isa = PBXGroup;
+			children = (
+				5E7878748BB9E16298184860 /* KyberSwapQuote.swift */,
+				CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */,
+				E8C796F13B6313681B4F992A /* KyberSwapToken.swift */,
+			);
+			path = KyberSwap;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3989,6 +4036,7 @@
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
+				A68C00A92DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
@@ -4114,11 +4162,12 @@
 				A6505AE92CA6710A0002FBF4 /* StringExtension+macOS.swift in Sources */,
 				A6182F5B2C9299DC0059BFDD /* MemoTextField+iOS.swift in Sources */,
 				A6505AD22CA668C20002FBF4 /* InformationNote+macOS.swift in Sources */,
+				A68C00A52DF7B78C00FDE2AD /* PickReferralCode.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
 				A6C670B72C9D139A00F59B6A /* CoinDetailView+macOS.swift in Sources */,
 				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				A6505ADB2CA66CC20002FBF4 /* Placement+macOS.swift in Sources */,
-				A598FD7A2CE2098800F26516 /* EtherfaceService.swift in Sources */,
+				A598FD7A2CE2098800F26516 /* MemoDecodingService.swift in Sources */,
 				A6505AF52CA678530002FBF4 /* ImageFileDocument+iOS.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
@@ -4227,7 +4276,7 @@
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
 				A6C670982C9D09EF00F59B6A /* AddressQRCodeView+iOS.swift in Sources */,
 				B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */,
-				A6E0C9192DE6BAD600A01543 /* ReferralOnboardingGuideAnimation.swift in Sources */,
+				A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
@@ -4259,6 +4308,7 @@
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultAnimationManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				DEA630882DD6AC9F00F8C062 /* MoonPaySignature.swift in Sources */,
+				B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */,
 				A672643B2D02993A0002E97E /* JoinKeysignDoneSummary.swift in Sources */,
 				A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
@@ -4375,7 +4425,7 @@
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6505AE32CA6708C0002FBF4 /* ColorStyle+macOS.swift in Sources */,
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,
-				A6E0C94D2DF49E1900A01543 /* CreateReferralView+iOS.swift in Sources */,
+				A6E0C94D2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift in Sources */,
 				A6C670F12CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift in Sources */,
 				A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */,
 				A6A816402CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift in Sources */,
@@ -4395,6 +4445,7 @@
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
 				A6C670B12C9D12C700F59B6A /* VaultPairDetailView+iOS.swift in Sources */,
 				A6C670C32C9D16C600F59B6A /* CustomTokenView+macOS.swift in Sources */,
+				A68C00A72DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift in Sources */,
 				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
 				A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
@@ -4409,7 +4460,7 @@
 				A6C670CD2C9E8D3500F59B6A /* SetupQRCodeView+iOS.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
-				A6E0C94F2DF49E2700A01543 /* CreateReferralView+macOS.swift in Sources */,
+				A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,
@@ -4456,6 +4507,7 @@
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
 				461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */,
+				A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */,
 				A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */,
 				A6521C5A2C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift in Sources */,
 				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
@@ -4569,7 +4621,7 @@
 				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
 				A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */,
 				A6C670882C9CFA9B00F59B6A /* KeysignDiscoveryView+iOS.swift in Sources */,
-				A6E0C92A2DEF717500A01543 /* ReferralViewModel.swift in Sources */,
+				A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
@@ -4601,6 +4653,7 @@
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */,
 				A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */,
+				A67EC5B22E0399290031A22A /* CreateReferralDetailsView.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
@@ -4613,7 +4666,7 @@
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
-				A6E0C9172DE6B59D00A01543 /* ReferralOnboardingView.swift in Sources */,
+				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
@@ -4742,6 +4795,7 @@
 				A622C85E2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
 				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
+				A685245F2DFCD47E00FEE2E4 /* ReferralViewModel.swift in Sources */,
 				A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */,
 				A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
@@ -4795,6 +4849,11 @@
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
+				A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */,
+				CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */,
+				3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */,
+				6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */,
+				8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6C670BD2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift in Sources */,
@@ -4820,6 +4879,7 @@
 				B5293CDB2DBC00C300C6C66A /* StringExtensionTests.swift in Sources */,
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
+				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 			);

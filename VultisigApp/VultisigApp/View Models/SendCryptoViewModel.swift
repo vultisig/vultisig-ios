@@ -45,9 +45,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func loadGasInfoForSending(tx: SendTransaction) async {
-        guard !isLoading else { return }
+        guard !isLoading else {
+            return
+        }
         isLoading = true
-        
+        defer {
+            isLoading = false
+        }
         do {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
@@ -56,7 +60,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-        isLoading = false
+        
     }
     
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
@@ -85,7 +89,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
-                var gas = BigInt.zero
+                let gas = BigInt.zero
                 tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
@@ -185,17 +189,36 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         case .polkadot:
             Task {
-                await BalanceService.shared.updateBalance(for: tx.coin)
-                
-                var gas = BigInt.zero
-                if percentage == 100 {
-                    gas = tx.coin.feeDefault.toBigInt()
+                do {
+                    tx.sendMaxAmount = percentage == 100 // Set sendMaxAmount flag for max sends
+                    await BalanceService.shared.updateBalance(for: tx.coin)
+                    
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        // For max sends, fetch actual gas estimation instead of using default fee
+                        let polkadotSpecific = try await blockchainService.fetchSpecific(tx: tx)
+                        gas = polkadotSpecific.gas
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                } catch {
+                    // Fallback to default fee if gas estimation fails
+                    await BalanceService.shared.updateBalance(for: tx.coin)
+                    
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    
+                    convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
+                    print("Failed to get DOT gas estimation, using default fee: \(error.localizedDescription)")
                 }
-                
-                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                setPercentageAmount(tx: tx, for: percentage)
-                
-                convertToFiat(newValue: tx.amount, tx: tx)
                 
                 isLoading = false
             }
@@ -418,6 +441,45 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 errorTitle = "error"
                 errorMessage = fetchErrorMsg
                 showAlert = true
+                isValidForm = false
+            }
+        }
+        
+        // Cardano-specific validation: Check minimum UTXO value for amount and remaining balance
+        if tx.coin.chain == .cardano {
+            let amountInLovelaces = tx.amountInRaw
+            let totalBalance = tx.coin.rawBalance
+            let estimatedFee = tx.fee
+            
+            let validation = CardanoHelper.validateUTXORequirements(
+                sendAmount: amountInLovelaces,
+                totalBalance: totalBalance.toBigInt(), 
+                estimatedFee: estimatedFee
+            )
+            
+            if !validation.isValid {
+                errorTitle = "error"
+                errorMessage = validation.errorMessage ?? "Cardano UTXO validation failed"
+                showAlert = true
+                logger.log("Cardano UTXO validation failed: \(validation.errorMessage ?? "Unknown error")")
+                isValidForm = false
+            }
+        }
+        
+        // DOT-specific validation: Check existential deposit (1 DOT minimum balance)
+        if tx.coin.chain == .polkadot {
+            let totalBalance = BigInt(tx.coin.rawBalance) ?? BigInt.zero
+            let totalTransactionCost = tx.amountInRaw + tx.gas
+            let remainingBalance = totalBalance - totalTransactionCost
+            
+            // Allow transaction only if:
+            // 1. Remaining balance stays above 1 DOT, OR
+            // 2. It's a complete MAX send (sendMaxAmount = true) that drains the entire balance
+            if !tx.sendMaxAmount && remainingBalance < PolkadotHelper.defaultExistentialDeposit && remainingBalance > 0 {
+                errorTitle = "error"
+                errorMessage = "Keep account balance above 1 DOT. The remaining funds will be lost if balance is below 1 DOT"
+                showAlert = true
+                logger.log("DOT transaction would leave balance below existential deposit")
                 isValidForm = false
             }
         }

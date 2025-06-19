@@ -657,3 +657,12 @@
 "editReferral" = "Uredi preporuku";
 "editReferredCode" = "Uredi referalni kod";
 "saveReferredCode" = "Spremi referalni kod";
+"alreadyTaken" = "Već zauzeto";
+"available" = "Dostupno";
+"status" = "Status";
+"invalid" = "Nevažeće";
+"enter4Characters" = "Unesi 4 znaka";
+"pickValidCode" = "Odaberi važeći referalni kod";
+"pickValidExpiration" = "Postavi valjano vrijeme isteka";
+"pickPayoutAsset" = "Odaberi način isplate s popisa";
+"insufficientBalance" = "Nedovoljno sredstava";

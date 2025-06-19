@@ -24,11 +24,13 @@ enum TssKeysignError: Error {
 @MainActor
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
+    
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
     @Published var txid: String = .empty
     @Published var approveTxid: String?
+    @Published var decodedMemo: String?
     
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -81,6 +83,32 @@ class KeysignViewModel: ObservableObject {
         let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
         self.isInitiateDevice = isInitiateDevice
+        
+        // Load extension memo decoding
+        await loadFunctionName()
+    }
+    
+    func loadFunctionName() async {
+        guard let memo = keysignPayload?.memo, !memo.isEmpty else {
+            return
+        }
+        
+        // First try to decode as Extension memo (works for all chains)
+        if let extensionDecoded = memo.decodedExtensionMemo {
+            decodedMemo = extensionDecoded
+            return
+        }
+        
+        // Fall back to EVM-specific decoding for EVM chains
+        guard keysignPayload?.coin.chainType == .EVM else {
+            return
+        }
+        
+        do {
+            decodedMemo = try await MemoDecodingService.shared.decode(memo: memo)
+        } catch {
+            print("EVM memo decoding error: \(error.localizedDescription)")
+        }
     }
     
     func getTransactionExplorerURL(txid: String) -> String {
@@ -94,10 +122,12 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .oneInch, .none:
+        case .oneInch, .kyberSwap, .none:
             return nil
         }
     }
+    
+
     func startKeysign() async {
         switch vault.libType {
         case .GG20,.none:
@@ -317,6 +347,10 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
+            case .kyberSwap(let payload):
+                let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                signedTransactions.append(transaction)
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -402,10 +436,10 @@ class KeysignViewModel: ObservableObject {
             let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Ripple:
-            let transaction = try RippleHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA,keysignPayload: keysignPayload, signatures: signatures)
+            let transaction = try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return .regular(transaction)
         case .Tron:
-            let transaction = try TronHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, keysignPayload: keysignPayload, signatures: signatures, vault: vault)
+            let transaction = try TronHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures, vault: vault)
             return .regular(transaction)
         }
         
@@ -448,7 +482,16 @@ class KeysignViewModel: ObservableObject {
                 case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia:
                     let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
-                case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
+                case .bitcoin:
+                    UTXOTransactionsService.broadcastBitcoinTransaction(signedTransaction: tx.rawTransaction) { result in
+                        switch result {
+                        case .success(let transactionHash):
+                            self.txid = transactionHash
+                        case .failure(let error):
+                            self.handleBroadcastError(error: error, transactionType: transactionType)
+                        }
+                    }
+                case .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {
@@ -465,6 +508,9 @@ class KeysignViewModel: ObservableObject {
                         case .success(let transactionHash):
                             self.txid = transactionHash
                         case .failure(let error):
+                            print("Transaction Type: \(transactionType)")
+                            
+                            print("Transaction has : \(transactionType.transactionHash)")
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
                     }
@@ -598,6 +644,14 @@ class KeysignViewModel: ObservableObject {
                 return
             }
         default:
+            
+            // Check for Cardano "already broadcasted" errors
+            if error.localizedDescription.contains("BadInputsUTxO") || error.localizedDescription.contains("timed out") {
+                print("Cardano transaction already broadcast - using correct hash from transactionType \(transactionType.transactionHash)")
+                self.txid = transactionType.transactionHash
+                return
+            }
+            
             errMessage = "Failed to broadcast transaction,error:\(error.localizedDescription)"
         }
         print(errMessage)

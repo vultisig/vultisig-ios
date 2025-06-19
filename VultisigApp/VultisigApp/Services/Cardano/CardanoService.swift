@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import BigInt
 
 class CardanoService {
     
@@ -152,6 +153,61 @@ class CardanoService {
     func calculateDynamicTTL() async throws -> UInt64 {
         let currentSlot = try await getCurrentSlot()
         return currentSlot + 720 // Add 720 slots (~12 minutes at 1 slot per second)
+    }
+    
+    /// Validate that the amount meets Cardano's minimum UTXO requirements (Alonzo Era)
+    /// Current protocol: minUTxO = utxoEntrySize × coinsPerUTxOWord ≈ 0.93 ADA for simple transactions
+    /// - Parameter amountInLovelaces: The amount to send in lovelaces (smallest Cardano unit)
+    /// - Throws: Error if amount is below minimum UTXO value
+    func validateMinimumAmount(_ amountInLovelaces: BigInt) throws {
+        let minUTXOValue = CardanoHelper.defaultMinUTXOValue
+        
+        guard amountInLovelaces >= minUTXOValue else {
+            let minAmountADA = minUTXOValue.toADAString
+            let sendAmountADA = amountInLovelaces.toADAString
+            throw NSError(
+                domain: "CardanoServiceError", 
+                code: 5, 
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Amount \(sendAmountADA) ADA is below the minimum UTXO requirement of \(minAmountADA) ADA. Cardano protocol (Alonzo era) requires this minimum to prevent spam and maintain network efficiency."
+                ]
+            )
+        }
+    }
+    
+    /// Comprehensive validation for Cardano transactions including change/remaining balance validation
+    /// - Parameters:
+    ///   - sendAmount: Amount to send in lovelaces
+    ///   - totalBalance: Total available balance in lovelaces
+    ///   - estimatedFee: Estimated transaction fee in lovelaces
+    /// - Throws: Error if transaction would violate minimum UTXO requirements
+    func validateTransaction(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt) throws {
+        let validation = CardanoHelper.validateUTXORequirements(
+            sendAmount: sendAmount,
+            totalBalance: totalBalance,
+            estimatedFee: estimatedFee
+        )
+        
+        if !validation.isValid {
+            throw NSError(
+                domain: "CardanoServiceError",
+                code: 9,
+                userInfo: [
+                    NSLocalizedDescriptionKey: validation.errorMessage ?? "Cardano UTXO validation failed"
+                ]
+            )
+        }
+        
+        // Also check for proactive "Send Max" recommendations
+        let sendMaxRecommendation = CardanoHelper.shouldRecommendSendMax(
+            totalBalance: totalBalance,
+            estimatedFee: estimatedFee
+        )
+        
+        if sendMaxRecommendation.shouldRecommend {
+            // Log recommendation but don't throw error
+            print("Cardano Service: \(sendMaxRecommendation.message ?? "Consider Send Max")")
+        }
     }
     
     /// Validate Cardano chain specific parameters

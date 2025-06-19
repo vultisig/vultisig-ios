@@ -141,6 +141,6 @@ struct SettingsCustomMessageView: View {
     }
 
     var customMessagePayload: CustomMessagePayload? {
-        return CustomMessagePayload(method: method, message: message)
+        return CustomMessagePayload(method: method, message: message, decodedMessage: nil)
     }
 }

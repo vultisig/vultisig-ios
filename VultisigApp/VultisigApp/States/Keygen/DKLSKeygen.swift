@@ -278,6 +278,9 @@ final class DKLSKeygen {
     
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
+        defer {
+            self.setKeygenDone(status: true)
+        }
         var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
@@ -335,7 +338,6 @@ final class DKLSKeygen {
             }
             let isFinished = try await pullInboundMessages(handle: h)
             if isFinished {
-                self.setKeygenDone(status: true)
                 var keyshareHandler = godkls.Handle()
                 let keyShareResult = dkls_keygen_session_finish(handler,&keyshareHandler)
                 if keyShareResult != DKLS_LIB_OK {
@@ -355,11 +357,11 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
@@ -469,6 +471,9 @@ final class DKLSKeygen {
     
     func DKLSReshareWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
+        defer {
+            self.setKeygenDone(status: true)
+        }
         var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = godkls.Handle()
@@ -537,13 +542,11 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .milliseconds(500))
-                self.setKeygenDone(status: true)
+                try await Task.sleep(for: .microseconds(500))
             }
         }
         catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
-            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")

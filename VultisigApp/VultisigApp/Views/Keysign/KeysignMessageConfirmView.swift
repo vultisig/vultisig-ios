@@ -46,13 +46,15 @@ struct KeysignMessageConfirmView: View {
                 }
                 
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
-                    getSummaryCell(title: "memo", value: memo)
-                    Separator()
-                }
-                
-                if let decodedMemo = viewModel.decodedMemo {
-                    functionField(decodedMemo: decodedMemo)
-                    Separator()
+                    // Show decoded memo if available, otherwise show raw memo as fallback
+                    if let decodedMemo = viewModel.decodedMemo, !decodedMemo.isEmpty {
+                        functionField(decodedMemo: decodedMemo)
+                        Separator()
+                    } else {
+                        // Only show raw memo if decoding completely failed
+                        getSummaryCell(title: "memo", value: memo)
+                        Separator()
+                    }
                 }
                 
                 if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {

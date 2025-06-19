@@ -1,5 +1,5 @@
 //
-//  ReferralOnboardingView+macOS.swift
+//  ReferredOnboardingView+macOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-06-04.
@@ -8,7 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension ReferralOnboardingView {
+extension ReferredOnboardingView {
     var container: some View {
         VStack(spacing: 0) {
             header

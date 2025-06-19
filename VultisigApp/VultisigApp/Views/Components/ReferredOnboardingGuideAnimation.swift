@@ -1,5 +1,5 @@
 //
-//  ReferralOnboardingGuideAnimation.swift
+//  ReferredOnboardingGuideAnimation.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-27.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ReferralOnboardingGuideAnimation: View {
+struct ReferredOnboardingGuideAnimation: View {
     @State var contentHeight: CGFloat = .zero
     @State var cellHeight: CGFloat = .zero
     
@@ -203,5 +203,5 @@ struct ReferralOnboardingGuideAnimation: View {
 }
 
 #Preview {
-    ReferralOnboardingGuideAnimation()
+    ReferredOnboardingGuideAnimation()
 }

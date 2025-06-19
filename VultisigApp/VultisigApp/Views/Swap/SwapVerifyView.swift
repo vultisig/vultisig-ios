@@ -17,8 +17,6 @@ struct SwapVerifyView: View {
 
     @State var fastPasswordPresented = false
     
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -91,6 +89,12 @@ struct SwapVerifyView: View {
                     with: swapViewModel.totalFeeString(tx: tx)
                 )
             }
+            
+            separator
+            getValueCell(
+                for: "vault",
+                with: vault.name
+            )
         }
         .padding(16)
         .background(Color.blue600)

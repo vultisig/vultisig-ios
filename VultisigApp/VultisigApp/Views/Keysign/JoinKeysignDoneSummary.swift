@@ -14,13 +14,8 @@ struct JoinKeysignDoneSummary: View {
     @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     let summaryViewModel = JoinKeysignSummaryViewModel()
-    
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
     
     var body: some View {
         ZStack {
@@ -91,11 +86,21 @@ struct JoinKeysignDoneSummary: View {
             
             if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                 Separator()
-                getGeneralCell(
-                    title: "memo",
-                    description: memo,
-                    isVerticalStacked: false
-                )
+                
+                // Show decoded memo if available, otherwise show original memo
+                if let decodedMemo = viewModel.decodedMemo, !decodedMemo.isEmpty {
+                    getGeneralCell(
+                        title: "action",
+                        description: decodedMemo,
+                        isVerticalStacked: false
+                    )
+                } else {
+                    getGeneralCell(
+                        title: "memo",
+                        description: memo,
+                        isVerticalStacked: false
+                    )
+                }
             }
             
             if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
@@ -133,11 +138,20 @@ struct JoinKeysignDoneSummary: View {
             )
             
             Separator()
-            getGeneralCell(
-                title: "Message",
-                description: viewModel.customMessagePayload?.message ?? "",
-                isVerticalStacked: true
-            )
+            // Show decoded message if available, otherwise show raw message
+            if let decodedMessage = viewModel.customMessagePayload?.decodedMessage, !decodedMessage.isEmpty {
+                getGeneralCell(
+                    title: "Transaction Details",
+                    description: decodedMessage,
+                    isVerticalStacked: true
+                )
+            } else {
+                getGeneralCell(
+                    title: "Message",
+                    description: viewModel.customMessagePayload?.message ?? "",
+                    isVerticalStacked: true
+                )
+            }
             Separator()
             getGeneralCell(
                 title: "Signature",

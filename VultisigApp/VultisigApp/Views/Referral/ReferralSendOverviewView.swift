@@ -8,16 +8,23 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @State var isAmountCorrect: Bool = false
-    @State var isAddressCorrect: Bool = false
+    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var functionCallViewModel: FunctionCallViewModel
+    @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
+        ZStack {
+            Background()
+            container
+        }
+    }
+    
+    var content: some View {
         VStack(spacing: 16) {
-            Spacer()
             summary
             checkboxes
-            Spacer()
-            button
         }
         .padding(24)
     }
@@ -26,8 +33,7 @@ struct ReferralSendOverviewView: View {
         VStack(alignment: .leading ,spacing: 24) {
             title
             assetDetail
-            separator
-            content
+            overview
         }
         .padding(24)
         .background(Color.blue600)
@@ -36,8 +42,8 @@ struct ReferralSendOverviewView: View {
     
     var checkboxes: some View {
         VStack(spacing: 12) {
-            Checkbox(isChecked: $isAmountCorrect, text: "referralOverviewCheckbox1")
-            Checkbox(isChecked: $isAddressCorrect, text: "referralOverviewCheckbox2")
+            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAmountCorrect, text: "referralOverviewCheckbox1")
+            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAddressCorrect, text: "referralOverviewCheckbox2")
         }
     }
     
@@ -50,10 +56,12 @@ struct ReferralSendOverviewView: View {
     
     var assetDetail: some View {
         HStack {
-            Circle()
+            Image("rune")
+                .resizable()
                 .frame(width: 24, height: 24)
+                .cornerRadius(32)
             
-            Text("12")
+            Text("\(sendTx.amount) RUNE")
                 .foregroundColor(.neutral0)
             
             Text("RUNE")
@@ -68,19 +76,14 @@ struct ReferralSendOverviewView: View {
         Separator()
     }
     
-    var content: some View {
+    var overview: some View {
         VStack(spacing: 12) {
-            getCell(
-                title: "from",
-                description: "Main Vault",
-                bracketValue: "0xF42...9Ac5"
-            )
-            
             separator
             
             getCell(
-                title: "to",
-                description: "0xF43jf9840fkfjn38fk0dk9Ac5"
+                title: "from",
+                description: homeViewModel.selectedVault?.name ?? "",
+                bracketValue: getVaultAddress()
             )
             
             separator
@@ -88,47 +91,59 @@ struct ReferralSendOverviewView: View {
             getCell(
                 title: "network",
                 description: "THORChain",
-                icon: "0xF42...9Ac5"
+                icon: "rune"
             )
             
             separator
             
             getCell(
-                title: "estNetworkFee",
-                description: "1 RUNE"
+                title: "gas",
+                description: "\(sendTx.gasInReadable)"
             )
         }
-    }
-    
-    var button: some View {
-        FilledButton(title: "signTransaction")
     }
     
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             Spacer()
             
             if let icon {
-                Circle()
-                    .foregroundColor(.black)
+                Image(icon)
+                    .resizable()
                     .frame(width: 16, height: 16)
+                    .cornerRadius(16)
             }
             
             Text(description)
                 .foregroundColor(.neutral0)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             if let bracketValue {
-                Text("(\(title))")
+                Text("(\(bracketValue))")
                     .foregroundColor(.extraLightGray)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
         }
         .font(.body14BrockmannMedium)
     }
+    
+    private func getVaultAddress() -> String? {
+        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+            return nil
+        }
+        
+        return nativeCoin.address
+    }
 }
 
 #Preview {
-    ReferralSendOverviewView()
+    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
+        .environmentObject(HomeViewModel())
 }

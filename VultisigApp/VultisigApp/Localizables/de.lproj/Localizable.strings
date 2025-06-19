@@ -674,3 +674,15 @@
 "editReferral" = "Empfehlung bearbeiten";
 "editReferredCode" = "Empfehlungscode bearbeiten";
 "saveReferredCode" = "Empfehlungscode speichern";
+"alreadyTaken" = "Bereits vergeben";
+"available" = "Verfügbar";
+"status" = "Status";
+"invalid" = "Ungültig";
+"enter4Characters" = "Gib 4 Zeichen ein";
+"pickValidCode" = "Bitte wählen Sie einen gültigen Empfehlungscode";
+"pickValidExpiration" = "Bitte legen Sie eine gültige Ablaufdauer fest";
+"pickPayoutAsset" = "Bitte wählen Sie eine Auszahlungsoption";
+"whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
+"referralProgram" = "Empfehlungsprogramm";
+"referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps auf Best-Effort-Basis. Um das Vultisig-Empfehlungsprogramm zu nutzen, müssen Sie einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
+"insufficientBalance" = "Unzureichendes Guthaben";

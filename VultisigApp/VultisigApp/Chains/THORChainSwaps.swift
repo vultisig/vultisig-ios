@@ -137,7 +137,7 @@ class THORChainSwaps {
         case .gaiaChain:
             return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
         case .ripple:
-            return try RippleHelper.getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, keysignPayload: keysignPayload, signatures: signatures)
+            return try RippleHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
         default:
             throw HelperError.runtimeError("not support")
         }

@@ -102,7 +102,8 @@ class JoinKeygenViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.status = .WaitingForKeygenToStart
                 }
-                
+            } else {
+                self.logger.error("Failed to join the key generation committee.")
             }
         }
     }

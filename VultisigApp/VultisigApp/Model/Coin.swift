@@ -269,17 +269,7 @@ class Coin: ObservableObject, Codable, Hashable {
         return !isNativeToken && chain.chainType == .EVM
     }
     
-    var tokenSchema: String? {
-        guard !isNativeToken else { return nil }
-        switch chain {
-        case .ethereum:
-            return "ERC20"
-        case .bscChain:
-            return "BEP20"
-        default:
-            return nil
-        }
-    }
+    
     
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }
@@ -290,29 +280,7 @@ class Coin: ObservableObject, Codable, Hashable {
     var isRune: Bool {
         return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
     }
-    
-    /// Total sum of bonded RUNE
-    var totalBondedAmount: Decimal {
-
-        let bondTotal = bondedNodes.reduce(Decimal.zero) { $0 + $1.bond }
-        return bondTotal / Foundation.pow(10, decimals)
-    }
-    
-
-    var totalBondedAmountInFiat: Decimal {
-        return RateProvider.shared.fiatBalance(value: totalBondedAmount, coin: self)
-    }
-    
-
-    var totalBondedAmountString: String {
-        return totalBondedAmount.formatToDecimal(digits: 8)
-    }
-    
-
-    var totalBondedAmountInFiatString: String {
-        return totalBondedAmountInFiat.formatToFiat()
-    }
-    
+     
     var hasBondedNodes: Bool {
         return !bondedNodes.isEmpty
     }
