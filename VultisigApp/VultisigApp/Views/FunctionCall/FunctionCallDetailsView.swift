@@ -250,6 +250,35 @@ struct FunctionCallDetailsView: View {
                         tx.toAddress = toAddress
                     }
                     
+                    // QUICK FIX: Check if coin ticker has X/RUJI format and replace with ruji
+                    if tx.coin.ticker.uppercased().hasSuffix("/RUJI") {
+                        let originalCoin = tx.coin
+                        
+                        // Create a new CoinMeta with ticker "ruji" but same properties
+                        let rujiMeta = CoinMeta(
+                            chain: originalCoin.chain,
+                            ticker: "ruji", // Set the ticker to ruji
+                            logo: originalCoin.logo,
+                            decimals: originalCoin.decimals,
+                            priceProviderId: originalCoin.priceProviderId,
+                            contractAddress: originalCoin.contractAddress,
+                            isNativeToken: originalCoin.isNativeToken
+                        )
+                        
+                        // Create a new coin from the meta
+                        let rujiCoin = Coin(
+                            asset: rujiMeta,
+                            address: originalCoin.address,
+                            hexPublicKey: originalCoin.hexPublicKey
+                        )
+                        
+                        // Copy over balance information
+                        rujiCoin.rawBalance = originalCoin.rawBalance
+                        rujiCoin.stakedBalance = originalCoin.stakedBalance
+                        
+                        tx.coin = rujiCoin
+                    }
+                    
                     functionCallViewModel.moveToNextView()
                     
                 } else {
