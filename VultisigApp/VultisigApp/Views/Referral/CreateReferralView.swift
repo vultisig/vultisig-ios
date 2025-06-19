@@ -29,12 +29,12 @@ struct CreateReferralView: View {
                 verifyView
             case 3:
                 pairView
-//            case 4:
-//                keysign
-//            case 5:
-//                doneView
+            case 4:
+                keysign
+            case 5:
+                doneView
             default:
-                EmptyView()
+                errorView
             }
         }
         .frame(maxHeight: .infinity)
@@ -72,6 +72,35 @@ struct CreateReferralView: View {
                 SendCryptoVaultErrorView()
             }
         }
+    }
+    
+    var keysign: some View {
+        ZStack {
+            if let keysignView = keysignView {
+                keysignView
+            } else {
+                errorView
+            }
+        }
+    }
+    
+    var doneView: some View {
+        ZStack {
+            if let hash = functionCallViewModel.hash, let chain = keysignPayload?.coin.chain  {
+                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain, sendTransaction: tx, swapTransaction: nil)
+            } else {
+                errorView
+            }
+        }.onAppear() {
+            Task{
+                try await Task.sleep(for: .seconds(5)) // Back off 5s
+                self.functionCallViewModel.stopMediator()
+            }
+        }
+    }
+    
+    var errorView: some View {
+        SendCryptoSigningErrorView()
     }
 }
 
