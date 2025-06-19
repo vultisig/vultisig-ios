@@ -22,18 +22,14 @@ class ReferralViewModel: ObservableObject {
     
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
-    @Published var navigateToOverviewView = false
     
     // Fees
+    @Published var nativeCoin: Coin? = nil
     @Published var registrationFee: Decimal = 0
     @Published var feePerBlock: Decimal = 0
     @Published var isFeesLoading: Bool = false
     
-    // Send Overview
-    @Published var isAmountCorrect: Bool = false
-    @Published var isAddressCorrect: Bool = false
-    @Published var showSendOverviewAlert = false
-    @Published var navigateToSendView = false
+    let blockchainService = BlockChainService.shared
     
     var registrationFeeFiat: String {
         getFiatAmount(for: getRegistrationFee())
@@ -81,7 +77,7 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries() {
+    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
@@ -92,7 +88,12 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        navigateToOverviewView = true
+        guard enoughGas(tx: tx) else {
+            showAlert(with: "insufficientBalance")
+            return
+        }
+        
+        createTransaction(tx: tx, functionCallViewModel: functionCallViewModel)
     }
     
     func getRegistrationFee() -> Decimal {
@@ -105,7 +106,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getFiatAmount(for amount: Decimal) -> String {
-        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+        guard let nativeCoin else {
             return ""
         }
         
@@ -113,18 +114,39 @@ class ReferralViewModel: ObservableObject {
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
     }
     
-    func verifySendOverviewDetails() {
-        guard isAmountCorrect else {
-            showSendOverviewAlert = true
+    func getNativeCoin(tx: SendTransaction) {
+        nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+        
+        if let nativeCoin {
+            tx.coin = nativeCoin
+        }
+    }
+    
+    func loadGasInfoForSending(tx: SendTransaction) async{
+        do {
+            let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+            tx.gas = chainSpecific.gas
+        } catch {
+            print("error fetching data: \(error.localizedDescription)")
+        }
+    }
+    
+    func createTransaction(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
+        setupTransaction(tx: tx)
+        functionCallViewModel.currentIndex = 2
+    }
+    
+    private func setupTransaction(tx: SendTransaction) {
+        tx.amount = totalFee.formatDecimalToLocale()
+        
+        guard let nativeCoin else {
             return
         }
         
-        guard isAddressCorrect else {
-            showSendOverviewAlert = true
-            return
-        }
-        
-        navigateToSendView = true
+        let memo = "~:\(referralCode):THOR:\(nativeCoin.address)"
+        tx.memo = memo
+        tx.coin = nativeCoin
+        tx.fromAddress = nativeCoin.address
     }
     
     private func showAlert(with message: String) {
@@ -234,11 +256,17 @@ class ReferralViewModel: ObservableObject {
     private func containsWhitespace(_ text: String) -> Bool {
         return text.rangeOfCharacter(from: .whitespacesAndNewlines) != nil
     }
-
-// Codable struct for all relevant fields from the endpoint
-struct ThorchainNetworkAllFees: Codable {
-    let tns_register_fee_rune: String
-    let tns_fee_per_block_rune: String
-}
-
+    
+    private func enoughGas(tx: SendTransaction) -> Bool {
+        let decimals = tx.coin.decimals
+        let gas = Decimal(tx.gas) / pow(10,decimals)
+        let amount = totalFee + gas
+        let vaultAmount = nativeCoin?.balanceDecimal ?? 0
+        
+        if vaultAmount >= amount {
+            return true
+        } else {
+            return false
+        }
+    }
 }

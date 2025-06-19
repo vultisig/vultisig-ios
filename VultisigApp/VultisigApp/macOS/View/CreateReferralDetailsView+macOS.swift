@@ -1,5 +1,5 @@
 //
-//  CreateReferralView+macOS.swift
+//  CreateReferralDetailsView+macOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-06-07.
@@ -8,7 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension CreateReferralView {
+extension CreateReferralDetailsView {
     var container: some View {
         VStack(spacing: 0) {
             header

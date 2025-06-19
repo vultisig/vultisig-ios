@@ -1,5 +1,5 @@
 //
-//  CreateReferralView+iOS.swift
+//  CreateReferralDetailsView+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-06-07.
@@ -8,7 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
-extension CreateReferralView {
+extension CreateReferralDetailsView {
     var container: some View {
         content
             .navigationTitle(NSLocalizedString("createReferral", comment: ""))

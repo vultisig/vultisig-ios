@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct ReferralSendOverviewView: View {
-    @ObservedObject var referralViewModel: ReferralViewModel
+    @ObservedObject var sendTx: SendTransaction
+    @ObservedObject var functionCallViewModel: FunctionCallViewModel
+    @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -17,18 +19,12 @@ struct ReferralSendOverviewView: View {
             Background()
             container
         }
-        .alert(isPresented: $referralViewModel.showSendOverviewAlert) {
-            alert
-        }
     }
     
     var content: some View {
         VStack(spacing: 16) {
-            Spacer()
             summary
             checkboxes
-            Spacer()
-            button
         }
         .padding(24)
     }
@@ -46,8 +42,8 @@ struct ReferralSendOverviewView: View {
     
     var checkboxes: some View {
         VStack(spacing: 12) {
-            Checkbox(isChecked: $referralViewModel.isAmountCorrect, text: "referralOverviewCheckbox1")
-            Checkbox(isChecked: $referralViewModel.isAddressCorrect, text: "referralOverviewCheckbox2")
+            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAmountCorrect, text: "referralOverviewCheckbox1")
+            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAddressCorrect, text: "referralOverviewCheckbox2")
         }
     }
     
@@ -65,7 +61,7 @@ struct ReferralSendOverviewView: View {
                 .frame(width: 24, height: 24)
                 .cornerRadius(32)
             
-            Text("\(referralViewModel.getTotalFee())")
+            Text("\(sendTx.amount) RUNE")
                 .foregroundColor(.neutral0)
             
             Text("RUNE")
@@ -101,30 +97,10 @@ struct ReferralSendOverviewView: View {
             separator
             
             getCell(
-                title: "registrationFee",
-                description: "\(referralViewModel.getRegistrationFee()) RUNE"
+                title: "gas",
+                description: "\(sendTx.gasInReadable)"
             )
         }
-    }
-    
-    var button: some View {
-        Button {
-            referralViewModel.verifySendOverviewDetails()
-        } label: {
-            label
-        }
-    }
-    
-    var label: some View {
-        FilledButton(title: "signTransaction")
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(referralViewModel.referralAlertMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
     
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
@@ -168,6 +144,6 @@ struct ReferralSendOverviewView: View {
 }
 
 #Preview {
-    ReferralSendOverviewView(referralViewModel: ReferralViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
         .environmentObject(HomeViewModel())
 }

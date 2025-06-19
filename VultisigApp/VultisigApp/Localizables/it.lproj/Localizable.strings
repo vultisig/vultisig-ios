@@ -668,3 +668,4 @@
 "whitespaceNotAllowed" = "I caratteri di spazio non sono consentiti.";
 "referralProgram" = "Programma di riferimento";
 "referralProgramTooltipDescription" = "Il programma di riferimento si applica agli swap THORChain su base best-effort. Per utilizzare il referral Vultisig, è necessario registrare un THORName. La tariffa di registrazione è di 10 RUNE, più 1 RUNE all'anno, pagata alla rete THORChain.";
+"insufficientBalance" = "Saldo insufficiente";

@@ -12,13 +12,18 @@ import WalletCore
 
 @MainActor
 class FunctionCallVerifyViewModel: ObservableObject {
-    
-    @Published var isAddressCorrect = false
-    @Published var isAmountCorrect = false
-    @Published var isHackedOrPhished = false
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
+    
+    // General
+    @Published var isAddressCorrect = false
+    @Published var isAmountCorrect = false
+    @Published var isHackedOrPhished = false
+    
+    // Referral
+    @Published var isReferralAmountCorrect: Bool = false
+    @Published var isReferralAddressCorrect: Bool = false
     
     let blockChainService = BlockChainService.shared
     

@@ -671,3 +671,4 @@
 "whitespaceNotAllowed" = "Razmak nije dopušten.";
 "referralProgram" = "Program preporuke";
 "referralProgramTooltipDescription" = "Program preporuke primjenjuje se na THORChain zamjene temeljem najboljeg pokušaja. Da biste koristili Vultisig preporuku, potrebno je registrirati THORName. Naknada za registraciju iznosi 10 RUNE, uz 1 RUNE godišnje, plaćeno THORChain mreži.";
+"insufficientBalance" = "Saldo insuficiente";
