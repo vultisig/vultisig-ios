@@ -48,7 +48,10 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString)
+        let displayBalance = homeViewModel.hideVaultBalance ? "****" : 
+            (coin.balanceDecimal >= 1_000_000 ? coin.balanceDecimal.formatWithAbbreviation() : coin.balanceString)
+        
+        Text(displayBalance)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
