@@ -61,7 +61,7 @@ struct ReferralSendOverviewView: View {
                 .frame(width: 24, height: 24)
                 .cornerRadius(32)
             
-            Text("\(sendTx.amount) RUNE")
+            Text("\(sendTx.amount)")
                 .foregroundColor(.neutral0)
             
             Text("RUNE")

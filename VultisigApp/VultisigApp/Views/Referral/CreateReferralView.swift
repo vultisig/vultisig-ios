@@ -86,8 +86,8 @@ struct CreateReferralView: View {
     
     var doneView: some View {
         ZStack {
-            if let hash = functionCallViewModel.hash, let chain = keysignPayload?.coin.chain  {
-                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain, sendTransaction: tx, swapTransaction: nil)
+            if let hash = functionCallViewModel.hash  {
+                ReferralTransactionOverviewView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
             } else {
                 errorView
             }

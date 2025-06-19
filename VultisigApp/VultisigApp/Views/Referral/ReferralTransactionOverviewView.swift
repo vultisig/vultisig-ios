@@ -9,6 +9,10 @@ import SwiftUI
 import RiveRuntime
 
 struct ReferralTransactionOverviewView: View {
+    let hash: String
+    let sendTx: SendTransaction
+    @ObservedObject var referralViewModel: ReferralViewModel
+    
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
@@ -34,16 +38,17 @@ struct ReferralTransactionOverviewView: View {
     
     var payoutAsset: some View {
         VStack(spacing: 2) {
-            Circle()
-                .foregroundColor(.black)
+            Image("rune")
+                .resizable()
                 .frame(width: 36, height: 36)
+                .cornerRadius(32)
             
-            Text("12 RUNE")
+            Text("\(sendTx.amount) RUNE")
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 12)
             
-            Text("$12345")
+            Text("\(referralViewModel.totalFeeFiat)")
                 .font(.body10BrockmannMedium)
                 .foregroundColor(.extraLightGray)
         }
@@ -102,5 +107,5 @@ struct ReferralTransactionOverviewView: View {
 }
 
 #Preview {
-    ReferralTransactionOverviewView()
+    ReferralTransactionOverviewView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
 }
