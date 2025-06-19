@@ -29,11 +29,6 @@ class ReferralViewModel: ObservableObject {
     @Published var feePerBlock: Decimal = 0
     @Published var isFeesLoading: Bool = false
     
-    // Send Overview
-    @Published var isAmountCorrect: Bool = false
-    @Published var isAddressCorrect: Bool = false
-    @Published var showSendOverviewAlert = false
-    
     let blockchainService = BlockChainService.shared
     
     var registrationFeeFiat: String {
@@ -117,20 +112,6 @@ class ReferralViewModel: ObservableObject {
         
         let fiatAmount = RateProvider.shared.fiatBalance(value: amount, coin: nativeCoin)
         return fiatAmount.formatToFiat(includeCurrencySymbol: true, useAbbreviation: true)
-    }
-    
-    func verifySendOverviewDetails(functionCallViewModel: FunctionCallViewModel) {
-        guard isAmountCorrect else {
-            showSendOverviewAlert = true
-            return
-        }
-        
-        guard isAddressCorrect else {
-            showSendOverviewAlert = true
-            return
-        }
-        
-        functionCallViewModel.currentIndex = 3
     }
     
     func getNativeCoin(tx: SendTransaction) {
@@ -271,7 +252,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     private func enoughGas(tx: SendTransaction) -> Bool {
-        var decimals = tx.coin.decimals
+        let decimals = tx.coin.decimals
         let gas = Decimal(tx.gas) / pow(10,decimals)
         let amount = totalFee + gas
         let vaultAmount = nativeCoin?.balanceDecimal ?? 0

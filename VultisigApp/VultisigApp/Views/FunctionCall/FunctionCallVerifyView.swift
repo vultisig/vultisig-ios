@@ -18,7 +18,8 @@ struct FunctionCallVerifyView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @State var fastPasswordPresented = false
-    
+    @State var isForReferral = false
+    @State var referralViewModel = ReferralViewModel()
     
     var body: some View {
         ZStack {
@@ -36,12 +37,16 @@ struct FunctionCallVerifyView: View {
     
     var content: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                fields
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20) 
+            if isForReferral {
+                ReferralSendOverviewView(sendTx: tx, functionCallViewModel: depositViewModel, functionCallVerifyViewModel: depositVerifyViewModel)
+            } else {
+                ScrollView {
+                    fields
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 20)
+                }
+                .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
             }
-            .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
             
             Spacer()
             VStack(spacing: 16) {
@@ -68,12 +73,7 @@ struct FunctionCallVerifyView: View {
                 vault: vault,
                 onSubmit: {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        Task {
-                            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
-                            if keysignPayload != nil {
-                                depositViewModel.moveToNextView()
-                            }
-                        }
+                        handleSubmit()
                     }
                 }
             )
@@ -132,15 +132,7 @@ struct FunctionCallVerifyView: View {
             depositVerifyViewModel.isLoading = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                Task {
-                    
-                    keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
-                    
-                    if keysignPayload != nil {
-                        depositViewModel.moveToNextView()
-                    }
-                    
-                }
+                handleSubmit()
             }
             
         } label: {
@@ -178,10 +170,32 @@ struct FunctionCallVerifyView: View {
         .foregroundColor(.neutral100)
     }
     
-    
-    
     private func getAmount() -> String {
         tx.amountDecimal.formatDecimalToLocale() + " " + tx.coin.ticker
+    }
+    
+    private func handleSubmit() {
+        Task {
+            if isForReferral {
+                guard depositVerifyViewModel.isReferralAmountCorrect else {
+                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
+                    depositVerifyViewModel.showAlert = true
+                    return
+                }
+                
+                guard depositVerifyViewModel.isReferralAddressCorrect else {
+                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
+                    depositVerifyViewModel.showAlert = true
+                    return
+                }
+            }
+            
+            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
+            
+            if keysignPayload != nil {
+                depositViewModel.moveToNextView()
+            }
+        }
     }
 }
 

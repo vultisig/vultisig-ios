@@ -18,6 +18,8 @@ struct CreateReferralView: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
         ZStack {
             switch functionCallViewModel.currentIndex {
@@ -43,7 +45,15 @@ struct CreateReferralView: View {
     }
     
     var verifyView: some View {
-        ReferralSendOverviewView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        FunctionCallVerifyView(
+            keysignPayload: $keysignPayload,
+            depositViewModel: functionCallViewModel,
+            depositVerifyViewModel: functionCallVerifyViewModel,
+            tx: sendTx,
+            vault: homeViewModel.selectedVault ?? .example,
+            isForReferral: true,
+            referralViewModel: referralViewModel
+        )
     }
 }
 
