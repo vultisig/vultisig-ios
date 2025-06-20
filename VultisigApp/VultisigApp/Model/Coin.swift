@@ -243,8 +243,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "\(chain.swapAsset).\(chain.ticker)"
         }
 
-        if chain == .thorChain && contractAddress.range(of: "x/", options: .caseInsensitive) != nil {
-            return "\(chain.swapAsset).\(ticker.uppercased().replacingOccurrences(of: "x/", with: "", options: .caseInsensitive))"
+        if chain == .thorChain {
+            return "\(chain.swapAsset).\(ticker)"
         }
 
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
