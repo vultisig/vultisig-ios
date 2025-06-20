@@ -7,46 +7,19 @@
 
 import Foundation
 
-/// Factory for configuring the security service with different providers
+/// Factory for configuring the security service with all available providers
 struct SecurityServiceFactory {
     
-    /// Configuration options for security service
+    /// Simple configuration for the security service
     struct Configuration {
-        let useBlockaid: Bool
         let isEnabled: Bool
-        let blockaidCapabilities: SecurityProviderCapabilities
         
-        init(
-            useBlockaid: Bool = true,
-            isEnabled: Bool = true,
-            blockaidCapabilities: SecurityProviderCapabilities = .blockaidEVM
-        ) {
-            self.useBlockaid = useBlockaid
+        init(isEnabled: Bool = true) {
             self.isEnabled = isEnabled
-            self.blockaidCapabilities = blockaidCapabilities
         }
         
-        /// EVM-only configuration (current plan) - Transaction scanning only
-        static let `default` = Configuration(
-            blockaidCapabilities: .blockaidEVM
-        )
-        
-        /// Full capabilities configuration (higher plan)
-        static let full = Configuration(
-            blockaidCapabilities: .blockaidFull
-        )
-        
-        /// Disabled configuration
-        static let disabled = Configuration(
-            useBlockaid: false,
-            isEnabled: false,
-            blockaidCapabilities: .none
-        )
-        
-        /// EVM-only configuration (current plan)
-        static let evmOnly = Configuration(
-            blockaidCapabilities: .blockaidEVM
-        )
+        static let `default` = Configuration()
+        static let disabled = Configuration(isEnabled: false)
     }
     
     /// Configure the shared security service instance
@@ -65,23 +38,26 @@ struct SecurityServiceFactory {
             securityService.removeProvider(named: provider.providerName)
         }
         
-        // Add Blockaid provider if enabled
-        if configuration.useBlockaid {
-            let blockaidProvider = BlockaidProvider(capabilities: configuration.blockaidCapabilities)
-            securityService.addProvider(blockaidProvider)
+        // Add all available and enabled providers
+        addAvailableProviders(to: securityService)
+    }
+    
+    /// Add all available providers that are enabled
+    private static func addAvailableProviders(to securityService: SecurityService) {
+        for providerType in AvailableSecurityProvider.allCases {
+            if let provider = providerType.createProvider() {
+                securityService.addProvider(provider)
+                print("[SecurityServiceFactory] Added provider: \(providerType.displayName)")
+            } else {
+                print("[SecurityServiceFactory] Skipped disabled provider: \(providerType.displayName)")
+            }
         }
     }
     
     /// Get configuration from environment or user defaults
     static func getConfigurationFromEnvironment() -> Configuration {
-        let useBlockaid = UserDefaults.standard.object(forKey: "VultisigUseBlockaid") as? Bool ?? true
         let isEnabled = UserDefaults.standard.object(forKey: "VultisigSecurityScanEnabled") as? Bool ?? true
-        
-        // Use Blockaid through proxy for real-time security scanning
-        return Configuration(
-            useBlockaid: useBlockaid,
-            isEnabled: isEnabled
-        )
+        return Configuration(isEnabled: isEnabled)
     }
 }
 
@@ -99,13 +75,13 @@ extension UserDefaults {
         return object(forKey: "VultisigSecurityScanEnabled") as? Bool ?? true
     }
     
-    /// Enable or disable Blockaid provider
-    func setBlockaidEnabled(_ enabled: Bool) {
-        set(enabled, forKey: "VultisigUseBlockaid")
+    /// Enable or disable a specific security provider
+    func setSecurityProviderEnabled(_ providerName: String, enabled: Bool) {
+        set(enabled, forKey: "VultisigSecurityProvider_\(providerName)")
     }
     
-    /// Check if Blockaid provider is enabled
-    func isBlockaidEnabled() -> Bool {
-        return object(forKey: "VultisigUseBlockaid") as? Bool ?? true
+    /// Check if a specific security provider is enabled
+    func isSecurityProviderEnabled(_ providerName: String) -> Bool {
+        return object(forKey: "VultisigSecurityProvider_\(providerName)") as? Bool ?? true
     }
 } 

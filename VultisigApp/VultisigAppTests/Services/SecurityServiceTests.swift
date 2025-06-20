@@ -15,9 +15,8 @@ class SecurityServiceTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         
-        // Configure SecurityService with Blockaid provider for testing
+        // Configure SecurityService with enabled providers for testing
         let configuration = SecurityServiceFactory.Configuration(
-            useBlockaid: true,
             isEnabled: true
         )
         SecurityServiceFactory.configure(with: configuration)

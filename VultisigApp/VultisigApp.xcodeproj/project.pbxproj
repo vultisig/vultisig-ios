@@ -346,6 +346,7 @@
 		A6SEC0012E1234567890AB01 /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0012E1234567890AB02 /* SecurityService.swift */; };
 		A6SEC0032E1234567890AB01 /* SecurityServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */; };
 		A6SEC0042E1234567890AB01 /* SecurityProviderCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */; };
+		A6SEC0102E1234567890AB01 /* AvailableSecurityProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0102E1234567890AB02 /* AvailableSecurityProviders.swift */; };
 		A6SEC0052E1234567890AB01 /* SecurityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0052E1234567890AB02 /* SecurityProvider.swift */; };
 		A6SEC0072E1234567890AB01 /* BlockaidProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidProvider.swift */; };
 
@@ -1296,6 +1297,7 @@
 		A6SEC0012E1234567890AB02 /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
 		A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityServiceFactory.swift; sourceTree = "<group>"; };
 		A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityProviderCapabilities.swift; sourceTree = "<group>"; };
+		A6SEC0102E1234567890AB02 /* AvailableSecurityProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableSecurityProviders.swift; sourceTree = "<group>"; };
 		A6SEC0052E1234567890AB02 /* SecurityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityProvider.swift; sourceTree = "<group>"; };
 		A6SEC0072E1234567890AB02 /* BlockaidProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidProvider.swift; sourceTree = "<group>"; };
 
@@ -2312,6 +2314,7 @@
 				A6SEC0012E1234567890AB02 /* SecurityService.swift */,
 				A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */,
 				A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */,
+				A6SEC0102E1234567890AB02 /* AvailableSecurityProviders.swift */,
 				A6SEC0052E1234567890AB02 /* SecurityProvider.swift */,
 				A6SEC0172E1234567890AB02 /* Providers */,
 			);
@@ -4144,6 +4147,7 @@
 				A6SEC0012E1234567890AB01 /* SecurityService.swift in Sources */,
 				A6SEC0032E1234567890AB01 /* SecurityServiceFactory.swift in Sources */,
 				A6SEC0042E1234567890AB01 /* SecurityProviderCapabilities.swift in Sources */,
+				A6SEC0102E1234567890AB01 /* AvailableSecurityProviders.swift in Sources */,
 				A6SEC0052E1234567890AB01 /* SecurityProvider.swift in Sources */,
 							A6SEC0072E1234567890AB01 /* BlockaidProvider.swift in Sources */,
 			A6SEC0112E1234567890AB01 /* SecurityScanViewModel.swift in Sources */,

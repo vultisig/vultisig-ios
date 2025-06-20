@@ -16,7 +16,6 @@ class SecurityServiceAPIResponseTests: XCTestCase {
         try super.setUpWithError()
         
         let configuration = SecurityServiceFactory.Configuration(
-            useBlockaid: true,
             isEnabled: true
         )
         SecurityServiceFactory.configure(with: configuration)
