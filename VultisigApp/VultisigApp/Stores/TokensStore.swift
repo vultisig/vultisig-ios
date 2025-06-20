@@ -1570,6 +1570,15 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .thorChain,
+            ticker: "RUJI",
+            logo: "xruji",
+            decimals: 8,
+            priceProviderId: "",
+            contractAddress: "x/ruji",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .ton,
             ticker: "TON",
             logo: "ton",
