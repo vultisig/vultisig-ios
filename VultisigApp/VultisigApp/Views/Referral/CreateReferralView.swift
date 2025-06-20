@@ -45,15 +45,21 @@ struct CreateReferralView: View {
     }
     
     var verifyView: some View {
-        FunctionCallVerifyView(
-            keysignPayload: $keysignPayload,
-            depositViewModel: functionCallViewModel,
-            depositVerifyViewModel: functionCallVerifyViewModel,
-            tx: sendTx,
-            vault: homeViewModel.selectedVault ?? .example,
-            isForReferral: true,
-            referralViewModel: referralViewModel
-        )
+        ZStack {
+            if let vault = homeViewModel.selectedVault {
+                FunctionCallVerifyView(
+                    keysignPayload: $keysignPayload,
+                    depositViewModel: functionCallViewModel,
+                    depositVerifyViewModel: functionCallVerifyViewModel,
+                    tx: sendTx,
+                    vault: vault,
+                    isForReferral: true,
+                    referralViewModel: referralViewModel
+                )
+            } else {
+                SendCryptoVaultErrorView()
+            }
+        }
     }
     
     var pairView: some View {
@@ -61,9 +67,9 @@ struct CreateReferralView: View {
             pairViewHeader
             
             ZStack {
-                if let keysignPayload = keysignPayload {
+                if let keysignPayload = keysignPayload, let vault = homeViewModel.selectedVault {
                     KeysignDiscoveryView(
-                        vault: homeViewModel.selectedVault ?? .example,
+                        vault: vault,
                         keysignPayload: keysignPayload,
                         customMessagePayload: nil,
                         transferViewModel: functionCallViewModel,
