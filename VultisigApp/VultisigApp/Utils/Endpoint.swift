@@ -33,6 +33,33 @@ class Endpoint {
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
     
+    // Security/Fraud Detection Services - Proxied through Vultisig API
+    static let blockaidApiBase = "\(vultisigApiProxy)/blockaid/v0"
+    
+    static func blockaidEVMJSONRPCScan() -> String {
+        return "\(blockaidApiBase)/evm/json-rpc/scan"
+    }
+    
+    static func blockaidEVMTransactionScan() -> String {
+        return "\(blockaidApiBase)/evm/transaction/scan"
+    }
+    
+    static func blockaidSolanaMessageScan() -> String {
+        return "\(blockaidApiBase)/solana/message/scan"
+    }
+    
+    static func blockaidTokenScan() -> String {
+        return "\(blockaidApiBase)/token/scan"
+    }
+    
+    static func blockaidAddressScan() -> String {
+        return "\(blockaidApiBase)/evm/address/scan"
+    }
+    
+    static func blockaidSiteScan() -> String {
+        return "\(blockaidApiBase)/site/scan"
+    }
+    
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {

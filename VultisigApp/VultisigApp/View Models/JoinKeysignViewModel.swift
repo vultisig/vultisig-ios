@@ -47,6 +47,9 @@ class JoinKeysignViewModel: ObservableObject {
     
     @Published var decodedMemo: String?
     
+    @Published var securityScanViewModel = SecurityScanViewModel()
+    @Published var showSecurityScan = false
+    
     var encryptionKeyHex: String = ""
     var payloadID: String = ""
     
@@ -445,5 +448,22 @@ class JoinKeysignViewModel: ObservableObject {
         let amount = payload.toAmountDecimal
         return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker)"
         
+    }
+    
+    func performSecurityScan() async {
+        guard let payload = keysignPayload else {
+            print("No keysign payload available for security scan")
+            return
+        }
+        
+        // Check if security scanning is available for this chain
+        guard securityScanViewModel.isScanningAvailable(for: payload.coin.chain) else {
+            print("Security scanning not available for chain: \(payload.coin.chain.name)")
+            showSecurityScan = false
+            return
+        }
+        
+        await securityScanViewModel.scanTransaction(from: payload)
+        showSecurityScan = true
     }
 }

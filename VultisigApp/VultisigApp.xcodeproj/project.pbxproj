@@ -343,6 +343,14 @@
 		A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9832BAA07B500B2D8AA /* Background.swift */; };
 		A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */; };
 		A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */; };
+		A6SEC0012E1234567890AB01 /* SecurityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0012E1234567890AB02 /* SecurityService.swift */; };
+		A6SEC0032E1234567890AB01 /* SecurityServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */; };
+		A6SEC0042E1234567890AB01 /* SecurityProviderCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */; };
+		A6SEC0052E1234567890AB01 /* SecurityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0052E1234567890AB02 /* SecurityProvider.swift */; };
+		A6SEC0072E1234567890AB01 /* BlockaidProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidProvider.swift */; };
+
+		A6SEC0112E1234567890AB01 /* SecurityScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0112E1234567890AB02 /* SecurityScanViewModel.swift */; };
+		A6SEC0132E1234567890AB01 /* SecurityScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScanView.swift */; };
 		A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */; };
 		A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */; };
 		A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98D2BAD311200B2D8AA /* Loader.swift */; };
@@ -838,6 +846,8 @@
 		DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE49A16C2B65F6DB000F3AFB /* Assets.xcassets */; };
 		DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE49A1702B65F6DB000F3AFB /* Preview Assets.xcassets */; };
 		DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */; };
+		A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */; };
+		A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */; };
 		DE49A1852B65F6DB000F3AFB /* VultisigAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1842B65F6DB000F3AFB /* VultisigAppUITests.swift */; };
 		DE49A1872B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1862B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift */; };
 		DE49A1942B65F7B6000F3AFB /* Mediator in Resources */ = {isa = PBXBuildFile; fileRef = DE49A1932B65F7B6000F3AFB /* Mediator */; };
@@ -1283,6 +1293,14 @@
 		A65BA9832BAA07B500B2D8AA /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
 		A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoSigningErrorView.swift; sourceTree = "<group>"; };
+		A6SEC0012E1234567890AB02 /* SecurityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityService.swift; sourceTree = "<group>"; };
+		A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityServiceFactory.swift; sourceTree = "<group>"; };
+		A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityProviderCapabilities.swift; sourceTree = "<group>"; };
+		A6SEC0052E1234567890AB02 /* SecurityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityProvider.swift; sourceTree = "<group>"; };
+		A6SEC0072E1234567890AB02 /* BlockaidProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidProvider.swift; sourceTree = "<group>"; };
+
+		A6SEC0112E1234567890AB02 /* SecurityScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScanViewModel.swift; sourceTree = "<group>"; };
+		A6SEC0132E1234567890AB02 /* SecurityScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScanView.swift; sourceTree = "<group>"; };
 		A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVaultErrorView.swift; sourceTree = "<group>"; };
 		A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoStartErrorView.swift; sourceTree = "<group>"; };
 		A65BA98D2BAD311200B2D8AA /* Loader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
@@ -1777,6 +1795,8 @@
 		DE49A1702B65F6DB000F3AFB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		DE49A1762B65F6DB000F3AFB /* VultisigAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VultisigAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppTests.swift; sourceTree = "<group>"; };
+		A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/SecurityServiceTests.swift"; sourceTree = "<group>"; };
+		A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/SecurityServiceAPIResponseTests.swift"; sourceTree = "<group>"; };
 		DE49A1802B65F6DB000F3AFB /* VultisigAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VultisigAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A1842B65F6DB000F3AFB /* VultisigAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppUITests.swift; sourceTree = "<group>"; };
 		DE49A1862B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -1967,8 +1987,17 @@
 				A6E0C9182DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift */,
 				A6E0C91A2DE6BC8500A01543 /* ReferralOnboardingBanner.swift */,
 				A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */,
+				A6SEC0192E1234567890AB02 /* Security */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		A6SEC0192E1234567890AB02 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				A6SEC0132E1234567890AB02 /* SecurityScanView.swift */,
+			);
+			path = Security;
 			sourceTree = "<group>";
 		};
 		460347822BA148A2007ED3AC /* Ethereum */ = {
@@ -2023,6 +2052,7 @@
 				B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */,
 				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
 				B59173302C641F3D007100E3 /* CoinService.swift */,
+				A6SEC0152E1234567890AB02 /* Security */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -2274,6 +2304,26 @@
 				A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */,
 			);
 			path = Keychain;
+			sourceTree = "<group>";
+		};
+		A6SEC0152E1234567890AB02 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				A6SEC0012E1234567890AB02 /* SecurityService.swift */,
+				A6SEC0032E1234567890AB02 /* SecurityServiceFactory.swift */,
+				A6SEC0042E1234567890AB02 /* SecurityProviderCapabilities.swift */,
+				A6SEC0052E1234567890AB02 /* SecurityProvider.swift */,
+				A6SEC0172E1234567890AB02 /* Providers */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		A6SEC0172E1234567890AB02 /* Providers */ = {
+			isa = PBXGroup;
+			children = (
+				A6SEC0072E1234567890AB02 /* BlockaidProvider.swift */,
+			);
+			path = Providers;
 			sourceTree = "<group>";
 		};
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
@@ -2854,6 +2904,7 @@
 				A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */,
 				A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */,
 				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
+				A6SEC0112E1234567890AB02 /* SecurityScanViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -3727,6 +3778,8 @@
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
+				A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */,
+				A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -4088,6 +4141,13 @@
 				A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */,
 				A6505AD72CA66C4B0002FBF4 /* ImageFileDocument+macOS.swift in Sources */,
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
+				A6SEC0012E1234567890AB01 /* SecurityService.swift in Sources */,
+				A6SEC0032E1234567890AB01 /* SecurityServiceFactory.swift in Sources */,
+				A6SEC0042E1234567890AB01 /* SecurityProviderCapabilities.swift in Sources */,
+				A6SEC0052E1234567890AB01 /* SecurityProvider.swift in Sources */,
+							A6SEC0072E1234567890AB01 /* BlockaidProvider.swift in Sources */,
+			A6SEC0112E1234567890AB01 /* SecurityScanViewModel.swift in Sources */,
+				A6SEC0132E1234567890AB01 /* SecurityScanView.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
 				A6FA40212C10241700D6C6B7 /* VaultDeletionConfirmView.swift in Sources */,
@@ -4882,6 +4942,8 @@
 				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
+				A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */,
+				A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
