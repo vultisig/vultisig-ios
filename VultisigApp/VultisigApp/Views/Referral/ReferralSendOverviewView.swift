@@ -55,7 +55,6 @@ struct ReferralSendOverviewView: View {
     
     var content: some View {
         VStack(spacing: 16) {
-            Spacer()
             summary
             checkboxes
             Spacer()
