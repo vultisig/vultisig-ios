@@ -9,6 +9,10 @@ import SwiftUI
 import RiveRuntime
 
 struct ReferralTransactionOverviewView: View {
+    let hash: String
+    let sendTx: SendTransaction
+    @ObservedObject var referralViewModel: ReferralViewModel
+    
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
@@ -16,6 +20,7 @@ struct ReferralTransactionOverviewView: View {
             Background()
             content
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             setData()
         }
@@ -23,9 +28,16 @@ struct ReferralTransactionOverviewView: View {
     
     var content: some View {
         VStack(spacing: 0) {
+            headerTitle
             animation
             payoutAsset
-            transactionDetails
+            
+            NavigationLink {
+                detailView
+            } label: {
+                transactionDetails
+            }
+
             Spacer()
             button
         }
@@ -34,16 +46,17 @@ struct ReferralTransactionOverviewView: View {
     
     var payoutAsset: some View {
         VStack(spacing: 2) {
-            Circle()
-                .foregroundColor(.black)
+            Image("rune")
+                .resizable()
                 .frame(width: 36, height: 36)
+                .cornerRadius(32)
             
-            Text("12 RUNE")
+            Text("\(sendTx.amount) RUNE")
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 12)
             
-            Text("$12345")
+            Text("\(referralViewModel.totalFeeFiat)")
                 .font(.body10BrockmannMedium)
                 .foregroundColor(.extraLightGray)
         }
@@ -77,6 +90,14 @@ struct ReferralTransactionOverviewView: View {
     }
     
     var button: some View {
+        NavigationLink {
+            HomeView()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         FilledButton(title: "done")
     }
     
@@ -96,11 +117,23 @@ struct ReferralTransactionOverviewView: View {
             .font(.body18BrockmannMedium)
     }
     
+    var detailView: some View {
+        ReferralTransactionDetailsView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
+    }
+    
+    var headerTitle: some View {
+        Text(NSLocalizedString("overview", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body18BrockmannMedium)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+    }
+    
     private func setData() {
         animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
     }
 }
 
 #Preview {
-    ReferralTransactionOverviewView()
+    ReferralTransactionOverviewView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
 }
