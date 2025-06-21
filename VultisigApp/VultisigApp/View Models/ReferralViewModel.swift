@@ -147,7 +147,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        let memo = "~:\(referralCode):THOR:\(nativeCoin.address)"
+        let memo = "~:\(referralCode.uppercased()):THOR:\(nativeCoin.address):\(nativeCoin.address)"
         tx.memo = memo
         tx.coin = nativeCoin
         tx.fromAddress = nativeCoin.address
