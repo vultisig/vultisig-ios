@@ -10,7 +10,8 @@ import SwiftUI
 
 extension ReferralTextField {
     func handleCopyCode() {
-        
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = text
     }
     
     func handlePasteCode() {
