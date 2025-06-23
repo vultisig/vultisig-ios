@@ -22,14 +22,6 @@ struct SecurityProviderCapabilities {
         tokenScanning: false
     )
     
-    /// Blockaid full capabilities (higher plan)
-    static let blockaidFull = SecurityProviderCapabilities(
-        evmTransactionScanning: true,
-        solanaTransactionScanning: true,
-        addressValidation: true,
-        tokenScanning: true
-    )
-    
     /// No capabilities (disabled)
     static let none = SecurityProviderCapabilities(
         evmTransactionScanning: false,

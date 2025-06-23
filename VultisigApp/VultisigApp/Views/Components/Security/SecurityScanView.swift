@@ -186,6 +186,8 @@ struct SecurityRiskBadge: View {
     
     private var badgeColor: Color {
         switch riskLevel {
+        case .none:
+            return .green
         case .low:
             return .green
         case .medium:
@@ -234,13 +236,13 @@ struct CompactSecurityScanView: View {
 
 #Preview {
     VStack(spacing: 20) {
-        // Safe transaction
+        // Completely secure transaction
         SecurityScanView(viewModel: {
             let vm = SecurityScanViewModel()
             vm.scanResponse = SecurityScanResponse(
                 provider: "Blockaid",
                 isSecure: true,
-                riskLevel: .low,
+                riskLevel: .none,
                 warnings: [],
                 recommendations: [],
                 metadata: nil

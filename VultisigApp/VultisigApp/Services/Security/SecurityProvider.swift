@@ -106,6 +106,7 @@ enum SecurityTransactionType {
 
 /// Security risk levels
 enum SecurityRiskLevel: String, CaseIterable {
+    case none = "NONE"
     case low = "LOW"
     case medium = "MEDIUM"
     case high = "HIGH"
@@ -113,6 +114,7 @@ enum SecurityRiskLevel: String, CaseIterable {
     
     var displayName: String {
         switch self {
+        case .none: return "Secure"
         case .low: return "Low Risk"
         case .medium: return "Medium Risk"
         case .high: return "High Risk"

@@ -56,6 +56,8 @@ class SecurityScanViewModel: ObservableObject {
         guard let response = scanResponse else { return Color.green.opacity(0.35) }
         
         switch response.riskLevel {
+        case .none:
+            return Color.green.opacity(0.35)
         case .low:
             return Color.green.opacity(0.35)
         case .medium:
@@ -71,6 +73,8 @@ class SecurityScanViewModel: ObservableObject {
         guard let response = scanResponse else { return Color.green }
         
         switch response.riskLevel {
+        case .none:
+            return Color.green
         case .low:
             return Color.green
         case .medium:
@@ -89,6 +93,8 @@ class SecurityScanViewModel: ObservableObject {
             return "checkmark.shield"
         } else {
             switch response.riskLevel {
+            case .none:
+                return "checkmark.shield"
             case .low:
                 return "info.circle"
             case .medium:
@@ -105,6 +111,8 @@ class SecurityScanViewModel: ObservableObject {
         guard let response = scanResponse else { return Color.green }
         
         switch response.riskLevel {
+        case .none:
+            return Color.green
         case .low:
             return Color.green
         case .medium:

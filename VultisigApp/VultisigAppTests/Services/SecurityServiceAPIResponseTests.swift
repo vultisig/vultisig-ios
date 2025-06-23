@@ -314,7 +314,7 @@ class SecurityServiceAPIResponseTests: XCTestCase {
         XCTAssertNotNil(response.recommendations, "Recommendations array should be present")
         
         // Validate risk level is valid
-        let validRiskLevels: [SecurityRiskLevel] = [.low, .medium, .high, .critical]
+                    let validRiskLevels: [SecurityRiskLevel] = [.none, .low, .medium, .high, .critical]
         XCTAssertTrue(validRiskLevels.contains(response.riskLevel), "Risk level should be valid")
         
         // Validate metadata structure if present
