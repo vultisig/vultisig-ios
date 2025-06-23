@@ -229,7 +229,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
+    func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault, referralCode: String) async -> Bool {
         isLoading = true
         defer { isLoading = false }
         
@@ -247,7 +247,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     coin: tx.fromCoin,
                     toAddress: toAddress ?? tx.fromCoin.address,
                     amount: tx.amountInCoinDecimal,
-                    memo: tx.quote?.memo,
+                    memo: getMemo(tx.quote?.memo, referralCode: referralCode),
                     chainSpecific: chainSpecific,
                     swapPayload: .mayachain(tx.buildThorchainSwapPayload(
                         quote: quote,
@@ -265,7 +265,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
-                    memo: quote.memo,
+                    memo: getMemo(quote.memo, referralCode: referralCode),
                     chainSpecific: chainSpecific,
                     swapPayload: .thorchain(tx.buildThorchainSwapPayload(
                         quote: quote,
@@ -290,7 +290,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     coin: tx.fromCoin,
                     toAddress: quote.tx.to,
                     amount: tx.amountInCoinDecimal,
-                    memo: nil,
+                    memo: getMemo(referralCode: referralCode),
                     chainSpecific: chainSpecific,
                     swapPayload: .oneInch(payload),
                     approvePayload: buildApprovePayload(tx: tx),
@@ -312,7 +312,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     coin: tx.fromCoin,
                     toAddress: quote.tx.to,
                     amount: tx.amountInCoinDecimal,
-                    memo: nil,
+                    memo: getMemo(referralCode: referralCode),
                     chainSpecific: chainSpecific,
                     swapPayload: .kyberSwap(payload),
                     approvePayload: buildApprovePayload(tx: tx),
@@ -325,6 +325,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         catch {
             self.error = error
             return false
+        }
+    }
+    
+    private func getMemo(_ preset: String? = nil, referralCode: String) -> String? {
+        if let preset {
+            return preset
+        } else if !referralCode.isEmpty {
+            return "::vi/\(referralCode):35/10"
+        } else {
+            return nil
         }
     }
     
