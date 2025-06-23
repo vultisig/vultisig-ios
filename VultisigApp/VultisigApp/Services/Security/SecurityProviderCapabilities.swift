@@ -14,8 +14,7 @@ struct SecurityProviderCapabilities {
     let addressValidation: Bool
     let tokenScanning: Bool
     
-    /// Blockaid EVM-only capabilities (current plan)
-    static let blockaidEVM = SecurityProviderCapabilities(
+    static let blockaid = SecurityProviderCapabilities(
         evmTransactionScanning: true,
         solanaTransactionScanning: false,
         addressValidation: false,

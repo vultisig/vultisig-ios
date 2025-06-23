@@ -179,6 +179,64 @@ class SecurityServiceAPIResponseTests: XCTestCase {
         }
     }
     
+    func testSolanaTransactionResponse() async throws {
+        print("\n🧪 TESTING: Solana Transaction Scanning")
+        
+        let request = SecurityScanRequest(
+            chain: .solana,
+            transactionType: .transfer,
+            fromAddress: "11111111111111111111111111111112", // System Program
+            toAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
+            amount: "1000000", // 1 SOL in lamports
+            data: "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDArczbMia6GFszyeyjwp2Cqf1PSx5PLrUyKjVDvuFEjYLAQIDBAUGBwgJAA==", // Sample Solana transaction data
+            metadata: ["test": "Solana transfer"]
+        )
+        
+        do {
+            let response = try await securityService.scanTransaction(request)
+            
+            print("✅ SUCCESS: Solana transaction scan completed")
+            print("📊 Provider: \(response.provider)")
+            print("🔒 Is Secure: \(response.isSecure)")
+            print("⚠️ Risk Level: \(response.riskLevel.rawValue)")
+            print("🚨 Warnings Count: \(response.warnings.count)")
+            print("📝 Recommendations Count: \(response.recommendations.count)")
+            
+            if let metadata = response.metadata {
+                print("📄 Metadata:")
+                for (key, value) in metadata {
+                    print("   - \(key): \(value)")
+                }
+            }
+            
+            if !response.warnings.isEmpty {
+                print("⚠️ Solana Warnings:")
+                for warning in response.warnings {
+                    print("   - Type: \(warning.type.rawValue)")
+                    print("   - Severity: \(warning.severity.rawValue)")
+                    print("   - Message: \(warning.message)")
+                    if let details = warning.details {
+                        print("   - Details: \(details)")
+                    }
+                }
+            }
+            
+            if !response.recommendations.isEmpty {
+                print("📋 Recommendations:")
+                for recommendation in response.recommendations {
+                    print("   - \(recommendation)")
+                }
+            }
+            
+            // Verify basic response structure
+            XCTAssertEqual(response.provider, "Blockaid")
+            XCTAssertNotNil(response.riskLevel)
+            
+        } catch {
+            XCTFail("Solana transaction scan failed: \(error.localizedDescription)")
+        }
+    }
+
     // MARK: - Error Response Tests (403 endpoints)
     
     func testTokenScanningResponse() async throws {
@@ -222,19 +280,39 @@ class SecurityServiceAPIResponseTests: XCTestCase {
     // MARK: - Performance and Stress Tests
     
     func testMultipleEVMChainResponses() async throws {
-        print("\n🧪 TESTING: Multiple EVM Chains Performance")
+        print("\n🧪 TESTING: Multiple Blockchain Chains Performance")
         
-        let chains: [Chain] = [.ethereum, .bscChain, .polygon, .arbitrum]
+        let chains: [Chain] = [.ethereum, .bscChain, .polygon, .arbitrum, .solana]
         let startTime = Date()
         
         for chain in chains {
+            // Configure addresses and data based on chain type
+            let (fromAddress, toAddress, amount, data): (String, String, String, String?) = {
+                switch chain {
+                case .solana:
+                    return (
+                        "11111111111111111111111111111112", // System Program
+                        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
+                        "1000000", // 1 SOL in lamports
+                        "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDArczbMia6GFszyeyjwp2Cqf1PSx5PLrUyKjVDvuFEjYLAQIDBAUGBwgJAA=="
+                    )
+                default: // EVM chains
+                    return (
+                        "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
+                        "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+                        "1000000000000000000",
+                        nil
+                    )
+                }
+            }()
+            
             let request = SecurityScanRequest(
                 chain: chain,
                 transactionType: .transfer,
-                fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-                toAddress: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-                amount: "1000000000000000000",
-                data: nil,
+                fromAddress: fromAddress,
+                toAddress: toAddress,
+                amount: amount,
+                data: data,
                 metadata: ["test": "Multi-chain test", "chain": chain.name]
             )
             

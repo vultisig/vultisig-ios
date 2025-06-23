@@ -26,7 +26,7 @@ enum AvailableSecurityProvider: String, CaseIterable {
     var capabilities: SecurityProviderCapabilities {
         switch self {
         case .blockaid:
-            return .blockaidEVM // Currently only EVM transaction scanning available
+            return .blockaid // Currently only EVM transaction scanning available
         }
     }
     

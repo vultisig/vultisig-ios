@@ -19,7 +19,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     // MARK: - CapabilityAwareSecurityProvider
     let capabilities: SecurityProviderCapabilities
     
-    init(capabilities: SecurityProviderCapabilities = .blockaidEVM) {
+    init(capabilities: SecurityProviderCapabilities = .blockaid) {
         self.capabilities = capabilities
         // API key is handled by the Vultisig proxy
     }
