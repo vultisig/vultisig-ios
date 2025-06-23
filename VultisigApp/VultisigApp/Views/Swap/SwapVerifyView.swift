@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SwapVerifyView: View {
+    @StateObject var referralViewModel = ReferralViewModel()
     @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
 
     @ObservedObject var tx: SwapTransaction
@@ -212,7 +213,7 @@ struct SwapVerifyView: View {
 
     func signPressed() {
         Task {
-            if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
+            if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode) {
                 swapViewModel.moveToNextView()
             }
         }
