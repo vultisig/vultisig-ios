@@ -45,7 +45,7 @@ struct SendCryptoSigningErrorView: View {
         } label: {
             FilledButton(title: "tryAgain")
         }
-        .padding(.vertical, 40)
+        .padding(.vertical, 24)
         .padding(.horizontal, 15)
         .id(UUID())
     }
