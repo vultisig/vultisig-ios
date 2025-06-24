@@ -629,6 +629,7 @@
 		A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E422C36756700594687 /* OnboardingView4.swift */; };
 		A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */; };
 		A6D44A5B2D51950600C66726 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = A6D44A5A2D51950600C66726 /* RiveRuntime */; };
+		A6D739DC2E0AFF2E0005697D /* LinearSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D739DB2E0AFF2E0005697D /* LinearSeparator.swift */; };
 		A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */; };
 		A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */; };
 		A6E0C90F2DE4E8CE00A01543 /* EditReferredCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */; };
@@ -1563,6 +1564,7 @@
 		A6D07E402C366F7300594687 /* MemoTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoTextField.swift; sourceTree = "<group>"; };
 		A6D07E422C36756700594687 /* OnboardingView4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView4.swift; sourceTree = "<group>"; };
 		A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCameraPermissionView.swift; sourceTree = "<group>"; };
+		A6D739DB2E0AFF2E0005697D /* LinearSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinearSeparator.swift; sourceTree = "<group>"; };
 		A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureBackupGuideAnimation.swift; sourceTree = "<group>"; };
 		A6E0C9032DDD271600A01543 /* FileManagerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtension.swift; sourceTree = "<group>"; };
 		A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferredCodeView.swift; sourceTree = "<group>"; };
@@ -2347,6 +2349,7 @@
 			isa = PBXGroup;
 			children = (
 				A617B67B2CEC641B006E5122 /* SendCryptoDoneSummary.swift */,
+				A6D739DB2E0AFF2E0005697D /* LinearSeparator.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -3036,7 +3039,6 @@
 				A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */,
 				A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */,
 				A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */,
-				A68C00A62DFA20A300FDE2AD /* ReferralSendOverviewView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
 				A6505AFD2CA67ADE0002FBF4 /* FunctionCall */,
@@ -3110,7 +3112,6 @@
 				A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */,
 				A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */,
 				A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */,
-				A68C00A82DFA20B300FDE2AD /* ReferralSendOverviewView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -4079,6 +4080,7 @@
 				A6BB9BCD2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift in Sources */,
 				A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
+				A6D739DC2E0AFF2E0005697D /* LinearSeparator.swift in Sources */,
 				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
 				A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */,
 				A6505AD72CA66C4B0002FBF4 /* ImageFileDocument+macOS.swift in Sources */,
