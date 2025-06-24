@@ -23,6 +23,7 @@ struct LinearSeparator: View {
                     endPoint: UnitPoint(x: 1, y: 0.5)
                 )
             )
+            .opacity(0.8)
     }
 }
 

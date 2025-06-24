@@ -247,6 +247,15 @@ struct SendCryptoDetailsView: View {
         .disabled(sendCryptoViewModel.isLoading)
     }
     
+    var tabs: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                SendDetailsAssetTab(tx: tx)
+            }
+            .padding(16)
+        }
+    }
+    
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(leadingText)

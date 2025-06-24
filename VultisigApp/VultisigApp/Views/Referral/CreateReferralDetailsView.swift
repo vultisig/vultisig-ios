@@ -164,7 +164,7 @@ struct CreateReferralDetailsView: View {
     }
     
     var separator: some View {
-        LinearSeparator()
+        GradientSeparator()
     }
     
     var button: some View {
