@@ -116,6 +116,8 @@ struct CreateReferralView: View {
             getNavigationTitle("signing")
             
             ZStack {
+                Background()
+                
                 if let keysignView = keysignView {
                     keysignView
                 } else {

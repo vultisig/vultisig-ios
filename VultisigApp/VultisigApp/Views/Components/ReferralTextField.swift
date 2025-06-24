@@ -16,6 +16,7 @@ struct ReferralTextField: View {
     
     var showSuccess: Bool = false
     var isErrorLabelVisible: Bool = true
+    var isDisabled = false
     
     var body: some View {
         VStack(spacing: 8) {
@@ -34,6 +35,7 @@ struct ReferralTextField: View {
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
                 .colorScheme(.dark)
+                .disabled(isDisabled)
             
             actionButton
         }
