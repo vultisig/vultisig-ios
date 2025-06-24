@@ -381,15 +381,21 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
         updateFeesTask?.cancel()
-        updateFeesTask = Task {
-            await updateFees(tx: tx, vault: vault)
+        updateFeesTask = Task {[weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.5 seconds delay
+            guard !Task.isCancelled else { return }
+            await self?.updateFees(tx: tx, vault: vault)
         }
     }
     
     func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+        // this method is called when the user changes the amount, from/to coins, or chains
+        // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
-        updateQuoteTask = Task {
-            await updateQuotes(tx: tx)
+        updateQuoteTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.5 seconds delay
+            guard !Task.isCancelled else { return }
+            await self?.updateQuotes(tx: tx)
         }
     }
     
