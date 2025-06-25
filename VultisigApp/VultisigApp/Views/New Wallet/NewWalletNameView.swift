@@ -61,7 +61,6 @@ struct NewWalletNameView: View {
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
-        .maxLength($name)
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)
