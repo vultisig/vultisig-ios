@@ -16,6 +16,7 @@ class SecurityScanViewModel: ObservableObject {
     @Published var scanResponse: SecurityScanResponse?
     @Published var errorMessage: String?
     @Published var showAlert = false
+    @Published var userAcknowledgedRisk = false
     
     private let securityService = SecurityService.shared
     private var cancellables = Set<AnyCancellable>()
@@ -32,6 +33,14 @@ class SecurityScanViewModel: ObservableObject {
     
     var isSecure: Bool {
         return scanResponse?.isSecure ?? true
+    }
+    
+    var canProceed: Bool {
+        // User can proceed if:
+        // 1. No scan response yet (scanning not performed)
+        // 2. Transaction is secure
+        // 3. User has acknowledged the risk
+        return scanResponse == nil || isSecure || userAcknowledgedRisk
     }
     
     var riskLevel: SecurityRiskLevel {
@@ -164,6 +173,7 @@ class SecurityScanViewModel: ObservableObject {
         errorMessage = nil
         isScanning = false
         showAlert = false
+        userAcknowledgedRisk = false
     }
     
     /// Check if security scanning is available for a chain
@@ -291,7 +301,7 @@ extension SecurityScanViewModel {
             title: Text(title),
             message: Text(message),
             primaryButton: .destructive(Text("Proceed Anyway")) {
-                // Handle user decision to proceed
+                self.userAcknowledgedRisk = true
             },
             secondaryButton: .cancel(Text("Cancel"))
         )
