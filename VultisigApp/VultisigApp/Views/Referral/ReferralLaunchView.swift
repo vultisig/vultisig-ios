@@ -31,8 +31,15 @@ struct ReferralLaunchView: View {
             image
             Spacer()
             referredContent
-            orSeparator
-            createButton
+            
+            if referralViewModel.savedGeneratedReferralCode.isEmpty {
+                orSeparator
+                createButton
+            } else {
+                separator
+                referralTitle
+                referralCopyTextField
+            }
         }
         .padding(24)
     }
@@ -171,6 +178,24 @@ struct ReferralLaunchView: View {
             title: Text(NSLocalizedString("success", comment: "")),
             message: Text(NSLocalizedString(referredViewModel.referredLaunchViewSuccessMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    var referralTitle: some View {
+        Text(NSLocalizedString("yourReferralCode", comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.neutral0)
+    }
+    
+    var referralCopyTextField: some View {
+        ReferralTextField(
+            text: $referralViewModel.savedGeneratedReferralCode,
+            placeholderText: "",
+            action: .Copy,
+            showError: false,
+            errorMessage: "",
+            isDisabled: true
         )
     }
 }

@@ -49,6 +49,7 @@ struct NewWalletNameView: View {
                 .onSubmit {
                     verifyVault()
                 }
+                .maxLength($name, 64)
             
             if !name.isEmpty {
                 clearButton
@@ -60,7 +61,6 @@ struct NewWalletNameView: View {
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
-        .maxLength($name)
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)

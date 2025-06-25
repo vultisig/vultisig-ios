@@ -61,7 +61,7 @@ class ReferralViewModel: ObservableObject {
         }
         
         Task {
-            await checkNameAvailability(code: referralCode, forReferralCode: true)
+            await checkNameAvailability(code: referralCode)
         }
     }
     
@@ -147,7 +147,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        let memo = "~:\(referralCode):THOR:\(nativeCoin.address)"
+        let memo = "~:\(referralCode.uppercased()):THOR:\(nativeCoin.address):\(nativeCoin.address)"
         tx.memo = memo
         tx.coin = nativeCoin
         tx.fromAddress = nativeCoin.address
@@ -207,8 +207,8 @@ class ReferralViewModel: ObservableObject {
         }
     }
     
-    private func checkNameAvailability(code: String, forReferralCode: Bool) async {
-        let urlString = Endpoint.checkNameAvailability(for: code)
+    private func checkNameAvailability(code: String) async {
+        let urlString = Endpoint.getUserDetails(for: code)
         guard let url = URL(string: urlString) else {
             showNameError(with: "systemErrorMessage")
             return
@@ -219,14 +219,8 @@ class ReferralViewModel: ObservableObject {
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     showNameError(with: "alreadyTaken")
-                } else if httpResponse.statusCode == 404 {
-                    if forReferralCode {
-                        saveReferralCode()
-                    } else {
-                        showNameError(with: "referralCodeNotFound")
-                    }
                 } else {
-                    showNameError(with: "systemErrorMessage")
+                    saveReferralCode()
                 }
             }
         } catch {

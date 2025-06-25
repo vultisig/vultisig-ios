@@ -502,7 +502,7 @@ class Endpoint {
     }
     
     static func getLifiSwapTracker(txid: String) -> String {
-        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
+        return "https://scan.li.fi/tx/\(txid)"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
@@ -763,7 +763,7 @@ class Endpoint {
     
     // Referral
     
-    static let ReferralBase = "https://midgard.ninerealms.com/v2"
+    static let ReferralBase = "https://thornode.ninerealms.com/thorchain"
     static let ReferralFees = "https://thornode.ninerealms.com/thorchain/network"
     
     static func checkNameAvailability(for code: String) -> String {

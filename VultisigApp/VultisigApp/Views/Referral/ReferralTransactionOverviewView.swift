@@ -131,7 +131,7 @@ struct ReferralTransactionOverviewView: View {
     
     private func setData() {
         animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-    }
+        referralViewModel.savedGeneratedReferralCode = referralViewModel.referralCode    }
 }
 
 #Preview {

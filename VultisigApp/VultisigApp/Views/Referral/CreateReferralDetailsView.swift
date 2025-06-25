@@ -64,6 +64,7 @@ struct CreateReferralDetailsView: View {
         VStack(spacing: 8) {
             setExpirationTitle
             setExpirationCounter
+            expirationDate
         }
     }
     
@@ -80,6 +81,15 @@ struct CreateReferralDetailsView: View {
             expiratingInCounter
             increaseExpirationButton
         }
+    }
+    
+    var expirationDate: some View {
+        getCell(
+            title: "expirationDate",
+            description1: getExpirationDate(),
+            description2: "",
+            isPlaceholder: referralViewModel.expireInCount == 0
+        )
     }
     
     var decreaseExpirationButton: some View {
@@ -268,8 +278,10 @@ struct CreateReferralDetailsView: View {
                 Text(description1)
                     .foregroundColor(.neutral0)
                 
-                Text(description2)
-                    .foregroundColor(.extraLightGray)
+                if !description2.isEmpty {
+                    Text(description2)
+                        .foregroundColor(.extraLightGray)
+                }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
@@ -292,6 +304,17 @@ struct CreateReferralDetailsView: View {
         Task {
             await referralViewModel.calculateFees()
         }
+    }
+    
+    private func getExpirationDate() -> String {
+        let currentDate = Date()
+        let oneYearLater = Calendar.current.date(byAdding: .year, value: referralViewModel.expireInCount, to: currentDate)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM yyyy"
+        formatter.locale = Locale(identifier: "en_US")
+
+        let formattedDate = formatter.string(from: oneYearLater ?? Date())
+        return formattedDate
     }
 }
 
