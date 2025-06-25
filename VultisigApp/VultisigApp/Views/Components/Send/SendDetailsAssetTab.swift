@@ -116,29 +116,7 @@ struct SendDetailsAssetTab: View {
     }
     
     var doneEditTools: some View {
-        HStack(spacing: 12) {
-            checkmark
-            editButton
-        }
-        .font(.body16BrockmannMedium)
-    }
-    
-    var checkmark: some View {
-        Image(systemName: "checkmark.circle")
-            .foregroundColor(.alertTurquoise)
-    }
-    
-    var editButton: some View {
-        Button {
-            viewModel.selectedTab = .Asset
-        } label: {
-            editLabel
-        }
-    }
-    
-    var editLabel: some View {
-        Image(systemName: "pencil")
-            .foregroundColor(.neutral0)
+        SendDetailsTabEditTools(forTab: .Asset, viewModel: viewModel)
     }
 }
 
