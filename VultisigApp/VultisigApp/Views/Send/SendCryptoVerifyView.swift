@@ -36,6 +36,9 @@ var body: some View {
     .onAppear {
         setData()
     }
+    .task {
+        await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
+    }
 }
 
 var view: some View {
@@ -68,6 +71,10 @@ var fields: some View {
         VStack(spacing: 30) {
             summary
             checkboxes
+            
+            if sendCryptoVerifyViewModel.showSecurityScan {
+                SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
+            }
             }
             .padding(.horizontal, 16)
         }

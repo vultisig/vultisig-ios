@@ -6,6 +6,7 @@
 import SwiftData
 import SwiftUI
 import WalletCore
+import OSLog
 
 @main
 struct VultisigApp: App {
@@ -23,6 +24,11 @@ struct VultisigApp: App {
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
+    
+    init() {
+        // Configure security service on app launch
+        setupSecurityService()
+    }
     
     var body: some Scene {
         WindowGroup {
@@ -71,6 +77,11 @@ struct VultisigApp: App {
     
     func resetLogin() {
         accountViewModel.revokeAuth()
+    }
+    
+    private func setupSecurityService() {
+        let configuration = SecurityServiceFactory.getConfigurationFromEnvironment()
+        SecurityServiceFactory.configure(with: configuration)
     }
 }
 
