@@ -13,7 +13,36 @@ struct SendDetailsAssetTab: View {
     
     @State var isExpanded: Bool = true
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
+        content
+            .onAppear {
+                setData()
+            }
+            .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
+                if let vault = homeViewModel.selectedVault {
+                    SwapChainPickerView(
+                        vault: vault,
+                        showSheet: $viewModel.showChainPickerSheet,
+                        selectedChain: $viewModel.selectedChain,
+                        selectedCoin: $tx.coin
+                    )
+                }
+            })
+            .sheet(isPresented: $viewModel.showCoinPickerSheet, content: {
+                if let vault = homeViewModel.selectedVault {
+                    SwapCoinPickerView(
+                        vault: vault,
+                        showSheet: $viewModel.showCoinPickerSheet,
+                        selectedCoin: $tx.coin,
+                        selectedChain: $viewModel.selectedChain
+                    )
+                }
+            })
+    }
+    
+    var content: some View {
         VStack(spacing: 16) {
             titleSection
             
@@ -58,6 +87,14 @@ struct SendDetailsAssetTab: View {
     }
     
     var chainSelection: some View {
+        Button {
+            viewModel.showChainPickerSheet.toggle()
+        } label: {
+            chainSelectionLabel
+        }
+    }
+    
+    var chainSelectionLabel: some View {
         HStack(spacing: 8) {
             chainSelectionTitle
             selectedChainCell
@@ -77,9 +114,17 @@ struct SendDetailsAssetTab: View {
     
     var selectedCoinCell: some View {
         HStack {
-            SwapFromToCoin(coin: tx.coin)
+            selectedCoinButton
             Spacer()
             selectedCoinBalance
+        }
+    }
+    
+    var selectedCoinButton: some View {
+        Button {
+            viewModel.showCoinPickerSheet.toggle()
+        } label: {
+            SwapFromToCoin(coin: tx.coin)
         }
     }
     
@@ -117,6 +162,10 @@ struct SendDetailsAssetTab: View {
     
     var doneEditTools: some View {
         SendDetailsTabEditTools(forTab: .Asset, viewModel: viewModel)
+    }
+    
+    private func setData() {
+        viewModel.selectedChain = tx.coin.chain
     }
 }
 
