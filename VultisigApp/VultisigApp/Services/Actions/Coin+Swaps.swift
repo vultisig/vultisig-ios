@@ -28,8 +28,8 @@ extension Coin {
             return [.mayachain]
         case .ethereum:
             let defaultProviders: [SwapProvider] = [
-                .oneinch(chain),
                 .kyberswap(chain),
+                .oneinch(chain),
                 .lifi
             ]
             
@@ -46,21 +46,21 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .thorchain, .oneinch(chain), .lifi]
             } else {
-                return [.oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .thorchain, .oneinch(chain), .lifi]
             } else {
-                return [.oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .mayachain, .oneinch(chain), .lifi]
             } else {
-                return [.oneinch(chain), .kyberswap(chain), .lifi]
+                return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
@@ -68,7 +68,7 @@ extension Coin {
             }
             return [.oneinch(chain), .lifi] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2:
-            return [.oneinch(chain), .kyberswap(chain), .lifi] // KyberSwap supported
+            return [.kyberswap(chain), .oneinch(chain), .lifi] // KyberSwap supported
         case .zksync:
             return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
         case .blast:
