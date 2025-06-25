@@ -72,6 +72,30 @@ extension String {
     func parseInput(locale: Locale = Locale.current) -> Decimal? {
         let usLocale = Locale(identifier: "en_US")
         
+        // Helper function to validate if parsed result makes sense
+        func isReasonableParse(original: String, parsed: Decimal) -> Bool {
+            // If the original string contains a decimal separator at the beginning (0.xxx or 0,xxx)
+            // the parsed value should be less than 1
+            let startsWithZeroDecimal = original.hasPrefix("0.") || original.hasPrefix("0,")
+            if startsWithZeroDecimal && parsed >= 1 {
+                return false
+            }
+            
+            // Additional validation: the number of digits shouldn't drastically change
+            // For example, "0.012" (5 chars) shouldn't become "12" (2 digit number)
+            let originalDigits = original.replacingOccurrences(of: ",", with: "")
+                                        .replacingOccurrences(of: ".", with: "")
+                                        .replacingOccurrences(of: " ", with: "")
+            let parsedString = "\(parsed)".replacingOccurrences(of: ".", with: "")
+            
+            // If we have more digits in the result than in the input, something's wrong
+            if parsedString.count > originalDigits.count {
+                return false
+            }
+            
+            return true
+        }
+        
         // Attempt 1: Try parsing with the user's current (or provided default) locale first
         // This ensures comma-based locales (Europe/Brazil) work correctly
         if locale.identifier != usLocale.identifier {
@@ -80,7 +104,11 @@ extension String {
             formatterCurrent.numberStyle = .decimal
             
             if let number = formatterCurrent.number(from: self) {
-                return number.decimalValue
+                let decimal = number.decimalValue
+                // Validate the parse makes sense
+                if isReasonableParse(original: self, parsed: decimal) {
+                    return decimal
+                }
             }
         }
         
@@ -90,10 +118,21 @@ extension String {
         formatterUS.numberStyle = .decimal
         
         if let number = formatterUS.number(from: self) {
+            let decimal = number.decimalValue
+            // For US locale, also validate (though less likely to have issues)
+            if isReasonableParse(original: self, parsed: decimal) {
+                return decimal
+            }
+        }
+        
+        // Attempt 3: If both locale-specific attempts produced unreasonable results,
+        // try a more lenient approach - replace comma with dot and parse as US
+        let normalizedString = self.replacingOccurrences(of: ",", with: ".")
+        if let number = formatterUS.number(from: normalizedString) {
             return number.decimalValue
         }
         
-        // If both attempts fail
+        // If all attempts fail
         return nil
     }
 }
