@@ -12,7 +12,6 @@
 
 ### 3. **View Layer** (UI Components)
 - **SecurityScanView** - Main security scan display component
-- **CompactSecurityScanView** - Compact version for limited space
 - **SecurityRiskBadge** - Badge displaying risk level
 - **SendCryptoVerifyView** - Send transaction verification screen
 - **KeysignMessageConfirmView** - Keysign confirmation screen
@@ -118,12 +117,6 @@ classDiagram
         +riskLevel: SecurityRiskLevel
         +body: View
         -badgeColor: Color
-    }
-
-    class CompactSecurityScanView {
-        <<View>>
-        +viewModel: SecurityScanViewModel
-        +body: View
     }
 
     class SendCryptoVerifyView {
@@ -257,7 +250,6 @@ classDiagram
     SecurityScanView --> SecurityScanViewModel : observes
     SendCryptoVerifyView --> SendCryptoVerifyViewModel : observes
     KeysignMessageConfirmView --> JoinKeysignViewModel : observes
-    CompactSecurityScanView --> SecurityScanViewModel : observes
     SecurityRiskBadge --> SecurityRiskLevel : displays
     
     %% Relationships - Domain Integration
