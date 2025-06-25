@@ -201,7 +201,7 @@ struct SwapCryptoDoneView: View {
             
             otherFees
         }
-        .padding(24)
+        .padding(.horizontal, 24)
         .background(Color.blue600)
         .cornerRadius(16)
         .overlay(

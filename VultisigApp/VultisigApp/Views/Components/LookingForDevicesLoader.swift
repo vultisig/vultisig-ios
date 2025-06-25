@@ -24,7 +24,6 @@ struct LookingForDevicesLoader: View {
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .cornerRadius(10)
-        .shadow(radius: 5)
         .onAppear {
             animationVM = RiveViewModel(fileName: "ConnectingWithServer", autoPlay: true)
             

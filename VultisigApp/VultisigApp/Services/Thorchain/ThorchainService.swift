@@ -38,7 +38,7 @@ class ThorchainService: ThorchainSwapProvider {
                 
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
-                    ticker: info.symbol,
+                    ticker: info.symbol.uppercased().replacingOccurrences(of: "X/", with: ""),
                     logo: info.logo, // We will have to move this logo to another storage
                     decimals: 8,
                     priceProviderId: localAsset?.priceProviderId ?? "",

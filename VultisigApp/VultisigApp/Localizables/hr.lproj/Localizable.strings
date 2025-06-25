@@ -666,3 +666,6 @@
 "pickValidExpiration" = "Postavi valjano vrijeme isteka";
 "pickPayoutAsset" = "Odaberi način isplate s popisa";
 "insufficientBalance" = "Nedovoljno sredstava";
+"verifyBoxCheck" = "Molimo označite sve kućice";
+"expirationDate" = "Datum isteka";
+"yourReferralCode" = "Tvoj referalni kod";

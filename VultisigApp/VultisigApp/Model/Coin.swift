@@ -242,6 +242,11 @@ class Coin: ObservableObject, Codable, Hashable {
             }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
+
+        if chain == .thorChain {
+            return "\(chain.swapAsset).\(ticker)"
+        }
+
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     
