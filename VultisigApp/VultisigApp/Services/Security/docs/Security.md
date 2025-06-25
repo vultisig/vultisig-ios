@@ -245,10 +245,24 @@ enum AvailableSecurityProvider: String, CaseIterable {
 
 ```swift
 // Add any provider-specific logic in SecurityService.swift
-func scanTokenWithCustomProvider(_ tokenAddress: String, for chain: Chain) async throws -> SecurityScanResponse {
-    // Provider-specific implementation if needed
-    if let myProvider = provider as? MySecurityProvider {
-        return try await myProvider.scanToken(tokenAddress, for: chain)
+extension SecurityService {
+    func scanTokenWithCustomProvider(_ tokenAddress: String, for chain: Chain) async throws -> SecurityScanResponse {
+        // First, select an appropriate provider
+        guard let provider = selectProvider(for: chain) as? MySecurityProvider else {
+            throw SecurityProviderError.chainNotSupported
+        }
+        
+        // Ensure the provider has the scanToken method implemented
+        // Note: You need to add scanToken to MySecurityProvider protocol
+        return try await provider.scanToken(tokenAddress, for: chain)
+    }
+}
+
+// Also add the scanToken method to your provider:
+extension MySecurityProvider {
+    func scanToken(_ tokenAddress: String, for chain: Chain) async throws -> SecurityScanResponse {
+        // Implement your token scanning logic here
+        // Return appropriate SecurityScanResponse
     }
 }
 ```
