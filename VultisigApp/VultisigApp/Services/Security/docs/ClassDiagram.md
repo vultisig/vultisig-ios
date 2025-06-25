@@ -1,4 +1,3 @@
-```
 classDiagram
     %% Core Service
     class SecurityService {
@@ -205,7 +204,7 @@ classDiagram
     
     SecurityScanRequest --> SecurityTransactionType : has
 
-```
+
 
 ## Architecture Overview:
 
