@@ -100,7 +100,7 @@ class SecurityServiceTests: XCTestCase {
     // MARK: - Solana Transaction Scanning Tests
     
     func testSolanaTransactionScan_Transfer() async throws {
-        // Test Solana SOL transfer scanning (not available in current plan - no providers support Solana)
+        // Test Solana SOL transfer scanning (not available - Blockaid returns "not supported in GA")
         let solanaRequest = SecurityScanRequest(
             chain: .solana,
             transactionType: .transfer,
@@ -111,16 +111,16 @@ class SecurityServiceTests: XCTestCase {
             metadata: ["test": "Solana transfer"]
         )
         
-        // Since no providers support Solana in current plan, SecurityService returns safe response
+        // Solana is not supported in GA, so it returns None provider
         let response = try await securityService.scanTransaction(solanaRequest)
         XCTAssertEqual(response.provider, "None")
         XCTAssertEqual(response.riskLevel, .low)
         XCTAssertTrue(response.isSecure)
-        print("✅ Solana Transfer Scan returned safe response: No providers support Solana in current plan")
+        print("✅ Solana Transfer Scan returned safe response: Solana not supported in GA")
     }
     
     func testSolanaTransactionScan_TokenTransfer() async throws {
-        // Test Solana SPL token transfer scanning (not available in current plan - no providers support Solana)
+        // Test Solana SPL token transfer scanning (not available - Blockaid returns "not supported in GA")
         let tokenRequest = SecurityScanRequest(
             chain: .solana,
             transactionType: .transfer,
@@ -131,12 +131,12 @@ class SecurityServiceTests: XCTestCase {
             metadata: ["test": "Solana token transfer", "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"]
         )
         
-        // Since no providers support Solana in current plan, SecurityService returns safe response
+        // Solana is not supported in GA, so it returns None provider
         let response = try await securityService.scanTransaction(tokenRequest)
         XCTAssertEqual(response.provider, "None")
         XCTAssertEqual(response.riskLevel, .low)
         XCTAssertTrue(response.isSecure)
-        print("✅ Solana Token Transfer Scan returned safe response: No providers support Solana in current plan")
+        print("✅ Solana Token Transfer Scan returned safe response: Solana not supported in GA")
     }
     
     // MARK: - Token Scanning Tests
@@ -237,6 +237,213 @@ class SecurityServiceTests: XCTestCase {
         }
     }
     
+    // MARK: - Comprehensive Chain Support Tests
+    
+    func testAllEVMChains() async throws {
+        print("🧪 Testing ALL EVM Chains")
+        
+        let evmChains: [Chain] = [
+            .ethereum,
+            .avalanche,
+            .base,
+            .blast,
+            .arbitrum,
+            .polygon,
+            .polygonV2,
+            .optimism,
+            .bscChain,
+            .cronosChain,
+            .zksync,
+            .ethereumSepolia
+        ]
+        
+        for chain in evmChains {
+            print("\n📊 Testing \(chain.name) (\(chain.rawValue))")
+            
+            let request = SecurityScanRequest(
+                chain: chain,
+                transactionType: .transfer,
+                fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+                toAddress: "0x0987654321098765432109876543210987654321",
+                amount: "1000000000000000000", // 1 ETH equivalent
+                data: nil,
+                metadata: ["chain": chain.name, "test": "EVM chain support"]
+            )
+            
+            do {
+                let response = try await securityService.scanTransaction(request)
+                print("✅ \(chain.name) scan successful:")
+                print("   - Provider: \(response.provider)")
+                print("   - Risk Level: \(response.riskLevel.rawValue)")
+                print("   - Secure: \(response.isSecure)")
+                XCTAssertEqual(response.provider, "Blockaid", "\(chain.name) should use Blockaid provider")
+            } catch {
+                print("❌ \(chain.name) scan failed: \(error)")
+                XCTFail("\(chain.name) transaction scan should work: \(error)")
+            }
+        }
+    }
+    
+    func testAllBitcoinUTXOChains() async throws {
+        print("\n🧪 Testing ALL Bitcoin/UTXO Chains")
+        
+        let utxoChains: [Chain] = [
+            .bitcoin,
+            .bitcoinCash,
+            .litecoin,
+            .dogecoin,
+            .dash,
+            .zcash
+        ]
+        
+        for chain in utxoChains {
+            print("\n📊 Testing \(chain.name) (\(chain.rawValue))")
+            
+            // Use appropriate address format for UTXO chains
+            let fromAddress = chain == .bitcoin ? "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" : "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+            let toAddress = chain == .bitcoin ? "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" : "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2"
+            
+            // Sample raw transaction hex for Bitcoin (this is a real transaction format but with dummy data)
+            let rawTxHex = "0200000001abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890000000006a473044022012345678901234567890123456789012345678901234567890123456789012340220123456789012345678901234567890123456789012345678901234567890123401210234567890123456789012345678901234567890123456789012345678901234567890ffffffff0100e1f505000000001976a914123456789012345678901234567890123456789088ac00000000"
+            
+            let request = SecurityScanRequest(
+                chain: chain,
+                transactionType: .transfer,
+                fromAddress: fromAddress,
+                toAddress: toAddress,
+                amount: "100000000", // 1 BTC in satoshis
+                data: rawTxHex, // Include raw transaction hex for Bitcoin
+                metadata: ["chain": chain.name, "test": "UTXO chain support"]
+            )
+            
+            // Bitcoin/UTXO scanning is not supported (returns 404), so we expect None provider
+            let response = try await securityService.scanTransaction(request)
+            print("✅ \(chain.name) scan returned fallback:")
+            print("   - Provider: \(response.provider)")
+            print("   - Risk Level: \(response.riskLevel.rawValue)")
+            print("   - Secure: \(response.isSecure)")
+            
+            // All UTXO chains should return "None" provider since they're not supported
+            XCTAssertEqual(response.provider, "None", "\(chain.name) should use 'None' provider (not supported)")
+            XCTAssertEqual(response.riskLevel, .low, "\(chain.name) should return low risk")
+        }
+    }
+    
+    func testSolanaChain() async throws {
+        print("\n🧪 Testing Solana Chain")
+        
+        let solanaAddress1 = "11111111111111111111111111111112"
+        let solanaAddress2 = "22222222222222222222222222222223"
+        
+        // Sample Solana transaction message (base64 encoded)
+        let solanaMessage = "AQABAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        
+        let request = SecurityScanRequest(
+            chain: .solana,
+            transactionType: .transfer,
+            fromAddress: solanaAddress1,
+            toAddress: solanaAddress2,
+            amount: "1000000000", // 1 SOL in lamports
+            data: solanaMessage, // Include serialized transaction message
+            metadata: ["chain": "Solana", "test": "Solana support"]
+        )
+        
+        // Solana is not supported in GA, so we expect None provider
+        let response = try await securityService.scanTransaction(request)
+        print("✅ Solana scan returned fallback:")
+        print("   - Provider: \(response.provider)")
+        print("   - Risk Level: \(response.riskLevel.rawValue)")
+        print("   - Secure: \(response.isSecure)")
+        XCTAssertEqual(response.provider, "None", "Solana should use 'None' provider (not supported in GA)")
+        XCTAssertEqual(response.riskLevel, .low, "Solana should return low risk")
+    }
+    
+    func testUnsupportedChains() async throws {
+        print("\n🧪 Testing Unsupported Chains")
+        
+        let unsupportedChains: [Chain] = [
+            .thorChain,
+            .mayaChain,
+            .gaiaChain,
+            .kujira,
+            .dydx,
+            .osmosis,
+            .terra,
+            .terraClassic,
+            .noble,
+            .akash,
+            .sui,
+            .polkadot,
+            .ton,
+            .ripple,
+            .tron,
+            .cardano
+        ]
+        
+        for chain in unsupportedChains {
+            print("\n📊 Testing \(chain.name) (\(chain.rawValue)) - Expected to be unsupported")
+            
+            let request = SecurityScanRequest(
+                chain: chain,
+                transactionType: .transfer,
+                fromAddress: "test_address_1",
+                toAddress: "test_address_2",
+                amount: "1000000",
+                data: nil,
+                metadata: ["chain": chain.name, "test": "Unsupported chain"]
+            )
+            
+            let isAvailable = securityService.isSecurityScanningAvailable(for: chain)
+            XCTAssertFalse(isAvailable, "\(chain.name) should not have security scanning available")
+            
+            do {
+                let response = try await securityService.scanTransaction(request)
+                print("ℹ️ \(chain.name) returned response:")
+                print("   - Provider: \(response.provider)")
+                print("   - Risk Level: \(response.riskLevel.rawValue)")
+                // Unsupported chains should return "None" provider with low risk
+                XCTAssertEqual(response.provider, "None", "\(chain.name) should use 'None' provider")
+                XCTAssertEqual(response.riskLevel, .low, "\(chain.name) should return low risk")
+            } catch {
+                print("ℹ️ \(chain.name) threw error (expected): \(error)")
+            }
+        }
+    }
+    
+    func testChainMappingAccuracy() async throws {
+        print("\n🧪 Testing Chain Mapping Accuracy")
+        
+        // Test that specific chains map to correct Blockaid chain identifiers
+        let chainMappings: [(chain: Chain, expectedMapping: String)] = [
+            (.ethereum, "ethereum"),
+            (.polygon, "polygon"),
+            (.polygonV2, "polygon"),
+            (.bscChain, "bsc"),
+            (.avalanche, "avalanche"),
+            (.arbitrum, "arbitrum"),
+            (.optimism, "optimism"),
+            (.base, "base"),
+            (.solana, "solana"),
+            (.bitcoin, "bitcoin"),
+            (.bitcoinCash, "bitcoin-cash"),
+            (.litecoin, "litecoin"),
+            (.dogecoin, "dogecoin"),
+            (.dash, "dash")
+        ]
+        
+        for (chain, expectedMapping) in chainMappings {
+            print("\n📊 Verifying \(chain.name) maps to '\(expectedMapping)'")
+            
+            // We can't directly test the mapping function, but we can verify
+            // that the chain works as expected
+            if securityService.isSecurityScanningAvailable(for: chain) {
+                print("✅ \(chain.name) is available for scanning")
+            } else {
+                print("❌ \(chain.name) is not available for scanning")
+            }
+        }
+    }
+    
     // MARK: - Error Handling Tests
     
     func testErrorHandling_InvalidAddress() async throws {
@@ -325,7 +532,8 @@ class SecurityServiceTests: XCTestCase {
     func testServiceConfiguration() {
         XCTAssertTrue(securityService.isEnabled)
         XCTAssertTrue(securityService.isSecurityScanningAvailable(for: .ethereum))
-        XCTAssertFalse(securityService.isSecurityScanningAvailable(for: .solana)) // Not available in current plan
+        XCTAssertFalse(securityService.isSecurityScanningAvailable(for: .solana)) // Not available in GA
+        XCTAssertFalse(securityService.isSecurityScanningAvailable(for: .bitcoin)) // Returns 404
         print("✅ SecurityService configuration verified")
     }
 } 

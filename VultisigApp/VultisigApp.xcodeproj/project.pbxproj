@@ -847,6 +847,7 @@
 		DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */; };
 		A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */; };
 		A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */; };
+		A6SEC9932E1234567890AB01 /* SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */; };
 		DE49A1852B65F6DB000F3AFB /* VultisigAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1842B65F6DB000F3AFB /* VultisigAppUITests.swift */; };
 		DE49A1872B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1862B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift */; };
 		DE49A1942B65F7B6000F3AFB /* Mediator in Resources */ = {isa = PBXBuildFile; fileRef = DE49A1932B65F7B6000F3AFB /* Mediator */; };
@@ -1795,6 +1796,7 @@
 		DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppTests.swift; sourceTree = "<group>"; };
 		A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/SecurityServiceTests.swift"; sourceTree = "<group>"; };
 		A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/SecurityServiceAPIResponseTests.swift"; sourceTree = "<group>"; };
+		A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/SecurityServiceChainCoverageTests.swift"; sourceTree = "<group>"; };
 		DE49A1802B65F6DB000F3AFB /* VultisigAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VultisigAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A1842B65F6DB000F3AFB /* VultisigAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppUITests.swift; sourceTree = "<group>"; };
 		DE49A1862B65F6DB000F3AFB /* VultisigAppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigAppUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -3779,6 +3781,7 @@
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
 				A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */,
 				A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */,
+				A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -4942,6 +4945,7 @@
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 				A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */,
 				A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */,
+				A6SEC9932E1234567890AB01 /* SecurityServiceChainCoverageTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

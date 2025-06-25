@@ -13,12 +13,22 @@ struct SecurityProviderCapabilities {
     let solanaTransactionScanning: Bool
     let addressValidation: Bool
     let tokenScanning: Bool
+    let siteScanning: Bool
+    let bitcoinTransactionScanning: Bool
+    let starknetTransactionScanning: Bool
+    let stellarTransactionScanning: Bool
+    let suiTransactionScanning: Bool
     
     static let blockaid = SecurityProviderCapabilities(
-        evmTransactionScanning: true,
-        solanaTransactionScanning: false,
-        addressValidation: false,
-        tokenScanning: false
+        evmTransactionScanning: true,          // ✅ Working - /evm/json-rpc/scan 
+        solanaTransactionScanning: false,      // ❌ Not in GA - API returns "not supported in GA"
+        addressValidation: false,              // ❌ Returns 403 "You cannot consume this service"
+        tokenScanning: false,                  // ❌ Returns 403 "You cannot consume this service"
+        siteScanning: true,                    // ✅ Working - /site/scan endpoint
+        bitcoinTransactionScanning: false,     // ❌ Returns 404 "no Route matched"
+        starknetTransactionScanning: false,    // ❌ Chain not available in app
+        stellarTransactionScanning: false,     // ❌ Chain not available in app
+        suiTransactionScanning: false          // ❌ Chain not available in app
     )
     
     /// No capabilities (disabled)
@@ -26,7 +36,12 @@ struct SecurityProviderCapabilities {
         evmTransactionScanning: false,
         solanaTransactionScanning: false,
         addressValidation: false,
-        tokenScanning: false
+        tokenScanning: false,
+        siteScanning: false,
+        bitcoinTransactionScanning: false,
+        starknetTransactionScanning: false,
+        stellarTransactionScanning: false,
+        suiTransactionScanning: false
     )
 }
 

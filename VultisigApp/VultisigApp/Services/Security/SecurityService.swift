@@ -7,13 +7,14 @@
 
 import Foundation
 import OSLog
+import WalletCore
 
 /// Main security service that manages multiple security providers
 class SecurityService {
     static let shared = SecurityService()
     
     private let logger = Logger(subsystem: "security-service", category: "security")
-    private var providers: [SecurityProvider] = []
+    internal var providers: [SecurityProvider] = []
     private(set) var isEnabled: Bool = true
     
     private init() {
@@ -76,6 +77,8 @@ class SecurityService {
                 return capabilities.evmTransactionScanning
             case .Solana:
                 return capabilities.solanaTransactionScanning
+            case .UTXO:
+                return capabilities.bitcoinTransactionScanning
             default:
                 return false
             }
@@ -111,6 +114,8 @@ class SecurityService {
                 return capabilities.evmTransactionScanning
             case .Solana:
                 return capabilities.solanaTransactionScanning
+            case .UTXO:
+                return capabilities.bitcoinTransactionScanning
             default:
                 return false
             }
@@ -205,11 +210,60 @@ class SecurityService {
         return createSafeResponse()
     }
     
+    /// Scan a site/URL for security risks using available providers with site scanning enabled
+    func scanSite(_ url: String) async throws -> SecurityScanResponse {
+        guard isEnabled else {
+            logger.info("Security scanning is disabled, returning safe response")
+            return createSafeResponse()
+        }
+        
+        // Get providers that have site scanning capability enabled
+        let capableProviders = providers.filter { provider in
+            if let capabilityAware = provider as? CapabilityAwareSecurityProvider {
+                return capabilityAware.capabilities.siteScanning
+            }
+            return false
+        }
+        
+        guard let provider = capableProviders.first else {
+            logger.warning("No security providers support site scanning")
+            throw SecurityProviderError.unsupportedOperation("Site scanning not available in current plan")
+        }
+        
+        // Check if provider has scanSite method (Blockaid does)
+        if let blockaidProvider = provider as? BlockaidProvider {
+            logger.info("Scanning site \(url) with provider: \(provider.providerName)")
+            let response = try await blockaidProvider.scanSite(url)
+            logger.info("Site security scan completed. Risk level: \(response.riskLevel.rawValue)")
+            return response
+        }
+        
+        // Fallback: create a basic safe response for other providers
+        logger.info("Provider \(provider.providerName) doesn't support site scanning, returning safe response")
+        return createSafeResponse()
+    }
+    
     // MARK: - Convenience Methods
     
     /// Create a security scan request from a keysign payload
     func createSecurityScanRequest(from payload: KeysignPayload) -> SecurityScanRequest {
         let transactionType = determineTransactionType(from: payload)
+        
+        // For Solana, we need to create the transaction data
+        var transactionData: String? = payload.memo
+        
+        if payload.coin.chain == .solana {
+            // Try to create the Solana transaction message
+            do {
+                let inputData = try SolanaHelper.getPreSignedInputData(keysignPayload: payload)
+                transactionData = inputData.base64EncodedString()
+                logger.info("📦 Created Solana transaction data for security scan: \(transactionData ?? "nil")")
+            } catch {
+                logger.error("Failed to create Solana transaction data: \(error)")
+                // Fall back to memo
+                transactionData = payload.memo
+            }
+        }
         
         return SecurityScanRequest(
             chain: payload.coin.chain,
@@ -217,7 +271,7 @@ class SecurityService {
             fromAddress: payload.coin.address,
             toAddress: payload.toAddress,
             amount: payload.toAmount.description,
-            data: payload.memo,
+            data: transactionData,
             metadata: [
                 "memo": payload.memo ?? "",
                 "chainSpecific": payload.chainSpecific

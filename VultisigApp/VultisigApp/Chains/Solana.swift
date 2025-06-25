@@ -7,8 +7,11 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import OSLog
 
 enum SolanaHelper {
+    
+    private static let logger = Logger(subsystem: "solana-helper", category: "transaction")
     
     static let defaultFeeInLamports: BigInt = 1000000 //0.001
     
@@ -117,6 +120,13 @@ enum SolanaHelper {
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        
+        // Log the input data for debugging
+        logger.info("📦 SOLANA PRE-SIGNED INPUT DATA:")
+        logger.info("   - Input Data (hex): \(inputData.hexString)")
+        logger.info("   - Input Data (base64): \(inputData.base64EncodedString())")
+        logger.info("   - Input Data Length: \(inputData.count) bytes")
+        
         let imageHash = try SolanaHelper.getPreSignedImageHash(inputData: inputData)
         return imageHash
     }
@@ -128,6 +138,11 @@ enum SolanaHelper {
             print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
+        
+        // Log the pre-signing output
+        logger.info("🔐 SOLANA PRE-SIGNING OUTPUT:")
+        logger.info("   - Image Hash: \(preSigningOutput.data.hexString)")
+        
         return [preSigningOutput.data.hexString]
     }
     
@@ -180,6 +195,24 @@ enum SolanaHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
+        
+        // Log the final signed transaction
+        logger.info("✅ SOLANA SIGNED TRANSACTION:")
+        logger.info("   - Raw Transaction (base64): \(output.encoded)")
+        logger.info("   - Raw Transaction (hex): \(Data(base64Encoded: output.encoded)?.hexString ?? "error")")
+        logger.info("   - Transaction Hash: \(getHashFromRawTransaction(tx:output.encoded))")
+        logger.info("   - Transaction Length: \(output.encoded.count) bytes")
+        
+        // Print for easy copy/paste
+        print("\n🚀 SOLANA TRANSACTION DATA FOR TESTING:")
+        print("================================")
+        print("Base64 Encoded Transaction:")
+        print(output.encoded)
+        print("================================")
+        print("Hex Encoded Transaction:")
+        print(Data(base64Encoded: output.encoded)?.hexString ?? "error")
+        print("================================\n")
+        
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
 

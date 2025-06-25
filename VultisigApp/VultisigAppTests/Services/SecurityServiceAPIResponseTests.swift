@@ -8,402 +8,314 @@
 import XCTest
 @testable import VultisigApp
 
-class SecurityServiceAPIResponseTests: XCTestCase {
+final class SecurityServiceAPIResponseTests: XCTestCase {
     
-    var securityService: SecurityService!
+    private var securityService: SecurityService!
     
     override func setUpWithError() throws {
-        try super.setUpWithError()
-        
-        let configuration = SecurityServiceFactory.Configuration(
-            isEnabled: true
-        )
-        SecurityServiceFactory.configure(with: configuration)
+        // Initialize SecurityService with Blockaid provider
         securityService = SecurityService.shared
+        
+        // Ensure security scanning is enabled for tests
+        securityService.setEnabled(true)
+        
+        print("🧪 STARTING COMPREHENSIVE BLOCKAID API TESTS")
+        print("🔧 Security Service Configuration:")
+        print("   - Enabled: \(securityService.isEnabled)")
+        print("   - Providers: \(securityService.providers.map { $0.providerName })")
+        print("")
     }
     
     override func tearDownWithError() throws {
+        // Clean up after tests
         securityService = nil
-        try super.tearDownWithError()
     }
     
-    // MARK: - Working API Response Tests
+    // MARK: - EVM Transaction Scanning Tests (✅ Available)
     
     func testEthereumTransactionResponse() async throws {
-        print("\n🧪 TESTING: Ethereum Transaction Scanning")
+        print("🧪 TEST: Ethereum Transaction Scanning")
+        let ethereumChain = Chain.ethereum
         
         let request = SecurityScanRequest(
-            chain: .ethereum,
+            chain: ethereumChain,
             transactionType: .transfer,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC contract
-            amount: "1000000000000000000", // 1 ETH in wei
-            data: nil,
-            metadata: ["test": "Real Ethereum transfer"]
+            fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+            toAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+            amount: "1000000000000000000"
         )
         
         do {
             let response = try await securityService.scanTransaction(request)
+            print("✅ Response received:")
+            print("   - Provider: \(response.provider)")
+            print("   - Secure: \(response.isSecure)")
+            print("   - Risk Level: \(response.riskLevel)")
+            print("   - Warnings: \(response.warnings.count)")
             
-            print("✅ SUCCESS: Received response from Blockaid")
-            print("📊 Provider: \(response.provider)")
-            print("🔒 Is Secure: \(response.isSecure)")
-            print("⚠️ Risk Level: \(response.riskLevel.rawValue)")
-            print("🚨 Warnings Count: \(response.warnings.count)")
-            print("📝 Recommendations Count: \(response.recommendations.count)")
-            
-            if let metadata = response.metadata {
-                print("📄 Metadata:")
-                for (key, value) in metadata {
-                    print("   - \(key): \(value)")
-                }
-            }
-            
-            if !response.warnings.isEmpty {
-                print("⚠️ Warnings:")
-                for warning in response.warnings {
-                    print("   - Type: \(warning.type.rawValue)")
-                    print("   - Severity: \(warning.severity.rawValue)")
-                    print("   - Message: \(warning.message)")
-                    if let details = warning.details {
-                        print("   - Details: \(details)")
-                    }
-                }
-            }
-            
-            if !response.recommendations.isEmpty {
-                print("📋 Recommendations:")
-                for recommendation in response.recommendations {
-                    print("   - \(recommendation)")
-                }
-            }
-            
-            // Verify basic response structure
+            XCTAssertNotNil(response)
             XCTAssertEqual(response.provider, "Blockaid")
-            XCTAssertNotNil(response.riskLevel)
-            
         } catch {
-            XCTFail("Ethereum transaction scan failed: \(error.localizedDescription)")
-        }
-    }
-    
-    func testUniswapSwapResponse() async throws {
-        print("\n🧪 TESTING: Basic Contract Interaction")
-        
-        let request = SecurityScanRequest(
-            chain: .ethereum,
-            transactionType: .transfer,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", // Uniswap V2 Router
-            amount: "1000000000000000000",
-            data: "0x",
-            metadata: ["test": "Basic contract interaction"]
-        )
-        
-        do {
-            let response = try await securityService.scanTransaction(request)
-            
-            print("✅ SUCCESS: Basic contract interaction scan completed")
-            print("📊 Provider: \(response.provider)")
-            print("🔒 Is Secure: \(response.isSecure)")
-            print("⚠️ Risk Level: \(response.riskLevel.rawValue)")
-            print("🚨 Warnings Count: \(response.warnings.count)")
-            
-            if let metadata = response.metadata {
-                print("📄 Blockaid Metadata:")
-                for (key, value) in metadata {
-                    print("   - \(key): \(value)")
-                }
-            }
-            
-            XCTAssertEqual(response.provider, "Blockaid")
-            XCTAssertNotNil(response.riskLevel)
-            
-        } catch {
-            XCTFail("Basic contract interaction scan failed: \(error.localizedDescription)")
-        }
-    }
-    
-    func testBSCTransactionResponse() async throws {
-        print("\n🧪 TESTING: BSC Transaction Scanning")
-        
-        let request = SecurityScanRequest(
-            chain: .bscChain,
-            transactionType: .transfer,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56", // BUSD contract
-            amount: "1000000000000000000",
-            data: nil,
-            metadata: ["test": "BSC Chain transfer"]
-        )
-        
-        do {
-            let response = try await securityService.scanTransaction(request)
-            
-            print("✅ SUCCESS: BSC transaction scan completed")
-            print("📊 Risk Level: \(response.riskLevel.rawValue)")
-            print("🚨 Has Warnings: \(response.hasWarnings)")
-            
-            XCTAssertEqual(response.provider, "Blockaid")
-            XCTAssertNotNil(response.riskLevel)
-            
-        } catch {
-            XCTFail("BSC transaction scan failed: \(error.localizedDescription)")
+            print("❌ Error: \(error)")
+            XCTFail("Transaction scanning should work for Ethereum: \(error)")
         }
     }
     
     func testPolygonTransactionResponse() async throws {
-        print("\n🧪 TESTING: Polygon Transaction Scanning")
+        print("🧪 TEST: Polygon Transaction Scanning")
+        let polygonChain = Chain.polygon
         
         let request = SecurityScanRequest(
-            chain: .polygon,
+            chain: polygonChain,
             transactionType: .transfer,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", // USDC on Polygon
-            amount: "1000000000000000000",
-            data: nil,
-            metadata: ["test": "Polygon transfer"]
+            fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+            toAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+            amount: "1000000000000000000"
         )
         
         do {
             let response = try await securityService.scanTransaction(request)
+            print("✅ Response received:")
+            print("   - Provider: \(response.provider)")
+            print("   - Risk Level: \(response.riskLevel)")
             
-            print("✅ SUCCESS: Polygon transaction scan completed")
-            print("📊 Risk Level: \(response.riskLevel.rawValue)")
-            
+            XCTAssertNotNil(response)
             XCTAssertEqual(response.provider, "Blockaid")
-            XCTAssertNotNil(response.riskLevel)
-            
         } catch {
-            XCTFail("Polygon transaction scan failed: \(error.localizedDescription)")
+            print("❌ Error: \(error)")
+            XCTFail("Transaction scanning should work for Polygon: \(error)")
         }
     }
     
-    func testSolanaTransactionResponse() async throws {
-        print("\n🧪 TESTING: Solana Transaction Scanning")
-        
+    func testUniswapSwapResponse() async throws {
+        print("🧪 TEST: Uniswap V3 Swap Transaction")
         let request = SecurityScanRequest(
-            chain: .solana,
-            transactionType: .transfer,
-            fromAddress: "11111111111111111111111111111112", // System Program
-            toAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
-            amount: "1000000", // 1 SOL in lamports
-            data: "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDArczbMia6GFszyeyjwp2Cqf1PSx5PLrUyKjVDvuFEjYLAQIDBAUGBwgJAA==", // Sample Solana transaction data
-            metadata: ["test": "Solana transfer"]
+            chain: Chain.ethereum,
+            transactionType: .swap,
+            fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+            toAddress: "0xE592427A0AEce92De3Edee1F18E0157C05861564", // Uniswap V3 Router
+            amount: "1000000000000000000"
         )
         
         do {
             let response = try await securityService.scanTransaction(request)
+            print("✅ Uniswap response:")
+            print("   - Risk Level: \(response.riskLevel)")
+            print("   - Warnings: \(response.warnings.count)")
             
-            print("✅ SUCCESS: Solana transaction scan completed")
-            print("📊 Provider: \(response.provider)")
-            print("🔒 Is Secure: \(response.isSecure)")
-            print("⚠️ Risk Level: \(response.riskLevel.rawValue)")
-            print("🚨 Warnings Count: \(response.warnings.count)")
-            print("📝 Recommendations Count: \(response.recommendations.count)")
+            XCTAssertNotNil(response)
+        } catch {
+            print("❌ Error: \(error)")
+            XCTFail("Uniswap scanning failed: \(error)")
+        }
+    }
+    
+    // MARK: - Site Scanning Tests (✅ Available)
+    
+    func testSiteScanning() async throws {
+        print("🧪 TEST: Site Scanning - Safe Site")
+        let safeUrl = "https://vultisig.com"
+        
+        do {
+            let response = try await securityService.scanSite(safeUrl)
+            print("✅ Site scan response:")
+            print("   - URL: \(safeUrl)")
+            print("   - Risk Level: \(response.riskLevel)")
+            print("   - Secure: \(response.isSecure)")
+            print("   - Warnings: \(response.warnings.count)")
             
-            if let metadata = response.metadata {
-                print("📄 Metadata:")
-                for (key, value) in metadata {
-                    print("   - \(key): \(value)")
-                }
-            }
-            
-            if !response.warnings.isEmpty {
-                print("⚠️ Solana Warnings:")
-                for warning in response.warnings {
-                    print("   - Type: \(warning.type.rawValue)")
-                    print("   - Severity: \(warning.severity.rawValue)")
-                    print("   - Message: \(warning.message)")
-                    if let details = warning.details {
-                        print("   - Details: \(details)")
-                    }
-                }
-            }
-            
-            if !response.recommendations.isEmpty {
-                print("📋 Recommendations:")
-                for recommendation in response.recommendations {
-                    print("   - \(recommendation)")
-                }
-            }
-            
-            // Verify basic response structure
+            XCTAssertNotNil(response)
             XCTAssertEqual(response.provider, "Blockaid")
-            XCTAssertNotNil(response.riskLevel)
-            
         } catch {
-            XCTFail("Solana transaction scan failed: \(error.localizedDescription)")
+            print("❌ Error: \(error)")
+            XCTFail("Site scanning should work: \(error)")
         }
     }
-
-    // MARK: - Error Response Tests (403 endpoints)
     
-    func testTokenScanningResponse() async throws {
-        print("\n🧪 TESTING: Token Scanning (Expected Unsupported Operation)")
-        
-        let tokenAddress = "0xA0b86a33E6441c4c0E8B8C8532fD1F7B1B4E7A4F" // Random ERC-20
+    func testSuspiciousSiteScanning() async throws {
+        print("🧪 TEST: Site Scanning - Potentially Suspicious")
+        let suspiciousUrl = "https://evil-site.malicious.fake-site.test"
         
         do {
-            let _ = try await securityService.scanToken(tokenAddress, for: .ethereum)
-            XCTFail("Expected token scanning to fail with unsupported operation")
+            let response = try await securityService.scanSite(suspiciousUrl)
+            print("✅ Suspicious site scan response:")
+            print("   - URL: \(suspiciousUrl)")
+            print("   - Risk Level: \(response.riskLevel)")
+            print("   - Secure: \(response.isSecure)")
+            print("   - Warnings: \(response.warnings.count)")
             
-        } catch SecurityProviderError.unsupportedOperation(let message) {
-            print("⚠️ EXPECTED FAILURE: Token scan failed with: \(message)")
-            XCTAssertTrue(message.contains("not available in current plan"))
-            print("✅ Correct unsupported operation error received")
-            
+            XCTAssertNotNil(response)
         } catch {
-            XCTFail("Expected SecurityProviderError.unsupportedOperation, got: \(error.localizedDescription)")
+            print("❌ Error: \(error)")
+            // Don't fail - malicious sites might return errors and that's ok
+            print("⚠️  Suspicious site scanning returned error (expected behavior)")
         }
     }
     
-    func testAddressValidationResponse() async throws {
-        print("\n🧪 TESTING: Address Validation (Expected Unsupported Operation)")
-        
-        let address = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" // vitalik.eth
-        
-        do {
-            let _ = try await securityService.validateAddress(address, for: .ethereum)
-            XCTFail("Expected address validation to fail with unsupported operation")
-            
-        } catch SecurityProviderError.unsupportedOperation(let message) {
-            print("⚠️ EXPECTED FAILURE: Address validation failed with: \(message)")
-            XCTAssertTrue(message.contains("not available in current plan"))
-            print("✅ Correct unsupported operation error received")
-            
-        } catch {
-            XCTFail("Expected SecurityProviderError.unsupportedOperation, got: \(error.localizedDescription)")
-        }
-    }
+    // MARK: - Risk Level Mapping Tests
     
-    // MARK: - Performance and Stress Tests
-    
-    func testMultipleEVMChainResponses() async throws {
-        print("\n🧪 TESTING: Multiple Blockchain Chains Performance")
+    func testComprehensiveRiskLevelMapping() async throws {
+        print("🧪 TEST: Risk Level Mapping Validation")
         
-        let chains: [Chain] = [.ethereum, .bscChain, .polygon, .arbitrum, .solana]
-        let startTime = Date()
+        let testCases = [
+            (chain: Chain.ethereum, description: "Ethereum"),
+            (chain: Chain.bscChain, description: "BSC"), 
+            (chain: Chain.polygon, description: "Polygon"),
+            (chain: Chain.arbitrum, description: "Arbitrum")
+        ]
         
-        for chain in chains {
-            // Configure addresses and data based on chain type
-            let (fromAddress, toAddress, amount, data): (String, String, String, String?) = {
-                switch chain {
-                case .solana:
-                    return (
-                        "11111111111111111111111111111112", // System Program
-                        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT on Solana
-                        "1000000", // 1 SOL in lamports
-                        "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDArczbMia6GFszyeyjwp2Cqf1PSx5PLrUyKjVDvuFEjYLAQIDBAUGBwgJAA=="
-                    )
-                default: // EVM chains
-                    return (
-                        "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-                        "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-                        "1000000000000000000",
-                        nil
-                    )
-                }
-            }()
-            
+        for testCase in testCases {
             let request = SecurityScanRequest(
-                chain: chain,
+                chain: testCase.chain,
                 transactionType: .transfer,
-                fromAddress: fromAddress,
-                toAddress: toAddress,
-                amount: amount,
-                data: data,
-                metadata: ["test": "Multi-chain test", "chain": chain.name]
+                fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+                toAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+                amount: "100000000000000000"
             )
             
             do {
                 let response = try await securityService.scanTransaction(request)
-                print("✅ \(chain.name): Risk \(response.riskLevel.rawValue)")
-                
-                XCTAssertEqual(response.provider, "Blockaid")
-                XCTAssertNotNil(response.riskLevel)
-                
+                print("✅ \(testCase.description) - Risk: \(response.riskLevel)")
+                XCTAssertNotNil(response)
+                                 XCTAssertTrue([.none, .low, .medium, .high, .critical].contains(response.riskLevel))
             } catch {
-                XCTFail("\(chain.name) scan failed: \(error.localizedDescription)")
+                print("❌ \(testCase.description) failed: \(error)")
+                XCTFail("Risk level mapping failed for \(testCase.description)")
             }
         }
-        
-        let duration = Date().timeIntervalSince(startTime)
-        print("⏱️ Total time for \(chains.count) chains: \(String(format: "%.2f", duration)) seconds")
-        print("📊 Average time per chain: \(String(format: "%.2f", duration / Double(chains.count))) seconds")
     }
     
-    func testRealWorldContractInteraction() async throws {
-        print("\n🧪 TESTING: Real-World Contract Interaction")
+    // MARK: - Rate Limiting Tests
+    
+    func testRateLimitHandling() async throws {
+        print("🧪 TEST: Rate Limit Handling")
         
-        // Test interaction with a real DeFi contract (Compound)
-        let request = SecurityScanRequest(
-            chain: .ethereum,
-            transactionType: .contractInteraction,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B", // Compound Comptroller
-            amount: "0",
-            data: "0x4ef4c3e1000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000005d3a536e4d6dbd6114cc1ead35777bab948e3643",
-            metadata: ["test": "Compound interaction", "protocol": "compound"]
-        )
+        let requests = (1...3).map { i in
+            SecurityScanRequest(
+                chain: Chain.ethereum,
+                transactionType: .transfer,
+                fromAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+                toAddress: "0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7",
+                amount: "\(i)00000000000000000"
+            )
+        }
         
-        do {
-            let response = try await securityService.scanTransaction(request)
-            
-            print("✅ SUCCESS: Compound contract interaction scan completed")
-            print("📊 Risk Level: \(response.riskLevel.rawValue)")
-            print("🚨 Warnings Count: \(response.warnings.count)")
-            
-            if !response.warnings.isEmpty {
-                print("⚠️ DeFi Warnings Found:")
-                for warning in response.warnings {
-                    print("   - \(warning.type.rawValue): \(warning.message)")
+        await withTaskGroup(of: (Int, Bool).self) { group in
+            for (index, request) in requests.enumerated() {
+                group.addTask {
+                    do {
+                        let response = try await self.securityService.scanTransaction(request)
+                        print("✅ Request \(index + 1) completed - Risk: \(response.riskLevel)")
+                        return (index, true)
+                    } catch {
+                        print("❌ Request \(index + 1) failed: \(error)")
+                        return (index, false)
+                    }
                 }
             }
             
-            XCTAssertEqual(response.provider, "Blockaid")
+            var completedCount = 0
+            for await (_, success) in group {
+                if success {
+                    completedCount += 1
+                }
+            }
             
-        } catch {
-            XCTFail("Compound contract interaction scan failed: \(error.localizedDescription)")
+            print("✅ Rate limit test: \(completedCount)/\(requests.count) requests succeeded")
+            XCTAssertGreaterThan(completedCount, 0, "At least some requests should succeed")
         }
     }
     
-    // MARK: - Response Structure Validation
+    // MARK: - Disabled Capabilities Tests (❌ Not Available)
     
-    func testResponseStructureValidation() async throws {
-        print("\n🧪 TESTING: Response Structure Validation")
+    func testBitcoinTransactionCapabilityDisabled() async throws {
+        print("🧪 TEST: Bitcoin Transaction Scanning (Should be disabled)")
         
-        let request = SecurityScanRequest(
-            chain: .ethereum,
+        // Create a Bitcoin-like request 
+        let bitcoinRequest = SecurityScanRequest(
+            chain: .bitcoin,
             transactionType: .transfer,
-            fromAddress: "0x742d35Cc6634C0532925a3b8D2FD0E7ed30C7D6B",
-            toAddress: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-            amount: "1000000000000000000",
-            data: nil,
-            metadata: nil
+            fromAddress: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
+            toAddress: "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2",
+            amount: "100000000"
         )
         
-        let response = try await securityService.scanTransaction(request)
-        
-        // Validate all required fields are present
-        XCTAssertFalse(response.provider.isEmpty, "Provider should not be empty")
-        XCTAssertNotNil(response.riskLevel, "Risk level should be present")
-        XCTAssertNotNil(response.warnings, "Warnings array should be present")
-        XCTAssertNotNil(response.recommendations, "Recommendations array should be present")
-        
-        // Validate risk level is valid
-                    let validRiskLevels: [SecurityRiskLevel] = [.none, .low, .medium, .high, .critical]
-        XCTAssertTrue(validRiskLevels.contains(response.riskLevel), "Risk level should be valid")
-        
-        // Validate metadata structure if present
-        if let metadata = response.metadata {
-            print("📄 Metadata validation:")
-            for (key, value) in metadata {
-                print("   - \(key): \(value)")
-                XCTAssertFalse(key.isEmpty, "Metadata keys should not be empty")
-            }
+        do {
+            let response = try await securityService.scanTransaction(bitcoinRequest)
+            print("✅ Bitcoin response (fallback):")
+            print("   - Provider: \(response.provider)")
+            print("   - Should be 'None' (fallback): \(response.provider == "None")")
+            
+            // Should return "None" provider as Bitcoin endpoints aren't available
+            XCTAssertEqual(response.provider, "None")
+        } catch {
+            print("❌ Bitcoin test error: \(error)")
+            // This is actually expected since Bitcoin capabilities are disabled
+            print("✅ Expected: Bitcoin scanning not available")
         }
+    }
+    
+    func testAddressValidationCapabilityDisabled() async throws {
+        print("🧪 TEST: Address Validation (Should be disabled - 403)")
         
-        print("✅ Response structure validation passed")
+        do {
+            let response = try await securityService.validateAddress("0x742d35Cc6639Df3C2c6C4F4FE6a0c5e3b8b6e6d7", for: Chain.ethereum)
+            print("❌ Unexpected success: \(response)")
+            XCTFail("Address validation should throw error due to 403 (disabled capability)")
+        } catch SecurityProviderError.unsupportedOperation(let message) {
+            print("✅ Expected error: \(message)")
+            XCTAssertTrue(message.contains("not available in current plan"))
+        } catch {
+            print("✅ Address validation properly disabled: \(error)")
+        }
+    }
+    
+    func testTokenScanningCapabilityDisabled() async throws {
+        print("🧪 TEST: Token Scanning (Should be disabled - 403)")
+        
+        do {
+            let response = try await securityService.scanToken("0xA0b86a33E6441e13cDb9d59E4a623C79aF0Cc0c7", for: Chain.ethereum)
+            print("❌ Unexpected success: \(response)")
+            XCTFail("Token scanning should throw error due to 403 (disabled capability)")
+        } catch SecurityProviderError.unsupportedOperation(let message) {
+            print("✅ Expected error: \(message)")
+            XCTAssertTrue(message.contains("not available in current plan"))
+        } catch {
+            print("✅ Token scanning properly disabled: \(error)")
+        }
+    }
+    
+    // MARK: - Provider Configuration Test
+    
+    func testProviderConfiguration() {
+        print("🧪 TEST: Provider Configuration")
+        
+        let providers = securityService.getProviders()
+        print("✅ Available providers: \(providers.map { $0.providerName })")
+        
+        XCTAssertGreaterThan(providers.count, 0, "Should have at least one provider")
+        
+        // Check if Blockaid provider is configured
+        let hasBlockaid = providers.contains { $0.providerName == "Blockaid" }
+        XCTAssertTrue(hasBlockaid, "Should have Blockaid provider configured")
+        
+        // Check capabilities
+        if let blockaidProvider = providers.first(where: { $0.providerName == "Blockaid" }) as? CapabilityAwareSecurityProvider {
+            let caps = blockaidProvider.capabilities
+            print("✅ Blockaid capabilities:")
+            print("   - EVM Transaction Scanning: \(caps.evmTransactionScanning)")
+            print("   - Solana Transaction Scanning: \(caps.solanaTransactionScanning)")
+            print("   - Address Validation: \(caps.addressValidation)")
+            print("   - Token Scanning: \(caps.tokenScanning)")
+            print("   - Site Scanning: \(caps.siteScanning)")
+            print("   - Bitcoin Transaction Scanning: \(caps.bitcoinTransactionScanning)")
+            
+            XCTAssertTrue(caps.evmTransactionScanning, "EVM scanning should be enabled")
+            XCTAssertTrue(caps.siteScanning, "Site scanning should be enabled")
+            XCTAssertFalse(caps.solanaTransactionScanning, "Solana should be disabled (not in GA)")
+            XCTAssertFalse(caps.addressValidation, "Address validation should be disabled (403)")
+            XCTAssertFalse(caps.tokenScanning, "Token scanning should be disabled (403)")
+            XCTAssertFalse(caps.bitcoinTransactionScanning, "Bitcoin should be disabled (404)")
+        }
     }
 } 

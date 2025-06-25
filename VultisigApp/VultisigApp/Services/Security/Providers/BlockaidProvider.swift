@@ -37,9 +37,19 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         case .Solana:
             return capabilities.solanaTransactionScanning
         case .UTXO:
-            return false // Blockaid doesn't support Bitcoin-like chains yet
+            return capabilities.bitcoinTransactionScanning
+        case .Cosmos:
+            return false // Blockaid doesn't support Cosmos chains yet
         default:
-            return false
+            // Check for specific chain support
+            switch chain {
+            case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+                return capabilities.bitcoinTransactionScanning
+            case .solana:
+                return capabilities.solanaTransactionScanning
+            default:
+                return false
+            }
         }
     }
     
@@ -48,35 +58,51 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         case .EVM:
             return try await scanEVMTransaction(request)
         case .Solana:
+            // Solana scanning - using existing endpoint
             return try await scanSolanaTransaction(request)
+        case .UTXO:
+            // Bitcoin scanning - using existing endpoint  
+            return try await scanBitcoinTransaction(request)
         default:
-            throw SecurityProviderError.chainNotSupported(request.chain)
+            // For other chains, try EVM scanning as fallback
+            return try await scanEVMTransaction(request)
         }
     }
     
     func validateAddress(_ address: String, for chain: Chain) async throws -> SecurityScanResponse {
-        // Check if address validation is supported by this provider instance
-        guard capabilities.addressValidation else {
-            throw SecurityProviderError.unsupportedOperation("Address validation not available in current plan")
-        }
-        
         switch chain.chainType {
         case .EVM:
-            return try await scanEVMAddress(address, chain: chain)
+            return try await scanEVMAddress(address, for: chain)
         case .Solana:
-            return try await scanSolanaAddress(address, chain: chain)
+            return try await scanSolanaAddress(address, for: chain)
         default:
-            throw SecurityProviderError.chainNotSupported(chain)
+            throw SecurityProviderError.unsupportedOperation("Address validation not supported for chain: \(chain.name)")
+        }
+    }
+    
+    func scanSite(_ url: String) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidSiteScan()
+        
+        guard let requestURL = URL(string: endpoint) else {
+            throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        let requestBody = BlockaidSiteScanRequest(
+            url: url,
+            metadata: BlockaidRequestMetadata(domain: "vultisig.com")
+        )
+        
+        do {
+            let response: BlockaidTransactionScanResponse = try await performRequest(url: requestURL, body: requestBody)
+            return mapTransactionScanResponseToSecurityResponse(response)
+        } catch {
+            logger.error("Site scan failed: \(error)")
+            throw error
         }
     }
     
     func scanToken(_ tokenAddress: String, for chain: Chain) async throws -> SecurityScanResponse {
-        // Check if token scanning is supported by this provider instance
-        guard capabilities.tokenScanning else {
-            throw SecurityProviderError.unsupportedOperation("Token scanning not available in current plan")
-        }
-        
-        let endpoint = "\(baseURL)/token/scan"
+        let endpoint = Endpoint.blockaidTokenScan()
         
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
@@ -92,7 +118,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
-            logger.error("Token scan failed: \(error.localizedDescription)")
+            logger.error("Token scan failed: \(error)")
             throw error
         }
     }
@@ -100,7 +126,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     // MARK: - EVM Scanning
     
     private func scanEVMTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
-        let endpoint = "\(baseURL)/evm/json-rpc/scan"
+        let endpoint = Endpoint.blockaidEVMJSONRPCScan()
         
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
@@ -126,15 +152,13 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
-            logger.error("EVM scan failed: \(error.localizedDescription)")
+            logger.error("EVM transaction scan failed: \(error)")
             throw error
         }
     }
     
-    // MARK: - Address Scanning
-    
-    private func scanEVMAddress(_ address: String, chain: Chain) async throws -> SecurityScanResponse {
-        let endpoint = "\(baseURL)/evm/address/scan"
+    private func scanEVMAddress(_ address: String, for chain: Chain) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidEVMAddressScan()
         
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
@@ -150,29 +174,38 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
-            logger.error("EVM address scan failed: \(error.localizedDescription)")
+            logger.error("EVM address scan failed: \(error)")
             throw error
         }
     }
     
-    private func scanSolanaAddress(_ address: String, chain: Chain) async throws -> SecurityScanResponse {
-        let endpoint = "\(baseURL)/solana/address/scan"
+    // MARK: - Bitcoin Scanning
+    
+    private func scanBitcoinTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidBitcoinTransactionRaw()
         
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
         }
         
-        let requestBody = BlockaidAddressScanRequest(
-            chain: "solana",
-            address: address,
-            metadata: BlockaidRequestMetadata(domain: "vultisig.com")
+        let requestBody = BlockaidBitcoinRequest(
+            chain: mapChainToBlockaidChain(request.chain),
+            data: BlockaidBitcoinTransactionData(
+                rawTransaction: request.data ?? "",
+                fromAddress: request.fromAddress,
+                toAddress: request.toAddress,
+                amount: request.amount ?? "0"
+            ),
+            metadata: BlockaidRequestMetadata(
+                domain: "vultisig.com"
+            )
         )
         
         do {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
-            logger.error("Solana address scan failed: \(error.localizedDescription)")
+            logger.error("Bitcoin transaction scan failed: \(error)")
             throw error
         }
     }
@@ -180,10 +213,24 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     // MARK: - Solana Scanning
     
     private func scanSolanaTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
-        let endpoint = "\(baseURL)/solana/message/scan"
+        let endpoint = Endpoint.blockaidSolanaMessageScan()
         
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        // Log the incoming request data
+        logger.info("🚀 SOLANA SECURITY SCAN REQUEST:")
+        logger.info("   - From Address: \(request.fromAddress)")
+        logger.info("   - To Address: \(request.toAddress)")
+        logger.info("   - Amount: \(request.amount ?? "nil")")
+        logger.info("   - Data: \(request.data ?? "nil")")
+        logger.info("   - Data Length: \((request.data ?? "").count) characters")
+        
+        // If data is base64, try to decode it
+        if let data = request.data, let decodedData = Data(base64Encoded: data) {
+            logger.info("   - Decoded Data (hex): \(decodedData.hexString)")
+            logger.info("   - Decoded Data Length: \(decodedData.count) bytes")
         }
         
         let requestBody = BlockaidSolanaRequest(
@@ -201,7 +248,29 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
-            logger.error("Solana scan failed: \(error.localizedDescription)")
+            logger.error("Solana transaction scan failed: \(error)")
+            throw error
+        }
+    }
+    
+    private func scanSolanaAddress(_ address: String, for chain: Chain) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidSolanaAddressScan()
+        
+        guard let url = URL(string: endpoint) else {
+            throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        let requestBody = BlockaidAddressScanRequest(
+            chain: "solana",
+            address: address,
+            metadata: BlockaidRequestMetadata(domain: "vultisig.com")
+        )
+        
+        do {
+            let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
+            return mapTransactionScanResponseToSecurityResponse(response)
+        } catch {
+            logger.error("Solana address scan failed: \(error)")
             throw error
         }
     }
@@ -367,6 +436,18 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return "optimism"
         case .base:
             return "base"
+        case .solana:
+            return "solana"
+        case .bitcoin:
+            return "bitcoin"
+        case .bitcoinCash:
+            return "bitcoin-cash"
+        case .litecoin:
+            return "litecoin"
+        case .dogecoin:
+            return "dogecoin"
+        case .dash:
+            return "dash"
         default:
             return "ethereum" // Default fallback
         }
@@ -446,8 +527,6 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return .warning
         }
     }
-    
-
 }
 
 // MARK: - Blockaid API Models
@@ -479,6 +558,26 @@ struct BlockaidSolanaMessageData: Codable {
     }
 }
 
+struct BlockaidBitcoinRequest: Codable {
+    let chain: String
+    let data: BlockaidBitcoinTransactionData
+    let metadata: BlockaidRequestMetadata
+}
+
+struct BlockaidBitcoinTransactionData: Codable {
+    let rawTransaction: String
+    let fromAddress: String
+    let toAddress: String
+    let amount: String
+    
+    enum CodingKeys: String, CodingKey {
+        case rawTransaction = "raw_transaction"
+        case fromAddress = "from_address"
+        case toAddress = "to_address"
+        case amount
+    }
+}
+
 struct BlockaidRequestMetadata: Codable {
     let domain: String
 }
@@ -492,6 +591,11 @@ struct BlockaidTokenScanRequest: Codable {
 struct BlockaidAddressScanRequest: Codable {
     let chain: String
     let address: String
+    let metadata: BlockaidRequestMetadata
+}
+
+struct BlockaidSiteScanRequest: Codable {
+    let url: String
     let metadata: BlockaidRequestMetadata
 }
 
