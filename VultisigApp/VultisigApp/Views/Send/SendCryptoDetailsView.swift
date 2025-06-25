@@ -27,6 +27,7 @@ struct SendCryptoDetailsView: View {
     
     @State var isCoinPickerActive = false
     
+    @StateObject var sendDetailsViewModel = SendDetailsViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
     
     @FocusState var focusedField: Field?
@@ -250,7 +251,7 @@ struct SendCryptoDetailsView: View {
     var tabs: some View {
         ScrollView {
             VStack(spacing: 12) {
-                SendDetailsAssetTab(tx: tx)
+                SendDetailsAssetTab(tx: tx, viewModel: sendDetailsViewModel)
             }
             .padding(16)
         }

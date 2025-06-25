@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SendDetailsAssetTab: View {
     @ObservedObject var tx: SendTransaction
+    @
     
     @State var isExpanded: Bool = true
     
@@ -50,8 +51,9 @@ struct SendDetailsAssetTab: View {
     }
     
     var assetSelectionSection: some View {
-        VStack {
+        VStack(spacing: 12) {
             chainSelection
+            selectedCoinCell
         }
     }
     
@@ -71,6 +73,31 @@ struct SendDetailsAssetTab: View {
     
     var selectedChainCell: some View {
         SwapFromToChain(chain: tx.coin.chain)
+    }
+    
+    var selectedCoinCell: some View {
+        HStack {
+            SwapFromToCoin(coin: tx.coin)
+            Spacer()
+            selectedCoinBalance
+        }
+    }
+    
+    var selectedCoinBalance: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Group {
+                Text(NSLocalizedString("balance", comment: "")) +
+                Text(": ") +
+                Text(tx.coin.balanceString)
+            }
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.neutral0)
+            
+            Text(tx.coin.balanceInFiat)
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
 
