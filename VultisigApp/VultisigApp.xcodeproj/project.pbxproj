@@ -738,6 +738,7 @@
 		A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */; };
 		A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */; };
 		B50DB3742E0B7E5C00485E94 /* ClassDiagram.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3732E0B7E5500485E94 /* ClassDiagram.md */; };
+		B50DB3762E0B9E9E00485E94 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3752E0B9E9E00485E94 /* Security.md */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */; };
 		B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F46742DA9A308007B16DE /* Chain+ibc.swift */; };
@@ -1685,6 +1686,7 @@
 		A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceChainCoverageTests.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B50DB3732E0B7E5500485E94 /* ClassDiagram.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ClassDiagram.md; sourceTree = "<group>"; };
+		B50DB3752E0B9E9E00485E94 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
 		B50F46742DA9A308007B16DE /* Chain+ibc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+ibc.swift"; sourceTree = "<group>"; };
@@ -3360,6 +3362,7 @@
 			isa = PBXGroup;
 			children = (
 				B50DB3732E0B7E5500485E94 /* ClassDiagram.md */,
+				B50DB3752E0B9E9E00485E94 /* Security.md */,
 			);
 			path = docs;
 			sourceTree = "<group>";
@@ -4015,6 +4018,7 @@
 			files = (
 				A67EC5B42E0502CD0031A22A /* quick_summary.riv in Resources */,
 				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
+				B50DB3762E0B9E9E00485E94 /* Security.md in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
 				A6C58D842D7B6F3C000D2833 /* backup_vault.riv in Resources */,
