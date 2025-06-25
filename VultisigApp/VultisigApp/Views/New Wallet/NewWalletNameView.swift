@@ -49,6 +49,7 @@ struct NewWalletNameView: View {
                 .onSubmit {
                     verifyVault()
                 }
+                .maxLength($name, 64)
             
             if !name.isEmpty {
                 clearButton
