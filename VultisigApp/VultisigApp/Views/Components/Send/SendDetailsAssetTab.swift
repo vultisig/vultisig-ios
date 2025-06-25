@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SendDetailsAssetTab: View {
     @ObservedObject var tx: SendTransaction
-    @
+    @ObservedObject var viewModel: SendDetailsViewModel
     
     @State var isExpanded: Bool = true
     
@@ -36,12 +36,12 @@ struct SendDetailsAssetTab: View {
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.neutral0)
             
-            if isExpanded {
+            if viewModel.assetSetupDone {
+                doneSelectedAsset
                 Spacer()
+                doneEditTools
             } else {
-                // Selected asset
                 Spacer()
-                // Edit tools
             }
         }
     }
@@ -99,8 +99,49 @@ struct SendDetailsAssetTab: View {
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
+    
+    var doneSelectedAsset: some View {
+        HStack(spacing: 4) {
+            AsyncImageView(
+                logo: tx.coin.logo,
+                size: CGSize(width: 16, height: 16),
+                ticker: tx.coin.ticker,
+                tokenChainLogo: tx.coin.tokenChainLogo
+            )
+            
+            Text("\(tx.coin.ticker)")
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+    }
+    
+    var doneEditTools: some View {
+        HStack(spacing: 12) {
+            checkmark
+            editButton
+        }
+        .font(.body16BrockmannMedium)
+    }
+    
+    var checkmark: some View {
+        Image(systemName: "checkmark.circle")
+            .foregroundColor(.alertTurquoise)
+    }
+    
+    var editButton: some View {
+        Button {
+            viewModel.selectedTab = .Asset
+        } label: {
+            editLabel
+        }
+    }
+    
+    var editLabel: some View {
+        Image(systemName: "pencil")
+            .foregroundColor(.neutral0)
+    }
 }
 
 #Preview {
-    SendDetailsAssetTab(tx: SendTransaction())
+    SendDetailsAssetTab(tx: SendTransaction(), viewModel: SendDetailsViewModel())
 }
