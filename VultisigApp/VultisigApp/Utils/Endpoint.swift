@@ -416,7 +416,7 @@ class Endpoint {
     }
     
     static func getLifiSwapTracker(txid: String) -> String {
-        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
+        return "https://scan.li.fi/tx/\(txid)"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
