@@ -47,4 +47,4 @@ enum AvailableSecurityProvider: String, CaseIterable {
             return "Blockaid"
         }
     }
-} 
+}

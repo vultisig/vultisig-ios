@@ -47,9 +47,6 @@ struct SecurityServiceFactory {
         for providerType in AvailableSecurityProvider.allCases {
             if let provider = providerType.createProvider() {
                 securityService.addProvider(provider)
-                print("[SecurityServiceFactory] Added provider: \(providerType.displayName)")
-            } else {
-                print("[SecurityServiceFactory] Skipped disabled provider: \(providerType.displayName)")
             }
         }
     }

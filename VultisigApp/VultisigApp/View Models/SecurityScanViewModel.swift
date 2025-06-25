@@ -147,16 +147,12 @@ class SecurityScanViewModel: ObservableObject {
             let response = try await securityService.scanTransaction(request)
             self.scanResponse = response
             
-            // Log scan results
-            print("Security scan completed for \(request.chain.name)")
-            print("Provider: \(response.provider)")
-            print("Risk Level: \(response.riskLevel.rawValue)")
-            print("Warnings: \(response.warnings.count)")
+
             
         } catch {
             self.errorMessage = error.localizedDescription
             self.showAlert = true
-            print("Security scan failed: \(error.localizedDescription)")
+
         }
         
         isScanning = false
@@ -187,14 +183,12 @@ class SecurityScanViewModel: ObservableObject {
             let response = try await securityService.scanToken(address, for: chain)
             self.scanResponse = response
             
-            print("Token security scan completed for \(address) on \(chain.name)")
-            print("Provider: \(response.provider)")
-            print("Risk Level: \(response.riskLevel.rawValue)")
+
             
         } catch {
             self.errorMessage = "Failed to scan token: \(error.localizedDescription)"
             self.showAlert = true
-            print("Token security scan failed: \(error.localizedDescription)")
+
         }
         
         isScanning = false
@@ -212,14 +206,12 @@ class SecurityScanViewModel: ObservableObject {
             let response = try await securityService.validateAddress(address, for: chain)
             self.scanResponse = response
             
-            print("Address validation completed for \(address) on \(chain.name)")
-            print("Provider: \(response.provider)")
-            print("Risk Level: \(response.riskLevel.rawValue)")
+
             
         } catch {
             self.errorMessage = "Failed to validate address: \(error.localizedDescription)"
             self.showAlert = true
-            print("Address validation failed: \(error.localizedDescription)")
+
         }
         
         isScanning = false

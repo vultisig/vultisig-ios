@@ -18,6 +18,8 @@ class SecurityService {
     private(set) var isEnabled: Bool = true
     
     private init() {
+        // Call setupProviders for initialization hook, even though it's currently empty.
+        // See setupProviders() documentation for why this pattern is maintained.
         setupProviders()
     }
     
@@ -253,14 +255,11 @@ class SecurityService {
         var transactionData: String? = payload.memo
         
         if payload.coin.chain == .solana {
-            // Try to create the Solana transaction message
             do {
                 let inputData = try SolanaHelper.getPreSignedInputData(keysignPayload: payload)
                 transactionData = inputData.base64EncodedString()
-                logger.info("📦 Created Solana transaction data for security scan: \(transactionData ?? "nil")")
             } catch {
                 logger.error("Failed to create Solana transaction data: \(error)")
-                // Fall back to memo
                 transactionData = payload.memo
             }
         }
@@ -299,11 +298,27 @@ class SecurityService {
     // MARK: - Private Methods
     
     private func setupProviders() {
-        // This is now handled by SecurityServiceFactory.configure()
-        // to allow for proper capability configuration
-        
-        // Future: Add other providers here
-        // addProvider(OtherSecurityProvider())
+        // This method is intentionally empty but kept for several important reasons:
+        //
+        // 1. **Initialization Hook**: Called in init() to maintain a clear initialization pattern
+        //    even though provider setup has been delegated to SecurityServiceFactory
+        //
+        // 2. **Future Direct Setup**: If we need to add default providers that should always
+        //    be available regardless of configuration, they would go here
+        //
+        // 3. **Testing**: Tests can override SecurityService to add mock providers directly
+        //    in setupProviders without going through the factory
+        //
+        // 4. **Backwards Compatibility**: If we need to support legacy provider setup in the
+        //    future, this method provides the hook without changing the init pattern
+        //
+        // Current provider setup is handled by SecurityServiceFactory.configure() which:
+        // - Reads configuration from environment/UserDefaults
+        // - Conditionally adds providers based on settings
+        // - Manages provider lifecycle and capabilities
+        //
+        // This separation of concerns allows for more flexible configuration while
+        // maintaining a clean initialization pattern in the SecurityService itself.
     }
     
     private func createSafeResponse() -> SecurityScanResponse {
@@ -318,32 +333,22 @@ class SecurityService {
     }
     
     private func determineTransactionType(from payload: KeysignPayload) -> SecurityTransactionType {
-        // Check if it's a token transfer vs native transfer
-        if !payload.coin.isNativeToken {
-            return .transfer
+        // Check for swap payload first - this is the most reliable indicator
+        if payload.swapPayload != nil {
+            return .swap
         }
         
-        // Check memo for swap indicators
-        if let memo = payload.memo, !memo.isEmpty {
-            let memoUpper = memo.uppercased()
-            if memoUpper.contains("SWAP:") || memoUpper.contains("=") {
-                return .swap
-            }
-            if memoUpper.contains("ADD:") || memoUpper.contains("+:") {
-                return .defiInteraction
-            }
+        // Check for token approval
+        if payload.approvePayload != nil {
+            return .tokenApproval
         }
         
-        // Check for contract interaction based on chain and memo/data
-        if payload.coin.chain.chainType == .EVM {
-            // For EVM chains, contract interactions would typically have data
-            // Since we don't have direct access to transaction data in the current structure,
-            // we'll check if it's a non-native token transfer as an indicator
-            if !payload.coin.isNativeToken {
-                return .contractInteraction
-            }
+        // Check for EVM token transfers (ERC20/BEP20/etc)
+        if payload.coin.chain.chainType == .EVM && !payload.coin.isNativeToken {
+            return .contractInteraction
         }
         
+        // Default to transfer for all other cases (native token transfers)
         return .transfer
     }
 }
@@ -361,4 +366,4 @@ extension SecurityService {
         let providerNames = providers.map { $0.providerName }
         return "Available security providers: \(providerNames.joined(separator: ", "))"
     }
-} 
+}

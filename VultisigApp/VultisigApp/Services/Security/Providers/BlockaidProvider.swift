@@ -21,7 +21,6 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     
     init(capabilities: SecurityProviderCapabilities = .blockaid) {
         self.capabilities = capabilities
-        // API key is handled by the Vultisig proxy
     }
     
     // MARK: - SecurityProvider Protocol
@@ -38,18 +37,8 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return capabilities.solanaTransactionScanning
         case .UTXO:
             return capabilities.bitcoinTransactionScanning
-        case .Cosmos:
-            return false // Blockaid doesn't support Cosmos chains yet
         default:
-            // Check for specific chain support
-            switch chain {
-            case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-                return capabilities.bitcoinTransactionScanning
-            case .solana:
-                return capabilities.solanaTransactionScanning
-            default:
-                return false
-            }
+            return false
         }
     }
     
@@ -58,13 +47,10 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         case .EVM:
             return try await scanEVMTransaction(request)
         case .Solana:
-            // Solana scanning - using existing endpoint
             return try await scanSolanaTransaction(request)
         case .UTXO:
-            // Bitcoin scanning - using existing endpoint  
             return try await scanBitcoinTransaction(request)
         default:
-            // For other chains, try EVM scanning as fallback
             return try await scanEVMTransaction(request)
         }
     }
@@ -218,21 +204,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         guard let url = URL(string: endpoint) else {
             throw SecurityProviderError.invalidRequest("Invalid URL")
         }
-        
-        // Log the incoming request data
-        logger.info("🚀 SOLANA SECURITY SCAN REQUEST:")
-        logger.info("   - From Address: \(request.fromAddress)")
-        logger.info("   - To Address: \(request.toAddress)")
-        logger.info("   - Amount: \(request.amount ?? "nil")")
-        logger.info("   - Data: \(request.data ?? "nil")")
-        logger.info("   - Data Length: \((request.data ?? "").count) characters")
-        
-        // If data is base64, try to decode it
-        if let data = request.data, let decodedData = Data(base64Encoded: data) {
-            logger.info("   - Decoded Data (hex): \(decodedData.hexString)")
-            logger.info("   - Decoded Data Length: \(decodedData.count) bytes")
-        }
-        
+
         let requestBody = BlockaidSolanaRequest(
             chain: "solana",
             data: BlockaidSolanaMessageData(
@@ -281,18 +253,11 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        // API key authentication is handled by the Vultisig proxy
         
         do {
             let requestData = try JSONEncoder().encode(body)
             request.httpBody = requestData
-            
-            // Log the request being sent
-            if let requestString = String(data: requestData, encoding: .utf8) {
-                logger.info("📤 BLOCKAID API REQUEST to \(url.absoluteString):")
-                logger.info("\(requestString)")
-            }
-            
+
             let (data, response) = try await session.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -301,16 +266,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             
             switch httpResponse.statusCode {
             case 200...299:
-                // Log the raw API response
-                if let responseString = String(data: data, encoding: .utf8) {
-                    logger.info("🌐 BLOCKAID RAW API RESPONSE:")
-                    logger.info("\(responseString)")
-                } else {
-                    logger.info("🌐 BLOCKAID RAW API RESPONSE: [Unable to decode response as UTF-8 string]")
-                }
-                
                 let decoder = JSONDecoder()
-                // Don't use convertFromSnakeCase as it conflicts with explicit CodingKeys
                 return try decoder.decode(R.self, from: data)
             case 401:
                 throw SecurityProviderError.unauthorized
@@ -331,34 +287,13 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     // MARK: - Response Mapping
     
     private func mapTransactionScanResponseToSecurityResponse(_ response: BlockaidTransactionScanResponse) -> SecurityScanResponse {
-        // Debug logging - print the full Blockaid response
-        logger.info("🔍 BLOCKAID RESPONSE DEBUG:")
-        logger.info("📋 Request ID: \(response.requestId ?? "nil")")
-        logger.info("✅ Status: \(response.validation?.status ?? "nil")")
-        logger.info("🏷️ Classification: \(response.validation?.classification ?? "nil")")
-        logger.info("🔍 Result Type: \(response.validation?.resultType ?? "nil")")
-        
-        if let features = response.validation?.features, !features.isEmpty {
-            logger.info("⚠️ Features found (\(features.count)):")
-            for (index, feature) in features.enumerated() {
-                logger.info("   Feature \(index + 1):")
-                logger.info("     - Type: \(feature.type)")
-                logger.info("     - Severity: \(feature.severity ?? "nil")")
-                logger.info("     - Description: \(feature.description)")
-                logger.info("     - Address: \(feature.address ?? "nil")")
-            }
-        } else {
-            logger.info("✅ No features/warnings detected")
-        }
-        
         let hasFeatures = response.validation?.features?.isEmpty == false
         let riskLevel = mapBlockaidValidationToRiskLevel(
-            response.validation?.classification, 
+            response.validation?.classification,
             resultType: response.validation?.resultType,
             status: response.validation?.status,
             hasFeatures: hasFeatures
         )
-        logger.info("🎯 Mapped Risk Level: \(riskLevel.rawValue)")
         
         let warnings = response.validation?.features?.compactMap { feature in
             SecurityWarning(
@@ -449,18 +384,15 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         case .dash:
             return "dash"
         default:
-            return "ethereum" // Default fallback
+            return "ethereum"
         }
     }
     
     private func mapBlockaidValidationToRiskLevel(_ classification: String?, resultType: String?, status: String?, hasFeatures: Bool = false) -> SecurityRiskLevel {
-        logger.info("🔍 Mapping risk level - Status: '\(status ?? "nil")', Classification: '\(classification ?? "nil")', ResultType: '\(resultType ?? "nil")', HasFeatures: \(hasFeatures)")
-        
         // Special case: If status is "Success" and resultType is "Benign" with NO features/warnings, this is NONE (completely secure)
         if let status = status, status.lowercased() == "success",
            let resultType = resultType, resultType.lowercased() == "benign",
            !hasFeatures {
-            logger.info("✅ Success + Benign + No Features = NONE (Secure)")
             return .none
         }
         
@@ -472,12 +404,9 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             classificationToUse = resultType
         }
         
-        guard let classificationToUse = classificationToUse, !classificationToUse.isEmpty else { 
-            logger.info("⚠️ No classification or result_type available, defaulting to medium")
-            return .medium 
+        guard let classificationToUse = classificationToUse, !classificationToUse.isEmpty else {
+            return .medium
         }
-        
-        logger.info("🔍 Using classification: '\(classificationToUse)'")
         
         switch classificationToUse.lowercased() {
         case "benign":
@@ -489,7 +418,6 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         case "spam":
             return .medium
         default:
-            logger.info("⚠️ Unknown classification '\(classificationToUse)', defaulting to medium")
             return .medium
         }
     }
@@ -638,4 +566,4 @@ struct BlockaidFeature: Codable {
     let severity: String?
     let description: String
     let address: String?
-} 
+}

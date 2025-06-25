@@ -39,7 +39,7 @@ struct SecurityScanRequest {
     let data: String?
     let metadata: [String: Any]?
     
-    init(chain: Chain, 
+    init(chain: Chain,
          transactionType: SecurityTransactionType,
          fromAddress: String,
          toAddress: String,
@@ -186,4 +186,4 @@ enum SecurityProviderError: Error, LocalizedError {
             return "Operation not supported: \(message)"
         }
     }
-} 
+}
