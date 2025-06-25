@@ -1,5 +1,42 @@
+## Architecture Layers:
+
+### 1. **Service Layer** (Core Logic)
+- **SecurityService** - Main singleton managing security operations
+- **SecurityProvider** - Protocol for security providers
+- **BlockaidProvider** - Concrete implementation
+
+### 2. **View Model Layer** (Business Logic & State)
+- **SecurityScanViewModel** - Main VM handling security scans and UI state
+- **SendCryptoVerifyViewModel** - VM for send crypto verification
+- **JoinKeysignViewModel** - VM for keysign operations
+
+### 3. **View Layer** (UI Components)
+- **SecurityScanView** - Main security scan display component
+- **CompactSecurityScanView** - Compact version for limited space
+- **SecurityRiskBadge** - Badge displaying risk level
+- **SendCryptoVerifyView** - Send transaction verification screen
+- **KeysignMessageConfirmView** - Keysign confirmation screen
+- **WarningView** - Generic warning display
+
+### 4. **Model Layer** (Data Structures)
+- Request/Response models (SecurityScanRequest, SecurityScanResponse)
+- Domain models (KeysignPayload, SendTransaction, Chain)
+- Enumerations for type safety
+
+## Key Relationships:
+
+1. **View Models use SecurityService** - The VMs delegate security operations to the service
+2. **Views observe View Models** - SwiftUI's @ObservableObject pattern
+3. **SecurityService manages providers** - Plugin architecture for multiple providers
+4. **Domain models integrate** - KeysignPayload and SendTransaction are converted to SecurityScanRequest
+
+The architecture follows MVVM pattern with clean separation of concerns, making it easy to add new security providers or UI components.
+
+## Class Diagram
+
+```mermaid
 classDiagram
-    %% Core Service
+    %% Core Service Layer
     class SecurityService {
         -shared: SecurityService
         -logger: Logger
@@ -9,19 +46,108 @@ classDiagram
         +addProvider(provider: SecurityProvider)
         +removeProvider(named: String)
         +getProviders(): SecurityProvider[]
-        +getProviders(for: Chain): SecurityProvider[]
         +scanTransaction(request: SecurityScanRequest): SecurityScanResponse
-        +scanTransactionWithAllProviders(request: SecurityScanRequest): SecurityScanResponse[]
         +scanToken(tokenAddress: String, chain: Chain): SecurityScanResponse
         +validateAddress(address: String, chain: Chain): SecurityScanResponse
-        +scanSite(url: String): SecurityScanResponse
         +createSecurityScanRequest(from: KeysignPayload): SecurityScanRequest
         +createSecurityScanRequest(from: SendTransaction): SecurityScanRequest
-        +isSecurityScanningAvailable(for: Chain): Bool
-        +getProviderSummary(): String
     }
 
-    %% Protocols
+    %% View Models
+    class SecurityScanViewModel {
+        <<ObservableObject>>
+        -securityService: SecurityService
+        +isScanning: Bool
+        +scanResponse: SecurityScanResponse?
+        +errorMessage: String?
+        +showAlert: Bool
+        +hasResponse: Bool
+        +hasWarnings: Bool
+        +isSecure: Bool
+        +riskLevel: SecurityRiskLevel
+        +backgroundColor: Color
+        +borderColor: Color
+        +iconName: String
+        +iconColor: Color
+        +scanTransaction(from: KeysignPayload): async
+        +scanTransaction(from: SendTransaction): async
+        +scanToken(address: String, chain: Chain): async
+        +validateAddress(address: String, chain: Chain): async
+        +resetScan()
+        +getScanSummary(): String
+        +getHighRiskAlert(): Alert?
+    }
+
+    class SendCryptoVerifyViewModel {
+        <<ObservableObject>>
+        +isAddressCorrect: Bool
+        +isAmountCorrect: Bool
+        +isHackedOrPhished: Bool
+        +showAlert: Bool
+        +isLoading: Bool
+        +errorMessage: String
+        +securityScanViewModel: SecurityScanViewModel
+        +showSecurityScan: Bool
+        +performSecurityScan(tx: SendTransaction): async
+    }
+
+    class JoinKeysignViewModel {
+        <<ObservableObject>>
+        +keysignPayload: KeysignPayload?
+        +securityScanViewModel: SecurityScanViewModel
+        +showSecurityScan: Bool
+        +performSecurityScan(): async
+    }
+
+    %% Views
+    class SecurityScanView {
+        <<View>>
+        +viewModel: SecurityScanViewModel
+        -isExpanded: Bool
+        +body: View
+        -scanResultView: View
+        -scanningView: View
+        -icon: View
+        -mainContent: View
+        -warningsSection: View
+        -recommendationsSection: View
+    }
+
+    class SecurityRiskBadge {
+        <<View>>
+        +riskLevel: SecurityRiskLevel
+        +body: View
+        -badgeColor: Color
+    }
+
+    class CompactSecurityScanView {
+        <<View>>
+        +viewModel: SecurityScanViewModel
+        +body: View
+    }
+
+    class SendCryptoVerifyView {
+        <<View>>
+        +sendCryptoViewModel: SendCryptoViewModel
+        +sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+        +tx: SendTransaction
+        +vault: Vault
+        +body: View
+    }
+
+    class KeysignMessageConfirmView {
+        <<View>>
+        +viewModel: JoinKeysignViewModel
+        +body: View
+    }
+
+    class WarningView {
+        <<View>>
+        +text: String
+        +body: View
+    }
+
+    %% Service Layer - Providers
     class SecurityProvider {
         <<interface>>
         +providerName: String
@@ -29,67 +155,14 @@ classDiagram
         +supportsChain(chain: Chain): Bool
     }
 
-    class CapabilityAwareSecurityProvider {
-        <<interface>>
-        +capabilities: SecurityProviderCapabilities
-    }
-
-    %% Concrete Implementation
     class BlockaidProvider {
-        -logger: Logger
-        -baseURL: String
-        -session: URLSession
         +capabilities: SecurityProviderCapabilities
-        +providerName: String
-        +supportsChain(chain: Chain): Bool
         +scanTransaction(request: SecurityScanRequest): SecurityScanResponse
         +validateAddress(address: String, chain: Chain): SecurityScanResponse
         +scanToken(tokenAddress: String, chain: Chain): SecurityScanResponse
-        +scanSite(url: String): SecurityScanResponse
-        -scanEVMTransaction(request: SecurityScanRequest): SecurityScanResponse
-        -scanSolanaTransaction(request: SecurityScanRequest): SecurityScanResponse
-        -scanBitcoinTransaction(request: SecurityScanRequest): SecurityScanResponse
-        -performRequest(url: URL, body: T): R
     }
 
-    %% Factory and Configuration
-    class SecurityServiceFactory {
-        +configure(configuration: Configuration)
-        +getConfigurationFromEnvironment(): Configuration
-        -addAvailableProviders(to: SecurityService)
-    }
-
-    class Configuration {
-        +isEnabled: Bool
-        +default: Configuration
-        +disabled: Configuration
-    }
-
-    class AvailableSecurityProvider {
-        <<enumeration>>
-        +blockaid
-        +isEnabled: Bool
-        +capabilities: SecurityProviderCapabilities
-        +createProvider(): SecurityProvider?
-        +displayName: String
-    }
-
-    %% Capabilities
-    class SecurityProviderCapabilities {
-        +evmTransactionScanning: Bool
-        +solanaTransactionScanning: Bool
-        +addressValidation: Bool
-        +tokenScanning: Bool
-        +siteScanning: Bool
-        +bitcoinTransactionScanning: Bool
-        +starknetTransactionScanning: Bool
-        +stellarTransactionScanning: Bool
-        +suiTransactionScanning: Bool
-        +blockaid: SecurityProviderCapabilities
-        +none: SecurityProviderCapabilities
-    }
-
-    %% Request/Response Models
+    %% Models
     class SecurityScanRequest {
         +chain: Chain
         +transactionType: SecurityTransactionType
@@ -106,7 +179,6 @@ classDiagram
         +riskLevel: SecurityRiskLevel
         +warnings: SecurityWarning[]
         +recommendations: String[]
-        +metadata: Dictionary?
         +hasWarnings: Bool
         +warningMessages: String[]
     }
@@ -118,18 +190,30 @@ classDiagram
         +details: String?
     }
 
-    %% Enumerations
-    class SecurityTransactionType {
-        <<enumeration>>
-        +transfer
-        +swap
-        +contractInteraction
-        +tokenApproval
-        +nftTransfer
-        +defiInteraction
-        +other
+    %% Domain Models
+    class KeysignPayload {
+        +coin: Coin
+        +toAddress: String
+        +toAmount: BigInt
+        +memo: String?
+        +chainSpecific: String
     }
 
+    class SendTransaction {
+        +coin: Coin
+        +fromAddress: String
+        +toAddress: String
+        +amount: String
+        +memo: String
+        +gas: BigInt
+    }
+
+    class Chain {
+        +name: String
+        +chainType: ChainType
+    }
+
+    %% Enumerations
     class SecurityRiskLevel {
         <<enumeration>>
         +none
@@ -144,13 +228,8 @@ classDiagram
         <<enumeration>>
         +suspiciousContract
         +highValueTransfer
-        +unknownToken
-        +phishingAttempt
         +maliciousContract
-        +unusualActivity
-        +rugPullRisk
-        +sandwichAttack
-        +frontRunning
+        +phishingAttempt
         +other
     }
 
@@ -160,76 +239,37 @@ classDiagram
         +warning
         +error
         +critical
-        +displayName: String
     }
 
-    class SecurityProviderError {
-        <<enumeration>>
-        +providerNotSupported
-        +chainNotSupported
-        +networkError
-        +apiError
-        +invalidRequest
-        +rateLimitExceeded
-        +unauthorized
-        +unsupportedOperation
-        +errorDescription: String?
-    }
-
-    %% Relationships
+    %% Relationships - Service Layer
     SecurityService "1" --> "*" SecurityProvider : manages
-    SecurityService ..> SecurityScanRequest : uses
+    SecurityService ..> SecurityScanRequest : creates
     SecurityService ..> SecurityScanResponse : returns
-    SecurityService ..> SecurityProviderError : throws
+    SecurityProvider <|.. BlockaidProvider : implements
     
-    SecurityProvider <|-- CapabilityAwareSecurityProvider : extends
-    CapabilityAwareSecurityProvider <|.. BlockaidProvider : implements
+    %% Relationships - View Models
+    SecurityScanViewModel --> SecurityService : uses
+    SecurityScanViewModel --> SecurityScanResponse : displays
+    SendCryptoVerifyViewModel --> SecurityScanViewModel : contains
+    JoinKeysignViewModel --> SecurityScanViewModel : contains
     
-    BlockaidProvider --> SecurityProviderCapabilities : has
-    BlockaidProvider ..> SecurityScanRequest : uses
-    BlockaidProvider ..> SecurityScanResponse : returns
+    %% Relationships - Views to View Models
+    SecurityScanView --> SecurityScanViewModel : observes
+    SendCryptoVerifyView --> SendCryptoVerifyViewModel : observes
+    KeysignMessageConfirmView --> JoinKeysignViewModel : observes
+    CompactSecurityScanView --> SecurityScanViewModel : observes
+    SecurityRiskBadge --> SecurityRiskLevel : displays
     
-    SecurityServiceFactory --> SecurityService : configures
-    SecurityServiceFactory --> Configuration : uses
-    SecurityServiceFactory --> AvailableSecurityProvider : uses
+    %% Relationships - Domain Integration
+    SecurityService ..> KeysignPayload : converts to request
+    SecurityService ..> SendTransaction : converts to request
+    SecurityScanRequest --> Chain : references
+    KeysignPayload --> Chain : has
+    SendTransaction --> Chain : has
     
-    AvailableSecurityProvider --> SecurityProvider : creates
-    AvailableSecurityProvider --> SecurityProviderCapabilities : provides
-    
+    %% Relationships - Response Models
     SecurityScanResponse "1" --> "*" SecurityWarning : contains
     SecurityScanResponse --> SecurityRiskLevel : has
-    
     SecurityWarning --> SecurityWarningType : has
     SecurityWarning --> SecuritySeverity : has
-    
-    SecurityScanRequest --> SecurityTransactionType : has
-
-
-
-## Architecture Overview:
-
-1. **SecurityService** - The main singleton service that manages security providers and coordinates security scans
-
-2. **SecurityProvider Protocol** - The base interface that all security providers must implement
-
-3. **CapabilityAwareSecurityProvider** - An extended protocol that adds capability awareness
-
-4. **BlockaidProvider** - The concrete implementation of the Blockaid security provider
-
-5. **SecurityProviderCapabilities** - Defines what features each provider supports (EVM scanning, Solana scanning, token scanning, etc.)
-
-6. **SecurityServiceFactory** - Factory pattern for configuring the security service with providers
-
-7. **Request/Response Models**:
-   - SecurityScanRequest - Input for security scans
-   - SecurityScanResponse - Output from security scans
-   - SecurityWarning - Individual warnings within a response
-
-8. **Enumerations** for type safety:
-   - SecurityTransactionType (transfer, swap, etc.)
-   - SecurityRiskLevel (none, low, medium, high, critical)
-   - SecurityWarningType (malicious contract, phishing, etc.)
-   - SecuritySeverity (info, warning, error, critical)
-   - SecurityProviderError (various error types)
-
-The architecture follows a clean plugin-based design where new security providers can be easily added by implementing the SecurityProvider protocol and registering them through the AvailableSecurityProvider enum.
+```
