@@ -28,7 +28,7 @@ struct SecurityProviderCapabilities {
         bitcoinTransactionScanning: false,     // ❌ Returns 404 "no Route matched"
         starknetTransactionScanning: false,    // ❌ Chain not available in app
         stellarTransactionScanning: false,     // ❌ Chain not available in app
-        suiTransactionScanning: false          // ❌ Chain not available in app
+        suiTransactionScanning: false          // ❌ Not supported by Blockaid API yet
     )
     
     /// No capabilities (disabled)
