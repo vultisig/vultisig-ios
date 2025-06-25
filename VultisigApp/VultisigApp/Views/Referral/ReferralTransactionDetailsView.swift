@@ -141,6 +141,8 @@ struct ReferralTransactionDetailsView: View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             Spacer()
             
@@ -153,10 +155,14 @@ struct ReferralTransactionDetailsView: View {
             
             Text(description)
                 .foregroundColor(.neutral0)
+                .lineLimit(1)
+                .truncationMode(.middle)
             
             if let bracketValue {
                 Text("(\(bracketValue))")
                     .foregroundColor(.extraLightGray)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
         }
         .font(.body14BrockmannMedium)
