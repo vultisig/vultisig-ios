@@ -2028,12 +2028,9 @@
 				A5D49F542BE26BA7001766C8 /* Actions */,
 				B5A51B532BD8C68B00791D78 /* Sui */,
 				B54B01982BDE0A0F00FDA472 /* Polkadot */,
-				46DE08912BD0DA1F00AE8BDE /* EvmL2 */,
-				46B60BBC2BBA810C0043EBBA /* Avalanche */,
+				46DE08912BD0DA1F00AE8BDE /* Evm */,
 				DE63AE542BBA7878001BBE5C /* Cosmos */,
-				DE63AE492BB4D86A001BBE5C /* BSC */,
 				46C8CBBA2BA76CC100E68E08 /* UTXO */,
-				460347822BA148A2007ED3AC /* Ethereum */,
 				465A8D512B9E6887006E7457 /* Solana */,
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
@@ -2189,12 +2186,15 @@
 			path = Keygen;
 			sourceTree = "<group>";
 		};
-		46DE08912BD0DA1F00AE8BDE /* EvmL2 */ = {
+		46DE08912BD0DA1F00AE8BDE /* Evm */ = {
 			isa = PBXGroup;
 			children = (
+				DE63AE492BB4D86A001BBE5C /* BSC */,
 				46DE08942BD0DCA200AE8BDE /* EvmL2Service.swift */,
+				460347822BA148A2007ED3AC /* Ethereum */,
+				46B60BBC2BBA810C0043EBBA /* Avalanche */,
 			);
-			path = EvmL2;
+			path = Evm;
 			sourceTree = "<group>";
 		};
 		46F8F71F2B99FDAC0099454E /* TransactionManager */ = {
