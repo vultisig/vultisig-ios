@@ -332,28 +332,28 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         Mediator.shared.stop()
     }
     
-    func switchCoins(tx: SwapTransaction, vault: Vault) {
+    func switchCoins(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referralViewModel: referralViewModel)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        fetchQuotes(tx: tx, vault: vault)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
+        fetchQuotes(tx: tx, vault: vault, referralViewModel: referralViewModel)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         tx.fromCoin = coin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referralViewModel: referralViewModel)
     }
     
-    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         tx.toCoin = coin
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referralViewModel: referralViewModel)
     }
     
     func handleBackTap() {
@@ -361,22 +361,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func updateTimer(tx: SwapTransaction, vault: Vault) {
+    func updateTimer(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         timer -= 1
         
         if timer < 1 {
-            restartTimer(tx: tx, vault: vault)
+            restartTimer(tx: tx, vault: vault, referralViewModel: referralViewModel)
         }
     }
     
-    func restartTimer(tx: SwapTransaction, vault: Vault) {
-        refreshData(tx: tx, vault: vault)
+    func restartTimer(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
+        refreshData(tx: tx, vault: vault, referralViewModel: referralViewModel)
         timer = 59
     }
     
-    func refreshData(tx: SwapTransaction, vault: Vault) {
+    func refreshData(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referralViewModel: referralViewModel)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -388,14 +388,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+    func fetchQuotes(tx: SwapTransaction, vault: Vault, referralViewModel: ReferralViewModel) {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx)
+            await self?.updateQuotes(tx: tx, referralViewModel: referralViewModel)
         }
     }
     
@@ -438,7 +438,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction) async {
+    func updateQuotes(tx: SwapTransaction, referralViewModel: ReferralViewModel) async {
         isLoading = true
         defer { isLoading = false }
         
@@ -457,7 +457,8 @@ private extension SwapCryptoViewModel {
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: tx.isAlliliate
+                isAffiliate: tx.isAlliliate,
+                referralViewModel: referralViewModel
             )
             
             tx.quote = quote

@@ -267,4 +267,33 @@ class ReferralViewModel: ObservableObject {
             return false
         }
     }
+    
+    func getReferralAffiliateParams() async -> String {
+        guard let url = URL(string: Endpoint.referralParams(for: savedGeneratedReferralCode)) else {
+            print("Invalid URL")
+            return ""
+        }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let decoder = JSONDecoder()
+            let parameter = try decoder.decode(ReferralMemoParameter.self, from: data)
+            return shuffleAffiliates(parameter.memo)
+        } catch {
+            print("Network or decoding error: \(error)")
+            return ""
+        }
+    }
+    
+    private func shuffleAffiliates(_ memo: String) -> String {
+        guard "vi" < savedGeneratedReferralCode else {
+            return memo
+        }
+        
+        var memoString = memo
+        memoString.removeLast(5)
+        let updatedMemo = memoString + "35/10"
+        
+        return updatedMemo
+    }
 }

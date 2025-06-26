@@ -17,7 +17,7 @@ struct SwapService {
     private let kyberSwapService: KyberSwapService = KyberSwapService.shared
     private let lifiService: LiFiService = LiFiService.shared
     
-    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool, referralViewModel: ReferralViewModel) async throws -> SwapQuote {
 
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
             throw SwapError.routeUnavailable
@@ -32,7 +32,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate
+                isAffiliate: isAffiliate,
+                referralViewModel: referralViewModel
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
@@ -41,7 +42,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate
+                isAffiliate: isAffiliate,
+                referralViewModel: referralViewModel
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -81,7 +83,8 @@ private extension SwapService {
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
-        isAffiliate: Bool
+        isAffiliate: Bool,
+        referralViewModel: ReferralViewModel
     ) async throws -> SwapQuote {
         do {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
@@ -93,7 +96,8 @@ private extension SwapService {
                 toAsset: toCoin.swapAsset,
                 amount: normalizedAmount.description,
                 interval: provider.streamingInterval,
-                isAffiliate: isAffiliate
+                isAffiliate: isAffiliate,
+                referralViewModel: referralViewModel
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {

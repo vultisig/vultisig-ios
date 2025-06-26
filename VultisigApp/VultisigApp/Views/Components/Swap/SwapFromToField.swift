@@ -19,6 +19,8 @@ struct SwapFromToField: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
+    @StateObject var referralViewModel = ReferralViewModel()
+    
     var body: some View {
         VStack(spacing: 16) {
             header
@@ -110,7 +112,7 @@ struct SwapFromToField: View {
     var fromToAmountField: some View {
         SwapCryptoAmountTextField(amount: $amount) { _ in
             if title=="from" {
-                swapViewModel.updateFromAmount(tx: tx, vault: vault)
+                swapViewModel.updateFromAmount(tx: tx, vault: vault, referralViewModel: referralViewModel)
                 swapViewModel.showAllPercentageButtons = true
             }
         }

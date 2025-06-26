@@ -90,7 +90,7 @@ extension SwapCryptoDetailsView {
             .padding(.horizontal, 16)
         }
         .refreshable {
-            swapViewModel.refreshData(tx: tx, vault: vault)
+            swapViewModel.refreshData(tx: tx, vault: vault, referralViewModel: referralViewModel)
         }
     }
 }
