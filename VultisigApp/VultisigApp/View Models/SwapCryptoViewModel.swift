@@ -342,17 +342,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        fetchQuotes(tx: tx, vault: vault)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
         fetchFees(tx: tx, vault: vault)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
-        fetchQuotes(tx: tx, vault: vault)
         fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
