@@ -50,6 +50,7 @@ extension Color {
     static let checkboxBlue = Color(hex: "042436")
     
     static let miamiMarmalade = Color(hex: "F7961B")
+    static let infoBlue = Color(hex: "5CA7FF")
     
     static let reshareCellGreen = Color(hex: "15D7AC")
     static let reshareCellRed = Color(hex: "DA2E2E")
@@ -73,6 +74,8 @@ extension LinearGradient {
     static let primaryGradientHorizontal = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .leading, endPoint: .trailing)
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
     static let cancelRed = LinearGradient(colors: [Color.red], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let solidBlue = LinearGradient(colors: [Color.persianBlue400], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let solidWhite = LinearGradient(colors: [Color.neutral0], startPoint: .topLeading, endPoint: .bottomTrailing)
 }
 
 extension AngularGradient {

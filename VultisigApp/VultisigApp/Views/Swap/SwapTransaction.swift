@@ -35,14 +35,19 @@ class SwapTransaction: ObservableObject {
     }
 
     var isDeposit: Bool {
-        return fromCoin.chain == .mayaChain
+        // isDeposit should be true for Maya chain swaps
+        if fromCoin.chain == .mayaChain {
+            return true
+        }
+        
+        return false
     }
 
     var fee: BigInt {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch(_ , let fee), .lifi(_, let fee):
+        case .oneinch(_ , let fee), .kyberswap(_, let fee), .lifi(_, let fee):
             return fee ?? 0
         case nil:
             return .zero
@@ -58,6 +63,10 @@ class SwapTransaction: ObservableObject {
             let expected = quote.expectedAmountOut.toDecimal()
             return expected / toCoin.thorswapMultiplier
         case .oneinch(let quote, _), .lifi(let quote, _):
+
+            let amount = BigInt(quote.dstAmount) ?? BigInt.zero
+            return toCoin.decimal(for: amount)
+        case .kyberswap(let quote, _):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }

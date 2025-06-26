@@ -29,6 +29,7 @@ struct SettingsView: View {
             currencySelectionCell
             addressBookCell
             defaultChainsSelectionCell
+            referralCodeCell
             faqCell
         }
     }
@@ -104,6 +105,10 @@ struct SettingsView: View {
         } label: {
             SettingCell(title: "addressBook", icon: "text.book.closed")
         }
+    }
+    
+    var referralCodeCell: some View {
+        ReferralView()
     }
     
     var faqCell: some View {

@@ -59,7 +59,6 @@ struct JoinKeysignView: View {
         }
         .padding()
         .cornerRadius(10)
-        .shadow(radius: 5)
     }
     
     var keysignStartedView: some View {
@@ -78,7 +77,7 @@ struct JoinKeysignView: View {
     
     var keysignView: some View {
         KeysignView(
-            vault: vault,
+            vault: viewModel.vault,
             keysignCommittee: viewModel.keysignCommittee,
             mediatorURL: viewModel.serverAddress ?? "",
             sessionID: viewModel.sessionID,

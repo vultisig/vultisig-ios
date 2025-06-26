@@ -23,7 +23,6 @@ struct KeysignView: View {
     @State var showDoneText = false
     @State var showError = false
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
     
     var body: some View {

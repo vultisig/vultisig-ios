@@ -14,8 +14,9 @@ struct SwapService {
     private let thorchainService: ThorchainSwapProvider = ThorchainService.shared
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
+    private let kyberSwapService: KyberSwapService = KyberSwapService.shared
     private let lifiService: LiFiService = LiFiService.shared
-
+    
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
@@ -24,6 +25,7 @@ struct SwapService {
 
         switch provider {
         case .thorchain:
+            
             return try await fetchCrossChainQuote(
                 service: thorchainService, 
                 provider: provider,
@@ -49,6 +51,17 @@ struct SwapService {
             return try await fetchOneInchQuote(
                 chain: fromChainID,
                 amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
+        case .kyberswap(_):
+            guard let fromChainID = fromCoin.chain.chainID,
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
+                  throw SwapError.routeUnavailable
+            }
+            return try await fetchKyberSwapQuote(
+                chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
+                amount: amount,
+                fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
         case .lifi:
@@ -128,7 +141,20 @@ private extension SwapService {
         )
         return .oneinch(response.quote, fee: response.fee)
     }
-
+    
+    func fetchKyberSwapQuote(chain: String, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+        let rawAmount = fromCoin.raw(for: amount)
+        let (quote, fee) = try await KyberSwapService.shared.fetchQuotes(
+            chain: chain,
+            source: fromCoin.isNativeToken ? "" : fromCoin.contractAddress,
+            destination: toCoin.isNativeToken ? "" : toCoin.contractAddress,
+            amount: String(rawAmount),
+            from: fromCoin.address,
+            isAffiliate: isAffiliate
+        )
+        return .kyberswap(quote, fee: fee)
+    }
+    
     func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let fromAmount = fromCoin.raw(for: amount)
         let response = try await lifiService.fetchQuotes(

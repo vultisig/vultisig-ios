@@ -9,6 +9,8 @@ import SwiftUI
 
 struct OutlineButton: View {
     let title: String
+    
+    var textColor = LinearGradient.primaryGradient
     var gradient = LinearGradient.primaryGradient
     
     @State var animateGradient = false
@@ -19,7 +21,7 @@ struct OutlineButton: View {
     
     var content: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
-            .foregroundStyle(gradient)
+            .foregroundStyle(textColor)
             .padding(12)
             .frame(maxWidth: .infinity)
             .background(Color.clear)

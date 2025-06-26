@@ -17,10 +17,6 @@ extension TokenSelectionView {
             if let error = tokenViewModel.error {
                 errorView(error: error)
             }
-            
-            if tokenViewModel.isLoading {
-                Loader()
-            }
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -33,17 +29,25 @@ extension TokenSelectionView {
     }
     
     var headerMac: some View {
-        TokenSelectionHeader(title: "chooseTokens", chainDetailView: chainDetailView)
-    }
-    
-    var addCustomTokenButton: some View {
-        Button {
-            chainDetailView.sheetType = .customToken
-        } label: {
-            chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
+        HStack {
+            TokenSelectionHeader(title: "chooseTokens", chainDetailView: chainDetailView)
+            
+            Spacer()
+            
+            // Add subtle loading indicator in header
+            if tokenViewModel.isLoading {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                    Text("Loading tokens...")
+                        .font(.body12Menlo)
+                        .foregroundColor(.neutral0)
+                        .opacity(0.8)
+                }
+                .padding(.trailing, 40)
+            }
         }
-        .background(Color.clear)
-        .padding(.horizontal, 40)
     }
     
     var view: some View {
@@ -65,7 +69,17 @@ extension TokenSelectionView {
                 .colorScheme(.dark)
         }
     }
-    
+
+    var addCustomTokenButton: some View {
+        Button {
+            chainDetailView.sheetType = .customToken
+        } label: {
+            chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
+        }
+        .background(Color.clear)
+        .padding(.horizontal, 40)
+    }
+
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
             .font(.body16Menlo)
@@ -81,11 +95,19 @@ extension TokenSelectionView {
     
     var saveButton: some View {
         Button(action: {
+            saveAssets()
             self.chainDetailView.sheetType = nil
             dismiss()
         }) {
-            Text("Save")
-                .foregroundColor(Color.neutral0)
+            HStack(spacing: 8) {
+                if tokenViewModel.isLoading {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                }
+                Text("Save")
+                    .foregroundColor(Color.neutral0)
+            }
         }
         .padding(.horizontal, 32)
         .frame(height: 44)

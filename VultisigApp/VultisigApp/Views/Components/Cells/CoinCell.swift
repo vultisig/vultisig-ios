@@ -58,7 +58,7 @@ struct CoinCell: View {
         
         if coin.ticker.uppercased() == "TCY".uppercased() {
             
-            Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Staked")
+            Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Staked")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
@@ -67,7 +67,7 @@ struct CoinCell: View {
             
             if coin.isNativeToken {
                 
-                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Bonded")
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Bonded")
                     .font(.body16Menlo)
                     .foregroundColor(.neutral0)
                     .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
@@ -75,7 +75,7 @@ struct CoinCell: View {
                 
             } else {
                 
-                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalance.toDecimal().formatDecimalToLocale()) Merged")
+                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Merged")
                     .font(.body16Menlo)
                     .foregroundColor(.neutral0)
                     .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])

@@ -123,7 +123,8 @@ private extension CryptoPriceService {
             
             var rates: [Rate] = []
             for contract in contracts {
-                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: contract)
+                let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: sanitisedContract)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
                 rates.append(poolRate)
             }
@@ -209,7 +210,7 @@ private extension CryptoPriceService {
             return "binance-smart-chain"
         case .zksync:
             return "zksync"
-        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash:
+        case .thorChain, .solana, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .polkadot, .dydx, .sui, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .zcash, .cardano:
             return .empty
         }
     }

@@ -8,29 +8,54 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
-
-    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
+    
+    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-        var input = signingInput
+        guard let swapPayload = keysignPayload.swapPayload else {
+            throw HelperError.runtimeError("swap payload is missing")
+        }
+        
+        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
+            throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
+        }
+        
         var chainID = keysignPayload.coin.coinType.chainId
         if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
             chainID = ThorchainService.shared.network
         }
-        input.chainID = chainID
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        input.fee = CosmosFee.with {
-            $0.gas = 20000000
+        let input = CosmosSigningInput.with {
+            $0.chainID = chainID
+            $0.publicKey = pubKeyData
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            $0.signingMode = .protobuf
+            $0.messages = [CosmosMessage.with {
+                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+                    $0.signer = fromAddr.data
+                    $0.memo = keysignPayload.memo ?? ""
+                    $0.coins = [TW_Cosmos_Proto_THORChainCoin.with {
+                        $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
+                            $0.chain = "THOR"
+                            $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+                            $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+                            $0.synth = false
+                        }
+                        $0.amount = String(swapPayload.fromAmount)
+                        $0.decimals = Int64(swapPayload.fromCoin.decimals)
+                    }]
+                }
+            }]
+            $0.fee = CosmosFee.with {
+                $0.gas = 20000000
+            }
         }
-        // memo has been set
-        // deposit message has been set
+        
         return try input.serializedData()
     }
     
@@ -64,7 +89,7 @@ enum THORChainHelper {
                 // it's a merge
                 
                 let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
-            
+                
                 // This is for WASM tokens
                 
                 guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
@@ -84,11 +109,11 @@ enum THORChainHelper {
                         }
                     ]
                 }
-
+                
                 let message = CosmosMessage.with {
                     $0.wasmExecuteContractGeneric = wasmGenericMessage
                 }
-                               
+                
                 let fee = CosmosFee.with {
                     $0.gas = 20000000
                 }
@@ -108,15 +133,15 @@ enum THORChainHelper {
                 }
                 
                 return try input.serializedData()
-
+                
             }
             
             
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
-                    $0.symbol = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
-                    $0.ticker = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased()
+                    $0.symbol = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
+                    $0.ticker = keysignPayload.coin.isNativeToken ? "RUNE" : keysignPayload.coin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                     $0.synth = false
                 }
                 if keysignPayload.toAmount > 0 {
@@ -163,7 +188,7 @@ enum THORChainHelper {
                 $0.gas = 20000000
             }
         }
-
+        
         return try input.serializedData()
     }
     

@@ -36,6 +36,9 @@ var body: some View {
     .onAppear {
         setData()
     }
+    .task {
+        await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
+    }
 }
 
 var view: some View {
@@ -68,6 +71,10 @@ var fields: some View {
         VStack(spacing: 30) {
             summary
             checkboxes
+            
+            if sendCryptoVerifyViewModel.showSecurityScan {
+                SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
+            }
             }
             .padding(.horizontal, 16)
         }
@@ -75,6 +82,8 @@ var fields: some View {
     
     var summary: some View {
         VStack(spacing: 16) {
+            getDetailsCell(for: "vault", with: vault.name)
+            Separator()
             getAddressCell(for: "from", with: tx.fromAddress)
             Separator()
             getAddressCell(for: "to", with: tx.toAddress)

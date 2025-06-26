@@ -10,10 +10,6 @@ import BigInt
 
 struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    
-    var showApprove: Bool {
-        viewModel.keysignPayload?.approvePayload != nil
-    }
 
     var body: some View {
         VStack {
@@ -164,10 +160,7 @@ struct KeysignSwapConfirmView: View {
         VStack(alignment: .leading, spacing: 4) {
             Group {
                 Text(amount ?? "")
-                    .foregroundColor(.neutral0) +
-                Text(" ") +
-                Text(ticker ?? "")
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(.neutral0)
             }
             .font(.body18BrockmannMedium)
             

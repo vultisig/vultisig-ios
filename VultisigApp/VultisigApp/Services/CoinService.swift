@@ -91,8 +91,12 @@ struct CoinService {
             case .EVM :
                 let service = try EvmServiceFactory.getService(forChain: nativeToken.chain)
                 tokens = await service.getTokens(nativeToken: nativeToken)
+                // Filter out spam tokens by checking for valid price provider ID
+                tokens = tokens.filter { !$0.priceProviderId.isEmpty }
             case .Solana:
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
+                // Filter out spam tokens by checking for valid price provider ID
+                tokens = tokens.filter { !$0.priceProviderId.isEmpty }
             case .Sui:
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
             case .THORChain:

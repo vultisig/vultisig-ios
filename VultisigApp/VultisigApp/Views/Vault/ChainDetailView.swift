@@ -18,7 +18,6 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-    @State var isWeweLinkActive = false
     @State var showAlert = false
     @State var resetActive = false
 
@@ -47,12 +46,7 @@ struct ChainDetailView: View {
                 if let fromCoin = tokens.first {
                     SwapCryptoView(fromCoin: fromCoin, vault: vault)
                 }
-            }
-            .navigationDestination(isPresented: $isWeweLinkActive) {
-                if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
-                    SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
-                }
-            }
+            } 
             .navigationDestination(isPresented: $isMemoLinkActive) {
                 FunctionCallView(
                     tx: sendTx,

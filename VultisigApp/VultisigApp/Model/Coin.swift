@@ -19,6 +19,8 @@ class Coin: ObservableObject, Codable, Hashable {
     var rawBalance: String = ""
     var stakedBalance: String = ""
     
+    @Transient var bondedNodes: [RuneBondNode] = []
+    
     var decimals: Int {
         get {
             return Int(strDecimals) ?? 0
@@ -39,6 +41,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = asset.coinId(address: address)
         
         self.rawBalance = .zero
+        self.stakedBalance = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
@@ -85,13 +88,21 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceDecimal: Decimal {
-        let tokenBalance = rawBalance.toDecimal()
-        let tokenDecimals = decimals
-        return tokenBalance / pow(10, tokenDecimals)
+        let value = rawBalance.toDecimal() / pow(10, decimals)
+        return value
+    }
+    
+    var stakedBalanceDecimal: Decimal {
+        let value = stakedBalance.toDecimal() / pow(10, decimals)
+        return value
+    }
+    var combinedBalanceDecimal: Decimal {
+        let combined = balanceDecimal + stakedBalanceDecimal
+        return combined
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 8) // top 8, bc if I use decimals ETH has 18....
+        return balanceDecimal.formatToDecimal(digits: 8)
     }
     
     var balanceInFiat: String {
@@ -108,6 +119,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
+        case .cardano:
+            return .Cardano
         case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
             return .Cosmos
         case .sui:
@@ -140,7 +153,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return SolanaHelper.defaultFeeInLamports.description
-        case .ethereum,.avalanche,.polygon, .polygonV2, .bscChain,.ethereumSepolia:
+        case .ethereum,.avalanche, .bscChain,.ethereumSepolia:
             if self.isNativeToken {
                 return "23000"
             } else {
@@ -148,7 +161,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .arbitrum:
             return "120000"
-        case .base,.blast,.optimism,.cronosChain:
+        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2:
             if self.isNativeToken {
                 return "40000"
             } else {
@@ -156,7 +169,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .zksync:
             return "200000"
-        case .bitcoin,.bitcoinCash,.dash:
+        case .bitcoin,.bitcoinCash,.dash, .cardano:
             return "20"
         case .zcash:
             return "1000" // "2000" for faster confirmation
@@ -229,6 +242,11 @@ class Coin: ObservableObject, Codable, Hashable {
             }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
+
+        if chain == .thorChain {
+            return "\(chain.swapAsset).\(ticker)"
+        }
+
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     
@@ -239,11 +257,13 @@ class Coin: ObservableObject, Codable, Hashable {
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
         
-        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1) //the max value must be less than the balance, so we need to reduce the precision.
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1)
     }
     
     var balanceInFiatDecimal: Decimal {
-        return RateProvider.shared.fiatBalance(for: self)
+        let combined = combinedBalanceDecimal
+        let fiat = RateProvider.shared.fiatBalance(value: combined, coin: self)
+        return fiat
     }
     
     var blockchairKey: String {
@@ -254,21 +274,20 @@ class Coin: ObservableObject, Codable, Hashable {
         return !isNativeToken && chain.chainType == .EVM
     }
     
-    var tokenSchema: String? {
-        guard !isNativeToken else { return nil }
-        switch chain {
-        case .ethereum:
-            return "ERC20"
-        case .bscChain:
-            return "BEP20"
-        default:
-            return nil
-        }
-    }
+    
     
     var tokenChainLogo: String? {
         guard chain.logo != logo else { return nil }
         return chain.logo
+    }
+    
+
+    var isRune: Bool {
+        return chain == .thorChain && ticker.uppercased() == "RUNE" && isNativeToken
+    }
+     
+    var hasBondedNodes: Bool {
+        return !bondedNodes.isEmpty
     }
     
     static let example: Coin = {

@@ -10,6 +10,9 @@ import Foundation
 struct CustomMessagePayload: Codable, Hashable {
     let method: String
     let message: String
+    
+    /// Decoded human-readable version of the message (populated asynchronously)
+    var decodedMessage: String? = nil
 
     var keysignMessages: [String] {
         let data: Data

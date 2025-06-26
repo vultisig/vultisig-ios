@@ -2,8 +2,6 @@
 //  TokenSelectionHeader.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-08-08.
-//
 
 import SwiftUI
 

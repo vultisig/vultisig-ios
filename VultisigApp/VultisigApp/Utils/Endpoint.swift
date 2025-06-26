@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Endpoint {
+class Endpoint { 
     
     enum SwapChain {
         case thorchain
@@ -32,6 +32,92 @@ class Endpoint {
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
+    
+    // Security/Fraud Detection Services - Proxied through Vultisig API
+    static let blockaidApiBase = "\(vultisigApiProxy)/blockaid/v0"
+    
+    // OFFICIAL BLOCKAID API ENDPOINTS (Working ✅)
+    
+    // EVM Endpoints
+    static func blockaidEVMJSONRPCScan() -> String {
+        return "\(blockaidApiBase)/evm/json-rpc/scan"
+    }
+    
+    static func blockaidEVMTransactionScan() -> String {
+        return "\(blockaidApiBase)/evm/transaction/scan"
+    }
+    
+    static func blockaidEVMTransactionRawScan() -> String {
+        return "\(blockaidApiBase)/evm/transaction/raw/scan"
+    }
+    
+    static func blockaidEVMAddressScan() -> String {
+        return "\(blockaidApiBase)/evm/address/scan"
+    }
+    
+    static func blockaidEVMUserOperationScan() -> String {
+        return "\(blockaidApiBase)/evm/user-operation/scan"
+    }
+    
+    // Site Scanning
+    static func blockaidSiteScan() -> String {
+        return "\(blockaidApiBase)/site/scan"
+    }
+    
+    // Token Scanning
+    static func blockaidTokenScan() -> String {
+        return "\(blockaidApiBase)/token/scan"
+    }
+    
+    // Multi-Chain Support
+    static func blockaidBitcoinTransactionRaw() -> String {
+        return "\(blockaidApiBase)/bitcoin/transaction/raw"
+    }
+    
+    static func blockaidSolanaAddressScan() -> String {
+        return "\(blockaidApiBase)/solana/address/scan"
+    }
+    
+    static func blockaidSolanaMessageScan() -> String {
+        return "\(blockaidApiBase)/solana/message/scan"
+    }
+    
+    static func blockaidStarknetTransactionScan() -> String {
+        return "\(blockaidApiBase)/starknet/transaction/scan"
+    }
+    
+    static func blockaidStellarAddressScan() -> String {
+        return "\(blockaidApiBase)/stellar/address/scan"
+    }
+    
+    static func blockaidStellarTransactionScan() -> String {
+        return "\(blockaidApiBase)/stellar/transaction/scan"
+    }
+    
+    static func blockaidSuiAddressScan() -> String {
+        return "\(blockaidApiBase)/sui/address/scan"
+    }
+    
+    static func blockaidSuiTransactionScan() -> String {
+        return "\(blockaidApiBase)/sui/transaction/scan"
+    }
+    
+    // Chain-Agnostic
+    static func blockaidChainAgnosticTransaction() -> String {
+        return "\(blockaidApiBase)/chain-agnostic/transaction"
+    }
+    
+    // Enterprise Features  
+    static func blockaidExchangeProtectionWithdrawal() -> String {
+        return "\(blockaidApiBase)/exchange-protection/withdrawal"
+    }
+    
+
+    
+    // Legacy endpoint methods (for backward compatibility)
+    static func blockaidAddressScan() -> String {
+        return blockaidEVMAddressScan()
+    }
     
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
     
@@ -61,6 +147,10 @@ class Endpoint {
     
     static func fetchTcyStakedAmount(address: String) -> String {
         "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
+    }
+    
+    static func fetchRuneBondedAmount(address: String) -> String {
+        return "https://midgard.ninerealms.com/v2/bonds/\(address)"
     }
     
     static func fetchThorchainMergedAssets() -> String {
@@ -98,6 +188,24 @@ class Endpoint {
     
     static func fetchTokens(chain: Int) -> String {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
+    }
+    
+    static func fetchKyberSwapRoute(chain: String, tokenIn: String, tokenOut: String, amountIn: String, saveGas: Bool, gasInclude: Bool, slippageTolerance: Int, isAffiliate: Bool, sourceIdentifier: String? = nil, referrerAddress: String? = nil) -> URL {
+        let baseUrl = "https://aggregator-api.kyberswap.com/\(chain)/api/v1/routes?tokenIn=\(tokenIn)&tokenOut=\(tokenOut)&amountIn=\(amountIn)&saveGas=\(saveGas)&gasInclude=\(gasInclude)&slippageTolerance=\(slippageTolerance)"
+        
+        let affiliateParams = isAffiliate && sourceIdentifier != nil && referrerAddress != nil
+        ? "&source=\(sourceIdentifier!)&referral=\(referrerAddress!)"
+        : .empty
+        
+        return (baseUrl + affiliateParams).asUrl
+    }
+    
+    static func buildKyberSwapTransaction(chain: String) -> URL {
+        return "https://aggregator-api.kyberswap.com/\(chain)/api/v1/route/build".asUrl
+    }
+    
+    static func fetchKyberSwapTokens(chainId: String) -> URL {
+        return "https://ks-setting.kyberswap.com/api/v1/tokens?chainIds=\(chainId)&isWhitelisted=true&pageSize=100".asUrl
     }
     
     static func fetch1InchsTokensBalance(chain: String, address: String) -> String {
@@ -173,6 +281,10 @@ class Endpoint {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
     
+    static func fetchFourByteSignature(hexSignature: String) -> URL {
+        return "https://www.4byte.directory/api/v1/signatures/?format=json&hex_signature=\(hexSignature)&ordering=created_at".asUrl
+    }
+    
     static func fetchExtendedAddressInformation(address: String) -> String {
         return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }
@@ -196,7 +308,9 @@ class Endpoint {
     static func blockchairBroadcast(_ chainName: String) -> URL {
         "\(vultisigApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
     }
-    
+    static func bitcoinBroadcast() -> URL {
+        "\(vultisigApiProxy)/bitcoin/".asUrl
+    }
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         // ?state=latest
         "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
@@ -378,9 +492,17 @@ class Endpoint {
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
     }
+
+    static func thorchainNodeExplorerURL(_ address: String) -> String {
+        return "https://thorchain.net/node/\(address)"
+    }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+    }
+    
+    static func getLifiSwapTracker(txid: String) -> String {
+        return "https://scan.li.fi/tx/\(txid)"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
@@ -405,6 +527,17 @@ class Endpoint {
     }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
+    
+    // Cardano endpoints - Using Koios API (free, open source, no API key required)
+    static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
+    
+    static func fetchCardanoBalance(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_info"
+    }
+    
+    static func fetchCardanoUTXOs(address: String) -> String {
+        return "\(cardanoServiceRpc)/address_utxos"
+    }
     
     static func getExplorerURL(chain: Chain, txid: String) -> String {
         switch chain {
@@ -474,6 +607,8 @@ class Endpoint {
             return "https://tronscan.org/#/transaction/\(txid)"
         case .ethereumSepolia:
             return "https://sepolia.etherscan.io/tx/\(txid)"
+        case .cardano:
+            return "https://cardanoscan.io/transaction/\(txid)"
         }
     }
     
@@ -545,6 +680,8 @@ class Endpoint {
             return "https://www.mintscan.io/akash/address/\(address)"
         case .tron:
             return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
         
         }
     }
@@ -617,11 +754,29 @@ class Endpoint {
             return "https://www.mintscan.io/akash/address/\(address)"
         case .tron:
             return "https://tronscan.org/#/address/\(address)"
+        case .cardano:
+            return "https://cardanoscan.io/address/\(address)"
         case .none:
             return nil
         }
     }
     
+    // Referral
+    
+    static let ReferralBase = "https://thornode.ninerealms.com/thorchain"
+    static let ReferralFees = "https://thornode.ninerealms.com/thorchain/network"
+    
+    static func checkNameAvailability(for code: String) -> String {
+        ReferralBase + "/thorname/lookup/\(code)"
+    }
+    
+    static func getUserDetails(for code: String) -> String {
+        ReferralBase + "/thorname/\(code)"
+    }
+    
+    static func reverseLookup(for address: String) -> String {
+        ReferralBase + "/thorname/lookup/\(address)"
+    }
 }
 
 fileprivate extension String {

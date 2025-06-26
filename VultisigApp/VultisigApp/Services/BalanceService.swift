@@ -25,6 +25,8 @@ class BalanceService {
     private let osmo = OsmosisService.shared
     private let ripple = RippleService.shared
     private let tron = TronService.shared
+    private let cardano = CardanoService.shared
+
     
     private let terra = TerraService.shared
     private let terraClassic = TerraClassicService.shared
@@ -101,6 +103,12 @@ private extension BalanceService {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
                 return tcyStakedBalance.description
             }
+            
+            // Handle RUNE bonded balance
+            if coin.ticker.caseInsensitiveCompare("RUNE") == .orderedSame {
+                let runeBondedBalance = await thor.fetchRuneBondedAmount(address: coin.address)
+                return runeBondedBalance.description
+            }
 
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
@@ -109,7 +117,7 @@ private extension BalanceService {
                 if let matchedAccount = mergedAccounts.first(where: {
                     $0.pool.mergeAsset.metadata.symbol.caseInsensitiveCompare(coin.ticker) == .orderedSame
                 }) {
-                    let amountInDecimal = matchedAccount.size.amount.toDecimal() / Decimal(100_000_000)
+                    let amountInDecimal = matchedAccount.size.amount.toDecimal()
                     return amountInDecimal.description
                 }
             }
@@ -164,6 +172,9 @@ private extension BalanceService {
             
         case .tron:
             return .zero
+            
+        case .cardano:
+            return .zero
         
         }
     }
@@ -173,6 +184,9 @@ private extension BalanceService {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             return blockChairData.address?.balance?.description ?? "0"
+            
+        case .cardano:
+            return try await cardano.getBalance(coin: coin)
             
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
