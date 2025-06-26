@@ -777,6 +777,10 @@ class Endpoint {
     static func reverseLookup(for address: String) -> String {
         ReferralBase + "/thorname/lookup/\(address)"
     }
+    
+    static func nameLookup(for name: String) -> String {
+        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)"
+    }
 }
 
 fileprivate extension String {

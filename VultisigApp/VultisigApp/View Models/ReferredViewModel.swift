@@ -66,7 +66,7 @@ class ReferredViewModel: ObservableObject {
     }
     
     private func checkNameAvailability(code: String) async {
-        let urlString = Endpoint.getUserDetails(for: code)
+        let urlString = Endpoint.nameLookup(for: code)
         guard let url = URL(string: urlString) else {
             showNameError(with: "systemErrorMessage")
             return
@@ -77,8 +77,10 @@ class ReferredViewModel: ObservableObject {
             if let httpResponse = response as? HTTPURLResponse {
                 if httpResponse.statusCode == 200 {
                     saveReferredCode()
-                } else {
+                } else if httpResponse.statusCode == 404 {
                     showNameError(with: "referralCodeNotFound")
+                } else {
+                    showNameError(with: "systemErrorMessage")
                 }
             }
         } catch {
