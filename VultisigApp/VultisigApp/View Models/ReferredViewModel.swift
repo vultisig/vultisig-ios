@@ -105,7 +105,7 @@ class ReferredViewModel: ObservableObject {
             return
         }
         
-        guard code.count == 4 else {
+        guard code.count <= 4 else {
             showNameError(with: "referralLaunchCodeLengthError")
             return
         }
