@@ -20,6 +20,9 @@ struct SendDetailsAssetTab: View {
             .onAppear {
                 setData()
             }
+            .onChange(of: tx.coin, { oldValue, newValue in
+                setData()
+            })
             .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
                 if let vault = homeViewModel.selectedVault {
                     SwapChainPickerView(
