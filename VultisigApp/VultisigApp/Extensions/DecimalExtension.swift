@@ -90,6 +90,20 @@ extension Decimal {
         return formatter.string(from: number) ?? ""
     }
     
+    /// Formata valores para display, automaticamente usando abreviações para valores grandes
+    /// Para valores >= 1M, usa abreviações (K, M, B, T)
+    /// Para valores < 1M, usa formatação decimal padrão com locale
+    /// ⚠️ APENAS para display - nunca usar em campos de input
+    func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current) -> String {
+        let million = Decimal(1_000_000)
+        
+        if abs(self) >= million {
+            return formatWithAbbreviation(maxDecimals: maxDecimals)
+        } else {
+            return formatDecimalToLocale(locale: locale)
+        }
+    }
+    
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
     }

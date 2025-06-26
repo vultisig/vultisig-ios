@@ -102,7 +102,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceString: String {
-        return balanceDecimal.formatToDecimal(digits: 8)
+        return balanceDecimal.formatForDisplay()
     }
     
     var balanceInFiat: String {

@@ -126,10 +126,8 @@ struct SwapVerifyView: View {
     
     var summaryFromTo: some View {
         VStack(spacing: 16) {
-            getSwapAssetCell(
-                for: tx.fromAmountDecimal >= 1_000_000 ? 
-                    tx.fromAmountDecimal.formatWithAbbreviation() : 
-                    tx.fromAmountDecimal.formatDecimalToLocale(),
+                        getSwapAssetCell(
+                for: tx.fromAmountDecimal.formatForDisplay(),
                 with: tx.fromCoin.ticker,
                 on: tx.fromCoin.chain
             )
@@ -137,10 +135,8 @@ struct SwapVerifyView: View {
             separator
                 .padding(.leading, 12)
             
-            getSwapAssetCell(
-                for: tx.toAmountDecimal >= 1_000_000 ? 
-                    tx.toAmountDecimal.formatWithAbbreviation() : 
-                    tx.toAmountDecimal.formatDecimalToLocale(),
+                        getSwapAssetCell(
+                for: tx.toAmountDecimal.formatForDisplay(),
                 with: tx.toCoin.ticker,
                 on: tx.toCoin.chain
             )

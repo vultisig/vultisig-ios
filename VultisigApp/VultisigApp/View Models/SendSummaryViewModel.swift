@@ -10,9 +10,7 @@ import Foundation
 @MainActor
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
-        let formattedAmount = tx.fromAmountDecimal >= 1_000_000 ? 
-            tx.fromAmountDecimal.formatWithAbbreviation() : 
-            tx.fromAmountDecimal.formatDecimalToLocale()
+        let formattedAmount = tx.fromAmountDecimal.formatForDisplay()
             
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.fromCoin.ticker)"
@@ -22,9 +20,7 @@ class SendSummaryViewModel: ObservableObject {
     }
 
     func getToAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
-        let formattedAmount = tx.toAmountDecimal >= 1_000_000 ? 
-            tx.toAmountDecimal.formatWithAbbreviation() : 
-            tx.toAmountDecimal.formatDecimalToLocale()
+        let formattedAmount = tx.toAmountDecimal.formatForDisplay()
             
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.toCoin.ticker)"

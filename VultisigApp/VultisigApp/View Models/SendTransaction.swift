@@ -108,7 +108,7 @@ class SendTransaction: ObservableObject, Hashable {
                 
                 let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
                 
-                let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
+                let nativeTokenBalanceDecimal = nativeTokenBalance.formatForDisplay(maxDecimals: 8)
                 
                 return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
