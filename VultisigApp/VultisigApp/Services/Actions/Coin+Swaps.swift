@@ -46,25 +46,25 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.kyberswap(chain), .thorchain, .oneinch(chain), .lifi]
+                return [.thorchain, .kyberswap(chain), .oneinch(chain), .lifi]
             } else {
                 return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.kyberswap(chain), .thorchain, .oneinch(chain), .lifi]
+                return [.thorchain, .kyberswap(chain), .oneinch(chain), .lifi]
             } else {
                 return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.kyberswap(chain), .mayachain, .oneinch(chain), .lifi]
+                return [.mayachain, .kyberswap(chain), .oneinch(chain), .lifi]
             } else {
                 return [.kyberswap(chain), .oneinch(chain), .lifi]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {
-                return [.thorchain,.oneinch(chain), .lifi] // KyberSwap not supported
+                return [.thorchain, .oneinch(chain), .lifi] // KyberSwap not supported
             }
             return [.oneinch(chain), .lifi] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2:
