@@ -51,7 +51,7 @@ class ReferralViewModel: ObservableObject {
         return isFeesLoading
     }
     
-    func verifyReferralCode() {
+    func verifyReferralCode() async {
         isLoading = true
         resetReferralData()
         nameErrorCheck(code: referralCode, forReferralCode: true)
@@ -60,9 +60,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        Task {
-            await checkNameAvailability(code: referralCode)
-        }
+        await checkNameAvailability(code: referralCode)
     }
     
     func handleCounterIncrease() {
@@ -77,7 +75,9 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
+    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) async {
+        await verifyReferralCode()
+        
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
@@ -176,7 +176,7 @@ class ReferralViewModel: ObservableObject {
         isReferralCodeVerified = true
     }
     
-    private func resetReferralData() {
+    func resetReferralData() {
         showReferralAvailabilityError = false
         referralAvailabilityErrorMessage = ""
         showReferralAvailabilitySuccess = false

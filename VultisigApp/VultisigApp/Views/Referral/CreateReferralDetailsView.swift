@@ -182,7 +182,9 @@ struct CreateReferralDetailsView: View {
     
     var button: some View {
         Button {
-            referralViewModel.verifyReferralEntries(tx: sendTx, functionCallViewModel: functionCallViewModel)
+            Task {
+                await referralViewModel.verifyReferralEntries(tx: sendTx, functionCallViewModel: functionCallViewModel)
+            }
         } label: {
             label
         }
