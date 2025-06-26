@@ -83,9 +83,6 @@ private extension BalanceService {
     
     func fetchStakedBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            return .zero
-            
         case .thorChain:
             // Handle TCY staked balance
             if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
@@ -98,7 +95,7 @@ private extension BalanceService {
                 let runeBondedBalance = await thor.fetchRuneBondedAmount(address: coin.address)
                 return runeBondedBalance.description
             }
-
+            
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
                 let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
@@ -110,64 +107,16 @@ private extension BalanceService {
                     return amountInDecimal.description
                 }
             }
-
+            
             // Fallback return value
             return "0"
             
-        case .solana:
+        default:
+            // All other chains currently don't support staking
             return .zero
-            
-        case .sui:
-            return .zero
-            
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
-            return .zero
-            
-        case .gaiaChain:
-            return .zero
-            
-        case .dydx:
-            return .zero
-            
-        case .kujira:
-            return .zero
-            
-        case .osmosis:
-            return .zero
-            
-        case .terra:
-            return .zero
-            
-        case .terraClassic:
-            return .zero
-            
-        case .noble:
-            return .zero
-         
-        case .mayaChain:
-            return .zero
-            
-        case .polkadot:
-            return .zero
-            
-        case .ton:
-            return .zero
-            
-        case .ripple:
-            return .zero
-            
-        case .akash:
-            return .zero
-            
-        case .tron:
-            return .zero
-            
-        case .cardano:
-            return .zero
-        
         }
     }
-
+    
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
@@ -191,7 +140,6 @@ private extension BalanceService {
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
             
-            // COSMOS chains
         case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
             let cosmosService = try CosmosServiceFactory.getService(forChain: coin.chain)
             let balances = try await cosmosService.fetchBalances(coin: coin)
@@ -206,8 +154,6 @@ private extension BalanceService {
             }
             
             return balances.balance(denom: denom, coin: coin)
-         
-            //
             
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)
@@ -224,9 +170,6 @@ private extension BalanceService {
             
         case .tron:
             return try await tron.getBalance(coin: coin)
-         
-            //
-        
         }
     }
     
