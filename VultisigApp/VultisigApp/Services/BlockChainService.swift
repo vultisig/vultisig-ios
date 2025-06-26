@@ -302,6 +302,7 @@ private extension BlockChainService {
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
             
         case .gaiaChain:
+            let atom = GaiaService.shared
             let account = try await atom.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -324,12 +325,14 @@ private extension BlockChainService {
             let latestBlock = try await atom.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
-            if ibcDenomTrace == nil {
+            if coin.contractAddress.contains("ibc/") && ibcDenomTrace == nil {
                 ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
             }
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+            
         case .kujira:
+            let kuji = KujiraService.shared
             let account = try await kuji.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -352,12 +355,14 @@ private extension BlockChainService {
             let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
-            if ibcDenomTrace == nil {
+            if coin.contractAddress.contains("ibc/") && ibcDenomTrace == nil {
                 ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
             }
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+            
         case .osmosis:
+            let osmo = OsmosisService.shared
             let account = try await osmo.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -380,12 +385,14 @@ private extension BlockChainService {
             let latestBlock = try await osmo.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
             
-            if ibcDenomTrace == nil {
+            if coin.contractAddress.contains("ibc/") && ibcDenomTrace == nil {
                 ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
             }
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+            
         case .terra:
+            let terra = TerraService.shared
             let account = try await terra.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -405,13 +412,17 @@ private extension BlockChainService {
             let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
             let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
             
-            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
+            let latestBlock = try await terra.fetchLatestBlock(coin: coin)
             ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+            
+            if coin.contractAddress.contains("ibc/") && ibcDenomTrace == nil {
+                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            }
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
             
-            
         case .terraClassic:
+            let terraClassic = TerraClassicService.shared
             let account = try await terraClassic.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -421,9 +432,11 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
+            
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 100000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
             
         case .dydx:
+            let dydx = DydxService.shared
             let account = try await dydx.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -433,9 +446,11 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
+            
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
             
         case .noble:
+            let noble = NobleService.shared
             let account = try await noble.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
@@ -445,7 +460,23 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
+            
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 20000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            
+        case .akash:
+            let akash = AkashService.shared
+            let account = try await akash.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 3000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+
             
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
@@ -460,18 +491,6 @@ private extension BlockChainService {
             
             //60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
-            
-        case .akash:
-            let account = try await akash.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 3000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .tron:
             return try await tron.getBlockInfo(coin: coin)
         }

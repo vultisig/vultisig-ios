@@ -570,6 +570,14 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         throw err
                     }
+                case .akash:
+                    let broadcastResult = await AkashService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
                 case .solana:
                     self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:
@@ -582,14 +590,6 @@ class KeysignViewModel: ObservableObject {
                     self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
-                case .akash:
-                    let broadcastResult = await AkashService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
                     
                 case .tron:
                     
