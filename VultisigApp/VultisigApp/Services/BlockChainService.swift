@@ -329,7 +329,7 @@ private extension BlockChainService {
             }
             
             // Chain-specific gas values
-            let gas: Int64
+            let gas: UInt64
             switch coin.chain {
             case .terraClassic:
                 gas = 100000000
