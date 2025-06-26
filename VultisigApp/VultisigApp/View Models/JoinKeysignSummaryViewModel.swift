@@ -39,26 +39,31 @@ class JoinKeysignSummaryViewModel {
             return .empty
         }
 
-        return "\(fromCoin.decimal(for: amount).formatDecimalToLocale()) \(fromCoin.ticker)"
+        let amountDecimal = fromCoin.decimal(for: amount)
+        return "\(amountDecimal.formatForDisplay()) \(fromCoin.ticker)"
     }
 
     func getFromAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
+        let formattedAmount = amount.formatForDisplay()
+        
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker)"
+            return "\(formattedAmount) \(payload.fromCoin.ticker)"
         } else {
-            return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+            return "\(formattedAmount) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
+        let formattedAmount = amount.formatForDisplay()
+        
         if payload.fromCoin.chain == payload.toCoin.chain {
-            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker)"
+            return "\(formattedAmount) \(payload.toCoin.ticker)"
         } else {
-            return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+            return "\(formattedAmount) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
         }
     }
     
@@ -70,7 +75,7 @@ class JoinKeysignSummaryViewModel {
     func getFromAmountString(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return "" }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return amount.formatDecimalToLocale()
+        return amount.formatForDisplay()
     }
     
     func getToCoin(_ keysignPayload: KeysignPayload?) -> Coin? {
@@ -81,6 +86,6 @@ class JoinKeysignSummaryViewModel {
     func getToAmountString(_ keysignPayload: KeysignPayload?) -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
-        return amount.formatDecimalToLocale()
+        return amount.formatForDisplay()
     }
 }

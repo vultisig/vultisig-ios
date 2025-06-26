@@ -170,7 +170,8 @@ var fields: some View {
     }
     
     private func getAmount() -> String {
-        tx.amount.formatToDecimal(digits: 8) + " " + tx.coin.ticker
+        let amountDecimal = tx.amount.toDecimal()
+        return amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
     
     private func getFiatAmount() -> String {
