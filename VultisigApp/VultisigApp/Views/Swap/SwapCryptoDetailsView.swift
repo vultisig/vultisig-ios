@@ -15,7 +15,7 @@ struct SwapCryptoDetailsView: View {
     @State var isFromPickerActive = false
     @State var isToPickerActive = false
     
-    @StateObject var referralViewModel = ReferralViewModel()
+    @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -28,7 +28,7 @@ struct SwapCryptoDetailsView: View {
                 setData()
             }
             .onReceive(timer) { input in
-                swapViewModel.updateTimer(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+                swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
             .onChange(of: tx.fromCoin, { oldValue, newValue in
                 handleFromCoinUpdate()
@@ -38,13 +38,13 @@ struct SwapCryptoDetailsView: View {
             })
             .navigationDestination(isPresented: $isFromPickerActive) {
                 CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
-                    swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+                    swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
                     swapViewModel.updateCoinLists(tx: tx)
                 }
             }
             .navigationDestination(isPresented: $isToPickerActive) {
                 CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
-                    swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+                    swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
                 }
             }
     }
@@ -182,21 +182,21 @@ struct SwapCryptoDetailsView: View {
     }
     
     private func handleFromCoinUpdate() {
-        swapViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+        swapViewModel.updateFromCoin(coin: tx.fromCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
     }
     
     private func handleToCoinUpdate() {
-        swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+        swapViewModel.updateToCoin(coin: tx.toCoin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
     }
     
     private func handleSwapTap() {
         swapViewModel.error = nil
         buttonRotated.toggle()
-        swapViewModel.switchCoins(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+        swapViewModel.switchCoins(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         let fromChain = swapViewModel.fromChain
         swapViewModel.fromChain = swapViewModel.toChain
         swapViewModel.toChain = fromChain
-        swapViewModel.refreshData(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+        swapViewModel.refreshData(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
     }
     
     func showSheet() -> Bool {

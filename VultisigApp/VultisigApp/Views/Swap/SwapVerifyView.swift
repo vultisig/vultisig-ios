@@ -13,7 +13,7 @@ struct SwapVerifyView: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
-    @StateObject var referralViewModel = ReferralViewModel()
+    @StateObject var referredViewModel = ReferredViewModel()
 
     let vault: Vault
 
@@ -31,7 +31,7 @@ struct SwapVerifyView: View {
             }
         }
         .onReceive(timer) { input in
-            swapViewModel.updateTimer(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
+            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
         }
         .onDisappear {
             swapViewModel.isLoading = false

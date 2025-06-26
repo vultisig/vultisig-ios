@@ -332,28 +332,28 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         Mediator.shared.stop()
     }
     
-    func switchCoins(tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func switchCoins(tx: SwapTransaction, vault: Vault, referredCode: String) {
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault, referralCode: referralCode)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault, referralCode: String) {
-        fetchQuotes(tx: tx, vault: vault, referralCode: referralCode)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault, referralCode: referralCode)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.toCoin = coin
-        fetchQuotes(tx: tx, vault: vault, referralCode: referralCode)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func handleBackTap() {
@@ -361,22 +361,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func updateTimer(tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func updateTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
         timer -= 1
         
         if timer < 1 {
-            restartTimer(tx: tx, vault: vault, referralCode: referralCode)
+            restartTimer(tx: tx, vault: vault, referredCode: referredCode)
         }
     }
     
-    func restartTimer(tx: SwapTransaction, vault: Vault, referralCode: String) {
-        refreshData(tx: tx, vault: vault, referralCode: referralCode)
+    func restartTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        refreshData(tx: tx, vault: vault, referredCode: referredCode)
         timer = 59
     }
     
-    func refreshData(tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault, referralCode: referralCode)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -388,14 +388,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func fetchQuotes(tx: SwapTransaction, vault: Vault, referralCode: String) {
+    func fetchQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx, referralCode: referralCode)
+            await self?.updateQuotes(tx: tx, referredCode: referredCode)
         }
     }
     
@@ -438,7 +438,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction, referralCode: String) async {
+    func updateQuotes(tx: SwapTransaction, referredCode: String) async {
         isLoading = true
         defer { isLoading = false }
         
@@ -458,7 +458,7 @@ private extension SwapCryptoViewModel {
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
                 isAffiliate: tx.isAlliliate,
-                referralCode: referralCode
+                referredCode: referredCode
             )
             
             tx.quote = quote

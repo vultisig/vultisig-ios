@@ -49,7 +49,7 @@ class MayachainService: ThorchainSwapProvider {
 
     func fetchSwapQuotes(
         address: String, fromAsset: String, toAsset: String, amount: String,
-        interval: Int, isAffiliate: Bool, referralCode: String
+        interval: Int, isAffiliate: Bool, referredCode: String
     ) async throws -> ThorchainSwapQuote {
 
         let url = Endpoint.fetchSwapQuoteThorchain(
@@ -60,7 +60,7 @@ class MayachainService: ThorchainSwapProvider {
             amount: amount,
             interval: String(interval),
             isAffiliate: isAffiliate,
-            referralCode: referralCode
+            referredCode: referredCode
         )
 
         let (data, _) = try await URLSession.shared.data(
