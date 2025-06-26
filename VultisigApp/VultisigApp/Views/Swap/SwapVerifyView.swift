@@ -31,7 +31,7 @@ struct SwapVerifyView: View {
             }
         }
         .onReceive(timer) { input in
-            swapViewModel.updateTimer(tx: tx, vault: vault, referralViewModel: referralViewModel)
+            swapViewModel.updateTimer(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
         }
         .onDisappear {
             swapViewModel.isLoading = false

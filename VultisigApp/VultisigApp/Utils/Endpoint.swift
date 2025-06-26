@@ -73,11 +73,11 @@ class Endpoint {
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
-    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referralAffiliateParam: String) -> URL {
+    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referralCode: String) -> URL {
         let isAffiliateParams: String
         
-        if !referralAffiliateParam.isEmpty {
-            isAffiliateParams = referralAffiliateParam
+        if !referralCode.isEmpty {
+            isAffiliateParams = "&affiliate=\(referralCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)"
         } else {
             isAffiliateParams = isAffiliate
             ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"

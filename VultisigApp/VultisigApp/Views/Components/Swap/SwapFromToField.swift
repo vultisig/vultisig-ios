@@ -112,7 +112,7 @@ struct SwapFromToField: View {
     var fromToAmountField: some View {
         SwapCryptoAmountTextField(amount: $amount) { _ in
             if title=="from" {
-                swapViewModel.updateFromAmount(tx: tx, vault: vault, referralViewModel: referralViewModel)
+                swapViewModel.updateFromAmount(tx: tx, vault: vault, referralCode: referralViewModel.savedGeneratedReferralCode)
                 swapViewModel.showAllPercentageButtons = true
             }
         }

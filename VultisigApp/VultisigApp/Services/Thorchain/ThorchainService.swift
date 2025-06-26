@@ -132,10 +132,8 @@ class ThorchainService: ThorchainSwapProvider {
         amount: String,
         interval: Int,
         isAffiliate: Bool,
-        referralViewModel: ReferralViewModel
+        referralCode: String
     ) async throws -> ThorchainSwapQuote {
-        
-        let referralAffiliateParam = await referralViewModel.getReferralAffiliateParams()
         
         let url = Endpoint.fetchSwapQuoteThorchain(
             chain: .thorchain,
@@ -145,7 +143,7 @@ class ThorchainService: ThorchainSwapProvider {
             amount: amount,
             interval: String(interval),
             isAffiliate: isAffiliate,
-            referralAffiliateParam: referralAffiliateParam
+            referralCode: referralCode
         )
         
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
