@@ -514,64 +514,9 @@ class KeysignViewModel: ObservableObject {
                             self.handleBroadcastError(error: error, transactionType: transactionType)
                         }
                     }
-                case .gaiaChain:
-                    let broadcastResult = await GaiaService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .kujira:
-                    let broadcastResult = await KujiraService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .osmosis:
-                    let broadcastResult = await OsmosisService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .dydx:
-                    let broadcastResult = await DydxService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .terra:
-                    let broadcastResult = await TerraService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .terraClassic:
-                    let broadcastResult = await TerraClassicService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .noble:
-                    let broadcastResult = await NobleService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let hash):
-                        self.txid = hash
-                    case .failure(let err):
-                        throw err
-                    }
-                case .akash:
-                    let broadcastResult = await AkashService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+                    let service = try CosmosServiceFactory.getService(forChain: keysignPayload.coin.chain)
+                    let broadcastResult = await service.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash
