@@ -153,6 +153,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return .empty
             }
             return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
+        } else if coin.chain.chainType == .UTXO {
+            // for UTXO chains , we use transaction plan to get the transaction fee in total
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.ticker)"
         } else {
             return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
         }
@@ -220,6 +223,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         && !tx.fromAmount.isEmpty
         && !tx.toAmountDecimal.isZero
         && tx.quote != nil
+        && tx.gas != .zero
         && isSufficientBalance(tx: tx)
         && !isLoading
     }
@@ -338,15 +342,17 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        fetchQuotes(tx: tx, vault: vault)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
+        fetchQuotes(tx: tx, vault: vault)
+        fetchFees(tx: tx, vault: vault)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
         tx.fromCoin = coin
+        fetchQuotes(tx: tx, vault: vault)
         fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
@@ -481,11 +487,12 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-            
-            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
             tx.gas = chainSpecific.gas
+            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+
         } catch {
             print("Update fees error: \(error.localizedDescription)")
+            self.error = Errors.insufficientFunds
         }
     }
     
@@ -524,6 +531,9 @@ private extension SwapCryptoViewModel {
                 vaultHexChainCode: vault.hexChainCode
             )
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+                throw Errors.insufficientFunds
+            }
             return BigInt(plan.fee)
             
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:

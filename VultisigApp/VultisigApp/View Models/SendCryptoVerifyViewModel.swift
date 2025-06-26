@@ -19,6 +19,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
+    @Published var securityScanViewModel = SecurityScanViewModel()
+    @Published var showSecurityScan = false
+    
     @Published var utxo = BlockchairService.shared
     let blockChainService = BlockChainService.shared
     
@@ -64,5 +67,17 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return nil
         }
         return keysignPayload
+    }
+    
+    func performSecurityScan(tx: SendTransaction) async {
+        // Check if security scanning is available for this chain
+        guard securityScanViewModel.isScanningAvailable(for: tx.coin.chain) else {
+            print("Security scanning not available for chain: \(tx.coin.chain.name)")
+            showSecurityScan = false
+            return
+        }
+        
+        await securityScanViewModel.scanTransaction(from: tx)
+        showSecurityScan = true
     }
 }
