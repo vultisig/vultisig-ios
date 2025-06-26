@@ -529,7 +529,7 @@ private extension SwapCryptoViewModel {
                 vaultHexChainCode: vault.hexChainCode
             )
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            if plan.fee <= 0 {
+            if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
                 throw Errors.insufficientFunds
             }
             return BigInt(plan.fee)
