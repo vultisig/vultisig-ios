@@ -11,6 +11,7 @@ struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -57,7 +58,6 @@ struct ReferralSendOverviewView: View {
         VStack(spacing: 16) {
             Spacer()
             summary
-            checkboxes
             Spacer()
         }
         .padding(24)
@@ -72,13 +72,6 @@ struct ReferralSendOverviewView: View {
         .padding(24)
         .background(Color.blue600)
         .cornerRadius(16)
-    }
-    
-    var checkboxes: some View {
-        VStack(spacing: 12) {
-            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAmountCorrect, text: "referralOverviewCheckbox1")
-            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAddressCorrect, text: "referralOverviewCheckbox2")
-        }
     }
     
     var title: some View {
@@ -134,10 +127,18 @@ struct ReferralSendOverviewView: View {
                 title: "gas",
                 description: "\(sendTx.gasInReadable)"
             )
+            
+            separator
+            
+            getCell(
+                title: "memo",
+                description: getMemo(),
+                isForMemo: true
+            )
         }
     }
     
-    private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
+    private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil, isForMemo: Bool = false) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
@@ -154,8 +155,8 @@ struct ReferralSendOverviewView: View {
             }
             
             Text(description)
-                .foregroundColor(.neutral0)
-                .lineLimit(1)
+                .foregroundColor(isForMemo ? .extraLightGray : .neutral0)
+                .lineLimit(isForMemo ? 2 : 1)
                 .truncationMode(.tail)
             
             if let bracketValue {
@@ -175,9 +176,13 @@ struct ReferralSendOverviewView: View {
         
         return nativeCoin.address
     }
+    
+    private func getMemo() -> String {
+        "createthorname:\(referralViewModel.referralCode):\(referralViewModel.nativeCoin?.address ?? "")"
+    }
 }
 
 #Preview {
-    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel(), referralViewModel: ReferralViewModel())
         .environmentObject(HomeViewModel())
 }
