@@ -783,10 +783,6 @@ class Endpoint {
     static func reverseLookup(for address: String) -> String {
         ReferralBase + "/thorname/lookup/\(address)"
     }
-    
-    static func referralParams(for name: String) -> String {
-        ReferralBase + "/quote/swap?from_asset=thor.rune&to_asset=thor.tcy&amount=100000000&destination=thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng&streaming_interval=1&affiliate=\(name)&affiliate_bps=10&affiliate=vi&affiliate_bps=35"
-    }
 }
 
 fileprivate extension String {
