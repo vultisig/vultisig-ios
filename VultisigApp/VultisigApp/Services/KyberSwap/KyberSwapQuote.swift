@@ -55,7 +55,7 @@ struct KyberSwapQuote: Codable, Hashable {
             data: data.data,
             value: data.transactionValue,
             gasPrice: data.gasPrice ?? "",
-            gas: Int64(data.gas) ?? 0,
+            gas: Int64(data.gas) ?? 0
         )
     }
 }
