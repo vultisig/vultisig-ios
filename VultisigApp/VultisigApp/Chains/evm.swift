@@ -60,17 +60,16 @@ class EVMHelper {
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
         
+        input.txMode = .enveloped
         if let gas, let gasPrice {
             input.gasLimit = gas.serialize()
-            input.gasPrice = gasPrice.serialize()
-            input.txMode = .legacy
+            input.maxFeePerGas = gasPrice.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
         } else {
             input.gasLimit = gasLimit.magnitude.serialize()
             input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
             input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-            input.txMode = .enveloped
         }
-        
         return try input.serializedData()
     }
     
