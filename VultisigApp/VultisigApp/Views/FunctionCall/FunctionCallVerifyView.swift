@@ -38,7 +38,12 @@ struct FunctionCallVerifyView: View {
     var content: some View {
         VStack(spacing: 0) {
             if isForReferral {
-                ReferralSendOverviewView(sendTx: tx, functionCallViewModel: depositViewModel, functionCallVerifyViewModel: depositVerifyViewModel)
+                ReferralSendOverviewView(
+                    sendTx: tx,
+                    functionCallViewModel: depositViewModel,
+                    functionCallVerifyViewModel: depositVerifyViewModel,
+                    referralViewModel: referralViewModel
+                )
             } else {
                 ScrollView {
                     fields
