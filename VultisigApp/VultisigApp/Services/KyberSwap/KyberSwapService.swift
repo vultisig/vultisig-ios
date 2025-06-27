@@ -167,7 +167,7 @@ struct KyberSwapService {
         } else {
             finalGas = BigInt(calculatedGas)
         }
-        
+        buildResponse.data.gas = finalGas.description
         let gasPriceValue = BigInt(gasPrice) ?? BigInt("20000000000")
         let minGasPrice = BigInt("1000000000")
         let finalGasPrice = gasPriceValue < minGasPrice ? minGasPrice : gasPriceValue

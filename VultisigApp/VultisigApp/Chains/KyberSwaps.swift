@@ -55,10 +55,7 @@ struct KyberSwaps {
                 }
             }
         }
-        var gasPrice = BigUInt(quote.tx.gasPrice) ?? nil
-        if keysignPayload.coin.chain == .arbitrum {
-           gasPrice = nil // set gasPrice to nil , so we will construct .envelop transaction for arbitrum chain
-        }
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? nil
         
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
