@@ -336,29 +336,29 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         Mediator.shared.stop()
     }
     
-    func switchCoins(tx: SwapTransaction, vault: Vault) {
+    func switchCoins(tx: SwapTransaction, vault: Vault, referredCode: String) {
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        fetchQuotes(tx: tx, vault: vault)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
         fetchFees(tx: tx, vault: vault)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
-        fetchQuotes(tx: tx, vault: vault)
         fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.toCoin = coin
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func handleBackTap() {
@@ -366,22 +366,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func updateTimer(tx: SwapTransaction, vault: Vault) {
+    func updateTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
         timer -= 1
         
         if timer < 1 {
-            restartTimer(tx: tx, vault: vault)
+            restartTimer(tx: tx, vault: vault, referredCode: referredCode)
         }
     }
     
-    func restartTimer(tx: SwapTransaction, vault: Vault) {
-        refreshData(tx: tx, vault: vault)
+    func restartTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        refreshData(tx: tx, vault: vault, referredCode: referredCode)
         timer = 59
     }
     
-    func refreshData(tx: SwapTransaction, vault: Vault) {
+    func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -393,14 +393,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+    func fetchQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx)
+            await self?.updateQuotes(tx: tx, referredCode: referredCode)
         }
     }
     
@@ -443,7 +443,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction) async {
+    func updateQuotes(tx: SwapTransaction, referredCode: String) async {
         isLoading = true
         defer { isLoading = false }
         
@@ -462,7 +462,8 @@ private extension SwapCryptoViewModel {
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: tx.isAlliliate
+                isAffiliate: tx.isAlliliate,
+                referredCode: referredCode
             )
             
             tx.quote = quote

@@ -125,12 +125,15 @@ class ThorchainService: ThorchainSwapProvider {
         return req
     }
     
-    func fetchSwapQuotes(address: String,
-                         fromAsset: String,
-                         toAsset: String,
-                         amount: String,
-                         interval: Int,
-                         isAffiliate: Bool) async throws -> ThorchainSwapQuote {
+    func fetchSwapQuotes(
+        address: String,
+        fromAsset: String,
+        toAsset: String,
+        amount: String,
+        interval: Int,
+        isAffiliate: Bool,
+        referredCode: String
+    ) async throws -> ThorchainSwapQuote {
         
         let url = Endpoint.fetchSwapQuoteThorchain(
             chain: .thorchain,
@@ -139,7 +142,8 @@ class ThorchainService: ThorchainSwapProvider {
             toAsset: toAsset,
             amount: amount,
             interval: String(interval),
-            isAffiliate: isAffiliate
+            isAffiliate: isAffiliate,
+            referredCode: referredCode
         )
         
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))

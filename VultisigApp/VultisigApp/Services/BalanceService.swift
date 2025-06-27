@@ -16,23 +16,12 @@ class BalanceService {
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
-    private let gaia = GaiaService.shared
-    private let dydx = DydxService.shared
-    private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
     private let ton = TonService.shared
-    private let osmo = OsmosisService.shared
     private let ripple = RippleService.shared
     private let tron = TronService.shared
     private let cardano = CardanoService.shared
-
-    
-    private let terra = TerraService.shared
-    private let terraClassic = TerraClassicService.shared
-    
-    private let noble = NobleService.shared
-    private let akash = AkashService.shared
     
     private let cryptoPriceService = CryptoPriceService.shared
     
@@ -94,9 +83,6 @@ private extension BalanceService {
     
     func fetchStakedBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
-            return .zero
-            
         case .thorChain:
             // Handle TCY staked balance
             if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
@@ -109,7 +95,7 @@ private extension BalanceService {
                 let runeBondedBalance = await thor.fetchRuneBondedAmount(address: coin.address)
                 return runeBondedBalance.description
             }
-
+            
             // Handle merge account balances for non-native tokens
             if !coin.isNativeToken {
                 let mergedAccounts = await thor.fetchMergeAccounts(address: coin.address)
@@ -121,64 +107,16 @@ private extension BalanceService {
                     return amountInDecimal.description
                 }
             }
-
+            
             // Fallback return value
             return "0"
             
-        case .solana:
+        default:
+            // All other chains currently don't support staking
             return .zero
-            
-        case .sui:
-            return .zero
-            
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
-            return .zero
-            
-        case .gaiaChain:
-            return .zero
-            
-        case .dydx:
-            return .zero
-            
-        case .kujira:
-            return .zero
-            
-        case .osmosis:
-            return .zero
-            
-        case .terra:
-            return .zero
-            
-        case .terraClassic:
-            return .zero
-            
-        case .noble:
-            return .zero
-         
-        case .mayaChain:
-            return .zero
-            
-        case .polkadot:
-            return .zero
-            
-        case .ton:
-            return .zero
-            
-        case .ripple:
-            return .zero
-            
-        case .akash:
-            return .zero
-            
-        case .tron:
-            return .zero
-            
-        case .cardano:
-            return .zero
-        
         }
     }
-
+    
     func fetchBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
@@ -202,36 +140,20 @@ private extension BalanceService {
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             return try await service.getBalance(coin: coin)
             
-            // COSMOS
-        case .gaiaChain:
-            let atomBalance = try await gaia.fetchBalances(coin: coin)
-            return atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased(), coin: coin)
+        case .gaiaChain, .dydx, .kujira, .osmosis, .terra, .terraClassic, .noble, .akash:
+            let cosmosService = try CosmosServiceFactory.getService(forChain: coin.chain)
+            let balances = try await cosmosService.fetchBalances(coin: coin)
             
-        case .dydx:
-            let dydxBalance = try await dydx.fetchBalances(coin: coin)
-            return dydxBalance.balance(denom: Chain.dydx.ticker.lowercased(), coin: coin)
+            // Determine the correct denom for each chain
+            let denom: String
+            switch coin.chain {
+            case .terra, .terraClassic:
+                denom = "uluna"
+            default:
+                denom = coin.chain.ticker.lowercased()
+            }
             
-        case .kujira:
-            let kujiBalance = try await kuji.fetchBalances(coin: coin)
-            return kujiBalance.balance(denom: Chain.kujira.ticker.lowercased(), coin: coin)
-            
-        case .osmosis:
-            let osmoBalance = try await osmo.fetchBalances(coin: coin)
-            return osmoBalance.balance(denom: Chain.osmosis.ticker.lowercased(), coin: coin)
-            
-        case .terra:
-            let terraBalance = try await terra.fetchBalances(coin: coin)
-            return terraBalance.balance(denom: "uluna", coin: coin)
-            
-        case .terraClassic:
-            let terraClassicBalance = try await terraClassic.fetchBalances(coin: coin)
-            return terraClassicBalance.balance(denom: "uluna", coin: coin)
-            
-        case .noble:
-            let balance = try await noble.fetchBalances(coin: coin)
-            return balance.balance(denom: Chain.noble.ticker.lowercased(), coin: coin)
-         
-            //
+            return balances.balance(denom: denom, coin: coin)
             
         case .mayaChain:
             let mayaBalance = try await maya.fetchBalances(coin.address)
@@ -246,15 +168,8 @@ private extension BalanceService {
         case .ripple:
             return try await ripple.getBalance(coin)
             
-        case .akash:
-            let balance = try await akash.fetchBalances(coin: coin)
-            return balance.balance(denom: Chain.akash.ticker.lowercased(), coin: coin)
-            
         case .tron:
             return try await tron.getBalance(coin: coin)
-         
-            //
-        
         }
     }
     
