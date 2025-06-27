@@ -10,18 +10,22 @@ import Foundation
 @MainActor
 class SendSummaryViewModel: ObservableObject {
     func getFromAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
+        let formattedAmount = tx.fromAmountDecimal.formatForDisplay()
+            
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.fromAmountDecimal.formatDecimalToLocale()) \(tx.fromCoin.ticker)"
+            return "\(formattedAmount) \(tx.fromCoin.ticker)"
         } else {
-            return "\(tx.fromAmountDecimal.formatDecimalToLocale()) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(formattedAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
         }
     }
 
     func getToAmount(_ tx: SwapTransaction, selectedCurrency: SettingsCurrency) -> String {
+        let formattedAmount = tx.toAmountDecimal.formatForDisplay()
+            
         if tx.fromCoin.chain == tx.toCoin.chain {
-            return "\(tx.toAmountDecimal.formatDecimalToLocale()) \(tx.toCoin.ticker)"
+            return "\(formattedAmount) \(tx.toCoin.ticker)"
         } else {
-            return "\(tx.toAmountDecimal.formatDecimalToLocale()) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(formattedAmount) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
     
