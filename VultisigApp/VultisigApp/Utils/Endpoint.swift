@@ -159,10 +159,16 @@ class Endpoint {
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
-    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
-        let isAffiliateParams = isAffiliate
-        ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
-        : .empty
+    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referredCode: String) -> URL {
+        let isAffiliateParams: String
+        
+        if !referredCode.isEmpty {
+            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)" : .empty
+        } else {
+            isAffiliateParams = isAffiliate
+            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
+            : .empty
+        }
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }

@@ -15,6 +15,14 @@ class THORChainSwaps {
         return "50"
 #endif
     }
+    
+    static var referredAffiliateFeeRateBp: String {
+        return "35"
+    }
+    
+    static var referredUserFeeRateBp: String {
+        return "10"
+    }
 
     static let affiliateFeeAddress = "vi"
 
