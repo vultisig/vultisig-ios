@@ -45,11 +45,16 @@ struct PickReferralCode: View {
             showSuccess: referralViewModel.showReferralAvailabilitySuccess,
             isErrorLabelVisible: false
         )
+        .onChange(of: referralViewModel.referralCode) { oldValue, newValue in
+            referralViewModel.resetReferralData()
+        }
     }
     
     var searchButton: some View {
         Button {
-            referralViewModel.verifyReferralCode()
+            Task {
+                await referralViewModel.verifyReferralCode()
+            }
         } label: {
             searchButtonLabel
         }
