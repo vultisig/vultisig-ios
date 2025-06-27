@@ -176,20 +176,6 @@ struct FunctionCallVerifyView: View {
     
     private func handleSubmit() {
         Task {
-            if isForReferral {
-                guard depositVerifyViewModel.isReferralAmountCorrect else {
-                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
-                    depositVerifyViewModel.showAlert = true
-                    return
-                }
-                
-                guard depositVerifyViewModel.isReferralAddressCorrect else {
-                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
-                    depositVerifyViewModel.showAlert = true
-                    return
-                }
-            }
-            
             keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
             
             if keysignPayload != nil {

@@ -34,7 +34,9 @@ struct CreateReferralDetailsView: View {
             Background()
             
             VStack {
-                tooltip
+                if showTooltip {
+                    tooltip
+                }
                 main
                 button
             }
@@ -231,7 +233,6 @@ struct CreateReferralDetailsView: View {
                 .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
         }
-        .animation(.easeInOut, value: showTooltip)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
@@ -241,8 +242,6 @@ struct CreateReferralDetailsView: View {
         .onTapGesture {
             showTooltip = false
         }
-        .frame(maxHeight: showTooltip ? nil : 0)
-        .clipped()
     }
     
     private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {

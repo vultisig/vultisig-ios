@@ -57,7 +57,6 @@ struct ReferralSendOverviewView: View {
         VStack(spacing: 16) {
             Spacer()
             summary
-            checkboxes
             Spacer()
         }
         .padding(24)
@@ -72,13 +71,6 @@ struct ReferralSendOverviewView: View {
         .padding(24)
         .background(Color.blue600)
         .cornerRadius(16)
-    }
-    
-    var checkboxes: some View {
-        VStack(spacing: 12) {
-            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAmountCorrect, text: "referralOverviewCheckbox1")
-            Checkbox(isChecked: $functionCallVerifyViewModel.isReferralAddressCorrect, text: "referralOverviewCheckbox2")
-        }
     }
     
     var title: some View {
