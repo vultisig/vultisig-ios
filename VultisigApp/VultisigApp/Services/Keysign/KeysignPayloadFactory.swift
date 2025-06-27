@@ -23,7 +23,6 @@ struct KeysignPayloadFactory {
     
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
-    private let gaia = GaiaService.shared
     private let sol = SolanaService.shared
     
     func buildTransfer(coin: Coin, toAddress: String, amount: BigInt, memo: String?, chainSpecific: BlockChainSpecific, swapPayload: SwapPayload? = nil, approvePayload: ERC20ApprovePayload? = nil, vault: Vault) async throws -> KeysignPayload {
