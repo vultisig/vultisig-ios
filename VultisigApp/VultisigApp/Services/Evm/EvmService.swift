@@ -8,6 +8,44 @@
 import Foundation
 import BigInt
 
+class BSCService: RpcEvmService, EvmTokenServiceProtocol {
+    static let bscRpcEndpoint = Endpoint.bscServiceRpcService
+    static let shared = BSCService(bscRpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(nativeToken: nativeToken)
+    }
+}
+
+class EthService: RpcEvmService, EvmTokenServiceProtocol {
+    static let ethRpcEndpoint = Endpoint.ethServiceRpcService
+    static let shared = EthService(ethRpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(nativeToken: nativeToken)
+    }
+}
+
+class EthSepoliaService: RpcEvmService, EvmTokenServiceProtocol {
+    static let ethRpcEndpoint = Endpoint.ethSepoliaServiceRpcService
+    static let shared = EthSepoliaService(ethRpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return [TokensStore.Token.ethSepolia]
+    }
+}
+
+class AvalancheService: RpcEvmService, EvmTokenServiceProtocol {
+    static let avaxRpcEndpoint = Endpoint.avalancheServiceRpcService
+    static let shared = AvalancheService(avaxRpcEndpoint)
+    
+    override func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(nativeToken: nativeToken)
+    }
+}
+
+// L2s
+
 class BaseService: RpcEvmService, EvmTokenServiceProtocol {
     static let rpcEndpoint = Endpoint.baseServiceRpcService
     static let shared = BaseService(rpcEndpoint)
