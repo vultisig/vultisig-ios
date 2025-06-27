@@ -30,16 +30,15 @@
 		469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */; };
 		46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */; };
 		46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */; };
-		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
+		46AAA49F2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA49E2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
-		46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */; };
 		46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */; };
 		46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBC2BA7753900E68E08 /* Blockchair.swift */; };
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
 		46DE088C2BD087D800AE8BDE /* kujira.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088B2BD087D800AE8BDE /* kujira.swift */; };
 		46DE088E2BD08C9900AE8BDE /* KujiraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088D2BD08C9900AE8BDE /* KujiraService.swift */; };
 		46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */; };
-		46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE08942BD0DCA200AE8BDE /* EvmL2Service.swift */; };
+		46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE08942BD0DCA200AE8BDE /* EvmService.swift */; };
 		46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */; };
 		46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
@@ -864,7 +863,6 @@
 		DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */; };
 		DE6325B72C2C12FB000D05B9 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */; };
 		DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */; };
-		DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4A2BB4D87F001BBE5C /* BscService.swift */; };
 		DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */; };
 		DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */; };
 		DE63AE532BBA627B001BBE5C /* atom.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE522BBA627B001BBE5C /* atom.swift */; };
@@ -982,16 +980,15 @@
 		469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountValue.swift; sourceTree = "<group>"; };
 		46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceFactory.swift; sourceTree = "<group>"; };
 		46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalExtension.swift; sourceTree = "<group>"; };
-		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
+		46AAA49E2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosServiceFactory.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
-		46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvalancheService.swift; sourceTree = "<group>"; };
 		46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmService.swift; sourceTree = "<group>"; };
 		46C8CBBC2BA7753900E68E08 /* Blockchair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchair.swift; sourceTree = "<group>"; };
 		46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchairService.swift; sourceTree = "<group>"; };
 		46DE088B2BD087D800AE8BDE /* kujira.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kujira.swift; sourceTree = "<group>"; };
 		46DE088D2BD08C9900AE8BDE /* KujiraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KujiraService.swift; sourceTree = "<group>"; };
 		46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosService.swift; sourceTree = "<group>"; };
-		46DE08942BD0DCA200AE8BDE /* EvmL2Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EvmL2Service.swift; sourceTree = "<group>"; };
+		46DE08942BD0DCA200AE8BDE /* EvmService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EvmService.swift; sourceTree = "<group>"; };
 		46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingErrorExtension.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempool.swift; sourceTree = "<group>"; };
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
@@ -1814,7 +1811,6 @@
 		DE5F7E202C816AC70022030F /* KeysignRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignRequest.swift; sourceTree = "<group>"; };
 		DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalanceCacheEntry.swift; sourceTree = "<group>"; };
 		DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORBalanceExtension.swift; sourceTree = "<group>"; };
-		DE63AE4A2BB4D87F001BBE5C /* BscService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BscService.swift; sourceTree = "<group>"; };
 		DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCResponse.swift; sourceTree = "<group>"; };
 		DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCError.swift; sourceTree = "<group>"; };
 		DE63AE522BBA627B001BBE5C /* atom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = atom.swift; sourceTree = "<group>"; };
@@ -1994,14 +1990,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		460347822BA148A2007ED3AC /* Ethereum */ = {
-			isa = PBXGroup;
-			children = (
-				46AC40A72B920061001704E6 /* EtherscanService.swift */,
-			);
-			path = Ethereum;
-			sourceTree = "<group>";
-		};
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -2026,24 +2014,18 @@
 				A5D49F542BE26BA7001766C8 /* Actions */,
 				B5A51B532BD8C68B00791D78 /* Sui */,
 				B54B01982BDE0A0F00FDA472 /* Polkadot */,
-				46DE08912BD0DA1F00AE8BDE /* EvmL2 */,
-				46B60BBC2BBA810C0043EBBA /* Avalanche */,
+				46DE08912BD0DA1F00AE8BDE /* Evm */,
 				DE63AE542BBA7878001BBE5C /* Cosmos */,
-				DE63AE492BB4D86A001BBE5C /* BSC */,
 				46C8CBBA2BA76CC100E68E08 /* UTXO */,
-				460347822BA148A2007ED3AC /* Ethereum */,
 				465A8D512B9E6887006E7457 /* Solana */,
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
-				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
 				A598FD792CE2098800F26516 /* MemoDecodingService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
-				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
-				B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */,
 				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
 				B59173302C641F3D007100E3 /* CoinService.swift */,
 				A6SEC0152E1234567890AB02 /* Security */,
@@ -2144,14 +2126,6 @@
 			path = AccountManager;
 			sourceTree = "<group>";
 		};
-		46B60BBC2BBA810C0043EBBA /* Avalanche */ = {
-			isa = PBXGroup;
-			children = (
-				46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */,
-			);
-			path = Avalanche;
-			sourceTree = "<group>";
-		};
 		46C8CBBA2BA76CC100E68E08 /* UTXO */ = {
 			isa = PBXGroup;
 			children = (
@@ -2187,12 +2161,15 @@
 			path = Keygen;
 			sourceTree = "<group>";
 		};
-		46DE08912BD0DA1F00AE8BDE /* EvmL2 */ = {
+		46DE08912BD0DA1F00AE8BDE /* Evm */ = {
 			isa = PBXGroup;
 			children = (
-				46DE08942BD0DCA200AE8BDE /* EvmL2Service.swift */,
+				46DE08942BD0DCA200AE8BDE /* EvmService.swift */,
+				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
+				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
+				B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */,
 			);
-			path = EvmL2;
+			path = Evm;
 			sourceTree = "<group>";
 		};
 		46F8F71F2B99FDAC0099454E /* TransactionManager */ = {
@@ -3821,14 +3798,6 @@
 			path = PreviewHelper;
 			sourceTree = "<group>";
 		};
-		DE63AE492BB4D86A001BBE5C /* BSC */ = {
-			isa = PBXGroup;
-			children = (
-				DE63AE4A2BB4D87F001BBE5C /* BscService.swift */,
-			);
-			path = BSC;
-			sourceTree = "<group>";
-		};
 		DE63AE542BBA7878001BBE5C /* Cosmos */ = {
 			isa = PBXGroup;
 			children = (
@@ -3838,6 +3807,7 @@
 				B55246C82CF5639A00E3532C /* NobleService.swift */,
 				46DE088D2BD08C9900AE8BDE /* KujiraService.swift */,
 				46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */,
+				46AAA49E2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift */,
 				B52FD1CD2CDDA7740031FB71 /* TerraService.swift */,
 				B5E476AC2C1A556D005DB485 /* DydxService.swift */,
 			);
@@ -4122,7 +4092,6 @@
 				A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
 				A6386D942C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift in Sources */,
-				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				A62269002DC0007300F378E0 /* SwapChainPickerView+macOS.swift in Sources */,
 				A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */,
 				A6386D9A2C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift in Sources */,
@@ -4223,7 +4192,7 @@
 				A6E0C9472DF3EE7400A01543 /* EditReferralCodeView+iOS.swift in Sources */,
 				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
-				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
+				46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */,
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				A6C670BF2C9D158F00F59B6A /* BackupPasswordSetupView+macOS.swift in Sources */,
@@ -4352,7 +4321,6 @@
 				B5A97CFC2BF4365E007574D7 /* FunctionCallInstance.swift in Sources */,
 				A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
-				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				B58BE8E82CD1C36E00FFD98F /* osmosis.swift in Sources */,
@@ -4401,7 +4369,6 @@
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
 				A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */,
-				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
 				A6BB9BD12DA9E56A0085E117 /* VaultShareBackupsView+iOS.swift in Sources */,
 				A6F7B71F2D4ED2D800AC8104 /* SecureBackupVaultOverview+iOS.swift in Sources */,
@@ -4815,6 +4782,7 @@
 				A6E0C91F2DE7FD8600A01543 /* ReferralTransactionOverviewView.swift in Sources */,
 				A6C6709E2C9D0B4900F59B6A /* ChainSelectionView+macOS.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
+				46AAA49F2BC3B4D000E5BAB4 /* CosmosServiceFactory.swift in Sources */,
 				A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */,
 				A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */,
 				A622C8462C9BBD2F00908332 /* FunctionCallView+iOS.swift in Sources */,
