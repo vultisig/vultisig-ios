@@ -136,6 +136,24 @@ class ReferralViewModel: ObservableObject {
         functionCallViewModel.currentIndex = 2
     }
     
+    func resetAllData() {
+        referralCode = ""
+        showReferralAvailabilityError = false
+        referralAvailabilityErrorMessage = ""
+        showReferralAvailabilitySuccess = false
+        isReferralCodeVerified = false
+        expireInCount = 0
+        
+        showReferralAlert = false
+        referralAlertMessage = ""
+        
+        
+        nativeCoin = nil
+        registrationFee = 0
+        feePerBlock = 0
+        isFeesLoading = false
+    }
+    
     private func setupTransaction(tx: SendTransaction) {
         tx.amount = totalFee.formatDecimalToLocale()
         
