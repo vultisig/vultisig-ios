@@ -218,7 +218,9 @@ class TronService: RpcService {
             
             let hexContractAddress = hexContractAddressData.hexString
             
-            let balance = try await TronEvmService.shared.fetchTRC20TokenBalance(
+            // Use EvmServiceFactory instead of direct service access
+            let evmService = try EvmServiceFactory.getService(forChain: coin.chain)
+            let balance = try await evmService.fetchTRC20TokenBalance(
                 contractAddress: "0x" + hexContractAddress,
                 walletAddress: "0x" + hexAddress
             )

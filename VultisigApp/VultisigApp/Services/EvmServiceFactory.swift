@@ -33,6 +33,8 @@ class EvmServiceFactory {
             return CronosService.shared
         case .zksync:
             return ZksyncService.shared
+        case .tron:
+            return TronEvmService.shared
         default:
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }
