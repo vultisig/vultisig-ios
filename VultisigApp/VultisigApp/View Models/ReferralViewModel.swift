@@ -267,16 +267,4 @@ class ReferralViewModel: ObservableObject {
             return false
         }
     }
-    
-    private func shuffleAffiliates(_ memo: String) -> String {
-        guard "vi" < savedGeneratedReferralCode else {
-            return memo
-        }
-        
-        var memoString = memo
-        memoString.removeLast(5)
-        let updatedMemo = memoString + "35/10"
-        
-        return updatedMemo
-    }
 }
