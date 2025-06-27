@@ -286,6 +286,7 @@
 		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
 		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
 		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
+		A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -1235,6 +1236,7 @@
 		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
 		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
 		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
+		A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMemoParameter.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -3529,6 +3531,7 @@
 				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
 				A67530612CAFBDC200B1E344 /* Folder.swift */,
 				A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */,
+				A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -4253,6 +4256,7 @@
 				B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */,
 				A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */,
 				A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */,
+				A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,

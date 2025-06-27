@@ -21,10 +21,6 @@ class FunctionCallVerifyViewModel: ObservableObject {
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
     
-    // Referral
-    @Published var isReferralAmountCorrect: Bool = false
-    @Published var isReferralAddressCorrect: Bool = false
-    
     let blockChainService = BlockChainService.shared
     
     func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
