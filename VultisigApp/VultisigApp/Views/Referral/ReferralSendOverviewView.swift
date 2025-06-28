@@ -11,6 +11,7 @@ struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -175,9 +176,13 @@ struct ReferralSendOverviewView: View {
         
         return nativeCoin.address
     }
+    
+    private func getMemo() -> String {
+        "createthorname:\(referralViewModel.referralCode):\(referralViewModel.nativeCoin?.address ?? "")"
+    }
 }
 
 #Preview {
-    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel(), referralViewModel: ReferralViewModel())
         .environmentObject(HomeViewModel())
 }
