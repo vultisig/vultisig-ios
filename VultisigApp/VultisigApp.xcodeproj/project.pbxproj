@@ -789,6 +789,7 @@
 		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
 		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */; };
+		B5A41F652DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A41F662DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift */; };
 		B5A54E002D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A54DFF2D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift */; };
 		B5A54E022D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A54E012D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift */; };
 		B5A80F182D0600BA00DC9069 /* Ripple.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A80F172D0600BA00DC9069 /* Ripple.swift */; };
@@ -808,6 +809,7 @@
 		B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
 		B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */; };
+		B5CDB87C2DDD8715007DF355 /* UnmergeAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CDB87D2DDD86FA007DF355 /* UnmergeAccountResponse.swift */; };
 		B5D1B9FC2DF66B4400D82EFB /* CoinFactory+Cardano.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */; };
 		B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
@@ -1736,6 +1738,7 @@
 		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
 		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosMerge.swift; sourceTree = "<group>"; };
+		B5A41F662DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosUnmerge.swift; sourceTree = "<group>"; };
 		B5A54DFF2D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddLiquidityMaya.swift; sourceTree = "<group>"; };
 		B5A54E012D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRemoveLiquidityMaya.swift; sourceTree = "<group>"; };
 		B5A80F172D0600BA00DC9069 /* Ripple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ripple.swift; sourceTree = "<group>"; };
@@ -1755,6 +1758,7 @@
 		B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCosmosSwitch.swift; sourceTree = "<group>"; };
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 		B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeAccountResponse.swift; sourceTree = "<group>"; };
+		B5CDB87D2DDD86FA007DF355 /* UnmergeAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnmergeAccountResponse.swift; sourceTree = "<group>"; };
 		B5D1B9FB2DF66B4400D82EFB /* CoinFactory+Cardano.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinFactory+Cardano.swift"; sourceTree = "<group>"; };
 		B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+RuneBond.swift"; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
@@ -3416,6 +3420,7 @@
 				B585A1FD2DA9779900ED0D5B /* FunctionCallCosmosIBC.swift */,
 				B5C5B4AB2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift */,
 				B5A41F632DAB33E70075E921 /* FunctionCallCosmosMerge.swift */,
+				B5A41F662DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift */,
 				B524F55A2CF049F600D5B19D /* FunctionCallBondMayaChain.swift */,
 				B5A54DFF2D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift */,
 				B5A54E012D9C5CCD001AF096 /* FunctionCallRemoveLiquidityMaya.swift */,
@@ -3503,6 +3508,7 @@
 			isa = PBXGroup;
 			children = (
 				B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */,
+				B5CDB87D2DDD86FA007DF355 /* UnmergeAccountResponse.swift */,
 				DE8291932D891AA20037E5FD /* MigrationRequest.swift */,
 				B5A97CFA2BF43653007574D7 /* FunctionCall */,
 				B5F7581B2BD8FD970097B5B9 /* Sui */,
@@ -4201,6 +4207,7 @@
 				A6C670BF2C9D158F00F59B6A /* BackupPasswordSetupView+macOS.swift in Sources */,
 				A65618012CB64EB200E9CF19 /* SettingVaultRegistrationCell.swift in Sources */,
 				B5A41F642DAB33E70075E921 /* FunctionCallCosmosMerge.swift in Sources */,
+				B5A41F652DAB33E70075E921 /* FunctionCallCosmosUnmerge.swift in Sources */,
 				A6386DB22C90263400DDD58E /* ToggleSelectionCell+iOS.swift in Sources */,
 				A6833D7E2C659283002029E1 /* TokenSelectionHeader.swift in Sources */,
 				A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */,
@@ -4739,6 +4746,7 @@
 				A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */,
 				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
 				B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */,
+				B5CDB87C2DDD8715007DF355 /* UnmergeAccountResponse.swift in Sources */,
 				A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */,
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
@@ -5362,7 +5370,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = new-tx-types;
 				kind = branch;
 			};
 		};
