@@ -72,36 +72,27 @@ class FunctionCallCosmosUnmerge: ObservableObject {
            let match = tokensToMerge.first(where: {
                $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
            }) {
-            selectedToken = .init(value: match.denom.uppercased())
-            tokenValid = true
-            destinationAddress = match.wasmContractAddress
-            tx.toAddress = destinationAddress  // Set the transaction destination
-            
-            // Ensure tx.coin is set to the token being unmerged
-            if let coin = selectedVaultCoin {
-                tx.coin = coin
-            }
-            
-            Task {
-                await fetchMergedBalance()
-            }
+            selectToken(.init(value: match.denom.uppercased()))
         } else if !tokens.isEmpty {
             // If no pre-selection, select the first available token
-            selectedToken = tokens[0]
-            tokenValid = true
-            destinationAddress = tokensToMerge.first {
-                $0.denom.lowercased() == selectedToken.value.lowercased()
-            }?.wasmContractAddress ?? ""
-            tx.toAddress = destinationAddress  // Set the transaction destination
-            
-            // Set tx.coin to the selected token
-            if let coin = selectedVaultCoin {
-                tx.coin = coin
-            }
-            
-            Task {
-                await fetchMergedBalance()
-            }
+            selectToken(tokens[0])
+        }
+    }
+    
+    func selectToken(_ token: IdentifiableString) {
+        selectedToken = token
+        tokenValid = true
+        destinationAddress = tokensToMerge.first {
+            $0.denom.lowercased() == token.value.lowercased()
+        }?.wasmContractAddress ?? ""
+        tx.toAddress = destinationAddress
+        
+        if let coin = selectedVaultCoin {
+            tx.coin = coin
+        }
+        
+        Task {
+            await fetchMergedBalance()
         }
     }
     
@@ -260,27 +251,13 @@ struct UnmergeView: View {
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    viewModel.selectedToken = asset
-                    viewModel.tokenValid = asset.value.lowercased() != "the unmerge"
-                    viewModel.destinationAddress = viewModel.tokensToMerge.first {
-                        $0.denom.lowercased() == asset.value.lowercased()
-                    }?.wasmContractAddress ?? ""
-                    viewModel.tx.toAddress = viewModel.destinationAddress  // Update transaction destination
-                    
-                    // Set tx.coin to the selected token (like merge does)
-                    if let coin = viewModel.selectedVaultCoin {
-                        viewModel.tx.coin = coin
-                    }
-                    
                     // Reset balance before fetching new one
                     viewModel.amount = 0
                     viewModel.totalShares = "0" 
                     viewModel.sharePrice = 0
                     viewModel.balanceLabel = "Loading..."
                     
-                    Task {
-                        await viewModel.fetchMergedBalance()
-                    }
+                    viewModel.selectToken(asset)
                 }
             )
             
