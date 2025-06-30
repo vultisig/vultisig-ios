@@ -22,8 +22,7 @@ import Combine
  */
 
 class FunctionCallCosmosUnmerge: ObservableObject {
-    @Published var rujiAmount: Decimal = 0.0  // This is what user enters
-    @Published var sharesAmount: String = "0" // This is calculated from rujiAmount
+    @Published var amount: Decimal = 0.0  // RUJI amount (what user enters/sees)
     @Published var destinationAddress: String = ""
     @Published var fnCall: String = ""
     
@@ -36,10 +35,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     @Published var tokenValid: Bool = false
     @Published var selectedToken: IdentifiableString = .init(value: "The Unmerge")
     
-    @Published var balanceLabel: String = "Amount"
-    @Published var currentRujiBalance: Decimal = 0
-    @Published var currentShares: String = "0"
-    @Published var sharePrice: Decimal = 0
+    @Published var balanceLabel: String = "Shares"
+    @Published var sharePrice: Decimal = 0  // Price per share (not used for transaction)
+    @Published var totalShares: String = "0"  // Total shares owned
     @Published var isLoading: Bool = false
     
     @ObservedObject var tx: SendTransaction
@@ -77,6 +75,13 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             selectedToken = .init(value: match.denom.uppercased())
             tokenValid = true
             destinationAddress = match.wasmContractAddress
+            tx.toAddress = destinationAddress  // Set the transaction destination
+            
+            // Ensure tx.coin is set to the token being unmerged
+            if let coin = selectedVaultCoin {
+                tx.coin = coin
+            }
+            
             Task {
                 await fetchMergedBalance()
             }
@@ -87,9 +92,28 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             destinationAddress = tokensToMerge.first {
                 $0.denom.lowercased() == selectedToken.value.lowercased()
             }?.wasmContractAddress ?? ""
+            tx.toAddress = destinationAddress  // Set the transaction destination
+            
+            // Set tx.coin to the selected token
+            if let coin = selectedVaultCoin {
+                tx.coin = coin
+            }
+            
             Task {
                 await fetchMergedBalance()
             }
+        }
+    }
+    
+    var selectedVaultCoin: Coin? {
+        let ticker = selectedToken.value
+            .lowercased()
+            .replacingOccurrences(of: "thor.", with: "")
+        
+        return vault.coins.first { coin in
+            coin.chain == .thorChain && 
+            !coin.isNativeToken &&
+            coin.ticker.lowercased() == ticker
         }
     }
     
@@ -108,8 +132,8 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             guard !thorAddress.isEmpty else {
                 print("ERROR: No THORChain address found in vault")
                 balanceLabel = "No THORChain address found"
-                currentRujiBalance = 0
-                currentShares = "0"
+                amount = 0
+                totalShares = "0"
                 sharePrice = 0
                 objectWillChange.send()
                 return
@@ -120,59 +144,40 @@ class FunctionCallCosmosUnmerge: ObservableObject {
                 tokenSymbol: selectedToken.value
             )
             
-            currentRujiBalance = ruji
-            currentShares = shares
+            totalShares = shares
             sharePrice = price
             
-            // Auto-fill the amount field with RUJI balance in decimal format
-            let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-            rujiAmount = currentRujiBalance / divisor.decimalValue
+            // For unmerge, amount is shares converted to decimal (8 decimal places like THOR)
+            if let sharesRaw = Decimal(string: shares) {
+                let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
+                amount = sharesRaw / divisor.decimalValue
+            }
             
             updateBalanceLabel()
-            calculateSharesFromRuji() // Calculate shares for the auto-filled RUJI amount
             objectWillChange.send() // Force UI update after setting values
         } catch {
             print("Error fetching merged balance: \(error)")
             balanceLabel = "Error loading balance"
-            currentRujiBalance = 0
-            currentShares = "0"
+            amount = 0
+            totalShares = "0"
             sharePrice = 0
-            rujiAmount = 0
-            sharesAmount = "0"
             objectWillChange.send() // Force UI update on error
         }
     }
     
     @MainActor
     private func updateBalanceLabel() {
-        let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-        let rujiBalance = currentRujiBalance / divisor.decimalValue
-        balanceLabel = "Amount ( Balance: \(rujiBalance.formatDecimalToLocale()) RUJI )"
+        balanceLabel = "Shares ( Balance: \(amount.formatDecimalToLocale()) )"
         objectWillChange.send() // Force UI update
     }
     
-    private func calculateSharesFromRuji() {
-        guard rujiAmount > 0, sharePrice > 0 else {
-            sharesAmount = "0"
-            return
-        }
-        
-        let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-        let rujiAmountInSmallestUnit = rujiAmount * divisor.decimalValue
-        let sharesDecimal = rujiAmountInSmallestUnit / sharePrice
-        sharesAmount = String(format: "%.0f", NSDecimalNumber(decimal: sharesDecimal).doubleValue)
-    }
-    
     private func setupValidation() {
-        // Validate amount based on rujiAmount changes
-        $rujiAmount
+        // Validate amount
+        $amount
             .sink { [weak self] value in
                 guard let self = self else { return }
-                self.calculateSharesFromRuji()
-                
-                let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-                let maxRuji = self.currentRujiBalance / divisor.decimalValue
-                self.amountValid = value > 0 && value <= maxRuji
+                // Amount is valid if greater than 0
+                self.amountValid = value > 0
             }
             .store(in: &cancellables)
         
@@ -199,9 +204,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
     
     var formattedBalanceText: String {
-        let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
-        let rujiBalance = (currentRujiBalance / divisor.decimalValue).formatDecimalToLocale()
-        return "\(rujiBalance) RUJI (\(currentShares) shares)"
+        return "\(amount.formatDecimalToLocale()) shares"
     }
     
     var description: String {
@@ -209,7 +212,11 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
     
     func toString() -> String {
-        let memo = "unmerge:\(selectedToken.value):\(sharesAmount)"
+        // Convert decimal shares back to raw amount for memo
+        let multiplier = NSDecimalNumber(decimal: pow(Decimal(10), 8))
+        let rawShares = amount * multiplier.decimalValue
+        let sharesStr = String(format: "%.0f", NSDecimalNumber(decimal: rawShares).doubleValue)
+        let memo = "unmerge:\(selectedToken.value.lowercased()):\(sharesStr)"
         return memo
     }
     
@@ -217,8 +224,6 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("destinationAddress", self.destinationAddress)
         dict.set("selectedToken", self.selectedToken.value)
-        dict.set("sharesAmount", self.sharesAmount)
-        dict.set("rujiAmount", self.rujiAmount.description)
         dict.set("memo", self.toString())
         return dict
     }
@@ -260,13 +265,17 @@ struct UnmergeView: View {
                     viewModel.destinationAddress = viewModel.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
+                    viewModel.tx.toAddress = viewModel.destinationAddress  // Update transaction destination
+                    
+                    // Set tx.coin to the selected token (like merge does)
+                    if let coin = viewModel.selectedVaultCoin {
+                        viewModel.tx.coin = coin
+                    }
                     
                     // Reset balance before fetching new one
-                    viewModel.currentRujiBalance = 0
-                    viewModel.currentShares = "0" 
+                    viewModel.amount = 0
+                    viewModel.totalShares = "0" 
                     viewModel.sharePrice = 0
-                    viewModel.rujiAmount = 0
-                    viewModel.sharesAmount = "0"
                     viewModel.balanceLabel = "Loading..."
                     
                     Task {
@@ -287,9 +296,9 @@ struct UnmergeView: View {
                         set: { viewModel.balanceLabel = $0 }
                     ),
                     value: Binding(
-                        get: { viewModel.rujiAmount },
+                        get: { viewModel.amount },
                         set: { 
-                            viewModel.rujiAmount = $0
+                            viewModel.amount = $0
                             viewModel.objectWillChange.send()
                         }
                     ),

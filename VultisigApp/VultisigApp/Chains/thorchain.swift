@@ -101,13 +101,14 @@ enum THORChainHelper {
                 
                 let executeMsg: String
                 if keysignPayload.memo?.lowercased().hasPrefix("unmerge:") == true {
-                    // Parse shares amount from memo
-                    let sharesAmount = keysignPayload.memo?.lowercased()
-                        .replacingOccurrences(of: "unmerge:", with: "")
-                        .replacingOccurrences(of: mergeToken.lowercased() + ":", with: "") ?? "0"
+                    // Parse shares amount from memo format: "unmerge:token:shares"
+                    let memoComponents = keysignPayload.memo?.lowercased().split(separator: ":")
+                    let sharesAmount = memoComponents?.count == 3 ? String(memoComponents![2]) : "0"
                     executeMsg = """
-                    { "redeem": { "share_amount": "\(sharesAmount)" } }
+                    { "withdraw": { "share_amount": "\(sharesAmount)" } }
                     """
+
+                    print(executeMsg)
                 } else {
                     executeMsg = """
                     { "deposit": {} }

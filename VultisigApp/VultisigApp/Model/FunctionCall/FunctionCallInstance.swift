@@ -139,8 +139,8 @@ enum FunctionCallInstance {
             return memo.amount
         case .merge(let memo):
             return memo.amount
-        case .unmerge:
-            return .zero  // Amount goes in the contract execution message
+        case .unmerge(let memo):
+            return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
         }
