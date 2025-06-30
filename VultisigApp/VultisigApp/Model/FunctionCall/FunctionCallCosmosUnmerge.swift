@@ -130,7 +130,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
                 return
             }
             
-            let (ruji, shares, price) = try await ThorchainService.shared.fetchRujiBalance(
+            let (_, shares, price) = try await ThorchainService.shared.fetchRujiBalance(
                 thorAddr: thorAddress,
                 tokenSymbol: selectedToken.value
             )
@@ -184,10 +184,6 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             .map { $0 && $1 && $2 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
-    }
-    
-    var view: AnyView {
-        return AnyView(UnmergeView(viewModel: self))
     }
     
     func getView() -> AnyView {
