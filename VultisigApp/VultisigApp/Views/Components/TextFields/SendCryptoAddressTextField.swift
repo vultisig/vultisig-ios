@@ -25,7 +25,10 @@ struct SendCryptoAddressTextField: View {
 #endif
     
     var body: some View {
-        container
+        VStack {
+            container
+            buttons
+        }
     }
     
     var content: some View {
@@ -56,14 +59,19 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
+    var buttons: some View {
+        HStack(spacing: 8) {
+            pasteButton
+            scanButton
+            addressBookButton
+        }
+    }
+    
     var pasteButton: some View {
         Button {
             pasteAddress()
         } label: {
-            Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("square.on.square")
         }
     }
     
@@ -71,10 +79,7 @@ struct SendCryptoAddressTextField: View {
         Button {
             showScanner.toggle()
         } label: {
-            Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("camera")
         }
     }
     
@@ -82,10 +87,7 @@ struct SendCryptoAddressTextField: View {
         Button {
             showImagePicker.toggle()
         } label: {
-            Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("photo.badge.plus")
         }
     }
     
@@ -97,15 +99,26 @@ struct SendCryptoAddressTextField: View {
                 }
             }
         } label: {
-            Image(systemName: "text.book.closed")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("text.book.closed")
         }
     }
     
     func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func getButton(_ icon: String) -> some View {
+        Image(systemName: icon)
+            .font(.body18BrockmannMedium)
+            .foregroundColor(.neutral0)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.blue400, lineWidth: 1)
+            )
+            .padding(1)
     }
 }
 

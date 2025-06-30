@@ -252,6 +252,7 @@ struct SendCryptoDetailsView: View {
         ScrollView {
             VStack(spacing: 12) {
                 SendDetailsAssetTab(tx: tx, viewModel: sendDetailsViewModel)
+                SendDetailsAddressTab(tx: tx, viewModel: sendDetailsViewModel, sendCryptoViewModel: sendCryptoViewModel)
             }
             .padding(16)
         }

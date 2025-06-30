@@ -287,6 +287,8 @@
 		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
 		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
 		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
+		A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */; };
+		A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -1229,6 +1231,8 @@
 		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
 		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
 		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
+		A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressTab.swift; sourceTree = "<group>"; };
+		A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressFields.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -2358,6 +2362,8 @@
 				A6D739DB2E0AFF2E0005697D /* LinearSeparator.swift */,
 				A6D739DD2E0B30440005697D /* SendDetailsAssetTab.swift */,
 				A6D739E12E0BAA3A0005697D /* SendDetailsTabEditTools.swift */,
+				A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */,
+				A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -4595,6 +4601,7 @@
 				A6C671092CA27D0500F59B6A /* OnboardingView2+iOS.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				A6F7B73F2D4EF93400AC8104 /* FastBackupVaultOverview+macOS.swift in Sources */,
+				A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */,
 				A533E6402CEC814F00FCBAEB /* MonthlyBackupView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
 				A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */,
@@ -4695,6 +4702,7 @@
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A6C344982D642AD20072B528 /* ThisDevicePeerCell.swift in Sources */,
 				D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */,
+				A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				B547A3FC2DF3EF6A0052164D /* Cardano.swift in Sources */,
