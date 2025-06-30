@@ -279,8 +279,6 @@ struct UnmergeView: View {
                     viewModel.balanceLabel = "Loading..."
                     
                     Task {
-                        // Add a small delay to ensure UI updates
-                        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
                         await viewModel.fetchMergedBalance()
                     }
                 }
