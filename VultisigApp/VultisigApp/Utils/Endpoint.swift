@@ -154,7 +154,7 @@ class Endpoint {
     }
     
     static func fetchThorchainMergedAssets() -> String {
-        "https://api.rujira.network/api/graphiql"
+        "https://api.rujira.network/api/graphql"
     }
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"

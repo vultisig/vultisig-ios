@@ -84,11 +84,14 @@ enum THORChainHelper {
         
         if isDeposit {
             
-            // This should invoke the wasm contract for RUJI merge
-            if keysignPayload.memo?.lowercased().hasPrefix("merge:") == true {
-                // it's a merge
+            // This should invoke the wasm contract for RUJI merge/unmerge
+            if keysignPayload.memo?.lowercased().hasPrefix("merge:") == true || 
+               keysignPayload.memo?.lowercased().hasPrefix("unmerge:") == true {
+                // it's a merge or unmerge
                 
-                let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
+                let mergeToken: String = keysignPayload.memo?.lowercased()
+                    .replacingOccurrences(of: "merge:", with: "")
+                    .replacingOccurrences(of: "unmerge:", with: "") ?? ""
                 
                 // This is for WASM tokens
                 
@@ -96,13 +99,26 @@ enum THORChainHelper {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
                 }
                 
+                let executeMsg: String
+                if keysignPayload.memo?.lowercased().hasPrefix("unmerge:") == true {
+                    // Parse shares amount from memo
+                    let sharesAmount = keysignPayload.memo?.lowercased()
+                        .replacingOccurrences(of: "unmerge:", with: "")
+                        .replacingOccurrences(of: mergeToken.lowercased() + ":", with: "") ?? "0"
+                    executeMsg = """
+                    { "redeem": { "share_amount": "\(sharesAmount)" } }
+                    """
+                } else {
+                    executeMsg = """
+                    { "deposit": {} }
+                    """
+                }
+                
                 let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
                     $0.contractAddress = keysignPayload.toAddress.description
-                    $0.executeMsg = """
-                    { "deposit": {} }
-                    """
-                    $0.coins = [
+                    $0.executeMsg = executeMsg
+                    $0.coins = keysignPayload.memo?.lowercased().hasPrefix("unmerge:") == true ? [] : [
                         TW_Cosmos_Proto_Amount.with {
                             $0.denom = mergeToken.lowercased() // "THOR.KUJI".lowercased()
                             $0.amount = String(keysignPayload.toAmount)
