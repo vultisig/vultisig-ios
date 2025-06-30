@@ -327,27 +327,7 @@ extension ThorchainService {
             throw HelperError.runtimeError("Invalid GraphQL URL")
         }
 
-        let query = """
-        {
-          node(id: "\(id)") {
-            ... on Account {
-              merge {
-                accounts {
-                  shares
-                  size { amount }
-                  pool { 
-                    mergeAsset {
-                      metadata {
-                        symbol
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        """
+        let query = String(format: Self.mergedAssetsQuery, id)
 
         let requestBody: [String: Any] = ["query": query]
 
@@ -391,27 +371,7 @@ extension ThorchainService {
             throw HelperError.runtimeError("Invalid GraphQL URL")
         }
 
-        let query = """
-        {
-          node(id: "\(id)") {
-            ... on Account {
-              merge {
-                accounts {
-                  shares
-                  size { amount }
-                  pool { 
-                    mergeAsset {
-                      metadata {
-                        symbol
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        """
+        let query = String(format: Self.mergedAssetsQuery, id)
 
         let requestBody: [String: Any] = ["query": query]
 
@@ -441,6 +401,29 @@ extension ThorchainService {
 }
 
 private extension ThorchainService {
+    // MARK: - GraphQL Queries
+    static let mergedAssetsQuery = """
+    {
+      node(id: "%@") {
+        ... on Account {
+          merge {
+            accounts {
+              shares
+              size { amount }
+              pool { 
+                mergeAsset {
+                  metadata {
+                    symbol
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    
     // MARK: - Models
     /// Response model for pool data from the THORChain API
     struct PoolResponse: Codable {
