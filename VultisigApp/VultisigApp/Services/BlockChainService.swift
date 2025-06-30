@@ -54,6 +54,8 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
+    private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
+    
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
         case .EVM:
@@ -348,7 +350,21 @@ private extension BlockChainService {
             
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
-            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false, sendMaxAmount: sendMaxAmount)
+            
+            // Determine if address is bounceable
+            var isBounceable = false
+            if let toAddress = toAddress, !toAddress.isEmpty {
+                // Check if destination wallet is uninitialized
+                let walletState = try await ton.getWalletState(toAddress)
+                let isUninitialized = walletState == TON_WALLET_STATE_UNINITIALIZED
+                
+                // If wallet is initialized and address starts with "E", it's bounceable
+                if !isUninitialized && toAddress.starts(with: "E") {
+                    isBounceable = true
+                }
+            }
+            
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount)
         case .ripple:
             
             let account = try await ripple.fetchAccountsInfo(for: coin.address)
