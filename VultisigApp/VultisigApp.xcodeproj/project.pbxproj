@@ -5374,7 +5374,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = "new-tx-types";
+				branch = main;
 				kind = branch;
 			};
 		};
