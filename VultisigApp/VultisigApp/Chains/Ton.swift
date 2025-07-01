@@ -40,7 +40,8 @@ enum TonHelper {
         
         let transfer = TheOpenNetworkTransfer.with {
             $0.dest = toAddress.description
-            $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
+            // When using attachAllContractBalance mode, amount is ignored, so set to 0 for clarity
+            $0.amount = sendMaxAmount ? 0 : (UInt64(keysignPayload.toAmount.description) ?? 0)
             $0.mode = sendMode
             
             // Set bounceable based on chainSpecific parameter
