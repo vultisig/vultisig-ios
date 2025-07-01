@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "new-tx-types",
-        "revision" : "370789b22d89dac5edd548a21435c6b49871ed58"
+        "branch" : "main",
+        "revision" : "24470283641cb2ff5b05203af4c5397d5eb3ec39"
       }
     },
     {
