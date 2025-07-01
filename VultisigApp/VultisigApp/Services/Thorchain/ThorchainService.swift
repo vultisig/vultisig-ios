@@ -315,12 +315,26 @@ extension ThorchainService {
 // MARK: - RUJI Merge/Unmerge Functionality
 extension ThorchainService {
     
+    /// Structure representing a RUJI balance result
+    struct RujiBalance {
+        let ruji: Decimal
+        let shares: String
+        let price: Decimal
+    }
+    
+    /// Structure representing a merged RUJI position
+    struct MergedPosition {
+        let token: String
+        let ruji: Decimal
+        let shares: String
+    }
+    
     /// Fetch merged RUJI balance for a specific token
     /// - Parameters:
     ///   - thorAddress: The THORChain address to query
     ///   - tokenSymbol: The token symbol to check (e.g., "THOR.KUJI", "THOR.RKUJI")
     /// - Returns: A tuple containing (ruji amount, shares, price per share)
-    func fetchRujiBalance(thorAddr: String, tokenSymbol: String) async throws -> (ruji: Decimal, shares: String, price: Decimal) {
+    func fetchRujiBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
         
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
@@ -349,7 +363,7 @@ extension ThorchainService {
         }
         
         guard let acc = acc else {
-            return (ruji: 0, shares: "0", price: 0)
+            return RujiBalance(ruji: 0, shares: "0", price: 0)
         }
 
         let shares = acc.shares
@@ -358,13 +372,13 @@ extension ThorchainService {
         let sharesDecimal = Decimal(string: shares) ?? 1
         let price = sharesDecimal > 0 ? ruji / sharesDecimal : 0
 
-        return (ruji: ruji, shares: shares, price: price)
+        return RujiBalance(ruji: ruji, shares: shares, price: price)
     }
     
     /// Fetch all merged RUJI positions for an address
     /// - Parameter thorAddress: The THORChain address to query
     /// - Returns: Array of merged positions with token info
-    func fetchAllMergedPositions(thorAddr: String) async throws -> [(token: String, ruji: Decimal, shares: String)] {
+    func fetchAllMergedPositions(thorAddr: String) async throws -> [MergedPosition] {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
         
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
@@ -385,14 +399,14 @@ extension ThorchainService {
         
         let decoded = try JSONDecoder().decode(UnmergeAccountResponse.self, from: data)
 
-        var positions: [(token: String, ruji: Decimal, shares: String)] = []
+        var positions: [MergedPosition] = []
         
         if let accounts = decoded.data.node?.merge?.accounts {
             for account in accounts {
                 let token = account.pool.mergeAsset.metadata.symbol
                 let ruji = Decimal(string: account.size.amount) ?? 0
                 let shares = account.shares
-                positions.append((token: token, ruji: ruji, shares: shares))
+                positions.append(MergedPosition(token: token, ruji: ruji, shares: shares))
             }
         }
         

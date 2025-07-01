@@ -55,7 +55,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         setupValidation()
         
         // Find available merge tokens that have balances
-        let availableTokens = tokensToMerge.filter { tokenInfo in
+        let availableTokens = ThorchainMergeTokens.tokensToMerge.filter { tokenInfo in
             vault.coins.contains { coin in
                 coin.chain == .thorChain &&
                 !coin.isNativeToken &&
@@ -69,7 +69,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         
         // Pre-select if we're already on a merged token
         if !tx.coin.isNativeToken,
-           let match = tokensToMerge.first(where: {
+           let match = ThorchainMergeTokens.tokensToMerge.first(where: {
                $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
            }) {
             selectToken(.init(value: match.denom.uppercased()))
@@ -82,7 +82,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     func selectToken(_ token: IdentifiableString) {
         selectedToken = token
         tokenValid = true
-        destinationAddress = tokensToMerge.first {
+        destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
             $0.denom.lowercased() == token.value.lowercased()
         }?.wasmContractAddress ?? ""
         tx.toAddress = destinationAddress
@@ -130,16 +130,16 @@ class FunctionCallCosmosUnmerge: ObservableObject {
                 return
             }
             
-            let (_, shares, price) = try await ThorchainService.shared.fetchRujiBalance(
+            let rujiBalance = try await ThorchainService.shared.fetchRujiBalance(
                 thorAddr: thorAddress,
                 tokenSymbol: selectedToken.value
             )
             
-            totalShares = shares
-            sharePrice = price
+            totalShares = rujiBalance.shares
+            sharePrice = rujiBalance.price
             
             // For unmerge, amount is shares converted to decimal (8 decimal places like THOR)
-            if let sharesRaw = Decimal(string: shares) {
+            if let sharesRaw = Decimal(string: rujiBalance.shares) {
                 let divisor = NSDecimalNumber(decimal: pow(Decimal(10), 8))
                 amount = sharesRaw / divisor.decimalValue
             }
@@ -214,20 +214,6 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-    
-    struct TokenMergeInfo: Codable {
-        let denom: String
-        let wasmContractAddress: String
-    }
-    
-    let tokensToMerge: [TokenMergeInfo] = [
-        TokenMergeInfo(denom: "thor.kuji", wasmContractAddress: "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"),
-        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
-        TokenMergeInfo(denom: "thor.fuzn", wasmContractAddress: "thor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrsw5xx2d"),
-        TokenMergeInfo(denom: "thor.nstk", wasmContractAddress: "thor1cnuw3f076wgdyahssdkd0g3nr96ckq8cwa2mh029fn5mgf2fmcmsmam5ck"),
-        TokenMergeInfo(denom: "thor.wink", wasmContractAddress: "thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y"),
-        TokenMergeInfo(denom: "thor.lvn", wasmContractAddress: "thor1ltd0maxmte3xf4zshta9j5djrq9cl692ctsp9u5q0p9wss0f5lms7us4yf")
-    ]
 }
 
 struct UnmergeView: View {
