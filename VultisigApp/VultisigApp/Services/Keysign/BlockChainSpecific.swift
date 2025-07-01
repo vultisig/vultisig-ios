@@ -13,7 +13,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: BigInt, sendMaxAmount: Bool)
     case Cardano(byteFee: BigInt, sendMaxAmount: Bool, ttl: UInt64)
     case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt)
-    case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool)
+    case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool, transactionType: Int = 0)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int, ibcDenomTrace: CosmosIbcDenomTraceDenomTrace?)
     case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?, hasProgramId: Bool) // priority fee is in microlamports
@@ -42,7 +42,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return byteFee
         case .Ethereum(let maxFeePerGasWei, _, _, _):
             return maxFeePerGasWei
-        case .THORChain(_, _, let fee, _):
+        case .THORChain(_, _, let fee, _, _):
             return fee.description.toBigInt()
         case .MayaChain:
             return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
