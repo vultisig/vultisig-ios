@@ -312,7 +312,132 @@ extension ThorchainService {
     }
 }
 
+// MARK: - RUJI Merge/Unmerge Functionality
+extension ThorchainService {
+    
+    /// Structure representing a RUJI balance result
+    struct RujiBalance {
+        let ruji: Decimal
+        let shares: String
+        let price: Decimal
+    }
+    
+    /// Structure representing a merged RUJI position
+    struct MergedPosition {
+        let token: String
+        let ruji: Decimal
+        let shares: String
+    }
+    
+    /// Fetch merged RUJI balance for a specific token
+    /// - Parameters:
+    ///   - thorAddress: The THORChain address to query
+    ///   - tokenSymbol: The token symbol to check (e.g., "THOR.KUJI", "THOR.RKUJI")
+    /// - Returns: A tuple containing (ruji amount, shares, price per share)
+    func fetchRujiBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
+        let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
+        
+        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
+            throw HelperError.runtimeError("Invalid GraphQL URL")
+        }
+
+        let query = String(format: Self.mergedAssetsQuery, id)
+
+        let requestBody: [String: Any] = ["query": query]
+
+        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        let decoded = try JSONDecoder().decode(UnmergeAccountResponse.self, from: data)
+
+        // Find the account matching the selected token
+        let cleanTokenSymbol = tokenSymbol.lowercased().replacingOccurrences(of: "thor.", with: "")
+        
+        let acc = decoded.data.node?.merge?.accounts.first { account in
+            account.pool.mergeAsset.metadata.symbol.lowercased() == cleanTokenSymbol
+        }
+        
+        guard let acc = acc else {
+            return RujiBalance(ruji: 0, shares: "0", price: 0)
+        }
+
+        let shares = acc.shares
+        let ruji = Decimal(string: acc.size.amount) ?? 0
+        // Calculate price per share based on user's own position
+        let sharesDecimal = Decimal(string: shares) ?? 1
+        let price = sharesDecimal > 0 ? ruji / sharesDecimal : 0
+
+        return RujiBalance(ruji: ruji, shares: shares, price: price)
+    }
+    
+    /// Fetch all merged RUJI positions for an address
+    /// - Parameter thorAddress: The THORChain address to query
+    /// - Returns: Array of merged positions with token info
+    func fetchAllMergedPositions(thorAddr: String) async throws -> [MergedPosition] {
+        let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
+        
+        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
+            throw HelperError.runtimeError("Invalid GraphQL URL")
+        }
+
+        let query = String(format: Self.mergedAssetsQuery, id)
+
+        let requestBody: [String: Any] = ["query": query]
+
+        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        let decoded = try JSONDecoder().decode(UnmergeAccountResponse.self, from: data)
+
+        var positions: [MergedPosition] = []
+        
+        if let accounts = decoded.data.node?.merge?.accounts {
+            for account in accounts {
+                let token = account.pool.mergeAsset.metadata.symbol
+                let ruji = Decimal(string: account.size.amount) ?? 0
+                let shares = account.shares
+                positions.append(MergedPosition(token: token, ruji: ruji, shares: shares))
+            }
+        }
+        
+        return positions
+    }
+}
+
 private extension ThorchainService {
+    // MARK: - GraphQL Queries
+    static let mergedAssetsQuery = """
+    {
+      node(id: "%@") {
+        ... on Account {
+          merge {
+            accounts {
+              shares
+              size { amount }
+              pool { 
+                mergeAsset {
+                  metadata {
+                    symbol
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    
     // MARK: - Models
     /// Response model for pool data from the THORChain API
     struct PoolResponse: Codable {

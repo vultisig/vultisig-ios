@@ -294,7 +294,8 @@ extension BlockChainSpecific {
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
                 fee: value.fee,
-                isDeposit: value.isDeposit
+                isDeposit: value.isDeposit,
+                transactionType: value.transactionType.rawValue
             )
         case .mayaSpecific(let value):
             self = .MayaChain(
@@ -388,12 +389,13 @@ extension BlockChainSpecific {
                 $0.nonce = nonce
                 $0.gasLimit = String(gasLimit)
             })
-        case .THORChain(let accountNumber, let sequence, let fee, let isDeposit):
+        case .THORChain(let accountNumber, let sequence, let fee, let isDeposit, let transactionType):
             return .thorchainSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.fee = fee
                 $0.isDeposit = isDeposit
+                $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
             })
         case .MayaChain(let accountNumber, let sequence, let isDeposit):
             return .mayaSpecific(.with {

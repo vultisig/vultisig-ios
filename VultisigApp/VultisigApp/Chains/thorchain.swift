@@ -6,11 +6,12 @@
 import Foundation
 import Tss
 import WalletCore
+import VultisigCommonData
 
 enum THORChainHelper {
     
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .THORChain(let accountNumber, let sequence, _, _) = keysignPayload.chainSpecific else {
+        guard case .THORChain(let accountNumber, let sequence, _, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -66,7 +67,7 @@ enum THORChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
         }
-        guard case .THORChain(let accountNumber, let sequence, _, let isDeposit) = keysignPayload.chainSpecific else {
+        guard case .THORChain(let accountNumber, let sequence, _, let isDeposit, let transactionTypeRawValue) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -84,11 +85,14 @@ enum THORChainHelper {
         
         if isDeposit {
             
-            // This should invoke the wasm contract for RUJI merge
-            if keysignPayload.memo?.lowercased().hasPrefix("merge:") == true {
-                // it's a merge
+            // This should invoke the wasm contract for RUJI merge/unmerge
+            let transactionType = VSTransactionType(rawValue: transactionTypeRawValue) ?? .unspecified
+            if transactionType == .thorMerge || transactionType == .thorUnmerge {
+                // it's a merge or unmerge
                 
-                let mergeToken: String = keysignPayload.memo?.lowercased().replacingOccurrences(of: "merge:", with: "") ?? ""
+                let mergeToken: String = keysignPayload.memo?.lowercased()
+                    .replacingOccurrences(of: "merge:", with: "")
+                    .replacingOccurrences(of: "unmerge:", with: "") ?? ""
                 
                 // This is for WASM tokens
                 
@@ -96,13 +100,25 @@ enum THORChainHelper {
                     throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
                 }
                 
+                let executeMsg: String
+                if transactionType == .thorUnmerge {
+                    // Parse shares amount from memo format: "unmerge:token:shares"
+                    let memoComponents = keysignPayload.memo?.lowercased().split(separator: ":")
+                    let sharesAmount = memoComponents?.count == 3 ? String(memoComponents![2]) : "0"
+                    executeMsg = """
+                    { "withdraw": { "share_amount": "\(sharesAmount)" } }
+                    """
+                } else {
+                    executeMsg = """
+                    { "deposit": {} }
+                    """
+                }
+                
                 let wasmGenericMessage = CosmosMessage.WasmExecuteContractGeneric.with {
                     $0.senderAddress = fromAddr.description
                     $0.contractAddress = keysignPayload.toAddress.description
-                    $0.executeMsg = """
-                    { "deposit": {} }
-                    """
-                    $0.coins = [
+                    $0.executeMsg = executeMsg
+                    $0.coins = transactionType == .thorUnmerge ? [] : [
                         TW_Cosmos_Proto_Amount.with {
                             $0.denom = mergeToken.lowercased() // "THOR.KUJI".lowercased()
                             $0.amount = String(keysignPayload.toAmount)
