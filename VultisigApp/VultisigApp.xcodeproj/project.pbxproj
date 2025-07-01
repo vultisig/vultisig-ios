@@ -289,6 +289,7 @@
 		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
 		A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */; };
 		A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */; };
+		A646DFA92E130BC5006E8ECC /* SendAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -1233,6 +1234,7 @@
 		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
 		A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressTab.swift; sourceTree = "<group>"; };
 		A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressFields.swift; sourceTree = "<group>"; };
+		A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAddressBookView.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -3531,6 +3533,7 @@
 				A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */,
 				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
 				A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */,
+				A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -4433,6 +4436,7 @@
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
 				A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
+				A646DFA92E130BC5006E8ECC /* SendAddressBookView.swift in Sources */,
 				A6C6712D2CA3C24F00F59B6A /* AddressTextField+macOS.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6505AE32CA6708C0002FBF4 /* ColorStyle+macOS.swift in Sources */,
