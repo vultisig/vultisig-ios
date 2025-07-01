@@ -129,5 +129,20 @@ class TonService {
         
         return (seqno, expireAt)
     }
+    
+    func getWalletState(_ address: String) async throws -> String {
+        guard let url = URL(string: Endpoint.fetchTonBalance(address: address)) else {
+            throw URLError(.badURL)
+        }
+        let request = URLRequest(url: url)
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        if let status = Utils.extractResultFromJson(fromData: data, path: "status") as? String {
+            return status
+        }
+        
+        return "uninit" // Default to uninitialized if status not found
+    }
 
 }
