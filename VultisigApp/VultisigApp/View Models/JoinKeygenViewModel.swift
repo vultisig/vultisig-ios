@@ -197,9 +197,12 @@ class JoinKeygenViewModel: ObservableObject {
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 oldResharePrefix = reshareMsg.oldResharePrefix
                 
-                guard let selectedVaultKey = selectedVault?.pubKeyECDSA, selectedVaultKey == reshareMsg.pubKeyECDSA else {
-                    areVaultsMismatched = true
-                    return
+                if tssType == .Migrate {
+                    // this logic only applies to migrate
+                    guard let selectedVaultKey = selectedVault?.pubKeyECDSA, selectedVaultKey == reshareMsg.pubKeyECDSA else {
+                        areVaultsMismatched = true
+                        return
+                    }
                 }
                 
                 // this means the vault is new , and it join the reshare to become the new committee
