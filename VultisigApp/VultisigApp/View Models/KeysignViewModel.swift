@@ -9,9 +9,6 @@ import Foundation
 import OSLog
 import Tss
 import WalletCore
-#if os(iOS)
-import UIKit
-#endif
 
 enum KeysignStatus {
     case CreatingInstance
@@ -527,22 +524,7 @@ class KeysignViewModel: ObservableObject {
                         throw err
                     }
                 case .solana:
-                    print("\n=== BROADCASTING SOLANA TRANSACTION ===")
-                    print("Time before broadcast: \(Date())")
-                    #if os(iOS)
-                    print("Device: \(UIDevice.current.name)")
-                    #else  
-                    print("Device: macOS")
-                    #endif
-                    print("Transaction hash: \(tx.transactionHash)")
-                    
-                    let broadcastStartTime = Date()
                     self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
-                    let broadcastEndTime = Date()
-                    
-                    print("Broadcast completed in: \(String(format: "%.3f", broadcastEndTime.timeIntervalSince(broadcastStartTime))) seconds")
-                    print("Transaction ID: \(self.txid)")
-                    print("======================================\n")
                 case .sui:
                     self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
                 case .polkadot:

@@ -7,9 +7,6 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
-#if os(iOS)
-import UIKit
-#endif
 
 enum SolanaHelper {
     

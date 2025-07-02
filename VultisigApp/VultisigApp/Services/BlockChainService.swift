@@ -9,9 +9,6 @@ import Foundation
 import BigInt
 import VultisigCommonData
 import WalletCore
-#if os(iOS)
-import UIKit
-#endif
 
 struct BlockSpecificCacheItem {
     let blockSpecific: BlockChainSpecific
