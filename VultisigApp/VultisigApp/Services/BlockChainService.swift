@@ -254,14 +254,6 @@ private extension BlockChainService {
             }
             return .MayaChain(accountNumber: accountNumber, sequence: sequence, isDeposit: isDeposit)
         case .solana:
-            print("\n=== FETCHING SOLANA BLOCKCHAIN SPECIFIC ===")
-            print("Time: \(Date())")
-            #if os(iOS)
-            print("Device: \(UIDevice.current.name)")
-            #else
-            print("Device: macOS")
-            #endif
-            
             async let recentBlockHashPromise = sol.fetchRecentBlockhash()
             async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
             
@@ -272,36 +264,12 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
             
-            print("Blockhash: \(recentBlockHash)")
-            print("Priority fee: \(highPriorityFee)")
-            print("==========================================\n")
-            
             if !coin.isNativeToken && fromAddress != nil {
-                print("\n=== BLOCKCHAIN SERVICE - TOKEN DETECTION ===")
-                print("Time: \(Date())")
-                #if os(iOS)
-                print("Device: \(UIDevice.current.name)")
-                #else
-                print("Device: macOS")
-                #endif
-                print("Blockhash: \(recentBlockHash)")
-                print("From Address: \(fromAddress!)")
-                print("Coin Address: \(coin.address)")
-                print("Contract Address: \(coin.contractAddress)")
-                print("High Priority Fee: \(highPriorityFee)")
-                
-                let fetchStartTime = Date()
                 let (associatedTokenAddressFrom, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
-                let fetchEndTime = Date()
-                print("Sender token account fetch took: \(String(format: "%.3f", fetchEndTime.timeIntervalSince(fetchStartTime))) seconds")
-                print("Sender token account: \(associatedTokenAddressFrom)")
-                print("Sender is Token-2022: \(senderIsToken2022)")
                 
                 // Validate that we got a valid sender account
                 if associatedTokenAddressFrom.isEmpty {
-                    print("ERROR: Sender has no token account for this mint!")
                     throw Errors.failToGetAssociatedTokenAddressFrom
-                    //throw Errors.runtimeError("You don't have this token in your wallet")
                 }
                 
                 // Only fetch recipient's token account if toAddress is provided
@@ -309,19 +277,13 @@ private extension BlockChainService {
                 var isToken2022 = senderIsToken2022  // Use sender's program type as default
                 
                 if let toAddress, !toAddress.isEmpty {
-                    print("Fetching recipient token account for: \(toAddress)")
-                    let recipientFetchStart = Date()
                     let (toTokenAddress, recipientTokenProgram) = try await sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
-                    let recipientFetchEnd = Date()
-                    print("Recipient token account fetch took: \(String(format: "%.3f", recipientFetchEnd.timeIntervalSince(recipientFetchStart))) seconds")
                     
                     associatedTokenAddressTo = toTokenAddress
                     // Only override if recipient has an account
                     if !toTokenAddress.isEmpty {
-                        print("Recipient has existing token account, using their program type: \(recipientTokenProgram)")
                         isToken2022 = recipientTokenProgram
                     } else {
-                        print("Recipient has no token account, will create using sender's program type: \(senderIsToken2022)")
                         // Fallback probe – derive deterministic ATAs and query getAccountInfo directly
                         if let walletCoreAddress = WalletCore.SolanaAddress(string: toAddress) {
                             let defaultAta = walletCoreAddress.defaultTokenAddress(tokenMintAddress: coin.contractAddress)
@@ -335,19 +297,12 @@ private extension BlockChainService {
                                 if exists {
                                     associatedTokenAddressTo = ataAddress
                                     isToken2022 = isToken2022Account
-                                    print("Fallback probe found recipient ATA: \(ataAddress) – Token2022: \(isToken2022)")
                                     break
                                 }
                             }
                         }
                     }
                 }
-                
-                print("Final decision - Is Token-2022: \(isToken2022)")
-                print("From account: \(associatedTokenAddressFrom)")
-                print("To account: \(associatedTokenAddressTo ?? "will be created")")
-                print("Total time in token detection: \(String(format: "%.3f", Date().timeIntervalSince(fetchStartTime))) seconds")
-                print("==========================================\n")
                 
                 // Important: Only return nil for toAddressPubKey if we're certain the account doesn't exist
                 // Empty string from RPC doesn't mean the account doesn't exist
@@ -496,7 +451,7 @@ private extension BlockChainService {
             )
             return gas
         } catch {
-            print("failed to estimate ERC20 transfer gas limit : \(error)")
+            // failed to estimate ERC20 transfer gas limit
             return 0
         }
     }
