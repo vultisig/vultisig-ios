@@ -27,45 +27,12 @@ struct SendTransactionResponse: Codable {
     }
 }
 
-// Simple rate limiter
-class RateLimiter {
-    private let maxRequestsPerSecond: Int
-    private let queue = DispatchQueue(label: "com.vultisig.ratelimiter")
-    private var lastRequestTime = Date.distantPast
-    
-    init(maxRequestsPerSecond: Int) {
-        self.maxRequestsPerSecond = maxRequestsPerSecond
-    }
-    
-    func waitForNextSlot() async {
-        await withCheckedContinuation { continuation in
-            queue.sync {
-                let now = Date()
-                let timeSinceLastRequest = now.timeIntervalSince(lastRequestTime)
-                let minInterval = 1.0 / Double(maxRequestsPerSecond)
-                
-                if timeSinceLastRequest < minInterval {
-                    let waitTime = minInterval - timeSinceLastRequest
-                    queue.asyncAfter(deadline: .now() + waitTime) {
-                        self.lastRequestTime = Date()
-                        continuation.resume()
-                    }
-                } else {
-                    lastRequestTime = now
-                    continuation.resume()
-                }
-            }
-        }
-    }
-}
-
 class SolanaService {
     static let shared = SolanaService()
     
     private init() {}
     
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
-    private let publicNodeURL = URL(string: "https://solana-rpc.publicnode.com")!
     
     // Account query methods that should use PublicNode
     private let accountQueryMethods = Set([
@@ -74,27 +41,9 @@ class SolanaService {
         "getMultipleAccounts"
     ])
     
-    // Rate limiter for RPC requests
-    private let rateLimiter = RateLimiter(maxRequestsPerSecond: 10)
-    
-    // Request tracking
-    private var requestCount = 0
-    private var requestTimes: [TimeInterval] = []
-    private var statusCodes: [Int: Int] = [:]
-    
     private let jsonDecoder = JSONDecoder()
     
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-    
-    // Rate limiting for PublicNode
-    private let requestQueue = DispatchQueue(label: "com.vultisig.solana.requests", attributes: .concurrent)
-    private let requestSemaphore = DispatchSemaphore(value: 5) // Max 5 concurrent requests
-    private var lastRequestTime = Date()
-    private let minRequestInterval: TimeInterval = 0.1 // 100ms between requests
-    
-    // Request tracking
-    private var requestCountLock = NSLock()
-    private var requestStartTime = Date()
     
     // Token account cache
     private struct TokenAccountCacheKey: Hashable {
@@ -120,15 +69,6 @@ class SolanaService {
         let now = Date()
         tokenAccountCache = tokenAccountCache.filter { _, value in
             now.timeIntervalSince(value.timestamp) < cacheExpirationTime
-        }
-    }
-    
-    // Determine which RPC to use based on the method
-    private func getRpcUrl(for method: String) -> URL {
-        if accountQueryMethods.contains(method) {
-            return publicNodeURL
-        } else {
-            return rpcURL
         }
     }
     
@@ -556,20 +496,7 @@ class SolanaService {
     
     private func postRequest(with requestBody: [String: Any], url: URL) async throws -> Data {
         // Determine which RPC to use based on the method
-        let method = requestBody["method"] as? String ?? ""
-        let actualURL: URL
-        
-        if accountQueryMethods.contains(method) {
-            actualURL = publicNodeURL
-        } else {
-            actualURL = url
-        }
-        
-        // Rate limiting
-        await rateLimiter.waitForNextSlot()
-        
-        let startTime = Date()
-        requestCount += 1
+        let actualURL: URL = url
         
         var request = URLRequest(url: actualURL)
         request.httpMethod = "POST"
@@ -577,14 +504,7 @@ class SolanaService {
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         request.timeoutInterval = 10
         
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        let elapsed = Date().timeIntervalSince(startTime)
-        requestTimes.append(elapsed)
-        
-        if let httpResponse = response as? HTTPURLResponse {
-            statusCodes[httpResponse.statusCode, default: 0] += 1
-        }
+        let (data, _) = try await URLSession.shared.data(for: request)
         
         return data
     }

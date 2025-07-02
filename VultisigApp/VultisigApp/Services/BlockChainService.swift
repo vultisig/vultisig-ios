@@ -305,6 +305,12 @@ private extension BlockChainService {
                 // Empty string from RPC doesn't mean the account doesn't exist
                 let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
                 
+                // TODO: Add rent exemption balance check here
+                // If finalToAddress is nil (account needs creation), verify sender has enough SOL:
+                // - 0.00203928 SOL for token account creation
+                // - Plus transaction fees
+                // - Plus maintaining sender's own rent exemption
+                
                 return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
             
