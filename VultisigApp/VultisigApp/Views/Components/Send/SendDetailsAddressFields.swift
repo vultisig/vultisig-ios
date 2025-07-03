@@ -11,6 +11,7 @@ struct SendDetailsAddressFields: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @FocusState.Binding var focusedField: Field?
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -56,11 +57,11 @@ struct SendDetailsAddressFields: View {
         VStack(spacing: 8) {
             getTitle(for: "sendTo")
             SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
-//                .focused($focusedField, equals: .toAddress)
-//                .id(Field.toAddress)
-//                .onSubmit {
-//                    focusNextField($focusedField)
-//                }
+                .focused($focusedField, equals: .toAddress)
+                .id(Field.toAddress)
+                .onSubmit {
+                    viewModel.selectedTab = .Amount
+                }
         }
     }
     
@@ -70,8 +71,4 @@ struct SendDetailsAddressFields: View {
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-}
-
-#Preview {
-    SendDetailsAddressFields(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }

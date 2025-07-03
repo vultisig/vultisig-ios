@@ -43,7 +43,6 @@ struct SendCryptoDetailsView: View {
         }
         .gesture(DragGesture())
         .onFirstAppear {
-            focusedField = .toAddress
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
@@ -262,17 +261,21 @@ struct SendCryptoDetailsView: View {
                     isExpanded: sendDetailsViewModel.selectedTab == .Address,
                     tx: tx,
                     viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    focusedField: $focusedField
                 )
                 
                 SendDetailsAmountTab(
                     isExpanded: sendDetailsViewModel.selectedTab == .Amount,
                     tx: tx,
                     viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    validateForm: validateForm,
+                    focusedField: $focusedField
                 )
             }
             .padding(16)
+            .offset(y: keyboardObserver.keyboardHeight != 0 ? -80 : 0)
         }
     }
     

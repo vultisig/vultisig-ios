@@ -12,6 +12,7 @@ struct SendDetailsAddressTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @FocusState.Binding var focusedField: Field?
     
     var body: some View {
         content
@@ -75,11 +76,12 @@ struct SendDetailsAddressTab: View {
     }
     
     var fields: some View {
-        SendDetailsAddressFields(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+        SendDetailsAddressFields(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
     }
     
     private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
         guard oldValue != newValue, !newValue else {
+            focusedField = .toAddress
             return
         }
         
@@ -90,8 +92,4 @@ struct SendDetailsAddressTab: View {
         
         viewModel.addressSetupDone = true
     }
-}
-
-#Preview {
-    SendDetailsAddressTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }

@@ -12,10 +12,21 @@ struct SendDetailsAmountTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    let validateForm: () async -> ()
+    @FocusState.Binding var focusedField: Field?
+    
+    @StateObject var keyboardObserver = KeyboardObserver()
     
     var body: some View {
         content
             .padding(.bottom, 100)
+            .frame(height: showTab() ? nil : 0, alignment: .top)
+            .clipped()
+            .onChange(of: isExpanded) { oldValue, newValue in
+                Task {
+                    setData(oldValue, newValue)
+                }
+            }
     }
     
     var content: some View {
@@ -51,9 +62,10 @@ struct SendDetailsAmountTab: View {
             
             Spacer()
             
-            if isExpanded {
-                gasSelector
-            }
+            // Enable this when gas selector is available
+//            if isExpanded {
+//                gasSelector
+//            }
         }
         .onTapGesture {
             viewModel.selectedTab = .Amount
@@ -80,6 +92,13 @@ struct SendDetailsAmountTab: View {
     
     var amountFieldSection: some View {
         SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+            .focused($focusedField, equals: .amount)
+            .id(Field.amount)
+            .onSubmit {
+                Task{
+                    await validateForm()
+                }
+            }
     }
     
     var percentageButtons: some View {
@@ -145,8 +164,19 @@ struct SendDetailsAmountTab: View {
                     .stroke(Color.blue400, lineWidth: 1)
             )
     }
-}
-
-#Preview {
-    SendDetailsAmountTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    
+    private func showTab() -> Bool {
+        if !isExpanded && keyboardObserver.keyboardHeight != 0 {
+            return false
+        } else {
+            return true
+        }
+    }
+    
+    private func setData(_ oldValue: Bool, _ newValue: Bool) {
+        guard oldValue != newValue, !newValue else {
+            focusedField = .amount
+            return
+        }
+    }
 }
