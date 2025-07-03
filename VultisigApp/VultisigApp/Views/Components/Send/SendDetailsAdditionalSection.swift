@@ -14,9 +14,16 @@ struct SendDetailsAdditionalSection: View {
     
     @State var isMemoExpanded = false
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
         VStack(spacing: 14) {
             addMemoField
+            
+            if !tx.amount.isEmpty {
+                separator
+                networkFeeField
+            }
         }
     }
     
@@ -54,6 +61,30 @@ struct SendDetailsAdditionalSection: View {
                 .clipped()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var separator: some View {
+        LinearSeparator()
+    }
+    
+    var networkFeeField: some View {
+        HStack {
+            getFieldTitle("estNetworkFee")
+            Spacer()
+            networkFeeDescription
+        }
+    }
+    
+    var networkFeeDescription: some View {
+        VStack {
+            Text(tx.gasInReadable)
+            Spacer()
+            
+            if let selectedVault = homeViewModel.selectedVault {
+                Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
+            }
+        }
+        .font(.body14BrockmannMedium)
     }
     
     private func getFieldTitle(_ title: String) -> some View {
