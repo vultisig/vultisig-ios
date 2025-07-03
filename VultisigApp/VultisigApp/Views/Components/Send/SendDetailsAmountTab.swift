@@ -25,6 +25,7 @@ struct SendDetailsAmountTab: View {
             if isExpanded {
                 separator
                 amountFieldSection
+                percentageButtons
             }
         }
         .padding(12)
@@ -66,6 +67,45 @@ struct SendDetailsAmountTab: View {
     
     var amountFieldSection: some View {
         SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+    }
+    
+    var percentageButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
+            } label: {
+                getPercentageButtons(for: "25%")
+            }
+            
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
+            } label: {
+                getPercentageButtons(for: "50%")
+            }
+            
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 75)
+            } label: {
+                getPercentageButtons(for: "75%")
+            }
+            
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx)
+            } label: {
+                getPercentageButtons(for: "Max")
+            }
+        }
+    }
+    
+    private func getPercentageButtons(for value: String) -> some View {
+        Text(value)
+            .foregroundColor(.neutral0)
+            .padding(4)
+            .frame(maxWidth: .infinity)
+            .overlay(
+                RoundedRectangle(cornerRadius: 32)
+                    .stroke(Color.blue400, lineWidth: 1)
+            )
     }
 }
 
