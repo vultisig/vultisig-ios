@@ -26,7 +26,6 @@ struct SendDetailsAddressFields: View {
             getTitle(for: "from")
             fromDetailsField
         }
-        
     }
     
     var fromDetailsField: some View {

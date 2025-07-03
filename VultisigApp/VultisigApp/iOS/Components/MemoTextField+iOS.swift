@@ -10,9 +10,13 @@ import SwiftUI
 
 extension MemoTextField {
     var container: some View {
-        HStack(spacing: 0) {
-            textField
-                .textInputAutocapitalization(.never)
+        content
+            .textInputAutocapitalization(.never)
+    }
+    
+    func pasteAddress() {
+        if let clipboardContent = UIPasteboard.general.string {
+            memo = clipboardContent
         }
     }
 }

@@ -13,21 +13,25 @@ struct MemoTextField: View {
     @Environment(\.isEnabled) private var isEnabled
     
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if memo.isEmpty {
-                Text(NSLocalizedString("enterMemo", comment: ""))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-            container
+        container
+            .font(.body16BrockmannMedium)
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.blue400, lineWidth: 1)
+            )
+            .padding(1)
+    }
+    
+    var content: some View {
+        HStack(spacing: 0) {
+            textField
+                .textInputAutocapitalization(.never)
+            Spacer()
+            pasteButton
         }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
     }
     
     var textField: some View {
@@ -37,6 +41,18 @@ struct MemoTextField: View {
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
             .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+    }
+    
+    var pasteButton: some View {
+        Button {
+            pasteAddress()
+        } label: {
+            pasteLabel
+        }
+    }
+    
+    var pasteLabel: some View {
+        Image(systemName: "square.on.square")
     }
 }
 

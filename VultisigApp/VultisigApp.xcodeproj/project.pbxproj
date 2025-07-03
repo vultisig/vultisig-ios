@@ -292,6 +292,7 @@
 		A646DFA92E130BC5006E8ECC /* SendAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */; };
 		A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */; };
 		A646DFB32E162935006E8ECC /* SendDetailsAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB22E162935006E8ECC /* SendDetailsAmountTextField.swift */; };
+		A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB42E16DE34006E8ECC /* SendDetailsAdditionalSection.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -1239,6 +1240,7 @@
 		A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAddressBookView.swift; sourceTree = "<group>"; };
 		A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAmountTab.swift; sourceTree = "<group>"; };
 		A646DFB22E162935006E8ECC /* SendDetailsAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAmountTextField.swift; sourceTree = "<group>"; };
+		A646DFB42E16DE34006E8ECC /* SendDetailsAdditionalSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAdditionalSection.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -2372,6 +2374,7 @@
 				A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */,
 				A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */,
 				A646DFB22E162935006E8ECC /* SendDetailsAmountTextField.swift */,
+				A646DFB42E16DE34006E8ECC /* SendDetailsAdditionalSection.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -4059,6 +4062,7 @@
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
+				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,

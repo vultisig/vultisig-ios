@@ -27,6 +27,7 @@ struct SendDetailsAmountTab: View {
                 amountFieldSection
                 percentageButtons
                 balanceSection
+                additionalOptionsSection
             }
         }
         .padding(12)
@@ -107,8 +108,13 @@ struct SendDetailsAmountTab: View {
         .font(.body14BrockmannMedium)
         .foregroundColor(.neutral0)
         .padding(12)
+        .padding(.vertical, 8)
         .background(Color.blue600)
-        .cornerRadius(16)
+        .cornerRadius(12)
+    }
+    
+    var additionalOptionsSection: some View {
+        SendDetailsAdditionalSection(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
     }
     
     private func getPercentageButtons(for value: String) -> some View {
