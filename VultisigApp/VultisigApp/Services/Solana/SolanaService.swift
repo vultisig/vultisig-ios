@@ -2,6 +2,31 @@ import Foundation
 import SwiftUI
 import WalletCore
 
+enum SolanaServiceError: Error, LocalizedError {
+    case blockhashExpired(message: String)
+    case rpcError(message: String, code: Int)
+    
+    var errorDescription: String? {
+        switch self {
+        case .blockhashExpired(let message):
+            return "Transaction failed: Blockhash expired. \(message)"
+        case .rpcError(let message, _):
+            return "RPC Error: \(message)"
+        }
+    }
+}
+
+struct SendTransactionResponse: Codable {
+    let jsonrpc: String
+    let result: String?
+    let error: ErrorResponse?
+    
+    struct ErrorResponse: Codable {
+        let code: Int
+        let message: String
+    }
+}
+
 class SolanaService {
     static let shared = SolanaService()
     
@@ -9,42 +34,82 @@ class SolanaService {
     
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
     
+    // Account query methods that should use PublicNode
+    private let accountQueryMethods = Set([
+        "getTokenAccountsByOwner",
+        "getAccountInfo",
+        "getMultipleAccounts"
+    ])
+    
     private let jsonDecoder = JSONDecoder()
     
     private let TOKEN_PROGRAM_ID_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
     
-    func sendSolanaTransaction(encodedTransaction: String) async throws
-    -> String?
-    {
+    // Token account cache
+    private struct TokenAccountCacheKey: Hashable {
+        let walletAddress: String
+        let mintAddress: String
+    }
+    
+    private struct TokenAccountCacheValue {
+        let accountAddress: String
+        let isToken2022: Bool
+        let timestamp: Date
+    }
+    
+    private var tokenAccountCache = [TokenAccountCacheKey: TokenAccountCacheValue]()
+    private let tokenAccountCacheLock = NSLock()
+    private let cacheExpirationTime: TimeInterval = 300 // 5 minutes
+    
+    // Clear expired cache entries
+    private func cleanExpiredCache() {
+        tokenAccountCacheLock.lock()
+        defer { tokenAccountCacheLock.unlock() }
+        
+        let now = Date()
+        tokenAccountCache = tokenAccountCache.filter { _, value in
+            now.timeIntervalSince(value.timestamp) < cacheExpirationTime
+        }
+    }
+    
+    func sendSolanaTransaction(encodedTransaction: String) async throws -> String? {
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "sendTransaction",
+            "params": [encodedTransaction],
+        ]
+        
         do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "sendTransaction",
-                "params": [encodedTransaction],
-            ]
-            
+            // Will use Vultisig RPC (sendTransaction is not in accountQueryMethods)
             let data = try await postRequest(with: requestBody, url: rpcURL)
             
-            if let errorMessage = Utils.extractResultFromJson(
-                fromData: data, path: "error.message") as? String
-            {
-                let lowercaseError = errorMessage.lowercased()
-                if lowercaseError.contains("blockhash") ||
-                   lowercaseError.contains("simulation failed") ||
-                   lowercaseError.contains("time out") ||
-                   lowercaseError.contains("expired") {
-                    return "Transaction time out due to slow signing. Please try again."
+            // Parse response
+            if let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                // Check for error
+                if let error = jsonObject["error"] as? [String: Any] {
+                    let errorMessage = error["message"] as? String ?? "Unknown error"
+                    let errorCode = error["code"] as? Int ?? -1
+                    
+                    // Check if it's a blockhash expiration error
+                    if errorMessage.contains("Blockhash not found") || 
+                       errorMessage.contains("blockhash") ||
+                       errorCode == -32002 {
+                        throw SolanaServiceError.blockhashExpired(message: errorMessage)
+                    }
+                    
+                    throw SolanaServiceError.rpcError(message: errorMessage, code: errorCode)
                 }
-                return errorMessage
+                
+                // Check for result
+                if let result = jsonObject["result"] as? String {
+                    return result
+                }
             }
             
-            let response = try jsonDecoder.decode(
-                SolanaRPCResponse<String>.self, from: data)
-            
+            let response = try JSONDecoder().decode(SendTransactionResponse.self, from: data)
             return response.result
         } catch {
-            print("Error in sendSolanaTransaction:")
             throw error
         }
     }
@@ -161,9 +226,59 @@ class SolanaService {
         }
     }
     
-    func fetchTokenAssociatedAccountByOwner(
-        for walletAddress: String, mintAddress: String
-    ) async throws -> (String, Bool) {
+    func fetchTokenAssociatedAccountByOwner(for ownerAddress: String, mintAddress: String) async throws -> (String, Bool) {
+        // First try getTokenAccountsByOwner
+        let (tokenAccounts, isToken2022) = try await getTokenAccountsByOwner(walletAddress: ownerAddress, mintAddress: mintAddress)
+        
+        if !tokenAccounts.isEmpty {
+            return (tokenAccounts, isToken2022)
+        }
+        
+        // If getTokenAccountsByOwner returns empty, probe the deterministic ATAs directly
+        guard let walletCoreAddress = WalletCore.SolanaAddress(string: ownerAddress) else {
+            return ("", false)
+        }
+        
+        // Try standard SPL token ATA first
+        if let defaultAta = walletCoreAddress.defaultTokenAddress(tokenMintAddress: mintAddress), !defaultAta.isEmpty {
+            let (exists, _) = try await checkAccountExists(address: defaultAta)
+            if exists {
+                return (defaultAta, false)
+            }
+        }
+        
+        // Try Token-2022 ATA
+        if let token2022Ata = walletCoreAddress.token2022Address(tokenMintAddress: mintAddress), !token2022Ata.isEmpty {
+            let (exists, _) = try await checkAccountExists(address: token2022Ata)
+            if exists {
+                return (token2022Ata, true)
+            }
+        }
+        
+        return ("", false)
+    }
+    
+    func getTokenAccountsByOwner(walletAddress: String, mintAddress: String) async throws -> (String, Bool) {
+        // Check cache first
+        let cacheKey = TokenAccountCacheKey(walletAddress: walletAddress, mintAddress: mintAddress)
+        
+        tokenAccountCacheLock.lock()
+        if let cachedValue = tokenAccountCache[cacheKey] {
+            let age = Date().timeIntervalSince(cachedValue.timestamp)
+            tokenAccountCacheLock.unlock()
+            
+            if age < cacheExpirationTime {
+                return (cachedValue.accountAddress, cachedValue.isToken2022)
+            } else {
+                // Remove expired entry
+                tokenAccountCacheLock.lock()
+                tokenAccountCache.removeValue(forKey: cacheKey)
+                tokenAccountCacheLock.unlock()
+            }
+        } else {
+            tokenAccountCacheLock.unlock()
+        }
+        
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -176,20 +291,29 @@ class SolanaService {
                 ],
             ]
             
+            // Will automatically use PublicNode due to the method
             let data = try await postRequest(with: requestBody, url: rpcURL)
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
-            let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result
-                .value
+            let accounts: [SolanaService.SolanaTokenAccount] = parsedData.result.value
             
             guard let associatedAccount = accounts.first else {
-                return (.empty, false)
+                return ("", false)
             }
             
-            let isToken2022 = associatedAccount.account.owner == TOKEN_PROGRAM_ID_2022
+            let accountOwner = associatedAccount.account.owner
+            let isToken2022 = accountOwner == TOKEN_PROGRAM_ID_2022
+            
+            // Cache the result
+            tokenAccountCacheLock.lock()
+            tokenAccountCache[cacheKey] = TokenAccountCacheValue(
+                accountAddress: associatedAccount.pubkey,
+                isToken2022: isToken2022,
+                timestamp: Date()
+            )
+            tokenAccountCacheLock.unlock()
             
             return (associatedAccount.pubkey, isToken2022)
         } catch {
-            print("Error in fetchTokenAssociatedAccountByOwner:")
             throw error
         }
     }
@@ -370,41 +494,19 @@ class SolanaService {
         }
     }
     
-    private func postRequest(with body: [String: Any], url: URL) async throws
-    -> Data
-    {
-        do {
-            var request = URLRequest(url: url)
-            request.cachePolicy = .returnCacheDataElseLoad
-            request.httpMethod = "POST"
-            request.addValue(
-                "application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONSerialization.data(
-                withJSONObject: body, options: [])
-            
-            let (data, response) = try await URLSession.shared.data(
-                for: request)
-            
-            if let httpResponse = response as? HTTPURLResponse,
-               let cacheControl = httpResponse.allHeaderFields["Cache-Control"]
-                as? String,
-               cacheControl.contains("max-age") == false
-            {
-                
-                // Set a default caching duration if none is provided
-                let userInfo = ["Cache-Control": "max-age=120"]  // 2 minutes
-                let cachedResponse = CachedURLResponse(
-                    response: httpResponse, data: data, userInfo: userInfo,
-                    storagePolicy: .allowed)
-                URLCache.shared.storeCachedResponse(
-                    cachedResponse, for: request)
-            }
-            
-            return data
-        } catch {
-            print("Error in postRequest: \(error.localizedDescription)")
-            throw error
-        }
+    private func postRequest(with requestBody: [String: Any], url: URL) async throws -> Data {
+        // Determine which RPC to use based on the method
+        let actualURL: URL = url
+        
+        var request = URLRequest(url: actualURL)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        request.timeoutInterval = 10
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        return data
     }
     
     private func parseSolanaTokenResponse(jsonData: Data) throws
@@ -447,4 +549,42 @@ class SolanaService {
         }
         
     }
+    
+    func checkAccountExists(address: String) async throws -> (exists: Bool, isToken2022: Bool) {
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getAccountInfo",
+            "params": [address, ["encoding": "jsonParsed"]],
+        ]
+        
+        // Will automatically use PublicNode due to the method
+        let data = try await postRequest(with: requestBody, url: rpcURL)
+        
+        if let jsonObj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let result = jsonObj["result"] as? [String: Any],
+           let value = result["value"] as? [String: Any] {
+            // Account exists
+            let ownerProgram = value["owner"] as? String ?? ""
+            let isToken2022 = ownerProgram == TOKEN_PROGRAM_ID_2022
+            return (true, isToken2022)
+        }
+        
+        return (false, false)
+    }
+    
+    func clearTokenAccountCache() {
+        tokenAccountCacheLock.lock()
+        defer { tokenAccountCacheLock.unlock() }
+        
+        tokenAccountCache.removeAll()
+    }
+    
+    func getCacheStats() -> (entries: Int, hitRate: Double) {
+        tokenAccountCacheLock.lock()
+        defer { tokenAccountCacheLock.unlock() }
+        
+        return (tokenAccountCache.count, 0.0) // Hit rate would need additional tracking
+    }
+    
 }
