@@ -253,6 +253,7 @@ struct SendCryptoDetailsView: View {
             VStack(spacing: 12) {
                 SendDetailsAssetTab(tx: tx, viewModel: sendDetailsViewModel)
                 SendDetailsAddressTab(tx: tx, viewModel: sendDetailsViewModel, sendCryptoViewModel: sendCryptoViewModel)
+                SendDetailsAmountTab(tx: tx, viewModel: sendDetailsViewModel)
             }
             .padding(16)
         }
