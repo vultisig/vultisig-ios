@@ -1,7 +1,7 @@
 import Foundation
 
 class TokensStore {
-
+    
     static let TokenSelectionAssets = [
         CoinMeta(
             chain: .akash,
@@ -1576,6 +1576,51 @@ class TokensStore {
             decimals: 8,
             priceProviderId: "",
             contractAddress: "x/ruji",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "KUJI",
+            logo: "kuji",
+            decimals: 8,
+            priceProviderId: "kujira",
+            contractAddress: "thor.kuji",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "FUZN",
+            logo: "fuzn",
+            decimals: 8,
+            priceProviderId: "fuzion",
+            contractAddress: "thor.fuzn",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "NSTK",
+            logo: "nstk",
+            decimals: 8,
+            priceProviderId: "unstake-fi",
+            contractAddress: "thor.nstk",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "WINK",
+            logo: "wink",
+            decimals: 8,
+            priceProviderId: "winkhub",
+            contractAddress: "thor.wink",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "LVN",
+            logo: "levana",
+            decimals: 8,
+            priceProviderId: "levana-protocol",
+            contractAddress: "thor.lvn",
             isNativeToken: false
         ),
         CoinMeta(
