@@ -15,6 +15,11 @@ struct SendDetailsAddressTab: View {
     
     var body: some View {
         content
+            .onChange(of: isExpanded) { oldValue, newValue in
+                Task {
+                    await handleClose(oldValue, newValue)
+                }
+            }
     }
     
     var content: some View {
@@ -48,6 +53,9 @@ struct SendDetailsAddressTab: View {
                 Spacer()
             }
         }
+        .onTapGesture {
+            viewModel.selectedTab = .Address
+        }
     }
     
     var separator: some View {
@@ -58,6 +66,8 @@ struct SendDetailsAddressTab: View {
         Text("\(tx.toAddress)")
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
+            .lineLimit(1)
+            .truncationMode(.middle)
     }
     
     var doneEditTools: some View {
@@ -66,6 +76,19 @@ struct SendDetailsAddressTab: View {
     
     var fields: some View {
         SendDetailsAddressFields(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+    }
+    
+    private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
+        guard oldValue != newValue, !newValue else {
+            return
+        }
+        
+        guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+            viewModel.selectedTab = .Address
+            return
+        }
+        
+        viewModel.addressSetupDone = true
     }
 }
 

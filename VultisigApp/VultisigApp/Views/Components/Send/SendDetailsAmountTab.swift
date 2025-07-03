@@ -50,6 +50,9 @@ struct SendDetailsAmountTab: View {
                 gasSelector
             }
         }
+        .onTapGesture {
+            viewModel.selectedTab = .Amount
+        }
     }
     
     var separator: some View {

@@ -27,6 +27,11 @@ struct SendCryptoAddressTextField: View {
     var body: some View {
         VStack {
             container
+            
+            if sendCryptoViewModel.showAddressAlert {
+                errorText
+            }
+            
             buttons
         }
     }
@@ -101,6 +106,13 @@ struct SendCryptoAddressTextField: View {
         } label: {
             getButton("text.book.closed")
         }
+    }
+    
+    var errorText: some View {
+        Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.alertYellow)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     func validateAddress(_ newValue: String) {

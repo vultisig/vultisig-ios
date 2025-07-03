@@ -26,7 +26,7 @@ extension SendCryptoAddressTextField {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(sendCryptoViewModel.showAddressAlert ? .alertYellow : Color.blue400, lineWidth: 1)
             )
             .padding(1)
     }

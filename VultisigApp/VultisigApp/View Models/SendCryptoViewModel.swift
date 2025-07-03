@@ -34,6 +34,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     @Published var tron: TronService = TronService.shared
     
+    @Published var showAddressAlert: Bool = false
+    
     let blockchainService = BlockChainService.shared
     
     private let mediator = Mediator.shared
@@ -345,42 +347,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
-        errorTitle = ""
-        errorMessage = ""
-        isValidForm = true
-        isNamespaceResolved = false
-        isLoading = true
+        resetStates()
         
-        guard !tx.toAddress.isEmpty else {
-            errorTitle = "invalidAddress"
-            errorMessage = "emptyAddressField"
-            showAlert = true
-            logger.log("Empty address field.")
-            isValidForm = false
-            isLoading = false
+        guard await validateToAddress(tx: tx) else {
             return false
-        }
-        
-        do {
-            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
-            isNamespaceResolved = true
-        } catch {
-            errorTitle = "error"
-            errorMessage = "validAddressDomainError"
-            showAlert = true
-            logger.log("Please enter a valid address for the selected blockchain.")
-            isValidForm = false
-            isLoading = false
-            return false
-        }
-        
-        // Validate the "To" address
-        if !isValidAddress && !isNamespaceResolved {
-            errorTitle = "error"
-            errorMessage = "validAddressError"
-            showAlert = true
-            logger.log("Invalid address.")
-            isValidForm = false
         }
         
         let amount = tx.amountDecimal
@@ -488,6 +458,46 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return isValidForm
     }
     
+    func validateToAddress(tx: SendTransaction) async -> Bool {
+        resetStates()
+        
+        guard !tx.toAddress.isEmpty else {
+            errorTitle = "invalidAddress"
+            errorMessage = "emptyAddressField"
+            showAddressAlert = true
+            logger.log("Empty address field.")
+            isValidForm = false
+            isLoading = false
+            return false
+        }
+        
+        do {
+            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            isNamespaceResolved = true
+        } catch {
+            errorTitle = "error"
+            errorMessage = "validAddressDomainError"
+            showAddressAlert = true
+            logger.log("Please enter a valid address for the selected blockchain.")
+            
+            isValidForm = false
+            isLoading = false
+            return false
+        }
+        
+        // Validate the "To" address
+        if !isValidAddress && !isNamespaceResolved {
+            errorTitle = "error"
+            errorMessage = "validAddressError"
+            showAddressAlert = true
+            logger.log("Invalid address.")
+            isValidForm = false
+            return false
+        }
+        
+        return true
+    }
+    
     func setHash(_ hash: String) {
         self.hash = hash
     }
@@ -516,6 +526,15 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return vault.coins.sorted(by: {
             Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
         })
+    }
+    
+    private func resetStates() {
+        errorTitle = ""
+        errorMessage = ""
+        isValidForm = true
+        isNamespaceResolved = false
+        isLoading = true
+        showAddressAlert = false
     }
 
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {

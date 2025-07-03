@@ -11,6 +11,7 @@ struct SendDetailsAssetTab: View {
     let isExpanded: Bool
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -42,6 +43,12 @@ struct SendDetailsAssetTab: View {
                     )
                 }
             })
+            .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
+                handleAssetSelection(oldValue, newValue)
+            }
+            .onChange(of: isExpanded) { oldValue, newValue in
+                handleAssetSelection(oldValue, newValue)
+            }
     }
     
     var content: some View {
@@ -74,6 +81,9 @@ struct SendDetailsAssetTab: View {
             } else {
                 Spacer()
             }
+        }
+        .onTapGesture {
+            viewModel.selectedTab = .Asset
         }
     }
     
@@ -169,8 +179,17 @@ struct SendDetailsAssetTab: View {
     private func setData() {
         viewModel.selectedChain = tx.coin.chain
     }
+    
+    private func handleAssetSelection(_ oldValue: Bool, _ newValue: Bool) {
+        guard oldValue != newValue, !newValue else {
+            return
+        }
+        
+        viewModel.selectedTab = .Address
+        viewModel.assetSetupDone = true
+    }
 }
 
 #Preview {
-    SendDetailsAssetTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel())
+    SendDetailsAssetTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }

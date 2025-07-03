@@ -254,7 +254,8 @@ struct SendCryptoDetailsView: View {
                 SendDetailsAssetTab(
                     isExpanded: sendDetailsViewModel.selectedTab == .Asset,
                     tx: tx,
-                    viewModel: sendDetailsViewModel
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel
                 )
                 
                 SendDetailsAddressTab(
