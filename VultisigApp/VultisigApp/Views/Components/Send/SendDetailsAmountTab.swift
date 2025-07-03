@@ -26,6 +26,7 @@ struct SendDetailsAmountTab: View {
                 separator
                 amountFieldSection
                 percentageButtons
+                balanceSection
             }
         }
         .padding(12)
@@ -95,6 +96,19 @@ struct SendDetailsAmountTab: View {
                 getPercentageButtons(for: "Max")
             }
         }
+    }
+    
+    var balanceSection: some View {
+        HStack {
+            Text(NSLocalizedString("balanceAvailable", comment: ""))
+            Spacer()
+            Text(tx.coin.balanceString + " " + tx.coin.ticker)
+        }
+        .font(.body14BrockmannMedium)
+        .foregroundColor(.neutral0)
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(16)
     }
     
     private func getPercentageButtons(for value: String) -> some View {
