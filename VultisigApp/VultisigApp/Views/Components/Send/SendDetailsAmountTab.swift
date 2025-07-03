@@ -10,6 +10,7 @@ import SwiftUI
 struct SendDetailsAmountTab: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @State var isExpanded: Bool = true
     
@@ -64,10 +65,10 @@ struct SendDetailsAmountTab: View {
     }
     
     var amountFieldSection: some View {
-        SendDetailsAmountTextField()
+        SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
     }
 }
 
 #Preview {
-    SendDetailsAmountTab(tx: SendTransaction(), viewModel: SendDetailsViewModel())
+    SendDetailsAmountTab(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }
