@@ -65,7 +65,7 @@ final class MemoDecodingService {
             let textSignature = firstResult.text_signature
             
             // Extract function name from signature
-            guard let functionName = textSignature.components(separatedBy: "(").first else {
+            guard textSignature.components(separatedBy: "(").first != nil else {
                 return nil
             }
             
