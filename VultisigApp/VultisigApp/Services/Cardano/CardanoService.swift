@@ -212,7 +212,7 @@ class CardanoService {
     
     /// Validate Cardano chain specific parameters
     func validateChainSpecific(_ chainSpecific: BlockChainSpecific) async throws {
-        guard case .Cardano(let byteFee, let sendMaxAmount, let ttl) = chainSpecific else {
+        guard case .Cardano(let byteFee, _, let ttl) = chainSpecific else {
             throw NSError(domain: "CardanoServiceError", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid chain specific type for Cardano"])
         }
         

@@ -26,8 +26,8 @@ extension CustomTokenView {
                 Spacer()
             }
         }
-        .task {
-            await tokenViewModel.loadData(groupedChain: group)
+        .onAppear{
+             tokenViewModel.loadData(groupedChain: group)
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
