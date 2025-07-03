@@ -307,7 +307,9 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
+        sendDetailsViewModel.selectedTab = .Amount
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+        
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
             sendCryptoViewModel.isLoading = false

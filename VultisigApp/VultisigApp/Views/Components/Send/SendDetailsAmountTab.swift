@@ -25,6 +25,11 @@ struct SendDetailsAmountTab: View {
             if isExpanded {
                 separator
                 amountFieldSection
+                
+                if sendCryptoViewModel.showAmountAlert {
+                    errorText
+                }
+                
                 percentageButtons
                 balanceSection
                 additionalOptionsSection
@@ -121,6 +126,13 @@ struct SendDetailsAmountTab: View {
     
     var additionalOptionsSection: some View {
         SendDetailsAdditionalSection(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
+    }
+    
+    var errorText: some View {
+        Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.alertYellow)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func getPercentageButtons(for value: String) -> some View {

@@ -35,6 +35,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var tron: TronService = TronService.shared
     
     @Published var showAddressAlert: Bool = false
+    @Published var showAmountAlert: Bool = false
     
     let blockchainService = BlockChainService.shared
     
@@ -349,17 +350,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         // Reset validation state at the beginning
         resetStates()
         
-        guard await validateToAddress(tx: tx) else {
-            return false
-        }
-        
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         
         if amount <= 0 {
             errorTitle = "error"
             errorMessage = "positiveAmountError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Invalid or non-positive amount.")
             isValidForm = false
             isLoading = false
@@ -369,7 +366,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if gasFee == 0 {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
-            showAlert = true
+            showAmountAlert = true
             logger.log("No gas estimation.")
             isValidForm = false
             isLoading = false
@@ -379,7 +376,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if gasFee < 0 {
             errorTitle = "error"
             errorMessage = "nonNegativeFeeError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Invalid or negative fee.")
             isValidForm = false
             isLoading = false
@@ -389,7 +386,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if tx.isAmountExceeded {
             errorTitle = "error"
             errorMessage = "walletBalanceExceededError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
         }
@@ -495,6 +492,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return false
         }
         
+        isLoading = false
         return true
     }
     
@@ -535,6 +533,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isNamespaceResolved = false
         isLoading = true
         showAddressAlert = false
+        showAmountAlert = false
+        showAlert = false
     }
 
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
