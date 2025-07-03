@@ -18,6 +18,7 @@ enum Field: Int, Hashable {
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
     
     @State var amount = ""
@@ -27,7 +28,6 @@ struct SendCryptoDetailsView: View {
     
     @State var isCoinPickerActive = false
     
-    @StateObject var sendDetailsViewModel = SendDetailsViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
     
     @FocusState var focusedField: Field?
@@ -326,6 +326,7 @@ struct SendCryptoDetailsView: View {
     SendCryptoDetailsView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
+        sendDetailsViewModel: SendDetailsViewModel(),
         vault: Vault.example
     )
 }
