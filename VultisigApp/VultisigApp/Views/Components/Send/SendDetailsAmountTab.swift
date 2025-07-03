@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct SendDetailsAmountTab: View {
+    let isExpanded: Bool
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
-    @State var isExpanded: Bool = true
-    
     var body: some View {
         content
+            .padding(.bottom, 100)
     }
     
     var content: some View {
@@ -45,7 +45,10 @@ struct SendDetailsAmountTab: View {
                 .foregroundColor(.neutral0)
             
             Spacer()
-            gasSelector
+            
+            if isExpanded {
+                gasSelector
+            }
         }
     }
     
@@ -130,5 +133,5 @@ struct SendDetailsAmountTab: View {
 }
 
 #Preview {
-    SendDetailsAmountTab(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAmountTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }

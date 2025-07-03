@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct SendDetailsAssetTab: View {
+    let isExpanded: Bool
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
-    
-    @State var isExpanded: Bool = true
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -173,5 +172,5 @@ struct SendDetailsAssetTab: View {
 }
 
 #Preview {
-    SendDetailsAssetTab(tx: SendTransaction(), viewModel: SendDetailsViewModel())
+    SendDetailsAssetTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel())
 }

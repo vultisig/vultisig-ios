@@ -251,9 +251,25 @@ struct SendCryptoDetailsView: View {
     var tabs: some View {
         ScrollView {
             VStack(spacing: 12) {
-                SendDetailsAssetTab(tx: tx, viewModel: sendDetailsViewModel)
-                SendDetailsAddressTab(tx: tx, viewModel: sendDetailsViewModel, sendCryptoViewModel: sendCryptoViewModel)
-                SendDetailsAmountTab(tx: tx, viewModel: sendDetailsViewModel, sendCryptoViewModel: sendCryptoViewModel)
+                SendDetailsAssetTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Asset,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel
+                )
+                
+                SendDetailsAddressTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Address,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel
+                )
+                
+                SendDetailsAmountTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Amount,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel
+                )
             }
             .padding(16)
         }

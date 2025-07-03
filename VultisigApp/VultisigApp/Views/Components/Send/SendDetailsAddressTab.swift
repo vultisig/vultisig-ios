@@ -8,11 +8,10 @@
 import SwiftUI
 
 struct SendDetailsAddressTab: View {
+    let isExpanded: Bool
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    
-    @State var isExpanded: Bool = true
     
     var body: some View {
         content
@@ -71,5 +70,5 @@ struct SendDetailsAddressTab: View {
 }
 
 #Preview {
-    SendDetailsAddressTab(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAddressTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
 }
