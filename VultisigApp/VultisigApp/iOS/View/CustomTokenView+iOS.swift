@@ -26,8 +26,8 @@ extension CustomTokenView {
                 Spacer()
             }
         }
-        .onAppear{
-             tokenViewModel.loadData(groupedChain: group)
+        .onAppear {
+            tokenViewModel.loadData(groupedChain: group)
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
@@ -50,6 +50,6 @@ extension CustomTokenView {
         view
             .padding(.top, 16)
             .padding(.horizontal, 16)
-}
+    }
 }
 #endif
