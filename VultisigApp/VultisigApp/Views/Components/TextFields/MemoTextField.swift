@@ -28,7 +28,6 @@ struct MemoTextField: View {
     var content: some View {
         HStack(spacing: 0) {
             textField
-                .textInputAutocapitalization(.never)
             Spacer()
             pasteButton
         }

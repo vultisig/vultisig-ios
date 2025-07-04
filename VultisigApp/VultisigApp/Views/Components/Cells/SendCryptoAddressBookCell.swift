@@ -20,6 +20,7 @@ struct SendCryptoAddressBookCell: View {
         } label: {
             label
         }
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var label: some View {

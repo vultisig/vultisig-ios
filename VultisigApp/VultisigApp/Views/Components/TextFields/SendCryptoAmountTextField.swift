@@ -34,9 +34,7 @@ struct SendCryptoAmountTextField: View {
             }
         ))
         .borderlessTextFieldStyle()
-        .keyboardType(.decimalPad)
         .font(.body34BrockmannMedium)
-        .submitLabel(.next)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
         .foregroundColor(isEnabled ? .neutral0 : .neutral300)

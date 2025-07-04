@@ -15,7 +15,7 @@ extension SendCryptoDetailsView {
     
     var view: some View {
         VStack {
-            fields
+            tabs
             buttonContainer
                 .padding(.horizontal, 8)
                 .padding(.vertical, -12)

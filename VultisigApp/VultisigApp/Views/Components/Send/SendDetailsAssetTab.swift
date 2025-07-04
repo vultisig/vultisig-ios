@@ -15,8 +15,6 @@ struct SendDetailsAssetTab: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @StateObject var keyboardObserver = KeyboardObserver()
-    
     var body: some View {
         content
             .onAppear {
@@ -51,7 +49,6 @@ struct SendDetailsAssetTab: View {
             .onChange(of: isExpanded) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
-            .frame(height: showTab() ? nil : 0, alignment: .top)
             .clipped()
     }
     
@@ -191,14 +188,6 @@ struct SendDetailsAssetTab: View {
         
         viewModel.selectedTab = .Address
         viewModel.assetSetupDone = true
-    }
-    
-    private func showTab() -> Bool {
-        if !isExpanded && keyboardObserver.keyboardHeight != 0 {
-            return false
-        } else {
-            return true
-        }
     }
 }
 

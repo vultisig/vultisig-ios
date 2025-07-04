@@ -23,6 +23,7 @@ struct SendCryptoAddressBookView: View {
             Background()
             content
         }
+        .buttonStyle(BorderlessButtonStyle())
         .presentationDetents([.medium, .large])
     }
     

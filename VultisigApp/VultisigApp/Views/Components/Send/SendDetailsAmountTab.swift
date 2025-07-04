@@ -15,12 +15,9 @@ struct SendDetailsAmountTab: View {
     let validateForm: () async -> ()
     @FocusState.Binding var focusedField: Field?
     
-    @StateObject var keyboardObserver = KeyboardObserver()
-    
     var body: some View {
         content
             .padding(.bottom, 100)
-            .frame(height: showTab() ? nil : 0, alignment: .top)
             .clipped()
             .onChange(of: isExpanded) { oldValue, newValue in
                 Task {
@@ -163,14 +160,6 @@ struct SendDetailsAmountTab: View {
                 RoundedRectangle(cornerRadius: 32)
                     .stroke(Color.blue400, lineWidth: 1)
             )
-    }
-    
-    private func showTab() -> Bool {
-        if !isExpanded && keyboardObserver.keyboardHeight != 0 {
-            return false
-        } else {
-            return true
-        }
     }
     
     private func setData(_ oldValue: Bool, _ newValue: Bool) {

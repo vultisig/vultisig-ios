@@ -275,7 +275,6 @@ struct SendCryptoDetailsView: View {
                 )
             }
             .padding(16)
-            .offset(y: keyboardObserver.keyboardHeight != 0 ? -80 : 0)
         }
     }
     
