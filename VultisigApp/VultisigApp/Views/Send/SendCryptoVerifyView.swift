@@ -102,6 +102,11 @@ var fields: some View {
         .padding(16)
         .background(Color.blue600)
         .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(LinearGradient.borderGreen, lineWidth: 1)
+        )
+        .padding(1)
     }
     
     var summaryTitle: some View {
