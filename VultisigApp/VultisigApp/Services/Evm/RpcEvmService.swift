@@ -377,12 +377,23 @@ class RpcEvmService: RpcService {
                     // Handle logo - can be String or null
                     let logo = response["logo"] as? String ?? ""
                     
+                    // Try to find priceProviderId from TokensStore
+                    let priceProviderId = TokensStore.TokenSelectionAssets.first(where: { token in
+                        token.chain == nativeToken.chain &&
+                        token.ticker == symbol &&
+                        token.contractAddress.lowercased() == contractAddress.lowercased()
+                    })?.priceProviderId ?? ""
+                    
+                    if !priceProviderId.isEmpty {
+                        print("Found priceProviderId '\(priceProviderId)' in TokensStore for \(symbol)")
+                    }
+                    
                     return CoinMeta(
                         chain: nativeToken.chain,
                         ticker: symbol,
                         logo: logo,
                         decimals: decimals,
-                        priceProviderId: "",
+                        priceProviderId: priceProviderId,
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )

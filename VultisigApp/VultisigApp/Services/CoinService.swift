@@ -87,9 +87,19 @@ struct CoinService {
             print("  - Will remove: \(coin.ticker) on \(coin.chain.name)")
         }
         
-        // Check which coins should be hidden (auto-discovered tokens being removed)
+        // Find chains where native token was removed (entire chain being removed)
+        let chainsBeingRemoved = findChainsWithRemovedNativeToken(vault: vault, selection: selection)
+        
+        // Clear hidden tokens for chains being removed entirely
+        for chain in chainsBeingRemoved {
+            print("Chain \(chain.name) is being removed entirely - clearing its hidden tokens")
+            await clearHiddenTokensForChain(chain, vault: vault)
+        }
+        
+        // Check which remaining coins should be hidden (auto-discovered tokens being removed individually)
         for coin in coinsToRemove {
-            if shouldHideToken(coin, vault: vault) {
+            // Only hide if the chain is NOT being removed entirely
+            if !chainsBeingRemoved.contains(coin.chain) && shouldHideToken(coin, vault: vault) {
                 await addToHiddenTokens(coin, vault: vault)
             }
         }
@@ -179,6 +189,10 @@ struct CoinService {
                 // Only do auto-discovery for native tokens
                 if newCoin.isNativeToken {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
+                    
+                    // Clear hidden tokens for this chain when adding native token back
+                    await clearHiddenTokensForChain(asset.chain, vault: vault)
+                    
                     await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
@@ -210,10 +224,7 @@ struct CoinService {
                 print("  - Got EVM service: \(type(of: service))")
                 tokens = await service.getTokens(nativeToken: nativeToken)
                 print("  - Raw tokens from service: \(tokens.count)")
-                // Filter out spam tokens by checking for valid price provider ID
-                let beforeFilter = tokens.count
-                tokens = tokens.filter { !$0.priceProviderId.isEmpty }
-                print("  - Filtered out \(beforeFilter - tokens.count) tokens without priceProviderId")
+                // Don't filter by priceProviderId anymore - we'll try to find it in TokensStore
             case .Solana:
                 print("  - Chain type: Solana")
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
@@ -256,8 +267,55 @@ struct CoinService {
                         continue
                     }
                     
-                    _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
-                    print("  ✅ Added token: \(token.ticker) on \(token.chain.name)")
+                    // If the token doesn't have a priceProviderId, try to find it in TokensStore
+                    var enrichedToken = token
+                    if token.priceProviderId.isEmpty {
+                        if let storeToken = TokensStore.TokenSelectionAssets.first(where: { storeAsset in
+                            storeAsset.chain == token.chain &&
+                            storeAsset.ticker == token.ticker &&
+                            storeAsset.contractAddress.lowercased() == token.contractAddress.lowercased()
+                        }) {
+                            enrichedToken.priceProviderId = storeToken.priceProviderId
+                            enrichedToken.logo = storeToken.logo // Also use the logo from store
+                            print("  📋 Enriched token from TokensStore: \(token.ticker) with priceProviderId: \(storeToken.priceProviderId)")
+                        }
+                    }
+                    
+                    // Skip tokens that still don't have priceProviderId after enrichment (likely spam)
+                    if enrichedToken.priceProviderId.isEmpty {
+                        print("  ⚠️ Skipping token without priceProviderId: \(enrichedToken.ticker)")
+                        continue
+                    }
+                    
+                    // Additional spam filtering
+                    let suspiciousPatterns = [
+                        "t.me/",           // Telegram links
+                        "claim",           // Claim scams
+                        "airdrop",         // Airdrop scams
+                        "visit",           // Visit scams
+                        "*",               // Wildcards
+                        "|"                // Pipe characters often used in scam names
+                    ]
+                    
+                    let tickerLower = enrichedToken.ticker.lowercased()
+                    let isSpam = suspiciousPatterns.contains { pattern in
+                        tickerLower.contains(pattern)
+                    }
+                    
+                    if isSpam {
+                        print("  🚫 Skipping suspected spam token: \(enrichedToken.ticker)")
+                        continue
+                    }
+                    
+                    // Check for non-ASCII characters (common in scam tokens using lookalike characters)
+                    let asciiOnly = enrichedToken.ticker.allSatisfy { $0.isASCII }
+                    if !asciiOnly {
+                        print("  🚫 Skipping token with non-ASCII characters: \(enrichedToken.ticker)")
+                        continue
+                    }
+                    
+                    _ = try await addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
+                    print("  ✅ Added token: \(enrichedToken.ticker) on \(enrichedToken.chain.name)")
                     addedCount += 1
                 } catch {
                     print("  ❌ Error adding token \(token.ticker): \(error.localizedDescription)")
@@ -423,6 +481,27 @@ struct CoinService {
         }
         
         return orphanedTokens
+    }
+    
+    /// Clear all hidden tokens for a specific chain
+    static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) async {
+        print("Clearing hidden tokens for chain: \(chain.name)")
+        
+        // Find all hidden tokens for this chain
+        let hiddenTokensToRemove = vault.hiddenTokens.filter { hidden in
+            hidden.coinMeta.chain == chain
+        }
+        
+        print("Found \(hiddenTokensToRemove.count) hidden tokens to clear for \(chain.name)")
+        
+        // Remove them from the vault and storage
+        for hiddenToken in hiddenTokensToRemove {
+            if let index = vault.hiddenTokens.firstIndex(of: hiddenToken) {
+                vault.hiddenTokens.remove(at: index)
+                await Storage.shared.delete(hiddenToken)
+                print("  - Cleared hidden token: \(hiddenToken.coinMeta.ticker)")
+            }
+        }
     }
     
 }
