@@ -21,6 +21,9 @@ struct SendDetailsAddressTab: View {
                     await handleClose(oldValue, newValue)
                 }
             }
+            .onChange(of: tx.toAddress) { oldValue, newValue in
+                viewModel.selectedTab = .Amount
+            }
     }
     
     var content: some View {
