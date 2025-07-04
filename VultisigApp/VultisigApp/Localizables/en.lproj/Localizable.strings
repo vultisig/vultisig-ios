@@ -724,3 +724,5 @@
 "enterAddressHere" = "Enter address here";
 "balanceAvailable" = "Balance available:";
 "addMemo" = "Add MEMO";
+"savedAddresses" = "Saved Addresses";
+"myVaults" = "My Vaults";

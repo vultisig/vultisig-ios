@@ -17,6 +17,7 @@ struct SendCryptoAddressTextField: View {
     @State var showImagePicker = false
     @State var isUploading: Bool = false
     @State var showCameraScanView = false
+    @State var showAddressBookSheet: Bool = false
     
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -33,6 +34,9 @@ struct SendCryptoAddressTextField: View {
             }
             
             buttons
+        }
+        .sheet(isPresented: $showAddressBookSheet) {
+            SendCryptoAddressBookView()
         }
     }
     
@@ -97,12 +101,8 @@ struct SendCryptoAddressTextField: View {
     }
     
     var addressBookButton: some View {
-        NavigationLink {
-            AddressBookView(returnAddress: $tx.toAddress, coin: tx.coin).onDisappear {
-                DebounceHelper.shared.debounce {
-                    validateAddress(tx.toAddress)
-                }
-            }
+        Button {
+            showAddressBookSheet.toggle()
         } label: {
             getButton("text.book.closed")
         }

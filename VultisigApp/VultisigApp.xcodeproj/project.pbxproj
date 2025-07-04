@@ -293,6 +293,8 @@
 		A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */; };
 		A646DFB32E162935006E8ECC /* SendDetailsAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB22E162935006E8ECC /* SendDetailsAmountTextField.swift */; };
 		A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB42E16DE34006E8ECC /* SendDetailsAdditionalSection.swift */; };
+		A646DFB72E179B70006E8ECC /* SendCryptoAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB62E179B6F006E8ECC /* SendCryptoAddressBookView.swift */; };
+		A646DFB92E17A6CF006E8ECC /* SendCryptoAddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB82E17A6CF006E8ECC /* SendCryptoAddressBookCell.swift */; };
 		A649AB9E2C6C54AA004710A9 /* PopupCapsule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */; };
 		A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */; };
 		A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */; };
@@ -1241,6 +1243,8 @@
 		A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAmountTab.swift; sourceTree = "<group>"; };
 		A646DFB22E162935006E8ECC /* SendDetailsAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAmountTextField.swift; sourceTree = "<group>"; };
 		A646DFB42E16DE34006E8ECC /* SendDetailsAdditionalSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAdditionalSection.swift; sourceTree = "<group>"; };
+		A646DFB62E179B6F006E8ECC /* SendCryptoAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAddressBookView.swift; sourceTree = "<group>"; };
+		A646DFB82E17A6CF006E8ECC /* SendCryptoAddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAddressBookCell.swift; sourceTree = "<group>"; };
 		A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupCapsule.swift; sourceTree = "<group>"; };
 		A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+iOS.swift"; sourceTree = "<group>"; };
 		A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlinedDisclaimer+macOS.swift"; sourceTree = "<group>"; };
@@ -3324,6 +3328,7 @@
 				A6C344972D642AD20072B528 /* ThisDevicePeerCell.swift */,
 				A6BFE1C02D946A63000B73C0 /* SwapChainCell.swift */,
 				A6BFE1C82D95F538000B73C0 /* SwapCoinCell.swift */,
+				A646DFB82E17A6CF006E8ECC /* SendCryptoAddressBookCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -3543,6 +3548,7 @@
 				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
 				A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */,
 				A646DFA82E130BC5006E8ECC /* SendAddressBookView.swift */,
+				A646DFB62E179B6F006E8ECC /* SendCryptoAddressBookView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -4521,6 +4527,7 @@
 				A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */,
 				A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */,
 				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
+				A646DFB92E17A6CF006E8ECC /* SendCryptoAddressBookCell.swift in Sources */,
 				B5A54E002D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				A6C671072CA2793F00F59B6A /* OnboardingView1+macOS.swift in Sources */,
@@ -4851,6 +4858,7 @@
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */,
 				B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */,
+				A646DFB72E179B70006E8ECC /* SendCryptoAddressBookView.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
 				B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
