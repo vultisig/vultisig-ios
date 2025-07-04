@@ -68,7 +68,11 @@ struct SendCryptoAddressBookView: View {
     var list: some View {
         ScrollView {
             if isSavedAddressesSelected {
-                savedAddressesList
+//                if savedAddresses.count > 0 {
+//                    savedAddressesList
+//                } else {
+                    errorMessage
+//                }
             } else {
                 
             }
@@ -83,6 +87,13 @@ struct SendCryptoAddressBookView: View {
                 icon: address.coinMeta.logo
             )
         }
+    }
+    
+    var errorMessage: some View {
+        Text(NSLocalizedString("noSavedAddresses", comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.lightText)
+            .padding(.top, 32)
     }
     
     private func getCell(for title: String, isSelected: Bool) -> some View {
