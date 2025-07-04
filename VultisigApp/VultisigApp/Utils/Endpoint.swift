@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Endpoint { 
+class Endpoint {
     
     enum SwapChain {
         case thorchain
@@ -107,12 +107,12 @@ class Endpoint {
         return "\(blockaidApiBase)/chain-agnostic/transaction"
     }
     
-    // Enterprise Features  
+    // Enterprise Features
     static func blockaidExchangeProtectionWithdrawal() -> String {
         return "\(blockaidApiBase)/exchange-protection/withdrawal"
     }
     
-
+    
     
     // Legacy endpoint methods (for backward compatibility)
     static func blockaidAddressScan() -> String {
@@ -163,11 +163,12 @@ class Endpoint {
         let isAffiliateParams: String
         
         if !referredCode.isEmpty {
-            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)" : .empty
+            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)"
+                                            : "&affiliate=\(referredCode)&affiliate_bps=0&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
         } else {
             isAffiliateParams = isAffiliate
             ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
-            : .empty
+            : "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
         }
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
@@ -177,16 +178,20 @@ class Endpoint {
         
         let isAffiliateParams = isAffiliate
         ? "&referrer=\(referrer)&fee=\(fee)"
-        : .empty
+        : "&referrer=\(referrer)&fee=0"
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
     
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
-        let url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
+        var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
         
-        if let integrator, let fee {
-            return (url + "&integrator=\(integrator)&fee=\(fee)").asUrl
+        if let integrator {
+           url = url + "&integrator=\(integrator))"
+        }
+        
+        if let fee {
+            url = url + "&fee=\(fee)"
         }
         
         return url.asUrl
@@ -498,7 +503,7 @@ class Endpoint {
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
     }
-
+    
     static func thorchainNodeExplorerURL(_ address: String) -> String {
         return "https://thorchain.net/node/\(address)"
     }
@@ -529,7 +534,7 @@ class Endpoint {
         "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
     }
     static func moonPaySignatureUrl() -> URL {
-      return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
+        return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
     }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
@@ -688,7 +693,7 @@ class Endpoint {
             return "https://tronscan.org/#/address/\(address)"
         case .cardano:
             return "https://cardanoscan.io/address/\(address)"
-        
+            
         }
     }
     
