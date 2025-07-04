@@ -34,6 +34,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     @Published var tron: TronService = TronService.shared
     
+    @Published var showAddressAlert: Bool = false
+    @Published var showAmountAlert: Bool = false
+    
     let blockchainService = BlockChainService.shared
     
     private let mediator = Mediator.shared
@@ -345,43 +348,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
-        errorTitle = ""
-        errorMessage = ""
-        isValidForm = true
-        isNamespaceResolved = false
-        isLoading = true
-        
-        guard !tx.toAddress.isEmpty else {
-            errorTitle = "invalidAddress"
-            errorMessage = "emptyAddressField"
-            showAlert = true
-            logger.log("Empty address field.")
-            isValidForm = false
-            isLoading = false
-            return false
-        }
-        
-        do {
-            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
-            isNamespaceResolved = true
-        } catch {
-            errorTitle = "error"
-            errorMessage = "validAddressDomainError"
-            showAlert = true
-            logger.log("Please enter a valid address for the selected blockchain.")
-            isValidForm = false
-            isLoading = false
-            return false
-        }
-        
-        // Validate the "To" address
-        if !isValidAddress && !isNamespaceResolved {
-            errorTitle = "error"
-            errorMessage = "validAddressError"
-            showAlert = true
-            logger.log("Invalid address.")
-            isValidForm = false
-        }
+        resetStates()
         
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
@@ -389,7 +356,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if amount <= 0 {
             errorTitle = "error"
             errorMessage = "positiveAmountError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Invalid or non-positive amount.")
             isValidForm = false
             isLoading = false
@@ -399,7 +366,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if gasFee == 0 {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
-            showAlert = true
+            showAmountAlert = true
             logger.log("No gas estimation.")
             isValidForm = false
             isLoading = false
@@ -409,7 +376,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if gasFee < 0 {
             errorTitle = "error"
             errorMessage = "nonNegativeFeeError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Invalid or negative fee.")
             isValidForm = false
             isLoading = false
@@ -419,7 +386,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if tx.isAmountExceeded {
             errorTitle = "error"
             errorMessage = "walletBalanceExceededError"
-            showAlert = true
+            showAmountAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
         }
@@ -488,6 +455,47 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return isValidForm
     }
     
+    func validateToAddress(tx: SendTransaction) async -> Bool {
+        resetStates()
+        
+        guard !tx.toAddress.isEmpty else {
+            errorTitle = "invalidAddress"
+            errorMessage = "emptyAddressField"
+            showAddressAlert = true
+            logger.log("Empty address field.")
+            isValidForm = false
+            isLoading = false
+            return false
+        }
+        
+        do {
+            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            isNamespaceResolved = true
+        } catch {
+            errorTitle = "error"
+            errorMessage = "validAddressDomainError"
+            showAddressAlert = true
+            logger.log("Please enter a valid address for the selected blockchain.")
+            
+            isValidForm = false
+            isLoading = false
+            return false
+        }
+        
+        // Validate the "To" address
+        if !isValidAddress && !isNamespaceResolved {
+            errorTitle = "error"
+            errorMessage = "validAddressError"
+            showAddressAlert = true
+            logger.log("Invalid address.")
+            isValidForm = false
+            return false
+        }
+        
+        isLoading = false
+        return true
+    }
+    
     func setHash(_ hash: String) {
         self.hash = hash
     }
@@ -516,6 +524,17 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return vault.coins.sorted(by: {
             Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
         })
+    }
+    
+    private func resetStates() {
+        errorTitle = ""
+        errorMessage = ""
+        isValidForm = true
+        isNamespaceResolved = false
+        isLoading = true
+        showAddressAlert = false
+        showAmountAlert = false
+        showAlert = false
     }
 
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {

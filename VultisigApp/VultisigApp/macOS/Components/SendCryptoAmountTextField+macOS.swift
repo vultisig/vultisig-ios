@@ -8,9 +8,9 @@
 #if os(macOS)
 import SwiftUI
 
-extension ImportWalletView {
+extension SendCryptoAmountTextField {
     var container: some View {
-        content
+        textField
     }
 }
 #endif

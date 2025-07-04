@@ -365,7 +365,7 @@
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
 "noSavedAddressesForChain" = "No Saved Addresses found for this chain.";
 "editAddress" = "Edit Address";
-"validAddressDomainError" = "Please enter a valid address for the selected blockchain.";
+"validAddressDomainError" = "Wrong address for selected blockchain.";
 "privacyPolicy" = "Privacy Policy";
 "termsOfService" = "Terms of Service";
 "legal" = "Legal";
@@ -720,3 +720,9 @@
 "verifyBoxCheck" = "Please check all the boxes";
 "expirationDate" = "Expiration date";
 "yourReferralCode" = "Your Referral Code";
+"sendTo" = "Send to";
+"enterAddressHere" = "Enter address here";
+"balanceAvailable" = "Balance available:";
+"addMemo" = "Add MEMO";
+"savedAddresses" = "Saved Addresses";
+"myVaults" = "My Vaults";
