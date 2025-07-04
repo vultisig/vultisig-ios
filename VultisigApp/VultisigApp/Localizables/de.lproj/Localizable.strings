@@ -689,3 +689,9 @@
 "verifyBoxCheck" = "Bitte alle Kästchen ankreuzen";
 "expirationDate" = "Ablaufdatum";
 "yourReferralCode" = "Dein Empfehlungscode";
+"sendTo" = "Senden an";
+"enterAddressHere" = "Adresse hier eingeben";
+"balanceAvailable" = "Verfügbares Guthaben:";
+"addMemo" = "MEMO hinzufügen";
+"savedAddresses" = "Gespeicherte Adressen";
+"myVaults" = "Meine Tresore";

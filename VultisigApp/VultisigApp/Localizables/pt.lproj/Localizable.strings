@@ -673,3 +673,9 @@
 "verifyBoxCheck" = "Marque todas as caixas";
 "expirationDate" = "Data de validade";
 "yourReferralCode" = "Seu código de indicação";
+"sendTo" = "Enviar para";
+"enterAddressHere" = "Digite o endereço aqui";
+"balanceAvailable" = "Saldo disponível:";
+"addMemo" = "Adicionar MEMO";
+"savedAddresses" = "Endereços salvos";
+"myVaults" = "Meus Cofres";

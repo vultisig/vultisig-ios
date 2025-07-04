@@ -13,31 +13,14 @@ struct SendCryptoAmountTextField: View {
     var onChange: (String) async -> Void
     var onMaxPressed: (() -> Void)?
     
-    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.isEnabled) var isEnabled
     
     var body: some View {
-        HStack(spacing: 0) {
-#if os(iOS)
-            container.keyboardType(.decimalPad)
-#endif
-#if os(macOS)
-            container
-#endif
-            if showButton {
-                maxButton
-            }
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
+        container
     }
     
-    var container: some View {
-        TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
+    var textField: some View {
+        TextField(NSLocalizedString("0", comment: "").capitalized, text: Binding<String>(
             get: { amount },
             set: {
                 let newValue = $0
@@ -51,8 +34,7 @@ struct SendCryptoAmountTextField: View {
             }
         ))
         .borderlessTextFieldStyle()
-        .font(.body16MenloBold)
-        .submitLabel(.next)
+        .font(.body34BrockmannMedium)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
         .foregroundColor(isEnabled ? .neutral0 : .neutral300)
@@ -69,6 +51,7 @@ struct SendCryptoAmountTextField: View {
                 }
             }
         ))
+        .multilineTextAlignment(.center)
     }
     
     var maxButton: some View {

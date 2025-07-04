@@ -24,11 +24,16 @@ extension SendCryptoAddressTextField {
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(sendCryptoViewModel.showAddressAlert ? .alertYellow : Color.blue400, lineWidth: 1)
+            )
+            .padding(1)
     }
     
     var field: some View {
         HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: Binding<String>(
+            TextField(NSLocalizedString("enterAddressHere", comment: "").capitalized, text: Binding<String>(
                 get: { tx.toAddress },
                 set: { newValue in
                     tx.toAddress = newValue
@@ -37,7 +42,7 @@ extension SendCryptoAddressTextField {
                     }
                 }
             ))
-            .font(.body12MenloBold)
+            .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)
@@ -54,10 +59,6 @@ extension SendCryptoAddressTextField {
             .keyboardType(.default)
             .textInputAutocapitalization(.never)
             .textContentType(.oneTimeCode)
-            
-            pasteButton
-            scanButton
-            addressBookButton
         }
         .padding(.horizontal, 12)
     }

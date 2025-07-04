@@ -18,6 +18,7 @@ enum Field: Int, Hashable {
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
     
     @State var amount = ""
@@ -42,7 +43,6 @@ struct SendCryptoDetailsView: View {
         }
         .gesture(DragGesture())
         .onFirstAppear {
-            focusedField = .toAddress
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
@@ -67,167 +67,6 @@ struct SendCryptoDetailsView: View {
         )
     }
     
-    var coinSelector: some View {
-        TokenSelectorDropdown(
-            coin: tx.coin,
-            onPress: {
-                isCoinPickerActive = true
-            }
-        )
-    }
-    
-    var fromField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "from")
-            fromTextField
-        }
-    }
-    
-    var fromTextField: some View {
-        Text(tx.fromAddress)
-            .font(.body12MenloBold)
-            .foregroundColor(.neutral0)
-            .frame(height: 48)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .background(Color.blue600)
-            .cornerRadius(10)
-            .lineLimit(1)
-        
-    }
-    
-    var toField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "to")
-            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
-                .focused($focusedField, equals: .toAddress)
-                .id(Field.toAddress)
-                .onSubmit {
-                    focusNextField($focusedField)
-                }
-        }
-    }
-    
-    var memoField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button {
-                withAnimation {
-                    showMemoField.toggle()
-                }
-            } label: {
-                memoFieldTitle
-            }
-            
-            MemoTextField(memo: $tx.memo)
-                .focused($focusedField, equals: .memo)
-                .id(Field.memo)
-                .onSubmit {
-                    focusNextField($focusedField)
-                }
-                .frame(height: showMemoField ? nil : 0, alignment: .top)
-                .clipped()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var memoFieldTitle: some View {
-        HStack(spacing: 8) {
-            getTitle(for: "memo(optional)", isExpanded: false)
-            
-            Image(systemName: showMemoField ? "chevron.up" : "chevron.down")
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var percentageButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
-            } label: {
-                getPercentageCell(for: "25")
-            }
-            
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
-            } label: {
-                getPercentageCell(for: "50")
-            }
-        }
-    }
-    
-    var amountField: some View {
-        VStack(spacing: 8) {
-            HStack {
-                getTitle(for: "amount")
-                Spacer()
-                percentageButtons
-            }
-            
-            textField
-        }
-    }
-    
-    var textField: some View {
-        SendCryptoAmountTextField(
-            amount: $tx.amount,
-            onChange: {
-                sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
-            },
-            onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
-        )
-        .focused($focusedField, equals: .amount)
-        .id(Field.amount)
-        .onChange(of: tx.coin) { oldValue, newValue in
-            sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
-        }
-    }
-    
-    var existentialDepositTextMessage: some View {
-        HStack {
-            if tx.coin.chain == .polkadot {
-                Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
-            } else if tx.coin.chain == .ripple {
-                Text(NSLocalizedString("rippleExistentialDepositError", comment: ""))
-            }
-        }
-        .font(.body8Menlo)
-        .foregroundColor(.red)
-    }
-    
-    var balanceNativeTokenField: some View {
-        HStack {
-            Text(NSLocalizedString("balanceNativeToken", comment: ""))
-            Spacer()
-            Text(nativeTokenBalance)
-        }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-        .onAppear{
-            Task {
-                let balanceInt = await tx.getNativeTokenBalance()
-                nativeTokenBalance = balanceInt.description
-            }
-        }
-    }
-    
-    var amountFiatField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "amount(inFiat)")
-            textFiatField
-        }
-    }
-    
-    var textFiatField: some View {
-        SendCryptoAmountTextField(
-            amount: $tx.amountInFiat,
-            onChange: { sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
-        )
-        .focused($focusedField, equals: .amountInFiat)
-        .id(Field.amountInFiat)
-    }
-    
     var button: some View {
         Button {
             Task{
@@ -245,6 +84,37 @@ struct SendCryptoDetailsView: View {
         }
         .padding(.top, 20)
         .disabled(sendCryptoViewModel.isLoading)
+    }
+    
+    var tabs: some View {
+        ScrollView {
+            VStack(spacing: 12) {
+                SendDetailsAssetTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Asset,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel
+                )
+                
+                SendDetailsAddressTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Address,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    focusedField: $focusedField
+                )
+                
+                SendDetailsAmountTab(
+                    isExpanded: sendDetailsViewModel.selectedTab == .Amount,
+                    tx: tx,
+                    viewModel: sendDetailsViewModel,
+                    sendCryptoViewModel: sendCryptoViewModel,
+                    validateForm: validateForm,
+                    focusedField: $focusedField
+                )
+            }
+            .padding(16)
+        }
     }
     
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
@@ -278,7 +148,9 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
+        sendDetailsViewModel.selectedTab = .Amount
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+        
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
             sendCryptoViewModel.isLoading = false
@@ -295,6 +167,7 @@ struct SendCryptoDetailsView: View {
     SendCryptoDetailsView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
+        sendDetailsViewModel: SendDetailsViewModel(),
         vault: Vault.example
     )
 }
