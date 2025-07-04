@@ -67,7 +67,8 @@ class JoinKeysignViewModel: ObservableObject {
             return .empty
         }
 
-        return "\(fromCoin.decimal(for: amount).formatDecimalToLocale()) \(fromCoin.ticker)"
+        let decimalAmount = fromCoin.decimal(for: amount)
+        return "\(decimalAmount.formatForDisplay()) \(fromCoin.ticker)"
     }
     
     private func fetchVaults() -> [Vault] {
@@ -440,13 +441,13 @@ class JoinKeysignViewModel: ObservableObject {
     func getFromAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return "\(amount.formatDecimalToLocale()) \(payload.fromCoin.ticker)"
+        return "\(amount.formatForDisplay()) \(payload.fromCoin.ticker)"
     }
 
     func getToAmount() -> String {
         guard let payload = keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
-        return "\(amount.formatDecimalToLocale()) \(payload.toCoin.ticker)"
+        return "\(amount.formatForDisplay()) \(payload.toCoin.ticker)"
         
     }
     

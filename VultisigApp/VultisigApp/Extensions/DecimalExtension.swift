@@ -46,6 +46,35 @@ extension Decimal {
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
+    /// Formata números grandes com abreviações (M, B, T) para DISPLAY APENAS
+    /// ⚠️ NUNCA usar em campos de input - apenas para exibição de valores
+    func formatWithAbbreviation(maxDecimals: Int = 2) -> String {
+        let absValue = abs(self)
+        let isNegative = self < 0
+        let prefix = isNegative ? "-" : ""
+        
+        let trillion = Decimal(1_000_000_000_000)
+        let billion = Decimal(1_000_000_000)
+        let million = Decimal(1_000_000)
+        let thousand = Decimal(1_000)
+        
+        if absValue >= trillion {
+            let value = (absValue / trillion).truncated(toPlaces: maxDecimals)
+            return "\(prefix)\(value.formatToDecimal(digits: maxDecimals))T"
+        } else if absValue >= billion {
+            let value = (absValue / billion).truncated(toPlaces: maxDecimals)
+            return "\(prefix)\(value.formatToDecimal(digits: maxDecimals))B"
+        } else if absValue >= million {
+            let value = (absValue / million).truncated(toPlaces: maxDecimals)
+            return "\(prefix)\(value.formatToDecimal(digits: maxDecimals))M"
+        } else if absValue >= thousand {
+            let value = (absValue / thousand).truncated(toPlaces: maxDecimals)
+            return "\(prefix)\(value.formatToDecimal(digits: maxDecimals))K"
+        } else {
+            return "\(prefix)\(absValue.formatToDecimal(digits: maxDecimals))"
+        }
+    }
+    
     func formatToDecimal(digits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -59,6 +88,20 @@ extension Decimal {
         let number = NSDecimalNumber(decimal: self)
         
         return formatter.string(from: number) ?? ""
+    }
+    
+    /// Formata valores para display, automaticamente usando abreviações para valores grandes
+    /// Para valores >= 1M, usa abreviações (K, M, B, T)
+    /// Para valores < 1M, usa formatação decimal padrão com locale
+    /// ⚠️ APENAS para display - nunca usar em campos de input
+    func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current) -> String {
+        let million = Decimal(1_000_000)
+        
+        if abs(self) >= million {
+            return formatWithAbbreviation(maxDecimals: maxDecimals)
+        } else {
+            return formatDecimalToLocale(locale: locale)
+        }
     }
     
     init(_ bigInt: BigInt) {

@@ -174,7 +174,7 @@ struct FunctionCallVerifyView: View {
     }
     
     private func getAmount() -> String {
-        tx.amountDecimal.formatDecimalToLocale() + " " + tx.coin.ticker
+        return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
     
     private func handleSubmit() {

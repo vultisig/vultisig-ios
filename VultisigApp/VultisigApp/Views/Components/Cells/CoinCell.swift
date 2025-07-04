@@ -48,42 +48,30 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString)
+        let displayBalance = homeViewModel.hideVaultBalance ? "****" : coin.balanceDecimal.formatForDisplay()
+        
+        return Text(displayBalance)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
     }
     
     var stakedAmount: some View {
+        let formattedStakedBalance = coin.stakedBalanceDecimal.formatForDisplay()
         
+        let labelText: String
         if coin.ticker.uppercased() == "TCY".uppercased() {
-            
-            Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Staked")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
-            
+            labelText = "Staked"
+        } else if coin.isNativeToken {
+            labelText = "Bonded"
         } else {
-            
-            if coin.isNativeToken {
-                
-                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Bonded")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
-                
-                
-            } else {
-                
-                Text(homeViewModel.hideVaultBalance ? "****" : "\(coin.stakedBalanceDecimal.formatDecimalToLocale()) Merged")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-                    .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
-                
-            }
-            
+            labelText = "Merged"
         }
         
+        return Text(homeViewModel.hideVaultBalance ? "****" : "\(formattedStakedBalance) \(labelText)")
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
     }
     
     var amount: some View {
