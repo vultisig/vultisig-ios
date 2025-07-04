@@ -15,8 +15,6 @@ extension SendCryptoAmountTextField {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
-            .keyboardType(.decimalPad)
-            .submitLabel(.next)
     }
 }
 #endif
