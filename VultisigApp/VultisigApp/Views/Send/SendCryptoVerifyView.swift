@@ -8,73 +8,78 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
-@Binding var keysignPayload: KeysignPayload?
-
-@ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-@ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
-@ObservedObject var tx: SendTransaction
-
-let vault: Vault
-
-@State var isButtonDisabled = false
-@State var fastPasswordPresented = false
-
-@EnvironmentObject var settingsViewModel: SettingsViewModel
-
-var body: some View {
-    ZStack {
-        Background()
-        view
-    }
-    .gesture(DragGesture())
-    .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
-        alert
-    }
-    .onDisappear {
-        sendCryptoVerifyViewModel.isLoading = false
-    }
-    .onAppear {
-        setData()
-    }
-    .task {
-        await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
-    }
-}
-
-var view: some View {
-    container
-}
-
-var content: some View {
-    VStack(spacing: 16) {
-        fields
-        
-        if tx.isFastVault {
-            fastVaultButton
+    @Binding var keysignPayload: KeysignPayload?
+    
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+    @ObservedObject var tx: SendTransaction
+    
+    let vault: Vault
+    
+    @State var isButtonDisabled = false
+    @State var fastPasswordPresented = false
+    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
+    
+    var body: some View {
+        ZStack {
+            Background()
+            view
         }
-        
-        pairedSignButton
+        .gesture(DragGesture())
+        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
+            alert
+        }
+        .onDisappear {
+            sendCryptoVerifyViewModel.isLoading = false
+        }
+        .onAppear {
+            setData()
+        }
+        .task {
+            await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
+        }
     }
-    .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
-}
-
-var alert: Alert {
-    Alert(
-        title: Text(NSLocalizedString("error", comment: "")),
-        message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
-        dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-    )
-}
-
-var fields: some View {
-    ScrollView {
-        VStack(spacing: 30) {
-            summary
-            checkboxes
+    
+    var view: some View {
+        container
+    }
+    
+    var content: some View {
+        VStack(spacing: 16) {
+            blockAidBanner
+            fields
             
-            if sendCryptoVerifyViewModel.showSecurityScan {
-                SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
+            if tx.isFastVault {
+                fastVaultButton
             }
+            
+            pairedSignButton
+        }
+        .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
+    }
+    
+    var blockAidBanner: some View {
+        Image("blockaidScannedBanner")
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    var fields: some View {
+        ScrollView {
+            VStack(spacing: 30) {
+                summary
+                checkboxes
+                
+                if sendCryptoVerifyViewModel.showSecurityScan {
+                    SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
+                }
             }
             .padding(.horizontal, 16)
         }
@@ -146,7 +151,7 @@ var fields: some View {
     private func setData() {
         isButtonDisabled = false
     }
-
+    
     func signPressed() {
         guard !isButtonDisabled else {
             return
@@ -154,14 +159,14 @@ var fields: some View {
         
         isButtonDisabled = true
         sendCryptoVerifyViewModel.isLoading = true
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             Task {
                 keysignPayload = await sendCryptoVerifyViewModel.validateForm(
                     tx: tx,
                     vault: vault
                 )
-
+                
                 if keysignPayload != nil {
                     sendCryptoViewModel.moveToNextView()
                 }
