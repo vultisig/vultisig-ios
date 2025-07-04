@@ -44,48 +44,6 @@ extension SendCryptoDetailsView {
             .padding(.bottom, idiom == .pad ? 30 : 0)
     }
     
-    var fields: some View {
-        ScrollViewReader { value in
-            ScrollView {
-                VStack(spacing: 18) {
-                    coinSelector
-                    fromField
-                    toField
-                    
-                    if tx.coin.isNativeToken || tx.coin.chainType == .Cosmos || tx.coin.ticker == "TCY" {
-                        memoField
-                    }
-                    
-                    amountField
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.decimalPad)
-
-                    amountFiatField
-                    
-                    if !tx.coin.isNativeToken {
-                        balanceNativeTokenField
-                    }
-                    
-                    getSummaryCell(leadingText: NSLocalizedString("networkFee", comment: ""), trailingText: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
-                    
-                    if tx.canBeReaped {
-                        existentialDepositTextMessage
-                    }
-                    
-                    Spacer()
-                        .frame(height: keyboardObserver.keyboardHeight)
-                }
-                .padding(.horizontal, 16)
-            }
-            .onChange(of: keyboardObserver.keyboardHeight) { oldValue, newValue in
-                scrollToField(value)
-            }
-            .refreshable {
-                await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
-                await getBalance()
-            }
-        }
-    }
     
     func setData() {
         keyboardObserver.keyboardHeight = 0
