@@ -13,6 +13,7 @@ struct SendCryptoAddressBookView: View {
     @Binding var showSheet: Bool
     
     @State var isSavedAddressesSelected: Bool = true
+    @State var myAddresses: [(id: UUID, title: String, description: String)] = []
     
     @Query var vaults: [Vault]
     @Query var savedAddresses: [AddressBookItem]
@@ -88,8 +89,8 @@ struct SendCryptoAddressBookView: View {
     }
     
     var savedAddressesList: some View {
-        ForEach(savedAddresses) { address in
-            VStack(spacing: 18) {
+        VStack(spacing: 12) {
+            ForEach(savedAddresses) { address in
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,
@@ -102,8 +103,19 @@ struct SendCryptoAddressBookView: View {
     }
     
     var myAddressesList: some View {
-        ZStack {
-            
+        VStack(spacing: 12) {
+            ForEach(myAddresses, id: \.id) { address in
+                SendCryptoAddressBookCell(
+                    title: address.title,
+                    description: address.description,
+                    icon: nil,
+                    tx: tx,
+                    showSheet: $showSheet
+                )
+            }
+        }
+        .onAppear {
+            filterVaults()
         }
     }
     
@@ -122,6 +134,27 @@ struct SendCryptoAddressBookView: View {
             .frame(height: 42)
             .background(isSelected ? Color.persianBlue400 : .clear)
             .cornerRadius(60)
+    }
+    
+    private func filterVaults() {
+        myAddresses = []
+        
+        for vault in vaults {
+            for coin in vault.coins {
+                if coin.chain == tx.coin.chain {
+                    let title = vault.name
+                    let description = coin.address
+                    
+                    myAddresses.append(
+                        (
+                            id: UUID(),
+                            title: title,
+                            description: description
+                        )
+                    )
+                }
+            }
+        }
     }
 }
 
