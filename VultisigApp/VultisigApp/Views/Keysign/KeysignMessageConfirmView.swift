@@ -21,6 +21,7 @@ struct KeysignMessageConfirmView: View {
             .task {
                 await viewModel.loadThorchainID()
                 await viewModel.loadFunctionName()
+                await viewModel.performSecurityScan()
             }
         }
     }
@@ -74,6 +75,10 @@ struct KeysignMessageConfirmView: View {
             .cornerRadius(10)
             .padding(16)
             
+            if viewModel.showSecurityScan {
+                SecurityScanView(viewModel: viewModel.securityScanViewModel)
+                    .padding(.horizontal, 16)
+            }
         }
     }
     

@@ -19,7 +19,6 @@ struct FunctionCallVerifyView: View {
     
     @State var fastPasswordPresented = false
     @State var isForReferral = false
-    @State var referralViewModel = ReferralViewModel()
     
     var body: some View {
         ZStack {
@@ -38,7 +37,11 @@ struct FunctionCallVerifyView: View {
     var content: some View {
         VStack(spacing: 0) {
             if isForReferral {
-                ReferralSendOverviewView(sendTx: tx, functionCallViewModel: depositViewModel, functionCallVerifyViewModel: depositVerifyViewModel)
+                ReferralSendOverviewView(
+                    sendTx: tx,
+                    functionCallViewModel: depositViewModel,
+                    functionCallVerifyViewModel: depositVerifyViewModel
+                )
             } else {
                 ScrollView {
                     fields
@@ -176,20 +179,6 @@ struct FunctionCallVerifyView: View {
     
     private func handleSubmit() {
         Task {
-            if isForReferral {
-                guard depositVerifyViewModel.isReferralAmountCorrect else {
-                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
-                    depositVerifyViewModel.showAlert = true
-                    return
-                }
-                
-                guard depositVerifyViewModel.isReferralAddressCorrect else {
-                    depositVerifyViewModel.errorMessage = "verifyBoxCheck"
-                    depositVerifyViewModel.showAlert = true
-                    return
-                }
-            }
-            
             keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
             
             if keysignPayload != nil {

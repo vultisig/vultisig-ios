@@ -14,7 +14,7 @@ struct KyberSwapQuote: Codable, Hashable {
         let amountInUsd: String
         let amountOut: String
         let amountOutUsd: String
-        let gas: String
+        var gas: String
         let gasUsd: String
         let data: String
         let routerAddress: String
@@ -48,17 +48,14 @@ struct KyberSwapQuote: Codable, Hashable {
     }
     
     var tx: Transaction {
-        let bufferedGas = gasForChain(.ethereum)
-        
-        let gasPriceValue = data.gasPrice ?? "20000000000"
         
         return Transaction(
             from: "",
             to: data.routerAddress,
             data: data.data,
             value: data.transactionValue,
-            gasPrice: gasPriceValue,
-            gas: bufferedGas
+            gasPrice: data.gasPrice ?? "",
+            gas: Int64(data.gas) ?? 0
         )
     }
 }
@@ -78,7 +75,7 @@ extension KyberSwapQuote {
             self.data = data
             self.value = value
             self.gasPrice = gasPrice
-            self.gas = gas == 0 ? 600000 : gas
+            self.gas = gas
         }
     }
 } 

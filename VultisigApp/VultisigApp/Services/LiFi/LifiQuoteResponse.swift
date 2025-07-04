@@ -45,8 +45,11 @@ enum LifiQuoteResponse: Codable {
     var fee: BigInt? {
         switch self {
         case .evm(let quote):
-            let estimate = quote.estimate.gasCosts.first?.estimate
-            return estimate.map { BigInt(stringLiteral: $0) }
+            guard let gasPrice = BigInt(quote.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
+                  let gasLimit = BigInt(quote.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
+                return nil
+            }
+            return gasPrice * gasLimit
         case .solana(let quote):
             let estimate = quote.estimate.gasCosts.first?.estimate
             return estimate.map { BigInt(stringLiteral: $0) }

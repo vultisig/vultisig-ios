@@ -650,7 +650,7 @@
 "referralOnboardingDescription4" = "Usa el código de un amigo y ahorra en comisiones.";
 "referral" = "Referido";
 "vultisig-referrals" = "Vultisig - Referidos";
-"referralLaunchCodeLengthError" = "El código de referido debe tener 4 caracteres";
+"referralLaunchCodeLengthError" = "El código de referido puede contener hasta 4 caracteres";
 "systemErrorMessage" = "Error del sistema. Inténtalo de nuevo.";
 "referralCodeNotFound" = "Código de referido no encontrado";
 "referralCodeAdded" = "Código de referido vinculado con éxito";

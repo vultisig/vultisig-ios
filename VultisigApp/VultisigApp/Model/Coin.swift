@@ -202,7 +202,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .akash:
             return "3000" // 0.003 AKT Cosmos station uses something like that
         case .tron:
-            return "800000"
+            return "100000" // 0.1 TRX = 100000 SUN
         }
     }
     
@@ -216,8 +216,11 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     func raw(for value: Decimal) -> BigInt {
-        let decimal = value * pow(10, decimals)
-        return BigInt(decimal.description) ?? BigInt.zero
+        var decimal = value * pow(10, decimals)
+        
+        var result = Decimal()
+        NSDecimalRound(&result, &decimal, 0,.up)
+        return BigInt(result.description) ?? BigInt(0)
     }
     
     func fiat(value: BigInt) -> Decimal {

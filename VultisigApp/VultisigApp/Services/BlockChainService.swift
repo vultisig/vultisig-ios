@@ -8,6 +8,7 @@
 import Foundation
 import BigInt
 import VultisigCommonData
+import WalletCore
 
 struct BlockSpecificCacheItem {
     let blockSpecific: BlockChainSpecific
@@ -33,6 +34,7 @@ final class BlockChainService {
         case failToGetAccountNumber
         case failToGetSequenceNo
         case failToGetRecentBlockHash
+        case failToGetAssociatedTokenAddressFrom
         
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
@@ -46,22 +48,15 @@ final class BlockChainService {
     private let sui = SuiService.shared
     private let dot = PolkadotService.shared
     private let thor = ThorchainService.shared
-    private let atom = GaiaService.shared
     private let maya = MayachainService.shared
-    private let kuji = KujiraService.shared
-    private let dydx = DydxService.shared
     private let ton = TonService.shared
-    private let osmo = OsmosisService.shared
     private let tron = TronService.shared
     
     private let ripple = RippleService.shared
-    
-    private let terra = TerraService.shared
-    private let terraClassic = TerraClassicService.shared
-    private let noble = NobleService.shared
-    private let akash = AkashService.shared
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
+    
+    private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
     
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         switch tx.coin.chainType {
@@ -79,6 +74,7 @@ final class BlockChainService {
                                           isDeposit: tx.isDeposit,
                                           transactionType: .unspecified,
                                           fromAddress: tx.fromCoin.address,
+                                          toAddress: nil,  // Swaps don't have a specific toAddress in the same way
                                           feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
@@ -96,8 +92,8 @@ final class BlockChainService {
             transactionType: .unspecified,
             gasLimit: nil,
             byteFee: nil,
-            fromAddress: nil,
-            toAddress: nil,
+            fromAddress: tx.fromCoin.address,
+            toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             feeMode: .fast
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
@@ -117,8 +113,9 @@ final class BlockChainService {
                      isDeposit: Bool,
                      transactionType: VSTransactionType,
                      fromAddress: String?,
+                     toAddress: String?,
                      feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(feeMode)"
+        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
     }
 }
 
@@ -138,6 +135,7 @@ private extension BlockChainService {
                                    isDeposit: tx.isDeposit,
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
+                                   toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
         if let localCacheItem =  self.localCache.get(cacheKey) {            
             // use the cache item
@@ -169,6 +167,7 @@ private extension BlockChainService {
                                    isDeposit: tx.isDeposit,
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
+                                   toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
@@ -222,7 +221,6 @@ private extension BlockChainService {
             return .UTXO(byteFee: coin.feeDefault.toBigInt(), sendMaxAmount: sendMaxAmount)
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let  byteFeeValue = try await fetchUTXOFee(coin: coin, action: action, feeMode: feeMode)
-            print("byteFeeValue: \(byteFeeValue)")
             return .UTXO(byteFee: byteFeeValue, sendMaxAmount: sendMaxAmount)
         case .cardano:
             let estimatedFee = cardano.estimateTransactionFee()
@@ -240,7 +238,7 @@ private extension BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .THORChain(accountNumber: accountNumber, sequence: sequence, fee: fee, isDeposit: isDeposit)
+            return .THORChain(accountNumber: accountNumber, sequence: sequence, fee: fee, isDeposit: isDeposit, transactionType: transactionType.rawValue)
         case .mayaChain:
             let account = try await maya.fetchAccountNumber(coin.address)
             
@@ -263,13 +261,57 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
             
-            if let fromAddress, let toAddress, !toAddress.isEmpty, !coin.isNativeToken {
-                async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: fromAddress, mintAddress: coin.contractAddress)
-                async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
-                let (associatedTokenAddressFrom, _) = try await associatedTokenAddressFromPromise
-                let (associatedTokenAddressTo, isToken2022) = try await associatedTokenAddressToPromise
+            if !coin.isNativeToken && fromAddress != nil {
+                let (associatedTokenAddressFrom, senderIsToken2022) = try await sol.fetchTokenAssociatedAccountByOwner(for: fromAddress!, mintAddress: coin.contractAddress)
                 
-                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: associatedTokenAddressTo, hasProgramId: isToken2022)
+                // Validate that we got a valid sender account
+                if associatedTokenAddressFrom.isEmpty {
+                    throw Errors.failToGetAssociatedTokenAddressFrom
+                }
+                
+                // Only fetch recipient's token account if toAddress is provided
+                var associatedTokenAddressTo: String? = nil
+                var isToken2022 = senderIsToken2022  // Use sender's program type as default
+                
+                if let toAddress, !toAddress.isEmpty {
+                    let (toTokenAddress, recipientTokenProgram) = try await sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
+                    
+                    associatedTokenAddressTo = toTokenAddress
+                    // Only override if recipient has an account
+                    if !toTokenAddress.isEmpty {
+                        isToken2022 = recipientTokenProgram
+                    } else {
+                        // Fallback probe – derive deterministic ATAs and query getAccountInfo directly
+                        if let walletCoreAddress = WalletCore.SolanaAddress(string: toAddress) {
+                            let defaultAta = walletCoreAddress.defaultTokenAddress(tokenMintAddress: coin.contractAddress)
+                            let token2022Ata = walletCoreAddress.token2022Address(tokenMintAddress: coin.contractAddress)
+                            
+                            for ataAddress in [defaultAta, token2022Ata].compactMap({ $0 }) {
+                                if ataAddress.isEmpty { continue }
+                                
+                                // Check if account exists using getAccountInfo
+                                let (exists, isToken2022Account) = try await sol.checkAccountExists(address: ataAddress)
+                                if exists {
+                                    associatedTokenAddressTo = ataAddress
+                                    isToken2022 = isToken2022Account
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Important: Only return nil for toAddressPubKey if we're certain the account doesn't exist
+                // Empty string from RPC doesn't mean the account doesn't exist
+                let finalToAddress = associatedTokenAddressTo?.isEmpty == true ? nil : associatedTokenAddressTo
+                
+                // TODO: Add rent exemption balance check here
+                // If finalToAddress is nil (account needs creation), verify sender has enough SOL:
+                // - 0.00203928 SOL for token account creation
+                // - Plus transaction fees
+                // - Plus maintaining sender's own rent exemption
+                
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: finalToAddress, hasProgramId: isToken2022)
             }
             
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil, hasProgramId: false)
@@ -301,8 +343,9 @@ private extension BlockChainService {
             
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
             
-        case .gaiaChain:
-            let account = try await atom.fetchAccountNumber(coin.address)
+        case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash:
+            let service = try CosmosServiceFactory.getService(forChain: coin.chain)
+            let account = try await service.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber
@@ -312,144 +355,65 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             
+            // Handle IBC denom traces for chains that support it
             var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
-            if coin.contractAddress.contains("ibc/"), let denomTrace = await atom.fetchIbcDenomTraces(coin: coin) {
-                ibcDenomTrace = denomTrace
+            if coin.contractAddress.contains("ibc/") {
+                switch coin.chain {
+                case .gaiaChain, .kujira, .osmosis, .terra:
+                    if let denomTrace = await service.fetchIbcDenomTraces(coin: coin) {
+                        ibcDenomTrace = denomTrace
+                    }
+                    
+                    let now = Date()
+                    let tenMinutesFromNow = now.addingTimeInterval(10 * 60)
+                    let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
+                    
+                    let latestBlock = try await service.fetchLatestBlock(coin: coin)
+                    ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+                    
+                    if ibcDenomTrace == nil {
+                        ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+                    }
+                default:
+                    break
+                }
             }
             
-            let now = Date()
-            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
-            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-            
-            let latestBlock = try await atom.fetchLatestBlock(coin: coin)
-            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
-            
-            if ibcDenomTrace == nil {
-                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
+            // Chain-specific gas values
+            let gas: UInt64
+            switch coin.chain {
+            case .terraClassic:
+                gas = 100000000
+            case .dydx:
+                gas = 2500000000000000
+            case .noble:
+                gas = 20000
+            case .akash:
+                gas = 3000
+            default:
+                gas = 7500
             }
             
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
-        case .kujira:
-            let account = try await kuji.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            
-            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
-            if coin.contractAddress.contains("ibc/"), let denomTrace = await kuji.fetchIbcDenomTraces(coin: coin) {
-                ibcDenomTrace = denomTrace
-            }
-            
-            let now = Date()
-            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
-            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-            
-            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
-            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
-            
-            if ibcDenomTrace == nil {
-                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
-            }
-            
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
-        case .osmosis:
-            let account = try await osmo.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            
-            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
-            if coin.contractAddress.contains("ibc/"), let denomTrace = await osmo.fetchIbcDenomTraces(coin: coin) {
-                ibcDenomTrace = denomTrace
-            }
-            
-            let now = Date()
-            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
-            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-            
-            let latestBlock = try await osmo.fetchLatestBlock(coin: coin)
-            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
-            
-            if ibcDenomTrace == nil {
-                ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
-            }
-            
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
-        case .terra:
-            let account = try await terra.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            
-            var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
-            if coin.contractAddress.contains("ibc/"), let denomTrace = await terra.fetchIbcDenomTraces(coin: coin) {
-                ibcDenomTrace = denomTrace
-            }
-            
-            let now = Date()
-            let tenMinutesFromNow = now.addingTimeInterval(10 * 60) // Add 10 minutes to current time
-            let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
-            
-            let latestBlock = try await kuji.fetchLatestBlock(coin: coin)
-            ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
-            
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
-            
-            
-        case .terraClassic:
-            let account = try await terraClassic.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 100000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
-            
-        case .dydx:
-            let account = try await dydx.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
-            
-        case .noble:
-            let account = try await noble.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 20000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: gas, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
+
             
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
-            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false, sendMaxAmount: sendMaxAmount)
+            
+            // Determine if address is bounceable
+            var isBounceable = false
+            if let toAddress = toAddress, !toAddress.isEmpty {
+                // Check if destination wallet is uninitialized
+                let walletState = try await ton.getWalletState(toAddress)
+                let isUninitialized = walletState == TON_WALLET_STATE_UNINITIALIZED
+                
+                // If wallet is initialized and address starts with "E", it's bounceable
+                if !isUninitialized && toAddress.starts(with: "E") {
+                    isBounceable = true
+                }
+            }
+            
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount)
         case .ripple:
             
             let account = try await ripple.fetchAccountsInfo(for: coin.address)
@@ -460,18 +424,6 @@ private extension BlockChainService {
             
             //60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
-            
-        case .akash:
-            let account = try await akash.fetchAccountNumber(coin.address)
-            
-            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
-                throw Errors.failToGetAccountNumber
-            }
-            
-            guard let sequence = UInt64(account?.sequence ?? "0") else {
-                throw Errors.failToGetSequenceNo
-            }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 3000, transactionType: transactionType.rawValue, ibcDenomTrace: nil)
         case .tron:
             return try await tron.getBlockInfo(coin: coin)
         }
@@ -502,7 +454,7 @@ private extension BlockChainService {
             )
             return gas
         } catch {
-            print("failed to estimate ERC20 transfer gas limit : \(error)")
+            // failed to estimate ERC20 transfer gas limit
             return 0
         }
     }

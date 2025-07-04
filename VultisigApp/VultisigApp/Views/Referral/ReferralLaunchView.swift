@@ -20,6 +20,9 @@ struct ReferralLaunchView: View {
                 loader
             }
         }
+        .onAppear {
+            referralViewModel.resetAllData()
+        }
         .alert(isPresented: $referredViewModel.showReferredLaunchViewSuccess) {
             alert
         }

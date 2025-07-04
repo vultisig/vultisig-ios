@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Endpoint { 
+class Endpoint {
     
     enum SwapChain {
         case thorchain
@@ -32,6 +32,92 @@ class Endpoint {
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
+    
+    // Security/Fraud Detection Services - Proxied through Vultisig API
+    static let blockaidApiBase = "\(vultisigApiProxy)/blockaid/v0"
+    
+    // OFFICIAL BLOCKAID API ENDPOINTS (Working ✅)
+    
+    // EVM Endpoints
+    static func blockaidEVMJSONRPCScan() -> String {
+        return "\(blockaidApiBase)/evm/json-rpc/scan"
+    }
+    
+    static func blockaidEVMTransactionScan() -> String {
+        return "\(blockaidApiBase)/evm/transaction/scan"
+    }
+    
+    static func blockaidEVMTransactionRawScan() -> String {
+        return "\(blockaidApiBase)/evm/transaction/raw/scan"
+    }
+    
+    static func blockaidEVMAddressScan() -> String {
+        return "\(blockaidApiBase)/evm/address/scan"
+    }
+    
+    static func blockaidEVMUserOperationScan() -> String {
+        return "\(blockaidApiBase)/evm/user-operation/scan"
+    }
+    
+    // Site Scanning
+    static func blockaidSiteScan() -> String {
+        return "\(blockaidApiBase)/site/scan"
+    }
+    
+    // Token Scanning
+    static func blockaidTokenScan() -> String {
+        return "\(blockaidApiBase)/token/scan"
+    }
+    
+    // Multi-Chain Support
+    static func blockaidBitcoinTransactionRaw() -> String {
+        return "\(blockaidApiBase)/bitcoin/transaction/raw"
+    }
+    
+    static func blockaidSolanaAddressScan() -> String {
+        return "\(blockaidApiBase)/solana/address/scan"
+    }
+    
+    static func blockaidSolanaMessageScan() -> String {
+        return "\(blockaidApiBase)/solana/message/scan"
+    }
+    
+    static func blockaidStarknetTransactionScan() -> String {
+        return "\(blockaidApiBase)/starknet/transaction/scan"
+    }
+    
+    static func blockaidStellarAddressScan() -> String {
+        return "\(blockaidApiBase)/stellar/address/scan"
+    }
+    
+    static func blockaidStellarTransactionScan() -> String {
+        return "\(blockaidApiBase)/stellar/transaction/scan"
+    }
+    
+    static func blockaidSuiAddressScan() -> String {
+        return "\(blockaidApiBase)/sui/address/scan"
+    }
+    
+    static func blockaidSuiTransactionScan() -> String {
+        return "\(blockaidApiBase)/sui/transaction/scan"
+    }
+    
+    // Chain-Agnostic
+    static func blockaidChainAgnosticTransaction() -> String {
+        return "\(blockaidApiBase)/chain-agnostic/transaction"
+    }
+    
+    // Enterprise Features
+    static func blockaidExchangeProtectionWithdrawal() -> String {
+        return "\(blockaidApiBase)/exchange-protection/withdrawal"
+    }
+    
+    
+    
+    // Legacy endpoint methods (for backward compatibility)
+    static func blockaidAddressScan() -> String {
+        return blockaidEVMAddressScan()
+    }
     
     static let FastVaultBackupVerification = vultisigApiProxy + "/vault/verify/"
     
@@ -68,15 +154,22 @@ class Endpoint {
     }
     
     static func fetchThorchainMergedAssets() -> String {
-        "https://api.rujira.network/api/graphiql"
+        "https://api.rujira.network/api/graphql"
     }
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
-    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
-        let isAffiliateParams = isAffiliate
-        ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
-        : .empty
+    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referredCode: String) -> URL {
+        let isAffiliateParams: String
+        
+        if !referredCode.isEmpty {
+            isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)"
+                                            : "&affiliate=\(referredCode)&affiliate_bps=0&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
+        } else {
+            isAffiliateParams = isAffiliate
+            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
+            : "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
+        }
         
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }
@@ -85,16 +178,20 @@ class Endpoint {
         
         let isAffiliateParams = isAffiliate
         ? "&referrer=\(referrer)&fee=\(fee)"
-        : .empty
+        : "&referrer=\(referrer)&fee=0"
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
     
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
-        let url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
+        var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
         
-        if let integrator, let fee {
-            return (url + "&integrator=\(integrator)&fee=\(fee)").asUrl
+        if let integrator {
+           url = url + "&integrator=\(integrator))"
+        }
+        
+        if let fee {
+            url = url + "&fee=\(fee)"
         }
         
         return url.asUrl
@@ -406,7 +503,7 @@ class Endpoint {
     static func getSwapProgressURL(txid: String) -> String {
         return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
     }
-
+    
     static func thorchainNodeExplorerURL(_ address: String) -> String {
         return "https://thorchain.net/node/\(address)"
     }
@@ -416,7 +513,7 @@ class Endpoint {
     }
     
     static func getLifiSwapTracker(txid: String) -> String {
-        return "https://scan.li.fi/tx/\(txid.stripHexPrefix())"
+        return "https://scan.li.fi/tx/\(txid)"
     }
     
     static let tronServiceRpc = "https://tron-rpc.publicnode.com"
@@ -437,7 +534,7 @@ class Endpoint {
         "https://api.trongrid.io/walletsolidity/triggerconstantcontract"
     }
     static func moonPaySignatureUrl() -> URL {
-      return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
+        return "https://moonpay-sign-delta.vercel.app/api/sign".asUrl
     }
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
@@ -596,7 +693,7 @@ class Endpoint {
             return "https://tronscan.org/#/address/\(address)"
         case .cardano:
             return "https://cardanoscan.io/address/\(address)"
-        
+            
         }
     }
     
@@ -690,6 +787,10 @@ class Endpoint {
     
     static func reverseLookup(for address: String) -> String {
         ReferralBase + "/thorname/lookup/\(address)"
+    }
+    
+    static func nameLookup(for name: String) -> String {
+        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)"
     }
 }
 

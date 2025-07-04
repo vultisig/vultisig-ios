@@ -51,7 +51,7 @@ class ReferralViewModel: ObservableObject {
         return isFeesLoading
     }
     
-    func verifyReferralCode() {
+    func verifyReferralCode() async {
         isLoading = true
         resetReferralData()
         nameErrorCheck(code: referralCode, forReferralCode: true)
@@ -60,9 +60,7 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        Task {
-            await checkNameAvailability(code: referralCode)
-        }
+        await checkNameAvailability(code: referralCode)
     }
     
     func handleCounterIncrease() {
@@ -77,7 +75,9 @@ class ReferralViewModel: ObservableObject {
         expireInCount -= 1
     }
     
-    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) {
+    func verifyReferralEntries(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel) async {
+        await verifyReferralCode()
+        
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
             return
@@ -136,6 +136,24 @@ class ReferralViewModel: ObservableObject {
         functionCallViewModel.currentIndex = 2
     }
     
+    func resetAllData() {
+        referralCode = ""
+        showReferralAvailabilityError = false
+        referralAvailabilityErrorMessage = ""
+        showReferralAvailabilitySuccess = false
+        isReferralCodeVerified = false
+        expireInCount = 0
+        
+        showReferralAlert = false
+        referralAlertMessage = ""
+        
+        
+        nativeCoin = nil
+        registrationFee = 0
+        feePerBlock = 0
+        isFeesLoading = false
+    }
+    
     private func setupTransaction(tx: SendTransaction) {
         tx.amount = totalFee.formatDecimalToLocale()
         
@@ -176,7 +194,7 @@ class ReferralViewModel: ObservableObject {
         isReferralCodeVerified = true
     }
     
-    private func resetReferralData() {
+    func resetReferralData() {
         showReferralAvailabilityError = false
         referralAvailabilityErrorMessage = ""
         showReferralAvailabilitySuccess = false
@@ -201,7 +219,7 @@ class ReferralViewModel: ObservableObject {
             }
         }
         
-        guard code.count == 4 else {
+        guard code.count <= 4 else {
             showNameError(with: "referralLaunchCodeLengthError")
             return
         }

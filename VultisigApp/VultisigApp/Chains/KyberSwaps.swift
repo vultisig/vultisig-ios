@@ -55,54 +55,15 @@ struct KyberSwaps {
                 }
             }
         }
-
-        let gas = BigUInt(quote.gasForChain(keysignPayload.coin.chain))
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? nil
         
-        let signed = try getPreSignedInputDataWithCustomGasLimit(
-            input: input,
-            keysignPayload: keysignPayload,
-            customGasLimit: gas,
-            incrementNonce: incrementNonce
-        )
-        
+        // sometimes the `gas` field in oneinch tx is 0
+        // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)
+        let normalizedGas = quote.tx.gas == 0 ? EVMHelper.defaultETHSwapGasUnit : quote.tx.gas
+        let gas = BigUInt(normalizedGas)
+        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+        let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
     }
     
-    func getPreSignedInputDataWithCustomGasLimit(
-        input: EthereumSigningInput,
-        keysignPayload: KeysignPayload,
-        customGasLimit: BigUInt,
-        incrementNonce: Bool
-    ) throws -> Data {
-        guard case .Ethereum(
-            let maxFeePerGasWei,
-            let priorityFeeWei,
-            let nonce,
-            _
-        ) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get Ethereum chain specific")
-        }
-        
-        // Apply 1 GWEI minimum for KyberSwap transactions
-        let oneGweiInWei = BigInt(1_000_000_000) // 1 GWEI = 10^9 Wei
-        let correctedPriorityFee = max(priorityFeeWei, oneGweiInWei)
-        let correctedMaxFeePerGas = max(maxFeePerGasWei, correctedPriorityFee, oneGweiInWei)
-        
-        let chainIdString = keysignPayload.coin.chain == .ethereumSepolia ? "11155111" : keysignPayload.coin.coinType.chainId
-        guard let intChainID = Int(chainIdString) else {
-            throw HelperError.runtimeError("fail to get chainID")
-        }
-        
-        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
-        
-        var modifiedInput = input
-        modifiedInput.chainID = Data(hexString: Int64(intChainID).hexString())!
-        modifiedInput.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
-        modifiedInput.gasLimit = customGasLimit.serialize()
-        modifiedInput.maxFeePerGas = correctedMaxFeePerGas.magnitude.serialize()
-        modifiedInput.maxInclusionFeePerGas = correctedPriorityFee.magnitude.serialize()
-        modifiedInput.txMode = .enveloped
-        
-        return try modifiedInput.serializedData()
-    }
 } 

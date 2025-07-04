@@ -153,6 +153,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return .empty
             }
             return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
+        } else if coin.chain.chainType == .UTXO {
+            // for UTXO chains , we use transaction plan to get the transaction fee in total
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.ticker)"
         } else {
             return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
         }
@@ -220,6 +223,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         && !tx.fromAmount.isEmpty
         && !tx.toAmountDecimal.isZero
         && tx.quote != nil
+        && tx.gas != .zero
         && isSufficientBalance(tx: tx)
         && !isLoading
     }
@@ -332,28 +336,29 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         Mediator.shared.stop()
     }
     
-    func switchCoins(tx: SwapTransaction, vault: Vault) {
+    func switchCoins(tx: SwapTransaction, vault: Vault, referredCode: String) {
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        fetchQuotes(tx: tx, vault: vault)
+    func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        fetchFees(tx: tx, vault: vault)
     }
     
-    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
-    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.toCoin = coin
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func handleBackTap() {
@@ -361,22 +366,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func updateTimer(tx: SwapTransaction, vault: Vault) {
+    func updateTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
         timer -= 1
         
         if timer < 1 {
-            restartTimer(tx: tx, vault: vault)
+            restartTimer(tx: tx, vault: vault, referredCode: referredCode)
         }
     }
     
-    func restartTimer(tx: SwapTransaction, vault: Vault) {
-        refreshData(tx: tx, vault: vault)
+    func restartTimer(tx: SwapTransaction, vault: Vault, referredCode: String) {
+        refreshData(tx: tx, vault: vault, referredCode: referredCode)
         timer = 59
     }
     
-    func refreshData(tx: SwapTransaction, vault: Vault) {
+    func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
         fetchFees(tx: tx, vault: vault)
-        fetchQuotes(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -388,14 +393,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+    func fetchQuotes(tx: SwapTransaction, vault: Vault, referredCode: String) {
         // this method is called when the user changes the amount, from/to coins, or chains
         // it will update the quotes after a short delay to avoid excessive requests
         updateQuoteTask?.cancel()
         updateQuoteTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
-            await self?.updateQuotes(tx: tx)
+            await self?.updateQuotes(tx: tx, referredCode: referredCode)
         }
     }
     
@@ -438,7 +443,7 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func updateQuotes(tx: SwapTransaction) async {
+    func updateQuotes(tx: SwapTransaction, referredCode: String) async {
         isLoading = true
         defer { isLoading = false }
         
@@ -457,7 +462,8 @@ private extension SwapCryptoViewModel {
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: tx.isAlliliate
+                isAffiliate: tx.isAlliliate,
+                referredCode: referredCode
             )
             
             tx.quote = quote
@@ -480,11 +486,12 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
-            
-            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
             tx.gas = chainSpecific.gas
+            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+
         } catch {
             print("Update fees error: \(error.localizedDescription)")
+            self.error = Errors.insufficientFunds
         }
     }
     
@@ -523,6 +530,9 @@ private extension SwapCryptoViewModel {
                 vaultHexChainCode: vault.hexChainCode
             )
             let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            if plan.fee <= 0 && tx.fromAmountDecimal > 0 {
+                throw Errors.insufficientFunds
+            }
             return BigInt(plan.fee)
             
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:

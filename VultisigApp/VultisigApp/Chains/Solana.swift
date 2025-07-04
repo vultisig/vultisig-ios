@@ -74,15 +74,22 @@ enum SolanaHelper {
                 
                 return try input.serializedData()
                 
-            } else if let fromPubKey = fromAddressPubKey {
+            } else if let fromPubKey = fromAddressPubKey, !fromPubKey.isEmpty {
                 
-                // We will need to create a new account association between the mint token and the receiver
-                
+                // Create new account association for either SPL or Token-2022
                 let receiverAddress = SolanaAddress(string: toAddress.description)!
-                let generatedAssociatedAddress = receiverAddress.defaultTokenAddress(tokenMintAddress: keysignPayload.coin.contractAddress)
+                
+                let generatedAssociatedAddress: String?
+                if tokenProgramId {
+                    // Use Token-2022 specific method
+                    generatedAssociatedAddress = receiverAddress.token2022Address(tokenMintAddress: keysignPayload.coin.contractAddress)
+                } else {
+                    // Use standard SPL token method
+                    generatedAssociatedAddress = receiverAddress.defaultTokenAddress(tokenMintAddress: keysignPayload.coin.contractAddress)
+                }
                 
                 guard let createdRecipientAddress = generatedAssociatedAddress else {
-                    throw HelperError.runtimeError("We must have the association between the minted token and the TO address")
+                    throw HelperError.runtimeError("Failed to generate associated token address for recipient")
                 }
                 
                 let createAndTransferTokenMessage = SolanaCreateAndTransferToken.with {
@@ -110,7 +117,7 @@ enum SolanaHelper {
                 return try input.serializedData()
             }
             
-            throw HelperError.runtimeError("To send tokens we must have the association between the minted token and the TO address")
+            throw HelperError.runtimeError("SPL token transfer failed: sender's associated token account not found. Please ensure you have this token in your wallet.")
             
         }
     }
@@ -124,8 +131,8 @@ enum SolanaHelper {
     static func getPreSignedImageHash(inputData: Data) throws -> [String] {
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
+        
         if !preSigningOutput.errorMessage.isEmpty {
-            print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         return [preSigningOutput.data.hexString]
@@ -164,6 +171,7 @@ enum SolanaHelper {
 
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedBytes: hashes)
+        
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
@@ -175,11 +183,13 @@ enum SolanaHelper {
 
         allSignatures.add(data: signature)
         publicKeys.add(data: pubkeyData)
+        
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,
                                                                              txInputData: inputData,
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedBytes: compileWithSignature)
+        
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
 

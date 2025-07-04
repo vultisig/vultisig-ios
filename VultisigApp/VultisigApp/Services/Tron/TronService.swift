@@ -78,7 +78,7 @@ class TronService: RpcService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
         
-        var estimation = "800000" // If a TRX we will charge Fee: 800000 SUN = 0.8 TRX MEXC charges it. So probably safer
+        var estimation = "100000" // 0.1 TRX = 100000 SUN (default fee for native TRX transfers)
         if !coin.isNativeToken {
             // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
             // Tron does not have a 0x... it can be any address
@@ -218,7 +218,9 @@ class TronService: RpcService {
             
             let hexContractAddress = hexContractAddressData.hexString
             
-            let balance = try await TronEvmService.shared.fetchTRC20TokenBalance(
+            // Use EvmServiceFactory instead of direct service access
+            let evmService = try EvmServiceFactory.getService(forChain: coin.chain)
+            let balance = try await evmService.fetchTRC20TokenBalance(
                 contractAddress: "0x" + hexContractAddress,
                 walletAddress: "0x" + hexAddress
             )

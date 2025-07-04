@@ -1089,7 +1089,7 @@ class TokensStore {
             logo: "maya",
             decimals: 4,
             priceProviderId: "maya",
-            contractAddress: "",
+            contractAddress: "maya",
             isNativeToken: false
         ),
         CoinMeta(

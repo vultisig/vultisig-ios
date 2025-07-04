@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
-    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, theSwitch
+    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch
     
     var id: String { self.rawValue }
     
@@ -52,6 +52,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "IBC Transfer"
         case .merge:
             return "The Merge"
+        case .unmerge:
+            return "Unmerge RUJI"
         case .theSwitch:
             return "Switch"
         }
@@ -61,9 +63,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
-                return [.bond, .unbond, .leave, .merge, .custom, .stakeTcy, .unstakeTcy]
+                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .stakeTcy, .unstakeTcy]
             }
-            return [.bond, .unbond, .leave, .merge, .custom]
+            return [.bond, .unbond, .leave, .merge, .unmerge, .custom]
         case .mayaChain:
             return [.bondMaya, .unbondMaya, .leave, .custom, .addPool, .removePool]
         case .dydx:

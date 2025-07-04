@@ -123,7 +123,8 @@ private extension CryptoPriceService {
             
             var rates: [Rate] = []
             for contract in contracts {
-                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: contract)
+                let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: sanitisedContract)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
                 rates.append(poolRate)
             }
