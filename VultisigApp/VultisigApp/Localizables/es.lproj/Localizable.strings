@@ -675,3 +675,9 @@
 "verifyBoxCheck" = "Marca todas las casillas";
 "expirationDate" = "Fecha de expiración";
 "yourReferralCode" = "Tu código de referido";
+"sendTo" = "Enviar a";
+"enterAddressHere" = "Ingresa la dirección aquí";
+"balanceAvailable" = "Saldo disponible:";
+"addMemo" = "Agregar MEMO";
+"savedAddresses" = "Direcciones guardadas";
+"myVaults" = "Mis Bóvedas";

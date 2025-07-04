@@ -669,3 +669,9 @@
 "verifyBoxCheck" = "Molimo označite sve kućice";
 "expirationDate" = "Datum isteka";
 "yourReferralCode" = "Tvoj referalni kod";
+"sendTo" = "Pošalji na";
+"enterAddressHere" = "Unesite adresu ovdje";
+"balanceAvailable" = "Dostupan saldo:";
+"addMemo" = "Dodaj MEMO";
+"savedAddresses" = "Spremljene adrese";
+"myVaults" = "Moji trezori";
