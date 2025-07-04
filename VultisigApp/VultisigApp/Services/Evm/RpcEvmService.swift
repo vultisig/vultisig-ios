@@ -218,7 +218,6 @@ class RpcEvmService: RpcService {
             
             return (name, symbol, decimals)
         } catch {
-            print(error.localizedDescription)
             return (.empty, .empty, .zero)
         }
     }
@@ -308,24 +307,18 @@ class RpcEvmService: RpcService {
     
     func getTokens(nativeToken: Coin) async -> [CoinMeta] {
         do {
-            print("=== EVM getTokens START for \(nativeToken.ticker) on \(nativeToken.chain.name) ===")
-            print("Using RPC endpoint: \(rpcEndpoint)")
-            
             // First RPC call to get token balances
             let tokenBalances: [[String: Any]] = try await sendRPCRequest(
                 method: "alchemy_getTokenBalances",
                 params: [nativeToken.address]
             ) { result in
-                print("alchemy_getTokenBalances response: \(result)")
                 guard
                     let response = result as? [String: Any],
                     let tokenBalances = response["tokenBalances"] as? [[String: Any]]
                 else {
-                    print("Failed to parse tokenBalances from response")
                     return []
                 }
                 
-                print("Found \(tokenBalances.count) token balances")
                 return tokenBalances
             }
             
@@ -346,20 +339,12 @@ class RpcEvmService: RpcService {
                     method: "alchemy_getTokenMetadata",
                     params: [contractAddress]
                 ) { result in
-                    print("alchemy_getTokenMetadata response for \(contractAddress): \(result)")
                     guard
                         let response = result as? [String: Any],
                         let symbol = response["symbol"] as? String,
                         !symbol.isEmpty,
                         let name = response["name"] as? String
                     else {
-                        print("Failed to parse metadata - missing required fields")
-                        if let response = result as? [String: Any] {
-                            print("Response keys: \(response.keys)")
-                            print("symbol: \(response["symbol"] ?? "nil")")
-                            print("decimals: \(response["decimals"] ?? "nil")")
-                            print("logo: \(response["logo"] ?? "nil")")
-                        }
                         return nil
                     }
                     
@@ -370,7 +355,6 @@ class RpcEvmService: RpcService {
                     } else if let decimalsInt64 = response["decimals"] as? Int64 {
                         decimals = Int(decimalsInt64)
                     } else {
-                        print("Failed to parse decimals for \(symbol)")
                         return nil
                     }
                     
@@ -383,10 +367,6 @@ class RpcEvmService: RpcService {
                         token.ticker == symbol &&
                         token.contractAddress.lowercased() == contractAddress.lowercased()
                     })?.priceProviderId ?? ""
-                    
-                    if !priceProviderId.isEmpty {
-                        print("Found priceProviderId '\(priceProviderId)' in TokensStore for \(symbol)")
-                    }
                     
                     return CoinMeta(
                         chain: nativeToken.chain,
@@ -405,13 +385,9 @@ class RpcEvmService: RpcService {
                 
             }
             
-            print("=== EVM getTokens END - returning \(tokenMetadata.count) tokens ===")
             return tokenMetadata
             
         } catch {
-            print("=== EVM getTokens ERROR: \(error) ===")
-            print("Error type: \(type(of: error))")
-            print("Error localized: \(error.localizedDescription)")
             return []
         }
     }

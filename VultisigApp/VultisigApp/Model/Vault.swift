@@ -149,7 +149,7 @@ final class Vault: ObservableObject, Codable {
             } while idx < 1000
         }
         catch {
-            print("fail to load all vaults")
+            // Silent error handling
         }
         return "Main Vault"
     }

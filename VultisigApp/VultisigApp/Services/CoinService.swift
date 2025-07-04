@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @MainActor
 struct CoinService {
@@ -14,20 +15,12 @@ struct CoinService {
     
     /// Removes the specified coins from the vault and storage
     static func removeCoins(coins: [Coin], vault: Vault) async throws {
-        print("--- REMOVE COINS: Removing \(coins.count) coins ---")
         for coin in coins {
-            print("  - Attempting to remove: \(coin.ticker) on \(coin.chain.name)")
             if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                 vault.coins.remove(at: idx)
-                print("    ✓ Removed from vault at index \(idx)")
-            } else {
-                print("    ✗ Not found in vault!")
             }
-            
             await Storage.shared.delete(coin)
-            print("    ✓ Deleted from storage")
         }
-        print("--- REMOVE COINS: Complete ---")
     }
     
     /// Main entry point for saving asset selection changes
@@ -35,25 +28,8 @@ struct CoinService {
     ///   - vault: The vault to update
     ///   - selection: The new set of selected assets
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
-        print("\n========== SAVE ASSETS START ==========")
-        
         // Check for invalid vault state
         let orphanedTokens = detectOrphanedTokens(vault: vault)
-        if !orphanedTokens.isEmpty {
-            print("⚠️ VAULT HAS ORPHANED TOKENS (tokens without native token):")
-            for (chain, tokens) in orphanedTokens {
-                print("  - \(chain.name): \(tokens.map { $0.ticker }.joined(separator: ", "))")
-            }
-        }
-        
-        print("Current vault coins: \(vault.coins.count)")
-        for coin in vault.coins {
-            print("  - Vault has: \(coin.ticker) on \(coin.chain.name) (native: \(coin.isNativeToken))")
-        }
-        print("\nNew selection: \(selection.count) assets")
-        for asset in selection {
-            print("  - Selected: \(asset.ticker) on \(asset.chain.name) (native: \(asset.isNativeToken))")
-        }
         
         do {
             // Step 1: Remove coins that are no longer selected
@@ -63,36 +39,21 @@ struct CoinService {
             try await addNewlySelectedCoins(vault: vault, selection: selection)
             
         } catch {
-            print("fail to save asset,\(error)")
+            // Silent error handling
         }
-        
-        print("\nFinal vault coins: \(vault.coins.count)")
-        for coin in vault.coins {
-            print("  - Final vault has: \(coin.ticker) on \(coin.chain.name)")
-        }
-        print("========== SAVE ASSETS END ==========\n")
     }
     
     // MARK: - Main Flow Methods
     
     private static func removeDeselectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
-        print("=== REMOVE DESELECTED COINS START ===")
-        print("Vault has \(vault.coins.count) coins")
-        print("Selection has \(selection.count) coins")
-        
         // Find all coins that need to be removed
         let coinsToRemove = findAllCoinsToRemove(vault: vault, selection: selection)
-        print("Found \(coinsToRemove.count) coins to remove")
-        for coin in coinsToRemove {
-            print("  - Will remove: \(coin.ticker) on \(coin.chain.name)")
-        }
         
         // Find chains where native token was removed (entire chain being removed)
         let chainsBeingRemoved = findChainsWithRemovedNativeToken(vault: vault, selection: selection)
         
         // Clear hidden tokens for chains being removed entirely
         for chain in chainsBeingRemoved {
-            print("Chain \(chain.name) is being removed entirely - clearing its hidden tokens")
             await clearHiddenTokensForChain(chain, vault: vault)
         }
         
@@ -106,26 +67,15 @@ struct CoinService {
         
         // Remove them
         try await removeCoins(coins: coinsToRemove, vault: vault)
-        print("=== REMOVE DESELECTED COINS END ===")
     }
     
     private static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
         // Find chains where the native token is being removed from the selection
         let chainsBeingRemoved = findChainsBeingRemoved(selection: selection)
-        print("--- Finding chains being removed ---")
-        print("Chains being removed: \(chainsBeingRemoved.count)")
-        for chain in chainsBeingRemoved {
-            print("  - Chain being removed: \(chain.name)")
-        }
         
         // Filter selection to exclude tokens from chains being removed
         let filteredSelection = selection.filter { asset in
             !chainsBeingRemoved.contains(asset.chain)
-        }
-        
-        print("Filtered selection: \(filteredSelection.count) assets (was \(selection.count))")
-        if selection.count != filteredSelection.count {
-            print("Excluded \(selection.count - filteredSelection.count) tokens from removed chains")
         }
         
         // Find new coins to add from the filtered selection
@@ -134,11 +84,6 @@ struct CoinService {
             selection: filteredSelection,
             excludedChains: Set<Chain>() // We already filtered, so no need to exclude again
         )
-        
-        print("New coins to add: \(newCoins.count)")
-        for coin in newCoins {
-            print("  - Will add: \(coin.ticker) on \(coin.chain.name) (native: \(coin.isNativeToken))")
-        }
         
         // Check if any selected coins are currently hidden and unhide them
         for asset in filteredSelection {
@@ -152,34 +97,19 @@ struct CoinService {
     }
     
     private static func findAllCoinsToRemove(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
-        print("--- Finding all coins to remove ---")
-        
         // Find directly deselected coins
         let directlyRemovedCoins = findRemovedCoins(vault: vault, selection: selection)
-        print("Directly removed coins: \(directlyRemovedCoins.count)")
-        for coin in directlyRemovedCoins {
-            print("  - Direct remove: \(coin.ticker) on \(coin.chain.name)")
-        }
         
         // Find chains where native token was removed
         let chainsWithRemovedNative = findChainsWithRemovedNativeToken(vault: vault, selection: selection)
-        print("Chains with removed native token: \(chainsWithRemovedNative.count)")
-        for chain in chainsWithRemovedNative {
-            print("  - Chain to remove entirely: \(chain.name)")
-        }
         
         // Find all coins from chains where native was removed
         let coinsFromRemovedChains = vault.coins.filter { coin in
             chainsWithRemovedNative.contains(coin.chain)
         }
-        print("Coins from removed chains: \(coinsFromRemovedChains.count)")
-        for coin in coinsFromRemovedChains {
-            print("  - From removed chain: \(coin.ticker) on \(coin.chain.name)")
-        }
         
         // Combine and deduplicate
         let allToRemove = Array(Set(directlyRemovedCoins + coinsFromRemovedChains))
-        print("Total coins to remove after deduplication: \(allToRemove.count)")
         return allToRemove
     }
     
@@ -188,8 +118,6 @@ struct CoinService {
             if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
                 // Only do auto-discovery for native tokens
                 if newCoin.isNativeToken {
-                    print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    
                     // Clear hidden tokens for this chain when adding native token back
                     await clearHiddenTokensForChain(asset.chain, vault: vault)
                     
@@ -216,54 +144,31 @@ struct CoinService {
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
             var tokens: [CoinMeta] = []
-            print("🔍 Auto-discovery starting for \(nativeToken.ticker) on \(nativeToken.chain.name)")
             switch nativeToken.chain.chainType {
             case .EVM :
-                print("  - Chain type: EVM")
                 let service = try EvmServiceFactory.getService(forChain: nativeToken.chain)
-                print("  - Got EVM service: \(type(of: service))")
                 tokens = await service.getTokens(nativeToken: nativeToken)
-                print("  - Raw tokens from service: \(tokens.count)")
-                // Don't filter by priceProviderId anymore - we'll try to find it in TokensStore
             case .Solana:
-                print("  - Chain type: Solana")
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
-                print("  - Raw tokens from service: \(tokens.count)")
                 // Filter out spam tokens by checking for valid price provider ID
-                let beforeFilter = tokens.count
                 tokens = tokens.filter { !$0.priceProviderId.isEmpty }
-                print("  - Filtered out \(beforeFilter - tokens.count) tokens without priceProviderId")
             case .Sui:
-                print("  - Chain type: Sui")
                 tokens = try await SuiService.shared.getAllTokensWithMetadata(coin: nativeToken)
-                print("  - Raw tokens from service: \(tokens.count)")
             case .THORChain:
-                print("  - Chain type: THORChain")
                 tokens = try await ThorchainService.shared.fetchTokens(nativeToken.address)
-                print("  - Raw tokens from service: \(tokens.count)")
             default:
-                print("  - Chain type: \(nativeToken.chain.chainType) - no auto-discovery")
                 tokens = []
             }
-            
-            print("Auto-discovery found \(tokens.count) tokens for \(nativeToken.ticker) on \(nativeToken.chain.name)")
-            
-            var addedCount = 0
-            var skippedHiddenCount = 0
-            var skippedExistingCount = 0
             
             for token in tokens {
                 do {
                     // Check if token is hidden by user
                     if isTokenHidden(token, vault: vault) {
-                        print("  ⛔ Skipping hidden token: \(token.ticker) on \(token.chain.name)")
-                        skippedHiddenCount += 1
                         continue
                     }
                     
                     let existingCoin =  vault.coin(for: token)
                     if existingCoin != nil {
-                        skippedExistingCount += 1
                         continue
                     }
                     
@@ -277,13 +182,11 @@ struct CoinService {
                         }) {
                             enrichedToken.priceProviderId = storeToken.priceProviderId
                             enrichedToken.logo = storeToken.logo // Also use the logo from store
-                            print("  📋 Enriched token from TokensStore: \(token.ticker) with priceProviderId: \(storeToken.priceProviderId)")
                         }
                     }
                     
                     // Skip tokens that still don't have priceProviderId after enrichment (likely spam)
                     if enrichedToken.priceProviderId.isEmpty {
-                        print("  ⚠️ Skipping token without priceProviderId: \(enrichedToken.ticker)")
                         continue
                     }
                     
@@ -303,30 +206,22 @@ struct CoinService {
                     }
                     
                     if isSpam {
-                        print("  🚫 Skipping suspected spam token: \(enrichedToken.ticker)")
                         continue
                     }
                     
                     // Check for non-ASCII characters (common in scam tokens using lookalike characters)
                     let asciiOnly = enrichedToken.ticker.allSatisfy { $0.isASCII }
                     if !asciiOnly {
-                        print("  🚫 Skipping token with non-ASCII characters: \(enrichedToken.ticker)")
                         continue
                     }
                     
                     _ = try await addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
-                    print("  ✅ Added token: \(enrichedToken.ticker) on \(enrichedToken.chain.name)")
-                    addedCount += 1
                 } catch {
-                    print("  ❌ Error adding token \(token.ticker): \(error.localizedDescription)")
+                    // Silent error handling
                 }
             }
-            
-            print("Auto-discovery summary: Found \(tokens.count), Added \(addedCount), Skipped hidden \(skippedHiddenCount), Skipped existing \(skippedExistingCount)")
         } catch {
-            print("❌ Error in auto-discovery: \(error)")
-            print("   Error type: \(type(of: error))")
-            print("   Error details: \(error.localizedDescription)")
+            // Silent error handling
         }
     }
     
@@ -347,41 +242,16 @@ struct CoinService {
     }
     
     private static func findRemovedCoins(vault: Vault, selection: Set<CoinMeta>) -> [Coin] {
-        print("--- Finding removed coins ---")
         let removed = vault.coins.filter { coin in
             let isInSelection = selection.contains(where: { meta in
-                let matches = meta.chain == coin.chain && meta.ticker == coin.ticker
-                if matches {
-                    print("  - Found match for \(coin.ticker) on \(coin.chain.name)")
-                }
-                return matches
+                meta.chain == coin.chain && meta.ticker == coin.ticker
             })
-            if !isInSelection {
-                print("  - Coin NOT in selection: \(coin.ticker) on \(coin.chain.name)")
-            }
             return !isInSelection
         }
-        print("Total removed coins: \(removed.count)")
         return removed
     }
     
     private static func findChainsWithRemovedNativeToken(vault: Vault, selection: Set<CoinMeta>) -> Set<Chain> {
-        print("--- Finding chains with removed native tokens ---")
-        
-        // First, let's see what native tokens are in the vault
-        let nativeTokensInVault = vault.coins.filter { $0.isNativeToken }
-        print("Native tokens in vault: \(nativeTokensInVault.count)")
-        for token in nativeTokensInVault {
-            print("  - Vault has native: \(token.ticker) on \(token.chain.name)")
-        }
-        
-        // Now check what native tokens are in selection
-        let nativeTokensInSelection = selection.filter { $0.isNativeToken }
-        print("Native tokens in selection: \(nativeTokensInSelection.count)")
-        for token in nativeTokensInSelection {
-            print("  - Selection has native: \(token.ticker) on \(token.chain.name)")
-        }
-        
         let removedNativeTokens = vault.coins.filter { coin in
             // Only check native tokens
             guard coin.isNativeToken else { return false }
@@ -391,16 +261,7 @@ struct CoinService {
                 meta.chain == coin.chain && meta.isNativeToken
             })
             
-            if !chainStillHasNativeToken {
-                print("  - Native token \(coin.ticker) on \(coin.chain.name) is being removed (chain has no native token in selection)")
-            }
-            
             return !chainStillHasNativeToken
-        }
-        
-        print("Removed native tokens: \(removedNativeTokens.count)")
-        for token in removedNativeTokens {
-            print("  - Native token removed: \(token.ticker) on \(token.chain.name)")
         }
         
         return Set(removedNativeTokens.map { $0.chain })
@@ -439,7 +300,6 @@ struct CoinService {
             let hiddenToken = HiddenToken(coin: coin)
             vault.hiddenTokens.append(hiddenToken)
             await Storage.shared.insert([hiddenToken])
-            print("Added to hidden tokens: \(coin.ticker) on \(coin.chain.name)")
         }
     }
     
@@ -458,7 +318,6 @@ struct CoinService {
             let hiddenToken = vault.hiddenTokens[index]
             vault.hiddenTokens.remove(at: index)
             await Storage.shared.delete(hiddenToken)
-            print("Removed from hidden tokens: \(token.ticker) on \(token.chain.name)")
         }
     }
     
@@ -475,7 +334,6 @@ struct CoinService {
         for (chain, coins) in coinsByChain {
             let hasNativeToken = coins.contains { $0.isNativeToken }
             if !hasNativeToken && !coins.isEmpty {
-                print("⚠️ WARNING: Chain \(chain.name) has \(coins.count) tokens but NO native token!")
                 orphanedTokens[chain] = coins
             }
         }
@@ -485,21 +343,16 @@ struct CoinService {
     
     /// Clear all hidden tokens for a specific chain
     static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) async {
-        print("Clearing hidden tokens for chain: \(chain.name)")
-        
         // Find all hidden tokens for this chain
         let hiddenTokensToRemove = vault.hiddenTokens.filter { hidden in
             hidden.coinMeta.chain == chain
         }
-        
-        print("Found \(hiddenTokensToRemove.count) hidden tokens to clear for \(chain.name)")
         
         // Remove them from the vault and storage
         for hiddenToken in hiddenTokensToRemove {
             if let index = vault.hiddenTokens.firstIndex(of: hiddenToken) {
                 vault.hiddenTokens.remove(at: index)
                 await Storage.shared.delete(hiddenToken)
-                print("  - Cleared hidden token: \(hiddenToken.coinMeta.ticker)")
             }
         }
     }
