@@ -315,8 +315,8 @@ extension BlockChainSpecific {
             self = .Solana(
                 recentBlockHash: value.recentBlockHash,
                 priorityFee: BigInt(stringLiteral: value.priorityFee),
-                fromAddressPubKey: value.fromTokenAssociatedAddress,
-                toAddressPubKey: value.toTokenAssociatedAddress,
+                fromAddressPubKey: value.fromTokenAssociatedAddress.isEmpty ? nil : value.fromTokenAssociatedAddress,
+                toAddressPubKey: value.toTokenAssociatedAddress.isEmpty ? nil : value.toTokenAssociatedAddress,
                 hasProgramId: value.programID
             )
         case .polkadotSpecific(let value):
