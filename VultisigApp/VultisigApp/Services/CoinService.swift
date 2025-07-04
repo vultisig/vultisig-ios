@@ -22,9 +22,6 @@ struct CoinService {
     }
     
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
-        // Check for invalid vault state
-        let orphanedTokens = detectOrphanedTokens(vault: vault)
-        
         do {
             // Step 1: Remove coins that are no longer selected
             try await removeDeselectedCoins(vault: vault, selection: selection)
@@ -184,28 +181,8 @@ struct CoinService {
                         continue
                     }
                     
-                    // Additional spam filtering
-                    let suspiciousPatterns = [
-                        "t.me/",           // Telegram links
-                        "claim",           // Claim scams
-                        "airdrop",         // Airdrop scams
-                        "visit",           // Visit scams
-                        "*",               // Wildcards
-                        "|"                // Pipe characters often used in scam names
-                    ]
-                    
-                    let tickerLower = enrichedToken.ticker.lowercased()
-                    let isSpam = suspiciousPatterns.contains { pattern in
-                        tickerLower.contains(pattern)
-                    }
-                    
-                    if isSpam {
-                        continue
-                    }
-                    
-                    // Check for non-ASCII characters (common in scam tokens using lookalike characters)
-                    let asciiOnly = enrichedToken.ticker.allSatisfy { $0.isASCII }
-                    if !asciiOnly {
+                    // Check for spam tokens
+                    if isSpamToken(enrichedToken) {
                         continue
                     }
                     
@@ -220,6 +197,36 @@ struct CoinService {
     }
     
     // MARK: - Helper Functions
+    
+    /// Check if a token appears to be spam based on its name and characteristics
+    private static func isSpamToken(_ token: CoinMeta) -> Bool {
+        // Additional spam filtering patterns
+        let suspiciousPatterns = [
+            "t.me/",           // Telegram links
+            "claim",           // Claim scams
+            "airdrop",         // Airdrop scams
+            "visit",           // Visit scams
+            "*",               // Wildcards
+            "|"                // Pipe characters often used in scam names
+        ]
+        
+        let tickerLower = token.ticker.lowercased()
+        let hasSpamPattern = suspiciousPatterns.contains { pattern in
+            tickerLower.contains(pattern)
+        }
+        
+        if hasSpamPattern {
+            return true
+        }
+        
+        // Check for non-ASCII characters (common in scam tokens using lookalike characters)
+        let asciiOnly = token.ticker.allSatisfy { $0.isASCII }
+        if !asciiOnly {
+            return true
+        }
+        
+        return false
+    }
     
     private static func findChainsBeingRemoved(selection: Set<CoinMeta>) -> Set<Chain> {
         // Get all unique chains from the selection
@@ -287,7 +294,9 @@ struct CoinService {
     private static func addToHiddenTokens(_ coin: Coin, vault: Vault) async {
         // Check if already hidden
         let alreadyHidden = vault.hiddenTokens.contains { hidden in
-            hidden.coinMeta == coin.toCoinMeta()
+            hidden.chain == coin.chain.rawValue &&
+            hidden.ticker == coin.ticker &&
+            hidden.contractAddress == coin.contractAddress
         }
         
         if !alreadyHidden {
@@ -300,14 +309,14 @@ struct CoinService {
     /// Check if a token is in the hidden list
     private static func isTokenHidden(_ token: CoinMeta, vault: Vault) -> Bool {
         return vault.hiddenTokens.contains { hidden in
-            hidden.coinMeta == token
+            hidden.matches(token)
         }
     }
     
     /// Remove a token from the hidden list (when user re-selects it)
     static func unhideToken(_ token: CoinMeta, vault: Vault) async {
         if let index = vault.hiddenTokens.firstIndex(where: { hidden in
-            hidden.coinMeta == token
+            hidden.matches(token)
         }) {
             let hiddenToken = vault.hiddenTokens[index]
             vault.hiddenTokens.remove(at: index)
@@ -339,7 +348,7 @@ struct CoinService {
     static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) async {
         // Find all hidden tokens for this chain
         let hiddenTokensToRemove = vault.hiddenTokens.filter { hidden in
-            hidden.coinMeta.chain == chain
+            hidden.chain == chain.rawValue
         }
         
         // Remove them from the vault and storage

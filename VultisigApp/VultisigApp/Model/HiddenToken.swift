@@ -10,30 +10,49 @@ import SwiftData
 
 @Model
 class HiddenToken {
-    var coinMeta: CoinMeta
+    var chain: String
+    var ticker: String
+    var contractAddress: String
     var hiddenAt: Date
     
-    init(coinMeta: CoinMeta) {
-        self.coinMeta = coinMeta
+    init(chain: Chain, ticker: String, contractAddress: String) {
+        self.chain = chain.rawValue
+        self.ticker = ticker
+        self.contractAddress = contractAddress
         self.hiddenAt = Date()
     }
     
+    convenience init(coinMeta: CoinMeta) {
+        self.init(chain: coinMeta.chain, ticker: coinMeta.ticker, contractAddress: coinMeta.contractAddress)
+    }
+    
     convenience init(coin: Coin) {
-        self.init(coinMeta: coin.toCoinMeta())
+        self.init(chain: coin.chain, ticker: coin.ticker, contractAddress: coin.contractAddress)
     }
     
     /// Unique identifier for matching tokens
     var identifier: String {
-        return "\(coinMeta.chain.rawValue)-\(coinMeta.ticker)-\(coinMeta.contractAddress)"
+        return "\(chain)-\(ticker)-\(contractAddress)"
+    }
+    
+    /// Check if this hidden token matches a CoinMeta
+    func matches(_ coinMeta: CoinMeta) -> Bool {
+        return chain == coinMeta.chain.rawValue &&
+               ticker == coinMeta.ticker &&
+               contractAddress == coinMeta.contractAddress
     }
 }
 
 extension HiddenToken: Hashable {
     static func == (lhs: HiddenToken, rhs: HiddenToken) -> Bool {
-        return lhs.coinMeta == rhs.coinMeta
+        return lhs.chain == rhs.chain &&
+               lhs.ticker == rhs.ticker &&
+               lhs.contractAddress == rhs.contractAddress
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(coinMeta)
+        hasher.combine(chain)
+        hasher.combine(ticker)
+        hasher.combine(contractAddress)
     }
 } 
