@@ -145,14 +145,20 @@ struct SendCryptoAddressBookView: View {
                 if coin.chain == tx.coin.chain {
                     let title = vault.name
                     let description = coin.address
+                    let vaultTitles = myAddresses.map { address in
+                        address.title
+                    }
+                    let vaultSet = Set(vaultTitles)
                     
-                    myAddresses.append(
-                        (
-                            id: UUID(),
-                            title: title,
-                            description: description
+                    if !vaultSet.contains(title) {
+                        myAddresses.append(
+                            (
+                                id: UUID(),
+                                title: title,
+                                description: description
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
