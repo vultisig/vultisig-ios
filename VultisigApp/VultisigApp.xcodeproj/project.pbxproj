@@ -10,6 +10,7 @@
 		049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VultisigLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
+		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
 		461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
 		461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */; };
@@ -745,9 +746,9 @@
 		A6SEC0102E1234567890AB01 /* AvailableSecurityProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0102E1234567890AB02 /* AvailableSecurityProviders.swift */; };
 		A6SEC0112E1234567890AB01 /* SecurityScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0112E1234567890AB02 /* SecurityScanViewModel.swift */; };
 		A6SEC0132E1234567890AB01 /* SecurityScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScanView.swift */; };
-		A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */; };
-		A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */; };
-		A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */; };
+		A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */; };
+		A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */; };
+		A6SEC9932E1234567890AB01 /* SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */; };
 		B50DB3742E0B7E5C00485E94 /* ClassDiagram.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3732E0B7E5500485E94 /* ClassDiagram.md */; };
 		B50DB3762E0B9E9E00485E94 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3752E0B9E9E00485E94 /* Security.md */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
@@ -1705,9 +1706,9 @@
 		A6SEC0102E1234567890AB02 /* AvailableSecurityProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableSecurityProviders.swift; sourceTree = "<group>"; };
 		A6SEC0112E1234567890AB02 /* SecurityScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScanViewModel.swift; sourceTree = "<group>"; };
 		A6SEC0132E1234567890AB02 /* SecurityScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScanView.swift; sourceTree = "<group>"; };
-		A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceTests.swift; sourceTree = "<group>"; };
-		A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceAPIResponseTests.swift; sourceTree = "<group>"; };
-		A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceChainCoverageTests.swift; sourceTree = "<group>"; };
+		A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceTests.swift; sourceTree = "<group>"; };
+		A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceAPIResponseTests.swift; sourceTree = "<group>"; };
+		A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceChainCoverageTests.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B50DB3732E0B7E5500485E94 /* ClassDiagram.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ClassDiagram.md; sourceTree = "<group>"; };
 		B50DB3752E0B9E9E00485E94 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
@@ -1908,6 +1909,7 @@
 		DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignedTransactionResult.swift; sourceTree = "<group>"; };
 		E7DBBE9179D24F73ADF22596 /* ExtensionMemoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionMemoServiceTests.swift; sourceTree = "<group>"; };
 		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
+		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3573,6 +3575,7 @@
 				A67530612CAFBDC200B1E344 /* Folder.swift */,
 				A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */,
 				A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */,
+				FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -3811,9 +3814,9 @@
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
-				A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */,
-				A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */,
-				A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */,
+				A6SEC9912E1234567890AB02 /* SecurityServiceTests.swift */,
+				A6SEC9922E1234567890AB02 /* SecurityServiceAPIResponseTests.swift */,
+				A6SEC9932E1234567890AB02 /* SecurityServiceChainCoverageTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -4005,7 +4008,7 @@
 			);
 			mainGroup = DE49A15A2B65F6D9000F3AFB;
 			packageReferences = (
-				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */,
+				D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */,
 				DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */,
 				DEFF59022BD23A12005DFDF9 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
@@ -4968,6 +4971,7 @@
 				DEEB57282D096BC100B120D1 /* DERSignature.swift in Sources */,
 				DEEB57292D096BC100B120D1 /* DKLSKeysign.swift in Sources */,
 				A6C671392CA3C7EE00F59B6A /* VaultDeletionDetails+macOS.swift in Sources */,
+				43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4983,9 +4987,9 @@
 				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
-				A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */,
-				A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */,
-				A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */,
+				A6SEC9912E1234567890AB01 /* SecurityServiceTests.swift in Sources */,
+				A6SEC9922E1234567890AB01 /* SecurityServiceAPIResponseTests.swift in Sources */,
+				A6SEC9932E1234567890AB01 /* SecurityServiceChainCoverageTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5407,7 +5411,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "../Mediator" */ = {
+		D9A22EB52B667C41007281BF /* XCLocalSwiftPackageReference "Mediator" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Mediator;
 		};
