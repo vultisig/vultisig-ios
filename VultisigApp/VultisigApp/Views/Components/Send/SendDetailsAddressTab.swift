@@ -57,6 +57,7 @@ struct SendDetailsAddressTab: View {
                 Spacer()
             }
         }
+        .background(Background().opacity(0.01))
         .onTapGesture {
             viewModel.selectedTab = .Address
         }

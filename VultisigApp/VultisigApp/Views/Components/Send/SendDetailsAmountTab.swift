@@ -64,6 +64,7 @@ struct SendDetailsAmountTab: View {
 //                gasSelector
 //            }
         }
+        .background(Background().opacity(0.01))
         .onTapGesture {
             viewModel.selectedTab = .Amount
         }
