@@ -82,27 +82,52 @@ var fields: some View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getDetailsCell(for: "vault", with: vault.name)
+            summaryTitle
+            summaryCoinDetails
             Separator()
-            getAddressCell(for: "from", with: tx.fromAddress)
+            getValueCell(for: "from", with: vault.name, bracketValue: tx.fromAddress)
             Separator()
-            getAddressCell(for: "to", with: tx.toAddress)
+            getValueCell(for: "to", with: tx.toAddress)
+            Separator()
+            getValueCell(for: "network", with: tx.coin.chain.name, showIcon: true)
+            Separator()
             
             if !tx.memo.isEmpty {
+                getValueCell(for: "memo", with: tx.memo)
                 Separator()
-                getDetailsCell(for: "memo", with: tx.memo)
             }
             
-            Separator()
-            getDetailsCell(for: "amount", with: getAmount())
-            Separator()
-            getDetailsCell(for: "value", with: getFiatAmount())
-            Separator()
-            getDetailsCell(for: "networkFee", with: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
+            getValueCell(for: "estNetworkFee", with: tx.gasInReadable, secondRowText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
         }
         .padding(16)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var summaryTitle: some View {
+        Text(NSLocalizedString("youreSending", comment: ""))
+            .foregroundColor(.lightText)
+            .font(.body16BrockmannMedium)
+            .padding(.bottom, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var summaryCoinDetails: some View {
+        HStack(spacing: 8) {
+            Image(tx.coin.chain.name)
+                .resizable()
+                .frame(width: 24, height: 24)
+                .cornerRadius(32)
+            
+            Text(tx.amount)
+                .foregroundColor(.neutral0)
+            
+            Text(tx.coin.ticker)
+                .foregroundColor(.extraLightGray)
+            
+            Spacer()
+        }
+        .font(.body18BrockmannMedium)
     }
     
     var checkboxes: some View {
@@ -112,8 +137,6 @@ var fields: some View {
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
         }
     }
-    
-    
     
     private func setData() {
         isButtonDisabled = false
@@ -140,33 +163,52 @@ var fields: some View {
             }
         }
     }
-
-    private func getAddressCell(for title: String, with address: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString(title, comment: ""))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-            Text(address)
-                .font(.body13MenloBold)
-                .foregroundColor(.turquoise600)
-                .truncationMode(.middle)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
     
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-            )
+    func getValueCell(
+        for title: String,
+        with value: String,
+        bracketValue: String? = nil,
+        secondRowText: String? = nil,
+        showIcon: Bool = false
+    ) -> some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString(title, comment: ""))
+                .foregroundColor(.extraLightGray)
+            
             Spacer()
-            Text(value)
+            
+            if showIcon {
+                Image(value)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+            }
+            
+            VStack(alignment: .trailing) {
+                Text(value)
+                    .foregroundColor(.neutral0)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                
+                if let secondRowText {
+                    Text(secondRowText)
+                        .foregroundColor(.extraLightGray)
+                }
+            }
+            
+            if let bracketValue {
+                Group {
+                    Text("(") +
+                    Text(bracketValue) +
+                    Text(")")
+                }
+                .foregroundColor(.extraLightGray)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            }
+            
         }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
+        .font(.body14BrockmannMedium)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func getAmount() -> String {
