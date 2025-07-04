@@ -695,3 +695,5 @@
 "addMemo" = "MEMO hinzufügen";
 "savedAddresses" = "Gespeicherte Adressen";
 "myVaults" = "Meine Tresore";
+"youreSending" = "Du sendest";
+"holdForPairedSign" = "Halte für gekoppeltes Signieren";

@@ -678,3 +678,5 @@
 "addMemo" = "Aggiungi MEMO";
 "savedAddresses" = "Indirizzi salvati";
 "myVaults" = "I miei Vault";
+"youreSending" = "Stai inviando";
+"holdForPairedSign" = "Tieni premuto per la firma abbinata";

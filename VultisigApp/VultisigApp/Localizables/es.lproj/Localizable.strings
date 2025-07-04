@@ -681,3 +681,5 @@
 "addMemo" = "Agregar MEMO";
 "savedAddresses" = "Direcciones guardadas";
 "myVaults" = "Mis Bóvedas";
+"youreSending" = "Estás enviando";
+"holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
