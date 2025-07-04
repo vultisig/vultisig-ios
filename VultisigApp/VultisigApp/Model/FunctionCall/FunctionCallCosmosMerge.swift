@@ -11,7 +11,7 @@ import Combine
 
 /**
  
- 3) THORCHAIN - FUNCTION: “EXECUTE CONTRACT”
+ 3) THORCHAIN - FUNCTION: "EXECUTE CONTRACT"
  
  UI Elements:
  •    Dropdown: Select action (only one for now: "RUJI MERGE")
@@ -57,14 +57,14 @@ class FunctionCallCosmosMerge: ObservableObject {
             return normalized
         })
         
-        for token in tokensToMerge {
+        for token in ThorchainMergeTokens.tokensToMerge {
             let normalizedToken = token.denom.lowercased().replacingOccurrences(of: "thor.", with: "")
             if coinsInVault.contains(normalizedToken) {
                 tokens.append(.init(value: token.denom.uppercased()))
             }
         }
         
-        if let match = tokensToMerge.first(where: {
+        if let match = ThorchainMergeTokens.tokensToMerge.first(where: {
             $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
         }) {
             selectedToken = .init(value: match.denom.uppercased())
@@ -147,7 +147,7 @@ class FunctionCallCosmosMerge: ObservableObject {
                 onSelect: { asset in
                     self.selectedToken = asset
                     self.tokenValid = asset.value.lowercased() != "select the token to be merged"
-                    self.destinationAddress = self.tokensToMerge.first {
+                    self.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
                     
@@ -197,18 +197,4 @@ class FunctionCallCosmosMerge: ObservableObject {
             .id("field-\(self.balanceLabel)-\(self.amount)")
         })
     }
-    
-    struct TokenMergeInfo: Codable {
-        let denom: String
-        let wasmContractAddress: String
-    }
-    
-    private let tokensToMerge: [TokenMergeInfo] = [
-        TokenMergeInfo(denom: "thor.kuji", wasmContractAddress: "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"),
-        TokenMergeInfo(denom: "thor.rkuji", wasmContractAddress: "thor1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh"),
-        TokenMergeInfo(denom: "thor.fuzn", wasmContractAddress: "thor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrsw5xx2d"),
-        TokenMergeInfo(denom: "thor.nstk", wasmContractAddress: "thor1cnuw3f076wgdyahssdkd0g3nr96ckq8cwa2mh029fn5mgf2fmcmsmam5ck"),
-        TokenMergeInfo(denom: "thor.wink", wasmContractAddress: "thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y"),
-        TokenMergeInfo(denom: "thor.lvn", wasmContractAddress: "thor1ltd0maxmte3xf4zshta9j5djrq9cl692ctsp9u5q0p9wss0f5lms7us4yf")
-    ]
 }

@@ -202,7 +202,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .akash:
             return "3000" // 0.003 AKT Cosmos station uses something like that
         case .tron:
-            return "800000"
+            return "100000" // 0.1 TRX = 100000 SUN
         }
     }
     

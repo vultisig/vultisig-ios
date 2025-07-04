@@ -26,6 +26,7 @@ enum FunctionCallInstance {
     case removePool(FunctionCallRemoveLiquidityMaya)
     case cosmosIBC(FunctionCallCosmosIBC)
     case merge(FunctionCallCosmosMerge)
+    case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
     
     var view: AnyView {
@@ -60,11 +61,13 @@ enum FunctionCallInstance {
             return memo.getView()
         case .merge(let memo):
             return memo.getView()
+        case .unmerge(let memo):
+            return memo.getView()
         case .theSwitch(let memo):
             return memo.getView()
         }
     }
-
+    
     var description: String {
         switch self {
         case .bond(let memo):
@@ -97,11 +100,13 @@ enum FunctionCallInstance {
             return memo.description
         case .merge(let memo):
             return memo.description
+        case .unmerge(let memo):
+            return memo.description
         case .theSwitch(let memo):
             return memo.description
         }
     }
-
+    
     var amount: Decimal {
         switch self {
         case .bond(let memo):
@@ -134,11 +139,13 @@ enum FunctionCallInstance {
             return memo.amount
         case .merge(let memo):
             return memo.amount
+        case .unmerge(let memo):
+            return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
         }
     }
-
+    
     var toAddress: String? {
         switch self {
         case .stake(let memo):
@@ -149,13 +156,15 @@ enum FunctionCallInstance {
             return memo.destinationAddress
         case .merge(let memo):
             return memo.destinationAddress
+        case .unmerge(let memo):
+            return memo.destinationAddress
         case .theSwitch(let memo):
             return memo.destinationAddress
         default:
             return nil
         }
     }
-
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .bond(let memo):
@@ -188,22 +197,28 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .merge(let memo):
             return memo.toDictionary()
+        case .unmerge(let memo):
+            return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
         }
     }
-
+    
     func getTransactionType() -> VSTransactionType {
         switch self {
         case .vote(_):
             return VSTransactionType.vote
         case .cosmosIBC(_):
             return VSTransactionType.ibcTransfer
+        case .merge(_):
+            return VSTransactionType.thorMerge
+        case .unmerge(_):
+            return VSTransactionType.thorUnmerge
         default:
             return .unspecified
         }
     }
-
+    
     var isTheFormValid: Bool {
         switch self {
         case .bond(let memo):
@@ -236,11 +251,13 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .merge(let memo):
             return memo.isTheFormValid
+        case .unmerge(let memo):
+            return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
         }
     }
-
+    
     static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:

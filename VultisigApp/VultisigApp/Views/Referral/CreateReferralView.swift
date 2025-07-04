@@ -53,8 +53,7 @@ struct CreateReferralView: View {
                     depositVerifyViewModel: functionCallVerifyViewModel,
                     tx: sendTx,
                     vault: vault,
-                    isForReferral: true,
-                    referralViewModel: referralViewModel
+                    isForReferral: true
                 )
             } else {
                 SendCryptoVaultErrorView()

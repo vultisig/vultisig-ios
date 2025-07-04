@@ -15,7 +15,7 @@ extension SendCryptoDetailsView {
     
     var view: some View {
         VStack {
-            fields
+            tabs
             buttonContainer
                 .padding(.horizontal, 8)
                 .padding(.vertical, -12)
@@ -26,37 +26,6 @@ extension SendCryptoDetailsView {
         button
             .padding(.horizontal, 40)
             .padding(.bottom, 40)
-    }
-    
-    var fields: some View {
-        ScrollViewReader { value in
-            ScrollView {
-                VStack(spacing: 16) {
-                    coinSelector
-                    fromField
-                    toField
-                    
-                    if tx.coin.isNativeToken || tx.coin.chainType == .Cosmos || tx.coin.ticker == "TCY" {
-                        memoField
-                    }
-                    
-                    amountField
-                    amountFiatField
-                    
-                    if !tx.coin.isNativeToken {
-                        balanceNativeTokenField
-                    }
-                    
-                    getSummaryCell(leadingText: NSLocalizedString("networkFee", comment: ""), trailingText: "\(tx.gasInReadable)(~\(sendCryptoViewModel.feesInReadable(tx: tx, vault: vault)))")
-                    
-                    if tx.canBeReaped {
-                        existentialDepositTextMessage
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(26)
-            }
-        }
     }
     
     func setData() {

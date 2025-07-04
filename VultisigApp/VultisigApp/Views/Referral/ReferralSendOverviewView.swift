@@ -11,7 +11,6 @@ struct ReferralSendOverviewView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
-    @ObservedObject var referralViewModel: ReferralViewModel
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -132,7 +131,7 @@ struct ReferralSendOverviewView: View {
             
             getCell(
                 title: "memo",
-                description: getMemo(),
+                description: sendTx.memo,
                 isForMemo: true
             )
         }
@@ -176,13 +175,9 @@ struct ReferralSendOverviewView: View {
         
         return nativeCoin.address
     }
-    
-    private func getMemo() -> String {
-        "createthorname:\(referralViewModel.referralCode):\(referralViewModel.nativeCoin?.address ?? "")"
-    }
 }
 
 #Preview {
-    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel(), referralViewModel: ReferralViewModel())
+    ReferralSendOverviewView(sendTx: SendTransaction(), functionCallViewModel: FunctionCallViewModel(), functionCallVerifyViewModel: FunctionCallVerifyViewModel())
         .environmentObject(HomeViewModel())
 }

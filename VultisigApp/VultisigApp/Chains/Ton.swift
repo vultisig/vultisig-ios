@@ -21,7 +21,7 @@ enum TonHelper {
             throw HelperError.runtimeError("coin is not TON")
         }
         
-        guard case .Ton(let sequenceNumber, let expireAt, _, let sendMaxAmount) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
@@ -40,17 +40,23 @@ enum TonHelper {
         
         let transfer = TheOpenNetworkTransfer.with {
             $0.dest = toAddress.description
-            $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
+            // When using attachAllContractBalance mode, amount is ignored, so set to 0 for clarity
+            $0.amount = sendMaxAmount ? 0 : (UInt64(keysignPayload.toAmount.description) ?? 0)
             $0.mode = sendMode
+            
+            // Set bounceable based on chainSpecific parameter
+            var shouldBounce = bounceable
             
             if let memo = keysignPayload.memo  {
                 $0.comment = memo
-                // If it is a deposit or a withdraw for staking function, then it can be bounceable
-                $0.bounceable = (memo.trimmingCharacters(in: .whitespacesAndNewlines) == "d" ||
-                                 memo.trimmingCharacters(in: .whitespacesAndNewlines) == "w")
-                
+                // Override bounceable for staking operations (deposit "d" or withdraw "w")
+                if memo.trimmingCharacters(in: .whitespacesAndNewlines) == "d" ||
+                   memo.trimmingCharacters(in: .whitespacesAndNewlines) == "w" {
+                    shouldBounce = true
+                }
             }
             
+            $0.bounceable = shouldBounce
         }
         
         let input = TheOpenNetworkSigningInput.with {

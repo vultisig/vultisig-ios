@@ -58,9 +58,9 @@ extension Coin {
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {
-                return [.mayachain, .kyberswap(chain), .oneinch(chain), .lifi]
+                return [.mayachain, .oneinch(chain), .lifi, .kyberswap(chain), ]
             } else {
-                return [.kyberswap(chain), .oneinch(chain), .lifi]
+                return [.oneinch(chain), .lifi, .kyberswap(chain), ]
             }
         case .base:
             if thorBaseTokens.contains(ticker) {

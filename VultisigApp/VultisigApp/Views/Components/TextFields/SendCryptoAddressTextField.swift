@@ -17,6 +17,7 @@ struct SendCryptoAddressTextField: View {
     @State var showImagePicker = false
     @State var isUploading: Bool = false
     @State var showCameraScanView = false
+    @State var showAddressBookSheet: Bool = false
     
 #if os(iOS)
     @State var selectedImage: UIImage?
@@ -25,7 +26,18 @@ struct SendCryptoAddressTextField: View {
 #endif
     
     var body: some View {
-        container
+        VStack {
+            container
+            
+            if sendCryptoViewModel.showAddressAlert {
+                errorText
+            }
+            
+            buttons
+        }
+        .sheet(isPresented: $showAddressBookSheet) {
+            SendCryptoAddressBookView(tx: tx, showSheet: $showAddressBookSheet)
+        }
     }
     
     var content: some View {
@@ -56,14 +68,19 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
+    var buttons: some View {
+        HStack(spacing: 8) {
+            pasteButton
+            scanButton
+            addressBookButton
+        }
+    }
+    
     var pasteButton: some View {
         Button {
             pasteAddress()
         } label: {
-            Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("square.on.square")
         }
     }
     
@@ -71,10 +88,7 @@ struct SendCryptoAddressTextField: View {
         Button {
             showScanner.toggle()
         } label: {
-            Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("camera")
         }
     }
     
@@ -82,30 +96,41 @@ struct SendCryptoAddressTextField: View {
         Button {
             showImagePicker.toggle()
         } label: {
-            Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("photo.badge.plus")
         }
     }
     
     var addressBookButton: some View {
-        NavigationLink {
-            AddressBookView(returnAddress: $tx.toAddress, coin: tx.coin).onDisappear {
-                DebounceHelper.shared.debounce {
-                    validateAddress(tx.toAddress)
-                }
-            }
+        Button {
+            showAddressBookSheet.toggle()
         } label: {
-            Image(systemName: "text.book.closed")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("text.book.closed")
         }
+    }
+    
+    var errorText: some View {
+        Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.alertYellow)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func getButton(_ icon: String) -> some View {
+        Image(systemName: icon)
+            .font(.body18BrockmannMedium)
+            .foregroundColor(.neutral0)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.blue400, lineWidth: 1)
+            )
+            .padding(1)
     }
 }
 

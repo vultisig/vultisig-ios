@@ -19,7 +19,6 @@ struct FunctionCallVerifyView: View {
     
     @State var fastPasswordPresented = false
     @State var isForReferral = false
-    @State var referralViewModel = ReferralViewModel()
     
     var body: some View {
         ZStack {
@@ -41,8 +40,7 @@ struct FunctionCallVerifyView: View {
                 ReferralSendOverviewView(
                     sendTx: tx,
                     functionCallViewModel: depositViewModel,
-                    functionCallVerifyViewModel: depositVerifyViewModel,
-                    referralViewModel: referralViewModel
+                    functionCallVerifyViewModel: depositVerifyViewModel
                 )
             } else {
                 ScrollView {

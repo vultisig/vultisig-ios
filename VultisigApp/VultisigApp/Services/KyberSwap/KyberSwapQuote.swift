@@ -14,7 +14,7 @@ struct KyberSwapQuote: Codable, Hashable {
         let amountInUsd: String
         let amountOut: String
         let amountOutUsd: String
-        let gas: String
+        var gas: String
         let gasUsd: String
         let data: String
         let routerAddress: String
