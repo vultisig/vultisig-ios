@@ -11,22 +11,16 @@ import SwiftData
 @MainActor
 struct CoinService {
     
-    // MARK: - Core Operations
-    
-    /// Removes the specified coins from the vault and storage
     static func removeCoins(coins: [Coin], vault: Vault) async throws {
         for coin in coins {
             if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                 vault.coins.remove(at: idx)
             }
+            
             await Storage.shared.delete(coin)
         }
     }
     
-    /// Main entry point for saving asset selection changes
-    /// - Parameters:
-    ///   - vault: The vault to update
-    ///   - selection: The new set of selected assets
     static func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
         // Check for invalid vault state
         let orphanedTokens = detectOrphanedTokens(vault: vault)
@@ -39,7 +33,7 @@ struct CoinService {
             try await addNewlySelectedCoins(vault: vault, selection: selection)
             
         } catch {
-            // Silent error handling
+            print("fail to save asset,\(error)")
         }
     }
     
@@ -217,11 +211,11 @@ struct CoinService {
                     
                     _ = try await addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
                 } catch {
-                    // Silent error handling
+                    print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
                 }
             }
         } catch {
-            // Silent error handling
+            print("Error fetching service: \(error.localizedDescription)")
         }
     }
     

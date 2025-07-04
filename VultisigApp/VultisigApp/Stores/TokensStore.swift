@@ -1,7 +1,7 @@
 import Foundation
 
 class TokensStore {
-    
+
     static let TokenSelectionAssets = [
         CoinMeta(
             chain: .akash,

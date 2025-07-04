@@ -218,6 +218,7 @@ class RpcEvmService: RpcService {
             
             return (name, symbol, decimals)
         } catch {
+            print(error.localizedDescription)
             return (.empty, .empty, .zero)
         }
     }
@@ -387,6 +388,7 @@ class RpcEvmService: RpcService {
             return tokenMetadata
             
         } catch {
+            print("Error fetching tokens: \(error)")
             return []
         }
     }
