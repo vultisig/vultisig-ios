@@ -11,8 +11,18 @@ struct SendCryptoAddressBookCell: View {
     let title: String
     let description: String
     let icon: String?
+    @ObservedObject var tx: SendTransaction
+    @Binding var showSheet: Bool
     
     var body: some View {
+        Button {
+            handleButtonTap()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         HStack {
             image
             content
@@ -66,8 +76,9 @@ struct SendCryptoAddressBookCell: View {
                 .foregroundColor(color)
         }
     }
-}
-
-#Preview {
-    SendCryptoAddressBookCell(title: "Online Wallet", description: "0xF43jf9840fkfjn38fk0dk9Ac5", icon: nil)
+    
+    private func handleButtonTap() {
+        tx.toAddress = description
+        showSheet = false
+    }
 }

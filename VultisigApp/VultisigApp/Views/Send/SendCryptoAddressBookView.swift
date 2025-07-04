@@ -9,8 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct SendCryptoAddressBookView: View {
+    @ObservedObject var tx: SendTransaction
+    @Binding var showSheet: Bool
+    
     @State var isSavedAddressesSelected: Bool = true
     
+    @Query var vaults: [Vault]
     @Query var savedAddresses: [AddressBookItem]
     
     var body: some View {
@@ -68,24 +72,38 @@ struct SendCryptoAddressBookView: View {
     var list: some View {
         ScrollView {
             if isSavedAddressesSelected {
-//                if savedAddresses.count > 0 {
-//                    savedAddressesList
-//                } else {
+                if savedAddresses.count > 0 {
+                    savedAddressesList
+                } else {
                     errorMessage
-//                }
+                }
             } else {
-                
+                if vaults.count > 0 {
+                    myAddressesList
+                } else {
+                    errorMessage
+                }
             }
         }
     }
     
     var savedAddressesList: some View {
         ForEach(savedAddresses) { address in
-            SendCryptoAddressBookCell(
-                title: address.title,
-                description: address.address,
-                icon: address.coinMeta.logo
-            )
+            VStack(spacing: 18) {
+                SendCryptoAddressBookCell(
+                    title: address.title,
+                    description: address.address,
+                    icon: address.coinMeta.logo,
+                    tx: tx,
+                    showSheet: $showSheet
+                )
+            }
+        }
+    }
+    
+    var myAddressesList: some View {
+        ZStack {
+            
         }
     }
     
@@ -108,5 +126,5 @@ struct SendCryptoAddressBookView: View {
 }
 
 #Preview {
-    SendCryptoAddressBookView()
+    SendCryptoAddressBookView(tx: SendTransaction(), showSheet: .constant(true))
 }
