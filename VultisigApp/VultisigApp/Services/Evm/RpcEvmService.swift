@@ -342,8 +342,7 @@ class RpcEvmService: RpcService {
                     guard
                         let response = result as? [String: Any],
                         let symbol = response["symbol"] as? String,
-                        !symbol.isEmpty,
-                        let name = response["name"] as? String
+                        !symbol.isEmpty
                     else {
                         return nil
                     }
@@ -358,22 +357,22 @@ class RpcEvmService: RpcService {
                         return nil
                     }
                     
-                    // Handle logo - can be String or null
-                    let logo = response["logo"] as? String ?? ""
-                    
                     // Try to find priceProviderId from TokensStore
-                    let priceProviderId = TokensStore.TokenSelectionAssets.first(where: { token in
+                    let tokenFromTokenStore = TokensStore.TokenSelectionAssets.first(where: { token in
                         token.chain == nativeToken.chain &&
                         token.ticker == symbol &&
                         token.contractAddress.lowercased() == contractAddress.lowercased()
-                    })?.priceProviderId ?? ""
+                    })
+                    
+                    // Handle logo - can be String or null
+                    let logo = tokenFromTokenStore?.logo ?? response["logo"] as? String ?? ""
                     
                     return CoinMeta(
                         chain: nativeToken.chain,
                         ticker: symbol,
                         logo: logo,
                         decimals: decimals,
-                        priceProviderId: priceProviderId,
+                        priceProviderId: tokenFromTokenStore?.priceProviderId ?? "",
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )
