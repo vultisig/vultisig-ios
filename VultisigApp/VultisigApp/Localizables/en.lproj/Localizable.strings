@@ -147,7 +147,7 @@
 "keysignFinished" = "KEYSIGN FINISHED...";
 "scanWithPairedDevice" = "Scan with your Paired device:";
 "waitingForKeygenStart" = "Waiting for key generation to start...";
-"sendingRightAddressCheck" = "I’m sending to the right address";
+"sendingRightAddressCheck" = "I’m sending to the correct address";
 "correctAmountCheck" = "The amount is correct";
 "notHackedCheck" = "I’m not sending my money to a scam or hacker";
 "wrongVaultTryAgain" = "Wrong Vault or Pair Device.";
