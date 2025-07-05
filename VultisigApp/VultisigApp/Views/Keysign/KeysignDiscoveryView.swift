@@ -95,11 +95,8 @@ struct KeysignDiscoveryView: View {
     }
     
     var button: some View {
-        VStack {
-            signButton
-            switchLink
-        }
-        .background(Color.backgroundBlue)
+        switchLink
+            .background(Color.backgroundBlue)
     }
     
     var portraitContent: some View {
