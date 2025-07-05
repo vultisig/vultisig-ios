@@ -38,7 +38,7 @@ struct KeysignDiscoveryView: View {
     @Environment(\.displayScale) var displayScale
     
     let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+        GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16)
     ]
     
     let adaptiveColumnsMac = [
