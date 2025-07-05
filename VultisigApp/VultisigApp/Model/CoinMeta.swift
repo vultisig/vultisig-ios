@@ -11,11 +11,11 @@ import WalletCore
 struct CoinMeta : Hashable, Codable{
     let chain: Chain
     let ticker: String
-    let logo: String
+    var logo: String
     let decimals: Int
     let contractAddress: String
     let isNativeToken: Bool
-    let priceProviderId: String
+    var priceProviderId: String
     
     init(chain: Chain,
          ticker: String,
