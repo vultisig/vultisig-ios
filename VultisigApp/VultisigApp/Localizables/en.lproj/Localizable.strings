@@ -729,3 +729,5 @@
 "youreSending" = "You’re sending";
 "holdForPairedSign" = "Hold for paired sign";
 "waitingOnDevice" = "Waiting on device";
+"enterServerPassword" = "Enter server password";
+"confirm" = "Confirm";
