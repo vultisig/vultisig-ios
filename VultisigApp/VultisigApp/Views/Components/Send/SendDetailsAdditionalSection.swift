@@ -78,7 +78,6 @@ struct SendDetailsAdditionalSection: View {
     var networkFeeDescription: some View {
         VStack {
             Text(tx.gasInReadable)
-            Spacer()
             
             if let selectedVault = homeViewModel.selectedVault {
                 Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))

@@ -679,3 +679,5 @@
 "addMemo" = "Adicionar MEMO";
 "savedAddresses" = "Endereços salvos";
 "myVaults" = "Meus Cofres";
+"youreSending" = "Você está enviando";
+"holdForPairedSign" = "Segure para assinatura emparelhada";
