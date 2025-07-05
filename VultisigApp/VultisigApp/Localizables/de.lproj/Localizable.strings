@@ -697,3 +697,6 @@
 "myVaults" = "Meine Tresore";
 "youreSending" = "Du sendest";
 "holdForPairedSign" = "Halte für gekoppeltes Signieren";
+"waitingOnDevice" = "Warte auf Gerät";
+"enterServerPassword" = "Server-Passwort eingeben";
+"confirm" = "Bestätigen";

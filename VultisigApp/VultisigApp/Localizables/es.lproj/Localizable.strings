@@ -683,3 +683,9 @@
 "myVaults" = "Mis Bóvedas";
 "youreSending" = "Estás enviando";
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
+"waitingOnDevice" = "Esperando al dispositivo";
+"enterServerPassword" = "Ingrese la contraseña del servidor";
+"confirm" = "Confirmar";
+"waitingOnDevice" = "Esperando al dispositivo";
+"enterServerPassword" = "Ingrese la contraseña del servidor";
+"confirm" = "Confirmar";
