@@ -51,25 +51,6 @@ extension KeysignDiscoveryView {
             .frame(width: getMinSize(), height: getMinSize())
     }
     
-    var signButton: some View {
-        let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
-        
-        return Button(action: {
-            isLoading = true
-            startKeysign()
-        }) {
-            FilledButton(
-                title: isDisabled ? "waitingOnDevices..." : "sign",
-                textColor: isDisabled ? .textDisabled : .blue600,
-                background: isDisabled ? .buttonDisabled : .turquoise600
-            )
-        }
-        .disabled(isDisabled)
-        .padding(.horizontal, 28)
-        .edgesIgnoringSafeArea(.bottom)
-        .padding(.bottom, 8)
-    }
-    
     var QRCodeContent: some View {
         VStack {
             paringQRCode

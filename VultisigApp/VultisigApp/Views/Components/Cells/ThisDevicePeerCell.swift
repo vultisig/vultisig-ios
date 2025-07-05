@@ -16,8 +16,6 @@ struct ThisDevicePeerCell: View {
     
     var cell: some View {
         HStack(spacing: 8) {
-            check
-            
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
@@ -26,12 +24,12 @@ struct ThisDevicePeerCell: View {
             Spacer()
         }
         .padding(16)
-        .frame(height: 50)
-        .background(Color.blue600)
+        .frame(height: 70)
+        .background(Color.checkboxBlue)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.alertTurquoise, lineWidth: 2)
+                .stroke(Color.alertTurquoise.opacity(0.25), lineWidth: 1)
         )
         .padding(1)
     }
@@ -40,7 +38,7 @@ struct ThisDevicePeerCell: View {
         Text(deviceName)
             .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
-            .lineLimit(1)
+            .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -48,14 +46,8 @@ struct ThisDevicePeerCell: View {
         Text(NSLocalizedString("thisDevice", comment: ""))
             .font(.body12BrockmannMedium)
             .foregroundColor(.lightText)
-            .lineLimit(1)
+            .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var check: some View {
-        Image(systemName: "checkmark.circle.fill")
-            .font(.body24MontserratMedium)
-            .foregroundColor(.alertTurquoise)
     }
 }
 

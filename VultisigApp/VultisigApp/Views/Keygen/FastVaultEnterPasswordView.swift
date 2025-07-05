@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
-    
     @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
     
     @State var isLoading: Bool = false
@@ -28,7 +27,6 @@ struct FastVaultEnterPasswordView: View {
         VStack {
             passwordField
             Spacer(minLength: 20)
-            disclaimer
             buttons
         }
         .onAppear {
@@ -38,31 +36,20 @@ struct FastVaultEnterPasswordView: View {
     
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("FastVault password")
-                .font(.body14MontserratMedium)
+            Text(NSLocalizedString("enterServerPassword", comment: ""))
+                .font(.body34BrockmannMedium)
                 .foregroundColor(.neutral0)
+                .padding(.top, 24)
             
             textfield
+                .padding(.top, 80)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 30)
     }
     
     var textfield: some View {
         HiddenTextField(placeholder: "enterPassword", password: $password)
             .padding(.top, 8)
-    }
-    
-    var disclaimer: some View {
-        VStack{
-            OutlinedDisclaimer(text: NSLocalizedString("fastVaultEnterDisclaimer", comment: ""))
-                .padding(.horizontal, 16)
-            
-            if let hint = keychain.getFastHint(pubKeyECDSA: vault.pubKeyECDSA) {
-                OutlinedDisclaimer(text: NSLocalizedString("wrongPasswordHint", comment: "") + (hint) )
-                    .padding(.horizontal, 16)
-            }
-        }
     }
     
     var buttons: some View {
@@ -80,7 +67,11 @@ struct FastVaultEnterPasswordView: View {
                 await checkPassword()
             }
         }) {
-            FilledButton(title: "continue")
+            FilledButton(
+                title: "confirm",
+                textColor: isSaveButtonDisabled ? .textDisabled : .neutral0,
+                background: isSaveButtonDisabled ? .buttonDisabled : .persianBlue400
+            )
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)

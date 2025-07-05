@@ -53,25 +53,6 @@ extension KeysignDiscoveryView {
             .padding(24)
     }
     
-    var signButton: some View {
-        let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
-        
-        return Button(action: {
-            isLoading = true
-            startKeysign()
-        }) {
-            FilledButton(
-                title: isDisabled ? "waitingOnDevices..." : "sign",
-                textColor: isDisabled ? .textDisabled : .blue600,
-                background: isDisabled ? .buttonDisabled : .turquoise600
-            )
-        }
-        .disabled(isDisabled)
-        .padding(.horizontal, 32)
-        .edgesIgnoringSafeArea(.bottom)
-        .padding(2)
-    }
-    
     var deviceList: some View {
         VStack {
             listTitle
