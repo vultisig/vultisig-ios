@@ -42,7 +42,7 @@ struct KeysignDiscoveryView: View {
     ]
     
     let adaptiveColumnsMac = [
-        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+        GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
     ]
     
     var body: some View {
