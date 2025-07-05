@@ -187,7 +187,7 @@ class Endpoint {
         var url = "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)&toAddress=\(toAddress)"
         
         if let integrator {
-           url = url + "&integrator=\(integrator))"
+           url = url + "&integrator=\(integrator)"
         }
         
         if let fee {
