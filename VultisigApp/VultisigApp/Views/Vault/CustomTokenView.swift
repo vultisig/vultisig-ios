@@ -84,12 +84,14 @@ struct CustomTokenView: View {
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
             
-            Button {
-                Task { await fetchTokenInfo() }
-            } label: {
-                FilledButton(title: "Retry")
+            if !(error is RateLimitError) {
+                Button {
+                    Task { await fetchTokenInfo() }
+                } label: {
+                    FilledButton(title: "Retry")
+                }
+                .padding(.horizontal, 40)
             }
-            .padding(.horizontal, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -177,6 +179,14 @@ struct CustomTokenView: View {
                 
             }
             
+        } catch let error as NSError {
+            // Check for rate limit error
+            if error.code == 429 {
+                self.error = RateLimitError()
+            } else {
+                self.error = error
+            }
+            self.isLoading = false
         } catch {
             self.error = error
             self.isLoading = false
@@ -206,6 +216,12 @@ struct CustomTokenView: View {
     private struct TokenNotFoundError: LocalizedError {
         var errorDescription: String? {
             return NSLocalizedString("Token Not Found", comment: "Token not found error")
+        }
+    }
+    
+    private struct RateLimitError: LocalizedError {
+        var errorDescription: String? {
+            return NSLocalizedString("Too many requests. Please close this screen and try again later.", comment: "Rate limit error")
         }
     }
 }
