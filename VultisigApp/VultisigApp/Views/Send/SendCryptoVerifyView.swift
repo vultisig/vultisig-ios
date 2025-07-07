@@ -124,7 +124,7 @@ struct SendCryptoVerifyView: View {
     
     var summaryCoinDetails: some View {
         HStack(spacing: 8) {
-            Image(tx.coin.chain.name)
+            Image(tx.coin.chain.logo)
                 .resizable()
                 .frame(width: 24, height: 24)
                 .cornerRadius(32)
