@@ -46,8 +46,8 @@ extension Decimal {
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }
     
-    /// Formata números grandes com abreviações (M, B, T) para DISPLAY APENAS
-    /// ⚠️ NUNCA usar em campos de input - apenas para exibição de valores
+    /// Format large numbers with abbreviations (M, B, T) for DISPLAY ONLY
+    /// ⚠️ NEVER use in input fields - only for displaying values
     func formatWithAbbreviation(maxDecimals: Int = 2) -> String {
         let absValue = abs(self)
         let isNegative = self < 0
@@ -90,10 +90,10 @@ extension Decimal {
         return formatter.string(from: number) ?? ""
     }
     
-    /// Formata valores para display, automaticamente usando abreviações para valores grandes
-    /// Para valores >= 1M, usa abreviações (K, M, B, T)
-    /// Para valores < 1M, usa formatação decimal padrão com locale
-    /// ⚠️ APENAS para display - nunca usar em campos de input
+    /// Format values ​​for display, automatically using abbreviations for large values
+    /// For values ​​>= 1M, use abbreviations (K, M, B, T)
+    /// For values ​​< 1M, use standard decimal formatting with locale
+    /// ⚠️ ONLY for display - never use in input fields
     func formatForDisplay(maxDecimals: Int = 2, locale: Locale = Locale.current) -> String {
         let million = Decimal(1_000_000)
         
