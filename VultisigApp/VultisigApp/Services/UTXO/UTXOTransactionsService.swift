@@ -155,6 +155,6 @@ public class UTXOTransactionsService: ObservableObject {
     
     func formatAmount(_ amountSatoshis: Int, tx: SendTransaction) -> String {
         let amountBTC = Decimal(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
-        return  amountBTC.formatToDecimal(digits: 8)
+        return  amountBTC.formatForDisplay()
     }
 }

@@ -133,6 +133,7 @@ private extension TokenSelectionViewModel {
     enum Errors: Error, LocalizedError {
         case noTokens
         case networkError
+        case rateLimitExceeded
         
         var errorDescription: String? {
             switch self {
@@ -140,6 +141,8 @@ private extension TokenSelectionViewModel {
                 return "Tokens not found"
             case .networkError:
                 return "Unable to connect.\nPlease check your internet connection and try again"
+            case .rateLimitExceeded:
+                return "Too many requests.\nPlease close this screen and try again later"
             }
         }
     }
@@ -167,6 +170,15 @@ private extension TokenSelectionViewModel {
             
             tokens.append(contentsOf: uniqueTokens)
             
+        } catch let error as NSError {
+            if !Task.isCancelled {
+                // Check for rate limit error (429)
+                if error.code == 429 {
+                    self.error = Errors.rateLimitExceeded
+                } else {
+                    self.error = Errors.networkError
+                }
+            }
         } catch {
             if !Task.isCancelled {
                 self.error = Errors.networkError
