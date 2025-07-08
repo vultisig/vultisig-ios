@@ -42,7 +42,7 @@ class Blockchair: Codable {
 		// Helper function to format an amount in satoshis as Bitcoin
         func formatAsBitcoin(_ satoshis: Int) -> String {
 			let btcValue = Decimal(satoshis) / 100_000_000.0 // Convert satoshis to BTC
-            return btcValue.formatForDisplay()
+            return btcValue.formatToDecimal(digits: 8)
 		}
 	}
 	
