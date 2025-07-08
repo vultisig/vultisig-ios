@@ -18,6 +18,20 @@ struct SendCryptoAddressBookView: View {
     @Query var vaults: [Vault]
     @Query var savedAddresses: [AddressBookItem]
     
+    // Filter out invalid address book items (chains that no longer exist)
+    var validSavedAddresses: [AddressBookItem] {
+        savedAddresses.filter { item in
+            // Check if we can create a Chain from the stored raw value
+            if let data = try? JSONEncoder().encode(item.coinMeta),
+               let rawChain = try? JSONDecoder().decode([String: String].self, from: data),
+               let chainRaw = rawChain["chain"],
+               Chain(rawValue: chainRaw) != nil {
+                return true
+            }
+            return false
+        }
+    }
+    
     var body: some View {
         ZStack {
             Background()
@@ -74,7 +88,7 @@ struct SendCryptoAddressBookView: View {
     var list: some View {
         ScrollView {
             if isSavedAddressesSelected {
-                if savedAddresses.count > 0 {
+                if validSavedAddresses.count > 0 {
                     savedAddressesList
                 } else {
                     errorMessage
@@ -91,7 +105,7 @@ struct SendCryptoAddressBookView: View {
     
     var savedAddressesList: some View {
         VStack(spacing: 12) {
-            ForEach(savedAddresses) { address in
+            ForEach(validSavedAddresses) { address in
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,

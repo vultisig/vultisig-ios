@@ -8,6 +8,12 @@
 import SwiftUI
 import SwiftData
 
+// Helper struct for safe decoding
+private struct SafeCoinMeta: Decodable {
+    let chain: String
+    let logo: String
+}
+
 struct AddressBookCell: View {
     let address: AddressBookItem
     let shouldReturnAddress: Bool
@@ -59,10 +65,30 @@ struct AddressBookCell: View {
     }
     
     var logo: some View {
-        Image(address.coinMeta.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(30)
+        Group {
+            if let logoName = getCoinLogo() {
+                Image(logoName)
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(30)
+            } else {
+                Circle()
+                    .fill(Color.gray)
+                    .frame(width: 32, height: 32)
+            }
+        }
+    }
+    
+    private func getCoinLogo() -> String? {
+        do {
+            // Encode and decode to ensure we can access the logo
+            let data = try JSONEncoder().encode(address.coinMeta)
+            let safeMeta = try JSONDecoder().decode(SafeCoinMeta.self, from: data)
+            return safeMeta.logo
+        } catch {
+            print("Error getting logo for address '\(address.title)': \(error)")
+            return nil
+        }
     }
     
     var text: some View {
@@ -90,11 +116,35 @@ struct AddressBookCell: View {
     }
     
     var networkContent: some View {
-        Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
-            .foregroundColor(.neutral300)
-            .font(.body12Menlo)
-            .lineLimit(1)
-            .truncationMode(.tail)
+        Group {
+            if let chainName = getChainName() {
+                Text(chainName + " " + NSLocalizedString("network", comment: ""))
+                    .foregroundColor(.neutral300)
+                    .font(.body12Menlo)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            } else {
+                Text("Unknown " + NSLocalizedString("network", comment: ""))
+                    .foregroundColor(.neutral300)
+                    .font(.body12Menlo)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+        }
+    }
+    
+    private func getChainName() -> String? {
+        do {
+            // Encode and decode to ensure we can access the chain
+            let data = try JSONEncoder().encode(address.coinMeta)
+            let safeMeta = try JSONDecoder().decode(SafeCoinMeta.self, from: data)
+            if let chain = Chain(rawValue: safeMeta.chain) {
+                return chain.name
+            }
+        } catch {
+            print("Error getting chain name for address '\(address.title)': \(error)")
+        }
+        return nil
     }
     
     var addressContent: some View {

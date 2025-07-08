@@ -9,6 +9,11 @@
 import SwiftUI
 
 extension AddressBookView {
+    // Use the getValidAddresses() method from the main file
+    var validSavedAddresses: [AddressBookItem] {
+        getValidAddresses()
+    }
+    
     var content: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -17,7 +22,7 @@ extension AddressBookView {
         .navigationTitle(NSLocalizedString("addressBook", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if savedAddresses.count != 0 {
+            if validSavedAddresses.count != 0 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     navigationButton
                 }
@@ -38,7 +43,7 @@ extension AddressBookView {
     }
     
     var list: some View {
-        let filteredAddress = savedAddresses.filter {
+        let filteredAddress = validSavedAddresses.filter {
             coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
         }
         

@@ -31,13 +31,14 @@ extension AddressBookView {
     
     var headerMac: some View {
         AddressBookHeader(
-            count: savedAddresses.count,
+            count: getValidAddresses().count,
             isEditing: $isEditing
         )
     }
     
     var list: some View {
-        let filteredAddress = savedAddresses.filter {
+        let validAddresses = getValidAddresses()
+        let filteredAddress = validAddresses.filter {
             coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
         }
         
