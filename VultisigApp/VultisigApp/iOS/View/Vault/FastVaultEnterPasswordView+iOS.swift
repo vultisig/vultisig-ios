@@ -20,7 +20,6 @@ extension FastVaultEnterPasswordView {
             }
             .navigationBarItems(leading: backButton)
             .navigationBarTitleTextColor(.neutral0)
-            .navigationTitle(NSLocalizedString("password", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
         }
     }

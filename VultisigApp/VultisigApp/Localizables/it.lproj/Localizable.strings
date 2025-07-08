@@ -680,3 +680,6 @@
 "myVaults" = "I miei Vault";
 "youreSending" = "Stai inviando";
 "holdForPairedSign" = "Tieni premuto per la firma abbinata";
+"waitingOnDevice" = "In attesa del dispositivo";
+"enterServerPassword" = "Inserisci la password del server";
+"confirm" = "Conferma";

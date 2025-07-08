@@ -3,7 +3,6 @@
 //  VultisigApp
 
 import SwiftUI
-import RiveRuntime
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
@@ -28,7 +27,6 @@ struct KeysignDiscoveryView: View {
     
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
-    @State var animationVM: RiveViewModel? = nil
     @State var showDisclaimer: Bool = true
     
     var swapTransaction: SwapTransaction = SwapTransaction()
@@ -40,11 +38,11 @@ struct KeysignDiscoveryView: View {
     @Environment(\.displayScale) var displayScale
     
     let adaptiveColumns = [
-        GridItem(.adaptive(minimum: 350, maximum: 500), spacing: 16)
+        GridItem(.adaptive(minimum: 150, maximum: 300), spacing: 16)
     ]
     
     let adaptiveColumnsMac = [
-        GridItem(.adaptive(minimum: 400, maximum: 800), spacing: 8)
+        GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 8)
     ]
     
     var body: some View {
@@ -59,9 +57,6 @@ struct KeysignDiscoveryView: View {
             if isLoading {
                 loader
             }
-        }
-        .onAppear {
-            setAnimation()
         }
         .task {
             await setData()
@@ -100,11 +95,8 @@ struct KeysignDiscoveryView: View {
     }
     
     var button: some View {
-        VStack {
-            signButton
-            switchLink
-        }
-        .background(Color.backgroundBlue)
+        switchLink
+            .background(Color.backgroundBlue)
     }
     
     var portraitContent: some View {
@@ -116,12 +108,13 @@ struct KeysignDiscoveryView: View {
     }
     
     var paringQRCode: some View {
-        ZStack {
-            animation
-            qrCode
-        }
-        .foregroundColor(.neutral0)
-        .padding()
+        qrCode
+            .foregroundColor(.neutral0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.borderBlue, lineWidth: 1)
+            )
+            .padding()
     }
     
     var disclaimer: some View {
@@ -151,14 +144,6 @@ struct KeysignDiscoveryView: View {
     
     var keysignState: SetupVaultState {
         return fastVaultPassword == nil ? .secure : .fast
-    }
-    
-    var animation: some View {
-        animationVM?.view()
-    }
-    
-    private func setAnimation() {
-        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
     }
     
     func setData() async {

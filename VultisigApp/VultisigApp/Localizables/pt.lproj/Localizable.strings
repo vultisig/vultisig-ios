@@ -681,3 +681,6 @@
 "myVaults" = "Meus Cofres";
 "youreSending" = "Você está enviando";
 "holdForPairedSign" = "Segure para assinatura emparelhada";
+"waitingOnDevice" = "Aguardando o dispositivo";
+"enterServerPassword" = "Digite a senha do servidor";
+"confirm" = "Confirmar";
