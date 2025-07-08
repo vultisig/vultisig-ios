@@ -678,3 +678,5 @@
 "addMemo" = "Aggiungi MEMO";
 "savedAddresses" = "Indirizzi salvati";
 "myVaults" = "I miei Vault";
+"addYourFriendsCode" = "Aggiungi il codice del tuo amico e risparmia 5 bps sugli swap";
+"createYourCodeAndEarn" = "Crea il tuo codice e guadagna 10 bps sugli swap";
