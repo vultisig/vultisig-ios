@@ -19,18 +19,18 @@ struct PeerCell: View {
     
     var cell: some View {
         HStack(spacing: 8) {
-            check
-            
             VStack(alignment: .leading, spacing: 2) {
                 deviceId
                 description
             }
             
             Spacer()
+            
+            check
         }
         .padding(16)
-        .frame(height: 50)
-        .background(Color.blue600)
+        .frame(height: 70)
+        .background(Color.checkboxBlue)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)

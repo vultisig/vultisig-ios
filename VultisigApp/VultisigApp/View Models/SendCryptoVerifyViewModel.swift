@@ -14,7 +14,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
-    @Published var isHackedOrPhished = false
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
@@ -26,7 +25,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     let blockChainService = BlockChainService.shared
     
     var isValidForm: Bool {
-        return isAddressCorrect && isAmountCorrect && isHackedOrPhished
+        return isAddressCorrect && isAmountCorrect
     }
     
     

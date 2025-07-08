@@ -675,3 +675,8 @@
 "addMemo" = "Dodaj MEMO";
 "savedAddresses" = "Spremljene adrese";
 "myVaults" = "Moji trezori";
+"youreSending" = "Šalješ";
+"holdForPairedSign" = "Drži za upareno potpisivanje";
+"waitingOnDevice" = "Čekanje uređaja";
+"enterServerPassword" = "Unesite lozinku za poslužitelj";
+"confirm" = "Potvrdi";

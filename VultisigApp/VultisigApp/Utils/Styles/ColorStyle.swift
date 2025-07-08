@@ -76,6 +76,8 @@ extension LinearGradient {
     static let cancelRed = LinearGradient(colors: [Color.red], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidBlue = LinearGradient(colors: [Color.persianBlue400], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidWhite = LinearGradient(colors: [Color.neutral0], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let solidGray = LinearGradient(colors: [Color.lightText], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let borderGreen = LinearGradient(colors: [Color(hex: "0FBF93"), Color(hex: "0FBF93").opacity(0)], startPoint: .top, endPoint: .bottom)
 }
 
 extension AngularGradient {

@@ -505,10 +505,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
     
-    func getProgress() -> Double {
-        Double(currentIndex)/Double(totalViews)
-    }
-    
     func stopMediator() {
         self.mediator.stop()
         logger.info("mediator server stopped.")
