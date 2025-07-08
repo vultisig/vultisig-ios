@@ -37,6 +37,7 @@ struct ReferralLaunchView: View {
             
             if referralViewModel.savedGeneratedReferralCode.isEmpty {
                 orSeparator
+                createTitle
                 createButton
             } else {
                 separator
@@ -55,7 +56,7 @@ struct ReferralLaunchView: View {
     }
     
     var title: some View {
-        Text(NSLocalizedString("useReferralCode", comment: ""))
+        Text(NSLocalizedString("addYourFriendsCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
@@ -91,6 +92,13 @@ struct ReferralLaunchView: View {
             
             separator
         }
+    }
+    
+    var createTitle: some View {
+        Text(NSLocalizedString("createYourCodeAndEarn", comment: ""))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.neutral0)
     }
     
     var separator: some View {
