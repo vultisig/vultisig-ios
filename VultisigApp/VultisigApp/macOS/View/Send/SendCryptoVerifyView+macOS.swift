@@ -16,33 +16,32 @@ extension SendCryptoVerifyView {
     
     var pairedSignButton: some View {
         VStack {
-            if sendCryptoVerifyViewModel.isValidForm {
+            if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
-            }
-            
-            ZStack {
-                if tx.isFastVault {
-                    OutlineButton(
-                        title: "Paired sign",
-                        textColor: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray,
-                        gradient: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray
-                    )
-                } else {
-                    FilledButton(
-                        title: NSLocalizedString("signTransaction", comment: ""),
-                        textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
-                        background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
-                    )
+                
+                OutlineButton(
+                    title: "Paired sign",
+                    textColor: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray,
+                    gradient: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray
+                )
+                .onLongPressGesture {
+                    signPressed()
+                }
+            } else {
+                FilledButton(
+                    title: NSLocalizedString("signTransaction", comment: ""),
+                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
+                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
+                )
+                .onTapGesture {
+                    signPressed()
                 }
             }
-            .disabled(!sendCryptoVerifyViewModel.isValidForm)
-            .padding(.horizontal, 40)
-            .onLongPressGesture {
-                signPressed()
-            }
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .padding(.horizontal, 40)
     }
     
     var fastVaultButton: some View {
