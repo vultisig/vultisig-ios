@@ -31,8 +31,7 @@ struct EmptyPeerCell: View {
             Spacer()
         }
         .padding(16)
-        .frame(height: 50)
-        .background(Color.blue600)
+        .frame(height: 70)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
@@ -42,15 +41,11 @@ struct EmptyPeerCell: View {
     }
     
     var text: some View {
-        Group {
-            Text(NSLocalizedString("scanWith", comment: "")) +
-            Text(" " + getDeviceNumber() + " ") +
-            Text(NSLocalizedString("device", comment: ""))
-        }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.neutral0)
-        .lineLimit(2)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text(NSLocalizedString("waitingOnDevice", comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.neutral0)
+            .lineLimit(2)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var animation: some View {
