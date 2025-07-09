@@ -681,3 +681,8 @@
 "myVaults" = "Meus Cofres";
 "addYourFriendsCode" = "Adicione o código do seu amigo e economize 5 bps em swaps";
 "createYourCodeAndEarn" = "Crie seu próprio código e ganhe 10 bps em swaps";
+"youreSending" = "Você está enviando";
+"holdForPairedSign" = "Segure para assinatura emparelhada";
+"waitingOnDevice" = "Aguardando o dispositivo";
+"enterServerPassword" = "Digite a senha do servidor";
+"confirm" = "Confirmar";

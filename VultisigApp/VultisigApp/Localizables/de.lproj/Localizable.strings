@@ -697,3 +697,8 @@
 "myVaults" = "Meine Tresore";
 "addYourFriendsCode" = "Füge den Code deines Freundes hinzu und spare 5 Bps beim Swappen";
 "createYourCodeAndEarn" = "Erstelle deinen eigenen Code und verdiene 10 Bps beim Swappen";
+"youreSending" = "Du sendest";
+"holdForPairedSign" = "Halte für gekoppeltes Signieren";
+"waitingOnDevice" = "Warte auf Gerät";
+"enterServerPassword" = "Server-Passwort eingeben";
+"confirm" = "Bestätigen";

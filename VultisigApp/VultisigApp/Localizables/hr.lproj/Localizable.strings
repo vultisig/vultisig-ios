@@ -677,3 +677,8 @@
 "myVaults" = "Moji trezori";
 "addYourFriendsCode" = "Dodaj kod prijatelja i uštedi 5 bps na swapovima";
 "createYourCodeAndEarn" = "Kreiraj vlastiti kod i zaradi 10 bps na swapovima";
+"youreSending" = "Šalješ";
+"holdForPairedSign" = "Drži za upareno potpisivanje";
+"waitingOnDevice" = "Čekanje uređaja";
+"enterServerPassword" = "Unesite lozinku za poslužitelj";
+"confirm" = "Potvrdi";

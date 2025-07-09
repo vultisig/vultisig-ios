@@ -15,17 +15,32 @@ extension SendCryptoVerifyView {
     }
     
     var pairedSignButton: some View {
-        Button {
-            signPressed()
-        } label: {
+        VStack {
             if tx.isFastVault {
-                OutlineButton(title: "Paired sign")
+                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                    .foregroundColor(.extraLightGray)
+                    .font(.body14BrockmannMedium)
+                
+                OutlineButton(
+                    title: "Paired sign",
+                    textColor: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray,
+                    gradient: sendCryptoVerifyViewModel.isValidForm ? .primaryGradient : .solidGray
+                )
+                .onLongPressGesture {
+                    signPressed()
+                }
             } else {
-                FilledButton(title: "sign")
+                FilledButton(
+                    title: NSLocalizedString("signTransaction", comment: ""),
+                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
+                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
+                )
+                .onTapGesture {
+                    signPressed()
+                }
             }
         }
         .disabled(!sendCryptoVerifyViewModel.isValidForm)
-        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
     }
     

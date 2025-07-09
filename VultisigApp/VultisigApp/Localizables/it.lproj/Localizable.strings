@@ -680,3 +680,8 @@
 "myVaults" = "I miei Vault";
 "addYourFriendsCode" = "Aggiungi il codice del tuo amico e risparmia 5 bps sugli swap";
 "createYourCodeAndEarn" = "Crea il tuo codice e guadagna 10 bps sugli swap";
+"youreSending" = "Stai inviando";
+"holdForPairedSign" = "Tieni premuto per la firma abbinata";
+"waitingOnDevice" = "In attesa del dispositivo";
+"enterServerPassword" = "Inserisci la password del server";
+"confirm" = "Conferma";

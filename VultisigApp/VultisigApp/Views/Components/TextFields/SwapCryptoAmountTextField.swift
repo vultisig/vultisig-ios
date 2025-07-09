@@ -34,11 +34,7 @@ struct SwapCryptoAmountTextField: View {
         let customBiding = Binding<String>(
             get: { amount },
             set: {
-                let newValue = $0.toDecimal()
-                let oldValue = amount.toDecimal()
-                
-                guard oldValue != newValue, newValue > 0 else { return }
-                
+                // Don't validate or convert here - just save what the user typed
                 amount = $0
                                 
                 DebounceHelper.shared.debounce(delay: 3) {

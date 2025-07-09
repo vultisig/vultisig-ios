@@ -180,8 +180,15 @@ class SolanaService {
             let tokenInfo = try JSONDecoder().decode(
                 SolanaJupiterToken.self, from: dataResponse)
             return tokenInfo
+        } catch let error as NSError {
+            if error.code == 429 {
+                print("Error in fetchSolanaJupiterTokenInfoList: Rate limit exceeded (429)")
+            } else {
+                print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription) (Code: \(error.code))")
+            }
+            throw error
         } catch {
-            print("Error in fetchSolanaJupiterTokenInfoList:")
+            print("Error in fetchSolanaJupiterTokenInfoList: \(error.localizedDescription)")
             throw error
         }
     }
@@ -206,6 +213,13 @@ class SolanaService {
                 )
                 return coinMeta
             }
+        } catch let error as NSError {
+            if error.code == 429 {
+                print("Error in fetchSolanaJupiterTokenList: Rate limit exceeded (429)")
+            } else {
+                print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription) (Code: \(error.code))")
+            }
+            throw error
         } catch {
             print("Error in fetchSolanaJupiterTokenList: \(error.localizedDescription)")
             throw error
@@ -425,8 +439,15 @@ class SolanaService {
             }
             
             return coinMetaList
+        } catch let error as NSError {
+            if error.code == 429 {
+                print("Error in fetchTokensInfos: Rate limit exceeded (429)")
+            } else {
+                print("Error in fetchTokensInfos: \(error.localizedDescription) (Code: \(error.code))")
+            }
+            throw error
         } catch {
-            print("Error in fetchTokens: \(error)")
+            print("Error in fetchTokensInfos: \(error)")
             throw error
         }
     }
