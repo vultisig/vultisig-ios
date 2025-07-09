@@ -734,3 +734,4 @@
 "waitingOnDevice" = "Waiting on device";
 "enterServerPassword" = "Enter server password";
 "confirm" = "Confirm";
+"transactionFailed" = "Transaction failed";

@@ -32,7 +32,10 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            content
+            ZStack {
+                Background()
+                SendCryptoSigningErrorView(errorString: "Error Message")
+            }
         }
         .modelContainer(sharedModelContainer)
         

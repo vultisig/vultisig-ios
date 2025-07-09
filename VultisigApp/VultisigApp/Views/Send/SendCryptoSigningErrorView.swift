@@ -8,42 +8,59 @@
 import SwiftUI
 
 struct SendCryptoSigningErrorView: View {
+    let errorString: String
+    
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        container
-    }
-    
-    var content: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            bottomBar
+        ZStack {
+            backgroundImage
+            container
         }
     }
     
-    var errorMessage: some View {
-        ErrorMessage(text: "signInErrorTryAgain")
+    var content: some View {
+        VStack(spacing: 32) {
+            main.opacity(0)
+            errorIcon
+            main
+        }
     }
     
-    var bottomBar: some View {
-        VStack {
-            sameWifiInstruction
+    var main: some View {
+        VStack(spacing: 22) {
+            errorMessage
             tryAgainButton
         }
     }
     
-    var sameWifiInstruction: some View {
-        InformationNote()
-            .padding(.horizontal, 16)
+    var errorIcon: some View {
+        Image(systemName: "xmark.circle.fill")
+            .font(.body24MontserratBold)
+            .foregroundColor(.alertRed)
+    }
+    
+    var backgroundImage: some View {
+        Image("CirclesBackground")
+    }
+    
+    var errorMessage: some View {
+        VStack(spacing: 18) {
+            Text(NSLocalizedString("transactionFailed", comment: ""))
+                .font(.body22BrockmannMedium)
+                .foregroundColor(.alertRed)
+            
+            Text(errorString)
+                .font(.body14MenloBold)
+                .foregroundColor(.extraLightGray)
+        }
     }
     
     var tryAgainButton: some View {
         NavigationLink {
             HomeView()
         } label: {
-            FilledButton(title: "tryAgain")
+            OutlineButton(title: "tryAgain", textColor: .solidWhite, gradient: .solidBlue)
         }
         .padding(.vertical, 24)
         .padding(.horizontal, 15)
@@ -54,6 +71,6 @@ struct SendCryptoSigningErrorView: View {
 #Preview {
     ZStack {
         Background()
-        SendCryptoSigningErrorView()
+        SendCryptoSigningErrorView(errorString: "Error Message")
     }
 }

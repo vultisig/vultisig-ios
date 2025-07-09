@@ -90,7 +90,7 @@ struct SwapCryptoView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
             }
         }
     }
@@ -106,7 +106,7 @@ struct SwapCryptoView: View {
                     swapTransaction: tx
                 )
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
             }
         }.onAppear() {
             Task {
@@ -117,7 +117,7 @@ struct SwapCryptoView: View {
     }
     
     var errorView: some View {
-        SendCryptoSigningErrorView()
+        SendCryptoSigningErrorView(errorString: swapViewModel.error?.localizedDescription ?? "Error")
     }
     
     var backButton: some View {
