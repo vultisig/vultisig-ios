@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SendCryptoDoneView: View {
     let vault: Vault
@@ -25,6 +26,8 @@ struct SendCryptoDoneView: View {
     @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
     
+    @State var animationVM: RiveViewModel? = nil
+    
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
@@ -37,13 +40,68 @@ struct SendCryptoDoneView: View {
         .navigationDestination(isPresented: $navigateToHome) {
             HomeView(selectedVault: vault)
         }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+        }
     }
     
     var sendView: some View {
         VStack {
-            cards
+//            cards
+            sendContent
             continueButton
         }
+    }
+    
+    var sendContent: some View {
+        ScrollView {
+            VStack {
+                animation
+                getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
+                
+                NavigationLink {
+                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash)
+                } label: {
+                    transactionDetails
+                }
+            }
+            .padding(24)
+        }
+    }
+    
+    var transactionDetails: some View {
+        HStack {
+            Text(NSLocalizedString("transactionDetails", comment: ""))
+            Spacer()
+            Image(systemName: "chevron.right")
+        }
+        .font(.body14BrockmannMedium)
+        .foregroundColor(.lightText)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
+        .background(Color.blue600)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.blue400, lineWidth: 1)
+        )
+        .padding(.top, 8)
+    }
+    
+    var animation: some View {
+        ZStack {
+            animationVM?.view()
+                .frame(width: 280, height: 280)
+            
+            animationText
+                .offset(y: 50)
+        }
+    }
+    
+    var animationText: some View {
+        Text(NSLocalizedString("transactionSuccessful", comment: ""))
+            .foregroundStyle(LinearGradient.primaryGradient)
+            .font(.body18BrockmannMedium)
     }
     
     var cards: some View {
@@ -98,9 +156,9 @@ struct SendCryptoDoneView: View {
             }
             navigateToHome = true
         } label: {
-            FilledButton(title: "complete")
+            FilledButton(title: "done", textColor: .neutral0, background: .persianBlue400)
         }
-        .padding(40)
+        .padding(24)
     }
 
     var summaryCard: some View {
@@ -202,6 +260,36 @@ struct SendCryptoDoneView: View {
         if let progressLink, let url = URL(string: progressLink) {
             openURL(url)
         }
+    }
+    
+    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
+        VStack(spacing: 4) {
+            if let coin {
+                AsyncImageView(
+                    logo: coin.logo,
+                    size: CGSize(width: 32, height: 32),
+                    ticker: coin.ticker,
+                    tokenChainLogo: coin.tokenChainLogo
+                )
+                .padding(.bottom, 8)
+            }
+            
+            Text(title)
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+            
+            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
+                .font(.body10BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+        .frame(height: 130)
+        .frame(maxWidth: .infinity)
+        .background(Color.blue600)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.blue400, lineWidth: 1)
+        )
     }
 }
 
