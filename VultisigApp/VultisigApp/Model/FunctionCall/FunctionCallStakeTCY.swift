@@ -28,7 +28,7 @@ class FunctionCallStakeTCY: ObservableObject {
     }
     
     var balance: String {
-        let balance = tx.coin.balanceDecimal.formatDecimalToLocale()
+        let balance = tx.coin.balanceDecimal.formatForDisplay()
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     

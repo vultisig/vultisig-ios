@@ -20,7 +20,7 @@ struct RuneBondCell: View {
     
     private var bondValueInRune: String {
         let convertedBond = convertFromBaseUnits(bondNode.bond)
-        return convertedBond.formatToDecimal(digits: 8) + " RUNE"
+        return convertedBond.formatForDisplay() + " RUNE"
     }
     
     var body: some View {

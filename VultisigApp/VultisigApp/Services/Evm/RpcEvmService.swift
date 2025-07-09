@@ -218,7 +218,6 @@ class RpcEvmService: RpcService {
             
             return (name, symbol, decimals)
         } catch {
-            print(error.localizedDescription)
             return (.empty, .empty, .zero)
         }
     }
@@ -343,18 +342,37 @@ class RpcEvmService: RpcService {
                     guard
                         let response = result as? [String: Any],
                         let symbol = response["symbol"] as? String,
-                        let decimalsString = response["decimals"] as? Int64,
-                        let logo = response["logo"] as? String?
+                        !symbol.isEmpty
                     else {
                         return nil
                     }
                     
+                    // Handle decimals - can be Int, Int64, or null
+                    let decimals: Int
+                    if let decimalsInt = response["decimals"] as? Int {
+                        decimals = decimalsInt
+                    } else if let decimalsInt64 = response["decimals"] as? Int64 {
+                        decimals = Int(decimalsInt64)
+                    } else {
+                        return nil
+                    }
+                    
+                    // Try to find priceProviderId from TokensStore
+                    let tokenFromTokenStore = TokensStore.TokenSelectionAssets.first(where: { token in
+                        token.chain == nativeToken.chain &&
+                        token.ticker == symbol &&
+                        token.contractAddress.lowercased() == contractAddress.lowercased()
+                    })
+                    
+                    // Handle logo - can be String or null
+                    let logo = tokenFromTokenStore?.logo ?? response["logo"] as? String ?? ""
+                    
                     return CoinMeta(
                         chain: nativeToken.chain,
                         ticker: symbol,
-                        logo: logo ?? "",
-                        decimals: Int(decimalsString),
-                        priceProviderId: "",
+                        logo: logo,
+                        decimals: decimals,
+                        priceProviderId: tokenFromTokenStore?.priceProviderId ?? "",
                         contractAddress: contractAddress,
                         isNativeToken: false
                     )
@@ -369,7 +387,6 @@ class RpcEvmService: RpcService {
             return tokenMetadata
             
         } catch {
-            print("Error fetching tokens: \(error)")
             return []
         }
     }

@@ -689,3 +689,14 @@
 "verifyBoxCheck" = "Bitte alle Kästchen ankreuzen";
 "expirationDate" = "Ablaufdatum";
 "yourReferralCode" = "Dein Empfehlungscode";
+"sendTo" = "Senden an";
+"enterAddressHere" = "Adresse hier eingeben";
+"balanceAvailable" = "Verfügbares Guthaben:";
+"addMemo" = "MEMO hinzufügen";
+"savedAddresses" = "Gespeicherte Adressen";
+"myVaults" = "Meine Tresore";
+"youreSending" = "Du sendest";
+"holdForPairedSign" = "Halte für gekoppeltes Signieren";
+"waitingOnDevice" = "Warte auf Gerät";
+"enterServerPassword" = "Server-Passwort eingeben";
+"confirm" = "Bestätigen";

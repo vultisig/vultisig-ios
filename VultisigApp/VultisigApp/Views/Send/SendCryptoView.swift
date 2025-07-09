@@ -14,6 +14,7 @@ struct SendCryptoView: View {
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
+    @StateObject var sendDetailsViewModel = SendDetailsViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
     @State var coin: Coin? = nil
@@ -69,12 +70,7 @@ struct SendCryptoView: View {
     }
 
     var view: some View {
-        VStack(spacing: 18) {
-            ProgressBar(progress: sendCryptoViewModel.getProgress())
-                .padding(.top, 12)
-            
-            tabView
-        }
+        tabView
     }
     
     var tabView: some View {
@@ -101,6 +97,7 @@ struct SendCryptoView: View {
         SendCryptoDetailsView(
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
+            sendDetailsViewModel: sendDetailsViewModel,
             vault: vault
         )
     }

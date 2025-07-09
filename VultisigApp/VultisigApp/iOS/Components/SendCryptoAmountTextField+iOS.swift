@@ -8,12 +8,13 @@
 #if os(iOS)
 import SwiftUI
 
-extension ImportWalletView {
+extension SendCryptoAmountTextField {
     var container: some View {
-        content
-            .textInputAutocapitalization(.never)
+        textField
             .keyboardType(.decimalPad)
-            .textContentType(.oneTimeCode)
+            .submitLabel(.next)
+            .disableAutocorrection(true)
+            .textFieldStyle(TappableTextFieldStyle())
     }
 }
 #endif

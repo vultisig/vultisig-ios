@@ -25,6 +25,7 @@ final class Vault: ObservableObject, Codable {
     var libType: LibType? = LibType.GG20
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
+    @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
     
     enum CodingKeys: CodingKey {
         case name

@@ -23,6 +23,15 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .arbitrum,
+            ticker: "WETH",
+            logo: "wETH",
+            decimals: 18,
+            priceProviderId: "weth",
+            contractAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .arbitrum,
             ticker: "DAI",
             logo: "dai",
             decimals: 18,
@@ -1576,6 +1585,60 @@ class TokensStore {
             decimals: 8,
             priceProviderId: "",
             contractAddress: "x/ruji",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "KUJI",
+            logo: "kuji",
+            decimals: 8,
+            priceProviderId: "kujira",
+            contractAddress: "thor.kuji",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "FUZN",
+            logo: "fuzn",
+            decimals: 8,
+            priceProviderId: "fuzion",
+            contractAddress: "thor.fuzn",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "NSTK",
+            logo: "nstk",
+            decimals: 8,
+            priceProviderId: "unstake-fi",
+            contractAddress: "thor.nstk",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "WINK",
+            logo: "wink",
+            decimals: 8,
+            priceProviderId: "winkhub",
+            contractAddress: "thor.wink",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "LVN",
+            logo: "levana",
+            decimals: 8,
+            priceProviderId: "levana-protocol",
+            contractAddress: "thor.lvn",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "RKUJI",
+            logo: "rkuji",
+            decimals: 8,
+            priceProviderId: "kujira",
+            contractAddress: "thor.rkuji",
             isNativeToken: false
         ),
         CoinMeta(

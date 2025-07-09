@@ -672,3 +672,14 @@
 "verifyBoxCheck" = "Seleziona tutte le caselle";
 "expirationDate" = "Data di scadenza";
 "yourReferralCode" = "Il tuo codice referral";
+"sendTo" = "Invia a";
+"enterAddressHere" = "Inserisci l'indirizzo qui";
+"balanceAvailable" = "Saldo disponibile:";
+"addMemo" = "Aggiungi MEMO";
+"savedAddresses" = "Indirizzi salvati";
+"myVaults" = "I miei Vault";
+"youreSending" = "Stai inviando";
+"holdForPairedSign" = "Tieni premuto per la firma abbinata";
+"waitingOnDevice" = "In attesa del dispositivo";
+"enterServerPassword" = "Inserisci la password del server";
+"confirm" = "Conferma";
