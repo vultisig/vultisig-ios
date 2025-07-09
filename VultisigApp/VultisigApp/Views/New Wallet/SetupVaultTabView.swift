@@ -67,12 +67,8 @@ struct SetupVaultTabView: View {
         // set the default selected vault type to secure
         self.selectedTab = .fast
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            showContent = true
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            animationVM?.triggerInput("Switch")
             showAnimation = true
+            showContent = true
         }
     }
 }
