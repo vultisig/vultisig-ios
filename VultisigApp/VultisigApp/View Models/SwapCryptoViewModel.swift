@@ -92,7 +92,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         case .lifi:
             return Endpoint.getLifiSwapTracker(txid: hash)
         case .oneinch, .kyberswap, .none:
-            return nil
+            return Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
         }
     }
     
