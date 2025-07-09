@@ -642,8 +642,8 @@
 "referralOnboardingBannerTitle3" = "Uštedi na naknadama.";
 "referralOnboardingTitle1" = "Kreiraj svoj referalni kod";
 "referralOnboardingTitle2" = "Podijeli s prijateljima";
-"referralOnboardingTitle3" = "Automatski zarađuj nagrade";
-"referralOnboardingTitle4" = "Iskoristi referalni kod";
+"referralOnboardingTitle3" = "Automatski ostvari 10 bps nagrade od naknada";
+"referralOnboardingTitle4" = "Upotrijebi referral kod – Uštedi 5 bps";
 "referralOnboardingDescription1" = "Odaberi kratak kod i postavi isplatu nagrade.";
 "referralOnboardingDescription2" = "Pozovi prijatelje da koriste tvoj kod prilikom zamjene.";
 "referralOnboardingDescription3" = "Zaradi u svom odabranom tokenu svaki put kad oni trguju.";
@@ -675,6 +675,8 @@
 "addMemo" = "Dodaj MEMO";
 "savedAddresses" = "Spremljene adrese";
 "myVaults" = "Moji trezori";
+"addYourFriendsCode" = "Dodaj kod prijatelja i uštedi 5 bps na swapovima";
+"createYourCodeAndEarn" = "Kreiraj vlastiti kod i zaradi 10 bps na swapovima";
 "youreSending" = "Šalješ";
 "holdForPairedSign" = "Drži za upareno potpisivanje";
 "waitingOnDevice" = "Čekanje uređaja";
