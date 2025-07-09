@@ -29,9 +29,6 @@ struct SettingsCustomMessageView: View {
 
     var view: some View {
         VStack(spacing: 18) {
-            ProgressBar(progress: viewModel.progress)
-                .padding(.top, 12)
-
             tabView
         }
     }
