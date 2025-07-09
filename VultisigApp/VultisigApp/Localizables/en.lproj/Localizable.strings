@@ -687,8 +687,8 @@
 "referralOnboardingBannerTitle3" = "Save on fees.";
 "referralOnboardingTitle1" = "Create your referral code";
 "referralOnboardingTitle2" = "Share with friends";
-"referralOnboardingTitle3" = "Earn rewards automatically";
-"referralOnboardingTitle4" = "Use Referral code";
+"referralOnboardingTitle3" = "Earn 10 bps fee rewards automatically";
+"referralOnboardingTitle4" = "Use Referral code - Save 5bps";
 "referralOnboardingDescription1" = "Pick a short code and set your reward payout.";
 "referralOnboardingDescription2" = "Invite friends to use your code while swapping.";
 "referralOnboardingDescription3" = "Get paid in your preferred asset every time they trade.";
@@ -726,6 +726,9 @@
 "addMemo" = "Add MEMO";
 "savedAddresses" = "Saved Addresses";
 "myVaults" = "My Vaults";
+"createReferralCode" = "Create referral code";
+"addYourFriendsCode" = "Add your friend’s code and save 5bps on swaps";
+"createYourCodeAndEarn" = "Create your own code and earn 10bps on swaps";
 "youreSending" = "You’re sending";
 "holdForPairedSign" = "Hold for paired sign";
 "waitingOnDevice" = "Waiting on device";

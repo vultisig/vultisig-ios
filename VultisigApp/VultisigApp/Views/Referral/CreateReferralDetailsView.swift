@@ -50,8 +50,8 @@ struct CreateReferralDetailsView: View {
                 separator
                 setExpiration
                 separator
-                choosePayoutAsset
-                separator
+//                choosePayoutAsset
+//                separator
                 summary
             }
             .padding(24)
@@ -166,7 +166,7 @@ struct CreateReferralDetailsView: View {
     }
     
     var separator: some View {
-        GradientSeparator()
+        LinearSeparator()
     }
     
     var button: some View {
@@ -181,7 +181,7 @@ struct CreateReferralDetailsView: View {
     }
     
     var label: some View {
-        FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
+        FilledButton(title: "createReferralCode", textColor: .neutral0, background: .persianBlue400)
     }
     
     var alert: Alert {

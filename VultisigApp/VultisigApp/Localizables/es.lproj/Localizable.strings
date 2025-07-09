@@ -642,8 +642,8 @@
 "referralOnboardingBannerTitle3" = "Ahorra en comisiones.";
 "referralOnboardingTitle1" = "Crea tu código de referido";
 "referralOnboardingTitle2" = "Compártelo con amigos";
-"referralOnboardingTitle3" = "Gana recompensas automáticamente";
-"referralOnboardingTitle4" = "Usar código de referido";
+"referralOnboardingTitle3" = "Gana automáticamente recompensas de 10 bps en comisiones";
+"referralOnboardingTitle4" = "Usa el código de referido - Ahorra 5 bps";
 "referralOnboardingDescription1" = "Elige un código corto y define tu recompensa.";
 "referralOnboardingDescription2" = "Invita a amigos a usar tu código al hacer intercambios.";
 "referralOnboardingDescription3" = "Recibe pagos en tu activo preferido cada vez que hagan transacciones.";
@@ -681,6 +681,8 @@
 "addMemo" = "Agregar MEMO";
 "savedAddresses" = "Direcciones guardadas";
 "myVaults" = "Mis Bóvedas";
+"addYourFriendsCode" = "Agrega el código de tu amigo y ahorra 5 bps en swaps";
+"createYourCodeAndEarn" = "Crea tu propio código y gana 10 bps en swaps";
 "youreSending" = "Estás enviando";
 "holdForPairedSign" = "Mantén pulsado para firmar con dispositivo vinculado";
 "waitingOnDevice" = "Esperando al dispositivo";
