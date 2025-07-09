@@ -287,6 +287,7 @@
 		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
 		A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */; };
 		A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */; };
+		A646DFAF2E15F2D6006E8ECC /* ChooseVault.riv in Resources */ = {isa = PBXBuildFile; fileRef = A646DFAE2E15F2D6006E8ECC /* ChooseVault.riv */; };
 		A646DFA52E12EEA6006E8ECC /* SendDetailsAddressTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */; };
 		A646DFA72E12F187006E8ECC /* SendDetailsAddressFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */; };
 		A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */; };
@@ -697,7 +698,6 @@
 		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
 		A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */; };
 		A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */; };
-		A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */; };
 		A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */; };
 		A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */; };
 		A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */; };
@@ -1248,6 +1248,7 @@
 		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
 		A6404F762E03346600069BD1 /* ThorchainNetworkAllFees.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainNetworkAllFees.swift; sourceTree = "<group>"; };
 		A646DFA22E0CFF53006E8ECC /* ReferralMemoParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMemoParameter.swift; sourceTree = "<group>"; };
+		A646DFAE2E15F2D6006E8ECC /* ChooseVault.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = ChooseVault.riv; sourceTree = "<group>"; };
 		A646DFA42E12EEA6006E8ECC /* SendDetailsAddressTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressTab.swift; sourceTree = "<group>"; };
 		A646DFA62E12F187006E8ECC /* SendDetailsAddressFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAddressFields.swift; sourceTree = "<group>"; };
 		A646DFB02E16270F006E8ECC /* SendDetailsAmountTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDetailsAmountTab.swift; sourceTree = "<group>"; };
@@ -1654,7 +1655,6 @@
 		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
 		A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextCard.swift; sourceTree = "<group>"; };
 		A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSecureText.swift; sourceTree = "<group>"; };
-		A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = ChooseVault.riv; sourceTree = "<group>"; };
 		A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSwithControl.swift; sourceTree = "<group>"; };
 		A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRCodeScanned.riv; sourceTree = "<group>"; };
 		A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryInfoBanner.swift; sourceTree = "<group>"; };
@@ -3267,11 +3267,11 @@
 				A6C58D7D2D7AD7F6000D2833 /* fastvault_summary.riv */,
 				A53065FB2D5AA5D3000B82E6 /* securevault_overview.riv */,
 				A6621B842D67D98900757B43 /* vaultCreatedAnimation.riv */,
-				A6F7B67A2D481FB000AC8104 /* ChooseVault.riv */,
 				A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */,
 				A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */,
 				A6F7B6C72D4ABA5A00AC8104 /* WaitingForDevice.riv */,
 				A65505142D66918200EDEB8C /* SecureVaultBackupSuccess.riv */,
+				A646DFAE2E15F2D6006E8ECC /* ChooseVault.riv */,
 				A6F7B6E82D4B0D6D00AC8104 /* CreatingVaultCircles.riv */,
 				A6F7B6EA2D4B0D8500AC8104 /* CreatingVaultCheckmark.riv */,
 				A6C58D662D7A3E4B000D2833 /* FastVaultBackupSucces.riv */,
@@ -4029,6 +4029,7 @@
 				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
 				B50DB3762E0B9E9E00485E94 /* Security.md in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
+				A646DFAF2E15F2D6006E8ECC /* ChooseVault.riv in Resources */,
 				A6F7B6E92D4B0D6E00AC8104 /* CreatingVaultCircles.riv in Resources */,
 				A6C58D842D7B6F3C000D2833 /* backup_vault.riv in Resources */,
 				A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */,
@@ -4039,7 +4040,6 @@
 				A65F8A172D42224100CF4DDB /* Brockmann-SemiBold.otf in Resources */,
 				A53065FA2D5A9FEF000B82E6 /* fastvault_overview.riv in Resources */,
 				A65F8A182D42224100CF4DDB /* Brockmann-Regular.otf in Resources */,
-				A6F7B67B2D481FB000AC8104 /* ChooseVault.riv in Resources */,
 				A65F8A192D42224100CF4DDB /* Brockmann-Medium.otf in Resources */,
 				A6F7B6F82D4C94D700AC8104 /* ConnectingWithServer.riv in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
