@@ -686,3 +686,4 @@
 "waitingOnDevice" = "Aguardando o dispositivo";
 "enterServerPassword" = "Digite a senha do servidor";
 "confirm" = "Confirmar";
+"transactionFailed" = "Transação falhou";

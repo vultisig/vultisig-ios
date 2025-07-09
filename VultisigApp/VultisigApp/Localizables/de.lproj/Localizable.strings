@@ -702,3 +702,4 @@
 "waitingOnDevice" = "Warte auf Gerät";
 "enterServerPassword" = "Server-Passwort eingeben";
 "confirm" = "Bestätigen";
+"transactionFailed" = "Transaktion fehlgeschlagen";

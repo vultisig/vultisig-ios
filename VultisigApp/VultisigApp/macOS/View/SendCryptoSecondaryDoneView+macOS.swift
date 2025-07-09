@@ -14,13 +14,13 @@ extension SendCryptoSecondaryDoneView {
             Background()
             
             VStack {
-                header
+                headerMac
                 content
             }
         }
     }
     
-    var header: some VIew {
+    var headerMac: some View {
         GeneralMacHeader(title: "transactionDetails")
     }
 }
