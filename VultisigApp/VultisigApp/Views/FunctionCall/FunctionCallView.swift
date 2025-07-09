@@ -34,9 +34,6 @@ struct FunctionCallView: View {
     
     var view: some View {
         VStack(spacing: 18) {
-            ProgressBar(progress: functionCallViewModel.getProgress())
-                .padding(.top, 12)
-
             tabView
         }
         .blur(radius: functionCallViewModel.isLoading ? 1 : 0)
