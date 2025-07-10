@@ -10,6 +10,7 @@ import SwiftUI
 struct SendCryptoSecondaryDoneView: View {
     let sendTransaction: SendTransaction?
     let hash: String
+    let explorerLink: String
     
     @State var navigateToHome = false
     
@@ -131,7 +132,7 @@ struct SendCryptoSecondaryDoneView: View {
     }
     
     func openLink() {
-        let urlString = "https://thorchain.net/tx/\(hash)"
+        let urlString = explorerLink
         
         if let url = URL(string: urlString) {
             openURL(url)
@@ -202,5 +203,5 @@ struct SendCryptoSecondaryDoneView: View {
 }
 
 #Preview {
-    SendCryptoSecondaryDoneView(sendTransaction: SendTransaction(), hash: "")
+    SendCryptoSecondaryDoneView(sendTransaction: SendTransaction(), hash: "", explorerLink: "")
 }

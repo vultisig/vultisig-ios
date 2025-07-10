@@ -60,7 +60,7 @@ struct SendCryptoDoneView: View {
                 getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
                 
                 NavigationLink {
-                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash)
+                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink(hash: hash))
                 } label: {
                     transactionDetails
                 }
