@@ -47,7 +47,6 @@ struct SendCryptoDoneView: View {
     
     var sendView: some View {
         VStack {
-//            cards
             sendContent
             continueButton
         }
@@ -60,7 +59,7 @@ struct SendCryptoDoneView: View {
                 getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
                 
                 NavigationLink {
-                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink(hash: hash))
+                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink())
                 } label: {
                     transactionDetails
                 }
@@ -102,51 +101,6 @@ struct SendCryptoDoneView: View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(.body18BrockmannMedium)
-    }
-    
-    var cards: some View {
-        ScrollView {
-            if let approveHash {
-                card(title: NSLocalizedString("Approve", comment: ""), hash: approveHash)
-            }
-
-            transactionCard
-        }
-    }
-    
-    var transactionCard: some View {
-        VStack(spacing: 0) {
-            card(title: NSLocalizedString("transaction", comment: "Transaction"), hash: hash)
-                .padding(.horizontal, -16)
-            
-            summaryCard
-            
-            if progressLink != nil, hash == self.hash {
-                Separator()
-                    .padding(.horizontal, 16)
-                
-                HStack {
-                    Spacer()
-                    progressbutton
-                }
-                .padding(16)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .padding(.horizontal, 16)
-    }
-    
-    var progressbutton: some View {
-        Button {
-            checkProgressLink()
-        } label: {
-            Text(NSLocalizedString(swapTransaction != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
-                .font(.body14MontserratBold)
-                .foregroundColor(.turquoise600)
-                .underline()
-        }
     }
 
     var continueButton: some View {
@@ -197,69 +151,9 @@ struct SendCryptoDoneView: View {
             navigateToHome: $navigateToHome
         )
     }
-    
-    func card(title: String, hash: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            titleSection(title: title, hash: hash)
 
-            Text(hash)
-                .font(.body13Menlo)
-                .foregroundColor(.turquoise600)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .padding(.horizontal, 16)
-    }
-    
-    func titleSection(title: String, hash: String) -> some View {
-        HStack(spacing: 12) {
-            Text(title)
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-            copyButton(hash: hash)
-            linkButton(hash: hash)
-        }
-    }
-    
-    func copyButton(hash: String) -> some View {
-        Button {
-            copyHash(hash: hash)
-        } label: {
-            Image(systemName: "square.on.square")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
-        }
-        
-    }
-    
-    func linkButton(hash: String) -> some View {
-        Button {
-            shareLink(hash: hash)
-        } label: {
-            Image(systemName: "link")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
-        }
-    }
-
-    func explorerLink(hash: String) -> String {
+    func explorerLink() -> String {
         return Endpoint.getExplorerURL(chain: chain, txid: hash)
-    }
-    
-    private func shareLink(hash: String) {
-        let explorerLink = explorerLink(hash: hash)
-        if !explorerLink.isEmpty, let url = URL(string: explorerLink) {
-            openURL(url)
-        }
-    }
-
-    private func checkProgressLink() {
-        if let progressLink, let url = URL(string: progressLink) {
-            openURL(url)
-        }
     }
     
     private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
