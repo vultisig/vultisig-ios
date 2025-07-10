@@ -69,18 +69,26 @@ class SwapPercentageTests: XCTestCase {
         ethCoin.rawBalance = "8940770000000000" // in wei
         
         let balance = ethCoin.balanceDecimal
-        let decimalsToUse = max(4, ethCoin.decimals)
         
-        // For ETH with 18 decimals, we should maintain high precision
-        XCTAssertEqual(decimalsToUse, 18, "For ETH, should use 18 decimals")
+        // For EVM chains with 18 decimals, should cap at 9
+        let decimalsToUse: Int
+        if ethCoin.chainType == .EVM {
+            decimalsToUse = min(9, max(4, ethCoin.decimals))
+        } else {
+            decimalsToUse = max(4, ethCoin.decimals)
+        }
         
-        // Test 25% calculation
+        XCTAssertEqual(decimalsToUse, 9, "For ETH (EVM), should cap at 9 decimals")
+        
+        // Test 25% calculation with capped decimals
         let twentyFivePercent = (balance * 0.25).formatToDecimal(digits: decimalsToUse)
-        XCTAssertEqual(twentyFivePercent, "0.00223519", "25% calculation should maintain precision")
+        XCTAssertEqual(twentyFivePercent, "0.002235192", "25% calculation should be capped at 9 decimals")
     }
     
-    func testLowDecimalCoin() {
-        // Test with a coin that has less than 4 decimals (e.g., USDC with 6 decimals)
+    func testEVMDecimalCapping() {
+        // Test various EVM tokens with different decimals
+        
+        // USDC - 6 decimals (should use 6)
         let usdcMeta = CoinMeta(
             chain: .ethereum,
             ticker: "USDC",
@@ -92,9 +100,56 @@ class SwapPercentageTests: XCTestCase {
         )
         
         let usdcCoin = Coin(asset: usdcMeta, address: "test", hexPublicKey: "test")
-        usdcCoin.rawBalance = "1000000" // 1 USDC
+        let usdcDecimalsToUse = min(9, max(4, usdcCoin.decimals))
+        XCTAssertEqual(usdcDecimalsToUse, 6, "USDC should use 6 decimals")
         
-        let decimalsToUse = max(4, usdcCoin.decimals)
-        XCTAssertEqual(decimalsToUse, 6, "For USDC, should use 6 decimals")
+        // WBTC on Ethereum - 8 decimals (should use 8)
+        let wbtcMeta = CoinMeta(
+            chain: .ethereum,
+            ticker: "WBTC",
+            logo: "wbtc",
+            decimals: 8,
+            priceProviderId: "wrapped-bitcoin",
+            contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+            isNativeToken: false
+        )
+        
+        let wbtcCoin = Coin(asset: wbtcMeta, address: "test", hexPublicKey: "test")
+        let wbtcDecimalsToUse = min(9, max(4, wbtcCoin.decimals))
+        XCTAssertEqual(wbtcDecimalsToUse, 8, "WBTC should use 8 decimals")
+        
+        // DAI - 18 decimals (should cap at 9)
+        let daiMeta = CoinMeta(
+            chain: .ethereum,
+            ticker: "DAI",
+            logo: "dai",
+            decimals: 18,
+            priceProviderId: "dai",
+            contractAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+            isNativeToken: false
+        )
+        
+        let daiCoin = Coin(asset: daiMeta, address: "test", hexPublicKey: "test")
+        let daiDecimalsToUse = min(9, max(4, daiCoin.decimals))
+        XCTAssertEqual(daiDecimalsToUse, 9, "DAI should cap at 9 decimals")
+    }
+    
+    func testNonEVMCoins() {
+        // Test that non-EVM coins are not capped
+        
+        // Solana - 9 decimals
+        let solMeta = CoinMeta(
+            chain: .solana,
+            ticker: "SOL",
+            logo: "sol",
+            decimals: 9,
+            priceProviderId: "solana",
+            contractAddress: "",
+            isNativeToken: true
+        )
+        
+        let solCoin = Coin(asset: solMeta, address: "test", hexPublicKey: "test")
+        let solDecimalsToUse = max(4, solCoin.decimals)
+        XCTAssertEqual(solDecimalsToUse, 9, "SOL should use full 9 decimals without capping")
     }
 } 
