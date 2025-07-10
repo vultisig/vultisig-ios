@@ -32,6 +32,9 @@ struct PasswordVerifyReminderView: View {
             }
         }
         .animation(.easeInOut, value: showError)
+        .onDisappear {
+            handleCloseTap()
+        }
     }
     
     var loader: some View {
@@ -133,15 +136,6 @@ struct PasswordVerifyReminderView: View {
         }
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
-    }
-    
-    var closeButton: some View {
-        Button {
-            handleCloseTap()
-        } label: {
-            Image(systemName: "xmark")
-        }
-        .buttonStyle(.plain)
     }
 
     var verifyButton: some View {
