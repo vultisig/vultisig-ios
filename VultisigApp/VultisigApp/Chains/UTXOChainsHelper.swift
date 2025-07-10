@@ -297,14 +297,17 @@ class UTXOChainsHelper {
             for hashPublicKey in preSignOutputs.hashPublicKeys {
                 let preImageHash = hashPublicKey.dataHash
                 
-                // Sign with dummy key to get a valid signature structure
+                // Sign with dummy key to get a valid signature
                 let signature = dummyPrivateKey.sign(digest: preImageHash, curve: .secp256k1)!
                 
-                // Add the signature and public key
-                allSignatures.add(data: signature)
+                // Convert to DER format (Bitcoin requires DER signatures)
+                let derSignature = signature.der
+                
+                // Add the DER signature and public key
+                allSignatures.add(data: derSignature)
                 publicKeys.add(data: pubkeyData)
                 
-                print("Added dummy signature for input, signature size: \(signature.count) bytes")
+                print("Added dummy DER signature for input, signature size: \(derSignature.count) bytes")
             }
             
             // Compile the transaction with dummy signatures
