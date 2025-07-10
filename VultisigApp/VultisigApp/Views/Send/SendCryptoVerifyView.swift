@@ -37,7 +37,7 @@ struct SendCryptoVerifyView: View {
             setData()
         }
         .task {
-            await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
+            await sendCryptoVerifyViewModel.performSecurityScan(tx: tx, vault: vault)
         }
     }
     

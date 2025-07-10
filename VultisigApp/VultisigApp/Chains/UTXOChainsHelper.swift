@@ -255,4 +255,87 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)")
         }
     }
+    
+    /// Creates a valid Bitcoin transaction for security scanning purposes
+    /// This generates a transaction that can be validated before actual TSS signing
+    func getValidatedTransaction(keysignPayload: KeysignPayload) throws -> String {
+        let bitcoinPubKey = getDerivedPubKey()
+        guard let pubkeyData = Data(hexString: bitcoinPubKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
+            throw HelperError.runtimeError("public key \(bitcoinPubKey) is invalid")
+        }
+        
+        do {
+            print("Creating validated transaction for security scanning...")
+            print("Coin type: \(coin)")
+            print("UTXOs count: \(keysignPayload.utxos.count)")
+            
+            // For Bitcoin, we'll create a transaction with valid dummy signatures
+            // This allows Blockaid to validate the transaction structure
+            
+            let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
+            print("Input data size: \(inputData.count) bytes")
+            
+            let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
+            let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
+            
+            if !preSignOutputs.errorMessage.isEmpty {
+                print("Pre-signing error: \(preSignOutputs.errorMessage)")
+                throw HelperError.runtimeError(preSignOutputs.errorMessage)
+            }
+            
+            print("Number of inputs to sign: \(preSignOutputs.hashPublicKeys.count)")
+            
+            let allSignatures = DataVector()
+            let publicKeys = DataVector()
+            
+            // Create a dummy private key for generating valid signatures
+            let dummyPrivateKeyData = Data(hexString: "0000000000000000000000000000000000000000000000000000000000000001")!
+            let dummyPrivateKey = PrivateKey(data: dummyPrivateKeyData)!
+            
+            // For each required signature, create a valid dummy signature
+            for hashPublicKey in preSignOutputs.hashPublicKeys {
+                let preImageHash = hashPublicKey.dataHash
+                
+                // Sign with dummy key to get a valid signature structure
+                let signature = dummyPrivateKey.sign(digest: preImageHash, curve: .secp256k1)!
+                
+                // Add the signature and public key
+                allSignatures.add(data: signature)
+                publicKeys.add(data: pubkeyData)
+                
+                print("Added dummy signature for input, signature size: \(signature.count) bytes")
+            }
+            
+            // Compile the transaction with dummy signatures
+            let compiledOutput = TransactionCompiler.compileWithSignatures(
+                coinType: coin,
+                txInputData: inputData,
+                signatures: allSignatures,
+                publicKeys: publicKeys
+            )
+            
+            print("Compiled transaction size: \(compiledOutput.count) bytes")
+            
+            // Parse the output to check for errors
+            if let output = try? BitcoinSigningOutput(serializedBytes: compiledOutput),
+               !output.errorMessage.isEmpty {
+                print("Compilation error: \(output.errorMessage)")
+                // Fall back to input data
+                return inputData.hexString
+            }
+            
+            // If we got a very small output, something went wrong
+            if compiledOutput.count < 10 {
+                print("Warning: Compiled output is too small (\(compiledOutput.count) bytes), using input data instead")
+                return inputData.hexString
+            }
+            
+            // Return the compiled transaction with dummy signatures
+            return compiledOutput.hexString
+        } catch {
+            print("Error creating validated transaction: \(error)")
+            throw HelperError.runtimeError("Failed to create validated transaction: \(error.localizedDescription)")
+        }
+    }
 }

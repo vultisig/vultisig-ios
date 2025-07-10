@@ -71,7 +71,7 @@ class Endpoint {
     
     // Multi-Chain Support
     static func blockaidBitcoinTransactionRaw() -> String {
-        return "\(blockaidApiBase)/bitcoin/transaction/raw"
+        return "\(blockaidApiBase)/bitcoin/transaction-raw/scan"
     }
     
     static func blockaidSolanaAddressScan() -> String {
@@ -100,6 +100,10 @@ class Endpoint {
     
     static func blockaidSuiTransactionScan() -> String {
         return "\(blockaidApiBase)/sui/transaction/scan"
+    }
+    
+    static func blockaidCosmosTransactionScan() -> String {
+        return "\(blockaidApiBase)/cosmos/transaction/scan"
     }
     
     // Chain-Agnostic
@@ -663,7 +667,7 @@ class Endpoint {
             return "https://basescan.org/address/\(address)"
         case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon,.polygonV2:
+        case .polygon, .polygonV2:
             return "https://polygonscan.com/address/\(address)"
         case .blast:
             return "https://blastscan.io/address/\(address)"

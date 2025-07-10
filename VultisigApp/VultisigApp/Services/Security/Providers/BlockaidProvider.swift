@@ -37,6 +37,10 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return capabilities.solanaTransactionScanning
         case .UTXO:
             return capabilities.bitcoinTransactionScanning
+        case .Sui:
+            return capabilities.suiTransactionScanning
+        case .Cosmos, .THORChain:
+            return capabilities.cosmosTransactionScanning
         default:
             return false
         }
@@ -50,8 +54,12 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return try await scanSolanaTransaction(request)
         case .UTXO:
             return try await scanBitcoinTransaction(request)
+        case .Sui:
+            return try await scanSuiTransaction(request)
+        case .Cosmos, .THORChain:
+            return try await scanCosmosTransaction(request)
         default:
-            return try await scanEVMTransaction(request)
+            throw SecurityProviderError.unsupportedOperation("Transaction scanning not supported for chain type: \(request.chain.chainType)")
         }
     }
     
@@ -61,6 +69,8 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return try await scanEVMAddress(address, for: chain)
         case .Solana:
             return try await scanSolanaAddress(address, for: chain)
+        case .Sui:
+            return try await scanSuiAddress(address, for: chain)
         default:
             throw SecurityProviderError.unsupportedOperation("Address validation not supported for chain: \(chain.name)")
         }
@@ -168,6 +178,51 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
     // MARK: - Bitcoin Scanning
     
     private func scanBitcoinTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
+        // Check if we have transaction data
+        guard let transactionData = request.data, !transactionData.isEmpty else {
+            logger.warning("Bitcoin transaction data not available for scanning.")
+            
+            // Print detailed debugging information
+            print("=== BITCOIN TRANSACTION SCAN (NO DATA) ===")
+            print("Provider: Blockaid")
+            print("Status: Skipped - No transaction data available")
+            print("From Address: \(request.fromAddress)")
+            print("To Address: \(request.toAddress)")
+            print("Amount: \(request.amount ?? "N/A")")
+            print("")
+            print("Explanation:")
+            print("- Bitcoin transactions require UTXOs to construct")
+            print("- At SendTransaction stage, UTXOs are not yet fetched")
+            print("- Zero-signed transactions can only be created with KeysignPayload")
+            print("- Security scanning will be available during the keysign process")
+            print("=========================================")
+            
+            // Return a response indicating we couldn't scan due to missing data
+            return SecurityScanResponse(
+                provider: providerName,
+                isSecure: true,
+                riskLevel: .low,
+                warnings: [
+                    SecurityWarning(
+                        type: .other,
+                        severity: .info,
+                        message: "Bitcoin transaction preview not available",
+                        details: "Full security scanning will be performed when transaction details are complete"
+                    )
+                ],
+                recommendations: ["Transaction will be scanned during the signing process"],
+                metadata: ["scanStatus": "pending_transaction_construction"]
+            )
+        }
+        
+        // We have transaction data! Print info about it
+        print("=== BITCOIN TRANSACTION SCAN (WITH DATA) ===")
+        print("Provider: Blockaid")
+        print("Transaction data available: \(transactionData.count) characters")
+        print("First 100 chars: \(transactionData.prefix(100))...")
+        print("Sending zero-signed transaction to Blockaid API")
+        print("===========================================")
+        
         let endpoint = Endpoint.blockaidBitcoinTransactionRaw()
         
         guard let url = URL(string: endpoint) else {
@@ -176,12 +231,8 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         
         let requestBody = BlockaidBitcoinRequest(
             chain: mapChainToBlockaidChain(request.chain),
-            data: BlockaidBitcoinTransactionData(
-                rawTransaction: request.data ?? "",
-                fromAddress: request.fromAddress,
-                toAddress: request.toAddress,
-                amount: request.amount ?? "0"
-            ),
+            transaction: transactionData,
+            accountAddress: request.fromAddress,
             metadata: BlockaidRequestMetadata(
                 domain: "vultisig.com"
             )
@@ -189,9 +240,41 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         
         do {
             let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
+            
+            // Print the raw response for debugging
+            print("=== BITCOIN TRANSACTION SCAN RESPONSE ===")
+            print("Provider: Blockaid")
+            print("Request ID: \(response.requestId ?? "N/A")")
+            print("Chain: \(response.chain ?? "N/A")")
+            print("Account Address: \(response.accountAddress ?? "N/A")")
+            if let validation = response.validation {
+                print("Validation Status: \(validation.status ?? "N/A")")
+                print("Classification: \(validation.classification ?? "N/A")")
+                print("Result Type: \(validation.resultType ?? "N/A")")
+                print("Description: \(validation.description ?? "N/A")")
+                print("Reason: \(validation.reason ?? "N/A")")
+                if let features = validation.features {
+                    print("Features/Warnings: \(features.count)")
+                    for (index, feature) in features.enumerated() {
+                        print("  Feature \(index + 1):")
+                        print("    Type: \(feature.type)")
+                        print("    Severity: \(feature.severity ?? "N/A")")
+                        print("    Description: \(feature.description)")
+                        print("    Address: \(feature.address ?? "N/A")")
+                    }
+                }
+            }
+            print("========================================")
+            
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
             logger.error("Bitcoin transaction scan failed: \(error)")
+            
+            // Also print the error details
+            print("=== BITCOIN TRANSACTION SCAN ERROR ===")
+            print("Error: \(error)")
+            print("=====================================")
+            
             throw error
         }
     }
@@ -206,7 +289,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         }
 
         let requestBody = BlockaidSolanaRequest(
-            chain: "solana",
+            chain: "mainnet",  // Changed from "solana" to "mainnet"
             data: BlockaidSolanaMessageData(
                 message: request.data ?? "",
                 accountAddress: request.fromAddress
@@ -233,7 +316,7 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         }
         
         let requestBody = BlockaidAddressScanRequest(
-            chain: "solana",
+            chain: "mainnet",  // Changed from "solana" to "mainnet"
             address: address,
             metadata: BlockaidRequestMetadata(domain: "vultisig.com")
         )
@@ -243,6 +326,86 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return mapTransactionScanResponseToSecurityResponse(response)
         } catch {
             logger.error("Solana address scan failed: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Sui Scanning
+    
+    private func scanSuiTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidSuiTransactionScan()
+        
+        guard let url = URL(string: endpoint) else {
+            throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        let requestBody = BlockaidSuiRequest(
+            chain: mapChainToBlockaidChain(request.chain),
+            data: BlockaidSuiTransactionData(
+                transaction: request.data ?? "",
+                accountAddress: request.fromAddress
+            ),
+            metadata: BlockaidRequestMetadata(
+                domain: "vultisig.com"
+            )
+        )
+        
+        do {
+            let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
+            return mapTransactionScanResponseToSecurityResponse(response)
+        } catch {
+            logger.error("Sui transaction scan failed: \(error)")
+            throw error
+        }
+    }
+    
+    private func scanSuiAddress(_ address: String, for chain: Chain) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidSuiAddressScan()
+        
+        guard let url = URL(string: endpoint) else {
+            throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        let requestBody = BlockaidAddressScanRequest(
+            chain: mapChainToBlockaidChain(chain),
+            address: address,
+            metadata: BlockaidRequestMetadata(domain: "vultisig.com")
+        )
+        
+        do {
+            let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
+            return mapTransactionScanResponseToSecurityResponse(response)
+        } catch {
+            logger.error("Sui address scan failed: \(error)")
+            throw error
+        }
+    }
+    
+    // MARK: - Cosmos Scanning
+    
+    private func scanCosmosTransaction(_ request: SecurityScanRequest) async throws -> SecurityScanResponse {
+        let endpoint = Endpoint.blockaidCosmosTransactionScan()
+        
+        guard let url = URL(string: endpoint) else {
+            throw SecurityProviderError.invalidRequest("Invalid URL")
+        }
+        
+        let requestBody = BlockaidCosmosRequest(
+            chain: mapChainToBlockaidChain(request.chain),
+            data: BlockaidCosmosTransactionData(
+                transaction: request.data ?? "",
+                accountAddress: request.fromAddress
+            ),
+            metadata: BlockaidRequestMetadata(
+                domain: "vultisig.com"
+            )
+        )
+        
+        do {
+            let response: BlockaidTransactionScanResponse = try await performRequest(url: url, body: requestBody)
+            return mapTransactionScanResponseToSecurityResponse(response)
+        } catch {
+            logger.error("Cosmos transaction scan failed: \(error)")
             throw error
         }
     }
@@ -259,6 +422,8 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             request.httpBody = requestData
 
             let (data, response) = try await session.data(for: request)
+            
+            print(String(data: data, encoding: .utf8))
             
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw SecurityProviderError.networkError("Invalid response type")
@@ -277,6 +442,9 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
                 throw SecurityProviderError.apiError("HTTP \(httpResponse.statusCode): \(errorMessage)")
             }
         } catch {
+            
+            print("Error: \(error.localizedDescription)")
+            
             if error is SecurityProviderError {
                 throw error
             }
@@ -371,8 +539,14 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return "optimism"
         case .base:
             return "base"
+        case .blast:
+            return "blast"
+        case .zksync:
+            return "zksync"
+        case .cronosChain:
+            return "cronos"  // Note: Cronos might not be in the supported list
         case .solana:
-            return "solana"
+            return "mainnet"  // Solana uses "mainnet" for chain name
         case .bitcoin:
             return "bitcoin"
         case .bitcoinCash:
@@ -383,7 +557,28 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
             return "dogecoin"
         case .dash:
             return "dash"
+        case .sui:
+            return "sui"
+        case .gaiaChain:
+            return "cosmos"  // Cosmos is called gaiaChain in the enum
+        case .thorChain:
+            return "thorchain"  // Note: THORChain might not be in the supported list
+        case .mayaChain:
+            return "mayachain"  // Note: Maya might not be in the supported list
+        case .kujira:
+            return "kujira"  // Note: Kujira might not be in the supported list
+        case .osmosis:
+            return "osmosis"  // Note: Osmosis might not be in the supported list
+        case .terra, .terraClassic:
+            return "terra"  // Note: Terra might not be in the supported list
+        case .dydx:
+            return "dydx"  // Note: dYdX might not be in the supported list
+        case .noble:
+            return "noble"  // Note: Noble might not be in the supported list
+        case .akash:
+            return "akash"  // Note: Akash might not be in the supported list
         default:
+            // For any unsupported chain, default to ethereum
             return "ethereum"
         }
     }
@@ -488,21 +683,15 @@ struct BlockaidSolanaMessageData: Codable {
 
 struct BlockaidBitcoinRequest: Codable {
     let chain: String
-    let data: BlockaidBitcoinTransactionData
+    let transaction: String
+    let accountAddress: String
     let metadata: BlockaidRequestMetadata
-}
-
-struct BlockaidBitcoinTransactionData: Codable {
-    let rawTransaction: String
-    let fromAddress: String
-    let toAddress: String
-    let amount: String
     
     enum CodingKeys: String, CodingKey {
-        case rawTransaction = "raw_transaction"
-        case fromAddress = "from_address"
-        case toAddress = "to_address"
-        case amount
+        case chain
+        case transaction
+        case accountAddress = "account_address"
+        case metadata
     }
 }
 
@@ -525,6 +714,38 @@ struct BlockaidAddressScanRequest: Codable {
 struct BlockaidSiteScanRequest: Codable {
     let url: String
     let metadata: BlockaidRequestMetadata
+}
+
+struct BlockaidSuiRequest: Codable {
+    let chain: String
+    let data: BlockaidSuiTransactionData
+    let metadata: BlockaidRequestMetadata
+}
+
+struct BlockaidSuiTransactionData: Codable {
+    let transaction: String
+    let accountAddress: String
+    
+    enum CodingKeys: String, CodingKey {
+        case transaction
+        case accountAddress = "account_address"
+    }
+}
+
+struct BlockaidCosmosRequest: Codable {
+    let chain: String
+    let data: BlockaidCosmosTransactionData
+    let metadata: BlockaidRequestMetadata
+}
+
+struct BlockaidCosmosTransactionData: Codable {
+    let transaction: String
+    let accountAddress: String
+    
+    enum CodingKeys: String, CodingKey {
+        case transaction
+        case accountAddress = "account_address"
+    }
 }
 
 struct BlockaidTransactionScanResponse: Codable {
