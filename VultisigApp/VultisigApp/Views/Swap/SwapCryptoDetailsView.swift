@@ -207,22 +207,25 @@ struct SwapCryptoDetailsView: View {
 extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
         swapViewModel.showAllPercentageButtons = false
+        // Use coin's decimals for proper precision
+        let decimalsToUse = max(4, tx.fromCoin.decimals)
+        
         switch percentage {
         case 25:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: 4)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.25).formatToDecimal(digits: decimalsToUse)
             handleFromCoinUpdate()
         case 50:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: 4)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.5).formatToDecimal(digits: decimalsToUse)
             handleFromCoinUpdate()
         case 75:
-            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: 4)
+            tx.fromAmount = (tx.fromCoin.balanceDecimal * 0.75).formatToDecimal(digits: decimalsToUse)
             handleFromCoinUpdate()
         case 100:
-            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: 4)
+            tx.fromAmount = tx.fromCoin.balanceDecimal.formatToDecimal(digits: decimalsToUse)
             handleFromCoinUpdate()
             let amountLessFee = tx.fromCoin.rawBalance.toBigInt() - tx.fee
             let amountLessFeeDecimal = amountLessFee.toDecimal(decimals: tx.fromCoin.decimals) / pow(10, tx.fromCoin.decimals)
-            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: 4)
+            tx.fromAmount = amountLessFeeDecimal.formatToDecimal(digits: decimalsToUse)
         default:
             break
         }
