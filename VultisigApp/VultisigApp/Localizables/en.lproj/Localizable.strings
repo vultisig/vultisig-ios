@@ -734,4 +734,5 @@
 "waitingOnDevice" = "Waiting on device";
 "enterServerPassword" = "Enter server password";
 "confirm" = "Confirm";
+"transactionFailed" = "Transaction failed";
 "biweeklyPasswordVerifyDescription" = "We will periodically ask you to verify your fast sign password so you will always remember it";

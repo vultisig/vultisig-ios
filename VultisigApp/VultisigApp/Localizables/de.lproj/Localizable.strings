@@ -702,4 +702,5 @@
 "waitingOnDevice" = "Warte auf Gerät";
 "enterServerPassword" = "Server-Passwort eingeben";
 "confirm" = "Bestätigen";
+"transactionFailed" = "Transaktion fehlgeschlagen";
 "biweeklyPasswordVerifyDescription" = "Wir werden Sie regelmäßig bitten, Ihr Fast-Sign-Passwort zu bestätigen, damit Sie es sich immer merken";

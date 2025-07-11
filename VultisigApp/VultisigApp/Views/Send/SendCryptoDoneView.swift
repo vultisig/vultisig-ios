@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import RiveRuntime
 
 struct SendCryptoDoneView: View {
     let vault: Vault
@@ -25,6 +26,8 @@ struct SendCryptoDoneView: View {
     @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
     
+    @State var animationVM: RiveViewModel? = nil
+    
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
@@ -37,58 +40,67 @@ struct SendCryptoDoneView: View {
         .navigationDestination(isPresented: $navigateToHome) {
             HomeView(selectedVault: vault)
         }
+        .onAppear {
+            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
+        }
     }
     
     var sendView: some View {
         VStack {
-            cards
+            sendContent
             continueButton
         }
     }
     
-    var cards: some View {
+    var sendContent: some View {
         ScrollView {
-            if let approveHash {
-                card(title: NSLocalizedString("Approve", comment: ""), hash: approveHash)
-            }
-
-            transactionCard
-        }
-    }
-    
-    var transactionCard: some View {
-        VStack(spacing: 0) {
-            card(title: NSLocalizedString("transaction", comment: "Transaction"), hash: hash)
-                .padding(.horizontal, -16)
-            
-            summaryCard
-            
-            if progressLink != nil, hash == self.hash {
-                Separator()
-                    .padding(.horizontal, 16)
+            VStack {
+                animation
+                getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
                 
-                HStack {
-                    Spacer()
-                    progressbutton
+                NavigationLink {
+                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink())
+                } label: {
+                    transactionDetails
                 }
-                .padding(16)
             }
+            .padding(24)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .padding(.horizontal, 16)
     }
     
-    var progressbutton: some View {
-        Button {
-            checkProgressLink()
-        } label: {
-            Text(NSLocalizedString(swapTransaction != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
-                .font(.body14MontserratBold)
-                .foregroundColor(.turquoise600)
-                .underline()
+    var transactionDetails: some View {
+        HStack {
+            Text(NSLocalizedString("transactionDetails", comment: ""))
+            Spacer()
+            Image(systemName: "chevron.right")
         }
+        .font(.body14BrockmannMedium)
+        .foregroundColor(.lightText)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
+        .background(Color.blue600)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.blue400, lineWidth: 1)
+        )
+        .padding(.top, 8)
+    }
+    
+    var animation: some View {
+        ZStack {
+            animationVM?.view()
+                .frame(width: 280, height: 280)
+            
+            animationText
+                .offset(y: 50)
+        }
+    }
+    
+    var animationText: some View {
+        Text(NSLocalizedString("transactionSuccessful", comment: ""))
+            .foregroundStyle(LinearGradient.primaryGradient)
+            .font(.body18BrockmannMedium)
     }
 
     var continueButton: some View {
@@ -98,9 +110,9 @@ struct SendCryptoDoneView: View {
             }
             navigateToHome = true
         } label: {
-            FilledButton(title: "complete")
+            FilledButton(title: "done", textColor: .neutral0, background: .persianBlue400)
         }
-        .padding(40)
+        .padding(24)
     }
 
     var summaryCard: some View {
@@ -139,69 +151,39 @@ struct SendCryptoDoneView: View {
             navigateToHome: $navigateToHome
         )
     }
-    
-    func card(title: String, hash: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            titleSection(title: title, hash: hash)
 
-            Text(hash)
-                .font(.body13Menlo)
-                .foregroundColor(.turquoise600)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .padding(.horizontal, 16)
-    }
-    
-    func titleSection(title: String, hash: String) -> some View {
-        HStack(spacing: 12) {
-            Text(title)
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-            copyButton(hash: hash)
-            linkButton(hash: hash)
-        }
-    }
-    
-    func copyButton(hash: String) -> some View {
-        Button {
-            copyHash(hash: hash)
-        } label: {
-            Image(systemName: "square.on.square")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
-        }
-        
-    }
-    
-    func linkButton(hash: String) -> some View {
-        Button {
-            shareLink(hash: hash)
-        } label: {
-            Image(systemName: "link")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
-        }
-    }
-
-    func explorerLink(hash: String) -> String {
+    func explorerLink() -> String {
         return Endpoint.getExplorerURL(chain: chain, txid: hash)
     }
     
-    private func shareLink(hash: String) {
-        let explorerLink = explorerLink(hash: hash)
-        if !explorerLink.isEmpty, let url = URL(string: explorerLink) {
-            openURL(url)
+    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
+        VStack(spacing: 4) {
+            if let coin {
+                AsyncImageView(
+                    logo: coin.logo,
+                    size: CGSize(width: 32, height: 32),
+                    ticker: coin.ticker,
+                    tokenChainLogo: coin.tokenChainLogo
+                )
+                .padding(.bottom, 8)
+            }
+            
+            Text(title)
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+            
+            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
+                .font(.body10BrockmannMedium)
+                .foregroundColor(.extraLightGray)
         }
-    }
-
-    private func checkProgressLink() {
-        if let progressLink, let url = URL(string: progressLink) {
-            openURL(url)
-        }
+        .frame(height: 130)
+        .frame(maxWidth: .infinity)
+        .background(Color.blue600)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.blue400, lineWidth: 1)
+        )
     }
 }
 

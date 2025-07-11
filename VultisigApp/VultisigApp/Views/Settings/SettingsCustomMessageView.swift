@@ -63,7 +63,7 @@ struct SettingsCustomMessageView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: message)
             }
         }
     }

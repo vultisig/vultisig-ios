@@ -145,7 +145,7 @@ struct CreateReferralView: View {
     }
     
     var errorView: some View {
-        SendCryptoSigningErrorView()
+        SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
     }
     
     private func getNavigationTitle(_ title: String) -> some View {

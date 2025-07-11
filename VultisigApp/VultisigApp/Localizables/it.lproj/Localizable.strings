@@ -685,4 +685,5 @@
 "waitingOnDevice" = "In attesa del dispositivo";
 "enterServerPassword" = "Inserisci la password del server";
 "confirm" = "Conferma";
+"transactionFailed" = "Transazione non riuscita";
 "biweeklyPasswordVerifyDescription" = "Ti chiederemo periodicamente di verificare la tua password Fast Sign, così non la dimenticherai mai";
