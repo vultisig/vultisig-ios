@@ -686,3 +686,4 @@
 "waitingOnDevice" = "Aguardando o dispositivo";
 "enterServerPassword" = "Digite a senha do servidor";
 "confirm" = "Confirmar";
+"biweeklyPasswordVerifyDescription" = "Periodicamente pediremos que verifique sua senha do Fast Sign para que você sempre se lembre dela";

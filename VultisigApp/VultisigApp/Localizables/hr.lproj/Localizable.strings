@@ -682,3 +682,4 @@
 "waitingOnDevice" = "Čekanje uređaja";
 "enterServerPassword" = "Unesite lozinku za poslužitelj";
 "confirm" = "Potvrdi";
+"biweeklyPasswordVerifyDescription" = "Povremeno ćemo vas tražiti da potvrdite svoju Fast Sign lozinku kako biste je uvijek zapamtili";

@@ -648,7 +648,7 @@
 "FastMigrateOverviewText2" = "Check your e-mail to verify";
 "signingTransaction" = "Signing transaction";
 "txid" = "Tx ID";
-"biweeklyPasswordVerifyTitle" = "Verify your Server Share\nPassword";
+"biweeklyPasswordVerifyTitle" = "Verify your Server Share Password";
 "passwordVerifiedSuccessfully" = "Password verified successfully";
 "close" = "Close";
 "vaultTypeDoesnotMatch" = "Vault type doesn't match";
@@ -734,3 +734,4 @@
 "waitingOnDevice" = "Waiting on device";
 "enterServerPassword" = "Enter server password";
 "confirm" = "Confirm";
+"biweeklyPasswordVerifyDescription" = "We will periodically ask you to verify your fast sign password so you will always remember it";
