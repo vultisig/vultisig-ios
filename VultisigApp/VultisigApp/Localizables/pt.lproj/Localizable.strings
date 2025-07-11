@@ -687,3 +687,4 @@
 "enterServerPassword" = "Digite a senha do servidor";
 "confirm" = "Confirmar";
 "transactionFailed" = "Transação falhou";
+"biweeklyPasswordVerifyDescription" = "Periodicamente pediremos que verifique sua senha do Fast Sign para que você sempre se lembre dela";

@@ -689,3 +689,4 @@
 "enterServerPassword" = "Ingrese la contraseña del servidor";
 "confirm" = "Confirmar";
 "transactionFailed" = "Transacción fallida";
+"biweeklyPasswordVerifyDescription" = "Periódicamente te pediremos que verifiques tu contraseña de Fast Sign para que siempre la recuerdes";

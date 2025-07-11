@@ -683,3 +683,4 @@
 "enterServerPassword" = "Unesite lozinku za poslužitelj";
 "confirm" = "Potvrdi";
 "transactionFailed" = "Transakcija nije uspjela";
+"biweeklyPasswordVerifyDescription" = "Povremeno ćemo vas tražiti da potvrdite svoju Fast Sign lozinku kako biste je uvijek zapamtili";
