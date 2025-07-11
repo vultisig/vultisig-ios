@@ -47,7 +47,10 @@ struct SendCryptoVerifyView: View {
     
     var content: some View {
         VStack(spacing: 16) {
-            blockAidBanner
+            if sendCryptoVerifyViewModel.showSecurityScan {
+                blockAidBanner
+            }
+            
             fields
             
             if tx.isFastVault {
@@ -57,6 +60,7 @@ struct SendCryptoVerifyView: View {
             pairedSignButton
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
+        .padding(.top, 24)
     }
     
     var blockAidBanner: some View {
@@ -76,10 +80,6 @@ struct SendCryptoVerifyView: View {
             VStack(spacing: 30) {
                 summary
                 checkboxes
-                
-                if sendCryptoVerifyViewModel.showSecurityScan {
-                    SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
-                }
             }
             .padding(.horizontal, 16)
         }
