@@ -357,21 +357,29 @@ private extension BlockChainService {
             
             // Handle IBC denom traces for chains that support it
             var ibcDenomTrace: CosmosIbcDenomTraceDenomTrace? = nil
-            if coin.contractAddress.contains("ibc/") {
+            
+            // If this is an IBC transfer OR the coin has an IBC contract address, we need timeout info
+            if transactionType == .ibcTransfer || coin.contractAddress.contains("ibc/") {
                 switch coin.chain {
                 case .gaiaChain, .kujira, .osmosis, .terra:
-                    if let denomTrace = await service.fetchIbcDenomTraces(coin: coin) {
-                        ibcDenomTrace = denomTrace
+                    // Only fetch denom traces for actual IBC tokens
+                    if coin.contractAddress.contains("ibc/") {
+                        if let denomTrace = await service.fetchIbcDenomTraces(coin: coin) {
+                            ibcDenomTrace = denomTrace
+                        }
                     }
                     
+                    // Always set up timeout information for IBC transfers
                     let now = Date()
                     let tenMinutesFromNow = now.addingTimeInterval(10 * 60)
                     let timeoutInNanoseconds = UInt64(tenMinutesFromNow.timeIntervalSince1970 * 1_000_000_000)
                     
                     let latestBlock = try await service.fetchLatestBlock(coin: coin)
-                    ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
                     
-                    if ibcDenomTrace == nil {
+                    // Update existing ibcDenomTrace or create a new one with timeout info
+                    if ibcDenomTrace != nil {
+                        ibcDenomTrace?.height = "\(latestBlock)_\(timeoutInNanoseconds)"
+                    } else {
                         ibcDenomTrace = CosmosIbcDenomTraceDenomTrace(path: "", baseDenom: "", height: "\(latestBlock)_\(timeoutInNanoseconds)")
                     }
                 default:
