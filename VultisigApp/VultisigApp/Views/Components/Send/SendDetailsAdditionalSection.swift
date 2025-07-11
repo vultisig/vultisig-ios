@@ -76,14 +76,17 @@ struct SendDetailsAdditionalSection: View {
     }
     
     var networkFeeDescription: some View {
-        VStack {
+        VStack(alignment: .trailing) {
             Text(tx.gasInReadable)
+                .foregroundColor(.neutral0)
             
             if let selectedVault = homeViewModel.selectedVault {
                 Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
+                    .foregroundColor(.extraLightGray)
             }
         }
         .font(.body14BrockmannMedium)
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
     
     private func getFieldTitle(_ title: String) -> some View {
