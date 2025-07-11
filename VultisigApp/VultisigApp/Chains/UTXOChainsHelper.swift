@@ -259,23 +259,32 @@ class UTXOChainsHelper {
     /// Creates a valid Bitcoin transaction for security scanning purposes
     /// This generates a transaction that can be validated before actual TSS signing
     func getValidatedTransaction(keysignPayload: KeysignPayload) throws -> String {
-        let bitcoinPubKey = getDerivedPubKey()
-        guard let pubkeyData = Data(hexString: bitcoinPubKey),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            throw HelperError.runtimeError("public key \(bitcoinPubKey) is invalid")
-        }
+        print("Creating validated transaction for security scanning...")
+        print("Coin type: \(coin)")
+        print("UTXOs count: \(keysignPayload.utxos.count)")
+        
+        // For Blockaid, we need a properly formatted Bitcoin transaction
+        // We'll use WalletCore's transaction builder with a dummy key
         
         do {
-            print("Creating validated transaction for security scanning...")
-            print("Coin type: \(coin)")
-            print("UTXOs count: \(keysignPayload.utxos.count)")
+            // Create a dummy private key
+            let dummyPrivateKeyData = Data(hexString: "0000000000000000000000000000000000000000000000000000000000000001")!
+            let dummyPrivateKey = PrivateKey(data: dummyPrivateKeyData)!
             
-            // For Bitcoin, we'll create a transaction with valid dummy signatures
-            // This allows Blockaid to validate the transaction structure
+            // Get the public key from the dummy private key
+            let dummyPublicKey = dummyPrivateKey.getPublicKeySecp256k1(compressed: true)
             
-            let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-            print("Input data size: \(inputData.count) bytes")
+            // Create signing input
+            var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
             
+            // Get the plan
+            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+            input.plan = plan
+            
+            print("Transaction plan: fee=\(plan.fee), change=\(plan.change)")
+            
+            // Create pre-signing output to get the hashes we need to sign
+            let inputData = try input.serializedData()
             let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
             let preSignOutputs = try BitcoinPreSigningOutput(serializedBytes: preHashes)
             
@@ -284,33 +293,26 @@ class UTXOChainsHelper {
                 throw HelperError.runtimeError(preSignOutputs.errorMessage)
             }
             
-            print("Number of inputs to sign: \(preSignOutputs.hashPublicKeys.count)")
-            
+            // Create signatures using the dummy private key
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             
-            // Create a dummy private key for generating valid signatures
-            let dummyPrivateKeyData = Data(hexString: "0000000000000000000000000000000000000000000000000000000000000001")!
-            let dummyPrivateKey = PrivateKey(data: dummyPrivateKeyData)!
-            
-            // For each required signature, create a valid dummy signature
             for hashPublicKey in preSignOutputs.hashPublicKeys {
                 let preImageHash = hashPublicKey.dataHash
                 
-                // Sign with dummy key to get a valid signature
+                // Sign with dummy private key
                 let signature = dummyPrivateKey.sign(digest: preImageHash, curve: .secp256k1)!
                 
-                // Convert to DER format (Bitcoin requires DER signatures)
-                let derSignature = signature.der
+                // Convert to DER format
+                let r = Array(signature.prefix(32))
+                let s = Array(signature[32..<64])
+                let derSignature = encodeCanonicalDERSignature(r: r, s: s)
                 
-                // Add the DER signature and public key
                 allSignatures.add(data: derSignature)
-                publicKeys.add(data: pubkeyData)
-                
-                print("Added dummy DER signature for input, signature size: \(derSignature.count) bytes")
+                publicKeys.add(data: dummyPublicKey.data)
             }
             
-            // Compile the transaction with dummy signatures
+            // Compile the transaction with signatures
             let compiledOutput = TransactionCompiler.compileWithSignatures(
                 coinType: coin,
                 txInputData: inputData,
@@ -321,21 +323,24 @@ class UTXOChainsHelper {
             print("Compiled transaction size: \(compiledOutput.count) bytes")
             
             // Parse the output to check for errors
-            if let output = try? BitcoinSigningOutput(serializedBytes: compiledOutput),
-               !output.errorMessage.isEmpty {
+            let output = try BitcoinSigningOutput(serializedBytes: compiledOutput)
+            
+            if !output.errorMessage.isEmpty {
                 print("Compilation error: \(output.errorMessage)")
-                // Fall back to input data
-                return inputData.hexString
+                throw HelperError.runtimeError(output.errorMessage)
             }
             
-            // If we got a very small output, something went wrong
-            if compiledOutput.count < 10 {
-                print("Warning: Compiled output is too small (\(compiledOutput.count) bytes), using input data instead")
-                return inputData.hexString
+            if output.encoded.isEmpty || output.encoded.count < 10 {
+                print("Warning: Compiled output is too small (\(output.encoded.count) bytes)")
+                throw HelperError.runtimeError("Invalid transaction output")
             }
             
-            // Return the compiled transaction with dummy signatures
-            return compiledOutput.hexString
+            print("Successfully created validated Bitcoin transaction")
+            print("Transaction ID: \(output.transactionID)")
+            print("Transaction hex: \(output.encoded.hexString.prefix(100))...")
+            
+            return output.encoded.hexString
+            
         } catch {
             print("Error creating validated transaction: \(error)")
             throw HelperError.runtimeError("Failed to create validated transaction: \(error.localizedDescription)")

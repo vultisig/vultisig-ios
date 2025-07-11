@@ -220,7 +220,15 @@ class BlockaidProvider: CapabilityAwareSecurityProvider {
         print("Provider: Blockaid")
         print("Transaction data available: \(transactionData.count) characters")
         print("First 100 chars: \(transactionData.prefix(100))...")
-        print("Sending zero-signed transaction to Blockaid API")
+        
+        // Log the transaction structure
+        if transactionData.hasPrefix("02000000") {
+            print("Transaction appears to be raw Bitcoin format")
+        } else if transactionData.hasPrefix("0801") {
+            print("WARNING: Transaction appears to be protobuf format - Blockaid will reject this")
+        }
+        
+        print("Sending transaction to Blockaid API")
         print("===========================================")
         
         let endpoint = Endpoint.blockaidBitcoinTransactionRaw()
