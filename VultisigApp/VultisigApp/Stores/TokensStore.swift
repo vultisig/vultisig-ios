@@ -1511,7 +1511,7 @@ class TokensStore {
             ticker: "WAL",
             logo: "https://coin-images.coingecko.com/coins/images/54914/large/WAL_logo.png",
             decimals: 9,
-            priceProviderId: "",
+            priceProviderId: "walrus-protocol",
             contractAddress: "0x9f992cc2430a1f442ca7a5ca7638169f5d5c00e0ebc3977a65e9ac6e497fe5ef::wal::WAL",
             isNativeToken: false
         ),
@@ -1538,7 +1538,7 @@ class TokensStore {
             ticker: "BLUE",
             logo: "https://coin-images.coingecko.com/coins/images/30883/large/BLUE_200x200.png",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "bluefin",
             contractAddress: "0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::blue::BLUE",
             isNativeToken: false
         ),
@@ -1547,7 +1547,7 @@ class TokensStore {
             ticker: "SEND",
             logo: "https://coin-images.coingecko.com/coins/images/50989/large/SEND.png",
             decimals: 9,
-            priceProviderId: "",
+            priceProviderId: "suilend",
             contractAddress: "0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::send::SEND",
             isNativeToken: false
         ),
@@ -1610,7 +1610,7 @@ class TokensStore {
             ticker: "NS",
             logo: "sui", // Using SUI logo as placeholder - NS logo not found on CDNs
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "suins",
             contractAddress: "0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS",
             isNativeToken: false
         ),
@@ -1619,7 +1619,7 @@ class TokensStore {
             ticker: "AXOL",
             logo: "https://coin-images.coingecko.com/coins/images/50412/large/AXOL.png",
             decimals: 9,
-            priceProviderId: "",
+            priceProviderId: "axol",
             contractAddress: "0x8f16cb934fa07af0f881e80c9f9e2e5b7d88435e329305e32c49f89c5e6c6867::axol::AXOL",
             isNativeToken: false
         ),
@@ -1628,7 +1628,7 @@ class TokensStore {
             ticker: "LOFI",
             logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/34187.png",
             decimals: 9,
-            priceProviderId: "",
+            priceProviderId: "lofi-defi",
             contractAddress: "0xf22da9a24ad027cccb5f2d496cbe91de953d363513db08a3a734d361c7c17503::lofi::LOFI",
             isNativeToken: false
         ),

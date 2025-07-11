@@ -56,10 +56,15 @@ class CetusAggregatorService {
     func findRoutes(fromToken: String, toToken: String, amount: String) async throws -> CetusRouteResponse {
         let url = URL(string: "\(baseURL)/router_v2/find_routes")!
         
+        // Convert amount string to UInt64 for API
+        guard let amountValue = UInt64(amount) else {
+            throw NSError(domain: "CetusAggregatorService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid amount format"])
+        }
+        
         let requestBody: [String: Any] = [
             "from": fromToken,
             "to": toToken,
-            "amount": amount,
+            "amount": amountValue,
             "by_amount_in": true
         ]
         
