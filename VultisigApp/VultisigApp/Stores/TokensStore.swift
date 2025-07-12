@@ -1502,7 +1502,7 @@ class TokensStore {
             ticker: "DEEP",
             logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/33391.png",
             decimals: 6,
-            priceProviderId: "deepbook-protocol",
+            priceProviderId: "deep",
             contractAddress: "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
             isNativeToken: false
         ),
@@ -1511,8 +1511,8 @@ class TokensStore {
             ticker: "WAL",
             logo: "https://coin-images.coingecko.com/coins/images/54914/large/WAL_logo.png",
             decimals: 9,
-            priceProviderId: "walrus-protocol",
-            contractAddress: "0x9f992cc2430a1f442ca7a5ca7638169f5d5c00e0ebc3977a65e9ac6e497fe5ef::wal::WAL",
+            priceProviderId: "walrus-2",
+            contractAddress: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1529,7 +1529,7 @@ class TokensStore {
             ticker: "NAVX",
             logo: "https://raw.githubusercontent.com/cosmostation/chainlist/main/chain/sui/asset/navx.png",
             decimals: 9,
-            priceProviderId: "navi-protocol",
+            priceProviderId: "navi",
             contractAddress: "0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX",
             isNativeToken: false
         ),
@@ -1539,7 +1539,7 @@ class TokensStore {
             logo: "https://coin-images.coingecko.com/coins/images/30883/large/BLUE_200x200.png",
             decimals: 8,
             priceProviderId: "bluefin",
-            contractAddress: "0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::blue::BLUE",
+            contractAddress: "0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1548,7 +1548,7 @@ class TokensStore {
             logo: "https://coin-images.coingecko.com/coins/images/50989/large/SEND.png",
             decimals: 9,
             priceProviderId: "suilend",
-            contractAddress: "0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::send::SEND",
+            contractAddress: "0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7::send::SEND",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1562,65 +1562,11 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .sui,
-            ticker: "USDT",
-            logo: "usdt",
-            decimals: 6,
-            priceProviderId: "tether",
-            contractAddress: "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
-            ticker: "WETH",
-            logo: "weth",
-            decimals: 8,
-            priceProviderId: "weth",
-            contractAddress: "0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
-            ticker: "WBTC",
-            logo: "wbtc",
-            decimals: 8,
-            priceProviderId: "wrapped-bitcoin",
-            contractAddress: "0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
-            ticker: "APT",
-            logo: "https://raw.githubusercontent.com/hippospace/aptos-coin-list/main/icons/APT.webp",
-            decimals: 8,
-            priceProviderId: "aptos",
-            contractAddress: "0x3a5143bb1196e3bcdfab6203d1683ae29edd26294fc8bfeafe4aaa9d2704df37::coin::COIN",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
-            ticker: "SOL",
-            logo: "sol",
-            decimals: 8,
-            priceProviderId: "solana",
-            contractAddress: "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
-            ticker: "NS",
-            logo: "sui", // Using SUI logo as placeholder - NS logo not found on CDNs
-            decimals: 6,
-            priceProviderId: "suins",
-            contractAddress: "0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS",
-            isNativeToken: false
-        ),
-        CoinMeta(
-            chain: .sui,
             ticker: "AXOL",
             logo: "https://coin-images.coingecko.com/coins/images/50412/large/AXOL.png",
             decimals: 9,
             priceProviderId: "axol",
-            contractAddress: "0x8f16cb934fa07af0f881e80c9f9e2e5b7d88435e329305e32c49f89c5e6c6867::axol::AXOL",
+            contractAddress: "0xf00eb7ab086967a33c04a853ad960e5c6b0955ef5a47d50b376d83856dc1215e::axol::AXOL",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1628,8 +1574,8 @@ class TokensStore {
             ticker: "LOFI",
             logo: "https://s2.coinmarketcap.com/static/img/coins/64x64/34187.png",
             decimals: 9,
-            priceProviderId: "lofi-defi",
-            contractAddress: "0xf22da9a24ad027cccb5f2d496cbe91de953d363513db08a3a734d361c7c17503::lofi::LOFI",
+            priceProviderId: "lofi-2",
+            contractAddress: "0xf22da9a24ad027cccb5f2d496cbe91de953d363513db08a3a734d361c7c17503::LOFI::LOFI",
             isNativeToken: false
         ),
         CoinMeta(
