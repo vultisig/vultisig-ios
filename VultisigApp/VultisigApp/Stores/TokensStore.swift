@@ -1537,7 +1537,7 @@ class TokensStore {
             chain: .sui,
             ticker: "BLUE",
             logo: "https://coin-images.coingecko.com/coins/images/30883/large/BLUE_200x200.png",
-            decimals: 8,
+            decimals: 9,
             priceProviderId: "bluefin",
             contractAddress: "0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE",
             isNativeToken: false
