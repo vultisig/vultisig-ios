@@ -63,7 +63,7 @@ class CetusAggregatorService {
         
         let requestBody: [String: Any] = [
             "from": fromToken,
-            "to": toToken,
+            "target": toToken,  // Changed from "to" to "target"
             "amount": amountValue,
             "by_amount_in": true
         ]
