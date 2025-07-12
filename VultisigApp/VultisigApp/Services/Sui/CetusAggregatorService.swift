@@ -81,8 +81,14 @@ class CetusAggregatorService {
             print("Cetus aggregator response: \(jsonString)")
         }
         
-        let response = try jsonDecoder.decode(CetusRouteResponse.self, from: data)
-        return response
+        let apiResponse = try jsonDecoder.decode(CetusAPIResponse.self, from: data)
+        
+        // Check if the API returned an error or no data
+        if apiResponse.code != 200 || apiResponse.data == nil {
+            throw NSError(domain: "CetusAggregatorService", code: apiResponse.code, userInfo: [NSLocalizedDescriptionKey: apiResponse.msg])
+        }
+        
+        return apiResponse.data!
     }
     
     /// Get USD value for a SUI token using Cetus aggregator
@@ -104,10 +110,10 @@ class CetusAggregatorService {
                 amount: amount
             )
             
-            // Calculate price from the best route
-            if let bestRoute = routes.routes.first,
-               let amountOut = Double(bestRoute.amount_out),
-               let amountIn = Double(amount) {
+            // Calculate price from the response
+            if routes.routes.count > 0 {
+                let amountOut = Double(routes.amount_out) ?? 0
+                let amountIn = Double(routes.amount_in) ?? 0
                 
                 // Since we're swapping to USDC (6 decimals), we need to adjust
                 let usdcDecimals = 6
@@ -117,7 +123,7 @@ class CetusAggregatorService {
                 let tokenAmount = amountIn / pow(10, Double(tokenDecimals))
                 
                 // Price = USDC amount / Token amount
-                let price = usdcAmount / tokenAmount
+                let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
                 
                 return price > 0 ? price : 0.0
             }
@@ -132,19 +138,19 @@ class CetusAggregatorService {
                 amount: amount
             )
             
-            if let tokenToSuiRoute = tokenToSuiRoutes.routes.first,
-               let suiAmountOut = Double(tokenToSuiRoute.amount_out) {
+            if tokenToSuiRoutes.routes.count > 0 {
+                let suiAmountOut = tokenToSuiRoutes.amount_out
                 
                 // Then get SUI -> USDC rate
                 let suiToUsdcRoutes = try await findRoutes(
                     fromToken: suiAddress,
                     toToken: usdcAddress,
-                    amount: tokenToSuiRoute.amount_out
+                    amount: suiAmountOut
                 )
                 
-                if let suiToUsdcRoute = suiToUsdcRoutes.routes.first,
-                   let usdcAmountOut = Double(suiToUsdcRoute.amount_out),
-                   let amountIn = Double(amount) {
+                if suiToUsdcRoutes.routes.count > 0 {
+                    let usdcAmountOut = Double(suiToUsdcRoutes.amount_out) ?? 0
+                    let amountIn = Double(amount) ?? 0
                     
                     // Calculate final price
                     let usdcDecimals = 6
@@ -153,7 +159,7 @@ class CetusAggregatorService {
                     let usdcAmount = usdcAmountOut / pow(10, Double(usdcDecimals))
                     let tokenAmount = amountIn / pow(10, Double(tokenDecimals))
                     
-                    let price = usdcAmount / tokenAmount
+                    let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
                     
                     return price > 0 ? price : 0.0
                 }
@@ -185,16 +191,16 @@ class CetusAggregatorService {
                 amount: amount
             )
             
-            if let bestRoute = routes.routes.first,
-               let amountOut = Double(bestRoute.amount_out),
-               let amountIn = Double(amount) {
+            if routes.routes.count > 0 {
+                let amountOut = Double(routes.amount_out) ?? 0
+                let amountIn = Double(routes.amount_in) ?? 0
                 
                 let usdcDecimals = 6
                 
                 let usdcAmount = amountOut / pow(10, Double(usdcDecimals))
                 let tokenAmount = amountIn / pow(10, Double(decimals))
                 
-                let price = usdcAmount / tokenAmount
+                let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
                 
                 return price > 0 ? price : 0.0
             }
@@ -210,29 +216,150 @@ class CetusAggregatorService {
 
 // MARK: - Response Models
 
+struct CetusAPIResponse: Codable {
+    let code: Int
+    let msg: String
+    let data: CetusRouteResponse?
+}
+
 struct CetusRouteResponse: Codable {
+    let request_id: String?
+    let amount_in: String
+    let amount_out: String
+    let deviation_ratio: String?
     let routes: [CetusRoute]
-    let status: String?
-    let message: String?
+    let gas: Int?
+    
+    enum CodingKeys: String, CodingKey {
+        case request_id, amount_in, amount_out, deviation_ratio, routes, gas
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        request_id = try container.decodeIfPresent(String.self, forKey: .request_id)
+        
+        // Handle amount_in as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_in) {
+            amount_in = String(intValue)
+        } else {
+            amount_in = try container.decode(String.self, forKey: .amount_in)
+        }
+        
+        // Handle amount_out as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_out) {
+            amount_out = String(intValue)
+        } else {
+            amount_out = try container.decode(String.self, forKey: .amount_out)
+        }
+        
+        deviation_ratio = try container.decodeIfPresent(String.self, forKey: .deviation_ratio)
+        routes = try container.decode([CetusRoute].self, forKey: .routes)
+        gas = try container.decodeIfPresent(Int.self, forKey: .gas)
+    }
 }
 
 struct CetusRoute: Codable {
+    let path: [CetusPath]
     let amount_in: String
     let amount_out: String
-    let paths: [CetusPath]
-    let is_exact_in: Bool
-    let by_amount_in: Bool
-    let split_percent: Double?
-    let price_impact: Double?
+    let initial_price: String
+    
+    enum CodingKeys: String, CodingKey {
+        case path, amount_in, amount_out, initial_price
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        path = try container.decode([CetusPath].self, forKey: .path)
+        
+        // Handle amount_in as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_in) {
+            amount_in = String(intValue)
+        } else {
+            amount_in = try container.decode(String.self, forKey: .amount_in)
+        }
+        
+        // Handle amount_out as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_out) {
+            amount_out = String(intValue)
+        } else {
+            amount_out = try container.decode(String.self, forKey: .amount_out)
+        }
+        
+        initial_price = try container.decode(String.self, forKey: .initial_price)
+    }
 }
 
 struct CetusPath: Codable {
-    let pool_id: String
-    let from_coin: String
-    let to_coin: String
+    let id: String
+    let provider: String
+    let from: String
+    let target: String
     let direction: Bool
-    let is_partner: Bool
-    let partner_name: String?
+    let fee_rate: String
+    let lot_size: Int
     let amount_in: String
     let amount_out: String
+    let extended_details: CetusExtendedDetails?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, provider, from, target, direction, fee_rate, lot_size, amount_in, amount_out, extended_details
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(String.self, forKey: .id)
+        provider = try container.decode(String.self, forKey: .provider)
+        from = try container.decode(String.self, forKey: .from)
+        target = try container.decode(String.self, forKey: .target)
+        direction = try container.decode(Bool.self, forKey: .direction)
+        fee_rate = try container.decode(String.self, forKey: .fee_rate)
+        lot_size = try container.decode(Int.self, forKey: .lot_size)
+        
+        // Handle amount_in as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_in) {
+            amount_in = String(intValue)
+        } else {
+            amount_in = try container.decode(String.self, forKey: .amount_in)
+        }
+        
+        // Handle amount_out as either String or Int
+        if let intValue = try? container.decode(Int.self, forKey: .amount_out) {
+            amount_out = String(intValue)
+        } else {
+            amount_out = try container.decode(String.self, forKey: .amount_out)
+        }
+        
+        extended_details = try container.decodeIfPresent(CetusExtendedDetails.self, forKey: .extended_details)
+    }
+}
+
+struct CetusExtendedDetails: Codable {
+    let after_sqrt_price: String
+    
+    enum CodingKeys: String, CodingKey {
+        case after_sqrt_price
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Handle after_sqrt_price as either String or very large numbers
+        // The API sometimes returns numbers too large for Int64
+        do {
+            // First try as String
+            after_sqrt_price = try container.decode(String.self, forKey: .after_sqrt_price)
+        } catch {
+            // If that fails, decode as Decimal and convert to String
+            // This handles very large numbers that don't fit in Int64
+            if let decimalValue = try? container.decode(Decimal.self, forKey: .after_sqrt_price) {
+                after_sqrt_price = "\(decimalValue)"
+            } else {
+                throw error
+            }
+        }
+    }
 } 
