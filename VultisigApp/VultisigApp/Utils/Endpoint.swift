@@ -274,12 +274,28 @@ class Endpoint {
         "https://api-sui.cetus.zone/v2/sui/swap/count"
     }
     
+    // Cetus Aggregator API endpoints
+    static let cetusApiBase = "https://api-sui.cetus.zone"
+    
     static func cetusAggregatorFindRoutes() -> String {
-        "https://api-sui.cetus.zone/router_v2/find_routes"
+        "\(cetusApiBase)/router_v2/find_routes"
     }
     
     static func cetusAggregatorSwapCount() -> String {
-        "https://api-sui.cetus.zone/v2/sui/swap/count"
+        "\(cetusApiBase)/v2/sui/swap/count"
+    }
+    
+    // Additional Cetus endpoints for future use
+    static func cetusPoolInfo() -> String {
+        "\(cetusApiBase)/v2/sui/pools"
+    }
+    
+    static func cetusTokenInfo() -> String {
+        "\(cetusApiBase)/v2/sui/tokens"
+    }
+    
+    static func cetusPriceInfo() -> String {
+        "\(cetusApiBase)/v2/sui/prices"
     }
     
     static let rippleServiceRpc = "https://xrplcluster.com"

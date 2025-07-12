@@ -11,7 +11,6 @@ import BigInt
 
 class CetusAggregatorService {
     static let shared = CetusAggregatorService()
-    private init() {}
     
     // Cetus aggregator package information
     struct CetusPackages {
@@ -44,8 +43,12 @@ class CetusAggregatorService {
         let version: Int
     }
     
-    private let baseURL = "https://api-sui.cetus.zone"
+    private let baseURL: String
     private let jsonDecoder = JSONDecoder()
+    
+    init(baseURL: String = Endpoint.cetusApiBase) {
+        self.baseURL = baseURL
+    }
     
     /// Find routes for swapping tokens using Cetus aggregator
     /// - Parameters:
@@ -53,6 +56,7 @@ class CetusAggregatorService {
     ///   - toToken: Destination token address (use USDC address for price calculation)
     ///   - amount: Amount to swap (in smallest units)
     /// - Returns: CetusRouteResponse containing swap routes and price information
+    /// - Throws: NSError if HTTP request fails or API returns an error
     func findRoutes(fromToken: String, toToken: String, amount: String) async throws -> CetusRouteResponse {
         let url = URL(string: "\(baseURL)/router_v2/find_routes")!
         
@@ -74,9 +78,15 @@ class CetusAggregatorService {
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         request.timeoutInterval = 10
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
         
-
+        // Validate HTTP response status
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "CetusAggregatorService", 
+                          code: (response as? HTTPURLResponse)?.statusCode ?? -1,
+                          userInfo: [NSLocalizedDescriptionKey: "HTTP request failed with status code: \((response as? HTTPURLResponse)?.statusCode ?? -1)"])
+        }
         
         let apiResponse = try jsonDecoder.decode(CetusAPIResponse.self, from: data)
         
