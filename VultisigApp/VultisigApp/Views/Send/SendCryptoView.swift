@@ -136,7 +136,7 @@ struct SendCryptoView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
             }
         }
     }
@@ -153,7 +153,7 @@ struct SendCryptoView: View {
                     swapTransaction: nil
                 )
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
             }
         }.onAppear() {
             Task{
@@ -177,7 +177,7 @@ struct SendCryptoView: View {
     }
 
     var errorView: some View {
-        SendCryptoSigningErrorView()
+        SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
     }
     
     var loader: some View {

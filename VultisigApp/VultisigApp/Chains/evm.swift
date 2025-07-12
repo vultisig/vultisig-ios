@@ -34,6 +34,58 @@ class EVMHelper {
         return self.coinType.chainId
     }
     
+    private func setGasParameters(
+        input: inout EthereumSigningInput,
+        chain: Chain,
+        gas: BigUInt?,
+        gasPrice: BigUInt?,
+        gasLimit: BigInt,
+        maxFeePerGasWei: BigInt,
+        priorityFeeWei: BigInt
+    ) {
+        // BSC doesn't support EIP-1559, use legacy transaction
+        if chain == .bscChain {
+            input.txMode = .legacy
+            if let gas, let gasPrice {
+                input.gasLimit = gas.serialize()
+                input.gasPrice = gasPrice.serialize()
+            } else {
+                input.gasLimit = gasLimit.magnitude.serialize()
+                input.gasPrice = maxFeePerGasWei.magnitude.serialize()
+            }
+        } else {
+            input.txMode = .enveloped
+            if let gas, let gasPrice {
+                input.gasLimit = gas.serialize()
+                input.maxFeePerGas = gasPrice.serialize()
+                input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+            } else {
+                input.gasLimit = gasLimit.magnitude.serialize()
+                input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+                input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+            }
+        }
+    }
+    
+    private func configureGasForChain(
+        _ input: inout EthereumSigningInput,
+        chain: Chain,
+        gasLimit: BigInt,
+        maxFeePerGasWei: BigInt,
+        priorityFeeWei: BigInt
+    ) {
+        input.gasLimit = gasLimit.magnitude.serialize()
+        // BSC doesn't support EIP-1559, use legacy transaction
+        if chain == .bscChain {
+            input.txMode = .legacy
+            input.gasPrice = maxFeePerGasWei.magnitude.serialize()
+        } else {
+            input.txMode = .enveloped
+            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+        }
+    }
+    
     func getPreSignedInputData(
         signingInput: EthereumSigningInput,
         keysignPayload: KeysignPayload,
@@ -60,16 +112,16 @@ class EVMHelper {
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
         
-        input.txMode = .enveloped
-        if let gas, let gasPrice {
-            input.gasLimit = gas.serialize()
-            input.maxFeePerGas = gasPrice.serialize()
-            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        } else {
-            input.gasLimit = gasLimit.magnitude.serialize()
-            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        }
+        setGasParameters(
+            input: &input,
+            chain: keysignPayload.coin.chain,
+            gas: gas,
+            gasPrice: gasPrice,
+            gasLimit: gasLimit,
+            maxFeePerGasWei: maxFeePerGasWei,
+            priorityFeeWei: priorityFeeWei
+        )
+        
         return try input.serializedData()
     }
     
@@ -147,16 +199,16 @@ class EVMHelper {
                 }
             }
         }
-        input.txMode = .enveloped
-        if let gas, let gasPrice {
-            input.gasLimit = gas.serialize()
-            input.maxFeePerGas = gasPrice.serialize()
-            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        } else {
-            input.gasLimit = gasLimit.magnitude.serialize()
-            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        }
+        
+        setGasParameters(
+            input: &input,
+            chain: keysignPayload.coin.chain,
+            gas: gas,
+            gasPrice: gasPrice,
+            gasLimit: gasLimit,
+            maxFeePerGasWei: maxFeePerGasWei,
+            priorityFeeWei: priorityFeeWei
+        )
 
         return try input.serializedData()
     }
@@ -173,14 +225,10 @@ class EVMHelper {
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
-        let input = EthereumSigningInput.with {
+        var input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
-            $0.gasLimit = gasLimit.magnitude.serialize()
-            $0.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-            $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.toAddress
-            $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
                     print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
@@ -196,6 +244,14 @@ class EVMHelper {
                 }
             }
         }
+        
+        configureGasForChain(
+            &input,
+            chain: keysignPayload.coin.chain,
+            gasLimit: gasLimit,
+            maxFeePerGasWei: maxFeePerGasWei,
+            priorityFeeWei: priorityFeeWei
+        )
         return try input.serializedData()
     }
     

@@ -659,8 +659,8 @@
 "referralOnboardingBannerTitle3" = "Gebühren sparen.";
 "referralOnboardingTitle1" = "Erstelle deinen Empfehlungscode";
 "referralOnboardingTitle2" = "Teile ihn mit Freunden";
-"referralOnboardingTitle3" = "Verdiene automatisch Belohnungen";
-"referralOnboardingTitle4" = "Empfehlungscode verwenden";
+"referralOnboardingTitle3" = "Verdiene automatisch 10 Bps Gebührenbelohnungen";
+"referralOnboardingTitle4" = "Verwende Empfehlungscode – Spare 5 Bps";
 "referralOnboardingDescription1" = "Wähle einen kurzen Code und lege deine Belohnung fest.";
 "referralOnboardingDescription2" = "Lade Freunde ein, deinen Code beim Swappen zu nutzen.";
 "referralOnboardingDescription3" = "Erhalte Zahlungen in deinem bevorzugten Asset jedes Mal, wenn sie handeln.";
@@ -695,8 +695,12 @@
 "addMemo" = "MEMO hinzufügen";
 "savedAddresses" = "Gespeicherte Adressen";
 "myVaults" = "Meine Tresore";
+"addYourFriendsCode" = "Füge den Code deines Freundes hinzu und spare 5 Bps beim Swappen";
+"createYourCodeAndEarn" = "Erstelle deinen eigenen Code und verdiene 10 Bps beim Swappen";
 "youreSending" = "Du sendest";
 "holdForPairedSign" = "Halte für gekoppeltes Signieren";
 "waitingOnDevice" = "Warte auf Gerät";
 "enterServerPassword" = "Server-Passwort eingeben";
 "confirm" = "Bestätigen";
+"transactionFailed" = "Transaktion fehlgeschlagen";
+"biweeklyPasswordVerifyDescription" = "Wir werden Sie regelmäßig bitten, Ihr Fast-Sign-Passwort zu bestätigen, damit Sie es sich immer merken";

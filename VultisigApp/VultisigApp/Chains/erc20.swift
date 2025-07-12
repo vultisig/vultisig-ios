@@ -27,6 +27,25 @@ class ERC20Helper {
         return self.coinType.chainId
     }
     
+    private func configureGasForChain(
+        _ input: inout EthereumSigningInput,
+        chain: Chain,
+        gasLimit: BigInt,
+        maxFeePerGasWei: BigInt,
+        priorityFeeWei: BigInt
+    ) {
+        input.gasLimit = gasLimit.magnitude.serialize()
+        // BSC doesn't support EIP-1559, use legacy transaction
+        if chain == .bscChain {
+            input.txMode = .legacy
+            input.gasPrice = maxFeePerGasWei.magnitude.serialize()
+        } else {
+            input.txMode = .enveloped
+            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+        }
+    }
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
 
         guard let intChainID = Int64(getChainId(chain: keysignPayload.coin.chain)) else {
@@ -40,14 +59,10 @@ class ERC20Helper {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
         
-        let input = EthereumSigningInput.with {
+        var input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
-            $0.gasLimit = gasLimit.magnitude.serialize()
-            $0.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-            $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.coin.contractAddress
-            $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
@@ -55,6 +70,14 @@ class ERC20Helper {
                 }
             }
         }
+        
+        configureGasForChain(
+            &input,
+            chain: keysignPayload.coin.chain,
+            gasLimit: gasLimit,
+            maxFeePerGasWei: maxFeePerGasWei,
+            priorityFeeWei: priorityFeeWei
+        )
 
         return try input.serializedData()
     }

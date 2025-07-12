@@ -34,9 +34,6 @@ struct FunctionCallView: View {
     
     var view: some View {
         VStack(spacing: 18) {
-            ProgressBar(progress: functionCallViewModel.getProgress())
-                .padding(.top, 12)
-
             tabView
         }
         .blur(radius: functionCallViewModel.isLoading ? 1 : 0)
@@ -103,7 +100,7 @@ struct FunctionCallView: View {
             if let keysignView = keysignView {
                 keysignView
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
             }
         }
     }
@@ -113,7 +110,7 @@ struct FunctionCallView: View {
             if let hash = functionCallViewModel.hash, let chain = keysignPayload?.coin.chain  {
                 SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain, sendTransaction: tx, swapTransaction: nil)
             } else {
-                SendCryptoSigningErrorView()
+                SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
             }
         }.onAppear() {
             Task{
@@ -124,7 +121,7 @@ struct FunctionCallView: View {
     }
     
     var errorView: some View {
-        SendCryptoSigningErrorView()
+        SendCryptoSigningErrorView(errorString: functionCallViewModel.errorMessage)
     }
     
     var loader: some View {

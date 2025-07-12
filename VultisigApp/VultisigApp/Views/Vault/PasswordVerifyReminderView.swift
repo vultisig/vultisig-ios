@@ -32,6 +32,9 @@ struct PasswordVerifyReminderView: View {
             }
         }
         .animation(.easeInOut, value: showError)
+        .onDisappear {
+            handleCloseTap()
+        }
     }
     
     var loader: some View {
@@ -50,32 +53,38 @@ struct PasswordVerifyReminderView: View {
     }
 
     var view: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: 12) {
             header
+            separator
+            description
             field
+            Spacer(minLength: 0)
             verifyButton
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 24)
+        .padding(.top, 24)
+        .padding(.bottom, 12)
         .blur(radius: isLoading ? 1 : 0)
+    }
+    
+    var separator: some View {
+        LinearSeparator()
+            .opacity(0.8)
     }
 
     var header: some View {
-        HStack {
-            closeButton
-                .disabled(true)
-                .opacity(0)
-
-            Spacer()
-
-            title
-
-            Spacer()
-
-            closeButton
-        }
-        .foregroundColor(.neutral0)
-        .font(.body16BrockmannMedium)
+        Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
+            .multilineTextAlignment(.center)
+            .foregroundColor(.lightText)
+            .font(.body14BrockmannMedium)
+    }
+    
+    var description: some View {
+        Text(NSLocalizedString("biweeklyPasswordVerifyDescription", comment: ""))
+            .multilineTextAlignment(.center)
+            .foregroundColor(.extraLightGray)
+            .font(.body12BrockmannMedium)
+            .padding(.horizontal, 28)
     }
     
     var field: some View {
@@ -112,7 +121,7 @@ struct PasswordVerifyReminderView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.turquoise600, lineWidth: 1)
+                .stroke(showError ? Color.invalidRed : Color.clear, lineWidth: 1)
         )
     }
     
@@ -128,29 +137,12 @@ struct PasswordVerifyReminderView: View {
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
     }
-    
-    var title: some View {
-        Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
-            .multilineTextAlignment(.center)
-    }
-    
-    var closeButton: some View {
-        Button {
-            handleCloseTap()
-        } label: {
-            Image(systemName: "xmark")
-        }
-        .buttonStyle(.plain)
-    }
 
     var verifyButton: some View {
         Button {
-            Task {
-                isLoading = true
-                await verifyPasswordIsValid()
-            }
+            handleButtonTap()
         } label: {
-            FilledButton(title: "verify")
+            FilledButton(title: "verify", textColor: .neutral0, background: .persianBlue400)
         }
         .buttonStyle(.plain)
     }
@@ -192,5 +184,12 @@ struct PasswordVerifyReminderView: View {
         let startOfToday = calendar.startOfDay(for: Date())
         biweeklyPasswordVerifyDate = startOfToday.timeIntervalSince1970
         isSheetPresented = false
+    }
+    
+    private func handleButtonTap() {
+        Task {
+            isLoading = true
+            await verifyPasswordIsValid()
+        }
     }
 }

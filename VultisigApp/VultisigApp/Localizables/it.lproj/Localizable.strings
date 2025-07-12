@@ -642,8 +642,8 @@
 "referralOnboardingBannerTitle3" = "Risparmia sulle commissioni.";
 "referralOnboardingTitle1" = "Crea il tuo codice di invito";
 "referralOnboardingTitle2" = "Condividilo con gli amici";
-"referralOnboardingTitle3" = "Ottieni ricompense automaticamente";
-"referralOnboardingTitle4" = "Usa il codice di invito";
+"referralOnboardingTitle3" = "Guadagna automaticamente 10 bps di ricompense sulle commissioni";
+"referralOnboardingTitle4" = "Usa il codice referral - Risparmia 5 bps";
 "referralOnboardingDescription1" = "Scegli un codice breve e imposta la ricompensa.";
 "referralOnboardingDescription2" = "Invita amici a usare il tuo codice durante lo swap.";
 "referralOnboardingDescription3" = "Ricevi pagamenti nel tuo asset preferito ogni volta che scambiano.";
@@ -678,8 +678,12 @@
 "addMemo" = "Aggiungi MEMO";
 "savedAddresses" = "Indirizzi salvati";
 "myVaults" = "I miei Vault";
+"addYourFriendsCode" = "Aggiungi il codice del tuo amico e risparmia 5 bps sugli swap";
+"createYourCodeAndEarn" = "Crea il tuo codice e guadagna 10 bps sugli swap";
 "youreSending" = "Stai inviando";
 "holdForPairedSign" = "Tieni premuto per la firma abbinata";
 "waitingOnDevice" = "In attesa del dispositivo";
 "enterServerPassword" = "Inserisci la password del server";
 "confirm" = "Conferma";
+"transactionFailed" = "Transazione non riuscita";
+"biweeklyPasswordVerifyDescription" = "Ti chiederemo periodicamente di verificare la tua password Fast Sign, così non la dimenticherai mai";
