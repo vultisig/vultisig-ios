@@ -53,6 +53,14 @@ class SuiService {
     }
     
     static func getTokenUSDValue(contractAddress: String) async -> Double {
+        // First try to get price from Cetus aggregator
+        let cetusPrice = await CetusAggregatorService.shared.getTokenUSDValue(contractAddress: contractAddress)
+        
+        if cetusPrice > 0 {
+            return cetusPrice
+        }
+        
+        // Fallback to the old method if Cetus doesn't return a price
         do {
             let urlString: String = Endpoint.suiTokenQuote()
             let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
@@ -97,6 +105,23 @@ class SuiService {
         } catch {
             return 0.0
         }
+    }
+    
+    /// Get token USD value with proper decimal handling
+    /// - Parameters:
+    ///   - contractAddress: Token contract address
+    ///   - decimals: Token decimals
+    /// - Returns: Price in USD
+    static func getTokenUSDValue(contractAddress: String, decimals: Int) async -> Double {
+        // Use Cetus aggregator with proper decimals
+        let cetusPrice = await CetusAggregatorService.shared.getTokenUSDValue(contractAddress: contractAddress, decimals: decimals)
+        
+        if cetusPrice > 0 {
+            return cetusPrice
+        }
+        
+        // Fallback to default method if Cetus doesn't return a price
+        return await getTokenUSDValue(contractAddress: contractAddress)
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
@@ -207,13 +232,13 @@ class SuiService {
                         !knownAsset.priceProviderId.isEmpty
                     }
                     
-
+                    let decimals = Int(tokenData["decimals"] ?? "0")!
                     
                     let coinMeta = CoinMeta(
                         chain: .sui,
                         ticker: tokenData["symbol"]!,
                         logo: tokenData["logo"]!,
-                        decimals: Int(tokenData["decimals"] ?? "0")!,
+                        decimals: decimals,
                         priceProviderId: knownTokenByTicker?.priceProviderId ?? "", // Use price provider ID from any matching token
                         contractAddress: objType,
                         isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false

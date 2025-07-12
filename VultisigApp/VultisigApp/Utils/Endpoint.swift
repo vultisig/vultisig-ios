@@ -274,6 +274,14 @@ class Endpoint {
         "https://api-sui.cetus.zone/v2/sui/swap/count"
     }
     
+    static func cetusAggregatorFindRoutes() -> String {
+        "https://api-sui.cetus.zone/router_v2/find_routes"
+    }
+    
+    static func cetusAggregatorSwapCount() -> String {
+        "https://api-sui.cetus.zone/v2/sui/swap/count"
+    }
+    
     static let rippleServiceRpc = "https://xrplcluster.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
