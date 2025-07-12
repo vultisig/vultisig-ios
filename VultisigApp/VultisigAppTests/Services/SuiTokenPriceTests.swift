@@ -53,42 +53,31 @@ final class SuiTokenPriceTests: XCTestCase {
     // MARK: - Test SuiService.getTokenUSDValue
     
     func testSuiServiceGetTokenUSDValue() async throws {
-        print("🧪 Testing SuiService.getTokenUSDValue for all Sui tokens")
-        print("=" * 60)
-        
         var successCount = 0
         var failureCount = 0
-        var priceResults: [(token: String, price: Double, status: String)] = []
+        var priceResults: [(token: String, price: Double)] = []
         
         for token in suiTokens {
-            print("\n🔍 Testing \(token.name)...")
-            
             let price = await SuiService.getTokenUSDValue(contractAddress: token.address)
             
             if price > 0 {
                 successCount += 1
-                print("✅ \(token.name): $\(String(format: "%.6f", price)) USD")
-                priceResults.append((token: token.name, price: price, status: "✅"))
+                priceResults.append((token: token.name, price: price))
             } else {
                 failureCount += 1
-                print("❌ \(token.name): Failed to get price (returned 0.0)")
-                priceResults.append((token: token.name, price: 0.0, status: "❌"))
             }
             
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
         
-        print("\n" + "=" * 60)
-        print("📊 SuiService Summary:")
+        print("\n📊 SuiService Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
-        print("📈 Total tokens tested: \(suiTokens.count)")
         
-        // Print summary table
-        print("\n📋 Price Summary:")
+        print("\n💰 Token Prices:")
         for result in priceResults {
-            print("\(result.status) \(result.token): $\(String(format: "%.6f", result.price))")
+            print("\(result.token): $\(String(format: "%.6f", result.price))")
         }
         
         // Assert that at least some tokens returned prices
@@ -98,15 +87,11 @@ final class SuiTokenPriceTests: XCTestCase {
     // MARK: - Test SuiService.getTokenUSDValue with decimals
     
     func testSuiServiceGetTokenUSDValueWithDecimals() async throws {
-        print("\n🧪 Testing SuiService.getTokenUSDValue with proper decimals")
-        print("=" * 60)
-        
         var successCount = 0
         var failureCount = 0
+        var priceResults: [(token: String, price: Double)] = []
         
         for token in suiTokens {
-            print("\n🔍 Testing \(token.name) with \(token.decimals) decimals...")
-            
             let price = await SuiService.getTokenUSDValue(
                 contractAddress: token.address,
                 decimals: token.decimals
@@ -114,20 +99,23 @@ final class SuiTokenPriceTests: XCTestCase {
             
             if price > 0 {
                 successCount += 1
-                print("✅ \(token.name): $\(String(format: "%.6f", price)) USD")
+                priceResults.append((token: token.name, price: price))
             } else {
                 failureCount += 1
-                print("❌ \(token.name): Failed to get price (returned 0.0)")
             }
             
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
         
-        print("\n" + "=" * 60)
-        print("📊 SuiService (with decimals) Summary:")
+        print("\n📊 SuiService (with decimals) Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
+        
+        print("\n💰 Token Prices:")
+        for result in priceResults {
+            print("\(result.token): $\(String(format: "%.6f", result.price))")
+        }
         
         XCTAssertGreaterThan(successCount, 0, "At least some tokens should return valid prices with decimals")
     }
@@ -135,19 +123,13 @@ final class SuiTokenPriceTests: XCTestCase {
     // MARK: - Test CetusAggregatorService directly
     
     func testCetusAggregatorServiceGetTokenUSDValue() async throws {
-        print("\n🧪 Testing CetusAggregatorService.getTokenUSDValue directly")
-        print("=" * 60)
-        
         var successCount = 0
         var failureCount = 0
         var priceComparison: [(token: String, cetusPrice: Double, suiServicePrice: Double)] = []
         
         for token in suiTokens {
-            print("\n🔍 Testing \(token.name) with Cetus...")
-            
             // Skip USDC as it can't be swapped to itself
             if token.name == "USDC" {
-                print("⏭️  Skipping USDC (base currency)")
                 continue
             }
             
@@ -165,15 +147,6 @@ final class SuiTokenPriceTests: XCTestCase {
             
             if cetusPrice > 0 {
                 successCount += 1
-                print("✅ \(token.name) Cetus: $\(String(format: "%.6f", cetusPrice)) USD")
-                print("   SuiService: $\(String(format: "%.6f", suiServicePrice)) USD")
-                
-                // Check if prices are similar (within 10% difference)
-                if suiServicePrice > 0 {
-                    let priceDiff = abs(cetusPrice - suiServicePrice) / suiServicePrice * 100
-                    print("   Price difference: \(String(format: "%.2f", priceDiff))%")
-                }
-                
                 priceComparison.append((
                     token: token.name,
                     cetusPrice: cetusPrice,
@@ -181,30 +154,20 @@ final class SuiTokenPriceTests: XCTestCase {
                 ))
             } else {
                 failureCount += 1
-                print("❌ \(token.name): Failed to get Cetus price")
             }
             
             // Small delay to avoid rate limiting
             try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
         }
         
-        print("\n" + "=" * 60)
-        print("📊 CetusAggregatorService Summary:")
+        print("\n📊 Results Summary:")
         print("✅ Successful: \(successCount)")
         print("❌ Failed: \(failureCount)")
         
-        // Print price comparison table
-        print("\n📋 Price Comparison (Cetus vs SuiService):")
+        // Print only the prices
+        print("\n💰 Token Prices:")
         for comparison in priceComparison {
-            let diff = comparison.suiServicePrice > 0 
-                ? abs(comparison.cetusPrice - comparison.suiServicePrice) / comparison.suiServicePrice * 100
-                : 0.0
-            print("\(comparison.token):")
-            print("  Cetus: $\(String(format: "%.6f", comparison.cetusPrice))")
-            print("  SuiService: $\(String(format: "%.6f", comparison.suiServicePrice))")
-            if diff > 0 {
-                print("  Difference: \(String(format: "%.2f", diff))%")
-            }
+            print("\(comparison.token): $\(String(format: "%.6f", comparison.cetusPrice))")
         }
         
         XCTAssertGreaterThan(successCount, 0, "At least some tokens should return valid Cetus prices")
@@ -213,28 +176,27 @@ final class SuiTokenPriceTests: XCTestCase {
     // MARK: - Test specific token: DEEP
     
     func testDEEPTokenPrice() async throws {
-        print("\n🧪 Testing DEEP token specifically")
-        print("=" * 60)
-        
         let deepToken = suiTokens.first { $0.name == "DEEP" }!
         
         // Test with SuiService
         let suiPrice = await SuiService.getTokenUSDValue(contractAddress: deepToken.address)
-        print("SuiService DEEP price: $\(String(format: "%.6f", suiPrice))")
         
         // Test with SuiService including decimals
         let suiPriceWithDecimals = await SuiService.getTokenUSDValue(
             contractAddress: deepToken.address,
             decimals: deepToken.decimals
         )
-        print("SuiService DEEP price (with decimals): $\(String(format: "%.6f", suiPriceWithDecimals))")
         
         // Test with CetusAggregatorService
         let cetusPrice = await cetusService.getTokenUSDValue(
             contractAddress: deepToken.address,
             decimals: deepToken.decimals
         )
-        print("CetusAggregatorService DEEP price: $\(String(format: "%.6f", cetusPrice))")
+        
+        print("\n💰 DEEP Token Prices:")
+        print("SuiService: $\(String(format: "%.6f", suiPrice))")
+        print("SuiService (with decimals): $\(String(format: "%.6f", suiPriceWithDecimals))")
+        print("CetusAggregatorService: $\(String(format: "%.6f", cetusPrice))")
         
         // Verify DEEP token returns a valid price
         XCTAssertGreaterThan(suiPrice, 0, "DEEP token should have a valid price from SuiService")
@@ -248,28 +210,20 @@ final class SuiTokenPriceTests: XCTestCase {
     // MARK: - Test error handling
     
     func testInvalidTokenAddress() async throws {
-        print("\n🧪 Testing error handling with invalid token address")
-        print("=" * 60)
-        
         let invalidAddress = "0xinvalid::token::address"
         
         // Test SuiService
         let suiPrice = await SuiService.getTokenUSDValue(contractAddress: invalidAddress)
-        print("SuiService price for invalid address: $\(suiPrice)")
         XCTAssertEqual(suiPrice, 0.0, "Invalid address should return 0.0")
         
         // Test CetusAggregatorService
         let cetusPrice = await cetusService.getTokenUSDValue(contractAddress: invalidAddress)
-        print("CetusAggregatorService price for invalid address: $\(cetusPrice)")
         XCTAssertEqual(cetusPrice, 0.0, "Invalid address should return 0.0")
     }
     
     // MARK: - Performance test
     
     func testPerformanceOfPriceFetching() throws {
-        print("\n🧪 Testing performance of price fetching")
-        print("=" * 60)
-        
         // Test performance for a single token
         let testToken = suiTokens.first { $0.name == "SUI" }!
         

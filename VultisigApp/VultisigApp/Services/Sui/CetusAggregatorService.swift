@@ -76,10 +76,7 @@ class CetusAggregatorService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        // Log response for debugging
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("Cetus aggregator response: \(jsonString)")
-        }
+
         
         let apiResponse = try jsonDecoder.decode(CetusAPIResponse.self, from: data)
         
@@ -168,7 +165,6 @@ class CetusAggregatorService {
             return 0.0
             
         } catch {
-            print("Error fetching Cetus aggregator price for \(contractAddress): \(error.localizedDescription)")
             return 0.0
         }
     }
@@ -208,7 +204,6 @@ class CetusAggregatorService {
             return 0.0
             
         } catch {
-            print("Error fetching Cetus price with decimals for \(contractAddress): \(error.localizedDescription)")
             return 0.0
         }
     }
