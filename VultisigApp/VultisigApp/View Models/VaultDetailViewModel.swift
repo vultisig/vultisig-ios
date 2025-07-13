@@ -58,7 +58,7 @@ class VaultDetailViewModel: ObservableObject {
     
     private func addCoin(_ coin: Coin) {
         for group in groups {
-            if group.address == coin.address && group.name == coin.chain.name {
+            if group.address == coin.address && group.chain == coin.chain {
                 group.coins.append(coin)
                 group.count += 1
                 if coin.isNativeToken {

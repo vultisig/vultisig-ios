@@ -11,6 +11,7 @@ import BigInt
 struct LiFiService {
     
     static let shared = LiFiService()
+    static let integratorFeeDecimal: Decimal = 0.005
 
     private let integratorName: String = "vultisig-iOS"
     private let integratorFee: String = "0.005"
