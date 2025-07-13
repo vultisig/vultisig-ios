@@ -832,6 +832,7 @@
 		B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
+		B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758182BD8E65D0097B5BA /* SuiConstants.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
 
@@ -1794,6 +1795,7 @@
 		B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtensionMemo.swift"; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
+		B5F758182BD8E65D0097B5BA /* SuiConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiConstants.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
 
@@ -3725,6 +3727,7 @@
 				B5E654EC2D2788CC003A037C /* Tron.swift */,
 				B5A80F172D0600BA00DC9069 /* Ripple.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
+				B5F758182BD8E65D0097B5BA /* SuiConstants.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* evm.swift */,
@@ -4888,6 +4891,7 @@
 				A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
+				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */,
 				A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */,
