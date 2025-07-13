@@ -95,19 +95,25 @@ class CetusAggregatorService {
             throw NSError(domain: "CetusAggregatorService", code: apiResponse.code, userInfo: [NSLocalizedDescriptionKey: apiResponse.msg])
         }
         
-        return apiResponse.data!
+        guard let data = apiResponse.data else {
+            throw NSError(domain: "CetusAggregatorService", code: 2, userInfo: [NSLocalizedDescriptionKey: "No data returned from API"])
+        }
+        
+        return data
     }
     
     /// Get USD value for a SUI token using Cetus aggregator
     /// - Parameter contractAddress: The token contract address
     /// - Returns: Price in USD (0.0 if not found)
+    /// - Warning: This method assumes 9 decimals for all tokens which may be incorrect. Use getTokenUSDValue(contractAddress:decimals:) instead.
+    @available(*, deprecated, message: "Use getTokenUSDValue(contractAddress:decimals:) instead to provide accurate decimals")
     func getTokenUSDValue(contractAddress: String) async -> Double {
         do {
             // USDC address on SUI
-            let usdcAddress = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+            let usdcAddress = SuiConstants.usdcAddress
             
-            // Amount: 1 token with appropriate decimals (we'll use 9 decimals as default for SUI tokens)
-            // This will be adjusted based on actual token decimals
+            // WARNING: This assumes 9 decimals which may not be correct for all tokens
+            // The caller should provide the actual decimals
             let amount = "1000000000" // 1 token with 9 decimals
             
             // Try to find routes from token to USDC
@@ -123,8 +129,8 @@ class CetusAggregatorService {
                 let amountIn = Double(routes.amount_in) ?? 0
                 
                 // Since we're swapping to USDC (6 decimals), we need to adjust
-                let usdcDecimals = 6
-                let tokenDecimals = 9 // Default for SUI tokens, should be fetched from metadata
+                let usdcDecimals = SuiConstants.usdcDecimals
+                let tokenDecimals = SuiConstants.defaultDecimals // Default for SUI tokens, should be fetched from metadata
                 
                 let usdcAmount = amountOut / pow(10, Double(usdcDecimals))
                 let tokenAmount = amountIn / pow(10, Double(tokenDecimals))
@@ -186,7 +192,7 @@ class CetusAggregatorService {
     /// - Returns: Price in USD
     func getTokenUSDValue(contractAddress: String, decimals: Int) async -> Double {
         do {
-            let usdcAddress = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+            let usdcAddress = SuiConstants.usdcAddress
             
             // Amount: 1 token with proper decimals
             let amount = String(BigInt(10).power(decimals))

@@ -52,6 +52,7 @@ class SuiService {
         }
     }
     
+    @available(*, deprecated, message: "Use getTokenUSDValue(contractAddress:decimals:) instead to provide accurate decimals")
     static func getTokenUSDValue(contractAddress: String) async -> Double {
         // First try to get price from Cetus aggregator
         let cetusPrice = await CetusAggregatorService.shared.getTokenUSDValue(contractAddress: contractAddress)
@@ -67,7 +68,7 @@ class SuiService {
 
             if let pools = Utils.extractResultFromJson(fromData: dataResponse, path: "data.pools") as? [[String: Any]] {
                 
-                let usdcAddress = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+                let usdcAddress = SuiConstants.usdcAddress
 
                 // Find a pool where `contractAddress` is in either `coin_a` or `coin_b`
                 let pool = pools.first { pool in
