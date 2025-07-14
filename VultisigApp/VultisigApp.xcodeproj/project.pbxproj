@@ -747,6 +747,7 @@
 		A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */; };
 		A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */; };
 		A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */; };
+		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
 		B50DB3742E0B7E5C00485E94 /* ClassDiagram.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3732E0B7E5500485E94 /* ClassDiagram.md */; };
 		B50DB3762E0B9E9E00485E94 /* Security.md in Resources */ = {isa = PBXBuildFile; fileRef = B50DB3752E0B9E9E00485E94 /* Security.md */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
@@ -785,6 +786,7 @@
 		B54E31832BF5A73500D4FC0A /* FunctionCallTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* FunctionCallTypeEnum.swift */; };
 		B55246C92CF5639A00E3532C /* NobleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55246C82CF5639A00E3532C /* NobleService.swift */; };
 		B55246CB2CF5643800E3532C /* noble.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55246CA2CF5643800E3532C /* noble.swift */; };
+		B56324982E1E2635008E59A5 /* CetusAggregatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56324972E1E2635008E59A5 /* CetusAggregatorService.swift */; };
 		B571384D2CC560F2000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384C2CC560F0000E925B /* Ton.swift */; };
 		B57138502CC5713E000E925B /* TonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384F2CC5713A000E925B /* TonService.swift */; };
 		B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576BE5C2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift */; };
@@ -830,8 +832,10 @@
 		B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
+		B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758182BD8E65D0097B5BA /* SuiConstants.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
+
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
 		D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70D65FB2DF48824001C4492 /* RuneBondCell.swift */; };
 		D7620B1D2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */; };
@@ -1705,6 +1709,7 @@
 		A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceTests.swift; sourceTree = "<group>"; };
 		A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceAPIResponseTests.swift; sourceTree = "<group>"; };
 		A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceChainCoverageTests.swift; sourceTree = "<group>"; };
+		927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SuiTokenPriceTests.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B50DB3732E0B7E5500485E94 /* ClassDiagram.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ClassDiagram.md; sourceTree = "<group>"; };
 		B50DB3752E0B9E9E00485E94 /* Security.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Security.md; sourceTree = "<group>"; };
@@ -1744,6 +1749,7 @@
 		B54E31822BF5A73500D4FC0A /* FunctionCallTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallTypeEnum.swift; sourceTree = "<group>"; };
 		B55246C82CF5639A00E3532C /* NobleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NobleService.swift; sourceTree = "<group>"; };
 		B55246CA2CF5643800E3532C /* noble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = noble.swift; sourceTree = "<group>"; };
+		B56324972E1E2635008E59A5 /* CetusAggregatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CetusAggregatorService.swift; sourceTree = "<group>"; };
 		B571384C2CC560F0000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
 		B571384F2CC5713A000E925B /* TonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonService.swift; sourceTree = "<group>"; };
 		B576BE5C2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+TCYStake.swift"; sourceTree = "<group>"; };
@@ -1789,8 +1795,10 @@
 		B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+ExtensionMemo.swift"; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
+		B5F758182BD8E65D0097B5BA /* SuiConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiConstants.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
+
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D70D65FB2DF48824001C4492 /* RuneBondCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuneBondCell.swift; sourceTree = "<group>"; };
 		D7620B1C2DF6BFD700294396 /* FunctionCallNodeMaintenance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallNodeMaintenance.swift; sourceTree = "<group>"; };
@@ -3414,6 +3422,7 @@
 		B5A51B532BD8C68B00791D78 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
+				B56324972E1E2635008E59A5 /* CetusAggregatorService.swift */,
 				B5F758192BD8E7230097B5B9 /* SuiService.swift */,
 			);
 			path = Sui;
@@ -3718,6 +3727,7 @@
 				B5E654EC2D2788CC003A037C /* Tron.swift */,
 				B5A80F172D0600BA00DC9069 /* Ripple.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
+				B5F758182BD8E65D0097B5BA /* SuiConstants.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* evm.swift */,
@@ -3811,6 +3821,7 @@
 				A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */,
 				A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */,
 				A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */,
+				927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */,
 			);
 			path = VultisigAppTests;
 			sourceTree = "<group>";
@@ -4369,6 +4380,7 @@
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
+				B56324982E1E2635008E59A5 /* CetusAggregatorService.swift in Sources */,
 				B58BE8E82CD1C36E00FFD98F /* osmosis.swift in Sources */,
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
 				A51AE8C62C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift in Sources */,
@@ -4879,6 +4891,7 @@
 				A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
+				B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */,
 				A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */,
@@ -4982,6 +4995,7 @@
 				A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */,
 				A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */,
 				A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */,
+				927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

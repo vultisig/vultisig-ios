@@ -52,14 +52,27 @@ class SuiService {
         }
     }
     
-    static func getTokenUSDValue(contractAddress: String) async -> Double {
+    /// Get token USD value with proper decimal handling
+    /// - Parameters:
+    ///   - contractAddress: Token contract address
+    ///   - decimals: Token decimals (defaults to 9 for SUI native tokens)
+    /// - Returns: Price in USD
+    static func getTokenUSDValue(contractAddress: String, decimals: Int = 9) async -> Double {
+        // First try to get price from Cetus aggregator with proper decimals
+        let cetusPrice = await CetusAggregatorService.shared.getTokenUSDValue(contractAddress: contractAddress, decimals: decimals)
+        
+        if cetusPrice > 0 {
+            return cetusPrice
+        }
+        
+        // Fallback to the old pool-based method if Cetus doesn't return a price
         do {
             let urlString: String = Endpoint.suiTokenQuote()
             let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 
             if let pools = Utils.extractResultFromJson(fromData: dataResponse, path: "data.pools") as? [[String: Any]] {
                 
-                let usdcAddress = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+                let usdcAddress = SuiConstants.usdcAddress
 
                 // Find a pool where `contractAddress` is in either `coin_a` or `coin_b`
                 let pool = pools.first { pool in
@@ -207,13 +220,13 @@ class SuiService {
                         !knownAsset.priceProviderId.isEmpty
                     }
                     
-
+                    let decimals = Int(tokenData["decimals"] ?? "0")!
                     
                     let coinMeta = CoinMeta(
                         chain: .sui,
                         ticker: tokenData["symbol"]!,
                         logo: tokenData["logo"]!,
-                        decimals: Int(tokenData["decimals"] ?? "0")!,
+                        decimals: decimals,
                         priceProviderId: knownTokenByTicker?.priceProviderId ?? "", // Use price provider ID from any matching token
                         contractAddress: objType,
                         isNativeToken: tokenData["symbol"]! == TokensStore.Token.suiSUI.ticker ? true : false
