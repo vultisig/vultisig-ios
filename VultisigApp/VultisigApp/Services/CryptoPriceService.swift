@@ -112,7 +112,19 @@ private extension CryptoPriceService {
             
             var rates: [Rate] = []
             for contract in contracts {
-                let poolPrice = await SuiService.getTokenUSDValue(contractAddress: contract)
+                // Try to find the coin metadata to get proper decimals
+                guard let tokenMeta = TokensStore.TokenSelectionAssets.first(where: { asset in
+                    asset.chain == .sui && asset.contractAddress.lowercased() == contract.lowercased()
+                }) else {
+                    // Skip tokens without metadata instead of using default decimals
+                    print("Warning: No metadata found for SUI token \(contract), skipping price fetch")
+                    continue
+                }
+                
+                let decimals = tokenMeta.decimals
+                
+                // Use the enhanced method with decimals
+                let poolPrice = await SuiService.getTokenUSDValue(contractAddress: contract, decimals: decimals)
                 let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
                 rates.append(poolRate)
             }
