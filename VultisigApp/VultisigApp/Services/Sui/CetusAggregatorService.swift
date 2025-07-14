@@ -101,41 +101,35 @@ class CetusAggregatorService {
         
         return data
     }
+
     
-    /// Get USD value for a SUI token using Cetus aggregator
-    /// - Parameter contractAddress: The token contract address
-    /// - Returns: Price in USD (0.0 if not found)
-    /// - Warning: This method assumes 9 decimals for all tokens which may be incorrect. Use getTokenUSDValue(contractAddress:decimals:) instead.
-    @available(*, deprecated, message: "Use getTokenUSDValue(contractAddress:decimals:) instead to provide accurate decimals")
-    func getTokenUSDValue(contractAddress: String) async -> Double {
+    /// Get token price with proper decimal handling
+    /// - Parameters:
+    ///   - contractAddress: Token contract address
+    ///   - decimals: Token decimals (defaults to 9 for SUI native tokens)
+    /// - Returns: Price in USD
+    func getTokenUSDValue(contractAddress: String, decimals: Int = 9) async -> Double {
         do {
-            // USDC address on SUI
             let usdcAddress = SuiConstants.usdcAddress
             
-            // WARNING: This assumes 9 decimals which may not be correct for all tokens
-            // The caller should provide the actual decimals
-            let amount = "1000000000" // 1 token with 9 decimals
+            // Amount: 1 token with proper decimals
+            let amount = String(BigInt(10).power(decimals))
             
-            // Try to find routes from token to USDC
             let routes = try await findRoutes(
                 fromToken: contractAddress,
                 toToken: usdcAddress,
                 amount: amount
             )
             
-            // Calculate price from the response
             if routes.routes.count > 0 {
                 let amountOut = Double(routes.amount_out) ?? 0
                 let amountIn = Double(routes.amount_in) ?? 0
                 
-                // Since we're swapping to USDC (6 decimals), we need to adjust
                 let usdcDecimals = SuiConstants.usdcDecimals
-                let tokenDecimals = SuiConstants.defaultDecimals // Default for SUI tokens, should be fetched from metadata
                 
                 let usdcAmount = amountOut / pow(10, Double(usdcDecimals))
-                let tokenAmount = amountIn / pow(10, Double(tokenDecimals))
+                let tokenAmount = amountIn / pow(10, Double(decimals))
                 
-                // Price = USDC amount / Token amount
                 let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
                 
                 return price > 0 ? price : 0.0
@@ -166,55 +160,13 @@ class CetusAggregatorService {
                     let amountIn = Double(amount) ?? 0
                     
                     // Calculate final price
-                    let usdcDecimals = 6
-                    let tokenDecimals = 9
-                    
-                    let usdcAmount = usdcAmountOut / pow(10, Double(usdcDecimals))
-                    let tokenAmount = amountIn / pow(10, Double(tokenDecimals))
+                    let usdcAmount = usdcAmountOut / pow(10, Double(SuiConstants.usdcDecimals))
+                    let tokenAmount = amountIn / pow(10, Double(decimals))
                     
                     let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
                     
                     return price > 0 ? price : 0.0
                 }
-            }
-            
-            return 0.0
-            
-        } catch {
-            return 0.0
-        }
-    }
-    
-    /// Get token price with proper decimal handling
-    /// - Parameters:
-    ///   - contractAddress: Token contract address
-    ///   - decimals: Token decimals
-    /// - Returns: Price in USD
-    func getTokenUSDValue(contractAddress: String, decimals: Int) async -> Double {
-        do {
-            let usdcAddress = SuiConstants.usdcAddress
-            
-            // Amount: 1 token with proper decimals
-            let amount = String(BigInt(10).power(decimals))
-            
-            let routes = try await findRoutes(
-                fromToken: contractAddress,
-                toToken: usdcAddress,
-                amount: amount
-            )
-            
-            if routes.routes.count > 0 {
-                let amountOut = Double(routes.amount_out) ?? 0
-                let amountIn = Double(routes.amount_in) ?? 0
-                
-                let usdcDecimals = 6
-                
-                let usdcAmount = amountOut / pow(10, Double(usdcDecimals))
-                let tokenAmount = amountIn / pow(10, Double(decimals))
-                
-                let price = tokenAmount > 0 ? usdcAmount / tokenAmount : 0
-                
-                return price > 0 ? price : 0.0
             }
             
             return 0.0
