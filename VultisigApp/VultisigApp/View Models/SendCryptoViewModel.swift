@@ -93,7 +93,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
                 let gas = BigInt.zero
-                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                // For Cardano, use decimals - 1 to match getMaxValue truncation
+                let maxDecimals = tx.coin.decimals > 0 ? tx.coin.decimals - 1 : tx.coin.decimals
+                tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: maxDecimals))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
@@ -413,7 +415,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         // Cardano-specific validation: Check minimum UTXO value for amount and remaining balance
-        if tx.coin.chain == .cardano {
+        if tx.coin.chain == .cardano && !tx.sendMaxAmount {
             let amountInLovelaces = tx.amountInRaw
             let totalBalance = tx.coin.rawBalance
             let estimatedFee = tx.fee

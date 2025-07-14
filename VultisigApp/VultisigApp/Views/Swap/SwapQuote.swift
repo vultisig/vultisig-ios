@@ -66,7 +66,12 @@ enum SwapQuote {
         case .thorchain(let quote), .mayachain(let quote):
             guard let fees = Decimal(string: quote.fees.total) else { return nil }
             return fees / toCoin.thorswapMultiplier
-        case .oneinch, .kyberswap, .lifi:
+        case .lifi(let quote, _):
+            // Li.Fi charges integrator fee on the output amount
+            let toAmountBigInt = BigInt(quote.dstAmount) ?? .zero
+            let toAmountDecimal = toCoin.decimal(for: toAmountBigInt)
+            return toAmountDecimal * LiFiService.integratorFeeDecimal
+        case .oneinch, .kyberswap:
             return .zero
         }
     }

@@ -61,10 +61,22 @@ enum CardanoHelper {
     ///   - sendAmount: Amount to send in lovelaces
     ///   - totalBalance: Total available balance in lovelaces  
     ///   - estimatedFee: Estimated transaction fee in lovelaces
+    ///   - sendMaxAmount: Whether this is a MAX send (skips fee validation like UTXO chains)
     /// - Returns: Tuple with validation result and error message if any
-    static func validateUTXORequirements(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt) -> (isValid: Bool, errorMessage: String?) {
+    static func validateUTXORequirements(sendAmount: BigInt, totalBalance: BigInt, estimatedFee: BigInt, sendMaxAmount: Bool = false) -> (isValid: Bool, errorMessage: String?) {
         let minUTXOValue = defaultMinUTXOValue
         
+        // For MAX sends, only validate that we have enough balance to cover fees
+        // The wallet will automatically deduct fees from the total, just like UTXO chains
+        if sendMaxAmount {
+            if totalBalance <= estimatedFee {
+                let availableADA = totalBalance.toADAString
+                return (false, "Insufficient balance (\(availableADA) ADA). Balance must be greater than transaction fees.")
+            }
+            return (true, nil)
+        }
+        
+        // Regular validation for non-MAX sends
         // 1. Check send amount meets minimum
         if sendAmount < minUTXOValue {
             let minAmountADA = minUTXOValue.toADAString
@@ -74,7 +86,10 @@ enum CardanoHelper {
         // 2. Check sufficient balance
         let totalNeeded = sendAmount + estimatedFee
         if totalBalance < totalNeeded {
-            let totalBalanceADA = totalBalance.toADAString
+            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
+            let totalBalanceDecimal = totalBalance.toADA
+            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
+            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
             
             // Recommend Send Max for insufficient balance
             if totalBalance > estimatedFee && totalBalance > 0 {
@@ -88,7 +103,10 @@ enum CardanoHelper {
         // 3. Check remaining balance (change) meets minimum UTXO requirement
         let remainingBalance = totalBalance - sendAmount - estimatedFee
         if remainingBalance > 0 && remainingBalance < minUTXOValue {
-            let totalBalanceADA = totalBalance.toADAString
+            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
+            let totalBalanceDecimal = totalBalance.toADA
+            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
+            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
             
             // Always recommend Send Max for change issues - simplest solution
             return (false, "This amount would leave too little change. 💡 Try 'Send Max' (\(totalBalanceADA) ADA) to avoid this issue.")
@@ -136,7 +154,10 @@ enum CardanoHelper {
         let lowBalanceThreshold: BigInt = 3_500_000 // 3.5 ADA in lovelaces
         
         if totalBalance <= lowBalanceThreshold && totalBalance > estimatedFee {
-            let totalBalanceADA = totalBalance.toADAString
+            // For MAX amount display, truncate to 5 decimal places to match getMaxValue behavior
+            let totalBalanceDecimal = totalBalance.toADA
+            let truncatedBalance = totalBalanceDecimal.truncated(toPlaces: 5) // ADA has 6 decimals, so decimals - 1 = 5
+            let totalBalanceADA = truncatedBalance.formatToDecimal(digits: 5)
             
             return (true, "💡 Low balance detected. Consider 'Send Max' (\(totalBalanceADA) ADA) to avoid change issues.")
         }
