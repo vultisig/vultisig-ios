@@ -12,3 +12,9 @@ struct ThorchainSwapError: Codable, Error, LocalizedError {
     let message: String
     var errorDescription: String? { return message }
 }
+
+struct MayachainSwapError: Codable, Error, LocalizedError {
+    let code: Int?
+    let error: String
+    var errorDescription: String? { return error }
+}

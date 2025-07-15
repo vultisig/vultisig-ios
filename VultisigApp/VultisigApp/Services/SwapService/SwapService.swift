@@ -122,6 +122,9 @@ private extension SwapService {
                 throw SwapError.routeUnavailable
             }
         }
+        catch let error as MayachainSwapError {
+            throw SwapError.serverError(message: error.error)
+        }
         catch let error as SwapError {
             throw error
         }
