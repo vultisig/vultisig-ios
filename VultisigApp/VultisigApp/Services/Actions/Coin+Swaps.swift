@@ -81,11 +81,13 @@ extension Coin {
             return [.thorchain]
         case .solana:
             return [.lifi]
+        case .cronosChain:
+            return [.lifi]
         case .zcash:
             return [.mayachain]
         case .ripple:
             return [.thorchain]
-        case .sui, .polkadot, .dydx, .cronosChain, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron, .ethereumSepolia, .cardano:
+        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron, .ethereumSepolia, .cardano:
             return []
         }
     }

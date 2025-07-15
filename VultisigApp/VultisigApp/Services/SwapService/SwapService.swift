@@ -115,11 +115,15 @@ private extension SwapService {
             }
         }
         catch let error as ThorchainSwapError {
-            if error.message.contains("not enough asset to pay for fees") {
+            if error.code == 3 || error.message.contains("not enough asset to pay for fees"){
                 throw SwapError.swapAmountTooSmall
-            } else {
+            }
+            else {
                 throw SwapError.routeUnavailable
             }
+        }
+        catch let error as MayachainSwapError {
+            throw SwapError.serverError(message: error.error)
         }
         catch let error as SwapError {
             throw error

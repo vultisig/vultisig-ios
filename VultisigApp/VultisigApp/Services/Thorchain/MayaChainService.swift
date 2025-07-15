@@ -72,7 +72,7 @@ class MayachainService: ThorchainSwapProvider {
             return response
         } catch {
             let error = try JSONDecoder().decode(
-                ThorchainSwapError.self, from: data)
+                MayachainSwapError.self, from: data)
             throw error
         }
     }
