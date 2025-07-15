@@ -36,9 +36,7 @@ struct KyberSwapQuote: Codable, Hashable {
         let gasMultiplierTimes10: Int64
         
         switch chain {
-        case .ethereum:
-            gasMultiplierTimes10 = 14
-        case .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
+        case .ethereum, .arbitrum, .optimism, .base, .polygon, .avalanche, .bscChain:
             gasMultiplierTimes10 = 20
         default:
             gasMultiplierTimes10 = 16

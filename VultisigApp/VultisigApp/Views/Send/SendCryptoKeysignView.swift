@@ -74,7 +74,14 @@ struct SendCryptoKeysignView: View {
     }
     
     var errorMessage: some View {
-        ErrorMessage(text: "signInErrorTryAgain")
+        VStack(spacing: 32) {
+            ErrorMessage(text: "signInErrorTryAgain")
+            if let title {
+                Text(NSLocalizedString(title, comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+            }
+        }
     }
     
     var shadow: some View {
