@@ -664,7 +664,6 @@
 "pickValidCode" = "Elige un código de referido válido";
 "pickValidExpiration" = "Configura una duración de expiración válida";
 "pickPayoutAsset" = "Elige una opción de activo para el pago";
-"whitespaceNotAllowed" = "No se permiten caracteres de espacio.";
 "referralProgram" = "Programa de Referidos";
 "referralProgramTooltipDescription" = "El programa de referidos se aplica a los intercambios de THORChain y funciona sobre la base del mejor esfuerzo. Para usar el referido de Vultisig, debes registrar un THORName. La tarifa de registro es de 10 RUNE más 1 RUNE por año, pagada a la red THORChain.";
 "whitespaceNotAllowed" = "Razmak nije dopušten.";
