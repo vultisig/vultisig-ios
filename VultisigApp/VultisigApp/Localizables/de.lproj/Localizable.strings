@@ -633,7 +633,6 @@
 "referralOnboardingDescription1" = "Wähle einen kurzen Code und lege deine Auszahlung fest.";
 "referralOnboardingDescription2" = "Lade Freunde ein, deinen Code beim Swappen zu verwenden.";
 "referralOnboardingDescription3" = "Erhalte 10 Bps in deinem bevorzugten Asset, jedes Mal wenn sie traden.";
-"referralProgram" = "Empfehlungsprogramm";
 "howItWorks" = "So funktioniert's";
 "getStarted" = "Loslegen";
 "referralOnboardingBannerTitle" = "Freunde einladen. Belohnungen verdienen. Gebühren sparen.";
@@ -684,7 +683,7 @@
 "pickPayoutAsset" = "Bitte wählen Sie eine Auszahlungsoption";
 "whitespaceNotAllowed" = "Leerzeichen sind nicht erlaubt.";
 "referralProgram" = "Empfehlungsprogramm";
-"referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps auf Best-Effort-Basis. Um das Vultisig-Empfehlungsprogramm zu nutzen, müssen Sie einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
+"referralProgramTooltipDescription" = "Das Empfehlungsprogramm gilt für THORChain-Swaps und wird nach dem Best-Effort-Prinzip betrieben. Um die Vultisig-Empfehlung zu nutzen, musst du einen THORName registrieren. Die Registrierungsgebühr beträgt 10 RUNE plus 1 RUNE pro Jahr und wird an das THORChain-Netzwerk gezahlt.";
 "insufficientBalance" = "Unzureichendes Guthaben";
 "verifyBoxCheck" = "Bitte alle Kästchen ankreuzen";
 "expirationDate" = "Ablaufdatum";

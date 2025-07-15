@@ -617,7 +617,6 @@
 "referralOnboardingDescription1" = "Escolha um código curto e defina sua recompensa.";
 "referralOnboardingDescription2" = "Convide amigos para usar seu código ao fazer swaps.";
 "referralOnboardingDescription3" = "Receba 10 bps no ativo preferido toda vez que eles negociarem.";
-"referralProgram" = "Programa de Indicação";
 "howItWorks" = "Como funciona";
 "getStarted" = "Começar";
 "referralOnboardingBannerTitle" = "Convide amigos. Ganhe recompensas. Economize taxas.";
@@ -668,7 +667,7 @@
 "pickPayoutAsset" = "Escolha uma opção de ativo para pagamento";
 "whitespaceNotAllowed" = "Caracteres de espaço não são permitidos.";
 "referralProgram" = "Programa de Indicação";
-"referralProgramTooltipDescription" = "O programa de indicação aplica-se a swaps na THORChain com base no melhor esforço. Para usar o referral da Vultisig, você precisa registrar um THORName. A taxa de registro é de 10 RUNE, mais 1 RUNE por ano, paga à rede THORChain.";
+"referralProgramTooltipDescription" = "O programa de indicação se aplica às trocas da THORChain e opera com base no melhor esforço. Para usar a indicação Vultisig, você deve registrar um THORName. A taxa de registro é de 10 RUNE mais 1 RUNE por ano, paga à rede THORChain.";
 "insufficientBalance" = "Saldo insuficiente";
 "verifyBoxCheck" = "Marque todas as caixas";
 "expirationDate" = "Data de validade";

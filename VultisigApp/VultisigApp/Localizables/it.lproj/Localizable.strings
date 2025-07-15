@@ -616,7 +616,6 @@
 "referralOnboardingDescription1" = "Scegli un codice breve e imposta il tuo premio.";
 "referralOnboardingDescription2" = "Invita amici a usare il tuo codice per lo swap.";
 "referralOnboardingDescription3" = "Ricevi 10 bps in asset preferito ogni volta che tradano.";
-"referralProgram" = "Programma di inviti";
 "howItWorks" = "Come funziona";
 "getStarted" = "Inizia ora";
 "referralOnboardingBannerTitle" = "Invita amici. Guadagna ricompense. Risparmia sulle commissioni.";
@@ -667,7 +666,7 @@
 "pickPayoutAsset" = "Scegli un'opzione di pagamento dall'elenco";
 "whitespaceNotAllowed" = "I caratteri di spazio non sono consentiti.";
 "referralProgram" = "Programma di riferimento";
-"referralProgramTooltipDescription" = "Il programma di riferimento si applica agli swap THORChain su base best-effort. Per utilizzare il referral Vultisig, è necessario registrare un THORName. La tariffa di registrazione è di 10 RUNE, più 1 RUNE all'anno, pagata alla rete THORChain.";
+"referralProgramTooltipDescription" = "Il programma di referral si applica agli swap THORChain e opera su base best-effort. Per utilizzare il referral Vultisig, è necessario registrare un THORName. La quota di registrazione è di 10 RUNE più 1 RUNE all'anno, pagata alla rete THORChain.";
 "insufficientBalance" = "Saldo insufficiente";
 "verifyBoxCheck" = "Seleziona tutte le caselle";
 "expirationDate" = "Data di scadenza";
