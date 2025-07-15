@@ -20,6 +20,14 @@ struct OneInchService {
         return "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
     }
     
+    private var supportedChain: [Chain] {
+        return [
+            .ethereum,.arbitrum,.avalanche,.bscChain,.solana,.optimism,.polygon,.polygonV2,.zksync,.base
+        ]
+    }
+    func isChainSupported(chain: Chain) -> Bool {
+        return supportedChain.contains(chain)
+    }
     func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: OneInchQuote, fee: BigInt?) {
         
         let sourceAddress = source.isEmpty ? nullAddress : source
