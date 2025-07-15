@@ -25,7 +25,7 @@ class TokenSelectionViewModel: ObservableObject {
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
-
+        
         let filteredTokens = tokens.filter { token in
             tickers.contains(token.ticker.lowercased())
         }
@@ -36,7 +36,7 @@ class TokenSelectionViewModel: ObservableObject {
         }.map { coin in
             coin.toCoinMeta()
         }
-
+        
         return filteredTokens + tickerTokens
     }
     
@@ -48,25 +48,25 @@ class TokenSelectionViewModel: ObservableObject {
         return TokensStore.TokenSelectionAssets
             .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
     }
-
+    
     func updateSearchedTokens(groupedChain: GroupedChain) {
         searchedTokens = filteredTokens(groupedChain: groupedChain)
     }
-
+    
     func filteredTokens(groupedChain: GroupedChain) -> [CoinMeta] {
         guard !searchText.isEmpty else {
             return []
         }
-
+        
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
-
+        
         let filtered = tokens
             .filter {
                 $0.ticker.lowercased().contains(searchText.lowercased()) && !tickers.contains($0.ticker.lowercased()) }
             .prefix(20)
-
+        
         return Array(filtered)
     }
     
@@ -192,6 +192,9 @@ private extension TokenSelectionViewModel {
     func fetchTokens(for chain: Chain, type: TokenLoadingType) async throws -> [CoinMeta] {
         switch type {
         case .evm:
+            if oneInchservice.isChainSupported(chain: chain) == false {
+                return []
+            }
             guard let chainID = chain.chainID else { return [] }
             let oneInchTokens = try await oneInchservice.fetchTokens(chain: chainID)
                 .sorted(by: { $0.name < $1.name })
