@@ -1,0 +1,381 @@
+//
+//  FunctionCallAddThorLP.swift
+//  VultisigApp
+//
+
+import SwiftUI
+import Foundation
+import Combine
+
+class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
+    @Published var amount: Decimal = 0.0
+    @Published var pairedAddress: String = ""
+    @Published var selectedPool: IdentifiableString = .init(value: "Select pool")
+    
+    // Internal validation
+    @Published var amountValid: Bool = false
+    @Published var pairedAddressValid: Bool = true
+    @Published var poolValid: Bool = false
+    @Published var isTheFormValid: Bool = false
+    
+    // Available pools
+    @Published var availablePools: [IdentifiableString] = []
+    @Published var isLoadingPools: Bool = true  // Start as loading
+    @Published var loadError: String? = nil
+    
+    // Map of display names to full pool names
+    private var poolNameMap: [String: String] = [:]
+    var retryCount = 0
+    private let maxRetries = 3
+    
+    var tx: SendTransaction
+    private var functionCallViewModel: FunctionCallViewModel
+    private var vault: Vault
+    
+    var addressFields: [String: String] {
+        get {
+            let fields = ["pairedAddress": pairedAddress]
+            return fields
+        }
+        set {
+            if let value = newValue["pairedAddress"] {
+                pairedAddress = value
+            }
+        }
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+        self.tx = tx
+        self.functionCallViewModel = functionCallViewModel
+        self.vault = vault
+        setupValidation()
+        
+        // Ensure isLoadingPools is true before starting
+        self.isLoadingPools = true
+        
+        // Load pools after a small delay to ensure UI is ready
+        Task {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
+            loadPools()
+        }
+    }
+    
+    var balance: String {
+        let balance = tx.coin.balanceDecimal.formatForDisplay()
+        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+    }
+    
+    private func setupValidation() {
+        Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
+            .map { $0 && $1 && $2 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    private func cleanPoolName(_ asset: String) -> String {
+        // Remove contract addresses from pool names
+        // Examples: 
+        // "AVAX.SOL-0XFE6B19286885A4F7F55ADAD09C3CD1F906D2478F" -> "AVAX.SOL"
+        // "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48" -> "ETH.USDC"
+        
+        if let dashIndex = asset.firstIndex(of: "-"),
+           let hexPrefix = asset[asset.index(after: dashIndex)...].firstIndex(of: "0"),
+           asset[hexPrefix...].starts(with: "0X") {
+            // Remove everything from the dash onwards
+            return String(asset[..<dashIndex])
+        }
+        
+        // Return as-is if no contract address found
+        return asset
+    }
+    
+    func loadPools() {
+        Task { @MainActor in
+            print("FunctionCallAddThorLP: loadPools() called, isLoadingPools = \(self.isLoadingPools)")
+            
+            // Set a timeout for the entire operation
+            let timeoutTask = Task {
+                try await Task.sleep(nanoseconds: 15_000_000_000) // 15 second timeout
+                if self.isLoadingPools {
+                    print("FunctionCallAddThorLP: Pool loading timeout!")
+                    await MainActor.run {
+                        self.availablePools = []
+                        self.isLoadingPools = false
+                    }
+                }
+            }
+            
+            do {
+                if tx.coin.chain == .thorChain {
+                    // For RUNE, fetch all available pools
+                    print("FunctionCallAddThorLP: Loading pools for RUNE...")
+                    
+                    let startTime = Date()
+                    let pools = try await Task.detached {
+                        try await ThorchainService.shared.fetchLPPools()
+                    }.value
+                    let loadTime = Date().timeIntervalSince(startTime)
+                    
+                    // Cancel timeout task if we finished successfully
+                    timeoutTask.cancel()
+                    
+                    print("FunctionCallAddThorLP: Fetched \(pools.count) pools in \(String(format: "%.2f", loadTime))s")
+                    
+                    // Add "Select pool" as the first option
+                    var poolOptions = [IdentifiableString(value: "Select pool")]
+                    var nameMap: [String: String] = [:]
+                    
+                    for pool in pools {
+                        // Clean up pool name by removing contract addresses
+                        let cleanName = cleanPoolName(pool.asset)
+                        poolOptions.append(IdentifiableString(value: cleanName))
+                        nameMap[cleanName] = pool.asset  // Map display name to full name
+                    }
+                    
+                    // Force UI update on main thread
+                    await MainActor.run {
+                        self.objectWillChange.send()  // Force SwiftUI to update
+                        self.poolNameMap = nameMap
+                        self.availablePools = poolOptions
+                        self.isLoadingPools = false
+                        self.loadError = nil  // Clear any previous errors
+                        self.retryCount = 0   // Reset retry count on success
+                        print("FunctionCallAddThorLP: Updated availablePools with \(self.availablePools.count) options")
+                        print("FunctionCallAddThorLP: availablePools.isEmpty = \(self.availablePools.isEmpty)")
+                        print("FunctionCallAddThorLP: isLoadingPools = \(self.isLoadingPools)")
+                        
+                        // Debug: print first few pools
+                        if pools.count > 0 {
+                            print("FunctionCallAddThorLP: First few pools: \(pools.prefix(5).map { cleanPoolName($0.asset) })")
+                        }
+                    }
+                } else {
+                    // For L1 assets, use the chain's swap asset
+                    let poolName = "\(tx.coin.chain.swapAsset).\(tx.coin.ticker.uppercased())"
+                    
+                    // Cancel timeout task
+                    timeoutTask.cancel()
+                    
+                    await MainActor.run {
+                        self.availablePools = [IdentifiableString(value: poolName)]
+                        self.selectedPool = IdentifiableString(value: poolName)
+                        self.poolValid = true
+                        self.isLoadingPools = false
+                    }
+                }
+            } catch {
+                print("FunctionCallAddThorLP: Error loading pools: \(error)")
+                print("FunctionCallAddThorLP: Error details: \(error.localizedDescription)")
+                
+                // Cancel timeout task
+                timeoutTask.cancel()
+                
+                // Check if we should retry
+                if retryCount < maxRetries {
+                    retryCount += 1
+                    print("FunctionCallAddThorLP: Retrying... (attempt \(retryCount + 1)/\(maxRetries + 1))")
+                    
+                    // Wait before retrying (exponential backoff)
+                    let retryDelay = UInt64(pow(2.0, Double(retryCount - 1))) * 1_000_000_000
+                    try? await Task.sleep(nanoseconds: retryDelay)
+                    
+                    // Retry
+                    loadPools()
+                } else {
+                    // Keep empty on error to show retry button
+                    await MainActor.run {
+                        self.objectWillChange.send()  // Force SwiftUI to update
+                        self.availablePools = []
+                        self.isLoadingPools = false
+                        self.loadError = "Failed to load pools. Please check your connection and try again."
+                    }
+                }
+            }
+        }
+    }
+    
+    var description: String {
+        return toString()
+    }
+    
+    func toString() -> String {
+        // For L1 assets: include THORChain address
+        // For THOR.RUNE: include the paired asset's address (optional for asymmetric LP)
+        let address = pairedAddress.nilIfEmpty
+        
+        // Get the full pool name from the map (or use the display name if not found)
+        let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
+        
+        let lpData = AddLPMemoData(
+            pool: fullPoolName,
+            pairedAddress: address
+        )
+        return lpData.memo
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        // Store the full pool name in the dictionary
+        let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
+        dict.set("pool", fullPoolName)
+        dict.set("pairedAddress", pairedAddress)
+        dict.set("memo", toString())
+        return dict
+    }
+    
+    func getView() -> AnyView {
+        AnyView(FunctionCallAddThorLPView(model: self))
+    }
+}
+
+struct FunctionCallAddThorLPView: View {
+    @ObservedObject var model: FunctionCallAddThorLP
+    
+    var body: some View {
+        VStack {
+            
+            // Pool selection for RUNE only
+            if model.tx.coin.chain == .thorChain {
+                VStack(alignment: .leading, spacing: 0) {
+                    let _ = print("FunctionCallAddThorLP UI: Rendering pool selector - isLoadingPools=\(model.isLoadingPools), availablePools.count=\(model.availablePools.count)")
+                    
+                    if model.isLoadingPools {
+                            // Show loading state as a disabled dropdown
+                            HStack(spacing: 12) {
+                                Text("Loading pools...")
+                                    .font(.body16Menlo)
+                                    .foregroundColor(.neutral0)
+                                    .onAppear {
+                                        print("FunctionCallAddThorLP UI: Showing loading state")
+                                    }
+                                
+                                Spacer()
+                                
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                                    .scaleEffect(0.7)
+                            }
+                            .frame(height: 48)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue600)
+                            .cornerRadius(10)
+                                            } else if !model.isLoadingPools && model.availablePools.isEmpty {
+                        // Show error state
+                        VStack(spacing: 8) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.body16Menlo)
+                                    .foregroundColor(.orange)
+                                
+                                Text(model.loadError ?? "No pools available")
+                                    .font(.body14Menlo)
+                                    .foregroundColor(.neutral0)
+                                    .lineLimit(2)
+                                    .onAppear {
+                                        print("FunctionCallAddThorLP UI: Showing error - availablePools.count = \(model.availablePools.count)")
+                                    }
+                                
+                                Spacer()
+                                
+                                Button {
+                                    model.retryCount = 0  // Reset retry count
+                                    model.loadError = nil
+                                    model.isLoadingPools = true
+                                    model.loadPools()
+                                } label: {
+                                    Text("Retry")
+                                        .font(.caption)
+                                        .foregroundColor(.turquoise600)
+                                }
+                            }
+                            .frame(minHeight: 48)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.blue600)
+                            .cornerRadius(10)
+                        }
+                        } else {
+                            GenericSelectorDropDown(
+                                items: Binding(
+                                    get: { model.availablePools },
+                                    set: { _ in }
+                                ),
+                                selected: Binding(
+                                    get: { model.selectedPool },
+                                    set: { model.selectedPool = $0 }
+                                ),
+                                mandatoryMessage: "*",
+                                descriptionProvider: { $0.value },
+                                onSelect: { pool in
+                                    model.selectedPool = pool
+                                    model.poolValid = pool.value.lowercased() != "select pool"
+                                }
+                            )
+                            .onAppear {
+                                print("FunctionCallAddThorLP UI: Showing dropdown - availablePools.count = \(model.availablePools.count)")
+                                print("FunctionCallAddThorLP UI: selectedPool = \(model.selectedPool.value)")
+                                print("FunctionCallAddThorLP UI: isLoadingPools = \(model.isLoadingPools)")
+                            }
+                    }
+                }
+            } else {
+                // Show selected pool for L1 assets (read-only)
+                HStack {
+                    Text("Pool:")
+                    Text(model.selectedPool.value)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal)
+            }
+            
+            // Paired address field for both RUNE and L1 assets
+            VStack(alignment: .leading, spacing: 8) {
+                let addressLabel = model.tx.coin.chain == .thorChain 
+                    ? "Paired Asset Address (optional)" 
+                    : "THORChain Address (optional)"
+                
+                let helperText = model.tx.coin.chain == .thorChain
+                    ? "Enter the address of the paired asset (e.g., BTC address for BTC.BTC pool)"
+                    : "Enter your THORChain address to receive LP units"
+                
+                Text(addressLabel)
+                    .font(.body12MenloBold)
+                    .foregroundColor(.neutral500)
+                
+                FunctionCallAddressTextField(
+                    memo: model,
+                    addressKey: "pairedAddress",
+                    isOptional: true,
+                    isAddressValid: Binding(
+                        get: { model.pairedAddressValid },
+                        set: { model.pairedAddressValid = $0 }
+                    )
+                )
+                
+                Text(helperText)
+                    .font(.caption)
+                    .foregroundColor(.neutral500)
+                    .padding(.horizontal, 4)
+            }
+            
+            // Amount field
+            StyledFloatingPointField(
+                placeholder: Binding(
+                    get: { "Amount \(model.balance)" },
+                    set: { _ in }
+                ),
+                value: Binding(
+                    get: { model.amount },
+                    set: { model.amount = $0 }
+                ),
+                isValid: Binding(
+                    get: { model.amountValid },
+                    set: { model.amountValid = $0 }
+                )
+            )
+        }
+    }
+} 

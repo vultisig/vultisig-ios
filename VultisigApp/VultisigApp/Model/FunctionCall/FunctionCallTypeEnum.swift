@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
-    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch
+    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch, addThorLP, removeThorLP
     
     var id: String { self.rawValue }
     
@@ -56,6 +56,10 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Unmerge RUJI"
         case .theSwitch:
             return "Switch"
+        case .addThorLP:
+            return "Add THORChain LP"
+        case .removeThorLP:
+            return "Remove THORChain LP"
         }
     }
     
@@ -63,9 +67,18 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         switch coin.chain {
         case .thorChain:
             if coin.ticker.uppercased() == "TCY" {
-                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .stakeTcy, .unstakeTcy]
+                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .stakeTcy, .unstakeTcy, .addThorLP, .removeThorLP]
+            }
+            if coin.ticker.uppercased() == "RUNE" {
+                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .addThorLP, .removeThorLP]
             }
             return [.bond, .unbond, .leave, .merge, .unmerge, .custom]
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .gaiaChain, .ripple:
+            // Add THORChain LP function for supported L1 assets
+            if coin.isNativeToken {
+                return [.addThorLP]
+            }
+            return []
         case .mayaChain:
             return [.bondMaya, .unbondMaya, .leave, .custom, .addPool, .removePool]
         case .dydx:
@@ -91,6 +104,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
+            if coin.ticker.uppercased() == "RUNE" {
+                return .addThorLP
+            }
             return .bond
         case .mayaChain:
             return .bondMaya
@@ -102,6 +118,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .theSwitch
         case .kujira:
             return .cosmosIBC
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            if coin.isNativeToken {
+                return .addThorLP
+            }
+            return .custom
         default:
             return .custom
         }

@@ -28,6 +28,8 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case addThorLP(FunctionCallAddThorLP)
+    case removeThorLP(FunctionCallRemoveThorLP)
     
     var view: AnyView {
         switch self {
@@ -64,6 +66,10 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .addThorLP(let memo):
+            return memo.getView()
+        case .removeThorLP(let memo):
             return memo.getView()
         }
     }
@@ -104,6 +110,10 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .addThorLP(let memo):
+            return memo.description
+        case .removeThorLP(let memo):
+            return memo.description
         }
     }
     
@@ -143,6 +153,10 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .addThorLP(let memo):
+            return memo.amount
+        case .removeThorLP:
+            return .zero // Remove LP doesn't require sending amount
         }
     }
     
@@ -201,6 +215,10 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
+        case .addThorLP(let memo):
+            return memo.toDictionary()
+        case .removeThorLP(let memo):
+            return memo.toDictionary()
         }
     }
     
@@ -255,6 +273,10 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
+        case .addThorLP(let memo):
+            return memo.isTheFormValid
+        case .removeThorLP(let memo):
+            return memo.isTheFormValid
         }
     }
     
@@ -272,6 +294,11 @@ enum FunctionCallInstance {
             return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            if coin.isNativeToken {
+                return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+            }
+            return .custom(FunctionCallCustom())
         default:
             return .custom(FunctionCallCustom())
         }
