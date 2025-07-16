@@ -27,6 +27,7 @@ extension PasswordBackupOptionsView {
         .sheet(isPresented: $showSkipShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
                 ShareSheetViewController(activityItems: [fileURL]) { didSave in
+                    showSkipShareSheet = false
                     if didSave {
                         fileSaved()
                         dismissView()
