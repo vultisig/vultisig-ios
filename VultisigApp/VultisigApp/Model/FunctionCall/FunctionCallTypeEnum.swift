@@ -104,9 +104,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getDefault(for coin: Coin) -> FunctionCallType {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.uppercased() == "RUNE" {
-                return .addThorLP
-            }
             return .bond
         case .mayaChain:
             return .bondMaya

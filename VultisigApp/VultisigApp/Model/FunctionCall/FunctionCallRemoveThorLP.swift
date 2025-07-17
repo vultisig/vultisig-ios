@@ -37,7 +37,15 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         setupValidation()
-        loadPositions()
+        
+        // Automatically get the THORChain address to load positions
+        if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
+            loadPositions(runeAddress: thorCoin.address)
+        } else {
+            // No THORChain address found
+            self.isLoading = false
+            self.errorMessage = "No THORChain address found in vault. You need a RUNE address to manage LP positions."
+        }
     }
     
     func cleanPoolName(_ asset: String) -> String {
@@ -65,12 +73,12 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
             .store(in: &cancellables)
     }
     
-    private func loadPositions() {
+    private func loadPositions(runeAddress: String) {
         Task {
             do {
-                print("FunctionCallRemoveThorLP: Loading positions for address: \(tx.coin.address)")
+                print("FunctionCallRemoveThorLP: Loading positions for RUNE address: \(runeAddress)")
                 
-                let positions = try await ThorchainService.shared.fetchLPPositions(runeAddress: tx.coin.address)
+                let positions = try await ThorchainService.shared.fetchLPPositions(runeAddress: runeAddress)
                 print("FunctionCallRemoveThorLP: Found \(positions.count) positions")
                 
                 await MainActor.run {
@@ -79,6 +87,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
                     if positions.isEmpty {
                         self.errorMessage = "No THORChain LP positions found. You need to add liquidity first."
                     } else if positions.count == 1 {
+                        // Auto-select if only one position
                         self.selectedPosition = positions.first
                         self.positionValid = true
                     }
@@ -254,29 +263,73 @@ private struct PositionRowView: View {
         return asset
     }
     
+    private func formatDepositValue(_ value: String) -> String {
+        // Convert from base units (1e8) to display format
+        if let decimal = Decimal(string: value) {
+            let displayValue = decimal / 100_000_000 // Convert from 1e8
+            return displayValue.formatForDisplay()
+        }
+        return value
+    }
+    
+    private func getAssetTicker(from poolName: String) -> String {
+        // Extract asset ticker from pool name (e.g., "ETH.USDC" -> "USDC")
+        let cleanName = cleanPoolName(poolName)
+        let components = cleanName.split(separator: ".")
+        if components.count >= 2 {
+            return String(components[1])
+        }
+        return "Asset"
+    }
+    
     var body: some View {
         Button(action: onTap) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(cleanPoolName(position.asset))
-                        .font(.body)
+                        .font(.body16MenloBold)
                         .foregroundColor(.primary)
                     
-                    Text("Units: \(position.poolUnits)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("LP Units")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(position.poolUnits)
+                                .font(.caption)
+                                .foregroundColor(.neutral0)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("RUNE Deposited")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(formatDepositValue(position.runeDepositValue))
+                                .font(.caption)
+                                .foregroundColor(.neutral0)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(getAssetTicker(from: position.asset)) Deposited")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(formatDepositValue(position.assetDepositValue))
+                                .font(.caption)
+                                .foregroundColor(.neutral0)
+                        }
+                    }
                 }
                 
                 Spacer()
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.turquoise600)
                 }
             }
             .padding()
-            .background(isSelected ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
-            .cornerRadius(8)
+            .background(isSelected ? Color.blue600.opacity(0.3) : Color.blue600.opacity(0.1))
+            .cornerRadius(10)
         }
         .buttonStyle(PlainButtonStyle())
     }

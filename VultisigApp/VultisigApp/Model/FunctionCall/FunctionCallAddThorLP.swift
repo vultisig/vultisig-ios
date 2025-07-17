@@ -10,7 +10,7 @@ import Combine
 class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
     @Published var pairedAddress: String = ""
-    @Published var selectedPool: IdentifiableString = .init(value: "Select pool")
+    @Published var selectedPool: IdentifiableString = .init(value: "")
     
     // Internal validation
     @Published var amountValid: Bool = false
@@ -27,6 +27,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     private var poolNameMap: [String: String] = [:]
     var retryCount = 0
     private let maxRetries = 3
+    
+    // Balance display for paired asset
+    @Published var pairedAssetBalance: String = ""
     
     var tx: SendTransaction
     private var functionCallViewModel: FunctionCallViewModel
@@ -50,15 +53,32 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
+        
+        // Prefill paired address based on the asset type
+        prefillPairedAddress()
+        
         setupValidation()
         
-        // Ensure isLoadingPools is true before starting
-        self.isLoadingPools = true
-        
-        // Load pools after a small delay to ensure UI is ready
-        Task {
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
-            loadPools()
+        // Only load pools for RUNE
+        if tx.coin.chain == .thorChain {
+            // Ensure isLoadingPools is true before starting
+            self.isLoadingPools = true
+            
+            // Load pools after a small delay to ensure UI is ready
+            Task {
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
+                loadPools()
+            }
+        } else {
+            // For L1 assets, set the pool to the native asset pool
+            // e.g., for BTC it would be "BTC.BTC", for ETH it would be "ETH.ETH"
+            let swapAsset = tx.coin.chain.swapAsset
+            let poolName = "\(swapAsset).\(swapAsset)"
+            self.selectedPool = IdentifiableString(value: poolName)
+            self.poolValid = true
+            self.isLoadingPools = false
+            // Store the full pool name in the map
+            self.poolNameMap[poolName] = poolName
         }
     }
     
@@ -67,9 +87,75 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
     }
     
+    private func prefillPairedAddress() {
+        if tx.coin.chain == .thorChain {
+            // For RUNE, paired address will be set when user selects a pool
+            pairedAddress = ""
+            pairedAddressValid = false // Will be set to true when pool is selected
+        } else {
+            // For L1 assets, automatically get user's THORChain address
+            if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
+                pairedAddress = thorCoin.address
+                pairedAddressValid = true
+            } else {
+                pairedAddress = ""
+                pairedAddressValid = false
+            }
+        }
+    }
+    
+    func prefillPairedAddressForPool(_ poolName: String) {
+        // Split pool name to get chain and asset (e.g., "ETH.USDC" -> ["ETH", "USDC"])
+        let poolComponents = poolName.split(separator: ".").map { String($0).uppercased() }
+        guard poolComponents.count >= 2 else {
+            pairedAddress = ""
+            pairedAddressValid = false
+            self.pairedAssetBalance = ""
+            return
+        }
+        
+        let chainPrefix = poolComponents[0]
+        let assetTicker = poolComponents[1]
+        
+        // Find the chain by matching swap asset
+        if let chainCoin = vault.coins.first(where: { coin in
+            coin.isNativeToken && coin.chain.swapAsset.uppercased() == chainPrefix
+        }) {
+            pairedAddress = chainCoin.address
+            pairedAddressValid = true
+            
+            // Now find the specific asset on that chain to show its balance
+            if let assetCoin = vault.coins.first(where: { coin in
+                coin.chain == chainCoin.chain && coin.ticker.uppercased() == assetTicker
+            }) {
+                // Show the balance of the specific asset in the pool
+                let balance = assetCoin.balanceDecimal.formatForDisplay()
+                self.pairedAssetBalance = "( Balance: \(balance) \(assetCoin.ticker.uppercased()) )"
+            } else if assetTicker == chainPrefix {
+                // For native token pools (e.g., "BTC.BTC"), use the chain coin
+                let balance = chainCoin.balanceDecimal.formatForDisplay()
+                self.pairedAssetBalance = "( Balance: \(balance) \(chainCoin.ticker.uppercased()) )"
+            } else {
+                // Asset not found in vault
+                self.pairedAssetBalance = "( \(assetTicker) not found in vault )"
+            }
+        } else {
+            // Chain not found
+            pairedAddress = ""
+            pairedAddressValid = false
+            self.pairedAssetBalance = ""
+        }
+    }
+    
     private func setupValidation() {
         Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
-            .map { $0 && $1 && $2 }
+            .map { amountValid, pairedAddressValid, poolValid in
+                // For validation, we need:
+                // - Valid amount
+                // - Valid pool (always true for L1 assets, selected for RUNE)
+                // - Valid paired address (automatically set)
+                return amountValid && poolValid && pairedAddressValid
+            }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -123,8 +209,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                     
                     print("FunctionCallAddThorLP: Fetched \(pools.count) pools in \(String(format: "%.2f", loadTime))s")
                     
-                    // Add "Select pool" as the first option
-                    var poolOptions = [IdentifiableString(value: "Select pool")]
+                    // Build pool options without "Select pool" prefix
+                    var poolOptions: [IdentifiableString] = []
                     var nameMap: [String: String] = [:]
                     
                     for pool in pools {
@@ -202,7 +288,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     func toString() -> String {
         // For L1 assets: include THORChain address
-        // For THOR.RUNE: include the paired asset's address (optional for asymmetric LP)
+        // For THOR.RUNE: include the paired asset's address (required)
         let address = pairedAddress.nilIfEmpty
         
         // Get the full pool name from the map (or use the display name if not found)
@@ -307,10 +393,15 @@ struct FunctionCallAddThorLPView: View {
                                     set: { model.selectedPool = $0 }
                                 ),
                                 mandatoryMessage: "*",
-                                descriptionProvider: { $0.value },
+                                descriptionProvider: { $0.value.isEmpty ? "Select pool" : $0.value },
                                 onSelect: { pool in
                                     model.selectedPool = pool
-                                    model.poolValid = pool.value.lowercased() != "select pool"
+                                    model.poolValid = !pool.value.isEmpty
+                                    
+                                    // When RUNE selects a pool, prefill the paired address
+                                    if model.tx.coin.chain == .thorChain && !pool.value.isEmpty {
+                                        model.prefillPairedAddressForPool(pool.value)
+                                    }
                                 }
                             )
                             .onAppear {
@@ -320,51 +411,20 @@ struct FunctionCallAddThorLPView: View {
                             }
                     }
                 }
-            } else {
-                // Show selected pool for L1 assets (read-only)
-                HStack {
-                    Text("Pool:")
-                    Text(model.selectedPool.value)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                .padding(.horizontal)
             }
             
-            // Paired address field for both RUNE and L1 assets
-            VStack(alignment: .leading, spacing: 8) {
-                let addressLabel = model.tx.coin.chain == .thorChain 
-                    ? "Paired Asset Address (optional)" 
-                    : "THORChain Address (optional)"
-                
-                let helperText = model.tx.coin.chain == .thorChain
-                    ? "Enter the address of the paired asset (e.g., BTC address for BTC.BTC pool)"
-                    : "Enter your THORChain address to receive LP units"
-                
-                Text(addressLabel)
-                    .font(.body12MenloBold)
-                    .foregroundColor(.neutral500)
-                
-                FunctionCallAddressTextField(
-                    memo: model,
-                    addressKey: "pairedAddress",
-                    isOptional: true,
-                    isAddressValid: Binding(
-                        get: { model.pairedAddressValid },
-                        set: { model.pairedAddressValid = $0 }
-                    )
-                )
-                
-                Text(helperText)
-                    .font(.caption)
-                    .foregroundColor(.neutral500)
-                    .padding(.horizontal, 4)
-            }
-            
-            // Amount field
+            // Amount field - shows balance of the asset being added
             StyledFloatingPointField(
                 placeholder: Binding(
-                    get: { "Amount \(model.balance)" },
+                    get: { 
+                        if model.tx.coin.chain == .thorChain && !model.pairedAssetBalance.isEmpty {
+                            // For RUNE, show the selected pool asset's balance
+                            return "Amount \(model.pairedAssetBalance)"
+                        } else {
+                            // For L1 assets, show their own balance
+                            return "Amount \(model.balance)"
+                        }
+                    },
                     set: { _ in }
                 ),
                 value: Binding(
