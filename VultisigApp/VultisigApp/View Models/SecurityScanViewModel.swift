@@ -136,8 +136,8 @@ class SecurityScanViewModel: ObservableObject {
     // MARK: - Scanning Methods
     
     /// Scan a transaction from a KeysignPayload
-    func scanTransaction(from payload: KeysignPayload) async {
-        let request = securityService.createSecurityScanRequest(from: payload)
+    func scanTransaction(from payload: KeysignPayload, vault: Vault? = nil) async {
+        let request = securityService.createSecurityScanRequest(from: payload, vault: vault)
         await scanTransaction(request)
     }
     
