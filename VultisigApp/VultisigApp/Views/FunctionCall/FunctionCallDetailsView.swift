@@ -189,6 +189,11 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .tronFreeze:
+                    fnCallInstance = .tronFreeze(FunctionCallTronFreeze(tx: tx, functionCallViewModel: functionCallViewModel))
+                    
+                case .tronUnfreeze:
+                    fnCallInstance = .tronUnfreeze(FunctionCallTronUnfreeze(tx: tx, functionCallViewModel: functionCallViewModel))
                 }
             }
     }
@@ -250,6 +255,10 @@ struct FunctionCallDetailsView: View {
                     
                     if let toAddress = fnCallInstance.toAddress {
                         tx.toAddress = toAddress
+                    } else {
+                        // For operations that don't have a specific toAddress (like TRON freeze/unfreeze)
+                        // use the sender's own address
+                        tx.toAddress = tx.coin.address
                     }
                     
                     functionCallViewModel.moveToNextView()

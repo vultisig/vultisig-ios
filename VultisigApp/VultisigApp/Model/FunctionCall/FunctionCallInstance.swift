@@ -28,6 +28,8 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case tronFreeze(FunctionCallTronFreeze)
+    case tronUnfreeze(FunctionCallTronUnfreeze)
     
     var view: AnyView {
         switch self {
@@ -64,6 +66,10 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .tronFreeze(let memo):
+            return memo.getView()
+        case .tronUnfreeze(let memo):
             return memo.getView()
         }
     }
@@ -104,6 +110,10 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .tronFreeze(let memo):
+            return memo.description
+        case .tronUnfreeze(let memo):
+            return memo.description
         }
     }
     
@@ -143,6 +153,10 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .tronFreeze(let memo):
+            return memo.amount
+        case .tronUnfreeze:
+            return .zero // Unfreezing doesn't require sending TRX
         }
     }
     
@@ -160,6 +174,9 @@ enum FunctionCallInstance {
             return memo.destinationAddress
         case .theSwitch(let memo):
             return memo.destinationAddress
+        case .tronFreeze, .tronUnfreeze:
+            // For TRON freeze/unfreeze, the toAddress is the sender's own address
+            return nil
         default:
             return nil
         }
@@ -201,6 +218,10 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
+        case .tronFreeze(let memo):
+            return memo.toDictionary()
+        case .tronUnfreeze(let memo):
+            return memo.toDictionary()
         }
     }
     
@@ -214,6 +235,10 @@ enum FunctionCallInstance {
             return VSTransactionType.thorMerge
         case .unmerge(_):
             return VSTransactionType.thorUnmerge
+        case .tronFreeze(_):
+            return .unspecified // Or add new types if needed
+        case .tronUnfreeze(_):
+            return .unspecified // Or add new types if needed
         default:
             return .unspecified
         }
@@ -255,6 +280,10 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
+        case .tronFreeze(let memo):
+            return memo.isTheFormValid
+        case .tronUnfreeze(let memo):
+            return memo.isTheFormValid
         }
     }
     
@@ -272,6 +301,8 @@ enum FunctionCallInstance {
             return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+        case .tron:
+            return .tronFreeze(FunctionCallTronFreeze(tx: tx, functionCallViewModel: functionCallViewModel))
         default:
             return .custom(FunctionCallCustom())
         }

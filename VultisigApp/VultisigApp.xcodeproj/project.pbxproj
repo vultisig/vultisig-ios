@@ -770,6 +770,8 @@
 		B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */; };
 		B537CE092CE7068D002085CB /* CosmosIbcDenomTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = B537CE082CE7068A002085CB /* CosmosIbcDenomTrace.swift */; };
 		B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC72BF7F21500B795D3 /* FunctionCallBond.swift */; };
+		2A7B9D4C2E4F6C8900123458 /* FunctionCallTronFreeze.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7B9D4A2E4F6C8900123456 /* FunctionCallTronFreeze.swift */; };
+		2A7B9D4D2E4F6C8900123459 /* FunctionCallTronUnfreeze.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7B9D4B2E4F6C8900123457 /* FunctionCallTronUnfreeze.swift */; };
 		B53D8CCA2BF7F22500B795D3 /* FunctionCallUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* FunctionCallUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* FunctionCallLeave.swift */; };
 		B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */; };
@@ -1733,6 +1735,8 @@
 		B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmServiceEnsServiceExtension.swift; sourceTree = "<group>"; };
 		B537CE082CE7068A002085CB /* CosmosIbcDenomTrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosIbcDenomTrace.swift; sourceTree = "<group>"; };
 		B53D8CC72BF7F21500B795D3 /* FunctionCallBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallBond.swift; sourceTree = "<group>"; };
+		2A7B9D4A2E4F6C8900123456 /* FunctionCallTronFreeze.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallTronFreeze.swift; sourceTree = "<group>"; };
+		2A7B9D4B2E4F6C8900123457 /* FunctionCallTronUnfreeze.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallTronUnfreeze.swift; sourceTree = "<group>"; };
 		B53D8CC92BF7F22500B795D3 /* FunctionCallUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* FunctionCallLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallLeave.swift; sourceTree = "<group>"; };
 		B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmTokenServiceProtocol.swift; sourceTree = "<group>"; };
@@ -3468,6 +3472,8 @@
 				B53D8CC92BF7F22500B795D3 /* FunctionCallUnbond.swift */,
 				B541C9252CF04C4700335933 /* FunctionCallUnbondMayaChain.swift */,
 				B5B5E2792CCADE85001167C3 /* FunctionCallUnstake.swift */,
+				2A7B9D4A2E4F6C8900123456 /* FunctionCallTronFreeze.swift */,
+				2A7B9D4B2E4F6C8900123457 /* FunctionCallTronUnfreeze.swift */,
 				B53D8CCB2BF7F22F00B795D3 /* FunctionCallLeave.swift */,
 				B51119322C0072620020B711 /* FunctionCallCustom.swift */,
 				B590DF852C2E70B800ED934E /* FunctionCallVote.swift */,
@@ -4337,6 +4343,8 @@
 				A6C670FF2CA2762D00F59B6A /* SettingsDefaultChainView+macOS.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */,
+				2A7B9D4C2E4F6C8900123458 /* FunctionCallTronFreeze.swift in Sources */,
+				2A7B9D4D2E4F6C8900123459 /* FunctionCallTronUnfreeze.swift in Sources */,
 				A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */,
 				A6386DB42C90263E00DDD58E /* ToggleSelectionCell+macOS.swift in Sources */,
 				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,
