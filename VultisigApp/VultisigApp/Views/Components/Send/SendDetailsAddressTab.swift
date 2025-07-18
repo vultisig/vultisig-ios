@@ -94,6 +94,12 @@ struct SendDetailsAddressTab: View {
             focusedField = .toAddress
             return
         }
+        if !tx.toAddress.isEmpty {
+            guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+                viewModel.selectedTab = .Address
+                return
+            }
+        }
         
         viewModel.addressSetupDone = true
     }
