@@ -228,6 +228,11 @@ class Coin: ObservableObject, Codable, Hashable {
         return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
     
+    func fiat(gas: BigInt) -> Decimal {
+        let decimal = decimal(for: gas)
+        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
+    }
+    
     func fiat(decimal: Decimal) -> Decimal {
         return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
