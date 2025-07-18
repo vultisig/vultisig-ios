@@ -79,11 +79,35 @@ class TronService: RpcService {
         let expiration = nowMillis + oneHourMillis
         
         var estimation = "100000" // 0.1 TRX = 100000 SUN (default fee for native TRX transfers)
+        
+        // Check available resources
+        let (availableEnergy, availableBandwidth) = try await getAccountResources(address: coin.address)
+        
         if !coin.isNativeToken {
-            // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
-            // Tron does not have a 0x... it can be any address
-            // We will only simulate the transaction fee with this address
-            estimation = try await getTriggerConstantContractFee(ownerAddressBase58:coin.address, contractAddressBase58: coin.contractAddress, recipientAddressHex: "0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf", amount: BigUInt(coin.rawBalance.toBigInt()))
+            // For TRC20 transfers, use fixed energy requirement
+            // Based on actual USDT transfers: ~32,000 energy per transfer
+            let energyRequired = 32000
+            
+            // Only charge for energy we don't have
+            if availableEnergy >= energyRequired {
+                // We have enough energy, only bandwidth fee applies
+                estimation = "1000" // Minimal fee for bandwidth only (0.001 TRX)
+            } else {
+                // Calculate fee for the energy deficit
+                let energyDeficit = max(0, energyRequired - availableEnergy)
+                let sunForEnergy = energyDeficit * 280 // 280 SUN per energy unit
+                
+                // Add bandwidth fee and 20% safety margin for energy fluctuation
+                let safetyMargin = Int(Double(sunForEnergy) * 0.2)
+                let bandwidthFee = 350 // ~350 SUN for bandwidth
+                let totalFee = sunForEnergy + safetyMargin + bandwidthFee
+                estimation = String(totalFee)
+            }
+        } else {
+            // For native TRX transfers, check bandwidth
+            if availableBandwidth > 200 { // Typical TRX transfer needs ~200 bandwidth
+                estimation = "1000" // Minimal fee
+            }
         }
         
         return BlockChainSpecific.Tron(
@@ -118,6 +142,47 @@ class TronService: RpcService {
         
         // 5) Concatenate the two 32-byte segments (64 hex chars + 64 hex chars = 128 hex chars total)
         return paddedAddressHex + paddedAmountHex
+    }
+    
+    /// Get the energy requirement for a TRC20 transfer
+    func getTriggerConstantContractEnergy(
+        ownerAddressBase58: String,
+        contractAddressBase58: String,
+        recipientAddressHex: String,
+        amount: BigUInt
+    ) async throws -> Int {
+        // Build the same request as getTriggerConstantContractFee
+        let functionSelector = "transfer(address,uint256)"
+        let parameter = try buildTrc20TransferParameter(
+            recipientBaseHex: recipientAddressHex,
+            amount: amount
+        )
+        
+        let body: [String: Any] = [
+            "owner_address": ownerAddressBase58,
+            "contract_address": contractAddressBase58,
+            "function_selector": functionSelector,
+            "parameter": parameter,
+            "visible": true
+        ]
+        
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        
+        let data = try await Utils.asyncPostRequest(
+            urlString: Endpoint.triggerSolidityConstantContractTron(),
+            headers: [
+                "accept": "application/json",
+                "content-type": "application/json"
+            ],
+            body: dataPayload
+        )
+        
+        // Extract energy_used (this is the actual energy requirement)
+        guard let energyUsed = Utils.extractResultFromJson(fromData: data, path: "energy_used") as? NSNumber else {
+            return 0
+        }
+        
+        return energyUsed.intValue
     }
     
     /// Computes the TRX fee for calling the TRC20 `transfer(address,uint256)` method.
@@ -172,9 +237,97 @@ class TronService: RpcService {
         // 6. Calculate fee in SUN and convert to TRX
         let totalEnergy = energyUsed.intValue + energyPenalty.intValue
         let totalSun = totalEnergy * 280
-        //let feeTRX = Double(totalSun) / 1_000_000.0
         
         return totalSun.description
+    }
+    
+    func getAccountResources(address: String) async throws -> (energy: Int, bandwidth: Int) {
+        let body: [String: Any] = ["address": address, "visible": true]
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        
+        let data = try await Utils.asyncPostRequest(
+            urlString: Endpoint.fetchAccountResourcesTron(),
+            headers: ["accept": "application/json", "content-type": "application/json"],
+            body: dataPayload
+        )
+        
+        // Extract available energy and bandwidth
+        let freeNetUsed = Utils.extractResultFromJson(fromData: data, path: "freeNetUsed") as? NSNumber ?? 0
+        let freeNetLimit = Utils.extractResultFromJson(fromData: data, path: "freeNetLimit") as? NSNumber ?? 0
+        let netUsed = Utils.extractResultFromJson(fromData: data, path: "NetUsed") as? NSNumber ?? 0
+        let netLimit = Utils.extractResultFromJson(fromData: data, path: "NetLimit") as? NSNumber ?? 0
+        let energyUsed = Utils.extractResultFromJson(fromData: data, path: "EnergyUsed") as? NSNumber ?? 0
+        let energyLimit = Utils.extractResultFromJson(fromData: data, path: "EnergyLimit") as? NSNumber ?? 0
+        
+        let availableBandwidth = (freeNetLimit.intValue - freeNetUsed.intValue) + (netLimit.intValue - netUsed.intValue)
+        let availableEnergy = energyLimit.intValue - energyUsed.intValue
+        
+        return (energy: availableEnergy, bandwidth: availableBandwidth)
+    }
+    
+    func getStakedBalances(address: String) async throws -> (energyStaked: Int64, bandwidthStaked: Int64) {
+        let body: [String: Any] = ["address": address, "visible": true]
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        
+        // Add retry logic for API failures
+        var lastError: Error?
+        for attempt in 1...3 {
+            do {
+                let data = try await Utils.asyncPostRequest(
+                    urlString: Endpoint.fetchAccountInfoTron(),
+                    headers: ["accept": "application/json", "content-type": "application/json"],
+                    body: dataPayload
+                )
+                
+                // If successful, parse and return the response
+                return try parseStakedBalances(from: data)
+            } catch {
+                lastError = error
+                print("Attempt \(attempt) failed to fetch staked balances: \(error)")
+                if attempt < 3 {
+                    // Wait before retrying
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                }
+            }
+        }
+        
+        // If all attempts failed, throw the last error
+        throw lastError ?? HelperError.runtimeError("Failed to fetch staked balances after 3 attempts")
+    }
+    
+    private func parseStakedBalances(from data: Data) throws -> (energyStaked: Int64, bandwidthStaked: Int64) {
+        // Extract frozen_v2 array which contains staked balance info
+        var energyStaked: Int64 = 0
+        var bandwidthStaked: Int64 = 0
+        
+        // Also check if account exists
+        if let _ = Utils.extractResultFromJson(fromData: data, path: "address") as? String {
+            // Account exists, continue checking frozen_v2
+        } else {
+            print("Warning: Account may not exist or have any activity")
+        }
+        
+        if let frozenV2Array = Utils.extractResultFromJson(fromData: data, path: "frozenV2") as? [[String: Any]] {
+            for frozen in frozenV2Array {
+                if let amount = frozen["amount"] as? NSNumber {
+                    if let type = frozen["type"] as? String {
+                        switch type {
+                        case "ENERGY":
+                            energyStaked += amount.int64Value
+                        case "BANDWIDTH":
+                            bandwidthStaked += amount.int64Value
+                        default:
+                            break
+                        }
+                    } else {
+                        // If no type is specified, it's usually BANDWIDTH
+                        bandwidthStaked += amount.int64Value
+                    }
+                }
+            }
+        }
+        
+        return (energyStaked: energyStaked, bandwidthStaked: bandwidthStaked)
     }
     
     func getBalance(coin: Coin) async throws -> String {

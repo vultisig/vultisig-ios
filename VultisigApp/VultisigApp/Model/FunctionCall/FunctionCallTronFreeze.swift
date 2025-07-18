@@ -61,6 +61,9 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
     ) {
         self.tx = tx
         setupValidation()
+        
+        // Auto-fill amount with available balance
+        self.amount = tx.coin.balanceDecimal
     }
     
     var balance: String {
@@ -158,15 +161,46 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
                 .pickerStyle(SegmentedPickerStyle())
             }
             
+            // Available balance display
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Available Balance")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(tx.coin.balanceDecimal.formatForDisplay()) TRX")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    self.amount = self.tx.coin.balanceDecimal
+                }) {
+                    Text("MAX")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(6)
+                }
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(8)
+            
             // Amount field
             StyledFloatingPointField(
                 placeholder: Binding(
-                    get: { "Amount in TRX (Balance: \(self.balance))" },
+                    get: { "Amount to freeze" },
                     set: { _ in }
                 ),
                 value: Binding(
                     get: { self.amount },
-                    set: { self.amount = $0 }
+                    set: { self.amount = min($0, self.tx.coin.balanceDecimal) }
                 ),
                 isValid: Binding(
                     get: { self.amountValid },

@@ -34,22 +34,12 @@ enum TronHelper {
         if let memo = keysignPayload.memo, keysignPayload.coin.isNativeToken {
             let memoComponents = memo.uppercased().split(separator: ":")
             
-            print("TRON DEBUG - Memo: \(memo)")
-            print("TRON DEBUG - Memo components: \(memoComponents)")
-            print("TRON DEBUG - To address: \(keysignPayload.toAddress)")
-            print("TRON DEBUG - From address: \(keysignPayload.coin.address)")
-            print("TRON DEBUG - Amount: \(keysignPayload.toAmount)")
-            
             if memoComponents.count >= 3 && memoComponents[0] == "FREEZE" {
                 // FREEZE:RESOURCE:AMOUNT[:RECEIVER]
                 let resource = String(memoComponents[1])
                 guard let amount = Int64(memoComponents[2]) else {
                     throw HelperError.runtimeError("Invalid freeze amount")
                 }
-                
-                print("TRON DEBUG - Creating FreezeBalanceV2Contract")
-                print("TRON DEBUG - Resource: \(resource)")
-                print("TRON DEBUG - Freeze amount: \(amount)")
                 
                 let contract = TronFreezeBalanceV2Contract.with {
                     $0.ownerAddress = keysignPayload.coin.address
@@ -73,25 +63,28 @@ enum TronHelper {
                     }
                 }
                 
-                print("TRON DEBUG - FreezeBalanceV2 transaction created")
-                print("TRON DEBUG - Block timestamp: \(blockHeaderTimestamp)")
-                print("TRON DEBUG - Block number: \(blockHeaderNumber)")
-                print("TRON DEBUG - Expiration: \(expiration)")
-                
                 return try input.serializedData()
                 
             } else if memoComponents.count >= 2 && memoComponents[0] == "UNFREEZE" {
-                // UNFREEZE:RESOURCE[:RECEIVER]
+                // UNFREEZE:RESOURCE:AMOUNT
                 let resource = String(memoComponents[1])
                 
-                print("TRON DEBUG - Creating UnfreezeBalanceV2Contract")
-                print("TRON DEBUG - Resource: \(resource)")
-                print("TRON DEBUG - Unfreeze amount: \(keysignPayload.toAmount)")
+                // Get the amount from the memo
+                let unfreezeAmount: Int64
+                if memoComponents.count >= 3, let amount = Int64(memoComponents[2]) {
+                    unfreezeAmount = amount
+                } else {
+                    // Fallback to using toAmount if not in memo (backward compatibility)
+                    unfreezeAmount = Int64(keysignPayload.toAmount)
+                }
                 
                 let contract = TronUnfreezeBalanceV2Contract.with {
                     $0.ownerAddress = keysignPayload.coin.address
-                    $0.unfreezeBalance = Int64(keysignPayload.toAmount)
+                    $0.unfreezeBalance = unfreezeAmount
                     $0.resource = resource
+                    
+                    // UnfreezeBalanceV2Contract doesn't have receiverAddress field
+                    // Receiver address is only for delegate/undelegate operations
                 }
                 
                 let input = TronSigningInput.with {
@@ -110,14 +103,9 @@ enum TronHelper {
                     }
                 }
                 
-                print("TRON DEBUG - UnfreezeBalanceV2 transaction created")
-                
                 return try input.serializedData()
             }
         }
-        
-        print("TRON DEBUG - Creating regular transfer transaction")
-        print("TRON DEBUG - Memo: \(keysignPayload.memo ?? "nil")")
         
         // Handle normal transfer transactions
         if keysignPayload.coin.isNativeToken {
@@ -263,9 +251,6 @@ enum TronHelper {
             print(output.errorMessage)
             throw HelperError.runtimeError("fail to sign transaction")
         }
-        
-        print("TRON DEBUG - Transaction ID: \(output.id.hexString)")
-        print("TRON DEBUG - JSON output: \(output.json)")
         
         let result = SignedTransactionResult(rawTransaction: output.json,
                                              transactionHash: output.id.hexString)

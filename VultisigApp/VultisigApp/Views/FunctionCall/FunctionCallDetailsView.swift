@@ -193,7 +193,24 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .tronFreeze(FunctionCallTronFreeze(tx: tx, functionCallViewModel: functionCallViewModel))
                     
                 case .tronUnfreeze:
-                    fnCallInstance = .tronUnfreeze(FunctionCallTronUnfreeze(tx: tx, functionCallViewModel: functionCallViewModel))
+                    Task {
+                        var energy: Int64 = 0
+                        var bandwidth: Int64 = 0
+                        do {
+                            (energy, bandwidth) = try await TronService.shared.getStakedBalances(address: tx.coin.address)
+                        } catch {
+                            print("Error fetching TRON staked balances: \(error.localizedDescription)")
+                        }
+                        await MainActor.run {
+                            let instance = FunctionCallTronUnfreeze(
+                                tx: tx,
+                                functionCallViewModel: functionCallViewModel,
+                                energyStaked: energy,
+                                bandwidthStaked: bandwidth
+                            )
+                            self.fnCallInstance = .tronUnfreeze(instance)
+                        }
+                    }
                 }
             }
     }

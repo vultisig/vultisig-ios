@@ -155,8 +155,8 @@ enum FunctionCallInstance {
             return memo.amount
         case .tronFreeze(let memo):
             return memo.amount
-        case .tronUnfreeze:
-            return .zero // Unfreezing doesn't require sending TRX
+        case .tronUnfreeze(_):
+            return .zero  // Unfreezing doesn't send TRX, amount is in memo
         }
     }
     
