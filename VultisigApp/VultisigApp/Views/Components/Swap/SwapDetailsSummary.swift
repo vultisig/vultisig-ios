@@ -93,15 +93,15 @@ struct SwapDetailsSummary: View {
     
     var swapFees: some View {
         getSummaryCell(
-            leadingText: "swapFee",
-            trailingText: swapViewModel.swapFeeString(tx: tx)
+            leadingText: "providersFee",
+            trailingText: swapViewModel.providersFeeString(tx: tx)
         )
     }
     
     var swapGas: some View {
         getSummaryCell(
             leadingText: "networkFee",
-            trailingText: "\(swapViewModel.swapGasString(tx: tx))(\(swapViewModel.approveFeeString(tx: tx)))"
+            trailingText: "\(swapViewModel.swapGasString(tx: tx))(\(swapViewModel.networkFeeString(tx: tx)))"
         )
     }
     

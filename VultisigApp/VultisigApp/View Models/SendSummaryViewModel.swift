@@ -28,23 +28,4 @@ class SendSummaryViewModel: ObservableObject {
             return "\(formattedAmount) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
         }
     }
-    
-    func swapFeeString(_ tx: SwapTransaction) -> String {
-        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
-        
-        let fromCoin = feeCoin(tx: tx)
-        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
-        return fee.formatToFiat(includeCurrencySymbol: true)
-    }
-    
-    private func feeCoin(tx: SwapTransaction) -> Coin {
-        switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui, .Ton, .Cardano, .Ripple, .Tron:
-            return tx.fromCoin
-        case .EVM:
-            guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
-        }
-    }
 }
