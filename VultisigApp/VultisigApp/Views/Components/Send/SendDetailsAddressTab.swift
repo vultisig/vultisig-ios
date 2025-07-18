@@ -22,7 +22,13 @@ struct SendDetailsAddressTab: View {
                 }
             }
             .onChange(of: tx.toAddress) { oldValue, newValue in
-                viewModel.selectedTab = .Amount
+                Task {
+                    guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+                        viewModel.selectedTab = .Address
+                        return
+                    }
+                    viewModel.selectedTab = .Amount
+                }
             }
     }
     
@@ -86,11 +92,6 @@ struct SendDetailsAddressTab: View {
     private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
         guard oldValue != newValue, !newValue else {
             focusedField = .toAddress
-            return
-        }
-        
-        guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-            viewModel.selectedTab = .Address
             return
         }
         
