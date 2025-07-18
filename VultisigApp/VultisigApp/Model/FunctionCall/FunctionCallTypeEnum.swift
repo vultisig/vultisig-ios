@@ -10,7 +10,7 @@ import Foundation
 import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
-    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch
+    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch, tronFreeze, tronUnfreeze
     
     var id: String { self.rawValue }
     
@@ -56,6 +56,10 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Unmerge RUJI"
         case .theSwitch:
             return "Switch"
+        case .tronFreeze:
+            return "Freeze TRX"
+        case .tronUnfreeze:
+            return "Unfreeze TRX"
         }
     }
     
@@ -82,7 +86,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return [.cosmosIBC]
         case .akash:
             return [.cosmosIBC]
-            
+        case .tron:
+            return [.tronFreeze, .tronUnfreeze]
         default:
             return []
         }
@@ -102,6 +107,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .theSwitch
         case .kujira:
             return .cosmosIBC
+        case .tron:
+            return .tronFreeze
         default:
             return .custom
         }

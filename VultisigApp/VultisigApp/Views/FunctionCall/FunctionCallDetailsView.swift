@@ -189,6 +189,28 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .tronFreeze:
+                    fnCallInstance = .tronFreeze(FunctionCallTronFreeze(tx: tx, functionCallViewModel: functionCallViewModel))
+                    
+                case .tronUnfreeze:
+                    Task {
+                        var energy: Int64 = 0
+                        var bandwidth: Int64 = 0
+                        do {
+                            (energy, bandwidth) = try await TronService.shared.getStakedBalances(address: tx.coin.address)
+                        } catch {
+                            print("Error fetching TRON staked balances: \(error.localizedDescription)")
+                        }
+                        await MainActor.run {
+                            let instance = FunctionCallTronUnfreeze(
+                                tx: tx,
+                                functionCallViewModel: functionCallViewModel,
+                                energyStaked: energy,
+                                bandwidthStaked: bandwidth
+                            )
+                            self.fnCallInstance = .tronUnfreeze(instance)
+                        }
+                    }
                 }
             }
     }
@@ -250,6 +272,10 @@ struct FunctionCallDetailsView: View {
                     
                     if let toAddress = fnCallInstance.toAddress {
                         tx.toAddress = toAddress
+                    } else {
+                        // For operations that don't have a specific toAddress (like TRON freeze/unfreeze)
+                        // use the sender's own address
+                        tx.toAddress = tx.coin.address
                     }
                     
                     functionCallViewModel.moveToNextView()

@@ -540,18 +540,18 @@ class Endpoint {
         return "https://scan.li.fi/tx/\(txid)"
     }
     
-    static let tronServiceRpc = "https://tron-rpc.publicnode.com"
+    static let tronServiceRpc = "https://api.trongrid.io"
     
-    static let broadcastTransactionTron = "https://tron-rpc.publicnode.com/wallet/broadcasttransaction"
+    static let broadcastTransactionTron = "https://api.trongrid.io/wallet/broadcasttransaction"
     
-    static let fetchBlockNowInfoTron = "https://tron-rpc.publicnode.com/wallet/getnowblock"
+    static let fetchBlockNowInfoTron = "https://api.trongrid.io/wallet/getnowblock"
     
     static func fetchAccountInfoTron() -> String {
-        "https://tron-rpc.publicnode.com/wallet/getaccount"
+        return "\(tronServiceRpc)/wallet/getaccount"
     }
     
-    static func triggerConstantContractTron() -> String {
-        "https://api.trongrid.io/wallet/triggerconstantcontract"
+    static func fetchAccountResourcesTron() -> String {
+        return "\(tronServiceRpc)/wallet/getaccountresource"
     }
     
     static func triggerSolidityConstantContractTron() -> String {
