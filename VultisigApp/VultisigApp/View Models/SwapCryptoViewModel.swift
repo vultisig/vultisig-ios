@@ -111,7 +111,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showFees(tx: SwapTransaction) -> Bool {
-        let fee = providersFeeString(tx: tx)
+        let fee = swapFeeString(tx: tx)
         return !fee.isEmpty && !fee.isZero
     }
     
@@ -132,42 +132,53 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return tx.toAmountDecimal != 0
     }
     
-    func providersFeeString(tx: SwapTransaction) -> String {
+    func swapFeeString(tx: SwapTransaction) -> String {
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
-        let fee = tx.toCoin.fiat(decimal: inboundFeeDecimal)
-        return fee.formatToFiat(includeCurrencySymbol: true)
-    }
-    
-    func networkFeeString(tx: SwapTransaction) -> String {
+        
         let fromCoin = feeCoin(tx: tx)
-        let fee = fromCoin.fiat(gas: tx.fee)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
     
     func swapGasString(tx: SwapTransaction) -> String {
         let coin = feeCoin(tx: tx)
         
+        let decimals = coin.decimals
+        
+        // Use tx.fee for swap quotes (which includes corrected gas price calculations)
+        // Fall back to tx.gas for other transaction types
+        let gasValue = tx.quote != nil ? tx.fee : tx.gas
+        
         if coin.chain.chainType == .EVM {
-            let feeInGwei = tx.fee / BigInt(1_000_000_000)
-            
-            if feeInGwei > 0 {
-                return "\(feeInGwei) Gwei"
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
+                return .empty
             }
+            return "\((Decimal(gasValue) / weiPerGWeiDecimal).formatToDecimal(digits: 0).description) \(coin.chain.feeUnit)"
+        } else if coin.chain.chainType == .UTXO {
+            // for UTXO chains , we use transaction plan to get the transaction fee in total
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.ticker)"
+        } else {
+            return "\((Decimal(gasValue) / pow(10 ,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
         }
-        
-        let feeDecimal = coin.decimal(for: tx.fee)
-        
-        return "\(feeDecimal.formatForDisplay()) \(coin.ticker)"
+    }
+    
+    func approveFeeString(tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let feeDecimal = fromCoin.decimal(for: tx.fee)
+        let fee = fromCoin.fiat(decimal: feeDecimal)
+        return fee.formatToFiat(includeCurrencySymbol: true)
     }
     
     func totalFeeString(tx: SwapTransaction) -> String {
         guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
         
         let fromCoin = feeCoin(tx: tx)
-        let inboundFee = tx.toCoin.fiat(decimal: inboundFeeDecimal)
-        let networkFee = fromCoin.fiat(gas: tx.fee)
-        let totalFee = inboundFee + networkFee
-        
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
+        let providerFee = tx.toCoin.fiat(value: inboundFee)
+        let networkFeeDecimal = fromCoin.decimal(for: tx.fee)
+        let networkFee = fromCoin.fiat(decimal: networkFeeDecimal)
+        let totalFee = providerFee + networkFee
         return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
     

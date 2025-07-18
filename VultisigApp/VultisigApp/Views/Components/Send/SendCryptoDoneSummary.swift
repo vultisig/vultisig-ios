@@ -119,8 +119,8 @@ struct SendCryptoDoneSummary: View {
             if swapSummaryViewModel.showFees(tx: tx) {
                 Separator()
                 getGeneralCell(
-                    title: "providersFee",
-                    description: swapSummaryViewModel.providersFeeString(tx: tx)
+                    title: "swapFee",
+                    description: swapSummaryViewModel.swapFeeString(tx: tx)
                 )
             }
             
@@ -128,7 +128,7 @@ struct SendCryptoDoneSummary: View {
                 Separator()
                 getGeneralCell(
                     title: "networkFee",
-                    description: "\(swapSummaryViewModel.swapGasString(tx: tx)) (\(swapSummaryViewModel.networkFeeString(tx: tx)))"
+                    description: "\(swapSummaryViewModel.swapGasString(tx: tx))(~\(swapSummaryViewModel.approveFeeString(tx: tx)))"
                 )
             }
             

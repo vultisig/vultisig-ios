@@ -267,15 +267,15 @@ struct SwapCryptoDoneView: View {
     
     var swapFees: some View {
         getCell(
-            title: "providersFee",
-            value: swapSummaryViewModel.providersFeeString(tx: tx)
+            title: "swapFee",
+            value: swapSummaryViewModel.swapFeeString(tx: tx)
         )
     }
     
     var swapGas: some View {
         getCell(
             title: "networkFee",
-            value: "\(swapSummaryViewModel.swapGasString(tx: tx))(\(swapSummaryViewModel.networkFeeString(tx: tx)))"
+            value: "\(swapSummaryViewModel.swapGasString(tx: tx))(\(swapSummaryViewModel.approveFeeString(tx: tx)))"
         )
     }
     
