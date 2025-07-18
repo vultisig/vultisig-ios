@@ -62,6 +62,13 @@ extension SendCryptoAddressTextField {
         }
         .padding(.horizontal, 12)
     }
+    var scanButton: some View {
+        Button {
+            showScanner.toggle()
+        } label: {
+            getButton("camera")
+        }
+    }
     
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, address: $tx.toAddress, handleScan: handleScan)

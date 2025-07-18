@@ -76,8 +76,12 @@ struct LiFiService {
             )
 
             return (quote, response.fee)
-
         case .solana(let quote):
+            var gas: Int64 = 0
+            if quote.estimate.gasCosts.count > 0  {
+                gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
+            }
+                
             let quote = OneInchQuote(
                 dstAmount: quote.estimate.toAmount,
                 tx: OneInchQuote.Transaction(
@@ -86,7 +90,7 @@ struct LiFiService {
                     data: quote.transactionRequest.data,
                     value: .empty,
                     gasPrice: .empty,
-                    gas: 0
+                    gas: gas
                 )
             )
 
