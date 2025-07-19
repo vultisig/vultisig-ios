@@ -98,7 +98,8 @@ struct SendCryptoView: View {
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
             sendDetailsViewModel: sendDetailsViewModel,
-            vault: vault
+            vault: vault,
+            settingsPresented: $settingsPresented
         )
     }
     
@@ -161,19 +162,6 @@ struct SendCryptoView: View {
                 self.sendCryptoViewModel.stopMediator()
             }
         }
-    }
-
-    var settingsButton: some View {
-        Button {
-            settingsPresented = true
-        } label: {
-            Image(systemName: "fuelpump")
-        }
-        .foregroundColor(.neutral0)
-    }
-
-    var showFeeSettings: Bool {
-        return sendCryptoViewModel.currentIndex == 1 && tx.coin.supportsFeeSettings
     }
 
     var errorView: some View {

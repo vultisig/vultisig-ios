@@ -20,6 +20,7 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
+    @Binding var settingsPresented: Bool
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -110,7 +111,8 @@ struct SendCryptoDetailsView: View {
                     viewModel: sendDetailsViewModel,
                     sendCryptoViewModel: sendCryptoViewModel,
                     validateForm: validateForm,
-                    focusedField: $focusedField
+                    focusedField: $focusedField,
+                    settingsPresented: $settingsPresented
                 )
             }
             .padding(16)
@@ -168,6 +170,7 @@ struct SendCryptoDetailsView: View {
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example
+        vault: Vault.example,
+        settingsPresented: .constant(false)
     )
 }
