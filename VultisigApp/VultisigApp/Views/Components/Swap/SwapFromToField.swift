@@ -58,9 +58,21 @@ struct SwapFromToField: View {
     }
     
     var balance: some View {
-        Text("\(coin.balanceString) \(coin.ticker)")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+        Button {
+            if title == "from" {
+                // Fill max amount for "from" field
+                amount = coin.balanceString
+                swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                swapViewModel.showAllPercentageButtons = true
+            }
+        } label: {
+            Text("\(coin.balanceString) \(coin.ticker)")
+                .font(.body12BrockmannMedium)
+                .foregroundColor(title == "from" ? .turquoise600 : .extraLightGray)
+                .underline(title == "from")
+        }
+        .disabled(title != "from")
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var unevenRectangle: some View {

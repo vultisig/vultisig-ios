@@ -12,7 +12,8 @@ struct SwapCoinPickerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
     @Binding var selectedChain: Chain?
-
+    @EnvironmentObject var swapViewModel: SwapCryptoViewModel
+    
     @State var searchText = ""
     @State var showChainPickerSheet: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
@@ -56,17 +57,36 @@ struct SwapCoinPickerView: View {
                 searchBar
                 chainSelector
                 
-                if getCoins().count > 0 {
+                if swapViewModel.isLoading {
+                    loadingView
+                } else if getCoins().count > 0 {
                     networkTitle
                     list
                 } else {
                     emptyMessage
                 }
+                
+                // Chain carousel at bottom
+                chainCarousel
             }
             .padding(.vertical, 8)
             .padding(.bottom, 50)
             .padding(.horizontal, 16)
         }
+    }
+    
+    var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.2)
+                .foregroundColor(.turquoise600)
+            
+            Text(NSLocalizedString("loading", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top, 48)
     }
     
     var networkTitle: some View {
@@ -162,17 +182,71 @@ struct SwapCoinPickerView: View {
         .font(.body16Menlo)
     }
     
+    var chainCarousel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("selectChain", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.neutral0)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(availableChains, id: \.self) { chain in
+                        Button {
+                            selectedChain = chain
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(chain.logo)
+                                    .resizable()
+                                    .frame(width: 16, height: 16)
+                                
+                                Text(chain.name)
+                                    .font(.body12BrockmannMedium)
+                                    .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(selectedChain == chain ? Color.blue600 : Color.clear)
+                            )
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+    
     private func getCoins() -> [Coin] {
         let availableCoins = vault.coins.filter { coin in
             coin.chain == selectedChain
-        }.sorted {
-            $0.ticker < $1.ticker
         }
         
-        return searchText.isEmpty
-            ? availableCoins
-            : availableCoins
-            .filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
+        // Sort coins: native token first, then by USD balance in descending order
+        let sortedCoins = availableCoins.sorted { first, second in
+            // Native token always comes first
+            if first.isNativeToken && !second.isNativeToken {
+                return true
+            }
+            if !first.isNativeToken && second.isNativeToken {
+                return false
+            }
+            
+            // If both are native or both are not native, sort by USD balance
+            return first.balanceInFiatDecimal > second.balanceInFiatDecimal
+        }
+        
+        return sortedCoins
+    }
+    
+    private var availableChains: [Chain] {
+        let chains = vault.coins.map { coin in
+            coin.chain
+        }
+        return Array(Set(chains)).sorted {
+            $0.name < $1.name
+        }
     }
 }
 

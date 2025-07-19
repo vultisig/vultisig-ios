@@ -44,6 +44,8 @@ struct SwapChainCell: View {
             
             if isSelected {
                 check
+            } else {
+                balanceInfo
             }
         }
         .padding(.horizontal, 22)
@@ -72,6 +74,18 @@ struct SwapChainCell: View {
             .bold()
     }
     
+    var balanceInfo: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(totalTokenAmount)
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.neutral0)
+            
+            Text(totalUSDValue)
+                .font(.body10BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+    }
+    
     private func setData() {
         isSelected = chain == selectedChain
     }
@@ -90,6 +104,23 @@ struct SwapChainCell: View {
         }
         
         showSheet = false
+    }
+    
+    private var totalTokenAmount: String {
+        let chainCoins = coins.filter { $0.chain == chain }
+        let totalAmount = chainCoins.reduce(Decimal.zero) { sum, coin in
+            sum + (Decimal(string: coin.balanceString) ?? Decimal.zero)
+        }
+        return totalAmount.formatForDisplay()
+    }
+    
+    private var totalUSDValue: String {
+        let totalValue = coins
+            .filter { $0.chain == chain }
+            .reduce(Decimal.zero) { sum, coin in
+                sum + coin.balanceInFiatDecimal
+            }
+        return totalValue.formatToFiat()
     }
 }
 

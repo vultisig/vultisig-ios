@@ -146,7 +146,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var continueButton: some View {
-        let isDisabled = !swapViewModel.validateForm(tx: tx)
+        let isDisabled = !swapViewModel.validateForm(tx: tx) || swapViewModel.isLoading
         
         return Button {
             Task {
@@ -154,13 +154,13 @@ struct SwapCryptoDetailsView: View {
             }
         } label: {
             FilledButton(
-                title: "continue",
+                title: swapViewModel.isLoading ? "loading" : "continue",
                 textColor: isDisabled ? .textDisabled : .blue600,
                 background: isDisabled ? .buttonDisabled : .turquoise600
             )
         }
         .disabled(isDisabled)
-        .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+        .opacity(swapViewModel.validateForm(tx: tx) && !swapViewModel.isLoading ? 1 : 0.5)
         .padding(40)
     }
     
