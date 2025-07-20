@@ -16,9 +16,9 @@ import UniformTypeIdentifiers
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURLWithPassowrd: URL? = nil
-    @Published var encryptedFileURLWithoutPassword: URL? = nil
-    @Published var decryptedContent: String? = nil
+    @Published var encryptedFileURLWithPassowrd: URL?
+    @Published var encryptedFileURLWithoutPassword: URL?
+    @Published var decryptedContent: String?
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
@@ -27,8 +27,8 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
     @Published var isFileUploaded = false
-    @Published var importedFileName: String? = nil
-    @Published var selectedVault: Vault? = nil
+    @Published var importedFileName: String?
+    @Published var selectedVault: Vault?
     
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     

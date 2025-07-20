@@ -22,15 +22,15 @@ extension View {
     }
 }
 
-fileprivate struct ShareSheetViewController: UIViewControllerRepresentable {
+private struct ShareSheetViewController: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     var activityItems: [Any]
-    var applicationActivities: [UIActivity]? = nil
+    var applicationActivities: [UIActivity]?
     var completion: ((Bool) -> Void)?
     
     func makeUIViewController(context: UIViewControllerRepresentableContext<ShareSheetViewController>) -> UIActivityViewController {
         let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-        controller.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+        controller.completionWithItemsHandler = { _, completed, _, _ in
             isPresented = false
             // Added delay on completion execution to wait for sheet dismissal for smoother experience
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
