@@ -20,7 +20,7 @@ extension PasswordBackupOptionsView {
     
     @ViewBuilder
     var withoutPasswordButton: some View {
-        if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
+        if let fileURL = backupViewModel.encryptedFileURLWithoutPassword {
             Button {
                 showSkipShareSheet = true
             } label: {

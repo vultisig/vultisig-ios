@@ -17,7 +17,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
     @Published var encryptedFileURLWithPassowrd: URL? = nil
-    @Published var encryptedFileURLWithoutPassowrd: URL? = nil
+    @Published var encryptedFileURLWithoutPassword: URL? = nil
     @Published var decryptedContent: String? = nil
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
@@ -42,7 +42,7 @@ class EncryptedBackupViewModel: ObservableObject {
         isFileUploaded = false
         importedFileName = nil
         encryptedFileURLWithPassowrd = nil
-        encryptedFileURLWithoutPassowrd = nil
+        encryptedFileURLWithoutPassword = nil
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
@@ -73,7 +73,7 @@ class EncryptedBackupViewModel: ObservableObject {
             do {
                 try dataToSave.write(to: tempURL)
                 encryptedFileURLWithPassowrd = tempURL
-                encryptedFileURLWithoutPassowrd = tempURL
+                encryptedFileURLWithoutPassword = tempURL
                 print(tempURL.absoluteString)
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
