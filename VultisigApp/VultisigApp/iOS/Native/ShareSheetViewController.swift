@@ -32,6 +32,7 @@ fileprivate struct ShareSheetViewController: UIViewControllerRepresentable {
         let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
         controller.completionWithItemsHandler = { activityType, completed, returnedItems, error in
             isPresented = false
+            // Added delay on completion execution to wait for sheet dismissal for smoother experience
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 completion?(completed)
             }
