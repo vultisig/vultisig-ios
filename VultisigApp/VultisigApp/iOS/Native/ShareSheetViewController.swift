@@ -6,23 +6,39 @@
 //
 #if os(iOS)
 import SwiftUI
-    struct ShareSheetViewController: UIViewControllerRepresentable {
-        var activityItems: [Any]
-        var completion: ((Bool) -> Void)?
-        var applicationActivities: [UIActivity]? = nil
 
-        func makeUIViewController(context: UIViewControllerRepresentableContext<ShareSheetViewController>) -> UIActivityViewController {
-            let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-            controller.completionWithItemsHandler = { activityType, completed, returnedItems, error in
-                if completed {
-                    completion?(true)
-                } else {
-                    completion?(false)
-                }
-            }
-            return controller
+extension View {
+    func shareSheet(isPresented: Binding<Bool>, activityItems: [Any], completion: ((Bool) -> Void)?, applicationActivities: [UIActivity]? = nil) -> some View {
+        self.sheet(isPresented: isPresented) {
+            ShareSheetViewController(
+                isPresented: isPresented,
+                activityItems: activityItems,
+                applicationActivities: applicationActivities,
+                completion: completion
+            )
+            .presentationDetents([.medium])
+            .ignoresSafeArea(.all)
         }
-
-        func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ShareSheetViewController>) {}
     }
+}
+
+fileprivate struct ShareSheetViewController: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
+    var completion: ((Bool) -> Void)?
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<ShareSheetViewController>) -> UIActivityViewController {
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        controller.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+            isPresented = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                completion?(completed)
+            }
+        }
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ShareSheetViewController>) {}
+}
 #endif
