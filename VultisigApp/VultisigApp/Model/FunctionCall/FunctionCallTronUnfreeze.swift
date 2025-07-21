@@ -10,23 +10,33 @@ import Foundation
 import Combine
 import VultisigCommonData
 
+
 struct FunctionCallTronUnfreezeView: View {
     @ObservedObject var unfreezeModel: FunctionCallTronUnfreeze
-
+    
     var body: some View {
         VStack(spacing: 16) {
-            // Resource type selector
+            // Resource type selector using GenericSelectorDropDown
             VStack(alignment: .leading, spacing: 8) {
                 Text("Resource Type")
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                Picker("Resource", selection: $unfreezeModel.resource) {
-                    ForEach(TronResourceType.allCases) { type in
-                        Text(type.display).tag(type)
+                GenericSelectorDropDown(
+                    items: Binding(
+                        get: { unfreezeModel.resourceItems },
+                        set: { unfreezeModel.resourceItems = $0 }
+                    ),
+                    selected: Binding(
+                        get: { unfreezeModel.selectedResource },
+                        set: { unfreezeModel.selectedResource = $0 }
+                    ),
+                    mandatoryMessage: nil,
+                    descriptionProvider: { $0.value },
+                    onSelect: { selected in
+                        unfreezeModel.selectResource(selected)
                     }
-                }
-                .pickerStyle(SegmentedPickerStyle())
+                )
             }
 
             // Staked balance display
@@ -57,24 +67,6 @@ struct FunctionCallTronUnfreezeView: View {
                 isValid: .constant(true)
             )
 
-            // Max button
-            HStack {
-                Spacer()
-                Button(action: {
-                    unfreezeModel.amount = unfreezeModel.maxUnfreezeAmount
-                }) {
-                    Text("MAX")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                }
-                .disabled(unfreezeModel.maxUnfreezeAmount <= 0)
-            }
-
             // Show appropriate message based on staked balance
             if unfreezeModel.maxUnfreezeAmount == 0 {
                 HStack {
@@ -103,19 +95,31 @@ struct FunctionCallTronUnfreezeView: View {
                 .padding(.vertical, 8)
             }
         }
+        .onAppear {
+            unfreezeModel.updateMaxUnfreezeAmount()
+            unfreezeModel.amount = unfreezeModel.maxUnfreezeAmount
+        }
     }
 }
 
 
 class FunctionCallTronUnfreeze: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
-    @Published var resource: TronResourceType = .energy
     @Published var maxUnfreezeAmount: Decimal = 0.0
     @Published var isTheFormValid: Bool = false
+    
+    @Published var selectedResource: IdentifiableString = .init(value: "Bandwidth (for regular transactions)")
+    @Published var resourceItems: [IdentifiableString] = [
+        .init(value: "Bandwidth (for regular transactions)"),
+        .init(value: "Energy (for smart contracts)")
+    ]
 
     private let energyStaked: Int64
     private let bandwidthStaked: Int64
     private var cancellables = Set<AnyCancellable>()
+    
+    // Keep internal resource type for logic
+    var resource: TronResourceType = .bandwidth
 
     var addressFields: [String: String] {
         get { [:] }
@@ -126,21 +130,24 @@ class FunctionCallTronUnfreeze: FunctionCallAddressable, ObservableObject {
         tx: SendTransaction,
         functionCallViewModel: FunctionCallViewModel,
         energyStaked: Int64,
-        bandwidthStaked: Int64
+        bandwidthStaked: Int64,
+        initialResource: TronResourceType = .bandwidth // <-- Default to bandwidth
     ) {
         self.energyStaked = energyStaked
         self.bandwidthStaked = bandwidthStaked
+        self.resource = initialResource
         
+        // Set initial selected resource based on initialResource
+        if initialResource == .energy {
+            self.selectedResource = .init(value: "Energy (for smart contracts)")
+        }
+        
+        print("ENERGY STAKED \(energyStaked)")
+        print("BANDWIDTH STAKED \(bandwidthStaked)")
+        print("RESOURCE \(initialResource)")
+
         self.updateMaxUnfreezeAmount()
         self.amount = self.maxUnfreezeAmount
-
-        $resource
-            .dropFirst()
-            .sink { [weak self] _ in
-                self?.updateMaxUnfreezeAmount()
-                self?.amount = self?.maxUnfreezeAmount ?? 0
-            }
-            .store(in: &cancellables)
             
         Publishers.CombineLatest($amount, $maxUnfreezeAmount)
             .map { amount, maxAmount in
@@ -149,9 +156,26 @@ class FunctionCallTronUnfreeze: FunctionCallAddressable, ObservableObject {
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
+    
+    func selectResource(_ selected: IdentifiableString) {
+        self.selectedResource = selected
+        
+        // Update internal resource type based on selection
+        if selected.value.lowercased().contains("energy") {
+            self.resource = .energy
+        } else {
+            self.resource = .bandwidth
+        }
+        
+        print("Resource changed to: \(self.resource)")
+        self.updateMaxUnfreezeAmount()
+        self.amount = self.maxUnfreezeAmount
+        self.objectWillChange.send()
+    }
 
-    private func updateMaxUnfreezeAmount() {
+    func updateMaxUnfreezeAmount() {
         let sunAmount = (resource == .energy) ? energyStaked : bandwidthStaked
+        print("Updating maxUnfreezeAmount for \(resource): staked=\(sunAmount), energyStaked=\(energyStaked), bandwidthStaked=\(bandwidthStaked)")
         self.maxUnfreezeAmount = Decimal(sunAmount) / Decimal(1_000_000)
     }
     

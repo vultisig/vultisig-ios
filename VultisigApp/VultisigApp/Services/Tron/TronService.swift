@@ -309,20 +309,24 @@ class TronService: RpcService {
         
         if let frozenV2Array = Utils.extractResultFromJson(fromData: data, path: "frozenV2") as? [[String: Any]] {
             for frozen in frozenV2Array {
-                if let amount = frozen["amount"] as? NSNumber {
-                    if let type = frozen["type"] as? String {
-                        switch type {
-                        case "ENERGY":
-                            energyStaked += amount.int64Value
-                        case "BANDWIDTH":
-                            bandwidthStaked += amount.int64Value
-                        default:
-                            break
-                        }
-                    } else {
-                        // If no type is specified, it's usually BANDWIDTH
+                // Check if this entry has both amount and type in the same object
+                if let amount = frozen["amount"] as? NSNumber,
+                   let type = frozen["type"] as? String {
+                    // Both amount and type specified
+                    switch type {
+                    case "ENERGY":
+                        energyStaked += amount.int64Value
+                    case "BANDWIDTH":
                         bandwidthStaked += amount.int64Value
+                    default:
+                        break
                     }
+                } else if let amount = frozen["amount"] as? NSNumber {
+                    // Amount without type = BANDWIDTH (default behavior)
+                    bandwidthStaked += amount.int64Value
+                } else if let type = frozen["type"] as? String {
+                    // Type without amount = just a capability marker, ignore
+                    continue
                 }
             }
         }

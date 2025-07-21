@@ -18,9 +18,9 @@ enum TronResourceType: String, CaseIterable, Identifiable {
     var display: String {
         switch self {
         case .bandwidth:
-            return "Bandwidth (for regular transactions)"
+            return "Bandwidth"
         case .energy:
-            return "Energy (for smart contracts)"
+            return "Energy"
         }
     }
 }

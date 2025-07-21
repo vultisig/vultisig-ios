@@ -206,7 +206,8 @@ struct FunctionCallDetailsView: View {
                                 tx: tx,
                                 functionCallViewModel: functionCallViewModel,
                                 energyStaked: energy,
-                                bandwidthStaked: bandwidth
+                                bandwidthStaked: bandwidth,
+                                initialResource: .bandwidth // <-- Set default to bandwidth
                             )
                             self.fnCallInstance = .tronUnfreeze(instance)
                         }
