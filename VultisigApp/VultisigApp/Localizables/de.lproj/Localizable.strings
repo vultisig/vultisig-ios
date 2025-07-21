@@ -103,9 +103,6 @@
 "scanQrCode" = "QR-Code scannen";
 "mainDevice" = "Hauptgerät";
 "pleaseWait" = "Bitte warten...";
-"loading" = "Laden...";
-"fetchingQuote" = "Angebot abrufen...";
-"processing" = "Verarbeitung...";
 "joinKeygen" = "BEITRITT ZUR SCHLÜSSELGENERIERUNG/-TEILUNG";
 "failToStartKesign" = "Fehler bei der Signatur. Bitte versuchen Sie es erneut.";
 "failToStartKeygen" = "Schlüsselgenerierung kann wegen fehlender Informationen nicht gestartet werden";
@@ -565,7 +562,6 @@
 "keysignDiscoveryDisclaimer" = "Scanne den QR-Code, um die Transaktion zu signieren.";
 "keysignDiscoveryDisclaimerDevice" = "-Gerätescan erforderlich.";
 "startUsingVault" = "Tresor nutzen";
-"loadingDetails" = "Lade Details";
 "backupPart1" = "Sicherungsanteil 1";
 "backupPart2" = "Sicherungsanteil 2";
 "vultiserverPassword" = "Vultiserver-Passwort";

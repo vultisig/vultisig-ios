@@ -41,7 +41,7 @@ struct FilledButton: View {
     }
     
     var loader: some View {
-        ProgressView()
+        SpinningLineLoader()
             .scaleEffect(0.7)
     }
 }

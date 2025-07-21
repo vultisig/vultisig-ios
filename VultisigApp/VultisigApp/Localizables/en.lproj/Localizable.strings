@@ -102,9 +102,6 @@
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
-"loading" = "Loading...";
-"fetchingQuote" = "Fetching quote...";
-"processing" = "Processing...";
 "joinKeygen" = "JOIN KEYGEN";
 "failToStartKesign" = "Signing Error. Please try again.";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
@@ -593,7 +590,6 @@
 "startUsingVault" = "Start using your Vault";
 "migrationFailed" = "Failed to migration GG20 vault to DKLS";
 "migrateVault" = "Migrate GG20 vault to DKLS";
-"loadingDetails" = "Loading details";
 "backupPart1" = "Backup Share 1";
 "backupPart2" = "Backup Share 2";
 "vultiserverPassword" = "Vultiserver Password";

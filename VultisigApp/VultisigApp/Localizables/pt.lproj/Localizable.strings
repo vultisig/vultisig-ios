@@ -103,9 +103,6 @@
 "scanQrCode" = "Escanear Código QR";
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor, espere...";
-"loading" = "Carregando...";
-"fetchingQuote" = "Buscando cotação...";
-"processing" = "Processando...";
 "joinKeygen" = "JUNTAR-SE À GERAÇÃO/RECOMPARTILHAÇÃO DE CHAVE";
 "failToStartKesign" = "Erro de assinatura. Por favor, tente novamente.";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
@@ -549,7 +546,6 @@
 "keysignDiscoveryDisclaimer" = "Escaneie o código QR para assinar a transação.";
 "keysignDiscoveryDisclaimerDevice" = "-é necessário escanear o dispositivo.";
 "startUsingVault" = "Usar Cofre";
-"loadingDetails" = "Carregando detalhes";
 "backupPart1" = "Cópia de Segurança 1";
 "backupPart2" = "Cópia de Segurança 2";
 "vultiserverPassword" = "Senha do Vultiserver";

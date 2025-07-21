@@ -102,10 +102,7 @@
 "pairWithOtherDevices" = "Accoppia con altri dispositivi:";
 "scanQrCode" = "Scansiona Codice QR";
 "mainDevice" = "Dispositivo Principale";
-"pleaseWait" = "Per favore attendi...";
-"loading" = "Caricamento...";
-"fetchingQuote" = "Recupero quotazione...";
-"processing" = "Elaborazione...";
+"pleaseWait" = "Per favore, aspetta...";
 "joinKeygen" = "UNISCITI ALLA GENERAZIONE/CONDIVISIONE CHIAVE";
 "failToStartKesign" = "Errore di firma. Per favore riprova.";
 "failToStartKeygen" = "Impossibile avviare la generazione della chiave a causa della mancanza di informazioni";
@@ -548,7 +545,6 @@
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
 "startUsingVault" = "Usa il Vault";
-"loadingDetails" = "Caricamento dettagli";
 "backupPart1" = "Copia di Backup 1";
 "backupPart2" = "Copia di Backup 2";
 "vultiserverPassword" = "Password Vultiserver";

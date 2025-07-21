@@ -125,9 +125,8 @@ struct SwapCryptoDetailsView: View {
         Group {
             if swapViewModel.isLoadingQuotes {
                 // Show loader instead of swap icon when loading
-                ProgressView()
+                SpinningLineLoader()
                     .scaleEffect(0.8)
-                    .preferredColorScheme(.dark)
                     .frame(width: 38, height: 38)
             } else {
                 // Show swap icon when not loading
