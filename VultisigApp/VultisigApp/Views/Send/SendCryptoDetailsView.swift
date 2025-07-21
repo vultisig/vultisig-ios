@@ -75,7 +75,7 @@ struct SendCryptoDetailsView: View {
         } label: {
             HStack {
                 FilledButton(
-                    title: "continue",
+                    title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
                     textColor: sendCryptoViewModel.isLoading ? .textDisabled : .blue600,
                     background: sendCryptoViewModel.isLoading ? .buttonDisabled : .turquoise600,
                     showLoader: sendCryptoViewModel.isLoading

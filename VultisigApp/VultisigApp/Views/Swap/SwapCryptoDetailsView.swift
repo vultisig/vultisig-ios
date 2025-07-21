@@ -52,7 +52,6 @@ struct SwapCryptoDetailsView: View {
     var content: some View {
         VStack {
             fields
-            summary // ensure summary is included here
             continueButton
         }
     }
