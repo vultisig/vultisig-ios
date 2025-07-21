@@ -87,7 +87,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            isLoading: false
         )
     }
     
@@ -102,7 +103,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            isLoading: swapViewModel.isLoadingQuotes && tx.toAmountDecimal == .zero
         )
     }
     
@@ -142,7 +144,18 @@ struct SwapCryptoDetailsView: View {
     }
     
     var summary: some View {
-        SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
+        VStack {
+            SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
+            
+            // Show inline loader when refreshing data
+            if swapViewModel.isLoadingQuotes && tx.toAmountDecimal != .zero {
+                HStack {
+                    InlineLoader()
+                    Spacer()
+                }
+                .padding(.top, 8)
+            }
+        }
     }
     
     var continueButton: some View {
@@ -153,13 +166,17 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.moveToNextView()
             }
         } label: {
-            FilledButton(
-                title: "continue",
-                textColor: isDisabled ? .textDisabled : .blue600,
-                background: isDisabled ? .buttonDisabled : .turquoise600
-            )
+            if swapViewModel.isLoadingTransaction {
+                ButtonLoader()
+            } else {
+                FilledButton(
+                    title: "continue",
+                    textColor: isDisabled ? .textDisabled : .blue600,
+                    background: isDisabled ? .buttonDisabled : .turquoise600
+                )
+            }
         }
-        .disabled(isDisabled)
+        .disabled(isDisabled || swapViewModel.isLoadingTransaction)
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
     }
@@ -209,12 +226,7 @@ extension SwapCryptoDetailsView {
         swapViewModel.showAllPercentageButtons = false
         // Use coin's decimals for proper precision
         // For EVM chains, cap at 9 decimals to avoid impractical precision
-        let decimalsToUse: Int
-        if tx.fromCoin.chainType == .EVM {
-            decimalsToUse = min(9, max(4, tx.fromCoin.decimals))
-        } else {
-            decimalsToUse = max(4, tx.fromCoin.decimals)
-        }
+        let decimalsToUse: Int = 4
         
         switch percentage {
         case 25:

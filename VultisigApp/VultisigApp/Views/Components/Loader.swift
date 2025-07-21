@@ -36,6 +36,46 @@ struct Loader: View {
     }
 }
 
+// MARK: - Non-blocking Loaders
+
+struct InlineLoader: View {
+    var body: some View {
+        ProgressView()
+            .scaleEffect(0.6)
+            .preferredColorScheme(.dark)
+            .frame(width: 24, height: 24)
+            .background(Color.blue600.opacity(0.7))
+            .cornerRadius(8)
+    }
+}
+
+struct ButtonLoader: View {
+    var body: some View {
+        ProgressView()
+            .scaleEffect(0.7)
+            .preferredColorScheme(.dark)
+            .frame(width: 32, height: 32)
+            .background(Color.blue600.opacity(0.8))
+            .cornerRadius(10)
+    }
+}
+
+struct SwapLoader: View {
+    var body: some View {
+        ProgressView()
+            .scaleEffect(1.2)
+            .preferredColorScheme(.dark)
+            .frame(width: 60, height: 60)
+            .background(Color.blue600.opacity(0.9))
+            .cornerRadius(12)
+    }
+}
+
 #Preview {
-    Loader()
+    VStack(spacing: 20) {
+        Loader()
+        InlineLoader()
+        ButtonLoader()
+        SwapLoader()
+    }
 }

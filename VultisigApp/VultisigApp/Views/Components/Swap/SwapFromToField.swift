@@ -18,6 +18,7 @@ struct SwapFromToField: View {
     @Binding var showCoinSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    let isLoading: Bool
     
     @StateObject var referredViewModel = ReferredViewModel()
     
@@ -110,13 +111,21 @@ struct SwapFromToField: View {
     }
     
     var fromToAmountField: some View {
-        SwapCryptoAmountTextField(amount: $amount) { _ in
-            if title=="from" {
-                swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                swapViewModel.showAllPercentageButtons = true
+        Group {
+            if isLoading {
+                // Show loader instead of text field when loading
+                SwapLoader()
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                SwapCryptoAmountTextField(amount: $amount) { _ in
+                    if title=="from" {
+                        swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                        swapViewModel.showAllPercentageButtons = true
+                    }
+                }
+                .disabled(title=="to")
             }
         }
-        .disabled(title=="to")
     }
     
     var fiatBalance: some View {
@@ -143,6 +152,7 @@ struct SwapFromToField: View {
         showNetworkSelectSheet: .constant(false),
         showCoinSelectSheet: .constant(false),
         tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel()
+        swapViewModel: SwapCryptoViewModel(),
+        isLoading: false
     )
 }

@@ -103,6 +103,9 @@
 "scanQrCode" = "Skenirajte QR kod";
 "mainDevice" = "Glavni uređaj";
 "pleaseWait" = "Molimo pričekajte...";
+"loading" = "Učitavanje...";
+"fetchingQuote" = "Dohvaćanje ponude...";
+"processing" = "Obrada...";
 "joinKeygen" = "PRIDRUŽI SE GENERIRANJU KLJUČA/PONOVLJENOM DIJELJENJU";
 "failToStartKesign" = "Greška u potpisivanju. Pokušajte ponovno.";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";

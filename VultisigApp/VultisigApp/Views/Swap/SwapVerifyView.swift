@@ -25,10 +25,6 @@ struct SwapVerifyView: View {
         ZStack {
             Background()
             view
-
-            if swapViewModel.isLoading {
-                Loader()
-            }
         }
         .onReceive(timer) { input in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
@@ -196,7 +192,9 @@ struct SwapVerifyView: View {
         return Button {
             signPressed()
         } label: {
-            if tx.isFastVault {
+            if swapViewModel.isLoadingTransaction {
+                ButtonLoader()
+            } else if tx.isFastVault {
                 OutlineButton(title: "Paired sign")
                     .opacity(!isDisabled ? 1 : 0.5)
             } else {
@@ -207,7 +205,7 @@ struct SwapVerifyView: View {
                 )
             }
         }
-        .disabled(isDisabled)
+        .disabled(isDisabled || swapViewModel.isLoadingTransaction)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
     }
@@ -267,6 +265,8 @@ struct SwapVerifyView: View {
         .font(.body14BrockmannMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+
 
     private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {

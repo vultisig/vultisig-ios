@@ -103,6 +103,9 @@
 "scanQrCode" = "Escanear Código QR";
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor espera...";
+"loading" = "Cargando...";
+"fetchingQuote" = "Obteniendo cotización...";
+"processing" = "Procesando...";
 "joinKeygen" = "UNIRSE A LA GENERACIÓN/RECOMPARTICIÓN DE CLAVE";
 "failToStartKesign" = "Error de firma. Por favor, inténtalo de nuevo.";
 "failToStartKeygen" = "No se pudo iniciar la generación de clave debido a información faltante";

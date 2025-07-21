@@ -102,6 +102,9 @@
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
+"loading" = "Loading...";
+"fetchingQuote" = "Fetching quote...";
+"processing" = "Processing...";
 "joinKeygen" = "JOIN KEYGEN";
 "failToStartKesign" = "Signing Error. Please try again.";
 "failToStartKeygen" = "Unable to start key generation due to missing information";

@@ -102,7 +102,10 @@
 "pairWithOtherDevices" = "Accoppia con altri dispositivi:";
 "scanQrCode" = "Scansiona Codice QR";
 "mainDevice" = "Dispositivo Principale";
-"pleaseWait" = "Per favore, aspetta...";
+"pleaseWait" = "Per favore attendi...";
+"loading" = "Caricamento...";
+"fetchingQuote" = "Recupero quotazione...";
+"processing" = "Elaborazione...";
 "joinKeygen" = "UNISCITI ALLA GENERAZIONE/CONDIVISIONE CHIAVE";
 "failToStartKesign" = "Errore di firma. Per favore riprova.";
 "failToStartKeygen" = "Impossibile avviare la generazione della chiave a causa della mancanza di informazioni";
