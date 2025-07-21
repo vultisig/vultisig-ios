@@ -23,6 +23,10 @@ class SecurityScanViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     
+    var showBanner: Bool {
+        hasResponse && !isSecure
+    }
+    
     var hasResponse: Bool {
         return scanResponse != nil
     }
@@ -96,23 +100,19 @@ class SecurityScanViewModel: ObservableObject {
     }
     
     var iconName: String {
-        guard let response = scanResponse else { return "checkmark.shield" }
+        guard let response = scanResponse, !response.isSecure else { return "" }
         
-        if response.isSecure {
+        switch response.riskLevel {
+        case .none:
             return "checkmark.shield"
-        } else {
-            switch response.riskLevel {
-            case .none:
-                return "checkmark.shield"
-            case .low:
-                return "info.circle"
-            case .medium:
-                return "exclamationmark.triangle"
-            case .high:
-                return "exclamationmark.triangle.fill"
-            case .critical:
-                return "xmark.shield"
-            }
+        case .low:
+            return "info.circle"
+        case .medium:
+            return "exclamationmark.triangle"
+        case .high:
+            return "exclamationmark.triangle.fill"
+        case .critical:
+            return "xmark.shield"
         }
     }
     
@@ -155,13 +155,9 @@ class SecurityScanViewModel: ObservableObject {
         do {
             let response = try await securityService.scanTransaction(request)
             self.scanResponse = response
-            
-
-            
         } catch {
             self.errorMessage = error.localizedDescription
             self.showAlert = true
-
         }
         
         isScanning = false
@@ -235,13 +231,13 @@ class SecurityScanViewModel: ObservableObject {
             return "No scan results available"
         }
         
-        if response.isSecure {
-            return "Transaction verified by \(response.provider). No security issues detected."
-        } else {
-            let warningCount = response.warnings.count
-            let riskLevel = response.riskLevel.displayName
-            return "Security scan detected \(warningCount) warning\(warningCount == 1 ? "" : "s") with \(riskLevel) risk level."
+        guard !response.isSecure else {
+            return ""
         }
+            
+        let warningCount = response.warnings.count
+        let riskLevel = response.riskLevel.displayName
+        return "Security scan detected \(warningCount) warning\(warningCount == 1 ? "" : "s") with \(riskLevel) risk level."
     }
     
     /// Get warnings grouped by severity

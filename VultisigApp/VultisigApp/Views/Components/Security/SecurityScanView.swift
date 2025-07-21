@@ -13,7 +13,7 @@ struct SecurityScanView: View {
     
     var body: some View {
         Group {
-            if viewModel.hasResponse {
+            if viewModel.showBanner {
                 scanResultView
             } else if viewModel.isScanning {
                 scanningView
