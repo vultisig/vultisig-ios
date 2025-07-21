@@ -79,10 +79,8 @@ struct FastVaultEmailView: View {
     }
 
     var continueButton: some View {
-        Button(action: {
+        PrimaryButton(title: "next") {
             handleTap()
-        }) {
-            FilledButton(title: "next")
         }
     }
     

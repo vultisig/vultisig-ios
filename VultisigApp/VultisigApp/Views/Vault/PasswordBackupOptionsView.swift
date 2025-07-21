@@ -67,29 +67,18 @@ struct PasswordBackupOptionsView: View {
         }
     }
     
-    var withoutPasswordLabel: some View {
-        FilledButton(title: "backupWithoutPassword")
-    }
-    
     var withPasswordButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(
+            title: "usePassword",
+            type: .secondary
+        ) {
             BackupPasswordSetupView(
                 tssType: tssType,
                 vault: vault,
                 isNewVault: isNewVault,
                 showSkipPasswordButton: false
             )
-        } label: {
-            withPasswordLabel
         }
-    }
-    
-    var withPasswordLabel: some View {
-        FilledButton(
-            title: "usePassword",
-            textColor: .neutral0,
-            background: .blue400
-        )
     }
     
     private func handleSkipTap() {

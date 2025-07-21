@@ -118,13 +118,11 @@ struct VaultsView: View {
     }
     
     var folderButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "createFolder", type: .secondary) {
             CreateFolderView(
                 count: folders.count,
                 filteredVaults: viewModel.filteredVaults
             )
-        } label: {
-            OutlineButton(title: "createFolder")
         }
         .padding(.horizontal, 16)
         .scaleEffect(showVaultsList ? 1 : 0)
@@ -143,10 +141,8 @@ struct VaultsView: View {
     }
     
     var addVaultButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "addNewVault", leadingIcon: "plus") {
             CreateVaultView(selectedVault: nil, showBackButton: true)
-        } label: {
-            FilledButton(title: "addNewVault", icon: "plus")
         }
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)

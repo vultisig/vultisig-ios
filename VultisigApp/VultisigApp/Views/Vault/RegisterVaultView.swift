@@ -66,11 +66,6 @@ struct RegisterVaultView: View {
             .cornerRadius(10)
     }
     
-    var label: some View {
-        FilledButton(title: "saveVaultQR")
-            .padding(.bottom, 20)
-    }
-    
     private func setData() {
         imageName = viewModel.generateName(vault: vault)
         viewModel.render(vault: vault, displayScale: displayScale)

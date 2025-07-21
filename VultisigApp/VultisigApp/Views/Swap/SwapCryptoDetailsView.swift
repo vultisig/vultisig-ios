@@ -156,27 +156,25 @@ struct SwapCryptoDetailsView: View {
             .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
+    @ViewBuilder
     var continueButton: some View {
         let isDisabled = !swapViewModel.validateForm(tx: tx)
         
-        return Button {
-            Task {
-                swapViewModel.moveToNextView()
+        if swapViewModel.isLoadingTransaction {
+            ButtonLoader()
+                .disabled(true)
+                .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+                .padding(40)
+        } else {
+            PrimaryButton(title: "continue") {
+                Task {
+                    swapViewModel.moveToNextView()
+                }
             }
-        } label: {
-            if swapViewModel.isLoadingTransaction {
-                ButtonLoader()
-            } else {
-                FilledButton(
-                    title: "continue",
-                    textColor: isDisabled ? .textDisabled : .blue600,
-                    background: isDisabled ? .buttonDisabled : .turquoise600
-                )
-            }
+            .disabled(isDisabled)
+            .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+            .padding(40)
         }
-        .disabled(isDisabled || swapViewModel.isLoadingTransaction)
-        .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-        .padding(40)
     }
     
     var loader: some View {

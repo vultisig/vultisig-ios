@@ -72,15 +72,12 @@ extension AddressBookView {
     }
     
     var addAddressButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "addAddress") {
             AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
-        } label: {
-            FilledButton(title: "addAddress")
-                .padding(.horizontal, 16)
-                .padding(.vertical, 30)
-                .padding(.horizontal, 24)
         }
-        .background(Color.backgroundBlue)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 30)
+        .padding(.horizontal, 24)
     }
 }
 #endif

@@ -80,10 +80,8 @@ struct PeerDiscoveryInfoBanner: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "gotIt") {
             isPresented = false
-        } label: {
-            FilledButton(title: "gotIt")
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 32)

@@ -112,17 +112,12 @@ extension PeerDiscoveryView {
         .padding(idiom == .phone ? 0 : 8)
     }
     
+    @ViewBuilder
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
         
-        return Button(action: {
+        PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
-        }) {
-            FilledButton(
-                title: isButtonDisabled ? "waitingOnDevices..." : "next",
-                textColor: isButtonDisabled ? .textDisabled : .blue600,
-                background: isButtonDisabled ? .buttonDisabled : .turquoise600
-            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)

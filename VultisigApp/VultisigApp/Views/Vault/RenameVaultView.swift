@@ -51,10 +51,8 @@ struct RenameVaultView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "save") {
             rename()
-        } label: {
-            FilledButton(title: "save")
         }
         .padding(40)
     }
