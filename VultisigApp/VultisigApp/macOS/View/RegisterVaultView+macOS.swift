@@ -40,12 +40,10 @@ extension RegisterVaultView {
     var deleteButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
-                Button {
+                PrimaryButton(title: "saveVaultQR") {
                     isExporting = true
-                } label: {
-                    label
-                        .padding(.bottom, 24)
                 }
+                .padding(.bottom, 24)
                 .fileExporter(
                     isPresented: $isExporting,
                     document: ImageFileDocument(image: renderedImage),

@@ -187,20 +187,14 @@ struct FolderDetailView: View {
     }
     
     var saveButton: some View {
-        Button {
+        PrimaryButton(title: "saveChanges") {
             saveFolder()
-        } label: {
-            label
         }
-    }
-    
-    var label: some View {
-        FilledButton(title: "saveChanges")
-            .padding(16)
-            .edgesIgnoringSafeArea(.bottom)
-            .frame(maxHeight: isEditingFolders ? nil : 0)
-            .clipped()
-            .background(Color.backgroundBlue)
+        .padding(16)
+        .edgesIgnoringSafeArea(.bottom)
+        .frame(maxHeight: isEditingFolders ? nil : 0)
+        .clipped()
+        .background(Color.backgroundBlue)
     }
     
     var editIcon: some View {

@@ -26,7 +26,7 @@ struct VaultSetupCard: View {
         VStack {
             Spacer()
             
-            FilledButton(title: buttonTitle)
+            PrimaryButton(title: buttonTitle) {}
                 .padding(24)
         }
     }

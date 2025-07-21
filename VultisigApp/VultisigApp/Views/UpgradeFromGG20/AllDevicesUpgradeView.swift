@@ -41,17 +41,11 @@ struct AllDevicesUpgradeView: View {
     }
     
     var button: some View {
-        NavigationLink(destination: {
+        PrimaryNavigationButton(title: "next") {
             VaultShareBackupsView(vault: vault)
-        }, label: {
-            label
-        })
+        }
+        .frame(width: 100)
         .padding(.vertical, 36)
-    }
-    
-    var label: some View {
-        FilledButton(title: "next")
-            .frame(width: 100)
     }
     
     private func setData() {

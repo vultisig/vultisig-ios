@@ -79,10 +79,8 @@ struct NewWalletNameView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "next") {
             verifyVault()
-        } label: {
-            FilledButton(title: "next")
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 24)

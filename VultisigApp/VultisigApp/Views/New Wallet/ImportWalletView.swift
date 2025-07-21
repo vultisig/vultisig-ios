@@ -79,18 +79,11 @@ struct ImportWalletView: View {
     }
     
     var continueButton: some View {
-        Button {
+        PrimaryButton(title: "continue") {
             handleButtonTap()
-        } label: {
-            FilledButton(
-                title: "continue",
-                textColor: isButtonEnabled ? .backgroundBlue : .disabledText,
-                background: isButtonEnabled ? .turquoise600 : .disabledButtonBackground)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
         .disabled(!backupViewModel.isFileUploaded)
     }
     

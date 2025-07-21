@@ -63,28 +63,24 @@ struct ReshareView: View {
     }
     
     var startReshareButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "startReshare") {
             PeerDiscoveryView(
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
                 fastSignConfig: nil
             )
-        } label: {
-            FilledButton(title: "startReshare")
         }
     }
     
     var startReshareVultisignerButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "startFastVaultReshare", type: .secondary) {
             FastVaultEmailView(
                 tssType: .Reshare,
                 vault: vault,
                 selectedTab: .secure,
                 fastVaultExist: viewModel.isFastVault
             )
-        } label: {
-            OutlineButton(title: "startFastVaultReshare")
         }
     }
 }

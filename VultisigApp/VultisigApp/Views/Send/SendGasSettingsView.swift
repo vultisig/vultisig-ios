@@ -126,25 +126,9 @@ struct SendGasSettingsView: View {
     }
 
     func modeTab(mode: FeeMode) -> some View {
-        Button {
+        PrimaryButton(title: mode.title, type: viewModel.selectedMode == mode ? .primary : .secondary) {
             viewModel.selectedMode = mode
-        } label: {
-            ZStack {
-                if viewModel.selectedMode == mode {
-                    Text(mode.title)
-                        .font(.body16MontserratBold)
-                        .foregroundColor(.blue800)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(LinearGradient.primaryGradientHorizontal)
-                        .cornerRadius(30)
-                } else {
-                    OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
-                        .contentShape(Rectangle())
-                }
-            }
         }
-        .buttonStyle(.plain)
     }
 
     var backButton: some View {

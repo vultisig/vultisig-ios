@@ -37,12 +37,10 @@ struct CreateFolderView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "create") {
             createFolder()
-        } label: {
-            FilledButton(title: "create")
-                .padding(16)
         }
+        .padding(16)
     }
     
     var folderName: some View {

@@ -40,12 +40,10 @@ struct VaultDetailQRCodeView: View {
     var saveButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
-                Button {
+                PrimaryButton(title: "save", type: .secondary) {
                     isExporting = true
-                } label: {
-                    OutlineButton(title: "save")
-                    .padding(.bottom, 22)
                 }
+                .padding(.bottom, 22)
                 .fileExporter(
                     isPresented: $isExporting,
                     document: ImageFileDocument(image: renderedImage),
@@ -70,12 +68,10 @@ struct VaultDetailQRCodeView: View {
                     item: renderedImage,
                     preview: SharePreview(imageName, image: renderedImage)
                 ) {
-                    FilledButton(
-                        title: "share",
-                        icon: "square.and.arrow.up"
-                    )
+                    PrimaryButtonView(title: "share", leadingIcon: "square.and.arrow.up")
                     .padding(.bottom, 22)
                 }
+                .buttonStyle(PrimaryButtonStyle())
             } else {
                 ProgressView()
             }

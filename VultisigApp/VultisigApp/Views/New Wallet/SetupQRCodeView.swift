@@ -41,7 +41,7 @@ struct SetupQRCodeView: View {
     }
     
     var startButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "next") {
             if tssType == .Keygen {
                 NewWalletNameView(
                     tssType: tssType,
@@ -64,8 +64,6 @@ struct SetupQRCodeView: View {
                     )
                 }
             }
-        } label: {
-            FilledButton(title: "next")
         }
     }
 }

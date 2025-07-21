@@ -51,10 +51,8 @@ struct WelcomeView: View {
     }
     
     var tryAgainButton: some View {
-        Button {
+        PrimaryButton(title: viewModel.authenticationType.rawValue) {
             viewModel.authenticateUser()
-        } label: {
-            FilledButton(title: viewModel.authenticationType.rawValue)
         }
     }
     

@@ -23,18 +23,11 @@ struct ReferredOnboardingView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "getStarted") {
             referredViewModel.showReferralDashboard()
-        } label: {
-            label
         }
         .padding(.horizontal, 24)
-    }
-    
-    var label: some View {
-        FilledButton(title: "getStarted")
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+        .padding(.bottom, 24)
     }
     
     var main: some View {

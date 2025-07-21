@@ -145,19 +145,14 @@ struct SwapCryptoDetailsView: View {
         SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
     }
     
+    @ViewBuilder
     var continueButton: some View {
         let isDisabled = !swapViewModel.validateForm(tx: tx)
         
-        return Button {
+        PrimaryButton(title: "continue") {
             Task {
                 swapViewModel.moveToNextView()
             }
-        } label: {
-            FilledButton(
-                title: "continue",
-                textColor: isDisabled ? .textDisabled : .blue600,
-                background: isDisabled ? .buttonDisabled : .turquoise600
-            )
         }
         .disabled(isDisabled)
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)

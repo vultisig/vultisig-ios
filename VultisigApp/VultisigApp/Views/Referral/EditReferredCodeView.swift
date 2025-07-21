@@ -64,10 +64,8 @@ struct EditReferredCodeView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "saveReferredCode") {
             referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
-        } label: {
-            FilledButton(title: "saveReferredCode", textColor: .neutral0, background: .persianBlue400)
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
