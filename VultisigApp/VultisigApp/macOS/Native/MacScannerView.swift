@@ -133,7 +133,7 @@ struct MacScannerView: View {
     }
     
     var uploadQRCodeButton: some View {
-        VultiNavigationButton(title: "uploadQRCodeImage") {
+        PrimaryNavigationButton(title: "uploadQRCodeImage") {
             GeneralQRImportMacView(type: type, sendTx: sendTx, selectedVault: selectedVault)
         }
     }

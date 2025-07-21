@@ -34,7 +34,7 @@ extension ReshareView {
     }
 
     var joinReshareButton: some View {
-        VultiNavigationButton(title: "joinReshare", type: .secondary) {
+        PrimaryNavigationButton(title: "joinReshare", type: .secondary) {
             MacScannerView(vault: vault, type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
         }
     }

@@ -72,7 +72,7 @@ extension AddressBookView {
     }
     
     var addAddressButton: some View {
-        VultiNavigationButton(title: "addAddress") {
+        PrimaryNavigationButton(title: "addAddress") {
             AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         }
         .padding(.horizontal, 16)

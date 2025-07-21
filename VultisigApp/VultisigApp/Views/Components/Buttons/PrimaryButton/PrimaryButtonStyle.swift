@@ -29,6 +29,7 @@ struct PrimaryButtonStyle: ButtonStyle {
                             lineWidth: borderWidth(for: type))
             )
             .cornerRadius(cornerRadius(for: size))
+            .contentShape(RoundedRectangle(cornerRadius: cornerRadius(for: size)))
     }
 }
 

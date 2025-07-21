@@ -30,7 +30,7 @@ extension SecureBackupVaultOverview {
     }
     
     var prevButton: some View {
-        VultiIconButton(icon: "chevron.left") {
+        IconButton(icon: "chevron.left") {
             prevTapped()
         }
         .frame(width: 80)

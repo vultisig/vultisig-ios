@@ -36,7 +36,9 @@ struct PrimaryButton: View {
     
     var body: some View {
         Button {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #if os(iOS)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            #endif
             action()
         } label: {
             PrimaryButtonView(

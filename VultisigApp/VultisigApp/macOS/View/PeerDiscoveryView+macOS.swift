@@ -107,6 +107,7 @@ extension PeerDiscoveryView {
         }
     }
     
+    @ViewBuilder
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
         
