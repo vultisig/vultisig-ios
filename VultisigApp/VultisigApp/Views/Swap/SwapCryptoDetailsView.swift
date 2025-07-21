@@ -87,8 +87,7 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel,
-            isLoading: false
+            swapViewModel: swapViewModel
         )
     }
     
@@ -103,8 +102,7 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel,
-            isLoading: swapViewModel.isLoadingQuotes && tx.toAmountDecimal == .zero
+            swapViewModel: swapViewModel
         )
     }
     
@@ -124,17 +122,28 @@ struct SwapCryptoDetailsView: View {
     }
     
     var swapLabel: some View {
-        Image(systemName: "arrow.up.arrow.down")
-            .font(.body16MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(width: 38, height: 38)
-            .background(Color.persianBlue400)
-            .cornerRadius(50)
-            .padding(2)
-            .background(Color.black.opacity(0.2))
-            .cornerRadius(50)
-            .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-            .animation(.spring, value: buttonRotated)
+        Group {
+            if swapViewModel.isLoadingQuotes {
+                // Show loader instead of swap icon when loading
+                ProgressView()
+                    .scaleEffect(0.8)
+                    .preferredColorScheme(.dark)
+                    .frame(width: 38, height: 38)
+            } else {
+                // Show swap icon when not loading
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.body16MontserratMedium)
+                    .foregroundColor(.neutral0)
+                    .frame(width: 38, height: 38)
+            }
+        }
+        .background(Color.persianBlue400)
+        .cornerRadius(50)
+        .padding(2)
+        .background(Color.black.opacity(0.2))
+        .cornerRadius(50)
+        .rotationEffect(.degrees(buttonRotated ? 180 : 0))
+        .animation(.spring, value: buttonRotated)
     }
     
     var filler: some View {
@@ -146,15 +155,6 @@ struct SwapCryptoDetailsView: View {
     var summary: some View {
         VStack {
             SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
-            
-            // Show inline loader when refreshing data
-            if swapViewModel.isLoadingQuotes && tx.toAmountDecimal != .zero {
-                HStack {
-                    InlineLoader()
-                    Spacer()
-                }
-                .padding(.top, 8)
-            }
         }
     }
     
