@@ -170,18 +170,12 @@ struct CreateReferralDetailsView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "createReferralCode") {
             Task {
                 await referralViewModel.verifyReferralEntries(tx: sendTx, functionCallViewModel: functionCallViewModel)
             }
-        } label: {
-            label
         }
         .padding(24)
-    }
-    
-    var label: some View {
-        FilledButton(title: "createReferralCode", textColor: .neutral0, background: .persianBlue400)
     }
     
     var alert: Alert {

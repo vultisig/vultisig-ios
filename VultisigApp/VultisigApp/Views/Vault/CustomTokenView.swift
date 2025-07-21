@@ -45,12 +45,10 @@ struct CustomTokenView: View {
                     showAddressBookIcon: false
                 )
                 
-                Button(action: {
+                IconButton(icon: "magnifyingglass", size: .mini) {
                     Task {
                         await fetchTokenInfo()
                     }
-                }) {
-                    CircularFilledButton(icon: "magnifyingglass")
                 }
             }
             
@@ -66,13 +64,10 @@ struct CustomTokenView: View {
                 .background(Color.blue600)
                 .cornerRadius(10)
                 
-                Button(action: {
+                PrimaryButton(title: "Add \(tokenSymbol) token") {
                     saveAssets()
-                }) {
-                    FilledButton(title: "Add \(tokenSymbol) token")
                 }
             }
-            
         }
     }
     
@@ -85,10 +80,8 @@ struct CustomTokenView: View {
                 .padding(.horizontal, 16)
             
             if !(error is RateLimitError) {
-                Button {
+                PrimaryButton(title: "Retry") {
                     Task { await fetchTokenInfo() }
-                } label: {
-                    FilledButton(title: "Retry")
                 }
                 .padding(.horizontal, 40)
             }

@@ -37,18 +37,14 @@ extension CreateVaultView {
     }
     
     var scanPhoneButton: some View {
-        Button(action: {
+        PrimaryButton(title: "scanQRStartScreen", type: .secondary) {
             showSheet = true
-        }) {
-            scanQRButton
         }
     }
     
     var scanMacButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "scanQRStartScreen", type: .secondary) {
             GeneralQRImportMacView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
-        } label: {
-            scanQRButton
         }
     }
 }

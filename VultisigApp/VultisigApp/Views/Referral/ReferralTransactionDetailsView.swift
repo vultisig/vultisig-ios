@@ -170,15 +170,9 @@ struct ReferralTransactionDetailsView: View {
     }
     
     var button: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "done") {
             HomeView()
-        } label: {
-            label
         }
-    }
-    
-    var label: some View {
-        FilledButton(title: "done")
     }
 }
 

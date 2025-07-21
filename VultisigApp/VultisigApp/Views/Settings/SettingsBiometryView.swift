@@ -98,14 +98,12 @@ struct SettingsBiometryView: View {
     }
 
     var button: some View {
-        return Button {
+        PrimaryButton(title: "save") {
             Task {
                 if await viewModel.validateForm(vault: vault) {
                     dismiss()
                 }
             }
-        } label: {
-            FilledButton(title: "save")
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 12)

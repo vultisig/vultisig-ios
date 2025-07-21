@@ -24,10 +24,8 @@ struct KeysignSameDeviceShareErrorView: View {
     }
     
     var tryAgainButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "goToHomeView") {
             HomeView(showVaultsList: true)
-        } label: {
-            FilledButton(title: "goToHomeView")
         }
         .padding(40)
     }

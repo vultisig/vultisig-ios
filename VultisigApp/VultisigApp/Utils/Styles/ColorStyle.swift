@@ -14,6 +14,7 @@ extension Color {
     static let body = Color(hex: "BBC1C7")
     static let neutral0 = Color(hex: "FFFFFF")
     static let neutral100 = Color(hex: "F3F4F5")
+    static let neutral50 = Color(hex: "F0F4FC")
     static let neutral200 = Color(hex: "EBECED")
     static let neutral300 = Color(hex: "BDBDBD")
     static let neutral400 = Color(hex: "A7A7A7")
@@ -21,8 +22,10 @@ extension Color {
     static let neutral700 = Color(hex: "737373")
     static let neutral900 = Color(hex: "000000")
     
+    static let blue100 = Color(hex: "1E6AD1")
     static let blue200 = Color(hex: "1B3F73")
     static let blue400 = Color(hex: "11284A")
+    static let blue500 = Color(hex: "0E2A41")
     static let blue600 = Color(hex: "061B3A")
     static let blue800 = Color(hex: "02122B")
     
@@ -31,6 +34,7 @@ extension Color {
     
     static let turquoise400 = Color(hex: "81F8DE")
     static let turquoise600 = Color(hex: "33E6BF")
+    static let turquoise800 = Color(hex: "0FBF93")
     
     static let mediumPurple = Color(hex: "9563FF")
     

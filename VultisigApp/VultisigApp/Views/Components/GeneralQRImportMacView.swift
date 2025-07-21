@@ -89,13 +89,10 @@ struct GeneralQRImportMacView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "continue") {
             handleTap()
-        } label: {
-            FilledButton(title: "continue")
-                .disabled(!isButtonEnabled)
-                .grayscale(isButtonEnabled ? 0 : 1)
         }
+        .disabled(!isButtonEnabled)
     }
     
     var alert: Alert {
