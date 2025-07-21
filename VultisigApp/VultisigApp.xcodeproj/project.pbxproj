@@ -857,6 +857,8 @@
 		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1905262BD8CC4D0043577E /* KeysignVerify.swift */; };
+		DE214FF22E2E131200CEEA71 /* SendCryptoAddressBookView+macos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */; };
+		DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */; };
 		DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */; };
 		DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE3D44AC2BD2445100BD64CD /* CryptoSwift */; };
 		DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */; };
@@ -1818,6 +1820,8 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
+		DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+macos.swift"; sourceTree = "<group>"; };
+		DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
@@ -3606,6 +3610,8 @@
 				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
 				A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */,
 				A646DFB62E179B6F006E8ECC /* SendCryptoAddressBookView.swift */,
+				DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */,
+				DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */,
 				A64A81AC2E1E2755002D0CDD /* SendCryptoSecondaryDoneView.swift */,
 			);
 			path = Send;
@@ -4700,6 +4706,7 @@
 				B590DF862C2E70B800ED934E /* FunctionCallVote.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6ACAD652D110B6000432CC4 /* SettingToggleCell.swift in Sources */,
+				DE214FF22E2E131200CEEA71 /* SendCryptoAddressBookView+macos.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
@@ -4829,6 +4836,7 @@
 				DEBE4AB72DCDDC8D002C5B92 /* ChainDetailActionButtons+macOS.swift in Sources */,
 				A6505ADE2CA66F750002FBF4 /* ViewExtension+iOS.swift in Sources */,
 				A6E0C94B2DF4992B00A01543 /* ReferralView.swift in Sources */,
+				DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */,
 				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A6E0C91B2DE6BC8500A01543 /* ReferralOnboardingBanner.swift in Sources */,
