@@ -16,9 +16,9 @@ import UniformTypeIdentifiers
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURLWithPassowrd: URL? = nil
-    @Published var encryptedFileURLWithoutPassowrd: URL? = nil
-    @Published var decryptedContent: String? = nil
+    @Published var encryptedFileURLWithPassowrd: URL?
+    @Published var encryptedFileURLWithoutPassword: URL?
+    @Published var decryptedContent: String?
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
@@ -27,8 +27,8 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
     @Published var isFileUploaded = false
-    @Published var importedFileName: String? = nil
-    @Published var selectedVault: Vault? = nil
+    @Published var importedFileName: String?
+    @Published var selectedVault: Vault?
     
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     
@@ -42,7 +42,7 @@ class EncryptedBackupViewModel: ObservableObject {
         isFileUploaded = false
         importedFileName = nil
         encryptedFileURLWithPassowrd = nil
-        encryptedFileURLWithoutPassowrd = nil
+        encryptedFileURLWithoutPassword = nil
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
@@ -73,7 +73,7 @@ class EncryptedBackupViewModel: ObservableObject {
             do {
                 try dataToSave.write(to: tempURL)
                 encryptedFileURLWithPassowrd = tempURL
-                encryptedFileURLWithoutPassowrd = tempURL
+                encryptedFileURLWithoutPassword = tempURL
                 print(tempURL.absoluteString)
             } catch {
                 print("Error writing file: \(error.localizedDescription)")

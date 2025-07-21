@@ -37,38 +37,36 @@ extension BackupPasswordSetupView {
         }
     }
     
+    @ViewBuilder
     var saveButton: some View {
-        PrimaryButton(title: "save") {
-            handleProxyTap()
-        }
-        .sheet(isPresented: $showSaveShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
+        if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+            Button(action: {
+                handleProxyTap()
+            }) {
+                FilledButton(title: "save")
+            }
+            .shareSheet(isPresented: $showSaveShareSheet, activityItems: [fileURL]) { didSave in
+                if didSave {
+                    fileSaved()
+                    dismissView()
                 }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
             }
         }
     }
     
+    @ViewBuilder
     var skipButton: some View {
-        PrimaryButton(title: "skipPassword", type: .secondary) {
-            showSkipShareSheet = true
-        }
-        .sheet(isPresented: $showSkipShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
+        if let fileURL = backupViewModel.encryptedFileURLWithoutPassword {
+            Button(action: {
+                showSkipShareSheet = true
+            }) {
+                OutlineButton(title: "skipPassword")
+            }
+            .shareSheet(isPresented: $showSkipShareSheet, activityItems: [fileURL]) { didSave in
+                if didSave {
+                    fileSaved()
+                    dismissView()
                 }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
             }
         }
     }

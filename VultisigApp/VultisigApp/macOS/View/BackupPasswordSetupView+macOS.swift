@@ -72,7 +72,7 @@ extension BackupPasswordSetupView {
         }
         .fileExporter(
             isPresented: $showSkipShareSheet,
-            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithoutPassowrd),
+            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithoutPassword),
             contentType: .data,
             defaultFilename: "\(vault.getExportName())"
         ) { result in
