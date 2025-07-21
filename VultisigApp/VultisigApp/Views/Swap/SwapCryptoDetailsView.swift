@@ -104,7 +104,6 @@ struct SwapCryptoDetailsView: View {
             tx: tx,
             swapViewModel: swapViewModel
         )
-        .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
     var swapButton: some View {
