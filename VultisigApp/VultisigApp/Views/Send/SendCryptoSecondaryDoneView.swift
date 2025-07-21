@@ -71,7 +71,7 @@ struct SendCryptoSecondaryDoneView: View {
                 getCell(
                     title: "network",
                     description: chainName,
-                    icon: sendTransaction?.coin.logo
+                    icon: sendTransaction?.coin.chain.logo
                 )
             }
             
