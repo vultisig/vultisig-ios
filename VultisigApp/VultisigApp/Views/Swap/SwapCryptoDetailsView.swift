@@ -52,6 +52,7 @@ struct SwapCryptoDetailsView: View {
     var content: some View {
         VStack {
             fields
+            summary // ensure summary is included here
             continueButton
         }
     }
@@ -104,6 +105,7 @@ struct SwapCryptoDetailsView: View {
             tx: tx,
             swapViewModel: swapViewModel
         )
+        .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
     var swapButton: some View {
@@ -153,6 +155,7 @@ struct SwapCryptoDetailsView: View {
     
     var summary: some View {
         SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
+            .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
     var continueButton: some View {
