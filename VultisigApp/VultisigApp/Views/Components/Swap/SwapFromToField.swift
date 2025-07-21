@@ -110,15 +110,13 @@ struct SwapFromToField: View {
     }
     
     var fromToAmountField: some View {
-        Group {
-            SwapCryptoAmountTextField(amount: $amount) { _ in
-                if title=="from" {
-                    swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                    swapViewModel.showAllPercentageButtons = true
-                }
+        SwapCryptoAmountTextField(amount: $amount) { _ in
+            if title=="from" {
+                swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                swapViewModel.showAllPercentageButtons = true
             }
-            .disabled(title=="to")
         }
+        .disabled(title=="to")
     }
     
     var fiatBalance: some View {

@@ -545,6 +545,7 @@
 "keysignDiscoveryDisclaimer" = "Skenirajte QR kod kako biste potpisali transakciju.";
 "keysignDiscoveryDisclaimerDevice" = "-potrebno skeniranje uređaja.";
 "startUsingVault" = "Koristi trezor";
+"loadingDetails" = "Učitavanje detalja";
 "backupPart1" = "Rezervna Kopija 1";
 "backupPart2" = "Rezervna Kopija 2";
 "vultiserverPassword" = "Vultiserver lozinka";

@@ -266,8 +266,6 @@ struct SwapVerifyView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-
-
     private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {
             Text(

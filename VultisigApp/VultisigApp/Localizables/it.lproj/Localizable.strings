@@ -545,6 +545,7 @@
 "keysignDiscoveryDisclaimer" = "Scansiona il codice QR per firmare la transazione.";
 "keysignDiscoveryDisclaimerDevice" = "-scansione del dispositivo richiesta.";
 "startUsingVault" = "Usa il Vault";
+"loadingDetails" = "Caricamento dettagli";
 "backupPart1" = "Copia di Backup 1";
 "backupPart2" = "Copia di Backup 2";
 "vultiserverPassword" = "Password Vultiserver";

@@ -545,6 +545,7 @@
 "keysignDiscoveryDisclaimer" = "Escanea el código QR para firmar la transacción.";
 "keysignDiscoveryDisclaimerDevice" = "-se requiere escanear el dispositivo.";
 "startUsingVault" = "Usar Bóveda";
+"loadingDetails" = "Cargando detalles";
 "backupPart1" = "Copia de Seguridad 1";
 "backupPart2" = "Copia de Seguridad 2";
 "vultiserverPassword" = "Contraseña de Vultiserver";

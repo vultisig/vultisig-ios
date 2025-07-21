@@ -152,9 +152,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var summary: some View {
-        VStack {
-            SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
-        }
+        SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
     }
     
     var continueButton: some View {
