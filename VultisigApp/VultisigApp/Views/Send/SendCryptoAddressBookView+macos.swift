@@ -9,21 +9,17 @@
 import SwiftUI
 extension SendCryptoAddressBookView {
     var content: some View {
-        ZStack {
-            Background()
-                .frame(width: 500)
-            
-            VStack(spacing: 12) {
-                headerMac
-                listSelector
-                list
-            }.padding(16)
-        }
+        VStack(spacing: 12) {
+            headerMac
+            listSelector
+            list
+        }.padding(16)
+            .frame(width: 500)
     }
     var headerMac: some View {
         GeneralMacHeader(title: "addressBook")
     }
-
+    
 }
 
 #endif
