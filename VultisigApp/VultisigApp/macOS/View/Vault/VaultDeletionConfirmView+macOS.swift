@@ -71,7 +71,7 @@ extension VaultDeletionConfirmView {
     }
     
     var deleteButton: some View {
-        VultiButton(title: "deleteVaultTitle") {
+        PrimaryButton(title: "deleteVaultTitle") {
             delete()
         }
         .padding(.top, 25)

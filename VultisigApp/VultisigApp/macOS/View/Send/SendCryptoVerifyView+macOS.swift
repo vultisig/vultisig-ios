@@ -21,7 +21,7 @@ extension SendCryptoVerifyView {
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
                 
-                VultiButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 }
                 .onLongPressGesture {
@@ -35,7 +35,7 @@ extension SendCryptoVerifyView {
                     )
                 }
             } else {
-                VultiButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     signPressed()
                 }
             }

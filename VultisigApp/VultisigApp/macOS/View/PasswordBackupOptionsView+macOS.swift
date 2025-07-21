@@ -30,7 +30,7 @@ extension PasswordBackupOptionsView {
     }
     
     var withoutPasswordButton: some View {
-        VultiButton(title: "backupWithoutPassword") {
+        PrimaryButton(title: "backupWithoutPassword") {
             showSkipShareSheet = true
         }
         .fileExporter(

@@ -110,7 +110,7 @@ extension PeerDiscoveryView {
     var bottomButton: some View {
         let isButtonDisabled = disableContinueButton()
         
-        VultiButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
+        PrimaryButton(title: isButtonDisabled ? "waitingOnDevices..." : "next") {
             viewModel.startKeygen()
         }
         .padding(.horizontal, 40)

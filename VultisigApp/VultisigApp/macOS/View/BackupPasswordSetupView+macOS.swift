@@ -44,7 +44,7 @@ extension BackupPasswordSetupView {
     }
     
     var saveButton: some View {
-        VultiButton(title: "save"){
+        PrimaryButton(title: "save") {
             handleProxyTap()
         }
         .fileExporter(
@@ -67,7 +67,7 @@ extension BackupPasswordSetupView {
     }
     
     var skipButton: some View {
-        VultiButton(title: "skipPassword", type: .secondary) {
+        PrimaryButton(title: "skipPassword", type: .secondary) {
             showSkipShareSheet = true
         }
         .fileExporter(

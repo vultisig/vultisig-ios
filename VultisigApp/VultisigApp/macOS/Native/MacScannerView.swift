@@ -139,7 +139,7 @@ struct MacScannerView: View {
     }
     
     var tryAgainButton: some View {
-        VultiButton(title: "tryAgain", type: .secondary) {
+        PrimaryButton(title: "tryAgain", type: .secondary) {
             cameraViewModel.setupSession()
         }
     }

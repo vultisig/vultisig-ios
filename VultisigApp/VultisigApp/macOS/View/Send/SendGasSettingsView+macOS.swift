@@ -65,7 +65,7 @@ extension SendGasSettingsView {
     }
     
     var continueButton: some View {
-        VultiButton(title: "save") {
+        PrimaryButton(title: "save") {
             save()
             presentationMode.wrappedValue.dismiss()
         }

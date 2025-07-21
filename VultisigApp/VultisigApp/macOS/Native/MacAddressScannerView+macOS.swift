@@ -114,13 +114,13 @@ struct MacAddressScannerView: View {
     }
     
     var uploadQRCodeButton: some View {
-        VultiButton(title: "uploadQRCodeImage") {
+        PrimaryButton(title: "uploadQRCodeImage") {
             showImportOptions = true
         }
     }
     
     var tryAgainButton: some View {
-        VultiButton(title: "tryAgain", type: .secondary) {
+        PrimaryButton(title: "tryAgain", type: .secondary) {
             scannerViewModel.setupSession()
         }
     }
