@@ -207,14 +207,9 @@ struct SwapCryptoDetailsView: View {
 extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
         swapViewModel.showAllPercentageButtons = false
-        // Use coin's decimals for proper precision
-        // For EVM chains, cap at 9 decimals to avoid impractical precision
-        let decimalsToUse: Int
-        if tx.fromCoin.chainType == .EVM {
-            decimalsToUse = min(9, max(4, tx.fromCoin.decimals))
-        } else {
-            decimalsToUse = max(4, tx.fromCoin.decimals)
-        }
+        // We use 4 decimals to avoid impractical precision
+        // Also LIFI and other providers use 4 decimals top
+        let decimalsToUse: Int = 4
         
         switch percentage {
         case 25:
