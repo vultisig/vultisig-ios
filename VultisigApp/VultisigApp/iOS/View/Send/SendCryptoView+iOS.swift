@@ -29,6 +29,7 @@ extension SendCryptoView {
                     }
                 }
             }
+            .toolbarBackground(Color.backgroundBlue)
     }
     
     var main: some View {

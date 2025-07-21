@@ -30,7 +30,7 @@ struct SendDetailsAmountTab: View {
     var content: some View {
         VStack(spacing: 16) {
             titleSection
-            
+                
             if isExpanded {
                 separator
                 amountFieldSection
@@ -50,6 +50,7 @@ struct SendDetailsAmountTab: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
+        
     }
     
     var titleSection: some View {
@@ -66,7 +67,7 @@ struct SendDetailsAmountTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Amount
+            viewModel.selectedTab = .amount
         }
     }
     

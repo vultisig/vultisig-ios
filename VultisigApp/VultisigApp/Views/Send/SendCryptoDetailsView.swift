@@ -88,34 +88,48 @@ struct SendCryptoDetailsView: View {
     }
     
     var tabs: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                SendDetailsAssetTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Asset,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel
-                )
-                
-                SendDetailsAddressTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Address,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    focusedField: $focusedField
-                )
-                
-                SendDetailsAmountTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Amount,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    validateForm: validateForm,
-                    focusedField: $focusedField,
-                    settingsPresented: $settingsPresented
-                )
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 12) {
+                    SendDetailsAssetTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .asset,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel
+                    )
+                    .id(SendDetailsFocusedTab.asset.rawValue)
+                    
+                    SendDetailsAddressTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .address,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        focusedField: $focusedField
+                    )
+                    .id(SendDetailsFocusedTab.address.rawValue)
+                    
+                    SendDetailsAmountTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .amount,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        validateForm: validateForm,
+                        focusedField: $focusedField,
+                        settingsPresented: $settingsPresented
+                    )
+                    .id(SendDetailsFocusedTab.amount.rawValue)
+                }
+                .padding(16)
             }
-            .padding(16)
+            .onChange(of: sendDetailsViewModel.selectedTab) { _, newValue in
+                proxy.scrollTo(SendDetailsFocusedTab.asset.rawValue, anchor: .bottom)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.easeInOut) {
+                        proxy.scrollTo(newValue.rawValue, anchor: .top)
+                    }
+                }
+            }
+        
         }
     }
     
@@ -150,7 +164,7 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        sendDetailsViewModel.selectedTab = .Amount
+        sendDetailsViewModel.selectedTab = .amount
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         
         if await sendCryptoViewModel.validateForm(tx: tx) {

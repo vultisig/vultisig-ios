@@ -60,7 +60,7 @@ struct SendDetailsAddressFields: View {
                 .focused($focusedField, equals: .toAddress)
                 .id(Field.toAddress)
                 .onSubmit {
-                    viewModel.selectedTab = .Amount
+                    viewModel.selectedTab = .amount
                 }
         }
     }

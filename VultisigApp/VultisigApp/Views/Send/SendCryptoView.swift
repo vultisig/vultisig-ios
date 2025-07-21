@@ -39,7 +39,7 @@ struct SendCryptoView: View {
                 loader
             }
         }
-        .ignoresSafeArea(.keyboard)
+//        .ignoresSafeArea(.keyboard)
         .onFirstAppear {
             Task {
                 await setData()

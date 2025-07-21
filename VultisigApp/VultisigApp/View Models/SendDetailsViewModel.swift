@@ -7,15 +7,15 @@
 
 import SwiftUI
 
-enum SendDetailsFocusedTab {
-    case Asset
-    case Address
-    case Amount
+enum SendDetailsFocusedTab: String {
+    case asset
+    case address
+    case amount
 }
 
 class SendDetailsViewModel: ObservableObject {
     @Published var selectedChain: Chain? = nil
-    @Published var selectedTab: SendDetailsFocusedTab = .Asset
+    @Published var selectedTab: SendDetailsFocusedTab = .asset
     
     @Published var assetSetupDone: Bool = false
     @Published var addressSetupDone: Bool = false

@@ -39,5 +39,5 @@ struct SendDetailsTabEditTools: View {
 }
 
 #Preview {
-    SendDetailsTabEditTools(forTab: .Asset, viewModel: SendDetailsViewModel())
+    SendDetailsTabEditTools(forTab: .asset, viewModel: SendDetailsViewModel())
 }

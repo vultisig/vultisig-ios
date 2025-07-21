@@ -94,7 +94,7 @@ struct SendDetailsAssetTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Asset
+            viewModel.selectedTab = .asset
         }
     }
     
@@ -184,7 +184,7 @@ struct SendDetailsAssetTab: View {
     }
     
     var doneEditTools: some View {
-        SendDetailsTabEditTools(forTab: .Asset, viewModel: viewModel)
+        SendDetailsTabEditTools(forTab: .asset, viewModel: viewModel)
     }
     
     private func setData() {
@@ -196,7 +196,7 @@ struct SendDetailsAssetTab: View {
             return
         }
         
-        viewModel.selectedTab = .Address
+        viewModel.selectedTab = .address
         viewModel.assetSetupDone = true
     }
 }
