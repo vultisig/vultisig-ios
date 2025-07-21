@@ -74,10 +74,8 @@ struct TokenSelectionView: View {
                 .padding(.horizontal, 16)
             
             if tokenViewModel.showRetry {
-                Button {
+                PrimaryButton(title: "Retry") {
                     tokenViewModel.loadData(groupedChain: group)
-                } label: {
-                    FilledButton(title: "Retry")
                 }
                 .padding(.horizontal, 40)
             }

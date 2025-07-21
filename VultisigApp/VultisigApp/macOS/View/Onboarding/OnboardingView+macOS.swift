@@ -34,13 +34,9 @@ extension OnboardingView {
     }
     
     var prevButton: some View {
-        Button {
+        VultiIconButton(icon: "chevron.left") {
             prevTapped()
-        } label: {
-            FilledButton(icon: "chevron.left")
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
         .frame(width: 80)
         .padding(.bottom, getBottomPadding())
     }

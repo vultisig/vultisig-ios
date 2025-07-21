@@ -36,7 +36,7 @@ extension SendGasSettingsView {
                     .colorScheme(.dark)
                     .textContentType(.oneTimeCode)
                     .disabled(disabled)
-
+                
                 if let label {
                     Text(label)
                         .foregroundColor(.neutral300)
@@ -52,24 +52,22 @@ extension SendGasSettingsView {
         )
         .padding(.horizontal, 16)
     }
-
+    
     var headerMac: some View {
         GeneralMacHeader(title: "Advanced")
     }
-
+    
     var buttons: some View {
         VStack(spacing: 20) {
             continueButton
         }
         .padding(40)
     }
-
+    
     var continueButton: some View {
-        Button(action: {
+        VultiButton(title: "save") {
             save()
             presentationMode.wrappedValue.dismiss()
-        }) {
-            FilledButton(title: "save")
         }
         .buttonStyle(.plain)
     }

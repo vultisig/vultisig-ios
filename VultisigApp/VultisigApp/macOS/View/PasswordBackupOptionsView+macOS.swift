@@ -30,10 +30,8 @@ extension PasswordBackupOptionsView {
     }
     
     var withoutPasswordButton: some View {
-        Button {
+        VultiButton(title: "backupWithoutPassword") {
             showSkipShareSheet = true
-        } label: {
-            withoutPasswordLabel
         }
         .fileExporter(
             isPresented: $showSkipShareSheet,

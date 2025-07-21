@@ -19,10 +19,8 @@ extension PasswordBackupOptionsView {
     }
     
     var withoutPasswordButton: some View {
-        Button {
+        PrimaryButton(title: "backupWithoutPassword") {
             showSkipShareSheet = true
-        } label: {
-            withoutPasswordLabel
         }
         .sheet(isPresented: $showSkipShareSheet) {
             if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {

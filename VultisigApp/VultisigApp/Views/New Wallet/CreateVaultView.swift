@@ -48,24 +48,27 @@ struct CreateVaultView: View {
         VStack(spacing: 16) {
             newVaultButton
             orSeparator
-            scanButton
-            importVaultButton
+            Group {
+                scanButton
+                importVaultButton
+            }
+            .opacity(showButtonStack ? 1 : 0)
+            .offset(y: showButtonStack ? 0 : 50)
+            .scaleEffect(showButtonStack ? 1 : 0.8)
+            .blur(radius: showButtonStack ? 0 : 10)
+            .animation(.spring(duration: 0.3), value: showButtonStack)
         }
         .padding(40)
     }
     
     var newVaultButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "createNewVault") {
             if accountViewModel.showOnboarding {
                 OnboardingView()
             } else {
                 SetupQRCodeView(tssType: .Keygen, vault: nil)
             }
-        } label: {
-            FilledButton(title: "createNewVault")
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
         .opacity(showNewVaultButton ? 1 : 0)
         .offset(y: showNewVaultButton ? 0 : 20)
         .scaleEffect(showNewVaultButton ? 1 : 0.8)
@@ -89,30 +92,10 @@ struct CreateVaultView: View {
         .animation(.spring(duration: 0.3), value: showSeparator)
     }
     
-    var scanQRButton: some View {
-        FilledButton(title: "scanQRStartScreen", textColor: .neutral0, background: Color.blue400)
-            .buttonStyle(PlainButtonStyle())
-            .background(Color.clear)
-            .opacity(showButtonStack ? 1 : 0)
-            .offset(y: showButtonStack ? 0 : 50)
-            .scaleEffect(showButtonStack ? 1 : 0.8)
-            .blur(radius: showButtonStack ? 0 : 10)
-            .animation(.spring(duration: 0.3), value: showButtonStack)
-    }
-    
     var importVaultButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "importVault", type: .secondary) {
             ImportWalletView()
-        } label: {
-            FilledButton(title: "importVault", textColor: .neutral0, background: Color.blue400)
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
-        .opacity(showButtonStack ? 1 : 0)
-        .offset(y: showButtonStack ? 0 : 50)
-        .scaleEffect(showButtonStack ? 1 : 0.8)
-        .blur(radius: showButtonStack ? 0 : 10)
-        .animation(.spring(duration: 0.3), value: showButtonStack)
     }
     
     private func setData() {

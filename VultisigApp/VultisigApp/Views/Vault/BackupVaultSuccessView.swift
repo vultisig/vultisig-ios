@@ -104,17 +104,11 @@ struct BackupVaultSuccessView: View {
     }
     
     var migrateButton: some View {
-        Button {
+        PrimaryButton(title: "goToWallet") {
             isHomeViewActive = true
-        } label: {
-            migrateLabel
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 40)
-    }
-    
-    var migrateLabel: some View {
-        FilledButton(title: "goToWallet")
     }
     
     var button: some View {
@@ -124,13 +118,9 @@ struct BackupVaultSuccessView: View {
     }
     
     var nextButton: some View {
-        Button {
+        IconButton(icon: "chevron.right") {
             nextTapped()
-        } label: {
-            FilledButton(icon: "chevron.right")
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
         .frame(width: 80)
         .padding(.bottom, 50)
     }

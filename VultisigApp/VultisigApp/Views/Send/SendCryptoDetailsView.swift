@@ -68,18 +68,12 @@ struct SendCryptoDetailsView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(
+            title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
+            isLoading: sendCryptoViewModel.isLoading
+        ) {
             Task{
                 await validateForm()
-            }
-        } label: {
-            HStack {
-                FilledButton(
-                    title: sendCryptoViewModel.isLoading ? "loadingDetails" : "continue",
-                    textColor: sendCryptoViewModel.isLoading ? .textDisabled : .blue600,
-                    background: sendCryptoViewModel.isLoading ? .buttonDisabled : .turquoise600,
-                    showLoader: sendCryptoViewModel.isLoading
-                )
             }
         }
         .padding(.top, 20)

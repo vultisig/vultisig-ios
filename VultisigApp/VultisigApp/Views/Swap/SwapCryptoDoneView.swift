@@ -49,37 +49,17 @@ struct SwapCryptoDoneView: View {
     }
     
     var trackButton: some View {
-        Button {
+        PrimaryButton(title: "track", type: .secondary) {
             if let progressLink, let url = URL(string: progressLink) {
                 openURL(url)
             }
-        } label: {
-            trackLabel
         }
-    }
-    
-    var trackLabel: some View {
-        FilledButton(
-            title: "track",
-            textColor: .neutral0,
-            background: .blue400
-        )
     }
     
     var doneButton: some View {
-        Button {
+        PrimaryButton(title: "done") {
             navigateToHome = true
-        } label: {
-            doneLabel
         }
-    }
-    
-    var doneLabel: some View {
-        FilledButton(
-            title: "done",
-            textColor: .neutral0,
-            background: .persianBlue400
-        )
     }
     
     var animation: some View {

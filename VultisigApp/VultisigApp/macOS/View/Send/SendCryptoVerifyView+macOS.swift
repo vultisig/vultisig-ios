@@ -21,16 +21,11 @@ extension SendCryptoVerifyView {
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
                 
-                FilledButton(
-                    title: NSLocalizedString("signTransaction", comment: ""),
-                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
-                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
-                )
+                VultiButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    fastPasswordPresented = true
+                }
                 .onLongPressGesture {
                     signPressed()
-                }
-                .onTapGesture {
-                    fastPasswordPresented = true
                 }
                 .sheet(isPresented: $fastPasswordPresented) {
                     FastVaultEnterPasswordView(
@@ -40,12 +35,7 @@ extension SendCryptoVerifyView {
                     )
                 }
             } else {
-                FilledButton(
-                    title: NSLocalizedString("signTransaction", comment: ""),
-                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
-                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
-                )
-                .onTapGesture {
+                VultiButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     signPressed()
                 }
             }

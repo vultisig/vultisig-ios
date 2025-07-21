@@ -17,10 +17,8 @@ extension CreateVaultView {
     }
     
     var scanButton: some View {
-        NavigationLink {
+        VultiNavigationButton(title: "scanQRStartScreen", type: .secondary) {
             MacScannerView(vault: createVault(), type: .NewVault, sendTx: SendTransaction(), selectedVault: selectedVault)
-        } label: {
-            scanQRButton
         }
     }
 }

@@ -25,7 +25,7 @@ struct KeygenView: View {
     @Binding var hideBackButton: Bool
     
     var selectedTab: SetupVaultState? = nil
-
+    
     @StateObject var viewModel = KeygenViewModel()
     
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -185,10 +185,8 @@ struct KeygenView: View {
     }
     
     var migrateRetryButton: some View {
-        Button {
+        PrimaryButton(title: "retry") {
             dismiss()
-        } label: {
-            FilledButton(title: "retry")
         }
     }
     
@@ -284,10 +282,8 @@ struct KeygenView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "retry") {
             dismiss()
-        } label: {
-            FilledButton(title: "retry")
         }
     }
     
@@ -312,11 +308,11 @@ struct KeygenView: View {
         if tssType == .Reshare {
             vault.isBackedUp = false
         }
-
+        
         if let fastSignConfig {
             viewModel.saveFastSignConfig(fastSignConfig, vault: vault)
         }
-
+        
         progressCounter = 4
         viewModel.delaySwitchToMain()
     }

@@ -71,14 +71,8 @@ extension VaultDeletionConfirmView {
     }
     
     var deleteButton: some View {
-        Button {
+        VultiButton(title: "deleteVaultTitle") {
             delete()
-        } label: {
-            FilledButton(
-                title: "deleteVaultTitle",
-                textColor: allFieldsChecked() ? .backgroundBlue : .disabledText,
-                background: allFieldsChecked() ? Color.alertRed : .disabledButtonBackground
-            )
         }
         .padding(.top, 25)
         .padding(.bottom, 40)
