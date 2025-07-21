@@ -21,19 +21,20 @@ extension SendCryptoVerifyView {
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
                 
-                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    fastPasswordPresented = true
-                }
-                .onLongPressGesture {
-                    signPressed()
-                }
-                .sheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $tx.fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { signPressed() }
-                    )
-                }
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {}
+                    .simultaneousGesture(LongPressGesture().onEnded { _ in
+                        signPressed()
+                    })
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        fastPasswordPresented = true
+                    })
+                    .sheet(isPresented: $fastPasswordPresented) {
+                        FastVaultEnterPasswordView(
+                            password: $tx.fastVaultPassword,
+                            vault: vault,
+                            onSubmit: { signPressed() }
+                        )
+                    }
             } else {
                 PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     signPressed()
