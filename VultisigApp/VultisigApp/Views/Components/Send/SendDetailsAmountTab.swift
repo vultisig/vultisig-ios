@@ -44,7 +44,7 @@ struct SendDetailsAmountTab: View {
                 additionalOptionsSection
             }
         }
-        .padding(12)
+        .padding(16)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.blue200, lineWidth: 1)
