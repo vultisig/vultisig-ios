@@ -22,7 +22,13 @@ struct SendDetailsAddressTab: View {
                 }
             }
             .onChange(of: tx.toAddress) { oldValue, newValue in
-                viewModel.selectedTab = .Amount
+                Task {
+                    guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+                        viewModel.selectedTab = .Address
+                        return
+                    }
+                    viewModel.selectedTab = .Amount
+                }
             }
     }
     
@@ -88,10 +94,11 @@ struct SendDetailsAddressTab: View {
             focusedField = .toAddress
             return
         }
-        
-        guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-            viewModel.selectedTab = .Address
-            return
+        if !tx.toAddress.isEmpty {
+            guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
+                viewModel.selectedTab = .Address
+                return
+            }
         }
         
         viewModel.addressSetupDone = true

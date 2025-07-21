@@ -76,15 +76,11 @@ extension SendCryptoAddressTextField {
         }
         .padding(.horizontal, 12)
     }
-    
-    var cameraScanButton: some View {
+    var scanButton: some View {
         Button {
-            showCameraScanView = true
+            showCameraScanView.toggle()
         } label: {
-            Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .frame(width: 40, height: 40)
+            getButton("camera")
         }
     }
     

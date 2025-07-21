@@ -23,6 +23,7 @@ struct SendDetailsAssetTab: View {
             .onChange(of: tx.coin, { oldValue, newValue in
                 setData()
             })
+            // chain selector
             .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
                 if let vault = homeViewModel.selectedVault {
                     SwapChainPickerView(
@@ -33,6 +34,7 @@ struct SendDetailsAssetTab: View {
                     )
                 }
             })
+            // coin selector
             .sheet(isPresented: $viewModel.showCoinPickerSheet, content: {
                 if let vault = homeViewModel.selectedVault {
                     SwapCoinPickerView(
@@ -48,6 +50,13 @@ struct SendDetailsAssetTab: View {
             }
             .onChange(of: isExpanded) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
+            }
+            .onChange(of: viewModel.selectedChain) { oldValue, newValue in
+                if let vault = homeViewModel.selectedVault {
+                    print("Selected chain changed: \(String(describing: newValue)) , update from address")
+                    let coin = vault.coins.first(where: { $0.chain == newValue })
+                    tx.fromAddress = coin?.address ?? ""
+                }
             }
             .clipped()
     }

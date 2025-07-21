@@ -391,8 +391,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAmountAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
+            isLoading = false
+            return isValidForm
         }
-        
+        let validToAddress =  await validateToAddress(tx: tx)
+        if !validToAddress {
+            isValidForm = false
+            return isValidForm
+        }
         if !tx.coin.isNativeToken {
             do {
                 let evmToken = try await blockchainService.fetchSpecific(tx: tx)
