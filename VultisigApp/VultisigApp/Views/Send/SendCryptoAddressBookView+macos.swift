@@ -13,11 +13,11 @@ extension SendCryptoAddressBookView {
             Background()
                 .frame(width: 500)
             
-            VStack {
+            VStack(spacing: 12) {
                 headerMac
                 listSelector
                 list
-            }
+            }.padding(16)
         }
     }
     var headerMac: some View {

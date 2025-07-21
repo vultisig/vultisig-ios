@@ -84,10 +84,7 @@ struct SendCryptoAddressBookView: View {
     
     var savedAddressesList: some View {
         VStack(spacing: 12) {
-            ForEach(savedAddresses) { address in
-                if address.coinMeta.chain != tx.coin.chain {
-                    continue
-                }
+            ForEach(savedAddresses.filter{$0.coinMeta.chain == tx.coin.chain}) { address in
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,
