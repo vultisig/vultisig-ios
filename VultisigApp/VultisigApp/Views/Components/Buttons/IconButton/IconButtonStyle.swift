@@ -86,7 +86,7 @@ private extension IconButtonStyle {
             }
         case .secondary:
             if !isEnabled {
-                return .disabledButtonBackground
+                return .disabledText
             } else {
                 return .neutral50
             }
