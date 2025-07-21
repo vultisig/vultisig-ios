@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VultisigLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
-		1328EB2E2E2E60EC00873CE7 /* OutlineButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1328EB2D2E2E60EC00873CE7 /* OutlineButton.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -194,8 +193,6 @@
 		A6182F352C922CD70059BFDD /* ChainHeaderCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */; };
 		A6182F372C92328E0059BFDD /* NetworkPromptCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F362C92328E0059BFDD /* NetworkPromptCell+iOS.swift */; };
 		A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */; };
-		A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */; };
-		A6182F412C9290DF0059BFDD /* OutlineButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */; };
 		A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */; };
 		A6182F452C92919D0059BFDD /* VaultDetailScanButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */; };
 		A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */; };
@@ -976,7 +973,6 @@
 		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
-		1328EB2D2E2E60EC00873CE7 /* OutlineButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineButton.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -1161,8 +1157,6 @@
 		A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainHeaderCell+macOS.swift"; sourceTree = "<group>"; };
 		A6182F362C92328E0059BFDD /* NetworkPromptCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NetworkPromptCell+iOS.swift"; sourceTree = "<group>"; };
 		A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NetworkPromptCell+macOS.swift"; sourceTree = "<group>"; };
-		A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+iOS.swift"; sourceTree = "<group>"; };
-		A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+macOS.swift"; sourceTree = "<group>"; };
 		A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailScanButton+iOS.swift"; sourceTree = "<group>"; };
 		A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailScanButton+macOS.swift"; sourceTree = "<group>"; };
 		A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationButton+iOS.swift"; sourceTree = "<group>"; };
@@ -2520,7 +2514,6 @@
 				A67F4C5E2BE313220086ED09 /* ActionButton.swift */,
 				A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */,
 				A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */,
-				1328EB2D2E2E60EC00873CE7 /* OutlineButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -2556,7 +2549,6 @@
 				A6182F362C92328E0059BFDD /* NetworkPromptCell+iOS.swift */,
 				A6386DAD2C9025B000DDD58E /* ChainNavigationCell+iOS.swift */,
 				A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */,
-				A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */,
 				A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */,
 				A6182F4A2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift */,
 				A6182F4E2C9296350059BFDD /* StyledIntegerField+iOS.swift */,
@@ -2597,7 +2589,6 @@
 				A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */,
 				A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */,
 				A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */,
-				A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */,
 				A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */,
 				A6182F482C9292F70059BFDD /* NavigationButton+macOS.swift */,
 				A6182F4C2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift */,
@@ -4496,7 +4487,6 @@
 				B541C9262CF04C4700335933 /* FunctionCallUnbondMayaChain.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
 				A6BB9BCB2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift in Sources */,
-				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* FunctionCallAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
 				A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */,
@@ -4629,7 +4619,6 @@
 				B5A54E002D9C1ECD001AF096 /* FunctionCallAddLiquidityMaya.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				A6C671072CA2793F00F59B6A /* OnboardingView1+macOS.swift in Sources */,
-				A6182F412C9290DF0059BFDD /* OutlineButton+macOS.swift in Sources */,
 				A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
@@ -4775,7 +4764,6 @@
 				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
-				1328EB2E2E2E60EC00873CE7 /* OutlineButton.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,
