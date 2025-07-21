@@ -200,21 +200,6 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
                 }
-                
-                Spacer()
-                
-                Button(action: {
-                    self.amount = self.tx.coin.balanceDecimal
-                }) {
-                    Text("MAX")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(6)
-                }
             }
             .padding()
             .background(Color.gray.opacity(0.1))
