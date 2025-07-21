@@ -18,17 +18,23 @@ enum TronResourceType: String, CaseIterable, Identifiable {
     var display: String {
         switch self {
         case .bandwidth:
-            return "Bandwidth"
+            return "Bandwidth (for regular transactions)"
         case .energy:
-            return "Energy"
+            return "Energy (for smart contracts)"
         }
     }
 }
 
 class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
     @Published var amount: Decimal = 0.0
-    @Published var resource: TronResourceType = .energy
     @Published var receiver: String = "" // Optional: delegate resource to another address
+    
+    // Resource selection using IdentifiableString
+    @Published var selectedResource: IdentifiableString = .init(value: "Energy (for smart contracts)")
+    @Published var resourceItems: [IdentifiableString] = [
+        .init(value: "Bandwidth (for regular transactions)"),
+        .init(value: "Energy (for smart contracts)")
+    ]
     
     // Internal validation
     @Published var amountValid: Bool = false
@@ -38,6 +44,9 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     
     private var tx: SendTransaction
+    
+    // Keep internal resource type for logic
+    private var resource: TronResourceType = .energy
     
     var addressFields: [String: String] {
         get {
@@ -64,6 +73,19 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
         
         // Auto-fill amount with available balance
         self.amount = tx.coin.balanceDecimal
+    }
+    
+    func selectResource(_ selected: IdentifiableString) {
+        self.selectedResource = selected
+        
+        // Update internal resource type based on selection
+        if selected.value.lowercased().contains("energy") {
+            self.resource = .energy
+        } else {
+            self.resource = .bandwidth
+        }
+        
+        self.objectWillChange.send()
     }
     
     var balance: String {
@@ -144,21 +166,27 @@ class FunctionCallTronFreeze: FunctionCallAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack(spacing: 16) {
-            // Resource type selector
+            // Resource type selector using GenericSelectorDropDown
             VStack(alignment: .leading, spacing: 8) {
                 Text("Resource Type")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Picker("Resource", selection: Binding<TronResourceType>(
-                    get: { self.resource },
-                    set: { self.resource = $0 }
-                )) {
-                    ForEach(TronResourceType.allCases) { type in
-                        Text(type.display).tag(type)
+                GenericSelectorDropDown(
+                    items: Binding(
+                        get: { self.resourceItems },
+                        set: { self.resourceItems = $0 }
+                    ),
+                    selected: Binding(
+                        get: { self.selectedResource },
+                        set: { self.selectedResource = $0 }
+                    ),
+                    mandatoryMessage: nil,
+                    descriptionProvider: { $0.value },
+                    onSelect: { selected in
+                        self.selectResource(selected)
                     }
-                }
-                .pickerStyle(SegmentedPickerStyle())
+                )
             }
             
             // Available balance display
