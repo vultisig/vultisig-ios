@@ -248,13 +248,20 @@ class SecurityService {
     // MARK: - Convenience Methods
     
     /// Create a security scan request from a keysign payload
-    func createSecurityScanRequest(from payload: KeysignPayload) -> SecurityScanRequest {
+    func createSecurityScanRequest(from payload: KeysignPayload, vault: Vault? = nil) -> SecurityScanRequest {
+        print("=== Creating SecurityScanRequest from KeysignPayload ===")
+        print("This method HAS access to transaction data for Bitcoin!")
+        print("Chain: \(payload.coin.chain.name)")
+        print("Chain Type: \(payload.coin.chain.chainType)")
+        print("Has Vault: \(vault != nil)")
+        
         let transactionType = determineTransactionType(from: payload)
         
-        // For Solana, we need to create the transaction data
+        // Get transaction data based on chain type
         var transactionData: String? = payload.memo
         
-        if payload.coin.chain == .solana {
+        switch payload.coin.chain.chainType {
+        case .Solana:
             do {
                 let inputData = try SolanaHelper.getPreSignedInputData(keysignPayload: payload)
                 transactionData = inputData.base64EncodedString()
@@ -262,7 +269,42 @@ class SecurityService {
                 logger.error("Failed to create Solana transaction data: \(error)")
                 transactionData = payload.memo
             }
+            
+        case .UTXO:
+            // For UTXO chains, create a zero-signed transaction for scanning
+            if let vault = vault {
+                do {
+                    let utxoHelper = UTXOChainsHelper(
+                        coin: payload.coin.coinType,
+                        vaultHexPublicKey: vault.pubKeyECDSA,
+                        vaultHexChainCode: vault.hexChainCode
+                    )
+                    // Create a validated Bitcoin transaction for security scanning
+                    // This uses a dummy key to create a properly formatted transaction that Blockaid can validate
+                    let validatedTx = try utxoHelper.getValidatedTransaction(keysignPayload: payload)
+                    transactionData = validatedTx
+                    logger.info("Created validated Bitcoin transaction for security scanning: \(validatedTx.count) chars")
+                    print("Bitcoin validated transaction created: \(validatedTx.count) chars")
+                    print("Transaction data (hex): \(transactionData?.prefix(100) ?? "nil")...")
+                } catch {
+                    logger.error("Failed to create zero-signed Bitcoin transaction: \(error)")
+                    print("Failed to create zero-signed Bitcoin transaction: \(error)")
+                    // For Bitcoin, we can't scan without the transaction data
+                    transactionData = nil
+                }
+            } else {
+                logger.warning("No vault provided for UTXO chain security scan")
+                print("No vault provided - cannot generate Bitcoin transaction data")
+                transactionData = nil
+            }
+            
+        default:
+            // For other chains, use memo as transaction data
+            transactionData = payload.memo
         }
+        
+        print("Final transaction data: \(transactionData != nil ? "Present (\(transactionData!.count) chars)" : "nil")")
+        print("================================================")
         
         return SecurityScanRequest(
             chain: payload.coin.chain,
@@ -280,13 +322,25 @@ class SecurityService {
     
     /// Create a security scan request from a send transaction
     func createSecurityScanRequest(from tx: SendTransaction) -> SecurityScanRequest {
+        // Debug logging
+        print("=== Creating SecurityScanRequest from SendTransaction ===")
+        print("This method does NOT have transaction data for Bitcoin!")
+        print("Chain: \(tx.coin.chain.name)")
+        print("Chain Type: \(tx.coin.chain.chainType)")
+        print("From: \(tx.fromAddress)")
+        print("To: \(tx.toAddress)")
+        print("Amount: \(tx.amount)")
+        print("Memo: \(tx.memo)")
+        print("Is Native Token: \(tx.coin.isNativeToken)")
+        print("==========================================")
+        
         return SecurityScanRequest(
             chain: tx.coin.chain,
             transactionType: .transfer,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             amount: tx.amount,
-            data: nil,
+            data: nil,  // <-- This is why there's no transaction data for Bitcoin
             metadata: [
                 "memo": tx.memo,
                 "sendMaxAmount": tx.sendMaxAmount,

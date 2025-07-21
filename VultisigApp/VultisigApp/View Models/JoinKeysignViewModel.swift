@@ -464,7 +464,7 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
         
-        await securityScanViewModel.scanTransaction(from: payload)
+        await securityScanViewModel.scanTransaction(from: payload, vault: vault)
         showSecurityScan = true
     }
 }
