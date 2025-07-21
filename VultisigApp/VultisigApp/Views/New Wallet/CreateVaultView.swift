@@ -58,7 +58,8 @@ struct CreateVaultView: View {
             .blur(radius: showButtonStack ? 0 : 10)
             .animation(.spring(duration: 0.3), value: showButtonStack)
         }
-        .padding(40)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 40)
     }
     
     var newVaultButton: some View {
