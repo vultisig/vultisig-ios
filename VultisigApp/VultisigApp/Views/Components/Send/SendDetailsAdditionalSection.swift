@@ -76,11 +76,12 @@ struct SendDetailsAdditionalSection: View {
     }
     
     var networkFeeDescription: some View {
-        VStack {
+        VStack(alignment: .trailing) {
             Text(tx.gasInReadable)
             
             if let selectedVault = homeViewModel.selectedVault {
                 Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
+                    .foregroundStyle(Color.extraLightGray)
             }
         }
         .font(.body14BrockmannMedium)
