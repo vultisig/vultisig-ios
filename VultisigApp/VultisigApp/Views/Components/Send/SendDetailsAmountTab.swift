@@ -50,6 +50,7 @@ struct SendDetailsAmountTab: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
+        .animation(.easeInOut, value: isExpanded)
         
     }
     

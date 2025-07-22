@@ -48,7 +48,7 @@ struct SendDetailsAddressTab: View {
                 .stroke(Color.blue200, lineWidth: 1)
         )
         .padding(1)
-        
+        .animation(.easeInOut, value: isExpanded)
     }
     
     var titleSection: some View {
@@ -101,8 +101,7 @@ struct SendDetailsAddressTab: View {
                 viewModel.onSelect(tab: .address)
                 return
             }
+            viewModel.addressSetupDone = true
         }
-        
-        viewModel.addressSetupDone = true
     }
 }
