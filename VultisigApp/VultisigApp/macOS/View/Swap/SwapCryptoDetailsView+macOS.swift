@@ -10,7 +10,7 @@ import SwiftUI
 
 extension SwapCryptoDetailsView {
     var container: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
             Background()
             view
             
@@ -19,8 +19,6 @@ extension SwapCryptoDetailsView {
             }
             
             VStack {
-                Spacer()
-                
                 if swapViewModel.showFromChainSelector {
                     SwapChainPickerView(
                         vault: vault,
