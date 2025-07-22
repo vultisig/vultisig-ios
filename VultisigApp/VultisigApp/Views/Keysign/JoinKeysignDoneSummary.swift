@@ -18,7 +18,7 @@ struct JoinKeysignDoneSummary: View {
     let summaryViewModel = JoinKeysignSummaryViewModel()
     
     var body: some View {
-        ZStack {
+        Group {
             if viewModel.keysignPayload?.swapPayload != nil {
                 swapContent
             } else {
@@ -50,7 +50,7 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var content: some View {
-        ZStack {
+        Group {
             if viewModel.customMessagePayload != nil {
                 signMessageContent
             } else {
