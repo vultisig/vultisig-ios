@@ -422,7 +422,7 @@ class JoinKeysignViewModel: ObservableObject {
     
     func getJoinedCalculatedNetworkFee() -> String {
         let fees = getCalculatedNetworkFee()
-        return fees.feeCrypto + " (~\(fees.feeFiat)"
+        return fees.feeCrypto + " (~\(fees.feeFiat))"
     }
     
     func getProvider() -> String {
