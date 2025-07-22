@@ -26,7 +26,7 @@ struct JoinSwapDoneSummary: View {
             buttons
         }
         .buttonStyle(BorderlessButtonStyle())
-        .onAppear {
+        .onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
@@ -47,7 +47,6 @@ struct JoinSwapDoneSummary: View {
             doneButton
         }
         .padding(.vertical)
-        .padding(.horizontal, 24)
     }
     
     var trackButton: some View {
