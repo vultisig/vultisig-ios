@@ -65,10 +65,8 @@ struct FunctionCallVerifyView: View {
     }
     
     var fastVaultButton: some View {
-        Button {
+        PrimaryButton(title: NSLocalizedString("fastSign", comment: "")) {
             fastPasswordPresented = true
-        } label: {
-            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
@@ -131,18 +129,14 @@ struct FunctionCallVerifyView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(
+            title: tx.isFastVault ? "Paired sign" : "sign",
+            type: tx.isFastVault ? .secondary : .primary
+        ) {
             depositVerifyViewModel.isLoading = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 handleSubmit()
-            }
-            
-        } label: {
-            if tx.isFastVault {
-                OutlineButton(title: "Paired sign")
-            } else {
-                FilledButton(title: "sign")
             }
         }
     }

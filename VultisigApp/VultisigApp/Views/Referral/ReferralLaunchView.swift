@@ -71,15 +71,9 @@ struct ReferralLaunchView: View {
     }
     
     var saveButton: some View {
-        Button {
+        PrimaryButton(title: "saveReferredCode", type: .secondary) {
             referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
-        } label: {
-            saveLabel
         }
-    }
-    
-    var saveLabel: some View {
-        OutlineButton(title: "saveReferredCode", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var orSeparator: some View {
@@ -107,15 +101,9 @@ struct ReferralLaunchView: View {
     }
     
     var createButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "createReferral") {
             CreateReferralView(referralViewModel: referralViewModel)
-        } label: {
-            createLabel
         }
-    }
-    
-    var createLabel: some View {
-        FilledButton(title: "createReferral", textColor: .neutral0, background: .persianBlue400)
     }
     
     var textField: some View {
@@ -169,15 +157,9 @@ struct ReferralLaunchView: View {
     }
     
     var editButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
             EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        } label: {
-            editLabel
         }
-    }
-    
-    var editLabel: some View {
-        OutlineButton(title: "editReferredCode", textColor: .solidWhite, gradient: .solidBlue)
     }
     
     var loader: some View {

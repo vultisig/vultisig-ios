@@ -117,10 +117,8 @@ struct FastVaultSetPasswordView: View {
         }
     }
     var button: some View {
-        Button(action: {
+        PrimaryButton(title: "next") {
             handleSubmit()
-        }) {
-            FilledButton(title: "next")
         }
         .padding(.top, 16)
         .padding(.bottom, 40)

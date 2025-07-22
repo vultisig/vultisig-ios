@@ -110,13 +110,16 @@ struct SwapFromToField: View {
     }
     
     var fromToAmountField: some View {
-        SwapCryptoAmountTextField(amount: $amount) { _ in
-            if title=="from" {
-                swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                swapViewModel.showAllPercentageButtons = true
+        Group {
+            SwapCryptoAmountTextField(amount: $amount) { _ in
+                if title=="from" {
+                    swapViewModel.updateFromAmount(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+                    swapViewModel.showAllPercentageButtons = true
+                }
             }
+            .disabled(title=="to")
         }
-        .disabled(title=="to")
+        .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
     var fiatBalance: some View {
@@ -125,6 +128,7 @@ struct SwapFromToField: View {
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
+            .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
     private func isFiatVisible() -> Bool {

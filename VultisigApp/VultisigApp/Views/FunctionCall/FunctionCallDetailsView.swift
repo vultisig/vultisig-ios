@@ -244,7 +244,7 @@ struct FunctionCallDetailsView: View {
     }
 
     var button: some View {
-        Button {
+        PrimaryButton(title: "continue") {
             Task {
                 if fnCallInstance.isTheFormValid {
                     tx.amount = fnCallInstance.amount.formatDecimalToLocale()
@@ -262,8 +262,6 @@ struct FunctionCallDetailsView: View {
                     showInvalidFormAlert = true
                 }
             }
-        } label: {
-            FilledButton(title: "continue")
         }
         .padding(40)
     }

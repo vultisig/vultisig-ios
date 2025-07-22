@@ -40,12 +40,10 @@ struct NoCameraPermissionView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "openSettings") {
             openSettings()
-        } label: {
-            FilledButton(title: "openSettings")
-                .padding(40)
         }
+        .padding(40)
     }
 }
 

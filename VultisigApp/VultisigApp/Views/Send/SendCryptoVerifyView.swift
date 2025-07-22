@@ -49,11 +49,6 @@ struct SendCryptoVerifyView: View {
         VStack(spacing: 16) {
             blockAidBanner
             fields
-            
-            if tx.isFastVault {
-                fastVaultButton
-            }
-            
             pairedSignButton
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)

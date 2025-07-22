@@ -14,10 +14,6 @@ extension SwapCryptoDetailsView {
             Background()
             view
             percentageButtons
-
-            if swapViewModel.isLoading {
-                loader
-            }
         }
         .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
             SwapChainPickerView(

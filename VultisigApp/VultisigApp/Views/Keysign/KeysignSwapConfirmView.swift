@@ -47,10 +47,8 @@ struct KeysignSwapConfirmView: View {
     }
 
     var button: some View {
-        Button(action: {
-            self.viewModel.joinKeysignCommittee()
-        }) {
-            FilledButton(title: "sign")
+        PrimaryButton(title: "sign") {
+            viewModel.joinKeysignCommittee()
         }
         .padding(20)
     }

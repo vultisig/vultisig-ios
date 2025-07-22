@@ -84,13 +84,7 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
-    var scanButton: some View {
-        Button {
-            showScanner.toggle()
-        } label: {
-            getButton("camera")
-        }
-    }
+   
     
     var fileButton: some View {
         Button {
@@ -119,7 +113,7 @@ struct SendCryptoAddressTextField: View {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
     
-    private func getButton(_ icon: String) -> some View {
+    func getButton(_ icon: String) -> some View {
         Image(systemName: icon)
             .font(.body18BrockmannMedium)
             .foregroundColor(.neutral0)

@@ -112,10 +112,8 @@ struct SettingsCustomMessageView: View {
     }
 
     var buttonLabel: some View {
-        return Button {
+        PrimaryButton(title: "Sign") {
             viewModel.moveToNextView()
-        } label: {
-            FilledButton(title: "Sign")
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 12)

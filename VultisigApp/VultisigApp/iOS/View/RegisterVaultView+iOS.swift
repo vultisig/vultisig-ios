@@ -40,8 +40,9 @@ extension RegisterVaultView {
                     item: renderedImage,
                     preview: SharePreview(imageName, image: renderedImage)
                 ) {
-                    label
+                    PrimaryButtonView(title: "saveVaultQR")
                 }
+                .buttonStyle(PrimaryButtonStyle())
             } else {
                 ProgressView()
             }

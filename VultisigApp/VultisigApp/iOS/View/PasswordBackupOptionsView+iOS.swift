@@ -18,22 +18,17 @@ extension PasswordBackupOptionsView {
         .padding(24)
     }
     
+    @ViewBuilder
     var withoutPasswordButton: some View {
-        Button {
-            showSkipShareSheet = true
-        } label: {
-            withoutPasswordLabel
-        }
-        .sheet(isPresented: $showSkipShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
+        if let fileURL = backupViewModel.encryptedFileURLWithoutPassword {
+            PrimaryButton(title: "backupWithoutPassword") {
+                showSkipShareSheet = true
+            }
+            .shareSheet(isPresented: $showSkipShareSheet, activityItems: [fileURL])  { didSave in
+                if didSave {
+                    fileSaved()
+                    dismissView()
                 }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
             }
         }
     }

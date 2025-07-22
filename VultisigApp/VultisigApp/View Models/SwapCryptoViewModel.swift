@@ -30,6 +30,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     @Published var error: Error?
     @Published var isLoading = false
+    @Published var isLoadingQuotes = false
+    @Published var isLoadingFees = false
+    @Published var isLoadingTransaction = false
     @Published var dataLoaded = false
     @Published var timer: Int = 59
     
@@ -165,7 +168,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func approveFeeString(tx: SwapTransaction) -> String {
         let fromCoin = feeCoin(tx: tx)
-        let fee = fromCoin.fiat(value: tx.fee)
+        let fee = fromCoin.fiat(gas: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
     
@@ -174,9 +177,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         
         let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let swapFee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
-        let networkFee = fromCoin.fiat(value: tx.fee)
-        let totalFee = swapFee + networkFee
+        let providerFee = tx.toCoin.fiat(value: inboundFee)
+        let networkFee = fromCoin.fiat(gas: tx.fee)
+        let totalFee = providerFee + networkFee
         return totalFee.formatToFiat(includeCurrencySymbol: true)
     }
     
@@ -236,8 +239,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
+        isLoadingTransaction = true
+        defer { isLoadingTransaction = false }
         
         do {
             guard let quote = tx.quote else {
@@ -446,8 +449,8 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, referredCode: String) async {
-        isLoading = true
-        defer { isLoading = false }
+        isLoadingQuotes = true
+        defer { isLoadingQuotes = false }
         
         clearQuote(tx: tx)
         
@@ -483,6 +486,9 @@ private extension SwapCryptoViewModel {
     }
     
     func updateFees(tx: SwapTransaction, vault: Vault) async {
+        isLoadingFees = true
+        defer { isLoadingFees = false }
+        
         tx.gas = .zero
         tx.thorchainFee = .zero
         

@@ -95,18 +95,16 @@ extension TokenSelectionView {
     }
     
     var saveButton: some View {
-        Button(action: {
-            saveAssets()
-            self.chainDetailView.sheetType = nil
-            dismiss()
-        }) {
-            HStack(spacing: 8) {
-                if tokenViewModel.isLoading {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
-                }
-                FilledButton(title: "save")
+        HStack(spacing: 8) {
+            if tokenViewModel.isLoading {
+                ProgressView()
+                    .scaleEffect(0.8)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+            }
+            PrimaryButton(title: "save") {
+                saveAssets()
+                self.chainDetailView.sheetType = nil
+                dismiss()
             }
         }
         .padding(.horizontal, 25)

@@ -133,18 +133,14 @@ struct MacScannerView: View {
     }
     
     var uploadQRCodeButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "uploadQRCodeImage") {
             GeneralQRImportMacView(type: type, sendTx: sendTx, selectedVault: selectedVault)
-        } label: {
-            FilledButton(title: "uploadQRCodeImage")
         }
     }
     
     var tryAgainButton: some View {
-        Button {
+        PrimaryButton(title: "tryAgain", type: .secondary) {
             cameraViewModel.setupSession()
-        } label: {
-            OutlineButton(title: "tryAgain")
         }
     }
     

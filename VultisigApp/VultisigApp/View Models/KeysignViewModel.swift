@@ -127,7 +127,7 @@ class KeysignViewModel: ObservableObject {
         }
     }
     
-
+    
     func startKeysign() async {
         switch vault.libType {
         case .GG20,.none:
@@ -583,7 +583,10 @@ class KeysignViewModel: ObservableObject {
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
             print("code:\(code), message:\(message)")
-            if message == "already known" || message == "replacement transaction underpriced"{
+            if message == "already known" 
+                || message == "replacement transaction underpriced"
+                || message.contains("This transaction has already been processed")
+            {
                 print("the transaction already broadcast,code:\(code)")
                 self.txid = transactionType.transactionHash
                 return

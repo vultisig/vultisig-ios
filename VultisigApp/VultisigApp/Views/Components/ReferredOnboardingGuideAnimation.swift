@@ -97,12 +97,6 @@ struct ReferredOnboardingGuideAnimation: View {
             .opacity(0.05)
             .blur(radius: 20)
     }
-    
-    var button: some View {
-        FilledButton(title: "getStarted")
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-    }
 
     var list: some View {
         VStack(spacing: 16) {

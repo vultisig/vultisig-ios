@@ -88,15 +88,9 @@ struct OnboardingSummaryView: View {
     }
 
     var button: some View {
-        Button {
+        PrimaryButton(title: "startUsingVault") {
             isPresented = false
             onDismiss?()
-        } label: {
-            FilledButton(
-                title: "startUsingVault",
-                textColor: didAgree ? .blue600 : .textDisabled,
-                background: didAgree ? .turquoise600 : .buttonDisabled
-            )
         }
         .disabled(!didAgree)
         .buttonStyle(.plain)

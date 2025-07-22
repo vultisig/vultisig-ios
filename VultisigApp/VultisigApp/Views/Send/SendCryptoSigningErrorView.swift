@@ -57,10 +57,8 @@ struct SendCryptoSigningErrorView: View {
     }
     
     var tryAgainButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "tryAgain", type: .secondary) {
             HomeView()
-        } label: {
-            OutlineButton(title: "tryAgain", textColor: .solidWhite, gradient: .solidBlue)
         }
         .padding(.vertical, 24)
         .padding(.horizontal, 15)
