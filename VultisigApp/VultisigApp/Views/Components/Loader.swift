@@ -55,7 +55,7 @@ struct SpinningLineLoader: View {
         ZStack {
             // Blue background circle
             Circle()
-                .fill(Color("061B3A")) // Using hex value for blue600
+                .fill(Color.blue600) // Using hex value for blue600
                 .frame(width: 32, height: 32)
             
             // White spinning arc - much shorter like in SwapRefreshQuoteCounter
