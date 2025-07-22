@@ -49,9 +49,7 @@ struct SendDetailsAmountTab: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.blue200, lineWidth: 1)
         )
-        .padding(1)
-        .animation(.easeInOut, value: isExpanded)
-        
+        .padding(1)        
     }
     
     var titleSection: some View {
