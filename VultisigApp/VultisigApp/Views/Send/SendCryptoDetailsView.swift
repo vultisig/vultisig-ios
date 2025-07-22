@@ -158,7 +158,7 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        sendDetailsViewModel.selectedTab = .amount
+        sendDetailsViewModel.onSelect(tab: .amount)
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         
         if await sendCryptoViewModel.validateForm(tx: tx) {

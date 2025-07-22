@@ -94,7 +94,7 @@ struct SendDetailsAssetTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .asset
+            viewModel.onSelect(tab: .asset)
         }
     }
     
@@ -196,7 +196,7 @@ struct SendDetailsAssetTab: View {
             return
         }
         
-        viewModel.selectedTab = .address
+        viewModel.onSelect(tab: .address)
         viewModel.assetSetupDone = true
     }
 }

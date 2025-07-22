@@ -26,7 +26,7 @@ struct SendDetailsTabEditTools: View {
     
     var editButton: some View {
         Button {
-            viewModel.selectedTab = forTab
+            viewModel.onSelect(tab: forTab)
         } label: {
             editLabel
         }

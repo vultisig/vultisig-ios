@@ -67,7 +67,7 @@ struct SendDetailsAmountTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .amount
+            viewModel.onSelect(tab: .amount)
         }
     }
     

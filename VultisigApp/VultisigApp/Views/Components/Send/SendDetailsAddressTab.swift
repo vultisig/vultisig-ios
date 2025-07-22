@@ -24,10 +24,11 @@ struct SendDetailsAddressTab: View {
             .onChange(of: tx.toAddress) { oldValue, newValue in
                 Task {
                     guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                        viewModel.selectedTab = .address
+                        viewModel.onSelect(tab: .address)
                         return
                     }
-                    viewModel.selectedTab = .amount
+                    viewModel.addressSetupDone = true
+                    viewModel.onSelect(tab: .amount)
                 }
             }
     }
@@ -66,7 +67,7 @@ struct SendDetailsAddressTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .address
+            viewModel.onSelect(tab: .address)
         }
     }
     
@@ -97,7 +98,7 @@ struct SendDetailsAddressTab: View {
         }
         if !tx.toAddress.isEmpty {
             guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                viewModel.selectedTab = .address
+                viewModel.onSelect(tab: .address)
                 return
             }
         }
