@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SendCryptoSecondaryDoneView: View {
-    let input: SendCryptoContentView.Input
+    let input: SendCryptoContent
     let onDone: () -> Void
     
     @State var navigateToHome = false

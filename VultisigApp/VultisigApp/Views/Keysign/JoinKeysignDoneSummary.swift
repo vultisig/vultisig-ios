@@ -79,8 +79,8 @@ struct JoinKeysignDoneSummary: View {
     var sendContent: some View {
         if let keysignPayload = viewModel.keysignPayload {
             let fees = viewModel.getCalculatedNetworkFee()
-            SendCryptoContentView(
-                input: SendCryptoContentView.Input(
+            SendCryptoDoneContentView(
+                input: SendCryptoContent(
                     coin: keysignPayload.coin,
                     amountCrypto: keysignPayload.toAmountWithTickerString,
                     amountFiat: keysignPayload.toSendAmountFiatString,

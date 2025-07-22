@@ -13,6 +13,8 @@
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
 		1334C7412E301B5300CBAA3E /* JoinKeysignGasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */; };
+		1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */; };
+		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -983,6 +985,8 @@
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
 		1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignGasViewModel.swift; sourceTree = "<group>"; };
+		1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContentView.swift; sourceTree = "<group>"; };
+		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -2054,6 +2058,15 @@
 				1334C73E2E30079F00CBAA3E /* OnLoad.swift */,
 			);
 			path = ViewModifiers;
+			sourceTree = "<group>";
+		};
+		1334C7422E301E3000CBAA3E /* SendCryptoDone */ = {
+			isa = PBXGroup;
+			children = (
+				1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */,
+				1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */,
+			);
+			path = SendCryptoDone;
 			sourceTree = "<group>";
 		};
 		138574122E2DA91E002532BF /* PrimaryButton */ = {
@@ -3648,6 +3661,7 @@
 		D9AD8EEE2B6731480009F8D5 /* Send */ = {
 			isa = PBXGroup;
 			children = (
+				1334C7422E301E3000CBAA3E /* SendCryptoDone */,
 				1334C7382E2FE55C00CBAA3E /* SendCryptoVerifySummary */,
 				A61BC8112BA2407A00484689 /* SendCryptoView.swift */,
 				A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */,
@@ -4623,6 +4637,7 @@
 				B53D8CCA2BF7F22500B795D3 /* FunctionCallUnbond.swift in Sources */,
 				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
+				1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */,
 				A6E0C9362DF00CD100A01543 /* ReferralLaunchView+macOS.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
 				A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */,
@@ -4995,6 +5010,7 @@
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */,
 				A6E0C9342DF00CC600A01543 /* ReferralLaunchView+iOS.swift in Sources */,
+				1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,
 				A5340A692CECF093002ADD35 /* MonthlyBackupView+iOS.swift in Sources */,
 				A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */,
