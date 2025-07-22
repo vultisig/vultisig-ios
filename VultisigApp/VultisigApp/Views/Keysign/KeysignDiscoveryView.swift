@@ -172,7 +172,7 @@ struct KeysignDiscoveryView: View {
                 displayScale: displayScale,
                 type: previewType,
                 vaultName: vault.name,
-                amount: previewType == .Send ? keysignPayload.toAmountString : "",
+                amount: previewType == .Send ? keysignPayload.toAmountWithTickerString : "",
                 toAddress: previewType == .Send ? keysignPayload.toAddress : "",
                 fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
                 toAmount: previewType == .Swap ? getSwapToAmount() : ""

@@ -103,7 +103,7 @@ struct JoinKeysignDoneSummary: View {
                 }
             }
             
-            if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
+            if let amount = viewModel.keysignPayload?.toAmountWithTickerString, !amount.isEmpty {
                 
                 Separator()
                 getGeneralCell(

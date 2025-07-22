@@ -41,7 +41,7 @@ extension Decimal {
         formatter.numberStyle = .decimal
         formatter.locale = locale
         formatter.maximumFractionDigits = 8
-        formatter.minimumFractionDigits = 4
+        formatter.minimumFractionDigits = 0
         formatter.roundingMode = .down
         return formatter.string(from: self as NSDecimalNumber) ?? ""
     }

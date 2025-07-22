@@ -32,10 +32,14 @@ struct KeysignPayload: Codable, Hashable {
         return NSDecimalNumber(decimal: truncatedValueFiat * power).stringValue.formatToFiat()
     }
 
+    var toAmountWithTickerString: String {
+        return "\(toAmountString) \(coin.ticker)"
+    }
+    
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
-        return "\((decimalAmount * power).formatForDisplay()) \(coin.ticker)"
+        return (decimalAmount * power).formatForDisplay()
     }
     
     var toAmountFiatString: String {

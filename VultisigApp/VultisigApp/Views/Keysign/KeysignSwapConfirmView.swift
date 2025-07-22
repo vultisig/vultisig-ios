@@ -39,7 +39,7 @@ struct KeysignSwapConfirmView: View {
             )
             
             separator
-            getValueCell(for: "NetworkFee", with: viewModel.getCalculatedNetworkFee())
+            getValueCell(for: "NetworkFee", with: viewModel.getJoinedCalculatedNetworkFee())
         }
         .padding(16)
         .background(Color.blue600)

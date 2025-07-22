@@ -141,6 +141,7 @@
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
 "joinKeySign" = "Join Keysign";
+"joinTransactionSigning" = "Join transaction signing";
 "creatingTssInstance" = "CREATING TSS INSTANCE...";
 "signingWithECDSA" = "SIGNING USING ECDSA KEY... ";
 "signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
