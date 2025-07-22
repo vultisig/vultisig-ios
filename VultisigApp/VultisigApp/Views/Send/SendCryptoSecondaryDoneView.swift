@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct SendCryptoSecondaryDoneView: View {
-    let sendTransaction: SendTransaction?
-    let hash: String
-    let explorerLink: String
+    let input: SendCryptoContentView.Input
+    let onDone: () -> Void
     
     @State var navigateToHome = false
     
@@ -41,7 +40,7 @@ struct SendCryptoSecondaryDoneView: View {
     }
     
     var header: some View {
-        getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
+        getAssetCard(coin: input.coin, title: input.amountCrypto, description: input.amountFiat)
     }
     
     var summary: some View {
@@ -54,7 +53,7 @@ struct SendCryptoSecondaryDoneView: View {
                 getCell(
                     title: "from",
                     description: vaultName,
-                    bracketValue: sendTransaction?.fromAddress ?? ""
+                    bracketValue: input.fromAddress
                 )
             }
             
@@ -62,27 +61,24 @@ struct SendCryptoSecondaryDoneView: View {
             
             getCell(
                 title: "to",
-                description: sendTransaction?.toAddress ?? ""
+                description: input.toAddress
             )
             
             separator
             
-            if let chainName = sendTransaction?.coin.chain.name {
-                getCell(
+            getCell(
                     title: "network",
-                    description: chainName,
-                    icon: sendTransaction?.coin.chain.logo
+                    description: input.coin.chain.name,
+                    icon: input.coin.chain.logo
                 )
-            }
             
             separator
             
-            if let gasInReadable = sendTransaction?.gasInReadable {
-                getCell(
-                    title: "estNetworkFee",
-                    description: gasInReadable
-                )
-            }
+            getCell(
+                title: "estNetworkFee",
+                description: input.fee.crypto,
+                secondaryDescription: input.fee.fiat
+            )
         }
         .padding(24)
         .background(Color.blue600)
@@ -110,7 +106,7 @@ struct SendCryptoSecondaryDoneView: View {
         HStack {
             getCell(
                 title: "transactionHash",
-                description: hash
+                description: input.hash
             )
             
             Image(systemName: "arrow.up.forward.app")
@@ -121,18 +117,14 @@ struct SendCryptoSecondaryDoneView: View {
     
     var continueButton: some View {
         PrimaryButton(title: "done") {
-            if let send = sendTransaction {
-                send.reset(coin: send.coin)
-            }
+            onDone()
             navigateToHome = true
         }
         .padding(24)
     }
     
     func openLink() {
-        let urlString = explorerLink
-        
-        if let url = URL(string: urlString) {
+        if let url = URL(string: input.explorerLink) {
             openURL(url)
         }
     }
@@ -167,7 +159,7 @@ struct SendCryptoSecondaryDoneView: View {
         )
     }
     
-    private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
+    private func getCell(title: String, description: String, secondaryDescription: String? = nil, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.extraLightGray)
@@ -183,16 +175,27 @@ struct SendCryptoSecondaryDoneView: View {
                     .cornerRadius(32)
             }
             
-            Text(description)
-                .foregroundColor(.neutral0)
-                .lineLimit(1)
-                .truncationMode(.middle)
             
-            if let bracketValue {
-                Text("(\(bracketValue))")
-                    .foregroundColor(.extraLightGray)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack(spacing: 2) {
+                    Text(description)
+                        .foregroundColor(.neutral0)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    
+                    if let bracketValue {
+                        Text("(\(bracketValue))")
+                            .foregroundColor(.extraLightGray)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                }
+                
+                if let secondaryDescription {
+                    Text(secondaryDescription)
+                        .foregroundColor(.extraLightGray)
+                        .lineLimit(1)
+                }
             }
         }
         .font(.body14BrockmannMedium)
@@ -201,5 +204,16 @@ struct SendCryptoSecondaryDoneView: View {
 }
 
 #Preview {
-    SendCryptoSecondaryDoneView(sendTransaction: SendTransaction(), hash: "", explorerLink: "")
+    SendCryptoSecondaryDoneView(
+        input: .init(
+            coin: .example,
+            amountCrypto: "30 RUNE",
+            amountFiat: "US$ 200",
+            hash: "44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
+            explorerLink: "https://thorchain.net/tx/44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
+            fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
+            toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
+            fee: ("0.001 RUNE", "US$ 0.00")
+        )
+    ) {}
 }

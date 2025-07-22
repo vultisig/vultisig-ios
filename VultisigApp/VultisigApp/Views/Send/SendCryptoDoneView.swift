@@ -45,26 +45,131 @@ struct SendCryptoDoneView: View {
         }
     }
     
-    var sendView: some View {
+    func sendView(tx: SendTransaction) -> some View {
         VStack {
-            sendContent
+            sendContent(tx: tx)
             continueButton
         }
     }
     
-    var sendContent: some View {
+    func sendContent(tx: SendTransaction) -> some View {
+        SendCryptoContentView(
+            input: SendCryptoContentView.Input(
+                coin: tx.coin,
+                amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
+                amountFiat: tx.amountInFiat,
+                hash: hash,
+                explorerLink: explorerLink(),
+                fromAddress: tx.fromAddress,
+                toAddress: tx.toAddress,
+                fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
+            )
+        ) {
+            tx.reset(coin: tx.coin)
+        }
+    }
+
+    var continueButton: some View {
+        PrimaryButton(title: "done") {
+            if let send = sendTransaction {
+                send.reset(coin: send.coin)
+            }
+            navigateToHome = true
+        }
+        .padding(24)
+    }
+
+    var summaryCard: some View {
+        SendCryptoDoneSummary(
+            sendTransaction: sendTransaction,
+            swapTransaction: swapTransaction,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel
+        )
+    }
+    
+    var view: some View {
+        ZStack {
+            if let tx = swapTransaction {
+                getSwapDoneView(tx)
+            } else if let sendTransaction {
+                sendView(tx: sendTransaction)
+            }
+        }
+    }
+    
+    private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
+        SwapCryptoDoneView(
+            tx: tx,
+            vault: vault,
+            hash: hash,
+            approveHash: approveHash,
+            progressLink: progressLink,
+            sendSummaryViewModel: sendSummaryViewModel,
+            swapSummaryViewModel: swapSummaryViewModel,
+            showAlert: $showAlert,
+            alertTitle: $alertTitle,
+            navigateToHome: $navigateToHome
+        )
+    }
+
+    func explorerLink() -> String {
+        return Endpoint.getExplorerURL(chain: chain, txid: hash)
+    }
+}
+
+#Preview {
+    SendCryptoDoneView(
+        vault:Vault.example,
+        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+        chain: .thorChain,
+        progressLink: "https://blockstream.info/tx/",
+        sendTransaction: nil,
+        swapTransaction: SwapTransaction()
+    )
+    .environmentObject(SettingsViewModel())
+}
+
+struct SendCryptoContentView: View {
+    struct Input {
+        let coin: Coin
+        let amountCrypto: String
+        let amountFiat: String
+        let hash: String
+        let explorerLink: String
+        
+        let fromAddress: String
+        let toAddress: String
+        let fee: (crypto: String, fiat: String)
+    }
+    
+    let input: Input
+    let onDone: () -> Void
+    
+    @State var animationVM: RiveViewModel? = nil
+    
+    var body: some View {
         ScrollView {
             VStack {
                 animation
-                getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
+                getAssetCard(coin: input.coin, title: input.amountCrypto, description: input.amountFiat)
                 
                 NavigationLink {
-                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink())
+                    SendCryptoSecondaryDoneView(input: input) {
+                        onDone()
+                    }
                 } label: {
                     transactionDetails
                 }
             }
-            .padding(24)
+            .padding(16)
+        }
+        .onLoad {
+            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
     
@@ -102,57 +207,6 @@ struct SendCryptoDoneView: View {
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(.body18BrockmannMedium)
     }
-
-    var continueButton: some View {
-        PrimaryButton(title: "done") {
-            if let send = sendTransaction {
-                send.reset(coin: send.coin)
-            }
-            navigateToHome = true
-        }
-        .padding(24)
-    }
-
-    var summaryCard: some View {
-        SendCryptoDoneSummary(
-            sendTransaction: sendTransaction,
-            swapTransaction: swapTransaction,
-            vault: vault,
-            hash: hash,
-            approveHash: approveHash,
-            sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel
-        )
-    }
-    
-    var view: some View {
-        ZStack {
-            if let tx = swapTransaction {
-                getSwapDoneView(tx)
-            } else {
-                sendView
-            }
-        }
-    }
-    
-    private func getSwapDoneView(_ tx: SwapTransaction) -> some View {
-        SwapCryptoDoneView(
-            tx: tx,
-            vault: vault,
-            hash: hash,
-            approveHash: approveHash,
-            progressLink: progressLink,
-            sendSummaryViewModel: sendSummaryViewModel,
-            swapSummaryViewModel: swapSummaryViewModel,
-            showAlert: $showAlert,
-            alertTitle: $alertTitle,
-            navigateToHome: $navigateToHome
-        )
-    }
-
-    func explorerLink() -> String {
-        return Endpoint.getExplorerURL(chain: chain, txid: hash)
-    }
     
     private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
         VStack(spacing: 4) {
@@ -183,17 +237,4 @@ struct SendCryptoDoneView: View {
                 .stroke(Color.blue400, lineWidth: 1)
         )
     }
-}
-
-#Preview {
-    SendCryptoDoneView(
-        vault:Vault.example,
-        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
-        chain: .thorChain,
-        progressLink: "https://blockstream.info/tx/",
-        sendTransaction: nil,
-        swapTransaction: SwapTransaction()
-    )
-    .environmentObject(SettingsViewModel())
 }

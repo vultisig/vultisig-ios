@@ -67,6 +67,8 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
+    private let gasViewModel = JoinKeysignGasViewModel()
+    
     init() {
         self.vault = Vault(name: "Main Vault")
         self.isShowingScanner = false
@@ -383,48 +385,6 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
-        guard let payload = keysignPayload else {
-            return (.empty, .empty)
-        }
-
-        guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
-            $0.isNativeToken && $0.chain == payload.coin.chain
-        }) else {
-            return (.empty, .empty)
-        }
-
-        if payload.coin.chainType == .EVM {
-            let gas = payload.chainSpecific.gas
-
-            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
-                  let gasDecimal = Decimal(string: gas.description) else {
-                return (.empty, .empty)
-            }
-
-            let gasGwei = gasDecimal / weiPerGWeiDecimal
-            let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-
-            var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
-            feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
-
-            return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
-        }
-
-        let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
-        let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-
-        var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
-        feeInReadable = feeInReadable.nilIfEmpty.map { $0 } ?? ""
-
-        return ("\(gasInReadable) \(payload.coin.chain.feeUnit)", feeInReadable)
-    }
-    
-    func getJoinedCalculatedNetworkFee() -> String {
-        let fees = getCalculatedNetworkFee()
-        return fees.feeCrypto + " (~\(fees.feeFiat))"
-    }
-    
     func getProvider() -> String {
         switch keysignPayload?.swapPayload {
         case .oneInch:
@@ -438,23 +398,6 @@ class JoinKeysignViewModel: ObservableObject {
         case .none:
             return .empty
         }
-    }
-    
-    func feesInReadable(coin: Coin, fee: BigInt) -> String {
-        var nativeCoinAux: Coin?
-        
-        if coin.isNativeToken {
-            nativeCoinAux = coin
-        } else {
-            nativeCoinAux = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
-        }
-        
-        guard let nativeCoin = nativeCoinAux else {
-            return ""
-        }
-        
-        let fee = nativeCoin.decimal(for: fee)
-        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
     
     func getFromAmount() -> String {
@@ -485,5 +428,15 @@ class JoinKeysignViewModel: ObservableObject {
         
         await securityScanViewModel.scanTransaction(from: payload)
         showSecurityScan = true
+    }
+    
+    func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
+        guard let keysignPayload else { return (.empty, .empty) }
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
+    }
+    
+    func getJoinedCalculatedNetworkFee() -> String {
+        guard let keysignPayload else { return "" }
+        return gasViewModel.getJoinedCalculatedNetworkFee(payload: keysignPayload)
     }
 }

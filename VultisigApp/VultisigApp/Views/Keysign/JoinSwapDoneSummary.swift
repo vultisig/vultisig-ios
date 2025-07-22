@@ -94,7 +94,7 @@ struct JoinSwapDoneSummary: View {
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.toAmountFiatString
+                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString
                 )
             }
             
