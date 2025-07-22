@@ -25,7 +25,7 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,  // Only THORChain supports affiliates
+                isAffiliate: isAffiliate,
                 referredCode: referredCode
             )
         case .mayachain:
@@ -49,7 +49,7 @@ struct SwapService {
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
-        case .kyberswap:
+        case .kyberswap(_):
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
                   throw SwapError.routeUnavailable
