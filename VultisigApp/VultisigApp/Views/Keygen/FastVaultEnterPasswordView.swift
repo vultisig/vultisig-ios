@@ -62,16 +62,10 @@ struct FastVaultEnterPasswordView: View {
     }
     
     var continueButton: some View {
-        Button(action: {
+        PrimaryButton(title: "confirm") {
             Task {
                 await checkPassword()
             }
-        }) {
-            FilledButton(
-                title: "confirm",
-                textColor: isSaveButtonDisabled ? .textDisabled : .neutral0,
-                background: isSaveButtonDisabled ? .buttonDisabled : .persianBlue400
-            )
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)

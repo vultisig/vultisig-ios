@@ -43,8 +43,9 @@ struct UpdateCheckUpdateNowView: View {
     
     var updateButton: some View {
         return Link(destination: link) {
-            FilledButton(title: "updateNow")
+            PrimaryButtonView(title: "updateNow")
         }
+        .buttonStyle(PrimaryButtonStyle())
         .padding(40)
     }
 }

@@ -21,31 +21,22 @@ extension SendCryptoVerifyView {
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
                 
-                FilledButton(
-                    title: NSLocalizedString("signTransaction", comment: ""),
-                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
-                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
-                )
-                .onLongPressGesture {
-                    signPressed()
-                }
-                .onTapGesture {
-                    fastPasswordPresented = true
-                }
-                .sheet(isPresented: $fastPasswordPresented) {
-                    FastVaultEnterPasswordView(
-                        password: $tx.fastVaultPassword,
-                        vault: vault,
-                        onSubmit: { signPressed() }
-                    )
-                }
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {}
+                    .simultaneousGesture(LongPressGesture().onEnded { _ in
+                        signPressed()
+                    })
+                    .simultaneousGesture(TapGesture().onEnded { _ in
+                        fastPasswordPresented = true
+                    })
+                    .sheet(isPresented: $fastPasswordPresented) {
+                        FastVaultEnterPasswordView(
+                            password: $tx.fastVaultPassword,
+                            vault: vault,
+                            onSubmit: { signPressed() }
+                        )
+                    }
             } else {
-                FilledButton(
-                    title: NSLocalizedString("signTransaction", comment: ""),
-                    textColor: sendCryptoVerifyViewModel.isValidForm ? .neutral0 : .textDisabled,
-                    background: sendCryptoVerifyViewModel.isValidForm ? Color.persianBlue400 : .buttonDisabled
-                )
-                .onTapGesture {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     signPressed()
                 }
             }

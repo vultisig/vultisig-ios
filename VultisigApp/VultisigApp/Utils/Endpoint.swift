@@ -162,10 +162,12 @@ class Endpoint {
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referredCode: String) -> URL {
         let isAffiliateParams: String
         
-        if !referredCode.isEmpty {
+        if chain == .thorchain && !referredCode.isEmpty {
+            // THORChain supports nested affiliates
             isAffiliateParams = isAffiliate ? "&affiliate=\(referredCode)&affiliate_bps=\(THORChainSwaps.referredUserFeeRateBp)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.referredAffiliateFeeRateBp)"
                                             : "&affiliate=\(referredCode)&affiliate_bps=0&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"
         } else {
+            // MayaChain only supports single affiliate
             isAffiliateParams = isAffiliate
             ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
             : "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=0"

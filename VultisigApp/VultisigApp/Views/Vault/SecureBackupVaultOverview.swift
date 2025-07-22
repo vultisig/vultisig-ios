@@ -76,13 +76,9 @@ struct SecureBackupVaultOverview: View {
     }
     
     var nextButton: some View {
-        Button {
+        IconButton(icon: "chevron.right") {
             nextTapped()
-        } label: {
-            FilledButton(icon: "chevron.right")
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
         .frame(width: 80)
     }
     

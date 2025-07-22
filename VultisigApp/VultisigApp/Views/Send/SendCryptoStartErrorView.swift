@@ -41,10 +41,8 @@ struct SendCryptoStartErrorView: View {
     }
     
     var tryAgainButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "tryAgain") {
             HomeView()
-        } label: {
-            FilledButton(title: "tryAgain")
         }
         .padding(40)
     }

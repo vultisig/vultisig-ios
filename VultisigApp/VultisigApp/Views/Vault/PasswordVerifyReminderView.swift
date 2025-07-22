@@ -139,12 +139,9 @@ struct PasswordVerifyReminderView: View {
     }
 
     var verifyButton: some View {
-        Button {
+        PrimaryButton(title: "verify") {
             handleButtonTap()
-        } label: {
-            FilledButton(title: "verify", textColor: .neutral0, background: .persianBlue400)
         }
-        .buttonStyle(.plain)
     }
     
     var errorContent: some View {

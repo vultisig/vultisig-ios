@@ -104,16 +104,15 @@ struct FastVaultSetHintView: View {
     
     var buttons: some View {
         HStack(spacing: 8) {
-            Button(action: {
+            PrimaryButton(
+                title: "skip",
+                type: .secondary
+            ) {
                 hint = .empty
                 isLinkActive = true
-            }) {
-                FilledButton(title: "skip", textColor: .neutral0, background: Color.blue400)
             }
-            Button(action: {
+            PrimaryButton(title: "next") {
                 isLinkActive = true
-            }) {
-                FilledButton(title: "next")
             }
         }
         .padding(.top, 16)

@@ -37,42 +37,32 @@ extension BackupPasswordSetupView {
         }
     }
     
+    @ViewBuilder
     var saveButton: some View {
-        Button(action: {
-            handleProxyTap()
-        }) {
-            FilledButton(title: "save")
-        }
-        .sheet(isPresented: $showSaveShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
+        if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+            PrimaryButton(title: "save") {
+                handleProxyTap()
+            }
+            .shareSheet(isPresented: $showSaveShareSheet, activityItems: [fileURL]) { didSave in
+                if didSave {
+                    fileSaved()
+                    dismissView()
                 }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
             }
         }
     }
     
+    @ViewBuilder
     var skipButton: some View {
-        Button(action: {
-            showSkipShareSheet = true
-        }) {
-            OutlineButton(title: "skipPassword")
-        }
-        .sheet(isPresented: $showSkipShareSheet) {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                ShareSheetViewController(activityItems: [fileURL]) { didSave in
-                    if didSave {
-                        fileSaved()
-                        dismissView()
-                    }
+        if let fileURL = backupViewModel.encryptedFileURLWithoutPassword {
+            PrimaryButton(title: "skipPassword", type: .secondary) {
+                showSkipShareSheet = true
+            }
+            .shareSheet(isPresented: $showSkipShareSheet, activityItems: [fileURL]) { didSave in
+                if didSave {
+                    fileSaved()
+                    dismissView()
                 }
-                .presentationDetents([.medium])
-                .ignoresSafeArea(.all)
             }
         }
     }

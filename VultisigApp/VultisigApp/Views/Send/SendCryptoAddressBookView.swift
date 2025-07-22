@@ -27,14 +27,7 @@ struct SendCryptoAddressBookView: View {
         .presentationDetents([.medium, .large])
     }
     
-    var content: some View {
-        VStack(spacing: 12) {
-            title
-            listSelector
-            list
-        }
-        .padding(16)
-    }
+    
     
     var title: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
@@ -91,7 +84,7 @@ struct SendCryptoAddressBookView: View {
     
     var savedAddressesList: some View {
         VStack(spacing: 12) {
-            ForEach(savedAddresses) { address in
+            ForEach(savedAddresses.filter{$0.coinMeta.chain == tx.coin.chain}) { address in
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,

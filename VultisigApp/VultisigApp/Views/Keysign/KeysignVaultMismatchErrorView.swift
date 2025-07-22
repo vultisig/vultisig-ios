@@ -24,10 +24,8 @@ struct KeysignVaultMismatchErrorView: View {
     }
     
     var tryAgainButton: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "changeVault") {
             HomeView(showVaultsList: true)
-        } label: {
-            FilledButton(title: "changeVault")
         }
         .padding(40)
     }

@@ -56,10 +56,8 @@ struct KeysignCustomMessageConfirmView: View {
     }
 
     var button: some View {
-        Button(action: {
-            self.viewModel.joinKeysignCommittee()
-        }) {
-            FilledButton(title: "joinKeySign")
+        PrimaryButton(title: "joinKeySign") {
+            viewModel.joinKeysignCommittee()
         }
         .padding(20)
     }

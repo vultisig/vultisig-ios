@@ -79,10 +79,8 @@ struct MacCheckUpdateView: View {
     }
     
     var tryAgainButton: some View {
-        Button {
+        PrimaryButton(title: "tryAgain") {
             setData()
-        } label: {
-            FilledButton(title: "tryAgain")
         }
         .padding(40)
     }

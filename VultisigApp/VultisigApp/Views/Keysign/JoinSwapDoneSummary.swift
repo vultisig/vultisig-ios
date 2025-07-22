@@ -52,39 +52,19 @@ struct JoinSwapDoneSummary: View {
     }
     
     var trackButton: some View {
-        Button {
+        PrimaryButton(title: "track", type: .secondary) {
             if let link = keysignViewModel.getSwapProgressURL(txid: keysignViewModel.txid) {
                 progressLink(link: link)
             } else {
                 shareLink(txid: keysignViewModel.txid)
             }
-        } label: {
-            trackLabel
         }
-    }
-    
-    var trackLabel: some View {
-        FilledButton(
-            title: "track",
-            textColor: .neutral0,
-            background: .blue400
-        )
     }
     
     var doneButton: some View {
-        Button {
+        PrimaryButton(title: "done") {
             moveToHome = true
-        } label: {
-            doneLabel
         }
-    }
-    
-    var doneLabel: some View {
-        FilledButton(
-            title: "done",
-            textColor: .neutral0,
-            background: .persianBlue400
-        )
     }
     
     var animation: some View {

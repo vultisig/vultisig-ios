@@ -43,10 +43,8 @@ struct BackupSetupView: View {
     }
 
     var saveButton: some View {
-        Button(action: {
+        PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
             navigationLinkActive = true
-        }) {
-            FilledButton(title: "backupNow", icon: "square.and.arrow.down")
         }
     }
 

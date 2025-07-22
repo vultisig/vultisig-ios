@@ -50,18 +50,11 @@ struct ReferralOnboardingBanner: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "next") {
             handleTap()
-        } label: {
-            label
         }
-        .buttonStyle(.plain)
-    }
-    
-    var label: some View {
-        FilledButton(title: "next")
-            .padding(.bottom, 24)
-            .padding(.top, 12)
+        .padding(.bottom, 24)
+        .padding(.top, 12)
     }
     
     var closeButtonContainer: some View {

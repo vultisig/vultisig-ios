@@ -57,12 +57,10 @@ struct AddAddressBookView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "saveAddress") {
             addAddress()
-        } label: {
-            FilledButton(title: "saveAddress")
-                .padding(.bottom, 40)
         }
+        .padding(.bottom, 40)
     }
     
     var alert: Alert {

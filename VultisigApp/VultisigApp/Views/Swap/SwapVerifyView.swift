@@ -25,10 +25,6 @@ struct SwapVerifyView: View {
         ZStack {
             Background()
             view
-
-            if swapViewModel.isLoading {
-                Loader()
-            }
         }
         .onReceive(timer) { input in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
@@ -173,10 +169,8 @@ struct SwapVerifyView: View {
     }
 
     var fastVaultButton: some View {
-        Button {
+        PrimaryButton(title: NSLocalizedString("fastSign", comment: "")) {
             fastPasswordPresented = true
-        } label: {
-            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
@@ -190,26 +184,25 @@ struct SwapVerifyView: View {
         }
     }
 
+    @ViewBuilder
     var pairedSignButton: some View {
         let isDisabled = !verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired)
         
-        return Button {
-            signPressed()
-        } label: {
-            if tx.isFastVault {
-                OutlineButton(title: "Paired sign")
-                    .opacity(!isDisabled ? 1 : 0.5)
-            } else {
-                FilledButton(
-                    title: "startTransaction",
-                    textColor: isDisabled ? .textDisabled : .blue600,
-                    background: isDisabled ? .buttonDisabled : .turquoise600
-                )
+        if swapViewModel.isLoadingTransaction {
+            ButtonLoader()
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+        } else {
+            PrimaryButton(
+                title: tx.isFastVault ? "Paired sign" : "startTransaction",
+                type: tx.isFastVault ? .secondary : .primary
+            ) {
+                signPressed()
             }
+            .disabled(isDisabled)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .disabled(isDisabled)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
     }
 
     func signPressed() {
