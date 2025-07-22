@@ -13,8 +13,6 @@ struct NewWalletNameView: View {
     let selectedTab: SetupVaultState
 
     @State var name: String
-
-    @State var didSet = false
     @State var isLinkActive = false
     @State var showAlert = false
     @FocusState private var isNameFocused: Bool
@@ -137,12 +135,7 @@ struct NewWalletNameView: View {
     }
     
     private func resetPlaceholderName() {
-        guard !didSet else {
-            return
-        }
-        
         name = ""
-        didSet = true
     }
 }
 
