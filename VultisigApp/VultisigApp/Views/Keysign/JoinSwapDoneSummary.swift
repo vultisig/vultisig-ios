@@ -38,7 +38,6 @@ struct JoinSwapDoneSummary: View {
                 fromToCards
                 summary
             }
-            .padding(.horizontal)
         }
     }
     
