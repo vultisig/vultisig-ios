@@ -16,12 +16,20 @@ struct SwapCoinPickerView: View {
     
     @State var searchText = ""
     @State var showChainPickerSheet: Bool = false
+    @State var isLoadingBalances: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    private let balanceService = BalanceService.shared
     
     var main: some View {
         VStack {
             header
             views
+        }
+        .task {
+            if let selectedChain {
+                await loadBalances()
+            }
         }
     }
     
@@ -57,7 +65,7 @@ struct SwapCoinPickerView: View {
                 searchBar
                 chainSelector
                 
-                if isLoading {
+                if isLoading || isLoadingBalances {
                     loadingView
                 } else if getCoins().count > 0 {
                     networkTitle
@@ -68,6 +76,11 @@ struct SwapCoinPickerView: View {
                 
                 // Chain carousel at bottom
                 chainCarousel
+                
+                // Custom token button - only show for supported chains
+                if let selectedChain, isCustomTokenSupported(for: selectedChain) {
+                    customTokenButton
+                }
             }
             .padding(.vertical, 8)
             .padding(.bottom, 50)
@@ -149,24 +162,48 @@ struct SwapCoinPickerView: View {
         Button {
             showChainPickerSheet = true
         } label: {
-            chainSelectorLabel
+            HStack(spacing: 6) {
+                if let selectedChain {
+                    Image(selectedChain.logo)
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                    
+                    Text(selectedChain.name)
+                        .font(.body14BrockmannMedium)
+                        .foregroundColor(.neutral0)
+                } else {
+                    Text(NSLocalizedString("allChains", comment: ""))
+                        .font(.body14BrockmannMedium)
+                        .foregroundColor(.neutral0)
+                }
+                
+                Image(systemName: "chevron.down")
+                    .font(.caption)
+                    .foregroundColor(.extraLightGray)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.blue600)
+            .cornerRadius(8)
+        }
+        .sheet(isPresented: $showChainPickerSheet) {
+            SwapChainPickerView(
+                vault: vault,
+                showSheet: $showChainPickerSheet,
+                selectedChain: $selectedChain,
+                selectedCoin: $selectedCoin
+            )
+            .environmentObject(viewModel)
+        }
+        .onChange(of: selectedChain) { oldValue, newValue in
+            if oldValue != newValue && newValue != nil {
+                Task {
+                    await loadBalances()
+                }
+            }
         }
     }
     
-    var chainSelectorLabel: some View {
-        HStack(spacing: 4) {
-            Image(selectedChain?.logo ?? "")
-                .resizable()
-                .frame(width: 16, height: 16)
-            
-            Text(selectedChain?.name ?? "")
-            
-            Image(systemName: "chevron.down")
-        }
-        .foregroundColor(.neutral0)
-        .font(.body12BrockmannMedium)
-    }
-
     var searchField: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
@@ -183,38 +220,51 @@ struct SwapCoinPickerView: View {
     }
     
     var chainCarousel: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("selectChain", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(availableChains, id: \.self) { chain in
-                        Button {
-                            selectedChain = chain
-                        } label: {
-                            HStack(spacing: 6) {
-                                Image(chain.logo)
-                                    .resizable()
-                                    .frame(width: 16, height: 16)
-                                
-                                Text(chain.name)
-                                    .font(.body12BrockmannMedium)
-                                    .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(selectedChain == chain ? Color.blue600 : Color.clear)
-                            )
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(availableChains, id: \.self) { chain in
+                    Button {
+                        selectChain(chain)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(chain.logo)
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                            
+                            Text(chain.name)
+                                .font(.body12BrockmannMedium)
+                                .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
                         }
-                        .buttonStyle(BorderlessButtonStyle())
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(selectedChain == chain ? Color.turquoise600 : Color.blue600)
+                        .cornerRadius(20)
                     }
                 }
-                .padding(.horizontal, 16)
             }
+            .padding(.horizontal, 4)
+        }
+        .frame(height: 44)
+    }
+    
+    var customTokenButton: some View {
+        NavigationLink {
+            SwapCustomTokenView(
+                vault: vault,
+                chain: selectedChain!,
+                showSheet: $showSheet,
+                selectedCoin: $selectedCoin
+            )
+            .environmentObject(viewModel)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "plus")
+                Text(NSLocalizedString("customToken", comment: ""))
+                Spacer()
+            }
+            .font(.body16MenloBold)
+            .foregroundColor(.turquoise600)
+            .padding(.top, 16)
         }
     }
     
@@ -246,6 +296,50 @@ struct SwapCoinPickerView: View {
         }
         return Array(Set(chains)).sorted {
             $0.name < $1.name
+        }
+    }
+    
+    private func selectChain(_ chain: Chain) {
+        selectedChain = chain
+        
+        // Select first coin of the chain automatically
+        let availableCoins = getCoins()
+        if let firstCoin = availableCoins.first {
+            selectedCoin = firstCoin
+        }
+        
+        // Load balances for the selected chain
+        Task {
+            await loadBalances()
+        }
+    }
+    
+    private func loadBalances() async {
+        await MainActor.run {
+            isLoadingBalances = true
+        }
+        
+        let chainCoins = vault.coins.filter { $0.chain == selectedChain }
+        
+        await withTaskGroup(of: Void.self) { group in
+            for coin in chainCoins {
+                group.addTask {
+                    await viewModel.loadData(coin: coin)
+                }
+            }
+        }
+        
+        await MainActor.run {
+            isLoadingBalances = false
+        }
+    }
+    
+    private func isCustomTokenSupported(for chain: Chain) -> Bool {
+        switch chain.chainType {
+        case .EVM, .Solana:
+            return true
+        default:
+            return false
         }
     }
 }

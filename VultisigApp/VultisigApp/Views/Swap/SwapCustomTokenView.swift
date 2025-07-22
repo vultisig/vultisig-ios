@@ -46,7 +46,6 @@ struct SwapCustomTokenView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
@@ -70,12 +69,10 @@ struct SwapCustomTokenView: View {
                     showAddressBookIcon: false
                 )
                 
-                Button(action: {
+                IconButton(icon: "magnifyingglass", size: .mini) {
                     Task {
                         await fetchTokenInfo()
                     }
-                }) {
-                    CircularFilledButton(icon: "magnifyingglass")
                 }
             }
             
@@ -90,10 +87,8 @@ struct SwapCustomTokenView: View {
                 .background(Color.blue600)
                 .cornerRadius(10)
                 
-                Button(action: {
+                PrimaryButton(title: "Add \(tokenSymbol) token") {
                     saveToken()
-                }) {
-                    FilledButton(title: "Add \(tokenSymbol) token")
                 }
             }
             
@@ -112,10 +107,8 @@ struct SwapCustomTokenView: View {
                 .padding(.horizontal, 16)
             
             if !(error is RateLimitError) {
-                Button {
+                PrimaryButton(title: "Retry") {
                     Task { await fetchTokenInfo() }
-                } label: {
-                    FilledButton(title: "Retry")
                 }
                 .padding(.horizontal, 40)
             }
@@ -209,18 +202,31 @@ struct SwapCustomTokenView: View {
     }
     
     private func saveToken() {
-        if let customToken = self.token {
+        guard let token = self.token else { return }
+        
+        Task {
             isLoading = true
-            Task {
-                do {
-                    if let newCoin = try await CoinService.addToChain(asset: customToken, to: vault, priceProviderId: customToken.priceProviderId) {
-                        selectedCoin = newCoin
+            
+            do {
+                // Create and add the coin to the vault
+                if let coin = try await CoinService.addToChain(
+                    asset: token,
+                    to: vault,
+                    priceProviderId: token.priceProviderId
+                ) {
+                    // Update the selectedCoin on the main thread
+                    await MainActor.run {
+                        selectedCoin = coin
+                        isLoading = false
                         showSheet = false
+                        dismiss()
                     }
-                } catch {
-                    self.error = error
                 }
-                isLoading = false
+            } catch {
+                await MainActor.run {
+                    self.error = error
+                    isLoading = false
+                }
             }
         }
     }

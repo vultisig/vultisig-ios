@@ -107,11 +107,12 @@ struct SwapChainCell: View {
     }
     
     private var totalTokenAmount: String {
-        let chainCoins = coins.filter { $0.chain == chain }
-        let totalAmount = chainCoins.reduce(Decimal.zero) { sum, coin in
-            sum + (Decimal(string: coin.balanceString) ?? Decimal.zero)
+        // Find the native token for this chain
+        if let nativeToken = coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
+            return nativeToken.balanceString
         }
-        return totalAmount.formatForDisplay()
+        // If no native token, return 0
+        return "0.0000"
     }
     
     private var totalUSDValue: String {

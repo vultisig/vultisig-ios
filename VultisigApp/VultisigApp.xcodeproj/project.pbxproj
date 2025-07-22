@@ -759,6 +759,7 @@
 		B51119332C0072620020B711 /* FunctionCallCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* FunctionCallCustom.swift */; };
 		B51819862DCC0A480013C435 /* FunctionCallStakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */; };
 		B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */; };
+		B51BA0AF2E304E000075BEBE /* SwapCustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */; };
 		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
 		B52196422C1296DF0021D27A /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196412C1296DF0021D27A /* IntExtension.swift */; };
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
@@ -1725,6 +1726,7 @@
 		B51119322C0072620020B711 /* FunctionCallCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallCustom.swift; sourceTree = "<group>"; };
 		B51819852DCC0A480013C435 /* FunctionCallStakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeTCY.swift; sourceTree = "<group>"; };
 		B51819872DCC1D920013C435 /* FunctionCallUnstakeTCY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeTCY.swift; sourceTree = "<group>"; };
+		B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCustomTokenView.swift; sourceTree = "<group>"; };
 		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
 		B52196412C1296DF0021D27A /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
@@ -3642,6 +3644,7 @@
 		D9AD8EEF2B6731570009F8D5 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
+				B51BA0AE2E304E000075BEBE /* SwapCustomTokenView.swift */,
 				A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */,
 				A564ED412BC350520056FDC0 /* SwapTransaction.swift */,
 				A543B3A12BEA93D4003FB989 /* SwapQuote.swift */,
@@ -4687,6 +4690,7 @@
 				A6CEFE7A2D8E6A03005AB80C /* PasswordBackupOptionsView+macOS.swift in Sources */,
 				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
+				B51BA0AF2E304E000075BEBE /* SwapCustomTokenView.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A622C8482C9BBD3900908332 /* FunctionCallView+macOS.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
