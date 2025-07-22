@@ -11,6 +11,7 @@ struct SendCryptoContent {
     let amountFiat: String
     let hash: String
     let explorerLink: String
+    let memo: String
     
     let fromAddress: String
     let toAddress: String

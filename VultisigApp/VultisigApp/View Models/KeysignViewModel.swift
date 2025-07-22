@@ -50,6 +50,14 @@ class KeysignViewModel: ObservableObject {
     
     private let gasViewModel = JoinKeysignGasViewModel()
     
+    var memo: String? {
+        guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
+            return keysignPayload?.memo
+        }
+        
+        return decodedMemo
+    }
+    
     init() {
         self.keysignCommittee = []
         self.mediatorURL = ""

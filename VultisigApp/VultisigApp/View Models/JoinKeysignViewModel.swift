@@ -54,17 +54,11 @@ class JoinKeysignViewModel: ObservableObject {
     var payloadID: String = ""
     
     var memo: String? {
-        guard let rawMemo = keysignPayload?.memo, rawMemo.isNotEmpty else {
-            return nil
-            
-        }
-        
-        // Show decoded memo if available, otherwise show raw memo as fallback
-        if let decodedMemo = decodedMemo, !decodedMemo.isEmpty {
-            return decodedMemo
-        } else {
+        guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo
         }
+        
+        return decodedMemo
     }
     
     private let gasViewModel = JoinKeysignGasViewModel()

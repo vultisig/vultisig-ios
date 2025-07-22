@@ -55,6 +55,7 @@ struct SendCryptoDoneView: View {
                 amountFiat: tx.amountInFiat,
                 hash: hash,
                 explorerLink: explorerLink(),
+                memo: tx.memo,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
@@ -62,6 +63,7 @@ struct SendCryptoDoneView: View {
         ) {
             tx.reset(coin: tx.coin)
         }
+        .padding(.horizontal, 16)
     }
 
     var continueButton: some View {
@@ -71,7 +73,7 @@ struct SendCryptoDoneView: View {
             }
             navigateToHome = true
         }
-        .padding(24)
+        .padding(16)
     }
 
     var summaryCard: some View {

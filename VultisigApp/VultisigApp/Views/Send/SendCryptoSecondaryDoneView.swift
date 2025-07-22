@@ -32,7 +32,8 @@ struct SendCryptoSecondaryDoneView: View {
                     header
                     summary
                 }
-                .padding(24)
+                .padding(.vertical, 24)
+                .padding(.horizontal, 16)
             }
             
             continueButton
@@ -49,22 +50,33 @@ struct SendCryptoSecondaryDoneView: View {
             
             separator
             
-            if let vaultName = homeViewModel.selectedVault?.name {
+            if let vaultName = homeViewModel.selectedVault?.name, vaultName.isNotEmpty {
                 getCell(
                     title: "from",
                     description: vaultName,
                     bracketValue: input.fromAddress
                 )
+                separator
             }
             
-            separator
+            Group {
+                getCell(
+                    title: "to",
+                    description: input.toAddress
+                )
+                separator
+            }
+            .showIf(input.toAddress.isNotEmpty)
             
-            getCell(
-                title: "to",
-                description: input.toAddress
-            )
+            Group {
+                getCell(
+                    title: "memo",
+                    description: input.memo
+                )
+                separator
+            }
+            .showIf(input.memo.isNotEmpty)
             
-            separator
             
             getCell(
                     title: "network",
@@ -211,6 +223,7 @@ struct SendCryptoSecondaryDoneView: View {
             amountFiat: "US$ 200",
             hash: "44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
             explorerLink: "https://thorchain.net/tx/44B447A6A8BCABCCEC6E3EE9DE366EA4E0CDFC2C0BFB59D51E1A12D27B0C51AB",
+            memo: "test",
             fromAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             toAddress: "thor1kkmnmgvd85puk8zsvqfxx36cqy9mxqret39t8z",
             fee: ("0.001 RUNE", "US$ 0.00")

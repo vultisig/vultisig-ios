@@ -18,14 +18,16 @@ struct JoinKeysignDoneSummary: View {
     let summaryViewModel = JoinKeysignSummaryViewModel()
     
     var body: some View {
-        Group {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                swapContent
-            } else if viewModel.customMessagePayload == nil {
-                sendContent
-            } else {
-                ScrollView {
-                    summary
+        VStack {
+            Group {
+                if viewModel.keysignPayload?.swapPayload != nil {
+                    swapContent
+                } else if viewModel.customMessagePayload == nil {
+                    sendContent
+                } else {
+                    ScrollView {
+                        summary
+                    }
                 }
             }
         }
@@ -86,6 +88,7 @@ struct JoinKeysignDoneSummary: View {
                     amountFiat: keysignPayload.toSendAmountFiatString,
                     hash: viewModel.txid,
                     explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
+                    memo: viewModel.memo ?? "",
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
                     fee: (fees.feeCrypto, fees.feeFiat)

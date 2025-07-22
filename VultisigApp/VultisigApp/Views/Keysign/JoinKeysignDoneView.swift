@@ -45,11 +45,10 @@ struct JoinKeysignDoneView: View {
     }
 
     var continueButton: some View {
-        PrimaryButton(title: "complete") {
+        PrimaryButton(title: "done") {
             handleTap()
         }
         .id(UUID())
-        .padding(20)
     }
     
     private func handleTap() {
