@@ -35,8 +35,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: false,  // MayaChain doesn't support THORChain affiliates
-                referredCode: ""
+                isAffiliate: isAffiliate,
+                referredCode: referredCode
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -47,7 +47,7 @@ struct SwapService {
                 service: OneInchService.shared,
                 chain: fromChainID,
                 amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: false  // 1inch uses its own referrer system
+                toCoin: toCoin, isAffiliate: isAffiliate
             )
         case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -59,13 +59,13 @@ struct SwapService {
                 chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: false  // KyberSwap uses its own referrer system
+                toCoin: toCoin, isAffiliate: isAffiliate
             )
         case .lifi:
             return try await fetchLiFiQuote(
                 service: LiFiService.shared,
                 amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: false  // LiFi doesn't use THORChain affiliates
+                toCoin: toCoin, isAffiliate: isAffiliate
             )
         }
     }

@@ -105,8 +105,8 @@ extension SwapTransaction {
         let vaultAddress = quote.inboundAddress ?? fromCoin.address
         let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
         
-        // Only use affiliate for THORChain, not MayaChain
-        let shouldUseAffiliate = provider == .thorchain && isAlliliate
+        // Use affiliate for both THORChain and MayaChain
+        let shouldUseAffiliate = isAlliliate
         
         let swapPayload = THORChainSwapPayload(
             fromAddress: fromCoin.address,
