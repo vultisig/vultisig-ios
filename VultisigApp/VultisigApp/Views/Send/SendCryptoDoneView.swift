@@ -104,13 +104,11 @@ struct SendCryptoDoneView: View {
     }
 
     var continueButton: some View {
-        Button {
+        PrimaryButton(title: "done") {
             if let send = sendTransaction {
                 send.reset(coin: send.coin)
             }
             navigateToHome = true
-        } label: {
-            FilledButton(title: "done", textColor: .neutral0, background: .persianBlue400)
         }
         .padding(24)
     }

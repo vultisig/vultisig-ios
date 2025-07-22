@@ -64,24 +64,19 @@ struct MonthlyBackupView: View {
     }
 
     var backupButton: some View {
-        Button {
+        PrimaryButton(title: "backup") {
             isBackupPresented = true
             isPresented = false
-        } label: {
-            FilledButton(title: "backup")
         }
         .padding(.horizontal, 16)
         .buttonStyle(.plain)
     }
 
     var dontRemindButton: some View {
-        Button {
+        PrimaryButton(title: "dontRemind", type: .secondary) {
             monthlyReminderDate = .distantFuture
             isPresented = false
-        } label: {
-            OutlineButton(title: "dontRemind")
         }
         .padding(.horizontal, 16)
-        .buttonStyle(.plain)
     }
 }

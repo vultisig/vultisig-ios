@@ -167,12 +167,13 @@ struct GeneralCodeScannerView: View {
         } label: {
             uploadButton
         }
+        .buttonStyle(PrimaryButtonStyle(type: .primary, size: .medium))
         .padding(.horizontal, 16)
         .padding(.bottom, 30)
     }
     
     var uploadButton: some View {
-        FilledButton(title: "uploadQR", icon: "arrow.up.document")
+        PrimaryButtonView(title: "uploadQR", leadingIcon: "arrow.up.document")
     }
     
     var alert: Alert {

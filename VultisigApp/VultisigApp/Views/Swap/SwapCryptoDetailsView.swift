@@ -122,17 +122,27 @@ struct SwapCryptoDetailsView: View {
     }
     
     var swapLabel: some View {
-        Image(systemName: "arrow.up.arrow.down")
-            .font(.body16MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(width: 38, height: 38)
-            .background(Color.persianBlue400)
-            .cornerRadius(50)
-            .padding(2)
-            .background(Color.black.opacity(0.2))
-            .cornerRadius(50)
-            .rotationEffect(.degrees(buttonRotated ? 180 : 0))
-            .animation(.spring, value: buttonRotated)
+        Group {
+            if swapViewModel.isLoadingQuotes {
+                // Show loader instead of swap icon when loading
+                SpinningLineLoader()
+                    .scaleEffect(0.8)
+                    .frame(width: 38, height: 38)
+            } else {
+                // Show swap icon when not loading
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.body16MontserratMedium)
+                    .foregroundColor(.neutral0)
+                    .frame(width: 38, height: 38)
+            }
+        }
+        .background(Color.persianBlue400)
+        .cornerRadius(50)
+        .padding(2)
+        .background(Color.black.opacity(0.2))
+        .cornerRadius(50)
+        .rotationEffect(.degrees(buttonRotated ? 180 : 0))
+        .animation(.spring, value: buttonRotated)
     }
     
     var filler: some View {
@@ -143,25 +153,28 @@ struct SwapCryptoDetailsView: View {
     
     var summary: some View {
         SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
+            .redacted(reason: swapViewModel.isLoadingQuotes ? .placeholder : [])
     }
     
+    @ViewBuilder
     var continueButton: some View {
         let isDisabled = !swapViewModel.validateForm(tx: tx)
         
-        return Button {
-            Task {
-                swapViewModel.moveToNextView()
+        if swapViewModel.isLoadingTransaction {
+            ButtonLoader()
+                .disabled(true)
+                .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+                .padding(40)
+        } else {
+            PrimaryButton(title: "continue") {
+                Task {
+                    swapViewModel.moveToNextView()
+                }
             }
-        } label: {
-            FilledButton(
-                title: "continue",
-                textColor: isDisabled ? .textDisabled : .blue600,
-                background: isDisabled ? .buttonDisabled : .turquoise600
-            )
+            .disabled(isDisabled)
+            .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+            .padding(40)
         }
-        .disabled(isDisabled)
-        .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-        .padding(40)
     }
     
     var loader: some View {
@@ -209,12 +222,7 @@ extension SwapCryptoDetailsView {
         swapViewModel.showAllPercentageButtons = false
         // Use coin's decimals for proper precision
         // For EVM chains, cap at 9 decimals to avoid impractical precision
-        let decimalsToUse: Int
-        if tx.fromCoin.chainType == .EVM {
-            decimalsToUse = min(9, max(4, tx.fromCoin.decimals))
-        } else {
-            decimalsToUse = max(4, tx.fromCoin.decimals)
-        }
+        let decimalsToUse: Int = 4
         
         switch percentage {
         case 25:

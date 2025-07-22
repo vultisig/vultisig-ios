@@ -30,6 +30,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     @Published var error: Error?
     @Published var isLoading = false
+    @Published var isLoadingQuotes = false
+    @Published var isLoadingFees = false
+    @Published var isLoadingTransaction = false
     @Published var dataLoaded = false
     @Published var timer: Int = 59
     
@@ -236,8 +239,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
+        isLoadingTransaction = true
+        defer { isLoadingTransaction = false }
         
         do {
             guard let quote = tx.quote else {
@@ -446,8 +449,8 @@ private extension SwapCryptoViewModel {
     }
     
     func updateQuotes(tx: SwapTransaction, referredCode: String) async {
-        isLoading = true
-        defer { isLoading = false }
+        isLoadingQuotes = true
+        defer { isLoadingQuotes = false }
         
         clearQuote(tx: tx)
         
@@ -483,6 +486,9 @@ private extension SwapCryptoViewModel {
     }
     
     func updateFees(tx: SwapTransaction, vault: Vault) async {
+        isLoadingFees = true
+        defer { isLoadingFees = false }
+        
         tx.gas = .zero
         tx.thorchainFee = .zero
         

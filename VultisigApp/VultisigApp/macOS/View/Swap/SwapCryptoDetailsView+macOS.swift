@@ -14,10 +14,6 @@ extension SwapCryptoDetailsView {
             Background()
             view
             
-            if swapViewModel.isLoading {
-                loader
-            }
-            
             if showSheet() {
                 overlay
             }
@@ -60,10 +56,7 @@ extension SwapCryptoDetailsView {
                         selectedChain: $swapViewModel.toChain
                     )
                 }
-                
-                Spacer()
             }
-            .offset(y: -50)
         }
     }
     

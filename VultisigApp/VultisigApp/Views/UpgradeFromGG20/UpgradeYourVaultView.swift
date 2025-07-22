@@ -60,19 +60,12 @@ struct UpgradeYourVaultView: View {
     }
     
     var button: some View {
-        Button {
+        PrimaryButton(title: "upgradeNow") {
             showSheet = false
             navigationLinkActive = true
-        } label: {
-            label
         }
+        .frame(width: 160)
         .padding(.vertical, 36)
-        .buttonStyle(.plain)
-    }
-    
-    var label: some View {
-        FilledButton(title: "upgradeNow")
-            .frame(width: 160)
     }
     
     private func setData() {

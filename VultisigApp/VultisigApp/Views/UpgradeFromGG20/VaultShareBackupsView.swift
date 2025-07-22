@@ -48,34 +48,25 @@ struct VaultShareBackupsView: View {
         .padding(.vertical, 36)
     }
     
-    var label: some View {
-        FilledButton(title: "next")
-            .frame(width: 100)
-    }
-    
     var migrateSecureVault: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "next") {
             PeerDiscoveryView(
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: .secure,
                 fastSignConfig: nil
             )
-        } label: {
-            label
-        }
+        }.frame(width: 100)
     }
     
     var migrateFastVault: some View {
-        NavigationLink {
+        PrimaryNavigationButton(title: "next") {
             FastVaultEmailView(
                 tssType: .Migrate,
                 vault: vault,
                 selectedTab: .fast,
                 fastVaultExist: true
             )
-        } label: {
-            label
         }
     }
 }

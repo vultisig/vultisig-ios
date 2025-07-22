@@ -44,10 +44,8 @@ extension BackupPasswordSetupView {
     }
     
     var saveButton: some View {
-        Button(action: {
+        PrimaryButton(title: "save") {
             handleProxyTap()
-        }) {
-            FilledButton(title: "save")
         }
         .fileExporter(
             isPresented: $showSaveShareSheet,
@@ -69,10 +67,8 @@ extension BackupPasswordSetupView {
     }
     
     var skipButton: some View {
-        Button(action: {
+        PrimaryButton(title: "skipPassword", type: .secondary) {
             showSkipShareSheet = true
-        }) {
-            OutlineButton(title: "skipPassword")
         }
         .fileExporter(
             isPresented: $showSkipShareSheet,

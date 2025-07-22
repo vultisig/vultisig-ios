@@ -69,7 +69,7 @@ struct FastVaultPasswordDisclaimer: View {
     }
     
     var bubble: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 8) {
             title
             description
         }

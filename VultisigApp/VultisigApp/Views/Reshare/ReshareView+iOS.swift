@@ -43,10 +43,8 @@ extension ReshareView {
     }
 
     var joinReshareButton: some View {
-        Button {
+        PrimaryButton(title: "joinReshare", type: .secondary) {
             showJoinReshare = true
-        } label: {
-            OutlineButton(title: "joinReshare")
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: vault, selectedVault: nil)
