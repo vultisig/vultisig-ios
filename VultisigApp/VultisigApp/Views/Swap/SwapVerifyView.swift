@@ -25,10 +25,6 @@ struct SwapVerifyView: View {
         ZStack {
             Background()
             view
-
-            if swapViewModel.isLoading {
-                Loader()
-            }
         }
         .onReceive(timer) { input in
             swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
@@ -192,15 +188,21 @@ struct SwapVerifyView: View {
     var pairedSignButton: some View {
         let isDisabled = !verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired)
         
-        PrimaryButton(
-            title: tx.isFastVault ? "Paired sign" : "startTransaction",
-            type: tx.isFastVault ? .secondary : .primary
-        ) {
-            signPressed()
+        if swapViewModel.isLoadingTransaction {
+            ButtonLoader()
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+        } else {
+            PrimaryButton(
+                title: tx.isFastVault ? "Paired sign" : "startTransaction",
+                type: tx.isFastVault ? .secondary : .primary
+            ) {
+                signPressed()
+            }
+            .disabled(isDisabled)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
-        .disabled(isDisabled)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
     }
 
     func signPressed() {
