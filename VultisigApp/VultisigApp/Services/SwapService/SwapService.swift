@@ -25,7 +25,7 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
+                isAffiliate: isAffiliate,  // Only THORChain supports affiliates
                 referredCode: referredCode
             )
         case .mayachain:
@@ -35,8 +35,8 @@ struct SwapService {
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
-                isAffiliate: isAffiliate,
-                referredCode: referredCode
+                isAffiliate: false,  // MayaChain doesn't support THORChain affiliates
+                referredCode: ""
             )
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
@@ -47,9 +47,9 @@ struct SwapService {
                 service: OneInchService.shared,
                 chain: fromChainID,
                 amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                toCoin: toCoin, isAffiliate: false  // 1inch uses its own referrer system
             )
-        case .kyberswap(_):
+        case .kyberswap:
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
                   throw SwapError.routeUnavailable
@@ -59,13 +59,13 @@ struct SwapService {
                 chain: try KyberSwapService.shared.getChainName(for: fromCoin.chain),
                 amount: amount,
                 fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                toCoin: toCoin, isAffiliate: false  // KyberSwap uses its own referrer system
             )
         case .lifi:
             return try await fetchLiFiQuote(
                 service: LiFiService.shared,
                 amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
+                toCoin: toCoin, isAffiliate: false  // LiFi doesn't use THORChain affiliates
             )
         }
     }

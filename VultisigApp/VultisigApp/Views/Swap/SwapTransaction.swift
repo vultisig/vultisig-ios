@@ -104,6 +104,10 @@ extension SwapTransaction {
     func buildThorchainSwapPayload(quote: ThorchainSwapQuote, provider: SwapProvider) -> THORChainSwapPayload {
         let vaultAddress = quote.inboundAddress ?? fromCoin.address
         let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
+        
+        // Only use affiliate for THORChain, not MayaChain
+        let shouldUseAffiliate = provider == .thorchain && isAlliliate
+        
         let swapPayload = THORChainSwapPayload(
             fromAddress: fromCoin.address,
             fromCoin: fromCoin,
@@ -116,7 +120,7 @@ extension SwapTransaction {
             streamingInterval: String(provider.streamingInterval),
             streamingQuantity: "0",
             expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-            isAffiliate: isAlliliate
+            isAffiliate: shouldUseAffiliate
         )
         return swapPayload
     }
