@@ -12,7 +12,7 @@ struct SwapCoinPickerView: View {
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
     @Binding var selectedChain: Chain?
-    @EnvironmentObject var swapViewModel: SwapCryptoViewModel
+    let isLoading: Bool
     
     @State var searchText = ""
     @State var showChainPickerSheet: Bool = false
@@ -57,7 +57,7 @@ struct SwapCoinPickerView: View {
                 searchBar
                 chainSelector
                 
-                if swapViewModel.isLoading {
+                if isLoading {
                     loadingView
                 } else if getCoins().count > 0 {
                     networkTitle
@@ -251,5 +251,5 @@ struct SwapCoinPickerView: View {
 }
 
 #Preview {
-    SwapCoinPickerView(vault: Vault.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example))
+    SwapCoinPickerView(vault: Vault.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example), isLoading: false)
 }

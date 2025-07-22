@@ -87,7 +87,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            handlePercentageSelection: handlePercentageSelection
         )
     }
     
@@ -102,7 +103,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            handlePercentageSelection: nil
         )
     }
     
