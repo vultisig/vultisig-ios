@@ -108,9 +108,8 @@ struct SwapChainPickerView: View {
     
     var loadingView: some View {
         VStack(spacing: 16) {
-            ProgressView()
+            SpinningLineLoader()
                 .scaleEffect(1.2)
-                .foregroundColor(.turquoise600)
             
             Text(NSLocalizedString("loading", comment: ""))
                 .font(.body14BrockmannMedium)
