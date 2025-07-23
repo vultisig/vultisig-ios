@@ -159,11 +159,18 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
+        await MainActor.run {
+            sendCryptoViewModel.isLoading = true
+        }
+        
         sendDetailsViewModel.onSelect(tab: .amount)
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
+        }
+        
+        await MainActor.run {
             sendCryptoViewModel.isLoading = false
         }
     }
