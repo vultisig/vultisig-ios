@@ -136,7 +136,7 @@ struct SendCryptoDoneSummary: View {
                 Separator()
                 getGeneralCell(
                     title: "totalFee",
-                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx)))"
+                    description: "\(swapSummaryViewModel.totalFeeString(tx: tx))"
                 )
             }
         }
