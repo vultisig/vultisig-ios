@@ -104,7 +104,6 @@ struct ServerBackupVerificationView: View {
         
         if verificationCode.count == Self.codeLength {
             verifyCode()
-            return
         }
     }
 

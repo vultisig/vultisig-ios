@@ -65,7 +65,7 @@ extension ServerBackupVerificationView {
                         .stroke(getBorderColor(index), lineWidth: 1)
                 )
                 .focused($focusedField, equals: index)
-                .onChange(of: otp[index]) { oldValue, newValue in
+                .onChange(of: otp[index]) { _, newValue in
                     handleInputChange(newValue, index: index)
                 }
             }
