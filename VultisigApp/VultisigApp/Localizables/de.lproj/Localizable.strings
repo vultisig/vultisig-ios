@@ -572,6 +572,8 @@
 "usePassword" = "Passwort verwenden";
 "migrate" = "Migrieren";
 "selectNetwork" = "Netzwerk auswählen";
+"selectChain" = "Kette auswählen";
+"swapTokenNotSupportedSPL" = "Swap wird für Token Contract nicht unterstützt, wir unterstützen nur native SPL-Token, Swap von SOL zu USDC/USDT";
 "network" = "Netzwerk";
 "selectAsset" = "Asset auswählen";
 "chain" = "Blockchain";
