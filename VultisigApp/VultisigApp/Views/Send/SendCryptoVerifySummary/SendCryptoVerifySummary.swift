@@ -12,9 +12,42 @@ struct SendCryptoVerifySummary {
     let network: String
     let networkImage: String
     let memo: String
+    let memoFunctionDictionary: [String: String]?
     let feeCrypto: String
     let feeFiat: String
     let coinImage: String
     let amount: String
     let coinTicker: String
+    let showScannedBy: Bool
+    
+    init(
+        fromName: String,
+        fromAddress: String,
+        toAddress: String,
+        network: String,
+        networkImage: String,
+        memo: String,
+        // Only for Function Calls
+        memoFunctionDictionary: [String : String]? = nil,
+        feeCrypto: String,
+        feeFiat: String,
+        coinImage: String,
+        amount: String,
+        coinTicker: String,
+        showScannedBy: Bool = true
+    ) {
+        self.fromName = fromName
+        self.fromAddress = fromAddress
+        self.toAddress = toAddress
+        self.network = network
+        self.networkImage = networkImage
+        self.memo = memo
+        self.memoFunctionDictionary = memoFunctionDictionary
+        self.feeCrypto = feeCrypto
+        self.feeFiat = feeFiat
+        self.coinImage = coinImage
+        self.amount = amount
+        self.coinTicker = coinTicker
+        self.showScannedBy = showScannedBy
+    }
 }

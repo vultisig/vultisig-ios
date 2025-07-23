@@ -21,6 +21,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     var body: some View {
         VStack(spacing: 16) {
             blockAidBanner
+                .showIf(input.showScannedBy)
             fields
         }
         .padding(.top, 20)
@@ -58,14 +59,23 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             .showIf(input.toAddress.isNotEmpty)
             
-            getValueCell(for: "network", with: input.network, image: input.networkImage)
-            Separator()
-            
             Group {
                 getValueCell(for: "memo", with: input.memo)
                 Separator()
             }
             .showIf(input.memo.isNotEmpty)
+            
+            if let dictionary = input.memoFunctionDictionary, !dictionary.isEmpty {
+                ForEach(Array(dictionary.keys), id: \.self) { key in
+                    if let value = dictionary[key] {
+                        getValueCell(for: key, with: value)
+                        Separator()
+                    }
+                }
+            }
+            
+            getValueCell(for: "network", with: input.network, image: input.networkImage)
+            Separator()
             
             getValueCell(for: "estNetworkFee", with: input.feeCrypto, secondRowText: input.feeFiat)
         }
