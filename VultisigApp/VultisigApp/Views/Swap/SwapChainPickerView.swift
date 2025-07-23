@@ -14,7 +14,11 @@ struct SwapChainPickerView: View {
     @Binding var selectedCoin: Coin
 
     @State var searchText = ""
+    @State var isLoadingBalances: Bool = false
+    @State var balanceUpdateId = UUID()
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    private let balanceService = BalanceService.shared
     
     var filteredChains: [Chain] {
         let chains = vault.coins.map { coin in
@@ -28,7 +32,12 @@ struct SwapChainPickerView: View {
         return searchText.isEmpty
             ? chainsArray
             : chainsArray
-            .filter { $0.name.lowercased().contains(searchText.lowercased()) }
+            .filter { chain in
+                // Search by chain name
+                chain.name.lowercased().contains(searchText.lowercased()) ||
+                // Search by native token ticker
+                chain.ticker.lowercased().contains(searchText.lowercased())
+            }
     }
     
     var content: some View {
@@ -45,6 +54,9 @@ struct SwapChainPickerView: View {
         VStack {
             header
             views
+        }
+        .task {
+            await loadAllBalances()
         }
     }
     
@@ -79,7 +91,9 @@ struct SwapChainPickerView: View {
             VStack(spacing: 12) {
                 searchBar
                 
-                if filteredChains.count > 0 {
+                if isLoadingBalances {
+                    loadingView
+                } else if filteredChains.count > 0 {
                     networkTitle
                     list
                 } else {
@@ -90,6 +104,19 @@ struct SwapChainPickerView: View {
             .padding(.bottom, 50)
             .padding(.horizontal, 16)
         }
+    }
+    
+    var loadingView: some View {
+        VStack(spacing: 16) {
+            SpinningLineLoader()
+                .scaleEffect(1.2)
+            
+            Text(NSLocalizedString("loading", comment: ""))
+                .font(.body14BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top, 48)
     }
     
     var networkTitle: some View {
@@ -112,6 +139,7 @@ struct SwapChainPickerView: View {
             }
         }
         .cornerRadius(12)
+        .id(balanceUpdateId)
     }
     
     var emptyMessage: some View {
@@ -150,6 +178,30 @@ struct SwapChainPickerView: View {
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
+        }
+    }
+    
+    private func loadAllBalances() async {
+        await MainActor.run {
+            isLoadingBalances = true
+        }
+        
+        // Load balances for all coins in the vault
+        await withTaskGroup(of: Void.self) { group in
+            for coin in vault.coins {
+                group.addTask {
+                    await viewModel.loadData(coin: coin)
+                }
+            }
+        }
+        
+        // Small delay to ensure data is propagated
+        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        
+        await MainActor.run {
+            isLoadingBalances = false
+            // Force view refresh by updating the ID
+            balanceUpdateId = UUID()
         }
     }
 }

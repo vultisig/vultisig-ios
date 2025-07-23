@@ -556,8 +556,7 @@
 "migrate" = "Migrare";
 "selectNetwork" = "Seleziona rete";
 "network" = "Rete";
-"selectAsset" = "Seleziona asset";
-"chain" = "Catena";
+"selectChain" = "Seleziona catena";
 "maxTotalFee" = "Commissione totale max.";
 "allowance" = "Autorizzazione";
 "on" = "su";

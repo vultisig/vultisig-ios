@@ -18,15 +18,6 @@ extension SwapCoinPickerView {
         ZStack {
             Background()
             main
-            
-            if showChainPickerSheet {
-                SwapChainPickerView(
-                    vault: vault,
-                    showSheet: $showChainPickerSheet,
-                    selectedChain: $selectedChain,
-                    selectedCoin: $selectedCoin
-                )
-            }
         }
         .buttonStyle(BorderlessButtonStyle())
     }
