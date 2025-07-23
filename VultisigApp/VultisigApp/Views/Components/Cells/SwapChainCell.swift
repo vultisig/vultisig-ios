@@ -75,15 +75,9 @@ struct SwapChainCell: View {
     }
     
     var balanceInfo: some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            Text(totalTokenAmount)
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.neutral0)
-            
-            Text(totalUSDValue)
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-        }
+        Text(totalUSDValue)
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.neutral0)
     }
     
     private func setData() {
@@ -104,15 +98,6 @@ struct SwapChainCell: View {
         }
         
         showSheet = false
-    }
-    
-    private var totalTokenAmount: String {
-        // Find the native token for this chain
-        if let nativeToken = coins.first(where: { $0.chain == chain && $0.isNativeToken }) {
-            return nativeToken.balanceString
-        }
-        // If no native token, return 0
-        return "0.0000"
     }
     
     private var totalUSDValue: String {
