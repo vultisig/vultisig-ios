@@ -15,7 +15,6 @@ struct SwapCoinPickerView: View {
     let isLoading: Bool
     
     @State var searchText = ""
-    @State var showChainPickerSheet: Bool = false
     @State var isLoadingBalances: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -63,7 +62,6 @@ struct SwapCoinPickerView: View {
         ScrollView {
             VStack(spacing: 12) {
                 searchBar
-                chainSelector
                 
                 if isLoading || isLoadingBalances {
                     loadingView
@@ -139,64 +137,6 @@ struct SwapCoinPickerView: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .padding(.bottom, 12)
-    }
-    
-    var chainSelector: some View {
-        HStack(spacing: 6) {
-            Text(NSLocalizedString("chain", comment: ""))
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-            
-            chainSelectorButton
-            
-            Spacer()
-        }
-    }
-    
-    var chainSelectorButton: some View {
-        Button {
-            showChainPickerSheet = true
-        } label: {
-            HStack(spacing: 6) {
-                if let selectedChain {
-                    Image(selectedChain.logo)
-                        .resizable()
-                        .frame(width: 16, height: 16)
-                    
-                    Text(selectedChain.name)
-                        .font(.body14BrockmannMedium)
-                        .foregroundColor(.neutral0)
-                } else {
-                    Text(NSLocalizedString("allChains", comment: ""))
-                        .font(.body14BrockmannMedium)
-                        .foregroundColor(.neutral0)
-                }
-                
-                Image(systemName: "chevron.down")
-                    .font(.caption)
-                    .foregroundColor(.extraLightGray)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.blue600)
-            .cornerRadius(8)
-        }
-        .sheet(isPresented: $showChainPickerSheet) {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $showChainPickerSheet,
-                selectedChain: $selectedChain,
-                selectedCoin: $selectedCoin
-            )
-            .environmentObject(viewModel)
-        }
-        .onChange(of: selectedChain) { oldValue, newValue in
-            if oldValue != newValue && newValue != nil {
-                Task {
-                    await loadBalances()
-                }
-            }
-        }
     }
     
     var searchField: some View {
