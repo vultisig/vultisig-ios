@@ -12,10 +12,9 @@ struct SecurityScanView: View {
     @State private var isExpanded = false
     
     var body: some View {
-        Group {
-            if viewModel.showBanner {
-                scanResultView
-            } else if viewModel.isScanning {
+        ZStack {
+            // TODO: - Add UI for bottom sheet
+            if viewModel.isScanning {
                 scanningView
             }
         }
