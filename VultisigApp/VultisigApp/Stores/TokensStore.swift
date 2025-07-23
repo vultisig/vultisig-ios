@@ -1634,6 +1634,15 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .terraClassic,
+            ticker: "JURIS",
+            logo: "juris",
+            decimals: 6,
+            priceProviderId: "juris-protocol",
+            contractAddress: "terra1vhgq25vwuhdhn9xjll0rhl2s67jzw78a4g2t78y5kz89q9lsdskq2pxcj2",
+            isNativeToken: true
+        ),
+        CoinMeta(
+            chain: .terraClassic,
             ticker: "USTC",
             logo: "ustc",
             decimals: 6,
