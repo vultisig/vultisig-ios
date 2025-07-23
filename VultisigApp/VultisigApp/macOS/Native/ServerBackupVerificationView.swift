@@ -91,8 +91,8 @@ struct ServerBackupVerificationView: View {
         .buttonStyle(.plain)
     }
 
-    func handleInputChange(_ newValue: String, index: Int) {
-        if newValue.count > 1 {
+    func handleInputChange(_ oldValue: String, _ newValue: String, index: Int) {
+        if newValue.count == Self.codeLength {
             pasteCode()
         }
 
@@ -103,6 +103,7 @@ struct ServerBackupVerificationView: View {
         }
 
         if verificationCode.count == Self.codeLength {
+            focusedField = Self.codeLength - 1
             verifyCode()
         }
     }
