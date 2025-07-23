@@ -61,9 +61,7 @@ struct BackupSetupView: View {
                 .foregroundColor(Color.extraLightGray)
                 .multilineTextAlignment(.center)
 
-            Button {
-                // TODO: Learn more link
-            } label: {
+            Link(destination: StaticURL.VultBackupURL) {
                 Text(NSLocalizedString("learnMore", comment: ""))
                     .font(.body14BrockmannMedium)
                     .foregroundColor(Color.lightText)
