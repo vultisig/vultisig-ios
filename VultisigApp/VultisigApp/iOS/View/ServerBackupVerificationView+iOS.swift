@@ -66,7 +66,7 @@ extension ServerBackupVerificationView {
                 )
                 .focused($focusedField, equals: index)
                 .onChange(of: otp[index]) { oldValue, newValue in
-                    handleInputChange(oldValue, newValue, index: index)
+                    handleInputChange(newValue, index: index)
                 }
             }
         }

@@ -91,7 +91,7 @@ struct ServerBackupVerificationView: View {
         .buttonStyle(.plain)
     }
 
-    func handleInputChange(_ oldValue: String, _ newValue: String, index: Int) {
+    func handleInputChange(_ newValue: String, index: Int) {
         if newValue.count == Self.codeLength {
             pasteCode()
         }
