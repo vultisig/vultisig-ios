@@ -76,6 +76,10 @@ extension ServerBackupVerificationView {
         if let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength {
             otp = clipboardContent.map { String($0) }
         }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            focusedField = Self.codeLength - 1
+        }
     }
 }
 #endif

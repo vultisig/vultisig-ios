@@ -101,10 +101,10 @@ struct ServerBackupVerificationView: View {
         } else if newValue.isEmpty && index > 0 {
             focusedField = index - 1
         }
-
+        
         if verificationCode.count == Self.codeLength {
-            focusedField = Self.codeLength - 1
             verifyCode()
+            return
         }
     }
 

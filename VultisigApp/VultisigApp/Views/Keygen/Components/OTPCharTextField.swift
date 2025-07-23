@@ -30,16 +30,31 @@ struct OTPCharTextField: UIViewRepresentable {
             self.parent = parent
         }
 
-        @objc func textFieldDidChange(_ textField: UITextField) {
-            let newText = textField.text ?? ""
-            if parent.text.isEmpty {
-                parent.text = newText
-                return
+        func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+            // Handle backspace
+            if string.isEmpty {
+                return true
             }
             
-            let filteredNewText = newText.filter { $0 != Character(parent.text) }
-            textField.text = String(filteredNewText)
-            parent.text = String(filteredNewText)
+            // Only allow digits
+            guard string.allSatisfy({ $0.isNumber }) else {
+                return false
+            }
+            
+            // If field is empty, allow the digit
+            if textField.text?.isEmpty ?? true {
+                return string.count == 1
+            }
+            
+            // If field has text, replace it with the new digit
+            textField.text = string
+            parent.text = string
+            return false // We handled the replacement ourselves
+        }
+
+        @objc func textFieldDidChange(_ textField: UITextField) {
+            let newText = textField.text ?? ""
+            parent.text = newText
         }
     }
 
