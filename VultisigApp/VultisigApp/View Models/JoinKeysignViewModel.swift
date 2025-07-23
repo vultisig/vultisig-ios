@@ -147,7 +147,7 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.resolve(withTimeout: 10)
     }
     
-    func stopJoiningKeysign(){
+    func stopJoiningKeysign() {
         self.status = .DiscoverSigningMsg
     }
     

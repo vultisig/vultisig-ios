@@ -29,7 +29,7 @@ struct SendCryptoKeysignView: View {
                 signingView
             }
         }
-        .onAppear {
+        .onLoad {
             setData()
         }
     }

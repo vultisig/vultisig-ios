@@ -24,7 +24,7 @@ struct KeysignView: View {
     @State var showError = false
     
     @EnvironmentObject var globalStateViewModel: GlobalStateViewModel
-    
+        
     var body: some View {
         container
             .sensoryFeedback(.success, trigger: showDoneText)
@@ -51,9 +51,11 @@ struct KeysignView: View {
             
             PopupCapsule(text: "hashCopied", showPopup: $showAlert)
         }
-        .task {
-            await setData()
-            await viewModel.startKeysign()
+        .onLoad {
+            Task {
+                await setData()
+                await viewModel.startKeysign()
+            }
         }
         .onChange(of: viewModel.txid) {
             movetoDoneView()
@@ -79,11 +81,8 @@ struct KeysignView: View {
     
     var forJoinKeysign: some View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
-            .onAppear {
+            .onLoad {
                 globalStateViewModel.showKeysignDoneView = true
-            }
-            .onDisappear {
-                globalStateViewModel.showKeysignDoneView = false
             }
     }
     
