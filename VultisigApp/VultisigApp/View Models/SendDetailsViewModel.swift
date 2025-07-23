@@ -14,6 +14,8 @@ enum SendDetailsFocusedTab: String {
 }
 
 class SendDetailsViewModel: ObservableObject {
+    let hasPreselectedCoin: Bool
+    
     @Published var selectedChain: Chain? = nil
     @Published private(set) var selectedTab: SendDetailsFocusedTab = .asset
     
@@ -22,6 +24,16 @@ class SendDetailsViewModel: ObservableObject {
     @Published var amountSetupDone: Bool = false
     @Published var showCoinPickerSheet: Bool = false
     @Published var showChainPickerSheet: Bool = false
+    
+    init(hasPreselectedCoin: Bool = false) {
+        self.hasPreselectedCoin = hasPreselectedCoin
+    }
+    
+    func onLoad() {
+        if hasPreselectedCoin {
+            selectedTab = .address
+        }
+    }
     
     func onSelect(tab: SendDetailsFocusedTab) {
         switch tab {
