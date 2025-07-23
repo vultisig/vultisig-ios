@@ -77,10 +77,6 @@ struct SwapCoinPickerView: View {
                 // Chain carousel at bottom
                 chainCarousel
                 
-                // Custom token button - only show for supported chains
-                if let selectedChain, isCustomTokenSupported(for: selectedChain) {
-                    customTokenButton
-                }
             }
             .padding(.vertical, 8)
             .padding(.bottom, 50)
@@ -247,27 +243,6 @@ struct SwapCoinPickerView: View {
         .frame(height: 44)
     }
     
-    var customTokenButton: some View {
-        NavigationLink {
-            SwapCustomTokenView(
-                vault: vault,
-                chain: selectedChain!,
-                showSheet: $showSheet,
-                selectedCoin: $selectedCoin
-            )
-            .environmentObject(viewModel)
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "plus")
-                Text(NSLocalizedString("customToken", comment: ""))
-                Spacer()
-            }
-            .font(.body16MenloBold)
-            .foregroundColor(.turquoise600)
-            .padding(.top, 16)
-        }
-    }
-    
     private func getCoins() -> [Coin] {
         let availableCoins = vault.coins.filter { coin in
             coin.chain == selectedChain
@@ -334,14 +309,7 @@ struct SwapCoinPickerView: View {
         }
     }
     
-    private func isCustomTokenSupported(for chain: Chain) -> Bool {
-        switch chain.chainType {
-        case .EVM, .Solana:
-            return true
-        default:
-            return false
-        }
-    }
+    // Disabled along with custom token button
 }
 
 #Preview {
