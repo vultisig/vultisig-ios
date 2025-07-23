@@ -869,6 +869,8 @@
 		DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1905262BD8CC4D0043577E /* KeysignVerify.swift */; };
 		DE214FF22E2E131200CEEA71 /* SendCryptoAddressBookView+macos.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */; };
 		DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */; };
+		DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */; };
+		DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */; };
 		DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */; };
 		DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE3D44AC2BD2445100BD64CD /* CryptoSwift */; };
 		DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */; };
@@ -1842,6 +1844,8 @@
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
 		DE214FF12E2E130400CEEA71 /* SendCryptoAddressBookView+macos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+macos.swift"; sourceTree = "<group>"; };
 		DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressBookView+iOS.swift"; sourceTree = "<group>"; };
+		DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHelperTests.swift; sourceTree = "<group>"; };
+		DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadCodable.swift; sourceTree = "<group>"; };
 		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
@@ -3971,6 +3975,8 @@
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */,
+				DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */,
 				DEF4295A2CA66D51004B6D0B /* ERC20Test.swift */,
 				DEF429582CA65AEF004B6D0B /* EvmTest.swift */,
 				DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */,
@@ -5084,9 +5090,11 @@
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
 				744B8E55385C46399CB8AEC8 /* ExtensionMemoServiceTests.swift in Sources */,
+				DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 				A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */,
+				DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */,
 				A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */,
 				A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */,
 				927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */,
