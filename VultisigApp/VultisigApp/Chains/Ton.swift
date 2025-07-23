@@ -33,9 +33,10 @@ enum TonHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         
-        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
+        let baseMode = TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue
+        var sendMode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | baseMode)
         if sendMaxAmount {
-            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue)
+            sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue | baseMode)
         }
         
         let transfer = TheOpenNetworkTransfer.with {
