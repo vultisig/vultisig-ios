@@ -1639,7 +1639,7 @@ class TokensStore {
             decimals: 6,
             priceProviderId: "juris-protocol",
             contractAddress: "terra1vhgq25vwuhdhn9xjll0rhl2s67jzw78a4g2t78y5kz89q9lsdskq2pxcj2",
-            isNativeToken: true
+            isNativeToken: false
         ),
         CoinMeta(
             chain: .terraClassic,
