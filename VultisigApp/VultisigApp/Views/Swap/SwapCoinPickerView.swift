@@ -248,8 +248,19 @@ struct SwapCoinPickerView: View {
             coin.chain == selectedChain
         }
         
+        // Filter by search text if not empty
+        let filteredCoins = if searchText.isEmpty {
+            availableCoins
+        } else {
+            availableCoins.filter { coin in
+                coin.ticker.localizedCaseInsensitiveContains(searchText) ||
+                coin.contractAddress.localizedCaseInsensitiveContains(searchText) ||
+                coin.chain.name.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
         // Sort coins: native token first, then by USD balance in descending order
-        let sortedCoins = availableCoins.sorted { first, second in
+        let sortedCoins = filteredCoins.sorted { first, second in
             // Native token always comes first
             if first.isNativeToken && !second.isNativeToken {
                 return true
