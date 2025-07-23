@@ -92,7 +92,7 @@ struct ServerBackupVerificationView: View {
     }
 
     func handleInputChange(_ newValue: String, index: Int) {
-        if newValue.count > 1 {
+        if newValue.count == Self.codeLength {
             pasteCode()
         }
 
@@ -101,7 +101,7 @@ struct ServerBackupVerificationView: View {
         } else if newValue.isEmpty && index > 0 {
             focusedField = index - 1
         }
-
+        
         if verificationCode.count == Self.codeLength {
             verifyCode()
         }

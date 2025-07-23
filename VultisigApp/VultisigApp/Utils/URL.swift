@@ -15,4 +15,5 @@ class StaticURL {
     static let PrivacyPolicyURL = URL(string: "https://vultisig.com/privacy")!
     static let TermsOfServiceURL = URL(string: "https://vultisig.com/termofservice")!
     static let VultisigWeb = URL(string: "https://airdrop.vultisig.com/")!
+    static let VultBackupURL = URL(string: "https://docs.vultisig.com/vultisig-vault-user-actions/managing-your-vault/vault-backup")!
 }

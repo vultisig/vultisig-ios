@@ -256,11 +256,7 @@ struct VaultDetailView: View {
     private func showBiweeklyPasswordVerificationIfNeeded() {
         guard vault.isFastVault else { return }
         
-        // If no verification has been done yet, show the prompt
         guard let lastVerifyTimestamp = biweeklyPasswordVerifyDate else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isBiweeklyPasswordVerifyLinkActive = true
-            }
             return
         }
         
