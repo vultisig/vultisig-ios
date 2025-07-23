@@ -5,6 +5,7 @@
 //  Created by Gaston Mazzeo on 23/07/2025.
 //
 
+#if os(iOS)
 import SwiftUI
 import UIKit
 
@@ -80,3 +81,4 @@ struct OTPCharTextField: UIViewRepresentable {
         Coordinator(parent: self)
     }
 }
+#endif
