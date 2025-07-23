@@ -81,8 +81,11 @@ struct KeysignView: View {
     
     var forJoinKeysign: some View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
-            .onLoad {
+            .onAppear {
                 globalStateViewModel.showKeysignDoneView = true
+            }
+            .onDisappear {
+                globalStateViewModel.showKeysignDoneView = false
             }
     }
     
