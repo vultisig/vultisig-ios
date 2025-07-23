@@ -17,7 +17,9 @@ extension CoinAction {
     ]
     
     static var memoChains: [Chain] = [
-        .thorChain, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis
+        .thorChain, .mayaChain, .ton, .dydx, .kujira, .gaiaChain, .osmosis,
+        // THORChain LP supported chains
+        .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple
     ]
 }
 

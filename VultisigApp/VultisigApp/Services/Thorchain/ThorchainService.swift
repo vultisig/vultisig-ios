@@ -7,6 +7,14 @@
 
 import Foundation
 
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
+
 class ThorchainService: ThorchainSwapProvider {
     var network: String = ""
     static let shared = ThorchainService()
@@ -14,6 +22,8 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheFeePrice = ThreadSafeDictionary<String,(data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String,(data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
+    private var cacheLPPools = ThreadSafeDictionary<String,(data: [ThorchainPool], timestamp: Date)>()
+    private var cacheLPPositions = ThreadSafeDictionary<String,(data: [ThorchainLPPosition], timestamp: Date)>()
     
     private init() {}
     
@@ -411,6 +421,170 @@ extension ThorchainService {
         }
         
         return positions
+    }
+}
+
+// MARK: - THORChain LP Functionality
+extension ThorchainService {
+    
+    /// Fetch LP positions for a given address with caching
+    func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
+        let targetAddress = runeAddress ?? assetAddress
+        guard let address = targetAddress else {
+            throw HelperError.runtimeError("Either rune address or asset address must be provided")
+        }
+        
+        let cacheKey = "lp_positions_\(address)"
+        let cacheExpirationMinutes = 2.0 // Cache for 2 minutes
+        
+        // Check cache first
+        if let cached = cacheLPPositions.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            print("ThorchainService: Using cached LP positions for \(address) (count: \(cached.data.count))")
+            return cached.data
+        }
+        
+        print("ThorchainService: Fetching LP positions for address: \(address)")
+        
+        // Get all available pools first (this will use cache if available)
+        let pools = try await fetchLPPools()
+        var allPositions: [ThorchainLPPosition] = []
+        
+        // Check each pool for LP positions
+        // Use sequential requests with small delay to avoid rate limiting
+        for pool in pools {
+            do {
+                let poolUrlString = "https://thornode.ninerealms.com/thorchain/pool/\(pool.asset)/liquidity_provider/\(address)"
+                guard let poolUrl = URL(string: poolUrlString) else { continue }
+                
+                let (poolData, response) = try await URLSession.shared.data(for: get9RRequest(url: poolUrl))
+                
+                // Check if we got a 404 (no position in this pool)
+                if let httpResponse = response as? HTTPURLResponse,
+                   httpResponse.statusCode == 404 {
+                    continue
+                }
+                
+                // Try to decode as pool LP response
+                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolData) {
+                    // Only add if units > 0
+                    if let units = Int64(lpResponse.units), units > 0 {
+                        let position = ThorchainLPPosition(
+                            asset: lpResponse.asset,
+                            runeAddress: runeAddress,
+                            assetAddress: lpResponse.assetAddress,
+                            poolUnits: lpResponse.units,
+                            runeDepositValue: lpResponse.runeDepositValue,
+                            assetDepositValue: lpResponse.assetDepositValue,
+                            runeRedeemValue: nil,
+                            assetRedeemValue: nil,
+                            luvi: nil,
+                            gLPGrowth: nil,
+                            assetGrowthPct: nil
+                        )
+                        allPositions.append(position)
+                        print("ThorchainService: Found LP position in \(pool.asset) with \(lpResponse.units) units")
+                    }
+                }
+                
+                // Add small delay to avoid rate limiting
+                try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                
+            } catch {
+                // Skip pools where user has no position
+                continue
+            }
+        }
+        
+        // Cache the result
+        cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
+        print("ThorchainService: Cached \(allPositions.count) LP positions for \(address)")
+        
+        return allPositions
+        
+        // For RUNE addresses, we also need to check by searching for the Thor address in pool LPs
+        if runeAddress != nil {
+            // The RUNE LP would be matched via the asset address field when adding symmetric LP
+            // But for pure RUNE LP, we need a different approach
+            // For now, we'll rely on the asset-side matching above
+        }
+        
+        return allPositions
+    }
+    
+    /// Fetch pool information for a specific asset
+    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
+        let urlString = "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+        
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("Invalid URL")
+        }
+        
+        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
+        let pool = try JSONDecoder().decode(ThorchainPool.self, from: data)
+        return pool
+    }
+    
+    /// Get supported pools for LP with caching
+    func fetchLPPools() async throws -> [ThorchainPool] {
+        let cacheKey = "lp_pools"
+        let cacheExpirationMinutes = 5.0 // Cache for 5 minutes
+        
+        // Check cache first
+        if let cached = cacheLPPools.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            print("ThorchainService: Using cached LP pools (count: \(cached.data.count))")
+            return cached.data
+        }
+        
+        let urlString = "https://thornode.ninerealms.com/thorchain/pools"
+        
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("Invalid URL")
+        }
+        
+        // Create a URL session with timeout
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 10.0 // 10 second timeout
+        config.timeoutIntervalForResource = 15.0
+        let session = URLSession(configuration: config)
+        
+        let (data, _) = try await session.data(for: get9RRequest(url: url))
+        let pools = try JSONDecoder().decode([ThorchainPool].self, from: data)
+        
+        // Filter only available pools
+        let availablePools = pools.filter { $0.status == "Available" }
+        
+        // Cache the result
+        cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
+        print("ThorchainService: Cached \(availablePools.count) LP pools")
+        
+        return availablePools
+    }
+    
+    /// Clear LP pools cache
+    func clearLPPoolsCache() async {
+        await cacheLPPools.clear()
+        print("ThorchainService: Cleared LP pools cache")
+    }
+    
+    /// Clear all LP-related caches
+    func clearAllLPCaches() async {
+        await cacheLPPools.clear()
+        await cacheLPPositions.clear()
+        print("ThorchainService: Cleared all LP caches")
+    }
+    
+    /// Calculate asset amount needed for symmetric LP
+    func calculateSymmetricLPAssetAmount(runeAmount: Decimal, pool: ThorchainPool) -> Decimal? {
+        guard let balanceRune = Decimal(string: pool.balanceRune),
+              let balanceAsset = Decimal(string: pool.balanceAsset),
+              balanceRune > 0 else {
+            return nil
+        }
+        
+        // For symmetric LP: assetAmount = runeAmount * (balanceAsset / balanceRune)
+        return runeAmount * (balanceAsset / balanceRune)
     }
 }
 
