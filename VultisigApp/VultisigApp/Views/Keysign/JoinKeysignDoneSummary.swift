@@ -39,12 +39,6 @@ struct JoinKeysignDoneSummary: View {
                 card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
             }
             
-            // TODO: - Check if it's ok
-//            if viewModel.customMessagePayload == nil {
-//                card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
-//                    .padding(.horizontal, -16)
-//            }
-//            
             content
         }
         .padding(.vertical, 12)
@@ -57,12 +51,6 @@ struct JoinKeysignDoneSummary: View {
     var content: some View {
         Group {
             signMessageContent
-            // TODO: - Check if it's ok
-//            if viewModel.customMessagePayload != nil {
-//                signMessageContent
-//            } else {
-//                transactionContent
-//            }
         }
         .padding(.horizontal, 16)
     }
