@@ -26,7 +26,7 @@ struct JoinSwapDoneSummary: View {
             buttons
         }
         .buttonStyle(BorderlessButtonStyle())
-        .onAppear {
+        .onLoad {
             animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         }
     }
@@ -38,7 +38,6 @@ struct JoinSwapDoneSummary: View {
                 fromToCards
                 summary
             }
-            .padding(.horizontal)
         }
     }
     
@@ -48,7 +47,6 @@ struct JoinSwapDoneSummary: View {
             doneButton
         }
         .padding(.vertical)
-        .padding(.horizontal, 24)
     }
     
     var trackButton: some View {
@@ -95,7 +93,7 @@ struct JoinSwapDoneSummary: View {
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.toAmountFiatString
+                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString
                 )
             }
             

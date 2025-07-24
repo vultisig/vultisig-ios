@@ -19,7 +19,7 @@ struct SendCryptoDoneSummary: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
-        ZStack {
+        Group {
             if let tx = sendTransaction {
                 getSendCard(tx)
             } else if let tx = swapTransaction {

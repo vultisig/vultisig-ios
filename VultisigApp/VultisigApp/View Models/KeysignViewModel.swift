@@ -48,6 +48,16 @@ class KeysignViewModel: ObservableObject {
     var encryptionKeyHex: String
     var isInitiateDevice: Bool
     
+    private let gasViewModel = JoinKeysignGasViewModel()
+    
+    var memo: String? {
+        guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
+            return keysignPayload?.memo
+        }
+        
+        return decodedMemo
+    }
+    
     init() {
         self.keysignCommittee = []
         self.mediatorURL = ""
@@ -623,5 +633,10 @@ class KeysignViewModel: ObservableObject {
             self.status = .KeysignFailed
             self.keysignError = errMessage
         }
+    }
+    
+    func getCalculatedNetworkFee() -> (feeCrypto: String, feeFiat: String) {
+        guard let keysignPayload else { return (.empty, .empty) }
+        return gasViewModel.getCalculatedNetworkFee(payload: keysignPayload)
     }
 }

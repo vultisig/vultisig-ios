@@ -42,7 +42,6 @@ extension SendCryptoVerifyView {
             }
         }
         .disabled(!sendCryptoVerifyViewModel.isValidForm)
-        .padding(.horizontal, 40)
     }
 }
 #endif

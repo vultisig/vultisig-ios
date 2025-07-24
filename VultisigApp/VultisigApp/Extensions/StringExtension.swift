@@ -44,6 +44,10 @@ extension String {
         }
         return nil
     }
+    
+    var isNotEmpty: Bool {
+        !isEmpty
+    }
 }
 
 // MARK: - String constants

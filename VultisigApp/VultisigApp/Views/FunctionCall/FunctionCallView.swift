@@ -27,7 +27,7 @@ struct FunctionCallView: View {
                     await loadGasInfo()
                 }
             }
-            .onDisappear(){
+            .onDisappear {
                 functionCallViewModel.stopMediator()
             }
     }

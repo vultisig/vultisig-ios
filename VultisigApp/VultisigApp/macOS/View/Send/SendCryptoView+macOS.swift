@@ -24,7 +24,7 @@ extension SendCryptoView {
         SendCryptoHeader(
             tx: tx,
             vault: vault, 
-            showFeeSettings: showFeeSettings,
+            showFeeSettings: tx.coin.supportsFeeSettings,
             settingsPresented: $settingsPresented,
             sendCryptoViewModel: sendCryptoViewModel,
             shareSheetViewModel: shareSheetViewModel

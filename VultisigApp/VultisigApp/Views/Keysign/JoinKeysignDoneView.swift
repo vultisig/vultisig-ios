@@ -13,43 +13,31 @@ struct JoinKeysignDoneView: View {
     @Binding var showAlert: Bool
     
     @State var moveToHome: Bool = false
-    
-    @Environment(\.openURL) var openURL
-    @Environment(\.dismiss) var dismiss
-    
+        
     var body: some View {
-        view
-            .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
-            .navigationDestination(isPresented: $moveToHome) {
-                HomeView(selectedVault: vault, showVaultsList: false)
-            }
-    }
-    
-    var view: some View {
         VStack(spacing: 32) {
-            cards
+            JoinKeysignDoneSummary(
+                vault: vault,
+                viewModel: viewModel,
+                showAlert: $showAlert,
+                moveToHome: $moveToHome
+            )
             
             if viewModel.keysignPayload?.swapPayload == nil {
                 continueButton
             }
         }
-    }
-    
-    var cards: some View {
-        JoinKeysignDoneSummary(
-            vault: vault,
-            viewModel: viewModel,
-            showAlert: $showAlert,
-            moveToHome: $moveToHome
-        )
+        .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
+        .navigationDestination(isPresented: $moveToHome) {
+            HomeView(selectedVault: vault, showVaultsList: false)
+        }
     }
 
     var continueButton: some View {
-        PrimaryButton(title: "complete") {
+        PrimaryButton(title: "done") {
             handleTap()
         }
         .id(UUID())
-        .padding(20)
     }
     
     private func handleTap() {

@@ -26,11 +26,10 @@ struct SendDetailsAmountTextField: View {
     
     var textFieldSection: some View {
         ZStack {
-            if isCryptoSelected {
-                amountSection
-            } else {
-                fiatSection
-            }
+            amountSection
+                .opacity(isCryptoSelected ? 1 : 0)
+            fiatSection
+                .opacity(isCryptoSelected ? 0 : 1)
         }
     }
     

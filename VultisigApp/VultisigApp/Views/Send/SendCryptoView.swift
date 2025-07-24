@@ -14,7 +14,7 @@ struct SendCryptoView: View {
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-    @StateObject var sendDetailsViewModel = SendDetailsViewModel()
+    @StateObject var sendDetailsViewModel: SendDetailsViewModel
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
     @State var coin: Coin? = nil
@@ -25,6 +25,20 @@ struct SendCryptoView: View {
 
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    
+    init(
+        tx: SendTransaction,
+        vault: Vault,
+        coin: Coin? = nil,
+        selectedChain: Chain? = nil,
+        hasPreselectedCoin: Bool = false
+    ) {
+        self.tx = tx
+        self.vault = vault
+        self.coin = coin
+        self.selectedChain = selectedChain
+        self._sendDetailsViewModel = StateObject(wrappedValue: SendDetailsViewModel(hasPreselectedCoin: hasPreselectedCoin))
+    }
     
     var body: some View {
         container
@@ -39,7 +53,6 @@ struct SendCryptoView: View {
                 loader
             }
         }
-        .ignoresSafeArea(.keyboard)
         .onFirstAppear {
             Task {
                 await setData()
@@ -98,7 +111,8 @@ struct SendCryptoView: View {
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
             sendDetailsViewModel: sendDetailsViewModel,
-            vault: vault
+            vault: vault,
+            settingsPresented: $settingsPresented
         )
     }
     
@@ -161,19 +175,6 @@ struct SendCryptoView: View {
                 self.sendCryptoViewModel.stopMediator()
             }
         }
-    }
-
-    var settingsButton: some View {
-        Button {
-            settingsPresented = true
-        } label: {
-            Image(systemName: "fuelpump")
-        }
-        .foregroundColor(.neutral0)
-    }
-
-    var showFeeSettings: Bool {
-        return sendCryptoViewModel.currentIndex == 1 && tx.coin.supportsFeeSettings
     }
 
     var errorView: some View {
