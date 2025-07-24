@@ -28,28 +28,20 @@ struct SendDetailsAmountTab: View {
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSecion(isExpanded: viewModel.selectedTab == .amount) {
             titleSection
-                
-            if isExpanded {
-                separator
-                amountFieldSection
-                
-                if sendCryptoViewModel.showAmountAlert {
-                    errorText
-                }
-                
-                percentageButtons
-                balanceSection
-                additionalOptionsSection
+        } content: {
+            separator
+            amountFieldSection
+            
+            if sendCryptoViewModel.showAmountAlert {
+                errorText
             }
+            
+            percentageButtons
+            balanceSection
+            additionalOptionsSection
         }
-        .padding(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)        
     }
     
     var titleSection: some View {

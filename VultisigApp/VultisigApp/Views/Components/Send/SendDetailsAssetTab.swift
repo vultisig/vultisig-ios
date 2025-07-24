@@ -63,20 +63,12 @@ struct SendDetailsAssetTab: View {
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSecion(isExpanded: isExpanded) {
             titleSection
-            
-            if isExpanded {
-                separator
-                assetSelectionSection
-            }
+        } content: {
+            separator
+            assetSelectionSection
         }
-        .padding(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var titleSection: some View {
@@ -203,5 +195,10 @@ struct SendDetailsAssetTab: View {
 }
 
 #Preview {
-    SendDetailsAssetTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAssetTab(
+        isExpanded: true,
+        tx: SendTransaction(),
+        viewModel: SendDetailsViewModel(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
 }
