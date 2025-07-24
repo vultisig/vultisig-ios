@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VultisigLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
+		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
+		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -983,6 +985,8 @@
 		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
+		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
+		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -2047,6 +2051,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		13095A342E3264E1009F8785 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		1334C7382E2FE55C00CBAA3E /* SendCryptoVerifySummary */ = {
 			isa = PBXGroup;
 			children = (
@@ -2076,6 +2088,7 @@
 		138574122E2DA91E002532BF /* PrimaryButton */ = {
 			isa = PBXGroup;
 			children = (
+				130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */,
 				1385741D2E2DB428002532BF /* PrimaryNavigationButton.swift */,
 				1385741B2E2DAC4D002532BF /* PrimaryButtonStyle.swift */,
 				138574192E2DAAE5002532BF /* PrimaryButtonView.swift */,
@@ -3593,6 +3606,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				13095A342E3264E1009F8785 /* Utils */,
 				1334C73D2E30079000CBAA3E /* ViewModifiers */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
@@ -4224,6 +4238,7 @@
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				A5F2C2352CD3FEE00086253E /* FastSignConfig.swift in Sources */,
 				A6C670C72C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift in Sources */,
+				13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */,
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
@@ -5049,6 +5064,7 @@
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
+				130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
 				A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */,
