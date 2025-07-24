@@ -17,7 +17,7 @@ class SendDetailsViewModel: ObservableObject {
     let hasPreselectedCoin: Bool
     
     @Published var selectedChain: Chain? = nil
-    @Published private(set) var selectedTab: SendDetailsFocusedTab = .asset
+    @Published private(set) var selectedTab: SendDetailsFocusedTab?
     
     @Published var assetSetupDone: Bool = false
     @Published var addressSetupDone: Bool = false
@@ -30,9 +30,7 @@ class SendDetailsViewModel: ObservableObject {
     }
     
     func onLoad() {
-        if hasPreselectedCoin {
-            selectedTab = .address
-        }
+        selectedTab = hasPreselectedCoin ? .address : .asset
     }
     
     func onSelect(tab: SendDetailsFocusedTab) {

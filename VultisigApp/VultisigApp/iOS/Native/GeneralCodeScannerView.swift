@@ -66,16 +66,6 @@ struct GeneralCodeScannerView: View {
         .alert(isPresented: $showAlert) {
             alert
         }
-        .overlay {
-            background
-        }
-    }
-    
-    var background: some View {
-        Image("QRScannerBackgroundImage")
-            .resizable()
-            .scaledToFill()
-            .opacity(0.2)
     }
     
     var content: some View {

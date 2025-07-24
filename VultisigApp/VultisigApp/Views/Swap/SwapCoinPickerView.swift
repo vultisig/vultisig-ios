@@ -15,7 +15,6 @@ struct SwapCoinPickerView: View {
     let isLoading: Bool
     
     @State var searchText = ""
-    @State var isLoadingBalances: Bool = false
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     private let balanceService = BalanceService.shared
@@ -24,11 +23,6 @@ struct SwapCoinPickerView: View {
         VStack {
             header
             views
-        }
-        .task {
-            if let selectedChain {
-                await loadBalances()
-            }
         }
     }
     
@@ -63,7 +57,7 @@ struct SwapCoinPickerView: View {
             VStack(spacing: 12) {
                 searchBar
                 
-                if isLoading || isLoadingBalances {
+                if isLoading {
                     loadingView
                 } else if getCoins().count > 0 {
                     networkTitle
@@ -233,30 +227,6 @@ struct SwapCoinPickerView: View {
             selectedCoin = firstCoin
         }
         
-        // Load balances for the selected chain
-        Task {
-            await loadBalances()
-        }
-    }
-    
-    private func loadBalances() async {
-        await MainActor.run {
-            isLoadingBalances = true
-        }
-        
-        let chainCoins = vault.coins.filter { $0.chain == selectedChain }
-        
-        await withTaskGroup(of: Void.self) { group in
-            for coin in chainCoins {
-                group.addTask {
-                    await viewModel.loadData(coin: coin)
-                }
-            }
-        }
-        
-        await MainActor.run {
-            isLoadingBalances = false
-        }
     }
     
     // Disabled along with custom token button
