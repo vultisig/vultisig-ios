@@ -3,6 +3,7 @@
 //  VultisigApp
 
 import SwiftUI
+import RiveRuntime
 
 struct KeysignDiscoveryView: View {
     let vault: Vault
@@ -30,6 +31,8 @@ struct KeysignDiscoveryView: View {
     @State var showDisclaimer: Bool = true
     
     var swapTransaction: SwapTransaction = SwapTransaction()
+    
+    @State var qrScannedAnimation: RiveViewModel? = nil
     
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
@@ -59,6 +62,7 @@ struct KeysignDiscoveryView: View {
             }
         }
         .task {
+            qrScannedAnimation = RiveViewModel(fileName: "QRScanner", autoPlay: true)
             await setData()
             await viewModel.startDiscovery()
         }
@@ -107,14 +111,13 @@ struct KeysignDiscoveryView: View {
         }
     }
     
+    @ViewBuilder
     var paringQRCode: some View {
-        qrCode
-            .foregroundColor(.neutral0)
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.borderBlue, lineWidth: 1)
-            )
-            .padding()
+        ZStack {
+            qrScannedAnimation?.view()
+            qrCode
+        }
+        .padding()
     }
     
     var disclaimer: some View {

@@ -42,7 +42,6 @@ struct SendCryptoDetailsView: View {
             Background()
             view
         }
-        .gesture(DragGesture())
         .onFirstAppear {
             sendDetailsViewModel.onLoad()
             setData()
@@ -78,7 +77,6 @@ struct SendCryptoDetailsView: View {
                 await validateForm()
             }
         }
-        .padding(.top, 20)
         .disabled(sendCryptoViewModel.isLoading)
     }
     
@@ -116,15 +114,25 @@ struct SendCryptoDetailsView: View {
                 }
                 .padding(16)
             }
-            .onChange(of: sendDetailsViewModel.selectedTab) { _, newValue in
-                proxy.scrollTo(SendDetailsFocusedTab.asset.rawValue, anchor: .bottom)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    withAnimation(.easeInOut) {
-                        proxy.scrollTo(newValue.rawValue, anchor: .top)
-                    }
+            .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
+                handleScroll(proxy: proxy, newValue: newValue, oldValue: oldValue)
+            }
+        }
+    }
+    
+    func handleScroll(proxy: ScrollViewProxy, newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?) {
+        // This delay is necessary when the screen starts
+        DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
+            proxy.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
+            
+            // If it's .amount, there is no need to scroll again
+            guard newValue != .amount else { return }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                withAnimation(.easeInOut) {
+                    proxy.scrollTo(newValue?.rawValue, anchor: .top)
                 }
             }
-        
         }
     }
     
@@ -159,15 +167,25 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        await MainActor.run {
-            sendCryptoViewModel.isLoading = true
-        }
-        
-        sendDetailsViewModel.onSelect(tab: .amount)
-        sendCryptoViewModel.validateAmount(amount: tx.amount.description)
-        
-        if await sendCryptoViewModel.validateForm(tx: tx) {
-            sendCryptoViewModel.moveToNextView()
+        switch sendDetailsViewModel.selectedTab {
+        case .none:
+            sendDetailsViewModel.onSelect(tab: .asset)
+            return
+        case .asset:
+            sendDetailsViewModel.onSelect(tab: .address)
+            return
+        case .address:
+            sendDetailsViewModel.onSelect(tab: .amount)
+            return
+        case .amount:
+            await MainActor.run {
+                sendCryptoViewModel.isLoading = true
+            }
+            sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+            
+            if await sendCryptoViewModel.validateForm(tx: tx) {
+                sendCryptoViewModel.moveToNextView()
+            }
         }
         
         await MainActor.run {
