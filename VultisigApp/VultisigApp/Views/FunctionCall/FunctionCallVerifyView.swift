@@ -81,6 +81,7 @@ struct FunctionCallVerifyView: View {
                 showScannedBy: false
             )
         ) {}
+        .padding(.horizontal, 16)
     }
     
     var pairedSignButton: some View {
