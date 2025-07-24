@@ -34,7 +34,7 @@ struct SendDetailsAddressTab: View {
     }
     
     var content: some View {
-        SendFormExpandableSecion(isExpanded: isExpanded) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
         } content: {
             separator

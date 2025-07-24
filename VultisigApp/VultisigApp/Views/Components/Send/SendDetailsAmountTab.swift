@@ -28,7 +28,7 @@ struct SendDetailsAmountTab: View {
     }
     
     var content: some View {
-        SendFormExpandableSecion(isExpanded: viewModel.selectedTab == .amount) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
         } content: {
             separator

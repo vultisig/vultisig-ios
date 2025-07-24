@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SendFormExpandableSecion<Header: View, Content: View>: View {
+struct SendFormExpandableSection<Header: View, Content: View>: View {
     let isExpanded: Bool
     let header: () -> Header
     let content: () -> Content
