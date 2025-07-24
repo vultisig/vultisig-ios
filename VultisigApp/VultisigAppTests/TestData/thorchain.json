@@ -30,5 +30,71 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["7e513b23957b2e3caf77e796ba1412851be066cd77f96a7d196c3c856c641ebf"]
+    },
+    {
+        "name": "Bond RUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"",
+                "logo": "rune.png"
+            },
+            "to_address": "",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "bond:thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["7ed0c815c1f70f6d4670268e4df1439e7f340ebefeb26e0a8694d59e84d243ec"]
+    },
+    {
+        "name": "UnBond RUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"",
+                "logo": "rune.png"
+            },
+            "to_address": "",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "unbond:thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["ea76ee8ac3f601a34d2b65d6c228484362ab075290cdb62a75c84678f90e93bc"]
     }
 ]
