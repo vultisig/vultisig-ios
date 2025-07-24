@@ -18,6 +18,7 @@ struct SwapFromToField: View {
     @Binding var showCoinSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    let handlePercentageSelection: ((Int) -> Void)?
     
     @StateObject var referredViewModel = ReferredViewModel()
     
@@ -58,9 +59,19 @@ struct SwapFromToField: View {
     }
     
     var balance: some View {
-        Text("\(coin.balanceString) \(coin.ticker)")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+        Button {
+            if title == "from" {
+                // Use the same logic as 100% percentage handler
+                handlePercentageSelection?(100)
+            }
+        } label: {
+            Text("\(coin.balanceString) \(coin.ticker)")
+                .font(.body12BrockmannMedium)
+                .foregroundColor(title == "from" ? .turquoise600 : .extraLightGray)
+                .underline(title == "from")
+        }
+        .disabled(title != "from")
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     var unevenRectangle: some View {
@@ -147,6 +158,7 @@ struct SwapFromToField: View {
         showNetworkSelectSheet: .constant(false),
         showCoinSelectSheet: .constant(false),
         tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel()
+        swapViewModel: SwapCryptoViewModel(),
+        handlePercentageSelection: { _ in }
     )
 }

@@ -87,7 +87,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showFromChainSelector,
             showCoinSelectSheet: $swapViewModel.showFromCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            handlePercentageSelection: handlePercentageSelection
         )
     }
     
@@ -102,7 +103,8 @@ struct SwapCryptoDetailsView: View {
             showNetworkSelectSheet: $swapViewModel.showToChainSelector,
             showCoinSelectSheet: $swapViewModel.showToCoinSelector,
             tx: tx,
-            swapViewModel: swapViewModel
+            swapViewModel: swapViewModel,
+            handlePercentageSelection: nil
         )
     }
     
@@ -158,7 +160,7 @@ struct SwapCryptoDetailsView: View {
     
     @ViewBuilder
     var continueButton: some View {
-        let isDisabled = !swapViewModel.validateForm(tx: tx)
+        let isDisabled = !swapViewModel.validateForm(tx: tx) || swapViewModel.isLoading
         
         if swapViewModel.isLoadingTransaction {
             ButtonLoader()
@@ -220,8 +222,8 @@ struct SwapCryptoDetailsView: View {
 extension SwapCryptoDetailsView {
     public func handlePercentageSelection(_ percentage: Int) {
         swapViewModel.showAllPercentageButtons = false
-        // Use coin's decimals for proper precision
-        // For EVM chains, cap at 9 decimals to avoid impractical precision
+        // We use 4 decimals to avoid impractical precision
+        // Also LIFI and other providers use 4 decimals top
         let decimalsToUse: Int = 4
         
         switch percentage {

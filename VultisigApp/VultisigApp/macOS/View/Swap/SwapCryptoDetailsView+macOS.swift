@@ -42,7 +42,8 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showFromCoinSelector,
                         selectedCoin: $tx.fromCoin,
-                        selectedChain: $swapViewModel.fromChain
+                        selectedChain: $swapViewModel.fromChain,
+                        isLoading: swapViewModel.isLoading
                     )
                 }
                 
@@ -51,7 +52,8 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showToCoinSelector,
                         selectedCoin: $tx.toCoin,
-                        selectedChain: $swapViewModel.toChain
+                        selectedChain: $swapViewModel.toChain,
+                        isLoading: swapViewModel.isLoading
                     )
                 }
             }

@@ -601,6 +601,8 @@
 "usePassword" = "Use password";
 "migrate" = "Migrate";
 "selectNetwork" = "Select network";
+"selectChain" = "Select chain";
+"selectToken" = "Select token";
 "network" = "Network";
 "selectAsset" = "Select asset";
 "chain" = "Chain";

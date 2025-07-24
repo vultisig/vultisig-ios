@@ -41,7 +41,8 @@ struct SendDetailsAssetTab: View {
                         vault: vault,
                         showSheet: $viewModel.showCoinPickerSheet,
                         selectedCoin: $tx.coin,
-                        selectedChain: $viewModel.selectedChain
+                        selectedChain: $viewModel.selectedChain,
+                        isLoading: false
                     )
                 }
             })

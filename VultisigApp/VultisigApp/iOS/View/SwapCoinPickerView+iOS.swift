@@ -19,14 +19,6 @@ extension SwapCoinPickerView {
             main
         }
         .buttonStyle(BorderlessButtonStyle())
-        .sheet(isPresented: $showChainPickerSheet, content: {
-            SwapChainPickerView(
-                vault: vault,
-                showSheet: $showChainPickerSheet,
-                selectedChain: $selectedChain,
-                selectedCoin: $selectedCoin
-            )
-        })
     }
 }
 #endif
