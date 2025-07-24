@@ -126,7 +126,7 @@ struct SendGasSettingsView: View {
     }
 
     func modeTab(mode: FeeMode) -> some View {
-        PrimaryButton(title: mode.title, type: viewModel.selectedMode == mode ? .primary : .secondary) {
+        PrimaryButton(title: mode.title, type: viewModel.selectedMode == mode ? .primary : .secondary, size: .small) {
             viewModel.selectedMode = mode
         }
     }
