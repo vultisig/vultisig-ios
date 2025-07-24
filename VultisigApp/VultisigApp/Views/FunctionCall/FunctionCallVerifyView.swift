@@ -91,13 +91,12 @@ struct FunctionCallVerifyView: View {
                     .foregroundColor(.extraLightGray)
                     .font(.body14BrockmannMedium)
                 
-                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {}
-                    .simultaneousGesture(LongPressGesture().onEnded { _ in
-                        handleSubmit()
-                    })
-                    .simultaneousGesture(TapGesture().onEnded { _ in
+                LongPressPrimaryButton(
+                    title: NSLocalizedString("signTransaction", comment: "")) {
                         fastPasswordPresented = true
-                    })
+                    } longPressAction: {
+                        handleSubmit()
+                    }
                     .sheet(isPresented: $fastPasswordPresented) {
                         FastVaultEnterPasswordView(
                             password: $tx.fastVaultPassword,

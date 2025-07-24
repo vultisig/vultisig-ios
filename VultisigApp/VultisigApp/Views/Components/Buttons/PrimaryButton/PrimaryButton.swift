@@ -16,6 +16,9 @@ struct PrimaryButton: View {
     let size: ButtonSize
     let action: () -> Void
     
+    let supportsLongPress: Bool
+    @Binding var longPressProgress: CGFloat
+    
     init(
         title: String,
         leadingIcon: String? = nil,
@@ -23,6 +26,8 @@ struct PrimaryButton: View {
         isLoading: Bool = false,
         type: ButtonType = .primary,
         size: ButtonSize = .medium,
+        supportsLongPress: Bool = false,
+        longPressProgress: Binding<CGFloat> = .constant(0),
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -31,6 +36,8 @@ struct PrimaryButton: View {
         self.isLoading = isLoading
         self.type = type
         self.size = size
+        self.supportsLongPress = supportsLongPress
+        self._longPressProgress = longPressProgress
         self.action = action
     }
     
@@ -48,7 +55,14 @@ struct PrimaryButton: View {
                 isLoading: isLoading
             )
         }
-        .buttonStyle(PrimaryButtonStyle(type: type, size: size))
+        .buttonStyle(
+            PrimaryButtonStyle(
+                type: type,
+                size: size,
+                supportsLongPress: supportsLongPress,
+                progress: $longPressProgress
+            )
+        )
     }
 }
 
