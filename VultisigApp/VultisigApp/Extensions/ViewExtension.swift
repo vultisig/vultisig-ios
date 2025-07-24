@@ -31,4 +31,11 @@ extension View {
     func borderlessTextFieldStyle() -> some View {
         self.textFieldStyle(PlainTextFieldStyle())
     }
+    
+    @ViewBuilder
+    func showIf(_ shouldShow: Bool) -> some View {
+        if shouldShow {
+            self
+        }
+    }
 }

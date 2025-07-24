@@ -20,6 +20,7 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
+    @Binding var settingsPresented: Bool
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -43,6 +44,7 @@ struct SendCryptoDetailsView: View {
         }
         .gesture(DragGesture())
         .onFirstAppear {
+            sendDetailsViewModel.onLoad()
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
@@ -81,33 +83,48 @@ struct SendCryptoDetailsView: View {
     }
     
     var tabs: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                SendDetailsAssetTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Asset,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel
-                )
-                
-                SendDetailsAddressTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Address,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    focusedField: $focusedField
-                )
-                
-                SendDetailsAmountTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Amount,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    validateForm: validateForm,
-                    focusedField: $focusedField
-                )
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 12) {
+                    SendDetailsAssetTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .asset,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel
+                    )
+                    .id(SendDetailsFocusedTab.asset.rawValue)
+                    
+                    SendDetailsAddressTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .address,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        focusedField: $focusedField
+                    )
+                    .id(SendDetailsFocusedTab.address.rawValue)
+                    
+                    SendDetailsAmountTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .amount,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        validateForm: validateForm,
+                        focusedField: $focusedField,
+                        settingsPresented: $settingsPresented
+                    )
+                    .id(SendDetailsFocusedTab.amount.rawValue)
+                }
+                .padding(16)
             }
-            .padding(16)
+            .onChange(of: sendDetailsViewModel.selectedTab) { _, newValue in
+                proxy.scrollTo(SendDetailsFocusedTab.asset.rawValue, anchor: .bottom)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.easeInOut) {
+                        proxy.scrollTo(newValue.rawValue, anchor: .top)
+                    }
+                }
+            }
+        
         }
     }
     
@@ -142,11 +159,18 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        sendDetailsViewModel.selectedTab = .Amount
+        await MainActor.run {
+            sendCryptoViewModel.isLoading = true
+        }
+        
+        sendDetailsViewModel.onSelect(tab: .amount)
         sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
+        }
+        
+        await MainActor.run {
             sendCryptoViewModel.isLoading = false
         }
     }
@@ -162,6 +186,7 @@ struct SendCryptoDetailsView: View {
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example
+        vault: Vault.example,
+        settingsPresented: .constant(false)
     )
 }

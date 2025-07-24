@@ -71,7 +71,7 @@ struct SendDetailsAssetTab: View {
                 assetSelectionSection
             }
         }
-        .padding(12)
+        .padding(16)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.blue200, lineWidth: 1)
@@ -95,7 +95,7 @@ struct SendDetailsAssetTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Asset
+            viewModel.onSelect(tab: .asset)
         }
     }
     
@@ -185,7 +185,7 @@ struct SendDetailsAssetTab: View {
     }
     
     var doneEditTools: some View {
-        SendDetailsTabEditTools(forTab: .Asset, viewModel: viewModel)
+        SendDetailsTabEditTools(forTab: .asset, viewModel: viewModel)
     }
     
     private func setData() {
@@ -197,7 +197,7 @@ struct SendDetailsAssetTab: View {
             return
         }
         
-        viewModel.selectedTab = .Address
+        viewModel.onSelect(tab: .address)
         viewModel.assetSetupDone = true
     }
 }

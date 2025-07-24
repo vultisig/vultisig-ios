@@ -19,12 +19,6 @@ extension SendCryptoView {
                     backButton
                 }
                 
-                if showFeeSettings {
-                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                        settingsButton
-                    }
-                }
-                
                 if sendCryptoViewModel.currentIndex == 3 {
                     ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         NavigationQRShareButton(
@@ -35,6 +29,7 @@ extension SendCryptoView {
                     }
                 }
             }
+            .toolbarBackground(Color.backgroundBlue)
     }
     
     var main: some View {

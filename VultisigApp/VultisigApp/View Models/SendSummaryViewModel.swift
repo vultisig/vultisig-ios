@@ -47,4 +47,10 @@ class SendSummaryViewModel: ObservableObject {
             return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
     }
+    
+    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+        guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
+        let fee = nativeCoin.decimal(for: tx.gas)
+        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+    }
 }

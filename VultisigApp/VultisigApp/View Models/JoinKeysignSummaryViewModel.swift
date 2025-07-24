@@ -8,6 +8,8 @@
 import Foundation
 
 class JoinKeysignSummaryViewModel {
+    let gasViewModel = JoinKeysignGasViewModel()
+    
     func getAction(_ keysignPayload: KeysignPayload?) -> String {
         guard keysignPayload?.approvePayload == nil else {
             return NSLocalizedString("approveAndSwap", comment: "")

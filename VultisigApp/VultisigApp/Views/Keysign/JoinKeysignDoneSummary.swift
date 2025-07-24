@@ -18,12 +18,16 @@ struct JoinKeysignDoneSummary: View {
     let summaryViewModel = JoinKeysignSummaryViewModel()
     
     var body: some View {
-        ZStack {
-            if viewModel.keysignPayload?.swapPayload != nil {
-                swapContent
-            } else {
-                ScrollView {
-                    summary
+        VStack {
+            Group {
+                if viewModel.keysignPayload?.swapPayload != nil {
+                    swapContent
+                } else if viewModel.customMessagePayload == nil {
+                    sendContent
+                } else {
+                    ScrollView {
+                        summary
+                    }
                 }
             }
         }
@@ -33,11 +37,6 @@ struct JoinKeysignDoneSummary: View {
         VStack {
             if let approveTxid = viewModel.approveTxid {
                 card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
-            }
-            
-            if viewModel.customMessagePayload == nil {
-                card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
-                    .padding(.horizontal, -16)
             }
             
             content
@@ -50,12 +49,8 @@ struct JoinKeysignDoneSummary: View {
     }
     
     var content: some View {
-        ZStack {
-            if viewModel.customMessagePayload != nil {
-                signMessageContent
-            } else {
-                transactionContent
-            }
+        Group {
+            signMessageContent
         }
         .padding(.horizontal, 16)
     }
@@ -70,62 +65,23 @@ struct JoinKeysignDoneSummary: View {
         )
     }
     
-    var transactionContent: some View {
-        VStack(spacing: 18) {
-            
-            if let address = viewModel.keysignPayload?.toAddress, !address.isEmpty {
-                
-                Separator()
-                getGeneralCell(
-                    title: "to",
-                    description: address,
-                    isVerticalStacked: true
+    @ViewBuilder
+    var sendContent: some View {
+        if let keysignPayload = viewModel.keysignPayload {
+            let fees = viewModel.getCalculatedNetworkFee()
+            SendCryptoDoneContentView(
+                input: SendCryptoContent(
+                    coin: keysignPayload.coin,
+                    amountCrypto: keysignPayload.toAmountWithTickerString,
+                    amountFiat: keysignPayload.toSendAmountFiatString,
+                    hash: viewModel.txid,
+                    explorerLink: viewModel.getTransactionExplorerURL(txid: viewModel.txid),
+                    memo: viewModel.memo ?? "",
+                    fromAddress: keysignPayload.coin.address,
+                    toAddress: keysignPayload.toAddress,
+                    fee: (fees.feeCrypto, fees.feeFiat)
                 )
-                
-            }
-            
-            if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
-                Separator()
-                
-                // Show decoded memo if available, otherwise show original memo
-                if let decodedMemo = viewModel.decodedMemo, !decodedMemo.isEmpty {
-                    getGeneralCell(
-                        title: "action",
-                        description: decodedMemo,
-                        isVerticalStacked: false
-                    )
-                } else {
-                    getGeneralCell(
-                        title: "memo",
-                        description: memo,
-                        isVerticalStacked: false
-                    )
-                }
-            }
-            
-            if let amount = viewModel.keysignPayload?.toAmountString, !amount.isEmpty {
-                
-                Separator()
-                getGeneralCell(
-                    title: "amount",
-                    description: amount,
-                    isVerticalStacked: false
-                )
-                
-            }
-            
-            if let fiat = viewModel.keysignPayload?.toAmountFiatString, !fiat.isEmpty {
-                
-                Separator()
-                getGeneralCell(
-                    title: "value",
-                    description: fiat,
-                    isVerticalStacked: false
-                )
-                
-            }
-            
-            transactionLink
+            ) {}
         }
     }
     
