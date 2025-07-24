@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Send THORChain RUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"",
+                "logo": "rune.png"
+            },
+            "to_address": "thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": false,
+                    "transaction_type": 0
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["7e513b23957b2e3caf77e796ba1412851be066cd77f96a7d196c3c856c641ebf"]
+    }
+]

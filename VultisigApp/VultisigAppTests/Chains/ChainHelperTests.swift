@@ -27,22 +27,34 @@ final class ChainHelperTests: XCTestCase {
     let hexChainCode = "c9b189a8232b872b8d9ccd867d0db316dd10f56e729c310fe072adf5fd204ae7"
     
     func testChainHelpers() throws {
-        // Locate the JSON file in the test bundle
-        guard let url = Bundle(for: type(of: self)).url(forResource: "testdata", withExtension: "json") else {
-            XCTFail("Missing file: testdata.json")
+        // Get the test bundle
+        let bundle = Bundle(for: type(of: self))
+        
+        // Get all JSON files in the bundle
+        let fileManager = FileManager.default
+        guard let resourcePath = bundle.resourcePath else {
+            XCTFail("Missing resource path")
             return
         }
+        let resourceURL = URL(fileURLWithPath: resourcePath)
+        let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
+            .filter { $0.pathExtension == "json" }
         
-        // Load the JSON data
-        let data = try Data(contentsOf: url)
-        let decoder = JSONDecoder()
-        let testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
-        for (_,tc) in testCases.enumerated() {
-            try runTestCase(tc)
+        // Iterate through each JSON file
+        for jsonFile in jsonFiles {
+            let data = try Data(contentsOf: jsonFile)
+            let decoder = JSONDecoder()
+            let testCases = try decoder.decode([ChainHelperTestCase].self, from: data)
+            
+            for testCase in testCases {
+                try runTestCase(testCase)
+            }
         }
+        
     }
     
     private func runTestCase(_ testCase: ChainHelperTestCase) throws {
+        print("Running test case: \(testCase.name)")
         let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
         let chain = keysignPayload.coin.chain
         switch chain {
@@ -62,6 +74,9 @@ final class ChainHelperTests: XCTestCase {
                 let result = try erc20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)
                 XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for ERC20 on \(chain.name)")
             }
+        case .thorChain:
+            let result = try THORChainHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+            XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for ThorChain")
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -871,7 +871,6 @@
 		DE214FF42E2E13A200CEEA71 /* SendCryptoAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF32E2E139100CEEA71 /* SendCryptoAddressBookView+iOS.swift */; };
 		DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */; };
 		DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */; };
-		DE2EDA6C2E31F1C6004713ED /* testdata.json in Resources */ = {isa = PBXBuildFile; fileRef = DE2EDA6B2E31F1BA004713ED /* testdata.json */; };
 		DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */; };
 		DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE3D44AC2BD2445100BD64CD /* CryptoSwift */; };
 		DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */; };
@@ -1848,7 +1847,6 @@
 		DE214FF52E308EE800CEEA71 /* ChainHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHelperTests.swift; sourceTree = "<group>"; };
 		DE214FF72E30B3E400CEEA71 /* KeysignPayloadCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadCodable.swift; sourceTree = "<group>"; };
 		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
-		DE2EDA6B2E31F1BA004713ED /* testdata.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = testdata.json; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -1943,6 +1941,22 @@
 		E8C796F13B6313681B4F992A /* KyberSwapToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapToken.swift; sourceTree = "<group>"; };
 		FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HiddenToken.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				evm.json,
+				thorchain.json,
+				utxo.json,
+			);
+			target = DE49A1752B65F6DB000F3AFB /* VultisigAppTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DE2EDA722E3245A4004713ED /* TestData */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TestData; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		DE49A1602B65F6D9000F3AFB /* Frameworks */ = {
@@ -3902,7 +3916,7 @@
 		DE49A1792B65F6DB000F3AFB /* VultisigAppTests */ = {
 			isa = PBXGroup;
 			children = (
-				DE2EDA6B2E31F1BA004713ED /* testdata.json */,
+				DE2EDA722E3245A4004713ED /* TestData */,
 				B5293CD92DBC00AA00C6C66A /* Extensions */,
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
@@ -4171,7 +4185,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE2EDA6C2E31F1C6004713ED /* testdata.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5400,7 +5413,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = NO;
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -5427,7 +5440,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REGISTER_APP_GROUPS = NO;
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

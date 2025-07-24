@@ -140,7 +140,10 @@ extension VSTHORChainSpecific: Codable {
         sequence = try container.decode(UInt64.self, forKey: .sequence)
         fee = try container.decode(UInt64.self, forKey: .fee)
         isDeposit = try container.decode(Bool.self, forKey: .isDeposit)
-        let transactionTypeRaw = try container.decode(String.self, forKey: .transactionType)
+        if container.contains(.transactionType) {
+            let transactionTypeRaw = try container.decode(Int.self, forKey: .transactionType)
+                transactionType = VSTransactionType(rawValue: transactionTypeRaw) ?? .unspecified
+        }
     }
 }
 
