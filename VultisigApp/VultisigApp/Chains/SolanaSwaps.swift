@@ -55,7 +55,7 @@ class SolanaSwaps {
         
         let updatedTxData = Data(base64Encoded: quote.tx.data) ?? Data()
         let decodedData = TransactionDecoder.decode(coinType: .solana, encodedTx: updatedTxData)
-        var decodedOutput = try! SolanaDecodingTransactionOutput(serializedBytes: decodedData)
+        var decodedOutput = try SolanaDecodingTransactionOutput(serializedBytes: decodedData)
         
         switch decodedOutput.transaction.message {
         case .legacy(var legacyMessage):
@@ -72,7 +72,7 @@ class SolanaSwaps {
             $0.rawMessage = decodedOutput.transaction
         }
         
-        return try! input.serializedData()
+        return try input.serializedData()
     }
     
 }
