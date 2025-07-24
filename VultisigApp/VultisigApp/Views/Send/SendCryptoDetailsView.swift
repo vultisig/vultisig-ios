@@ -159,15 +159,22 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        await MainActor.run {
-            sendCryptoViewModel.isLoading = true
-        }
-        
-        sendDetailsViewModel.onSelect(tab: .amount)
-        sendCryptoViewModel.validateAmount(amount: tx.amount.description)
-        
-        if await sendCryptoViewModel.validateForm(tx: tx) {
-            sendCryptoViewModel.moveToNextView()
+        switch sendDetailsViewModel.selectedTab {
+        case .asset:
+            sendDetailsViewModel.onSelect(tab: .address)
+            return
+        case .address:
+            sendDetailsViewModel.onSelect(tab: .amount)
+            return
+        case .amount:
+            await MainActor.run {
+                sendCryptoViewModel.isLoading = true
+            }
+            sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+            
+            if await sendCryptoViewModel.validateForm(tx: tx) {
+                sendCryptoViewModel.moveToNextView()
+            }
         }
         
         await MainActor.run {
