@@ -212,33 +212,61 @@
         "name": "Send ETH",
         "keysign_payload": {
             "coin": {
-                "chain": "Bitcoin",
-                "ticker": "BTC",
-                "address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
-                "decimals": 8,
-                "price_provider_id": "btc",
+                "chain": "Ethereum",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "eth",
                 "is_native_token": true,
                 "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
-                "logo": "btc.png"
+                "logo": "eth.png"
             },
-            "to_address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
-            "to_amount": "100000",
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "100000000000000000",
             "BlockchainSpecific": {
-                "UtxoSpecific": {
-                    "byte_fee": "1"
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000",
                 }
             },
-            "utxo_info": [
-                {
-                    "hash": "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0",
-                    "amount": 193796,
-                    "index": 1
-                }
-            ],
+            "utxo_info": [],
             "SwapPayload": null,
             "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["5ec8bb18ad8a6b0c4168f8506c9f83200d515dc5d568b477699af71d0db82277"]
+        "expected_image_hash": ["438e1d44be87f05826effb6086f51bb32e4931b4e6a3768ba522c0538d78d589"]
+    },
+    {
+        "name": "Send ERC20",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Ethereum",
+                "ticker": "USDC",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 6,
+                "price_provider_id": "usd-coin",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "logo": "eth.png"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "1000000000",
+                    "priority_fee": "1000000000",
+                    "nonce": 1,
+                    "gas_limit": "21000",
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["00c4725768e2aba712f0d5094cac14a26e3e0a4e0baf576d0b6a8a0f853bc8ef"]
     }
 ]

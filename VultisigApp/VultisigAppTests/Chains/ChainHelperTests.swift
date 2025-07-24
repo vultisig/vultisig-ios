@@ -51,7 +51,7 @@ final class ChainHelperTests: XCTestCase {
             let result = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
         
-        case .ethereum:
+        case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)
