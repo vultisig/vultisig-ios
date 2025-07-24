@@ -69,7 +69,6 @@ class SolanaSwaps {
         }
         
         let input = SolanaSigningInput.with {
-            $0.recentBlockhash = recentBlockHash
             $0.rawMessage = decodedOutput.transaction
         }
         
