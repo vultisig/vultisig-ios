@@ -49,10 +49,12 @@ private extension LongPressPrimaryButton {
     func startHold() {
         guard !isPressed else { return }
         
-        
         workItem = DispatchWorkItem {
+            #if os(iOS)
+                HapticFeedbackManager.shared.startHapticFeedback(duration: longPressDuration, interval: 0.15)
+            #endif
+            
             isPressed = true
-            HapticFeedbackManager.shared.startHapticFeedback(duration: longPressDuration, interval: 0.15)
             withAnimation(.easeIn(duration: longPressDuration)) {
                 progress = 1.0
             }
@@ -61,6 +63,8 @@ private extension LongPressPrimaryButton {
                 onLongPressComplete()
             }
         }
+        
+        // Delay to prevent tapGesture getting executed when the user starts holding
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem!)
     }
     
@@ -71,16 +75,20 @@ private extension LongPressPrimaryButton {
         timer = nil
         cancelWork()
         
-        HapticFeedbackManager.shared.stopHapticFeedback()
+        #if os(iOS)
+            HapticFeedbackManager.shared.stopHapticFeedback()
+        #endif
         withAnimation(.easeOut(duration: 0.3)) {
             progress = 0.0
         }
     }
     
     func onLongPressComplete() {
-        HapticFeedbackManager.shared.stopHapticFeedback()
-        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-        impactFeedback.impactOccurred()
+        #if os(iOS)
+            HapticFeedbackManager.shared.stopHapticFeedback()
+            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+            impactFeedback.impactOccurred()
+        #endif
         
         // Delay for smoother transition
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

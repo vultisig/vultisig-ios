@@ -7,8 +7,10 @@
 
 import SwiftUI
 
+#if os(iOS)
 class HapticFeedbackManager {
     private var timer: Timer?
+    private var stopWorkItem: DispatchWorkItem?
     private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
     
     static let shared = HapticFeedbackManager()
@@ -16,6 +18,9 @@ class HapticFeedbackManager {
     private init() {}
     
     func startHapticFeedback(duration: TimeInterval, interval: TimeInterval = 0.1) {
+        // Stop any existing feedback first
+        stopHapticFeedback()
+
         // Prepare the generator for better performance
         impactGenerator.prepare()
         
@@ -28,13 +33,17 @@ class HapticFeedbackManager {
         }
         
         // Stop after duration
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+        stopWorkItem = DispatchWorkItem {
             self.stopHapticFeedback()
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: stopWorkItem!)
     }
     
     func stopHapticFeedback() {
         timer?.invalidate()
         timer = nil
+        stopWorkItem?.cancel()
+        stopWorkItem = nil
     }
 }
+#endif
