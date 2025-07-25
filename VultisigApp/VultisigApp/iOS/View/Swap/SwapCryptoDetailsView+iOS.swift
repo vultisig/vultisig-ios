@@ -71,7 +71,10 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons(showAllPercentageButtons: $swapViewModel.showAllPercentageButtons) { percentage in
+        SwapPercentageButtons(
+            show100: !tx.fromCoin.isNativeToken,
+            showAllPercentageButtons: $swapViewModel.showAllPercentageButtons
+        ) { percentage in
             handlePercentageSelection(percentage)
         }
         .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)

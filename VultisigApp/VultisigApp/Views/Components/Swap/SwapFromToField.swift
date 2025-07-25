@@ -59,19 +59,9 @@ struct SwapFromToField: View {
     }
     
     var balance: some View {
-        Button {
-            if title == "from" {
-                // Use the same logic as 100% percentage handler
-                handlePercentageSelection?(100)
-            }
-        } label: {
-            Text("\(coin.balanceString) \(coin.ticker)")
-                .font(.body12BrockmannMedium)
-                .foregroundColor(title == "from" ? .turquoise600 : .extraLightGray)
-                .underline(title == "from")
-        }
-        .disabled(title != "from")
-        .buttonStyle(BorderlessButtonStyle())
+        Text("\(coin.balanceString) \(coin.ticker)")
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.extraLightGray)
     }
     
     var unevenRectangle: some View {

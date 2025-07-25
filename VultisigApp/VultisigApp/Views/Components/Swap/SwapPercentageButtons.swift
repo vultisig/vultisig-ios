@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct SwapPercentageButtons: View {
-    let buttonOptions = [25, 50, 75, 100]
+    let show100: Bool
+    
+    var buttonOptions: [Int] {
+        show100 ? [25, 50, 75, 100] : [25, 50, 75]
+    }
     
     @State private var selectedPercentage: Int? = nil
     
