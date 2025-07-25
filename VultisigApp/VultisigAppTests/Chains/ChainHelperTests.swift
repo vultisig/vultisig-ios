@@ -38,7 +38,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" && $0.lastPathComponent.hasPrefix("solana") }
+            .filter { $0.pathExtension == "json" && $0.lastPathComponent.hasPrefix("xrp") }
         
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
@@ -117,6 +117,8 @@ final class ChainHelperTests: XCTestCase {
             result += imageHash
         case .solana:
             result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .ripple:
+            result += try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
