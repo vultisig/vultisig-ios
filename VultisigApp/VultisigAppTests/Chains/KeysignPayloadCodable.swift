@@ -475,6 +475,7 @@ extension VSTHORChainSwapPayload: Codable {
         case streamingQuantity = "streaming_quantity"
         case isAffiliate = "is_affiliate"
         case fee = "fee"
+        case expirationTime = "expiration_time"
     }
     
     public func encode(to encoder: any Encoder) throws {
@@ -491,6 +492,7 @@ extension VSTHORChainSwapPayload: Codable {
         try container.encode(streamingQuantity, forKey: .streamingQuantity)
         try container.encode(isAffiliate, forKey: .isAffiliate)
         try container.encode(fee, forKey: .fee)
+        try container.encode(expirationTime, forKey: .expirationTime)
     }
     
     public init(from decoder: any Decoder) throws {
@@ -500,7 +502,7 @@ extension VSTHORChainSwapPayload: Codable {
         fromCoin = try container.decode(VSCoin.self, forKey: .fromCoin)
         toCoin = try container.decode(VSCoin.self, forKey: .toCoin)
         vaultAddress = try container.decode(String.self, forKey: .vaultAddress)
-        routerAddress = try container.decode(String.self, forKey: .routerAddress)
+        routerAddress = try container.decodeIfPresent(String.self, forKey: .routerAddress) ?? String()
         fromAmount = try container.decode(String.self, forKey: .fromAmount)
         toAmountDecimal = try container.decode(String.self, forKey: .toAmountDecimal)
         toAmountLimit = try container.decode(String.self, forKey: .toAmountLimit)
@@ -508,7 +510,7 @@ extension VSTHORChainSwapPayload: Codable {
         streamingQuantity = try container.decode(String.self, forKey: .streamingQuantity)
         isAffiliate = try container.decode(Bool.self, forKey: .isAffiliate)
         fee = try container.decode(String.self, forKey: .fee)
-        
+        expirationTime = try container.decode(UInt64.self, forKey: .expirationTime)
     }
 }
 extension VSErc20ApprovePayload : Codable {

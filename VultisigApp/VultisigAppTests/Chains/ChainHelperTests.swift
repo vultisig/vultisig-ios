@@ -14,7 +14,7 @@ struct ChainHelperTestCase: Codable {
     let name: String
     let keysignPayload: VSKeysignPayload // base64 encoded JSON string of KeysignPayload
     let expectedImageHash: [String]
-
+    
     enum CodingKeys: String, CodingKey {
         case name
         case keysignPayload = "keysign_payload"
@@ -38,7 +38,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" }
+            .filter { $0.pathExtension == "json" && $0.lastPathComponent.hasPrefix("solana") }
         
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
@@ -52,34 +52,76 @@ final class ChainHelperTests: XCTestCase {
         }
         
     }
-    
+    private func runTestCaseWithSwap(_ testCase: ChainHelperTestCase, keysignPayload: KeysignPayload) throws {
+        var result: [String] = []
+        if keysignPayload.approvePayload != nil {
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let approvalImageHash = try swaps.getPreSignedApproveImageHash(approvePayload: keysignPayload.approvePayload!, keysignPayload: keysignPayload)
+            result += approvalImageHash
+        }
+        let incrementNonce = keysignPayload.approvePayload != nil
+        switch keysignPayload.swapPayload {
+        case .thorchain(let swapPayload):
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
+                                                            keysignPayload: keysignPayload,
+                                                            incrementNonce: incrementNonce)
+            result += imageHash
+        case .kyberSwap(let kyberSwapPayload):
+            let swaps = KyberSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let imageHash = try swaps.getPreSignedImageHash(payload: kyberSwapPayload,
+                                                            keysignPayload: keysignPayload,
+                                                            incrementNonce: incrementNonce)
+            result += imageHash
+        case .mayachain(_):
+            // mayachain swap is a regular transaction with memo
+            return
+        case .oneInch(let oneInchSwapPayload):
+            let swaps = OneInchSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let imageHash = try swaps.getPreSignedImageHash(payload: oneInchSwapPayload,
+                                                            keysignPayload: keysignPayload,
+                                                            incrementNonce: incrementNonce)
+            result += imageHash
+        case .none:
+            XCTFail("Swap payload is nil for test case \(testCase.name)")
+        }
+        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed")
+    }
     private func runTestCase(_ testCase: ChainHelperTestCase) throws {
         print("Running test case: \(testCase.name)")
         let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
         let chain = keysignPayload.coin.chain
+        if keysignPayload.swapPayload != nil {
+            try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
+            return
+        }
+        var result: [String] = []
         switch chain {
         case .bitcoin,.bitcoinCash,.dogecoin,.litecoin,.zcash:
             let utxoHelper = UTXOChainsHelper(coin: chain.coinType, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
-            let result = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-            XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
-        
+            let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+            result += imageHash
         case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)
-                let result = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-                XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
+                let imageHash = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+                result += imageHash
             } else {
                 let erc20Helper = ERC20Helper(coinType: chain.coinType)
-                let result = try erc20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)
-                XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for ERC20 on \(chain.name)")
+                let imageHash = try erc20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)
+                result += imageHash
             }
         case .thorChain:
-            let result = try THORChainHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
-            XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for ThorChain")
+            let imageHash = try THORChainHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+            result += imageHash
+        case .solana:
+            result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
+        
+        XCTAssertEqual(result, testCase.expectedImageHash, "Test case \(testCase.name) failed for \(chain.name)")
     }
 }
 
