@@ -30,7 +30,12 @@ class SendDetailsViewModel: ObservableObject {
     }
     
     func onLoad() {
-        selectedTab = hasPreselectedCoin ? .address : .asset
+        if hasPreselectedCoin {
+            assetSetupDone = true
+            selectedTab = .address
+        } else {
+            selectedTab = .asset
+        }
     }
     
     func onSelect(tab: SendDetailsFocusedTab) {
