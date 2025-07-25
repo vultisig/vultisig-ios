@@ -99,6 +99,7 @@ extension KeysignPayload: ProtoMappable {
             if let approvePayload {
                 $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
             }
+            $0.wasmExecuteContractPayload = wasmExecuteContractPayload?.mapToProtobuff() ?? .init()
         }
     }
 }

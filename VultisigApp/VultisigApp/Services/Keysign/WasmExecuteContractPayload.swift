@@ -29,4 +29,13 @@ struct WasmExecuteContractPayload: Codable, Hashable {
         self.executeMsg = proto.executeMsg
         self.coins = try proto.coins.map { try ProtoCoinResolver.resolve(coin: $0) }
     }
+    
+    func mapToProtobuff() -> VSWasmExecuteContractPayload {
+        .with {
+            $0.senderAddress = self.senderAddress
+            $0.executeMsg = self.executeMsg
+            $0.contractAddress = self.contractAddress
+            $0.coins = self.coins.map { coin in ProtoCoinResolver.proto(from: coin) }
+        }
+    }
 }
