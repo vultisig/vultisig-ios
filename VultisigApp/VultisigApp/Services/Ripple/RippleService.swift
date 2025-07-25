@@ -74,8 +74,8 @@ class RippleService {
         
         // Calculate reserved balance
         let ownerCount = BigInt(accountInfo?.result?.accountData?.ownerCount ?? 0)
-        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 10000000) // Default 10 XRP
-        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 2000000)   // Default 2 XRP
+        let reservedBase = BigInt(serverState?.result?.state?.validatedLedger?.reserveBase ?? 1000000) // Default 1 XRP
+        let reserveInc = BigInt(serverState?.result?.state?.validatedLedger?.reserveInc ?? 200000)     // Default 0.2 XRP
         
         let reservedBalance = reservedBase + (ownerCount * reserveInc)
         
@@ -101,7 +101,7 @@ class RippleService {
             
             return response
         } catch {
-            print("Error in fetchServerState:")
+            print("Error in fetchServerState: \(error)")
             throw error
         }
     }
