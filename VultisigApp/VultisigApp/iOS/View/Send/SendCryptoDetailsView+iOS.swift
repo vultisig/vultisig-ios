@@ -30,14 +30,15 @@ extension SendCryptoDetailsView {
         ZStack(alignment: .bottom) {
             tabs
             buttonContainer
-                .background(getButtonBackground())
         }
     }
     
     var buttonContainer: some View {
         button
             .padding(.horizontal, 16)
-            .padding(.bottom, idiom == .pad ? 30 : 0)
+            .padding(.vertical, idiom == .pad ? 30 : 8)
+            .background(keyboardObserver.keyboardHeight == 0 ? .clear : .backgroundBlue)
+            .shadow(color: .backgroundBlue, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }
     
     

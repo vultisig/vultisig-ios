@@ -34,20 +34,12 @@ struct SendDetailsAddressTab: View {
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
-                
-            if isExpanded {
-                separator
-                fields
-            }
+        } content: {
+            separator
+            fields
         }
-        .padding(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var titleSection: some View {

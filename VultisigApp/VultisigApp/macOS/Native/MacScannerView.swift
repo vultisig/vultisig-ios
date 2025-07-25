@@ -168,13 +168,6 @@ struct MacScannerView: View {
         )
     }
     
-    var background: some View {
-        Image("QRScannerBackgroundImage")
-            .resizable()
-            .scaledToFill()
-            .opacity(0.2)
-    }
-    
     var overlay: some View {
         VStack {
             Spacer()
@@ -192,9 +185,6 @@ struct MacScannerView: View {
                 }
                 .onDisappear {
                     cameraViewModel.stopSession()
-                }
-                .overlay {
-                    background
                 }
             
             overlay
