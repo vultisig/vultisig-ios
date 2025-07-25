@@ -102,7 +102,8 @@ struct KeysignPayloadFactory {
             approvePayload: approvePayload,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID,
-            libType: (vault.libType ?? .GG20).toString()
+            libType: (vault.libType ?? .GG20).toString(),
+            wasmExecuteContractPayload: nil
         )
     }
 }
