@@ -1,0 +1,353 @@
+    [
+        {
+            "name": "Swap from RUNE to DOGE",
+            "keysign_payload": {
+                "coin": {
+                    "chain": "THORChain",
+                    "ticker": "RUNE",
+                    "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                    "decimals": 8,
+                    "price_provider_id": "rune",
+                    "is_native_token": true,
+                    "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                    "contract_address":"",
+                    "logo": "rune.png"
+                },
+                "to_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "to_amount": "100000000",
+                "BlockchainSpecific": {
+                    "ThorchainSpecific": {
+                        "account_number": 109315,
+                        "sequence": 218,
+                        "fee": 2000000,
+                        "is_deposit": false,
+                        "transaction_type": 0
+                    }
+                },
+                "memo": "=:d:DSxRrchVLpu6r9rvSRTy9LR9si7NuLrGdm:0\/1\/0:Vi\/vi:0\/0",
+                "utxo_info": [],
+                "SwapPayload": {
+                    "ThorchainSwapPayload":{
+                        "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "from_coin": {
+                            "ticker": "RUNE",
+                            "chain": "THORChain",
+                            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorChain",
+                            "logo": "rune",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "to_coin": {
+                            "ticker": "DOGE",
+                            "chain": "Dogecoin",
+                            "address": "DSxRrchVLpu6r9rvSRTy9LR9si7NuLrGdm",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "dogecoin",
+                            "logo": "doge",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "vault_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "from_amount": "500000000",
+                        "to_amount_decimal": "23.10205336",
+                        "to_amount_limit": "0",
+                        "streaming_interval": "1",
+                        "streaming_quantity": "0",
+                        "is_affiliate": false,
+                        "fee":"",
+                        "expiration_time": 1753426406
+                    }
+                },
+                "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+                "lib_type": "DKLS"
+            },
+            "expected_image_hash": ["6d9c11f66085cf57de3fe80ae42a60d8f1fbe13049995482dfe0ed8668734cfb"]
+        },
+        {
+            "name": "Swap from BCH to RUNE",
+            "keysign_payload": {
+                "coin": {
+                    "chain": "Bitcoin-Cash",
+                    "ticker": "BCH",
+                    "address": "qq6muq53fs6xw6dnhqjutlcgg5yryn93lyj6m3gdk5",
+                    "decimals": 8,
+                    "price_provider_id": "bch",
+                    "is_native_token": true,
+                    "hex_public_key": "02acd7afa2cb887a2b6c31d4fec0fbcbe89f70e577a60868cf6729a8547824c63d",
+                    "contract_address":"",
+                    "logo": "bch"
+                },
+                "to_address": "qpjfqyllyke662dgqx2aqx5e97ssdytjx5lhuk2sgj",
+                "to_amount": "2490000",
+                "BlockchainSpecific": {
+                    "UtxoSpecific": {
+                        "byte_fee": "5",
+                        "send_max_amount": false
+                    }
+                },
+                "memo": "=:r:thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng:0\/1\/0:vi:0",
+                "utxo_info": [
+                    {
+                        "amount": 999040,
+                        "index": 0,
+                        "hash": "7136a350c8dcd8b1c160c3fd0c6bbaec7d139b13d94f7ea09acf84c7cba2aedf"
+                    },
+                    {
+                        "amount": 1496915,
+                        "index": 1,
+                        "hash": "5e2bb8ea8a956cd1e58ecf064ac79dbb040f99bb994b3449551bc3dcd1506f9c"
+                    }
+                ],
+                "SwapPayload": {
+                    "ThorchainSwapPayload":{
+                        "from_address": "qq6muq53fs6xw6dnhqjutlcgg5yryn93lyj6m3gdk5",
+                        "from_coin": {
+                            "ticker": "BCH",
+                            "chain": "Bitcoin-Cash",
+                            "address": "qq6muq53fs6xw6dnhqjutlcgg5yryn93lyj6m3gdk5",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorChain",
+                            "logo": "rune",
+                            "hex_public_key": "02acd7afa2cb887a2b6c31d4fec0fbcbe89f70e577a60868cf6729a8547824c63d"
+                        },
+                        "to_coin": {
+                            "ticker": "RUNE",
+                            "chain": "THORChain",
+                            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorchain",
+                            "logo": "doge",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "vault_address": "qpjfqyllyke662dgqx2aqx5e97ssdytjx5lhuk2sgj",
+                        "from_amount": "2490000",
+                        "to_amount_decimal": "9.16066013",
+                        "to_amount_limit": "0",
+                        "streaming_interval": "1",
+                        "streaming_quantity": "0",
+                        "is_affiliate": false,
+                        "fee":"",
+                        "expiration_time": 1753437177
+                    }
+                },
+                "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+                "lib_type": "DKLS"
+            },
+            "expected_image_hash": ["274db3c7c8c63a4ea9a6a9b8bf5ee88b3fc355b8ad34913d466eca92bfa7fb01", "6c0b2e4692ce397a3eb80cffc3748de1b2f11e5a0008e27b45f8549fd6f2e1df"]
+        },
+        {
+            "name": "Swap from ETH to RUNE",
+            "keysign_payload": {
+                "coin": {
+                    "chain": "Ethereum",
+                    "ticker": "ETH",
+                    "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                    "decimals": 18,
+                    "price_provider_id": "ethereum",
+                    "is_native_token": true,
+                    "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                    "contract_address":"",
+                    "logo": "eth"
+                },
+                "to_address": "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
+                "to_amount": "10000000000000000",
+                "BlockchainSpecific": {
+                    "EthereumSpecific": {
+                        "max_fee_per_gas_wei": "990871752",
+                        "priority_fee": "33152177",
+                        "nonce": 42,
+                        "gas_limit": "600000",
+                    }
+                },
+                "memo": "=:r:thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng:0\/1\/0:vi:0",
+                "utxo_info": [],
+                "SwapPayload": {
+                    "ThorchainSwapPayload":{
+                        "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "to_coin": {
+                            "ticker": "RUNE",
+                            "chain": "THORChain",
+                            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorChain",
+                            "logo": "rune",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "from_coin": {
+                            "ticker": "ETH",
+                            "chain": "Ethereum",
+                            "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                            "contract_address": "",
+                            "decimals": 18,
+                            "is_native_token": true,
+                            "price_provider_id": "ethereum",
+                            "logo": "eth",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "vault_address": "0xfbe582a0a111e49301b34561807eee376231ab35",
+                        "from_amount": "10000000000000000",
+                        "to_amount_decimal": "25.28040376",
+                        "to_amount_limit": "0",
+                        "streaming_interval": "1",
+                        "streaming_quantity": "0",
+                        "is_affiliate": false,
+                        "fee":"",
+                        "expiration_time": 1753437719
+                    }
+                },
+                "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+                "lib_type": "DKLS"
+            },
+            "expected_image_hash": ["9ed6d0160b93dc9bd76fd4ad74ad84644c860926915d2b6e89d0bb1e403fb8d1"]
+        },
+        {
+            "name": "Swap from ETH.USDC to RUNE",
+            "keysign_payload": {
+                "coin": {
+                    "chain": "Ethereum",
+                    "ticker": "USDC",
+                    "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                    "decimals": 18,
+                    "price_provider_id": "",
+                    "is_native_token": true,
+                    "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                    "contract_address":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                    "logo": "usdc"
+                },
+                "to_address": "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
+                "to_amount": "100000000",
+                "BlockchainSpecific": {
+                    "EthereumSpecific": {
+                        "max_fee_per_gas_wei": "738954289",
+                        "priority_fee": "30000000",
+                        "nonce": 42,
+                        "gas_limit": "600000",
+                    }
+                },
+                "memo": "=:r:thor147fr229jewf063mv5w398e5dld00ytu2y8snmh:0\/1\/0:vi:0",
+                "utxo_info": [],
+                "SwapPayload": {
+                    "ThorchainSwapPayload":{
+                        "from_address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                        "to_coin": {
+                            "ticker": "RUNE",
+                            "chain": "THORChain",
+                            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorChain",
+                            "logo": "rune",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "from_coin": {
+                            "ticker": "ETH",
+                            "chain": "Ethereum",
+                            "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                            "contract_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                            "decimals": 6,
+                            "is_native_token": false,
+                            "price_provider_id": "usd-coin",
+                            "logo": "usdc",
+                            "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                        },
+                        "vault_address": "0xfbe582a0a111e49301b34561807eee376231ab35",
+                        "router_address": "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
+                        "from_amount": "100000000",
+                        "to_amount_decimal": "68.291027",
+                        "to_amount_limit": "0",
+                        "streaming_interval": "1",
+                        "streaming_quantity": "0",
+                        "is_affiliate": false,
+                        "fee":"",
+                        "expiration_time": 1753438155
+                    }
+                },
+                "erc20_approve_payload":{
+                    "spender": "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
+                    "amount": "100000000"
+                },
+                "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+                "lib_type": "DKLS"
+            },
+            "expected_image_hash": ["15a6454fd159ea76f44457661ed06d7fa68506955b84fe8cc978bd0aec8816ac", "688154d0ca56aa82e8fcda8a7bc37c40822b64fd8369a9eb36b529f6b957f2a2"]
+        },
+        {
+            "name": "Swap from BASE.ETH to RUNE",
+            "keysign_payload": {
+                "coin": {
+                    "chain": "Base",
+                    "ticker": "ETH",
+                    "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                    "decimals": 18,
+                    "price_provider_id": "ethereum",
+                    "is_native_token": true,
+                    "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725",
+                    "contract_address":"",
+                    "logo": "eth"
+                },
+                "to_address": "0x68208d99746b805a1ae41421950a47b711e35681",
+                "to_amount": "10000000000000000",
+                "BlockchainSpecific": {
+                    "EthereumSpecific": {
+                        "max_fee_per_gas_wei": "7166478",
+                        "priority_fee": "50",
+                        "nonce": 42,
+                        "gas_limit": "600000",
+                    }
+                },
+                "memo": "=:r:thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng:0\/1\/0:vi:0",
+                "utxo_info": [],
+                "SwapPayload": {
+                    "ThorchainSwapPayload":{
+                        "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "to_coin": {
+                            "ticker": "RUNE",
+                            "chain": "THORChain",
+                            "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                            "contract_address": "",
+                            "decimals": 8,
+                            "is_native_token": true,
+                            "price_provider_id": "thorChain",
+                            "logo": "rune",
+                            "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725"
+                        },
+                        "from_coin": {
+                            "ticker": "ETH",
+                            "chain": "Base",
+                            "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                            "contract_address": "",
+                            "decimals": 18,
+                            "is_native_token": true,
+                            "price_provider_id": "ethereum",
+                            "logo": "eth",
+                            "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725"
+                        },
+                        "vault_address": "0xfbe582a0a111e49301b34561807eee376231ab35",
+                        "router_address": "0x68208d99746b805a1ae41421950a47b711e35681",
+                        "from_amount": "10000000000000000",
+                        "to_amount_decimal": "25.29202505",
+                        "to_amount_limit": "0",
+                        "streaming_interval": "1",
+                        "streaming_quantity": "0",
+                        "is_affiliate": false,
+                        "fee":"",
+                        "expiration_time": 1753439457
+                    }
+                },
+                "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+                "lib_type": "DKLS"
+            },
+            "expected_image_hash": ["ec316fe9a55bd1e7ee5d291aba17f2c86229489c2f89ea3bc9528852ed348a71"]
+        },
+    ]
