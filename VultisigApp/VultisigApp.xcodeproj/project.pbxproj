@@ -17,6 +17,7 @@
 		1334C7412E301B5300CBAA3E /* JoinKeysignGasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */; };
 		1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */; };
 		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
+		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -995,6 +996,7 @@
 		1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignGasViewModel.swift; sourceTree = "<group>"; };
 		1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContentView.swift; sourceTree = "<group>"; };
 		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
+		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -2413,6 +2415,7 @@
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */,
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
@@ -4762,6 +4765,7 @@
 				A6B7F49E2C496EA8006D83D1 /* VaultDetailMacQRCode.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
+				1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */,
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
@@ -5546,7 +5550,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = main;
+				branch = feat/msgExecuteContract;
 				kind = branch;
 			};
 		};
