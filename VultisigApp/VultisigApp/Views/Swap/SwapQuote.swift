@@ -78,9 +78,9 @@ enum SwapQuote {
 
     var memo: String? {
         switch self {
-        case .mayachain(let quote):
+        case .thorchain(let quote), .mayachain(let quote):
             return quote.memo
-        case .thorchain, .oneinch, .kyberswap, .lifi:
+        case .oneinch, .kyberswap, .lifi:
             return nil
         }
     }
