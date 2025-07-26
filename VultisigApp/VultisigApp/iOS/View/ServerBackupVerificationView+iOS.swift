@@ -50,22 +50,24 @@ extension ServerBackupVerificationView {
     var field: some View {
         HStack(spacing: 8) {
             ForEach(0 ..< Self.codeLength, id: \.self) { index in
-                TextField("", text: $otp[index])
-                    .foregroundColor(.neutral0)
-                    .disableAutocorrection(true)
-                    .borderlessTextFieldStyle()
-                    .font(.body16BrockmannMedium)
-                    .frame(width: 46, height: 46)
-                    .background(Color.blue600)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(getBorderColor(index), lineWidth: 1)
-                    )
-                    .focused($focusedField, equals: index)
-                    .onChange(of: otp[index]) { _, newValue in
-                        handleInputChange(newValue, index: index)
-                    }
+                OTPCharTextField(text: $otp[index]) {
+                    focusedField = max(0, index - 1)
+                }
+                .foregroundColor(.neutral0)
+                .disableAutocorrection(true)
+                .borderlessTextFieldStyle()
+                .font(.body16BrockmannMedium)
+                .frame(width: 46, height: 46)
+                .background(Color.blue600)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(getBorderColor(index), lineWidth: 1)
+                )
+                .focused($focusedField, equals: index)
+                .onChange(of: otp[index]) { _, newValue in
+                    handleInputChange(newValue, index: index)
+                }
             }
         }
     }
@@ -73,6 +75,10 @@ extension ServerBackupVerificationView {
     func pasteCode() {
         if let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength {
             otp = clipboardContent.map { String($0) }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            focusedField = Self.codeLength - 1
         }
     }
 }

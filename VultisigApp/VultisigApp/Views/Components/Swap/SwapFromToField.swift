@@ -18,6 +18,7 @@ struct SwapFromToField: View {
     @Binding var showCoinSelectSheet: Bool
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    let handlePercentageSelection: ((Int) -> Void)?
     
     @StateObject var referredViewModel = ReferredViewModel()
     
@@ -147,6 +148,7 @@ struct SwapFromToField: View {
         showNetworkSelectSheet: .constant(false),
         showCoinSelectSheet: .constant(false),
         tx: SwapTransaction(),
-        swapViewModel: SwapCryptoViewModel()
+        swapViewModel: SwapCryptoViewModel(),
+        handlePercentageSelection: { _ in }
     )
 }

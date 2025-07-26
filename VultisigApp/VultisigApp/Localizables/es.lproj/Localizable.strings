@@ -556,6 +556,7 @@
 "migrate" = "Migrar";
 "selectNetwork" = "Seleccionar red";
 "network" = "Red";
+"selectChain" = "Seleccionar cadena";
 "selectAsset" = "Seleccionar activo";
 "chain" = "Cadena";
 "maxTotalFee" = "Tarifa total máx.";

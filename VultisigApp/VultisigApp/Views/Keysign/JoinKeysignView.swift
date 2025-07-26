@@ -16,7 +16,7 @@ struct JoinKeysignView: View {
     
     var body: some View {
         content
-            .onAppear {
+            .onLoad {
                 setData()
             }
             .task {
@@ -25,9 +25,6 @@ struct JoinKeysignView: View {
                 } catch {
                     print("fail to get thorchain network id, \(error.localizedDescription)")
                 }
-            }
-            .onDisappear(){
-                viewModel.stopJoiningKeysign()
             }
     }
     
@@ -120,7 +117,7 @@ struct JoinKeysignView: View {
     
     var discoveringSignMessage: some View {
         Loader()
-            .onAppear {
+            .onLoad {
                 viewModel.startScan()
             }
     }

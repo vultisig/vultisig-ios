@@ -36,7 +36,8 @@ extension SwapCryptoDetailsView {
                 vault: vault,
                 showSheet: $swapViewModel.showFromCoinSelector,
                 selectedCoin: $tx.fromCoin,
-                selectedChain: $swapViewModel.fromChain
+                selectedChain: $swapViewModel.fromChain,
+                isLoading: swapViewModel.isLoading
             )
         })
         .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
@@ -44,7 +45,8 @@ extension SwapCryptoDetailsView {
                 vault: vault,
                 showSheet: $swapViewModel.showToCoinSelector,
                 selectedCoin: $tx.toCoin,
-                selectedChain: $swapViewModel.toChain
+                selectedChain: $swapViewModel.toChain,
+                isLoading: swapViewModel.isLoading
             )
         })
     }
@@ -69,7 +71,10 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons(showAllPercentageButtons: $swapViewModel.showAllPercentageButtons) { percentage in
+        SwapPercentageButtons(
+            show100: !tx.fromCoin.isNativeToken,
+            showAllPercentageButtons: $swapViewModel.showAllPercentageButtons
+        ) { percentage in
             handlePercentageSelection(percentage)
         }
         .opacity(keyboardObserver.keyboardHeight == 0 ? 0 : 1)

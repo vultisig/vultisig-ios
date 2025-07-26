@@ -51,6 +51,7 @@ struct SendCryptoAmountTextField: View {
                 }
             }
         ))
+        .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
     }
     

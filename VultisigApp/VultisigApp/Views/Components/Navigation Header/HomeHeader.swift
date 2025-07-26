@@ -25,7 +25,9 @@ struct HomeHeader: View {
             navigationTitle
             Spacer()
             editButton
-            refreshButton
+            if !showVaultsList {
+                refreshButton
+            }
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 40)

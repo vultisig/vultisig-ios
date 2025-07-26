@@ -10,7 +10,7 @@ import SwiftUI
 
 extension SwapCryptoDetailsView {
     var container: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
             Background()
             view
             
@@ -19,8 +19,6 @@ extension SwapCryptoDetailsView {
             }
             
             VStack {
-                Spacer()
-                
                 if swapViewModel.showFromChainSelector {
                     SwapChainPickerView(
                         vault: vault,
@@ -44,7 +42,8 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showFromCoinSelector,
                         selectedCoin: $tx.fromCoin,
-                        selectedChain: $swapViewModel.fromChain
+                        selectedChain: $swapViewModel.fromChain,
+                        isLoading: swapViewModel.isLoading
                     )
                 }
                 
@@ -53,7 +52,8 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showToCoinSelector,
                         selectedCoin: $tx.toCoin,
-                        selectedChain: $swapViewModel.toChain
+                        selectedChain: $swapViewModel.toChain,
+                        isLoading: swapViewModel.isLoading
                     )
                 }
             }
@@ -66,7 +66,10 @@ extension SwapCryptoDetailsView {
     }
     
     var percentageButtons: some View {
-        SwapPercentageButtons(showAllPercentageButtons: $swapViewModel.showAllPercentageButtons) { percentage in
+        SwapPercentageButtons(
+            show100: !tx.fromCoin.isNativeToken,
+            showAllPercentageButtons: $swapViewModel.showAllPercentageButtons
+        ) { percentage in
             handlePercentageSelection(percentage)
         }
     }

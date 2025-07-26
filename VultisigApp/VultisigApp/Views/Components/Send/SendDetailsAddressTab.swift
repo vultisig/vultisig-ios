@@ -24,29 +24,22 @@ struct SendDetailsAddressTab: View {
             .onChange(of: tx.toAddress) { oldValue, newValue in
                 Task {
                     guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                        viewModel.selectedTab = .Address
+                        viewModel.onSelect(tab: .address)
                         return
                     }
-                    viewModel.selectedTab = .Amount
+                    viewModel.addressSetupDone = true
+                    viewModel.onSelect(tab: .amount)
                 }
             }
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
-            
-            if isExpanded {
-                separator
-                fields
-            }
+        } content: {
+            separator
+            fields
         }
-        .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var titleSection: some View {
@@ -65,7 +58,7 @@ struct SendDetailsAddressTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Address
+            viewModel.onSelect(tab: .address)
         }
     }
     
@@ -82,7 +75,7 @@ struct SendDetailsAddressTab: View {
     }
     
     var doneEditTools: some View {
-        SendDetailsTabEditTools(forTab: .Address, viewModel: viewModel)
+        SendDetailsTabEditTools(forTab: .address, viewModel: viewModel)
     }
     
     var fields: some View {
@@ -96,11 +89,10 @@ struct SendDetailsAddressTab: View {
         }
         if !tx.toAddress.isEmpty {
             guard await sendCryptoViewModel.validateToAddress(tx: tx) else {
-                viewModel.selectedTab = .Address
+                viewModel.onSelect(tab: .address)
                 return
             }
+            viewModel.addressSetupDone = true
         }
-        
-        viewModel.addressSetupDone = true
     }
 }

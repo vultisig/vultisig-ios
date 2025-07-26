@@ -21,7 +21,8 @@ struct CoinDetailView: View {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
-                    coin: coin
+                    coin: coin,
+                    hasPreselectedCoin: true
                 )
             }
             .navigationDestination(isPresented: $isSwapLinkActive) {

@@ -28,7 +28,12 @@ struct SwapChainPickerView: View {
         return searchText.isEmpty
             ? chainsArray
             : chainsArray
-            .filter { $0.name.lowercased().contains(searchText.lowercased()) }
+            .filter { chain in
+                // Search by chain name
+                chain.name.lowercased().contains(searchText.lowercased()) ||
+                // Search by native token ticker
+                chain.ticker.lowercased().contains(searchText.lowercased())
+            }
     }
     
     var content: some View {

@@ -29,19 +29,16 @@ extension SendCryptoDetailsView {
     var view: some View {
         ZStack(alignment: .bottom) {
             tabs
-                .offset(y: keyboardObserver.keyboardHeight != 0 ? -80 : 0)
-            
             buttonContainer
-                .background(getButtonBackground())
-                .offset(y: -0.9*CGFloat(keyboardObserver.keyboardHeight))
-                .animation(.easeInOut, value: keyboardObserver.keyboardHeight)
         }
     }
     
     var buttonContainer: some View {
         button
             .padding(.horizontal, 16)
-            .padding(.bottom, idiom == .pad ? 30 : 0)
+            .padding(.vertical, idiom == .pad ? 30 : 8)
+            .background(keyboardObserver.keyboardHeight == 0 ? .clear : .backgroundBlue)
+            .shadow(color: .backgroundBlue, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }
     
     

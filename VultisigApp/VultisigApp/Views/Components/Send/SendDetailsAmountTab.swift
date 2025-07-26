@@ -14,6 +14,7 @@ struct SendDetailsAmountTab: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     let validateForm: () async -> ()
     @FocusState.Binding var focusedField: Field?
+    @Binding var settingsPresented: Bool
     
     var body: some View {
         content
@@ -27,28 +28,20 @@ struct SendDetailsAmountTab: View {
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
+        } content: {
+            separator
+            amountFieldSection
             
-            if isExpanded {
-                separator
-                amountFieldSection
-                
-                if sendCryptoViewModel.showAmountAlert {
-                    errorText
-                }
-                
-                percentageButtons
-                balanceSection
-                additionalOptionsSection
+            if sendCryptoViewModel.showAmountAlert {
+                errorText
             }
+            
+            percentageButtons
+            balanceSection
+            additionalOptionsSection
         }
-        .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var titleSection: some View {
@@ -59,14 +52,13 @@ struct SendDetailsAmountTab: View {
             
             Spacer()
             
-            // Enable this when gas selector is available
-//            if isExpanded {
-//                gasSelector
-//            }
+            if showGasSelector {
+                gasSelector
+            }
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Amount
+            viewModel.onSelect(tab: .amount)
         }
     }
     
@@ -74,9 +66,13 @@ struct SendDetailsAmountTab: View {
         LinearSeparator()
     }
     
+    var showGasSelector: Bool {
+        isExpanded && tx.coin.supportsFeeSettings
+    }
+    
     var gasSelector: some View {
         Button {
-            
+            settingsPresented.toggle()
         } label: {
             editLabel
         }

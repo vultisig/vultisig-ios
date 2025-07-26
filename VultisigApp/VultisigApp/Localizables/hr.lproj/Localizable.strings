@@ -556,6 +556,7 @@
 "migrate" = "Migrirati";
 "selectNetwork" = "Odaberi mrežu";
 "network" = "Mreža";
+"selectChain" = "Odaberi lanac";
 "selectAsset" = "Odaberi imovinu";
 "chain" = "Lanac";
 "maxTotalFee" = "Maks. ukupna naknada";

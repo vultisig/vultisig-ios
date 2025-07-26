@@ -141,6 +141,7 @@
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
 "joinKeySign" = "Join Keysign";
+"joinTransactionSigning" = "Join transaction signing";
 "creatingTssInstance" = "CREATING TSS INSTANCE...";
 "signingWithECDSA" = "SIGNING USING ECDSA KEY... ";
 "signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
@@ -499,7 +500,7 @@
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
 "PasswordCannotBeReset" = "Password cannot be reset or recovered";
 "moreInfo" = "More info";
-"moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted, In the following step, you have the option to add a hint";
+"moreInfoDescription" = "This occurs because the password is used to locally encrypt the backup file, similar to how a hard drive is encrypted. In the following step, you have the option to add a hint";
 "connectingWithServer..." = "Connecting with server...";
 "shouldOnlyTakeAMinute..." = "This should only take a second";
 "enter5DigitVerificationCode" = "Enter the 4 digit code we emailed you";
@@ -600,6 +601,8 @@
 "usePassword" = "Use password";
 "migrate" = "Migrate";
 "selectNetwork" = "Select network";
+"selectChain" = "Select chain";
+"selectToken" = "Select token";
 "network" = "Network";
 "selectAsset" = "Select asset";
 "chain" = "Chain";

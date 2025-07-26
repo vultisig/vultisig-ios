@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import RiveRuntime
 
 struct SendCryptoDoneView: View {
     let vault: Vault
@@ -26,7 +25,6 @@ struct SendCryptoDoneView: View {
     @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
     
-    @State var animationVM: RiveViewModel? = nil
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
@@ -40,67 +38,32 @@ struct SendCryptoDoneView: View {
         .navigationDestination(isPresented: $navigateToHome) {
             HomeView(selectedVault: vault)
         }
-        .onAppear {
-            animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-        }
     }
     
-    var sendView: some View {
+    func sendView(tx: SendTransaction) -> some View {
         VStack {
-            sendContent
+            sendContent(tx: tx)
             continueButton
         }
     }
     
-    var sendContent: some View {
-        ScrollView {
-            VStack {
-                animation
-                getAssetCard(coin: sendTransaction?.coin, title: "\(sendTransaction?.amount ?? "") \(sendTransaction?.coin.ticker ?? "")", description: sendTransaction?.amountInFiat)
-                
-                NavigationLink {
-                    SendCryptoSecondaryDoneView(sendTransaction: sendTransaction, hash: hash, explorerLink: explorerLink())
-                } label: {
-                    transactionDetails
-                }
-            }
-            .padding(24)
+    func sendContent(tx: SendTransaction) -> some View {
+        SendCryptoDoneContentView(
+            input: SendCryptoContent(
+                coin: tx.coin,
+                amountCrypto: "\(tx.amount) \(tx.coin.ticker)",
+                amountFiat: tx.amountInFiat,
+                hash: hash,
+                explorerLink: explorerLink(),
+                memo: tx.memo,
+                fromAddress: tx.fromAddress,
+                toAddress: tx.toAddress,
+                fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
+            )
+        ) {
+            tx.reset(coin: tx.coin)
         }
-    }
-    
-    var transactionDetails: some View {
-        HStack {
-            Text(NSLocalizedString("transactionDetails", comment: ""))
-            Spacer()
-            Image(systemName: "chevron.right")
-        }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.lightText)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
-        )
-        .padding(.top, 8)
-    }
-    
-    var animation: some View {
-        ZStack {
-            animationVM?.view()
-                .frame(width: 280, height: 280)
-            
-            animationText
-                .offset(y: 50)
-        }
-    }
-    
-    var animationText: some View {
-        Text(NSLocalizedString("transactionSuccessful", comment: ""))
-            .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+        .padding(.horizontal, 16)
     }
 
     var continueButton: some View {
@@ -110,7 +73,7 @@ struct SendCryptoDoneView: View {
             }
             navigateToHome = true
         }
-        .padding(24)
+        .padding(16)
     }
 
     var summaryCard: some View {
@@ -129,8 +92,8 @@ struct SendCryptoDoneView: View {
         ZStack {
             if let tx = swapTransaction {
                 getSwapDoneView(tx)
-            } else {
-                sendView
+            } else if let sendTransaction {
+                sendView(tx: sendTransaction)
             }
         }
     }
@@ -152,36 +115,6 @@ struct SendCryptoDoneView: View {
 
     func explorerLink() -> String {
         return Endpoint.getExplorerURL(chain: chain, txid: hash)
-    }
-    
-    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
-            if let coin {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 32, height: 32),
-                    ticker: coin.ticker,
-                    tokenChainLogo: coin.tokenChainLogo
-                )
-                .padding(.bottom, 8)
-            }
-            
-            Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-        }
-        .frame(height: 130)
-        .frame(maxWidth: .infinity)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
-        )
     }
 }
 

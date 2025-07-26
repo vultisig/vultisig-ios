@@ -41,7 +41,8 @@ struct SendDetailsAssetTab: View {
                         vault: vault,
                         showSheet: $viewModel.showCoinPickerSheet,
                         selectedCoin: $tx.coin,
-                        selectedChain: $viewModel.selectedChain
+                        selectedChain: $viewModel.selectedChain,
+                        isLoading: false
                     )
                 }
             })
@@ -62,20 +63,12 @@ struct SendDetailsAssetTab: View {
     }
     
     var content: some View {
-        VStack(spacing: 16) {
+        SendFormExpandableSection(isExpanded: isExpanded) {
             titleSection
-            
-            if isExpanded {
-                separator
-                assetSelectionSection
-            }
+        } content: {
+            separator
+            assetSelectionSection
         }
-        .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var titleSection: some View {
@@ -94,7 +87,7 @@ struct SendDetailsAssetTab: View {
         }
         .background(Background().opacity(0.01))
         .onTapGesture {
-            viewModel.selectedTab = .Asset
+            viewModel.onSelect(tab: .asset)
         }
     }
     
@@ -184,7 +177,7 @@ struct SendDetailsAssetTab: View {
     }
     
     var doneEditTools: some View {
-        SendDetailsTabEditTools(forTab: .Asset, viewModel: viewModel)
+        SendDetailsTabEditTools(forTab: .asset, viewModel: viewModel)
     }
     
     private func setData() {
@@ -196,11 +189,16 @@ struct SendDetailsAssetTab: View {
             return
         }
         
-        viewModel.selectedTab = .Address
+        viewModel.onSelect(tab: .address)
         viewModel.assetSetupDone = true
     }
 }
 
 #Preview {
-    SendDetailsAssetTab(isExpanded: true, tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    SendDetailsAssetTab(
+        isExpanded: true,
+        tx: SendTransaction(),
+        viewModel: SendDetailsViewModel(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
 }

@@ -44,6 +44,8 @@ struct SwapChainCell: View {
             
             if isSelected {
                 check
+            } else {
+                balanceInfo
             }
         }
         .padding(.horizontal, 22)
@@ -72,6 +74,12 @@ struct SwapChainCell: View {
             .bold()
     }
     
+    var balanceInfo: some View {
+        Text(totalUSDValue)
+            .font(.body12BrockmannMedium)
+            .foregroundColor(.neutral0)
+    }
+    
     private func setData() {
         isSelected = chain == selectedChain
     }
@@ -90,6 +98,15 @@ struct SwapChainCell: View {
         }
         
         showSheet = false
+    }
+    
+    private var totalUSDValue: String {
+        let totalValue = coins
+            .filter { $0.chain == chain }
+            .reduce(Decimal.zero) { sum, coin in
+                sum + coin.balanceInFiatDecimal
+            }
+        return totalValue.formatToFiat()
     }
 }
 

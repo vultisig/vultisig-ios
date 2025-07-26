@@ -20,6 +20,7 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
+    @Binding var settingsPresented: Bool
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -41,8 +42,8 @@ struct SendCryptoDetailsView: View {
             Background()
             view
         }
-        .gesture(DragGesture())
         .onFirstAppear {
+            sendDetailsViewModel.onLoad()
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
@@ -76,38 +77,62 @@ struct SendCryptoDetailsView: View {
                 await validateForm()
             }
         }
-        .padding(.top, 20)
         .disabled(sendCryptoViewModel.isLoading)
     }
     
     var tabs: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                SendDetailsAssetTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Asset,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel
-                )
-                
-                SendDetailsAddressTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Address,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    focusedField: $focusedField
-                )
-                
-                SendDetailsAmountTab(
-                    isExpanded: sendDetailsViewModel.selectedTab == .Amount,
-                    tx: tx,
-                    viewModel: sendDetailsViewModel,
-                    sendCryptoViewModel: sendCryptoViewModel,
-                    validateForm: validateForm,
-                    focusedField: $focusedField
-                )
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 12) {
+                    SendDetailsAssetTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .asset,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel
+                    )
+                    .id(SendDetailsFocusedTab.asset.rawValue)
+                    
+                    SendDetailsAddressTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .address,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        focusedField: $focusedField
+                    )
+                    .id(SendDetailsFocusedTab.address.rawValue)
+                    
+                    SendDetailsAmountTab(
+                        isExpanded: sendDetailsViewModel.selectedTab == .amount,
+                        tx: tx,
+                        viewModel: sendDetailsViewModel,
+                        sendCryptoViewModel: sendCryptoViewModel,
+                        validateForm: validateForm,
+                        focusedField: $focusedField,
+                        settingsPresented: $settingsPresented
+                    )
+                    .id(SendDetailsFocusedTab.amount.rawValue)
+                }
+                .padding(16)
             }
-            .padding(16)
+            .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
+                handleScroll(proxy: proxy, newValue: newValue, oldValue: oldValue)
+            }
+        }
+    }
+    
+    func handleScroll(proxy: ScrollViewProxy, newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?) {
+        // This delay is necessary when the screen starts
+        DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
+            proxy.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
+            
+            // If it's .amount, there is no need to scroll again
+            guard newValue != .amount else { return }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                withAnimation(.easeInOut) {
+                    proxy.scrollTo(newValue?.rawValue, anchor: .top)
+                }
+            }
         }
     }
     
@@ -142,11 +167,28 @@ struct SendCryptoDetailsView: View {
     }
     
     func validateForm() async {
-        sendDetailsViewModel.selectedTab = .Amount
-        sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+        switch sendDetailsViewModel.selectedTab {
+        case .none:
+            sendDetailsViewModel.onSelect(tab: .asset)
+            return
+        case .asset:
+            sendDetailsViewModel.onSelect(tab: .address)
+            return
+        case .address:
+            sendDetailsViewModel.onSelect(tab: .amount)
+            return
+        case .amount:
+            await MainActor.run {
+                sendCryptoViewModel.isLoading = true
+            }
+            sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+            
+            if await sendCryptoViewModel.validateForm(tx: tx) {
+                sendCryptoViewModel.moveToNextView()
+            }
+        }
         
-        if await sendCryptoViewModel.validateForm(tx: tx) {
-            sendCryptoViewModel.moveToNextView()
+        await MainActor.run {
             sendCryptoViewModel.isLoading = false
         }
     }
@@ -162,6 +204,7 @@ struct SendCryptoDetailsView: View {
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example
+        vault: Vault.example,
+        settingsPresented: .constant(false)
     )
 }
