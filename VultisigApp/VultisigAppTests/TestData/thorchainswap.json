@@ -124,7 +124,7 @@
                             "decimals": 8,
                             "is_native_token": true,
                             "price_provider_id": "thorchain",
-                            "logo": "doge",
+                            "logo": "rune",
                             "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
                         },
                         "vault_address": "qpjfqyllyke662dgqx2aqx5e97ssdytjx5lhuk2sgj",
