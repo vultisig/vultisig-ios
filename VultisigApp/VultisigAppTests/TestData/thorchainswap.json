@@ -164,7 +164,7 @@
                         "max_fee_per_gas_wei": "990871752",
                         "priority_fee": "33152177",
                         "nonce": 42,
-                        "gas_limit": "600000",
+                        "gas_limit": "600000"
                     }
                 },
                 "memo": "=:r:thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng:0\/1\/0:vi:0",
@@ -231,7 +231,7 @@
                         "max_fee_per_gas_wei": "738954289",
                         "priority_fee": "30000000",
                         "nonce": 42,
-                        "gas_limit": "600000",
+                        "gas_limit": "600000"
                     }
                 },
                 "memo": "=:r:thor147fr229jewf063mv5w398e5dld00ytu2y8snmh:0\/1\/0:vi:0",
@@ -303,7 +303,7 @@
                         "max_fee_per_gas_wei": "7166478",
                         "priority_fee": "50",
                         "nonce": 42,
-                        "gas_limit": "600000",
+                        "gas_limit": "600000"
                     }
                 },
                 "memo": "=:r:thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng:0\/1\/0:vi:0",

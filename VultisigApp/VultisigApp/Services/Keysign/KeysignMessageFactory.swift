@@ -22,9 +22,7 @@ struct KeysignMessageFactory {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
-        // TODO: Remove this debug print once we are sure that the payload is correct
-        let data = try JSONEncoder().encode(payload)
-        print(String(data: data, encoding: .utf8) ?? "Failed to encode keysign payload")
+        
         if let swapPayload = payload.swapPayload {
             let incrementNonce = payload.approvePayload != nil
             switch swapPayload {
