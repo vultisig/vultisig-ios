@@ -45,19 +45,10 @@ enum TonHelper {
             $0.amount = sendMaxAmount ? 0 : (UInt64(keysignPayload.toAmount.description) ?? 0)
             $0.mode = sendMode
             
-            // Set bounceable based on chainSpecific parameter
-            var shouldBounce = bounceable
-            
             if let memo = keysignPayload.memo  {
                 $0.comment = memo
-                // Override bounceable for staking operations (deposit "d" or withdraw "w")
-                if memo.trimmingCharacters(in: .whitespacesAndNewlines) == "d" ||
-                   memo.trimmingCharacters(in: .whitespacesAndNewlines) == "w" {
-                    shouldBounce = true
-                }
             }
-            
-            $0.bounceable = shouldBounce
+            $0.bounceable = bounceable
         }
         
         let input = TheOpenNetworkSigningInput.with {
