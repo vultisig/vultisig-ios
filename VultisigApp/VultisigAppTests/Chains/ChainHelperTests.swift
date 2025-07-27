@@ -38,7 +38,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" }
+            .filter { $0.pathExtension == "json"}
         
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
@@ -77,11 +77,14 @@ final class ChainHelperTests: XCTestCase {
             // mayachain swap is a regular transaction with memo
             return
         case .oneInch(let oneInchSwapPayload):
-            let swaps = OneInchSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
-            let imageHash = try swaps.getPreSignedImageHash(payload: oneInchSwapPayload,
-                                                            keysignPayload: keysignPayload,
-                                                            incrementNonce: incrementNonce)
-            result += imageHash
+            switch keysignPayload.coin.chain {
+            case .solana:
+                let swaps = SolanaSwaps(vaultHexPubKey: hexPublicKey)
+                result += try swaps.getPreSignedImageHash(swapPayload: oneInchSwapPayload, keysignPayload: keysignPayload)
+            default:
+                let swaps = OneInchSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+                result += try swaps.getPreSignedImageHash(payload: oneInchSwapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+            }
         case .none:
             XCTFail("Swap payload is nil for test case \(testCase.name)")
         }
@@ -92,8 +95,13 @@ final class ChainHelperTests: XCTestCase {
         let keysignPayload = try KeysignPayload(proto: testCase.keysignPayload)
         let chain = keysignPayload.coin.chain
         if keysignPayload.swapPayload != nil {
-            try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
-            return
+            switch keysignPayload.swapPayload {
+            case .mayachain(_):
+                break
+            default:
+                try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
+                return
+            }
         }
         var result: [String] = []
         switch chain {
