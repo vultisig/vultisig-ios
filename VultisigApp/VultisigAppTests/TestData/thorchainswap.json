@@ -112,8 +112,8 @@
                             "contract_address": "",
                             "decimals": 8,
                             "is_native_token": true,
-                            "price_provider_id": "thorChain",
-                            "logo": "rune",
+                            "price_provider_id": "bch",
+                            "logo": "bch",
                             "hex_public_key": "02acd7afa2cb887a2b6c31d4fec0fbcbe89f70e577a60868cf6729a8547824c63d"
                         },
                         "to_coin": {
@@ -217,9 +217,9 @@
                     "chain": "Ethereum",
                     "ticker": "USDC",
                     "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
-                    "decimals": 18,
-                    "price_provider_id": "",
-                    "is_native_token": true,
+                    "decimals": 6,
+                    "price_provider_id": "usd-coin",
+                    "is_native_token": false,
                     "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
                     "contract_address":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
                     "logo": "usdc"
@@ -310,7 +310,7 @@
                 "utxo_info": [],
                 "SwapPayload": {
                     "ThorchainSwapPayload":{
-                        "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "from_address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                         "to_coin": {
                             "ticker": "RUNE",
                             "chain": "THORChain",
