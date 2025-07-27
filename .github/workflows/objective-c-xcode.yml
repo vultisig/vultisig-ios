@@ -26,7 +26,7 @@ jobs:
           echo $default | cat >default
           echo Using default scheme: $default
           
-      - name: Build
+      - name: Build and Test
         working-directory: VultisigApp
         env:
           scheme: ${{ 'default' }}
@@ -42,11 +42,12 @@ jobs:
           echo "Swift version:"
           swift --version
           
-          # Clean and build with detailed flags
-          xcodebuild clean build analyze \
+          # Clean, build, analyze and test in one command
+          echo "Building, analyzing and testing for scheme: $scheme"
+          xcodebuild clean build analyze test \
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=macOS,arch=x86_64' \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.2' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
@@ -54,26 +55,4 @@ jobs:
             SWIFT_COMPILATION_MODE=wholemodule \
             -verbose \
             OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
-            | xcpretty -c && exit ${PIPESTATUS[0]}
-
-      - name: Run Tests
-        working-directory: VultisigApp
-        env:
-          scheme: ${{ 'default' }}
-        run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
-          # Run tests
-          echo "Running tests for scheme: $scheme"
-          xcodebuild test \
-            -scheme "$scheme" \
-            -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.2' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            -verbose \
             | xcpretty -c && exit ${PIPESTATUS[0]}

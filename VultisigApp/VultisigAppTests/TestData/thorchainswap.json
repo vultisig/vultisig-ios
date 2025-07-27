@@ -251,7 +251,7 @@
                             "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
                         },
                         "from_coin": {
-                            "ticker": "ETH",
+                            "ticker": "USDC",
                             "chain": "Ethereum",
                             "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
                             "contract_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
