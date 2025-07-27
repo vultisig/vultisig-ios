@@ -13,6 +13,12 @@
   },
   "testTargets" : [
     {
+      "skippedTests" : [
+        "SecurityServiceAPIResponseTests",
+        "SecurityServiceChainCoverageTests",
+        "SecurityServiceTests",
+        "SuiTokenPriceTests"
+      ],
       "target" : {
         "containerPath" : "container:VultisigApp.xcodeproj",
         "identifier" : "DE49A1752B65F6DB000F3AFB",

@@ -1,0 +1,63 @@
+[
+    {
+        "name": "Send BNB",
+        "keysign_payload": {
+            "coin": {
+                "chain": "BSC",
+                "ticker": "BNB",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "binancecoin",
+                "is_native_token": true,
+                "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725",
+                "logo": "bsc"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "10000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "100000001",
+                    "priority_fee": "100000000",
+                    "nonce": 7,
+                    "gas_limit": "120000",
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["ec05621f72aab7204c4ada4c8254b0c6202dd6c4c86bfc0bfb34b0e3c85d975b"]
+    },
+    {
+        "name": "Send USDC on BNB",
+        "keysign_payload": {
+            "coin": {
+                "chain": "BSC",
+                "ticker": "USDC",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "usd-coin",
+                "is_native_token": false,
+                "contract_address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725",
+                "logo": "usdc"
+            },
+            "to_address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+            "to_amount": "1000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "100000001",
+                    "priority_fee": "100000000",
+                    "nonce": 7,
+                    "gas_limit": "120000",
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["16c0745b2abfe50c1ebf2abd09f0e45cb2734fd67a27d6632c6d1412d34616e9"]
+    }
+]

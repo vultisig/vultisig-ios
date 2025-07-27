@@ -1,0 +1,211 @@
+[
+    {
+        "name": "Send bitcoin - one UTXO",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Bitcoin",
+                "ticker": "BTC",
+                "address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
+                "decimals": 8,
+                "price_provider_id": "btc",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "logo": "btc.png"
+            },
+            "to_address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "UtxoSpecific": {
+                    "byte_fee": "1"
+                }
+            },
+            "utxo_info": [
+                {
+                    "hash": "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0",
+                    "amount": 193796,
+                    "index": 1
+                }
+            ],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["5ec8bb18ad8a6b0c4168f8506c9f83200d515dc5d568b477699af71d0db82277"]
+    },
+    {
+        "name": "Send bitcoin - max amount",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Bitcoin",
+                "ticker": "BTC",
+                "address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
+                "decimals": 8,
+                "price_provider_id": "btc",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "logo": "btc.png"
+            },
+            "to_address": "bc1q4e4y3g85dtkx0yp3l2flj2nmugf23c9wwtjwu5",
+            "to_amount": "193796",
+            "BlockchainSpecific": {
+                "UtxoSpecific": {
+                    "byte_fee": "1",
+                    "send_max_amount": true
+                }
+            },
+            "utxo_info": [
+                {
+                    "hash": "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0",
+                    "amount": 193796,
+                    "index": 1
+                }
+            ],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["c600af313b72990f316cf7aa71d31f63628a6d04fb19b1ad0880d6257738fb0d"]
+    },
+    {
+        "name": "Send bitcoin cash - two UTXO - max",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Bitcoin-Cash",
+                "ticker": "BCH",
+                "address": "qq6muq53fs6xw6dnhqjutlcgg5yryn93lyj6m3gdk5",
+                "decimals": 8,
+                "price_provider_id": "bch",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "logo": "btc.png"
+            },
+            "to_address": "qrfc9f9ta67l6x3ufcv8fdz83228r2vtcqmnul7jgx",
+            "to_amount": "1496915",
+            "BlockchainSpecific": {
+                "UtxoSpecific": {
+                    "byte_fee": "3",
+                    "send_max_amount": false
+                }
+            },
+            "utxo_info": [
+                {
+                    "hash": "7136a350c8dcd8b1c160c3fd0c6bbaec7d139b13d94f7ea09acf84c7cba2aedf",
+                    "amount": 999040,
+                    "index": 0
+                },
+                {
+                    "hash": "5e2bb8ea8a956cd1e58ecf064ac79dbb040f99bb994b3449551bc3dcd1506f9c",
+                    "amount": 1496915,
+                    "index": 1
+                }
+            ],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["f0347029c83b7996249041bdcf1dc3350f026cf29afc374450e26277babbd252", "f56d515fd5cf3c4cd4f7a0756bb8df81aa00f59b5d075474d4efe88a5c05ab02"]
+    },
+    {
+        "name": "Send DOGECoin",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Dogecoin",
+                "ticker": "DOGE",
+                "address": "DAcwwKfZ1RR4c8Gtg7kREtDuDivpkHFgF7",
+                "decimals": 8,
+                "price_provider_id": "dogecoin",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "logo": "doge.png"
+            },
+            "to_address": "DSxRrchVLpu6r9rvSRTy9LR9si7NuLrGdm",
+            "to_amount": "800500000",
+            "BlockchainSpecific": {
+                "UtxoSpecific": {
+                    "byte_fee": "312500",
+                    "send_max_amount": true
+                }
+            },
+            "utxo_info": [
+                {
+                    "hash": "822660d8da3750a8a043ba8a0e25d4acb7f308f8ae310125658b2d3eeb0bde43",
+                    "amount": 310763723,
+                    "index": 1
+                },
+                {
+                    "hash": "832f678b6612b144602db0c33329348c5a9c1a5c004066c1dfc43171bbe5794b",
+                    "amount": 491742645,
+                    "index": 1
+                },
+                {
+                    "hash": "7425a2b91e67405e8420951852466eae490cf2ea0f0b358abaf86035636f4411",
+                    "amount": 121478856,
+                    "index": 1
+                },
+                {
+                    "hash": "c80945cff3ed73ca42713f0c1ef2c452070806c1e260b1069bb726fbe4ca9ae7",
+                    "amount": 130500000,
+                    "index": 1
+                }
+            ],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["079971ea8a31e7eee14489d11cd87ad10ed8c1239c0a6f09b1472ceedf4e2f0e", "7ce61499b8bdb74a1e4d3cf2dcc405c1010563e3ead8f87cc5da0ec07d87ae10", "c1c290ea3b9c14e009d10e8e42317e868237a594a6a6fb21fa62413e047d227e", "f8d80999d9e21bf7c778e3e11225b15f8654ae8f51eb648cbaad41b181494ca5"]
+    },
+    {
+        "name": "Send litecoin",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Litecoin",
+                "ticker": "ltc",
+                "address": "ltc1q94hcz4uhl8gvw3pkqpfrhrxsglnlnrrr7lftpn",
+                "decimals": 8,
+                "price_provider_id": "litecoin",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "logo": "litecoin.png"
+            },
+            "to_address": "ltc1q9w8v76teggv76qc8l9sdhfg05dqqsxadlpy8zy",
+            "to_amount": "6237679",
+            "BlockchainSpecific": {
+                "UtxoSpecific": {
+                    "byte_fee": "1",
+                    "send_max_amount": false
+                }
+            },
+            "utxo_info": [
+                {
+                    "hash": "62b43c667a1809af53774851ca58ee173e1f2a9bf1cfa0836a030a9aebac4411",
+                    "index": 0,
+                    "amount": 6237679
+                },
+                {
+                    "hash": "f861ef2e5343d6d115482ab582f47958766d6a312f5d52e49116a12686884630",
+                    "index": 0,
+                    "amount": 2000000
+                },
+                {
+                    "hash": "d6e27c4e148d38cb1494ca72a085cc30877442f72dcc32788dc20debd37cbe99",
+                    "index": 0,
+                    "amount": 2746434
+                },
+                {
+                    "hash": "2ddb4f5ef8b0ea5b107105547953dfdb5998367376d4498cb770e5b88be4c491",
+                    "index": 0,
+                    "amount": 1000000
+                },
+                {
+                    "hash": "ea26ca8769eff76cc2ec39d5db8d2f5b11aa6d71fa24b57b044f56881038f631",
+                    "index": 1,
+                    "amount": 572091
+                }
+            ],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["5828e8f115ff6c6b06baa82e7429d19fe42d34278344c1c4548088bc122935ae", "b2e7adaade344971ec38639cc56e1e336391837f6c212d9c1c0a9ea46490cf31"]
+    }
+]
