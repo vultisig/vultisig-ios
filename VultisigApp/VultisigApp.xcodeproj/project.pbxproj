@@ -1963,6 +1963,7 @@
 				terra.json,
 				thorchain.json,
 				thorchainswap.json,
+				ton.json,
 				utxo.json,
 				xrp.json,
 			);

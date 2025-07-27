@@ -362,7 +362,7 @@ extension VSTonSpecific: Codable {
     enum CodingKeys: String, CodingKey {
         case sequenceNumber = "sequence_number"
         case expireAt = "expire_at"
-        case bounceable = "bouncable"
+        case bounceable = "bounceable"
         case sendMaxAmount = "send_max_amount"
     }
     public func encode(to encoder: any Encoder) throws {

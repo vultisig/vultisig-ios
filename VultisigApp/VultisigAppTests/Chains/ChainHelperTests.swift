@@ -131,6 +131,8 @@ final class ChainHelperTests: XCTestCase {
             result += try ATOMHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
         case .kujira:
             result += try KujiraHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .ton:
+            result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }
