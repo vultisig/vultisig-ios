@@ -1,4 +1,4 @@
-name: Xcode - Build and Analyze
+name: Xcode - Build, Analyze and Test
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and analyse default scheme using xcodebuild command
+    name: Build, analyse and test default scheme using xcodebuild command
     runs-on: macos-14
     
     steps:
@@ -54,4 +54,26 @@ jobs:
             SWIFT_COMPILATION_MODE=wholemodule \
             -verbose \
             OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
+            | xcpretty -c && exit ${PIPESTATUS[0]}
+
+      - name: Run Tests
+        working-directory: VultisigApp
+        env:
+          scheme: ${{ 'default' }}
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app
+          if [ $scheme = default ]; then scheme=$(cat default); fi
+          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
+          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
+          
+          # Run tests
+          echo "Running tests for scheme: $scheme"
+          xcodebuild test \
+            -scheme "$scheme" \
+            -"$filetype_parameter" "$file_to_build" \
+            -destination 'platform=macOS,arch=x86_64' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            -verbose \
             | xcpretty -c && exit ${PIPESTATUS[0]}
