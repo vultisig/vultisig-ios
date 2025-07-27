@@ -38,7 +38,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" && $0.lastPathComponent.hasPrefix("xrp") }
+            .filter { $0.pathExtension == "json" }
         
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
@@ -115,10 +115,22 @@ final class ChainHelperTests: XCTestCase {
         case .thorChain:
             let imageHash = try THORChainHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
+        case .mayaChain:
+            result += try MayaChainHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .solana:
             result +=  try SolanaHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ripple:
             result += try RippleHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .terra:
+            let terraHelper = TerraHelper(coinType: .terraV2, denom: "uluna")
+            result += try terraHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .terraClassic:
+            let terraHelper = TerraHelper(coinType: .terra, denom: "uluna")
+            result += try terraHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .gaiaChain:
+            result += try ATOMHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .kujira:
+            result += try KujiraHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }

@@ -1,0 +1,103 @@
+[
+    {
+        "name": "Send KUJIRA",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Kujira",
+                "ticker": "KUJI",
+                "address": "kujira1lm0mwvt8pknymlrat3z2slrpz0un45ghcgwpp0",
+                "decimals": 6,
+                "price_provider_id": "kujira",
+                "is_native_token": true,
+                "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+                "contract_address":"",
+                "logo": "kuji"
+            },
+            "to_address": "kujira153nnvyxz66sj4ywldvy0uexhdnwpfw9fyf4nkz",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 200870,
+                    "gas": 7500,
+                    "sequence": 5,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["cb0ed812bf650b6d007360b959b1bcca57829ebdbab9baff2cb952740706ba80"]
+    },
+    {
+        "name": "Send KUJIRA with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Kujira",
+                "ticker": "KUJI",
+                "address": "kujira1lm0mwvt8pknymlrat3z2slrpz0un45ghcgwpp0",
+                "decimals": 6,
+                "price_provider_id": "kujira",
+                "is_native_token": true,
+                "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+                "contract_address":"",
+                "logo": "kuji"
+            },
+            "to_address": "kujira153nnvyxz66sj4ywldvy0uexhdnwpfw9fyf4nkz",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 200870,
+                    "gas": 7500,
+                    "sequence": 5,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "hello world",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["069cc5f1c4dd4bb50020047f673b4575b41a68cb731046eb4f073bf4a64b6af5"]
+    },
+    {
+        "name": "Send KUJIRA IBC",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Kujira",
+                "ticker": "KUJI",
+                "address": "kujira1lm0mwvt8pknymlrat3z2slrpz0un45ghcgwpp0",
+                "decimals": 6,
+                "price_provider_id": "kujira",
+                "is_native_token": true,
+                "hex_public_key": "02f848cf16885a437038cfd48a2c5a601e63fd7d51ea3d5583631607bf6ded8e21",
+                "contract_address":"",
+                "logo": "kuji"
+            },
+            "to_address": "cosmos1lm0mwvt8pknymlrat3z2slrpz0un45ghfqvev9",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 200870,
+                    "gas": 7500,
+                    "sequence": 5,
+                    "transaction_type": 0,
+                    "ibc_denom_trace": {
+                        "path":"",
+                        "height":"32597414_1753579499419760896",
+                        "base_denom":""
+                    }
+                }
+            },
+            "memo": "Cosmos:channel-0:cosmos1lm0mwvt8pknymlrat3z2slrpz0un45ghfqvev9",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["812dda3c0ae35e03114d6f5ed0cb084df0d0007b9ee2a4330103c0a99f2a6046"]
+    },
+]
