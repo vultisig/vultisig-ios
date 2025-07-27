@@ -1,0 +1,160 @@
+[
+    {
+        "name": "Send Terra Luna",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Terra",
+                "ticker": "LUNA",
+                "address": "terra1eqjp3yfyn4ygwv9l2dcr0u5k82k0rpavm9t34y",
+                "decimals": 6,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "038c307c091c79db84c9c50322d1747f7e32945aba3f749e37beb4b99729cc6003",
+                "contract_address":"",
+                "logo": "luna"
+            },
+            "to_address": "terra1srcf8n4cqa042whwxjuzhadehfex29v5h03d2c",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 704127,
+                    "sequence": 3,
+                    "gas": 7500,
+                    "transaction_type": 0
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["9041e2803e008f8ef7767464f5984e18696b69fc7005a90907d8cf8c93c91dec"]
+    },
+    {
+        "name": "Send Terra Luna with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Terra",
+                "ticker": "LUNA",
+                "address": "terra1eqjp3yfyn4ygwv9l2dcr0u5k82k0rpavm9t34y",
+                "decimals": 6,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "038c307c091c79db84c9c50322d1747f7e32945aba3f749e37beb4b99729cc6003",
+                "contract_address":"",
+                "logo": "luna"
+            },
+            "to_address": "terra1srcf8n4cqa042whwxjuzhadehfex29v5h03d2c",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 704127,
+                    "sequence": 3,
+                    "gas": 7500,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["613b3108d8803659501a02a67752f77ca6f46bb1e71ee208609d56469e47dc6d"]
+    },
+    {
+        "name": "Send Terra class",
+        "keysign_payload": {
+            "coin": {
+                "chain": "TerraClassic",
+                "ticker": "LUNC",
+                "address": "terra1eqjp3yfyn4ygwv9l2dcr0u5k82k0rpavm9t34y",
+                "decimals": 6,
+                "price_provider_id": "terra-luna",
+                "is_native_token": true,
+                "hex_public_key": "038c307c091c79db84c9c50322d1747f7e32945aba3f749e37beb4b99729cc6003",
+                "contract_address":"",
+                "logo": "lunc"
+            },
+            "to_address": "terra1srcf8n4cqa042whwxjuzhadehfex29v5h03d2c",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 5417179,
+                    "sequence": 1,
+                    "gas": 100000000,
+                    "transaction_type": 0
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["1fd86e9318702061824f79a1998340b7efadcda4e462810c782c091a994742da"]
+    },
+    {
+        "name": "Send Terra class with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "TerraClassic",
+                "ticker": "LUNC",
+                "address": "terra1eqjp3yfyn4ygwv9l2dcr0u5k82k0rpavm9t34y",
+                "decimals": 6,
+                "price_provider_id": "terra-luna",
+                "is_native_token": true,
+                "hex_public_key": "038c307c091c79db84c9c50322d1747f7e32945aba3f749e37beb4b99729cc6003",
+                "contract_address":"",
+                "logo": "lunc"
+            },
+            "to_address": "terra1srcf8n4cqa042whwxjuzhadehfex29v5h03d2c",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 5417179,
+                    "sequence": 1,
+                    "gas": 100000000,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["51e735a460607eb7f18da60abf9a169bc449463d0ad2055c8b6cdcfaf66d52cc"]
+    },
+    {
+        "name": "Send USTC on terra classic",
+        "keysign_payload": {
+            "coin": {
+                "chain": "TerraClassic",
+                "ticker": "USTC",
+                "address": "terra1eqjp3yfyn4ygwv9l2dcr0u5k82k0rpavm9t34y",
+                "decimals": 6,
+                "price_provider_id": "terra-luna",
+                "is_native_token": false,
+                "hex_public_key": "038c307c091c79db84c9c50322d1747f7e32945aba3f749e37beb4b99729cc6003",
+                "contract_address":"uusd",
+                "logo": "ustc"
+            },
+            "to_address": "terra13lwh075aclv70w784nkjwdefmxx8p3s2f7n5m2",
+            "to_amount": "200000000",
+            "BlockchainSpecific": {
+                "CosmosSpecific": {
+                    "account_number": 5417179,
+                    "sequence": 1,
+                    "gas": 100000000,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["4fa9c4d76019a96e166890d2cbbbd93ccd03aa7926924f9c74ef51aae239a56c"]
+    }
+]

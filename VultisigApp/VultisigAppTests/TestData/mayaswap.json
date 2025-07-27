@@ -1,0 +1,70 @@
+[
+    {
+        "name": "Swap from RUNE to CACAO",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b",
+                "contract_address":"",
+                "logo": "rune.png"
+            },
+            "to_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 109315,
+                    "sequence": 220,
+                    "fee": 2000000,
+                    "is_deposit": false,
+                    "transaction_type": 0
+                }
+            },
+            "memo": "=:c:maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c:0\/3\/0:vi:0",
+            "utxo_info": [],
+            "SwapPayload": {
+                "MayachainSwapPayload":{
+                    "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                    "from_coin": {
+                        "ticker": "RUNE",
+                        "chain": "THORChain",
+                        "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                        "contract_address": "",
+                        "decimals": 8,
+                        "is_native_token": true,
+                        "price_provider_id": "thorChain",
+                        "logo": "rune",
+                        "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                    },
+                    "to_coin": {
+                        "ticker": "CACAO",
+                        "chain": "MayaChain",
+                        "address": "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c",
+                        "contract_address": "",
+                        "decimals": 10,
+                        "is_native_token": true,
+                        "price_provider_id": "cacao",
+                        "logo": "cacao",
+                        "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                    },
+                    "vault_address": "thor1uczp3j03kmwy9pvaqqa42798k34c6n6rz8pyjk",
+                    "from_amount": "1000000000",
+                    "to_amount_decimal": "74.7161768922",
+                    "to_amount_limit": "0",
+                    "streaming_interval": "3",
+                    "streaming_quantity": "0",
+                    "is_affiliate": false,
+                    "fee":"",
+                    "expiration_time": 1753652184
+                }
+            },
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["cc35a6f193ee65b3c6fe0d63caee6d4f53a516b750b6366024e2e48cfec16099"]
+    }
+]
