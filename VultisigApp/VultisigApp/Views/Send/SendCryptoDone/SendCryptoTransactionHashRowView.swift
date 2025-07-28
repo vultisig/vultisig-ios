@@ -85,6 +85,6 @@ struct SendCryptoTransactionHashRowView: View {
         hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
         explorerLink: "https://thorchain.net/tx/294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
         showCopy: true,
-        showAlert: .constant(false),
+        showAlert: .constant(false)
     )
 }
