@@ -9,9 +9,9 @@ import SwiftUI
 import RiveRuntime
 
 struct OnboardingView: View {
-
+    
     @EnvironmentObject var accountViewModel: AccountViewModel
-
+    
     @State var tabIndex = 0
     
     @State var showOnboarding = false
@@ -20,7 +20,7 @@ struct OnboardingView: View {
     @State var showSummary = false
     
     @State var animationScale: CGFloat = .zero
-
+    
     @State var animationVM: RiveViewModel? = nil
     
 #if os(iOS)
@@ -47,7 +47,7 @@ struct OnboardingView: View {
         .onAppear {
             animationVM = RiveViewModel(fileName: "Onboarding", stateMachineName: "State Machine 1")
         }
-        .onChange(of: tabIndex) { oldValue, newValue in
+        .onChange(of: tabIndex) { _, _ in
             playAnimation()
         }
         .onDisappear {
@@ -72,17 +72,25 @@ struct OnboardingView: View {
     
     var header: some View {
         HStack {
-            headerTitle
+            backButton
             Spacer()
             skipButton
         }
         .padding(16)
     }
     
-    var headerTitle: some View {
-        Text(NSLocalizedString("intro", comment: ""))
+    var backButton: some View {
+        Button {
+            backTapped()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "chevron.backward")
+                Text(NSLocalizedString("back", comment: ""))
+            }
             .foregroundColor(.neutral0)
             .font(.body18BrockmannMedium)
+            .contentShape(Rectangle())
+        }
     }
     
     var progressBar: some View {
@@ -138,26 +146,32 @@ struct OnboardingView: View {
             setupStartupText()
         }
     }
-    
-    private func nextTapped() {
-        guard tabIndex<totalTabCount-1 else {
+}
+
+private extension OnboardingView {
+    func nextTapped() {
+        guard tabIndex < totalTabCount - 1 else {
             showSummary = true
             return
         }
         
-        tabIndex+=1
+        tabIndex += 1
     }
-
+    
+    func backTapped() {
+        showOnboarding = false
+    }
+    
     func skipTapped() {
         moveToVaultView()
     }
-
-
-    private func moveToVaultView() {
+    
+    func moveToVaultView() {
         accountViewModel.showOnboarding = false
     }
-
-    private func setupStartupText() {
+    
+    func setupStartupText() {
+        startupTextOpacity = true
         showStartupText = true
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -169,7 +183,7 @@ struct OnboardingView: View {
         }
     }
     
-    private func playAnimation() {
+    func playAnimation() {
         animationVM?.setInput("Index", value: Double(tabIndex))
     }
 }
