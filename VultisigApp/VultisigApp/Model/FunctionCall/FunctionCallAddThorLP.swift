@@ -37,8 +37,16 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     var addressFields: [String: String] {
         get {
-            let fields = ["pairedAddress": pairedAddress]
-            return fields
+            if tx.coin.chain == .thorChain {
+                // For THORChain, pairedAddress is used in the memo
+                let fields = ["pairedAddress": pairedAddress]
+                return fields
+            } else {
+                // For L1 assets, pairedAddress is used in the memo (THORChain address)
+                // toAddress is automatically set by fetchInboundAddress()
+                let fields = ["pairedAddress": pairedAddress]
+                return fields
+            }
         }
         set {
             if let value = newValue["pairedAddress"] {
@@ -58,6 +66,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         prefillPairedAddress()
         
         setupValidation()
+        
+        // Fetch the inbound address (pool address) for the transaction
+        fetchInboundAddress()
         
         // Only load pools for RUNE
         if tx.coin.chain == .thorChain {
@@ -79,6 +90,70 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             self.isLoadingPools = false
             // Store the full pool name in the map
             self.poolNameMap[poolName] = poolName
+        }
+    }
+    
+    private func fetchInboundAddress() {
+        Task { @MainActor in
+            let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+            
+            if tx.coin.chain == .thorChain {
+                // For THORChain, we don't need an inbound address (it's a deposit)
+                // The toAddress will be set when pool is selected
+                return
+            } else {
+                // For L1 assets, find the inbound address for this chain
+                let chainName = getInboundChainName(for: tx.coin.chain)
+                
+                if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) {
+                    // Check if chain is halted or paused
+                    if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+                        print("FunctionCallAddThorLP: Chain \(chainName) is halted or paused for LP operations")
+                        return
+                    }
+                    
+                    // Set the inbound address as the destination for the transaction
+                    tx.toAddress = inbound.address
+                    print("FunctionCallAddThorLP: Set toAddress to \(inbound.address) for chain \(chainName)")
+                } else {
+                    print("FunctionCallAddThorLP: No inbound address found for chain \(chainName)")
+                }
+            }
+        }
+    }
+    
+    private func getInboundChainName(for chain: Chain) -> String {
+        // Map internal chain names to THORChain inbound address chain names
+        switch chain {
+        case .bitcoin:
+            return "BTC"
+        case .ethereum:
+            return "ETH"
+        case .avalanche:
+            return "AVAX"
+        case .bscChain:
+            return "BSC"
+        case .arbitrum:
+            return "ARB"
+        case .base:
+            return "BASE"
+        case .optimism:
+            return "OP"
+        case .polygon:
+            return "MATIC"
+        case .litecoin:
+            return "LTC"
+        case .bitcoinCash:
+            return "BCH"
+        case .dogecoin:
+            return "DOGE"
+        case .gaiaChain:
+            return "GAIA"
+        case .thorChain:
+            return "THOR"
+        default:
+            // For unknown chains, use the chain's swapAsset
+            return chain.swapAsset.uppercased()
         }
     }
     
@@ -123,6 +198,26 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         }) {
             pairedAddress = chainCoin.address
             pairedAddressValid = true
+            
+            // For THORChain adding to a pool, set the inbound address as destination
+            if tx.coin.chain == .thorChain {
+                Task { @MainActor in
+                    let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+                    let chainName = getInboundChainName(for: chainCoin.chain)
+                    
+                    if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) {
+                        // Check if chain is halted or paused
+                        if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+                            print("FunctionCallAddThorLP: Chain \(chainName) is halted or paused for LP operations")
+                            return
+                        }
+                        
+                        // Set the inbound address as the destination for RUNE transaction
+                        tx.toAddress = inbound.address
+                        print("FunctionCallAddThorLP: Set toAddress to \(inbound.address) for RUNE->pool \(poolName)")
+                    }
+                }
+            }
             
             // Now find the specific asset on that chain to show its balance
             if let assetCoin = vault.coins.first(where: { coin in
@@ -287,18 +382,26 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        // For L1 assets: include THORChain address
-        // For THOR.RUNE: include the paired asset's address (required)
-        let address = pairedAddress.nilIfEmpty
-        
         // Get the full pool name from the map (or use the display name if not found)
         let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
         
-        let lpData = AddLPMemoData(
-            pool: fullPoolName,
-            pairedAddress: address
-        )
-        return lpData.memo
+        if tx.coin.chain == .thorChain {
+            // For THORChain: include the paired asset's address (required)
+            let address = pairedAddress.nilIfEmpty
+            let lpData = AddLPMemoData(
+                pool: fullPoolName,
+                pairedAddress: address
+            )
+            return lpData.memo
+        } else {
+            // For L1 assets: just include the pool name in the memo
+            // The destination address is already set in tx.toAddress via fetchInboundAddress()
+            let lpData = AddLPMemoData(
+                pool: fullPoolName,
+                pairedAddress: nil
+            )
+            return lpData.memo
+        }
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -306,7 +409,15 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         // Store the full pool name in the dictionary
         let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
         dict.set("pool", fullPoolName)
-        dict.set("pairedAddress", pairedAddress)
+        
+        if tx.coin.chain == .thorChain {
+            // For THORChain, store pairedAddress in the memo dictionary
+            dict.set("pairedAddress", pairedAddress)
+        } else {
+            // For L1 assets, store the THORChain address in pairedAddress
+            dict.set("pairedAddress", pairedAddress)
+        }
+        
         dict.set("memo", toString())
         return dict
     }

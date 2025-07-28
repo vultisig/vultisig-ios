@@ -73,7 +73,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .addThorLP, .removeThorLP]
             }
             return [.bond, .unbond, .leave, .merge, .unmerge, .custom]
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .gaiaChain, .ripple:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             // Add THORChain LP function for supported L1 assets
             if coin.isNativeToken {
                 return [.addThorLP]

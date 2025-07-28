@@ -174,6 +174,10 @@ enum FunctionCallInstance {
             return memo.destinationAddress
         case .theSwitch(let memo):
             return memo.destinationAddress
+        case .addThorLP(let memo):
+            // For addThorLP, return the inbound address that was set by fetchInboundAddress()
+            // This is essential for Bitcoin and other chains to know where to send funds
+            return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
         default:
             return nil
         }

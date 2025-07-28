@@ -47,7 +47,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isDeposit: Bool {
-        !memoFunctionDictionary.allItems().isEmpty
+        !memoFunctionDictionary.allItems().isEmpty && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
     }
     
     var canBeReaped: Bool {
