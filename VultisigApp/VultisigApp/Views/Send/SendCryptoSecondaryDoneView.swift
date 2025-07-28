@@ -46,9 +46,11 @@ struct SendCryptoSecondaryDoneView: View {
     
     var summary: some View {
         VStack(spacing: 18) {
-            transactionHashLink
-            
-            separator
+            Group {
+                transactionHashLink
+                separator
+            }
+            .showIf(input.hash.isNotEmpty)
             
             if let vaultName = homeViewModel.selectedVault?.name, vaultName.isNotEmpty {
                 getCell(

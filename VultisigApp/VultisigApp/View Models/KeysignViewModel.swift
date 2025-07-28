@@ -50,6 +50,10 @@ class KeysignViewModel: ObservableObject {
     
     private let gasViewModel = JoinKeysignGasViewModel()
     
+    var showRedacted: Bool {
+        txid.isEmpty && !(keysignPayload?.skipBroadcast ?? false)
+    }
+    
     var memo: String? {
         guard let decodedMemo = decodedMemo, !decodedMemo.isEmpty else {
             return keysignPayload?.memo
@@ -461,6 +465,7 @@ class KeysignViewModel: ObservableObject {
         
         guard !keysignPayload.skipBroadcast else {
             print("Transaction not broadcasted, skipBroadcast is set to true")
+            self.txid = ""
             return
         }
         
