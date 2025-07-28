@@ -459,6 +459,12 @@ class KeysignViewModel: ObservableObject {
     func broadcastTransaction() async {
         guard let keysignPayload else { return }
         
+        guard !keysignPayload.skipBroadcast else {
+            print("Transaction not broadcasted, skipBroadcast is set to true")
+            return
+        }
+        
+        
         let transactionType: SignedTransactionType
         
         do {
