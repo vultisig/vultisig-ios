@@ -13,6 +13,16 @@ extension OnboardingView {
         content
     }
     
+    var view: some View {
+        VStack(spacing: 0) {
+            header
+            progressBar
+            animation
+            text
+            button
+        }
+    }
+    
     var text: some View {
         OnboardingTextCard(
             index: tabIndex,
@@ -31,7 +41,6 @@ extension OnboardingView {
     
     var animation: some View {
         animationVM?.view()
-            .padding(.bottom, 100)
     }
     
     private func prevTapped() {

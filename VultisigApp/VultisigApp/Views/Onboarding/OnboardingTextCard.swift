@@ -31,7 +31,7 @@ struct OnboardingTextCard: View {
         .font(.body28BrockmannMedium)
         .frame(maxWidth: 1024)
         .padding(.horizontal, 36)
-        .padding(.vertical, 24)
+        .padding(.bottom, 24)
         .multilineTextAlignment(.center)
         .opacity(showText ? 1 : 0)
         .offset(y: showText ? 0 : 50)

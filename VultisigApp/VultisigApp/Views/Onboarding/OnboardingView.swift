@@ -38,7 +38,6 @@ struct OnboardingView: View {
             Background()
             
             if showOnboarding {
-                animation
                 view
             } else {
                 startupText
@@ -61,16 +60,6 @@ struct OnboardingView: View {
             OnboardingSummaryView(kind: .initial, isPresented: $showSummary, onDismiss: {
                 accountViewModel.showOnboarding = false
             })
-        }
-    }
-    
-    var view: some View {
-        VStack(spacing: 0) {
-            header
-            progressBar
-            Spacer()
-            text
-            button
         }
     }
     
