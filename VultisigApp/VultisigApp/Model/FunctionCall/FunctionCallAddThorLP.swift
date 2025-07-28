@@ -70,26 +70,13 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         // Fetch the inbound address (pool address) for the transaction
         fetchInboundAddress()
         
-        // Only load pools for RUNE
-        if tx.coin.chain == .thorChain {
-            // Ensure isLoadingPools is true before starting
-            self.isLoadingPools = true
-            
-            // Load pools after a small delay to ensure UI is ready
-            Task {
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
-                loadPools()
-            }
-        } else {
-            // For L1 assets, set the pool to the native asset pool
-            // e.g., for BTC it would be "BTC.BTC", for ETH it would be "ETH.ETH"
-            let swapAsset = tx.coin.chain.swapAsset
-            let poolName = "\(swapAsset).\(swapAsset)"
-            self.selectedPool = IdentifiableString(value: poolName)
-            self.poolValid = true
-            self.isLoadingPools = false
-            // Store the full pool name in the map
-            self.poolNameMap[poolName] = poolName
+        // Load pools for both RUNE and L1 assets from the service
+        self.isLoadingPools = true
+        
+        // Load pools after a small delay to ensure UI is ready
+        Task {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
+            loadPools()
         }
     }
     
@@ -333,17 +320,61 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                         }
                     }
                 } else {
-                    // For L1 assets, use the chain's swap asset
-                    let poolName = "\(tx.coin.chain.swapAsset).\(tx.coin.ticker.uppercased())"
+                    // For L1 assets, fetch all available pools from ThorchainService
+                    print("FunctionCallAddThorLP: Loading pools for L1 asset...")
+                    
+                    let startTime = Date()
+                    let allPools = try await Task.detached {
+                        try await ThorchainService.shared.fetchLPPools()
+                    }.value
+                    let loadTime = Date().timeIntervalSince(startTime)
                     
                     // Cancel timeout task
                     timeoutTask.cancel()
                     
+                    print("FunctionCallAddThorLP: Fetched \(allPools.count) pools in \(String(format: "%.2f", loadTime))s")
+                    
+                    // Filter pools to find ones matching the current chain's swap asset
+                    let currentChainSwapAsset = tx.coin.chain.swapAsset.uppercased()
+                    let filteredPools = allPools.filter { pool in
+                        let poolComponents = pool.asset.split(separator: ".").map { String($0).uppercased() }
+                        return poolComponents.count >= 2 && poolComponents[0] == currentChainSwapAsset
+                    }
+                    
+                    // Build pool options without "Select pool" prefix
+                    var poolOptions: [IdentifiableString] = []
+                    var nameMap: [String: String] = [:]
+                    
+                    for pool in filteredPools {
+                        // Clean up pool name by removing contract addresses
+                        let cleanName = cleanPoolName(pool.asset)
+                        poolOptions.append(IdentifiableString(value: cleanName))
+                        nameMap[cleanName] = pool.asset  // Map display name to full name
+                    }
+                    
+                    // Force UI update on main thread
                     await MainActor.run {
-                        self.availablePools = [IdentifiableString(value: poolName)]
-                        self.selectedPool = IdentifiableString(value: poolName)
-                        self.poolValid = true
+                        self.objectWillChange.send()  // Force SwiftUI to update
+                        self.poolNameMap = nameMap
+                        self.availablePools = poolOptions
                         self.isLoadingPools = false
+                        self.loadError = nil  // Clear any previous errors
+                        self.retryCount = 0   // Reset retry count on success
+                        print("FunctionCallAddThorLP: Updated availablePools with \(self.availablePools.count) options for \(currentChainSwapAsset)")
+                        print("FunctionCallAddThorLP: availablePools.isEmpty = \(self.availablePools.isEmpty)")
+                        print("FunctionCallAddThorLP: isLoadingPools = \(self.isLoadingPools)")
+                        
+                        // Debug: print first few pools
+                        if filteredPools.count > 0 {
+                            print("FunctionCallAddThorLP: First few pools: \(filteredPools.prefix(5).map { cleanPoolName($0.asset) })")
+                        }
+                        
+                        // Auto-select the first pool if there's only one matching pool
+                        if poolOptions.count == 1 {
+                            self.selectedPool = poolOptions[0]
+                            self.poolValid = true
+                            print("FunctionCallAddThorLP: Auto-selected single pool: \(poolOptions[0].value)")
+                        }
                     }
                 }
             } catch {
@@ -433,31 +464,30 @@ struct FunctionCallAddThorLPView: View {
     var body: some View {
         VStack {
             
-            // Pool selection for RUNE only
-            if model.tx.coin.chain == .thorChain {
-                VStack(alignment: .leading, spacing: 0) {
-                    let _ = print("FunctionCallAddThorLP UI: Rendering pool selector - isLoadingPools=\(model.isLoadingPools), availablePools.count=\(model.availablePools.count)")
-                    
-                    if model.isLoadingPools {
-                            // Show loading state as a disabled dropdown
-                            HStack(spacing: 12) {
-                                Text("Loading pools...")
-                                    .font(.body16Menlo)
-                                    .foregroundColor(.neutral0)
-                                    .onAppear {
-                                        print("FunctionCallAddThorLP UI: Showing loading state")
-                                    }
-                                
-                                Spacer()
-                                
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle())
-                                    .scaleEffect(0.7)
-                            }
-                            .frame(height: 48)
-                            .padding(.horizontal, 12)
-                            .background(Color.blue600)
-                            .cornerRadius(10)
+            // Pool selection for both RUNE and L1 assets
+            VStack(alignment: .leading, spacing: 0) {
+                let _ = print("FunctionCallAddThorLP UI: Rendering pool selector - isLoadingPools=\(model.isLoadingPools), availablePools.count=\(model.availablePools.count)")
+                
+                if model.isLoadingPools {
+                        // Show loading state as a disabled dropdown
+                        HStack(spacing: 12) {
+                            Text("Loading pools...")
+                                .font(.body16Menlo)
+                                .foregroundColor(.neutral0)
+                                .onAppear {
+                                    print("FunctionCallAddThorLP UI: Showing loading state")
+                                }
+                            
+                            Spacer()
+                            
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(0.7)
+                        }
+                        .frame(height: 48)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue600)
+                        .cornerRadius(10)
                                             } else if !model.isLoadingPools && model.availablePools.isEmpty {
                         // Show error state
                         VStack(spacing: 8) {
@@ -510,6 +540,7 @@ struct FunctionCallAddThorLPView: View {
                                     model.poolValid = !pool.value.isEmpty
                                     
                                     // When RUNE selects a pool, prefill the paired address
+                                    // L1 assets don't need this since they already have the THORChain address
                                     if model.tx.coin.chain == .thorChain && !pool.value.isEmpty {
                                         model.prefillPairedAddressForPool(pool.value)
                                     }
@@ -522,7 +553,6 @@ struct FunctionCallAddThorLPView: View {
                             }
                     }
                 }
-            }
             
             // Amount field - shows balance of the asset being added
             StyledFloatingPointField(
