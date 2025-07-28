@@ -67,7 +67,8 @@ final class UTXOChainsHelperTest: XCTestCase {
                 vaultPubKeyECDSA: "ECDSAKey",
                 vaultLocalPartyID: "localPartyID",
                 libType: LibType.DKLS.toString(),
-                wasmExecuteContractPayload: nil
+                wasmExecuteContractPayload: nil,
+                skipBroadcast: false
             )
         )
         
@@ -96,7 +97,8 @@ final class UTXOChainsHelperTest: XCTestCase {
                 vaultPubKeyECDSA: "ECDSAKey",
                 vaultLocalPartyID: "localPartyID",
                 libType: LibType.DKLS.toString(),
-                wasmExecuteContractPayload: nil
+                wasmExecuteContractPayload: nil,
+                skipBroadcast: false
             )
         )
         
@@ -120,7 +122,8 @@ final class UTXOChainsHelperTest: XCTestCase {
                 vaultPubKeyECDSA: "ECDSAKey",
                 vaultLocalPartyID: "localPartyID",
                 libType: LibType.DKLS.toString(),
-                wasmExecuteContractPayload: nil
+                wasmExecuteContractPayload: nil,
+                skipBroadcast: false
             ),
             signatures: signature
         )

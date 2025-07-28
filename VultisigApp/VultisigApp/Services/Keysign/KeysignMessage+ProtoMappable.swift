@@ -82,6 +82,7 @@ extension KeysignPayload: ProtoMappable {
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
         self.libType = proto.libType
         self.wasmExecuteContractPayload = try? WasmExecuteContractPayload(proto: proto.wasmExecuteContractPayload)
+        self.skipBroadcast = proto.skipBroadcast
     }
     
     func mapToProtobuff() -> VSKeysignPayload {
@@ -100,6 +101,7 @@ extension KeysignPayload: ProtoMappable {
                 $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
             }
             $0.wasmExecuteContractPayload = wasmExecuteContractPayload?.mapToProtobuff() ?? .init()
+            $0.skipBroadcast = skipBroadcast
         }
     }
 }

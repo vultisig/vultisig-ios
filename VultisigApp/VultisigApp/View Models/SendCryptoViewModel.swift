@@ -573,7 +573,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID,
             libType: (vault.libType ?? .GG20).toString(),
-            wasmExecuteContractPayload: nil
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
         )
         
         guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
