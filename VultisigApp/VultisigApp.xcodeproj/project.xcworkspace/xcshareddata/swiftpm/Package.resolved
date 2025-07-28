@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/commondata",
       "state" : {
-        "branch" : "feat/msgExecuteContract",
-        "revision" : "6dfd3db7d6f75283f4e62c7c151f0f27a762998e"
+        "branch" : "main",
+        "revision" : "123adf4c51b299f7889108b641a2a1a136124c04"
       }
     },
     {

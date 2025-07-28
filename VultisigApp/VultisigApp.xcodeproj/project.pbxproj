@@ -5550,7 +5550,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				branch = feat/msgExecuteContract;
+				branch = main;
 				kind = branch;
 			};
 		};
