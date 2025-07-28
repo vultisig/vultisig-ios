@@ -40,6 +40,7 @@ struct SendCryptoDoneContentView: View {
                     
                     transactionDetailsButton
                 }
+                .font(.body14BrockmannMedium)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
                 .foregroundColor(.lightText)
