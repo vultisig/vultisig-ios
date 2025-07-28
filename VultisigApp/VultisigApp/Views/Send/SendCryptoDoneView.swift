@@ -59,7 +59,8 @@ struct SendCryptoDoneView: View {
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 fee: (tx.gasInReadable, sendSummaryViewModel.feesInReadable(tx: tx, vault: vault))
-            )
+            ),
+            showAlert: $showAlert
         ) {
             tx.reset(coin: tx.coin)
         }
