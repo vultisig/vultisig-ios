@@ -29,6 +29,7 @@ extension OnboardingView {
             textPrefix: "OnboardingCard"
         )
         .frame(maxWidth: .infinity)
+        .frame(height: 100)
     }
     
     var button: some View {
