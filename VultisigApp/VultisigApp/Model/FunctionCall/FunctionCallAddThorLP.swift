@@ -398,7 +398,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             // The destination address is already set in tx.toAddress via fetchInboundAddress()
             let lpData = AddLPMemoData(
                 pool: fullPoolName,
-                pairedAddress: nil
+                pairedAddress: pairedAddress.nilIfEmpty
             )
             return lpData.memo
         }
