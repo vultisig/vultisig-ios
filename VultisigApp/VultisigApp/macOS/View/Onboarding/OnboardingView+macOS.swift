@@ -23,22 +23,10 @@ extension OnboardingView {
     
     var button: some View {
         HStack {
-            if tabIndex != 0 {
-                prevButton
-            }
-            
             nextButton
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
-    }
-    
-    var prevButton: some View {
-        IconButton(icon: "chevron.left") {
-            prevTapped()
-        }
-        .frame(width: 80)
-        .padding(.bottom, getBottomPadding())
     }
     
     var animation: some View {
