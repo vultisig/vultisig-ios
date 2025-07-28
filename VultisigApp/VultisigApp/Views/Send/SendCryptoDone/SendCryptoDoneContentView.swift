@@ -10,23 +10,46 @@ import RiveRuntime
 
 struct SendCryptoDoneContentView: View {
     let input: SendCryptoContent
+    @Binding var showAlert: Bool
     let onDone: () -> Void
     
     @State var animationVM: RiveViewModel? = nil
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 8) {
                 animation
-                getAssetCard(coin: input.coin, title: input.amountCrypto, description: input.amountFiat)
+                getAssetCard(
+                    coin: input.coin,
+                    title: input.amountCrypto,
+                    description: input.amountFiat
+                )
                 
-                NavigationLink {
-                    SendCryptoSecondaryDoneView(input: input) {
-                        onDone()
+                VStack(spacing: 16) {
+                    Group {
+                        SendCryptoTransactionHashRowView(
+                            hash: input.hash,
+                            explorerLink: input.explorerLink,
+                            showCopy: true,
+                            showAlert: $showAlert
+                        )
+                        Separator()
+                            .opacity(0.8)
                     }
-                } label: {
-                    transactionDetails
+                    .showIf(input.hash.isNotEmpty)
+                    
+                    transactionDetailsButton
                 }
+                .font(.body14BrockmannMedium)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
+                .foregroundColor(.lightText)
+                .background(Color.blue600)
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.blue400, lineWidth: 1)
+                )
             }
         }
         .onLoad {
@@ -34,23 +57,18 @@ struct SendCryptoDoneContentView: View {
         }
     }
     
-    var transactionDetails: some View {
-        HStack {
-            Text(NSLocalizedString("transactionDetails", comment: ""))
-            Spacer()
-            Image(systemName: "chevron.right")
+    var transactionDetailsButton: some View {
+        NavigationLink {
+            SendCryptoSecondaryDoneView(input: input) {
+                onDone()
+            }
+        } label: {
+            HStack {
+                Text(NSLocalizedString("transactionDetails", comment: ""))
+                Spacer()
+                Image(systemName: "chevron.right")
+            }
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.lightText)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
-        )
-        .padding(.top, 8)
     }
     
     var animation: some View {
@@ -98,4 +116,15 @@ struct SendCryptoDoneContentView: View {
                 .stroke(Color.blue400, lineWidth: 1)
         )
     }
+}
+
+#Preview {
+    SendCryptoDoneView(
+        vault: .example,
+        hash: "294FF0BCDDA7E79140782FB3F5F759FFEE1C11639194FF500BAB6D92012C615C",
+        approveHash: "",
+        chain: .thorChain,
+        sendTransaction: nil,
+        swapTransaction: nil
+    )
 }
