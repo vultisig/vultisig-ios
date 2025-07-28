@@ -77,7 +77,6 @@ struct ContentView: View {
     }
     
     private func setData() {
-        accountViewModel.showOnboarding = true
         authenticateUser()
     }
     
