@@ -265,10 +265,6 @@ class CosmosHelper {
             throw HelperError.runtimeError("Invalid empty WasmExecuteContractPayload")
         }
         
-        let formattedMessage = contractPayload.executeMsg
-            .replacingOccurrences(of: "^\\{", with: "{ ", options: .regularExpression)
-            .replacingOccurrences(of: "\\}$", with: " }", options: .regularExpression)
-            .replacingOccurrences(of: ":", with: ": ")
         let coins = contractPayload.coins.map { coin in
             CosmosAmount.with {
                 $0.denom = coin.contractAddress.lowercased()
@@ -280,7 +276,7 @@ class CosmosHelper {
             $0.wasmExecuteContractGeneric = CosmosMessage.WasmExecuteContractGeneric.with {
                 $0.senderAddress = keysignPayload.coin.address
                 $0.contractAddress = keysignPayload.toAddress
-                $0.executeMsg = formattedMessage
+                $0.executeMsg = contractPayload.executeMsg
                 $0.coins = coins
             }
         }

@@ -222,17 +222,13 @@ enum THORChainHelper {
                     throw HelperError.runtimeError("Invalid empty WasmExecuteContractPayload")
                 }
                 
-                let formattedMessage = contractPayload.executeMsg
-                    .replacingOccurrences(of: "^\\{", with: "{ ", options: .regularExpression)
-                    .replacingOccurrences(of: "\\}$", with: " }", options: .regularExpression)
-                    .replacingOccurrences(of: ":", with: ": ")
                 let coins = contractPayload.coins.map { coin in
                     CosmosAmount.with {
                         $0.denom = coin.contractAddress.lowercased()
                         $0.amount = String(keysignPayload.toAmount)
                     }
                 }
-                $0.executeMsg = formattedMessage
+                $0.executeMsg = contractPayload.executeMsg
                 $0.senderAddress = contractPayload.senderAddress
                 $0.contractAddress = contractPayload.contractAddress
                 $0.coins = coins
