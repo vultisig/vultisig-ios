@@ -31,6 +31,7 @@ extension OnboardingView {
     
     var animation: some View {
         animationVM?.view()
+            .padding(.bottom, 100)
     }
     
     private func prevTapped() {

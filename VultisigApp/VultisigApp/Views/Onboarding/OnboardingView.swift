@@ -44,8 +44,12 @@ struct OnboardingView: View {
                 startupText
             }
         }
-        .onAppear {
-            animationVM = RiveViewModel(fileName: "Onboarding", stateMachineName: "State Machine 1")
+        .onLoad {
+            resetOnboarding()
+        }
+        .onChange(of: showOnboarding) { _, showOnboarding in
+            guard !showOnboarding else { return }
+            resetOnboarding()
         }
         .onChange(of: tabIndex) { _, _ in
             playAnimation()
@@ -122,8 +126,6 @@ struct OnboardingView: View {
                 .foregroundColor(Color.extraLightGray)
                 .font(.body14BrockmannMedium)
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
     }
     
     var startupText: some View {
@@ -185,6 +187,12 @@ private extension OnboardingView {
     
     func playAnimation() {
         animationVM?.setInput("Index", value: Double(tabIndex))
+    }
+    
+    func resetOnboarding() {
+        tabIndex = 0
+        animationVM?.stop()
+        animationVM = RiveViewModel(fileName: "Onboarding", stateMachineName: "State Machine 1")
     }
 }
 
