@@ -163,7 +163,7 @@ private extension OnboardingView {
     }
     
     func skipTapped() {
-        moveToVaultView()
+        showSummary = true
     }
     
     func moveToVaultView() {
