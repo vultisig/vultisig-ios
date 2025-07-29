@@ -31,6 +31,10 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Balance display for paired asset
     @Published var pairedAssetBalance: String = ""
     
+    // ERC20 approval support
+    @Published var isApprovalRequired: Bool = false
+    @Published var approvePayload: ERC20ApprovePayload?
+    
     var tx: SendTransaction
     private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
@@ -69,6 +73,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         
         // Fetch the inbound address (pool address) for the transaction
         fetchInboundAddress()
+        
+        // Check if ERC20 approval is required
+        checkApprovalRequirement()
         
         // Load pools for both RUNE and L1 assets from the service
         self.isLoadingPools = true
@@ -142,6 +149,44 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             // For unknown chains, use the chain's swapAsset
             return chain.swapAsset.uppercased()
         }
+    }
+    
+    private func checkApprovalRequirement() {
+        // ERC20 tokens on EVM chains require approval to the THORChain router
+        isApprovalRequired = tx.coin.shouldApprove
+        
+        if isApprovalRequired {
+            // Create approval payload when we have the router address (inbound address)
+            Task { @MainActor in
+                // Wait a bit for the inbound address to be fetched
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+                
+                if !tx.toAddress.isEmpty {
+                    let payload = ERC20ApprovePayload(
+                        amount: tx.amountInRaw,
+                        spender: tx.toAddress
+                    )
+                    self.approvePayload = payload
+                    print("FunctionCallAddThorLP: Created ERC20 approval payload for \(tx.coin.ticker) to spender \(tx.toAddress)")
+                } else {
+                    print("FunctionCallAddThorLP: Router address not available yet for ERC20 approval")
+                }
+            }
+        }
+    }
+    
+    func buildApprovePayload() async throws -> ERC20ApprovePayload? {
+        guard isApprovalRequired, !tx.toAddress.isEmpty else {
+            return nil
+        }
+        
+        // Create approval payload with the current amount and router address
+        let payload = ERC20ApprovePayload(
+            amount: tx.amountInRaw,
+            spender: tx.toAddress
+        )
+        
+        return payload
     }
     
     var balance: String {
@@ -553,6 +598,33 @@ struct FunctionCallAddThorLPView: View {
                             }
                     }
                 }
+            
+            // ERC20 Approval Information
+            if model.isApprovalRequired {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("ERC20 Approval Required")
+                        .font(.body16MenloBold)
+                        .foregroundColor(.neutral0)
+                    
+                    Text("This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:")
+                        .font(.body14Menlo)
+                        .foregroundColor(.neutral0)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("1. Approval transaction")
+                            .font(.body12Menlo)
+                            .foregroundColor(.turquoise600)
+                        Text("2. Add liquidity transaction")
+                            .font(.body12Menlo)
+                            .foregroundColor(.turquoise600)
+                    }
+                    .padding(.leading, 16)
+                }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(Color.blue600.opacity(0.1))
+                .cornerRadius(10)
+            }
             
             // Amount field - shows balance of the asset being added
             StyledFloatingPointField(

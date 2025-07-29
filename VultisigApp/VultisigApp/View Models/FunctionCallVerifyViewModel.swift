@@ -32,11 +32,28 @@ class FunctionCallVerifyViewModel: ObservableObject {
             
             let keysignPayloadFactory = KeysignPayloadFactory()
             
+            // Check if this is an AddThorLP transaction that requires ERC20 approval
+            var approvePayload: ERC20ApprovePayload?
+            if !tx.memoFunctionDictionary.allItems().isEmpty,
+               let _ = tx.memoFunctionDictionary.get("pool") { // This indicates it's an AddThorLP transaction
+                
+                // Check if the coin requires approval (ERC20 tokens)
+                if tx.coin.shouldApprove && !tx.toAddress.isEmpty {
+                    approvePayload = ERC20ApprovePayload(
+                        amount: tx.amountInRaw,
+                        spender: tx.toAddress
+                    )
+                    print("FunctionCallVerifyViewModel: Created ERC20 approval payload for \(tx.coin.ticker) to spender \(tx.toAddress)")
+                }
+            }
+            
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
                                                                            amount: tx.amountInRaw,
                                                                            memo: tx.memo,
-                                                                           chainSpecific: chainSpecific, vault: vault)
+                                                                           chainSpecific: chainSpecific,
+                                                                           approvePayload: approvePayload,
+                                                                           vault: vault)
         } catch {
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:

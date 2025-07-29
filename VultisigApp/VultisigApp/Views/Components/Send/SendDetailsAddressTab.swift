@@ -84,7 +84,6 @@ struct SendDetailsAddressTab: View {
     
     private func handleClose(_ oldValue: Bool, _ newValue: Bool) async {
         guard oldValue != newValue, !newValue else {
-            focusedField = .toAddress
             return
         }
         if !tx.toAddress.isEmpty {

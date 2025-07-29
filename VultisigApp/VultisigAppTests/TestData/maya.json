@@ -1,0 +1,94 @@
+[
+    {
+        "name": "Send Cacao",
+        "keysign_payload": {
+            "coin": {
+                "chain": "MayaChain",
+                "ticker": "CACAO",
+                "address": "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c",
+                "decimals": 10,
+                "price_provider_id": "cacao",
+                "is_native_token": true,
+                "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b",
+                "contract_address":"",
+                "logo": "cacao"
+            },
+            "to_address": "maya1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxyua4tr",
+            "to_amount": "1000000000",
+            "BlockchainSpecific": {
+                "MayaSpecific": {
+                    "account_number": 9380,
+                    "sequence": 12,
+                    "is_deposit": false
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["d21ab9211a420c475a8cc7cc55fbd875da4eb8cdf8d2abea9928234b8142fcdf"]
+    },
+    {
+        "name": "Send Cacao with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "MayaChain",
+                "ticker": "CACAO",
+                "address": "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c",
+                "decimals": 10,
+                "price_provider_id": "cacao",
+                "is_native_token": true,
+                "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b",
+                "contract_address":"",
+                "logo": "cacao"
+            },
+            "to_address": "maya1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxyua4tr",
+            "to_amount": "1000000000",
+            "BlockchainSpecific": {
+                "MayaSpecific": {
+                    "account_number": 9380,
+                    "sequence": 12,
+                    "is_deposit": false
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["228d2cafbd2b41d6268ceb454debac7f49a1be538ecb9e12f090dacc32c28956"]
+    },
+    {
+        "name": "Send Maya token",
+        "keysign_payload": {
+            "coin": {
+                "chain": "MayaChain",
+                "ticker": "MAYA",
+                "address": "maya1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxyua4tr",
+                "decimals": 4,
+                "price_provider_id": "maya",
+                "is_native_token": false,
+                "hex_public_key": "02a9ac9f7a97da41559e1684011b6a9b0b9c0445297d5f51dea0897fd4a39c31c7",
+                "contract_address":"",
+                "logo": "maya"
+            },
+            "to_address": "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c",
+            "to_amount": "1000000000",
+            "BlockchainSpecific": {
+                "MayaSpecific": {
+                    "account_number": 8603,
+                    "sequence": 24,
+                    "is_deposit": false
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["6c1fd5002a47e8626fb90a797c6c3f03ca4835a4927a762e8aa9499645663ca3"]
+    }
+]

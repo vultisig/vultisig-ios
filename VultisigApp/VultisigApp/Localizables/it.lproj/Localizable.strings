@@ -1,3 +1,4 @@
+"back" = "Indietro";
 "backupNow" = "Effettua il backup ora";
 "backupSetupTitle" = "Effettua il backup del tuo vault\ncondividi online";
 "backupSetupSubtitle" = "L'archiviazione online è consigliata ed è sicura –\nle condivisioni del vault sono state create per questo.";
@@ -459,7 +460,7 @@
 "generatingECDSAText2" = "dandoti il pieno controllo dei tuoi beni";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Creazione del Vault";
-"invalidEmailPleaseCheck" = "E-mail non valida, controlla.";
+"invalidEmailPleaseCheck" = "E-mail non corretta, controlla.";
 "emptyEmailPleaseCheck" = "E-mail vuota, controlla.";
 "enterYourEmail" = "Inserisci la tua e-mail";
 "enterYourEmailDescription" = "Questa email viene utilizzata solo per inviare il backup del server.";

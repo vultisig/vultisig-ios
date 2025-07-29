@@ -32,6 +32,7 @@ struct SendCryptoDetailsView: View {
     @StateObject var keyboardObserver = KeyboardObserver()
     
     @FocusState var focusedField: Field?
+    @State var scrollProxy: ScrollViewProxy?
     
     var body: some View {
         container
@@ -48,6 +49,9 @@ struct SendCryptoDetailsView: View {
         }
         .onChange(of: tx.coin) { oldValue, newValue in
             setData()
+        }
+        .onChange(of: focusedField) { _, focusedField in
+            onChange(focusedField: focusedField)
         }
         .alert(isPresented: $sendCryptoViewModel.showAlert) {
             alert
@@ -114,23 +118,32 @@ struct SendCryptoDetailsView: View {
                 }
                 .padding(16)
             }
+            .onLoad {
+                scrollProxy = proxy
+            }
             .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
-                handleScroll(proxy: proxy, newValue: newValue, oldValue: oldValue)
+                handleScroll(newValue: newValue, oldValue: oldValue)
             }
         }
     }
     
-    func handleScroll(proxy: ScrollViewProxy, newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?) {
+    func onChange(focusedField: Field?) {
+        if focusedField == .toAddress {
+            handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)
+        }
+    }
+    
+    func handleScroll(newValue: SendDetailsFocusedTab?, oldValue: SendDetailsFocusedTab?, delay: Double = 0.7) {
         // This delay is necessary when the screen starts
         DispatchQueue.main.asyncAfter(deadline: .now() + (oldValue == nil ? 0.2 : 0)) {
-            proxy.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
+            scrollProxy?.scrollTo(SendDetailsFocusedTab.amount.rawValue, anchor: .top)
             
             // If it's .amount, there is no need to scroll again
             guard newValue != .amount else { return }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeInOut) {
-                    proxy.scrollTo(newValue?.rawValue, anchor: .top)
+                    scrollProxy?.scrollTo(newValue?.rawValue, anchor: .top)
                 }
             }
         }
