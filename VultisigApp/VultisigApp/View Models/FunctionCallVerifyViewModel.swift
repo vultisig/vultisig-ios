@@ -40,6 +40,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                let _ = tx.memoFunctionDictionary.get("pool") { // This indicates it's an AddThorLP transaction
                 
                 // For THORChain LP, create a THORChain swap payload
+                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 minutes
                 let thorchainSwapPayload = THORChainSwapPayload(
                     fromAddress: tx.fromAddress,
                     fromCoin: tx.coin,
@@ -51,7 +52,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     toAmountLimit: "",
                     streamingInterval: "",
                     streamingQuantity: "",
-                    expirationTime: 0,
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970),
                     isAffiliate: false
                 )
                 swapPayload = .thorchain(thorchainSwapPayload)
