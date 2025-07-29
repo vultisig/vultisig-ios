@@ -11,9 +11,9 @@ struct WasmExecuteContractPayload: Codable, Hashable {
     let senderAddress: String
     let contractAddress: String
     let executeMsg: String
-    let coins: [Coin]
+    let coins: [CosmosCoin]
     
-    init(senderAddress: String, contractAddress: String, executeMsg: String, coins: [Coin]) {
+    init(senderAddress: String, contractAddress: String, executeMsg: String, coins: [CosmosCoin]) {
         self.senderAddress = senderAddress
         self.contractAddress = contractAddress
         self.executeMsg = executeMsg
@@ -27,7 +27,7 @@ struct WasmExecuteContractPayload: Codable, Hashable {
         self.senderAddress = proto.senderAddress
         self.contractAddress = proto.contractAddress
         self.executeMsg = proto.executeMsg
-        self.coins = try proto.coins.map { try ProtoCoinResolver.resolve(coin: $0) }
+        self.coins = proto.coins.compactMap { CosmosCoin(proto: $0) }
     }
     
     func mapToProtobuff() -> VSWasmExecuteContractPayload {
@@ -35,7 +35,7 @@ struct WasmExecuteContractPayload: Codable, Hashable {
             $0.senderAddress = self.senderAddress
             $0.executeMsg = self.executeMsg
             $0.contractAddress = self.contractAddress
-            $0.coins = self.coins.map { coin in ProtoCoinResolver.proto(from: coin) }
+            $0.coins = self.coins.map { $0.mapToProtobuff() }
         }
     }
 }

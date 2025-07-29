@@ -267,15 +267,15 @@ class CosmosHelper {
         
         let coins = contractPayload.coins.map { coin in
             CosmosAmount.with {
-                $0.denom = coin.contractAddress.lowercased()
-                $0.amount = String(keysignPayload.toAmount)
+                $0.denom = coin.denom
+                $0.amount = coin.amount
             }
         }
         
         return CosmosMessage.with {
             $0.wasmExecuteContractGeneric = CosmosMessage.WasmExecuteContractGeneric.with {
-                $0.senderAddress = keysignPayload.coin.address
-                $0.contractAddress = keysignPayload.toAddress
+                $0.senderAddress = contractPayload.senderAddress
+                $0.contractAddress = contractPayload.contractAddress
                 $0.executeMsg = contractPayload.executeMsg
                 $0.coins = coins
             }

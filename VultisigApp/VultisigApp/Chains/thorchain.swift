@@ -224,8 +224,8 @@ enum THORChainHelper {
                 
                 let coins = contractPayload.coins.map { coin in
                     CosmosAmount.with {
-                        $0.denom = coin.contractAddress.lowercased()
-                        $0.amount = String(keysignPayload.toAmount)
+                        $0.denom = coin.denom
+                        $0.amount = coin.amount
                     }
                 }
                 $0.executeMsg = contractPayload.executeMsg
