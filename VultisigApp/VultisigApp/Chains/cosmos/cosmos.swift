@@ -44,13 +44,7 @@ class CosmosHelper {
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            $0.fee = CosmosFee.with {
-                $0.gas = self.gasLimit
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = self.denom
-                    $0.amount = String(gas)
-                }]
-            }
+            $0.fee = buildCosmosFee(gas: gas)
             $0.signingMode = .protobuf
             $0.chainID = coinType.chainId
             $0.memo = memo
@@ -65,7 +59,7 @@ class CosmosHelper {
                 }
             }]
         }
-
+        
         return try input.serializedData()
     }
     
@@ -84,8 +78,8 @@ class CosmosHelper {
             transactionType = vsTransactionType
         }
         
-        if transactionType == .ibcTransfer {
-            
+        switch transactionType {
+        case .ibcTransfer:
             var memo = ""
             let splitedMemo = keysignPayload.memo?.split(separator: ":");
             if splitedMemo?.count == 0 {
@@ -93,15 +87,12 @@ class CosmosHelper {
             }
             
             let sourceChannel = splitedMemo?[1] ?? ""
-            
             if splitedMemo?.count == 4 {
                 memo = String(splitedMemo?[3] ?? "")
             }
             
             let timeouts = ibcDenomTrace?.height?.split(separator: "_") ?? []
-            
             let timeout = UInt64(timeouts.last ?? "0") ?? 0
-            
             let transferMessage = CosmosMessage.Transfer.with {
                 $0.sourcePort = "transfer"
                 $0.sourceChannel = String(sourceChannel)
@@ -118,7 +109,6 @@ class CosmosHelper {
                 $0.timeoutTimestamp = timeout
             }
             
-            
             let input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = .protobuf
@@ -130,18 +120,23 @@ class CosmosHelper {
                     $0.memo = memo
                 }
                 $0.messages = [CosmosMessage.with { $0.transferTokensMessage = transferMessage }]
-                
-                $0.fee = CosmosFee.with {
-                    $0.gas = self.gasLimit
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = self.denom
-                        $0.amount = String(gas)
-                    }]
-                }
+                $0.fee = buildCosmosFee(gas: gas)
             }
             
             return try input.serializedData()
-            
+        case .genericContract:
+            return try CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = coin.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                $0.messages = [try buildCosmosWasmGenericMsg(keysignPayload: keysignPayload)]
+                $0.fee = buildCosmosFee(gas: gas)
+            }.serializedData()
+        default:
+            break
         }
         
         if keysignPayload.coin.isNativeToken
@@ -172,13 +167,7 @@ class CosmosHelper {
                     }
                 }]
                 
-                $0.fee = CosmosFee.with {
-                    $0.gas = self.gasLimit
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = self.denom
-                        $0.amount = String(gas)
-                    }]
-                }
+                $0.fee = buildCosmosFee(gas: gas)
             }
             
             return try input.serializedData()
@@ -252,6 +241,44 @@ class CosmosHelper {
             return result
         } catch {
             throw HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)")
+        }
+    }
+    
+    private func buildCosmosFee(gas: UInt64) -> CosmosFee {
+        return CosmosFee.with {
+            $0.gas = gasLimit
+            $0.amounts = [CosmosAmount.with {
+                $0.denom = denom
+                $0.amount = String(gas)
+            }]
+        }
+    }
+    
+    private func buildCosmosWasmGenericMsg(keysignPayload: KeysignPayload) throws -> CosmosMessage {
+        let coinType = keysignPayload.coin.chain.coinType
+        
+        guard coinType.validate(address: keysignPayload.coin.address) else {
+            throw HelperError.runtimeError("Invalid Address type: \(keysignPayload.coin.address)")
+        }
+        
+        guard let contractPayload = keysignPayload.wasmExecuteContractPayload else {
+            throw HelperError.runtimeError("Invalid empty WasmExecuteContractPayload")
+        }
+        
+        let coins = contractPayload.coins.map { coin in
+            CosmosAmount.with {
+                $0.denom = coin.denom
+                $0.amount = coin.amount
+            }
+        }
+        
+        return CosmosMessage.with {
+            $0.wasmExecuteContractGeneric = CosmosMessage.WasmExecuteContractGeneric.with {
+                $0.senderAddress = contractPayload.senderAddress
+                $0.contractAddress = contractPayload.contractAddress
+                $0.executeMsg = contractPayload.executeMsg
+                $0.coins = coins
+            }
         }
     }
 }

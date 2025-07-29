@@ -27,7 +27,7 @@ struct JoinKeysignDoneView: View {
                 continueButton
             }
         }
-        .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
+        .redacted(reason: viewModel.showRedacted ? .placeholder : [])
         .navigationDestination(isPresented: $moveToHome) {
             HomeView(selectedVault: vault, showVaultsList: false)
         }

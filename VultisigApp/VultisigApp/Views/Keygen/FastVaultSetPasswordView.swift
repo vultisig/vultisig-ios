@@ -13,7 +13,7 @@ struct FastVaultSetPasswordView: View {
     let selectedTab: SetupVaultState
     let fastVaultEmail: String
     let fastVaultExist: Bool
-
+    
     @State var password: String = ""
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
@@ -26,7 +26,7 @@ struct FastVaultSetPasswordView: View {
     @FocusState var isPasswordFieldFocused: Bool
     @FocusState var isVerifyPasswordFieldFocused: Bool
     private let fastVaultService: FastVaultService = .shared
-
+    
     var body: some View {
         content
             .animation(.easeInOut, value: showTooltip)
@@ -46,7 +46,7 @@ struct FastVaultSetPasswordView: View {
                 }
             }
     }
-
+    
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
@@ -82,7 +82,7 @@ struct FastVaultSetPasswordView: View {
     var disclaimer: some View {
         FastVaultPasswordDisclaimer(showTooltip: $showTooltip)
     }
-
+    
     var textfield: some View {
         HiddenTextField(
             placeholder: "enterPassword",
@@ -96,7 +96,7 @@ struct FastVaultSetPasswordView: View {
         }
         .padding(.top, 32)
     }
-
+    
     var verifyTextfield: some View {
         HiddenTextField(
             placeholder: "verifyPassword",
@@ -133,44 +133,48 @@ struct FastVaultSetPasswordView: View {
             isExist: fastVaultExist
         )
     }
-
+    
     @MainActor func checkPassword() async {
         isLoading = true
         defer { isLoading = false }
-
+        
         let isValid = await fastVaultService.get(
             pubKeyECDSA: vault.pubKeyECDSA,
             password: password
         )
-
+        
         guard isValid else {
             isWrongPassword = true
             password = .empty
             return
         }
-
+        
         isLinkActive = true
     }
-    
-    private func handleTap() {
+    func validatePassword()->Bool {
         guard !password.isEmpty else {
             verifyFieldError = ""
             passwordFieldError = "emptyField"
-            return
+            return false
         }
         
         guard !verifyPassword.isEmpty else {
             verifyFieldError = "emptyField"
             passwordFieldError = ""
-            return
+            return false
         }
         
         guard password == verifyPassword else {
             verifyFieldError = "passwordMismatch"
             passwordFieldError = "passwordMismatch"
-            return
+            return false
         }
-        
-        isLinkActive = true
+        verifyFieldError = ""
+        passwordFieldError = ""
+        return true
+    }
+    private func handleTap() {
+        isLinkActive = validatePassword()
     }
 }
+
