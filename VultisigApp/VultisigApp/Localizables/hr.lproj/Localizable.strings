@@ -460,7 +460,7 @@
 "generatingECDSAText2" = "potpuna kontrola nad vašom imovinom";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Stvaranje Trezora";
-"invalidEmailPleaseCheck" = "Neispravna e-mail adresa, provjerite.";
+"invalidEmailPleaseCheck" = "Netočna e-mail adresa, molimo provjerite.";
 "emptyEmailPleaseCheck" = "Prazno polje za e-mail, provjerite.";
 "enterYourEmail" = "Unesite svoju e-mail adresu";
 "enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";
