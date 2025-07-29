@@ -34,8 +34,27 @@ class FunctionCallVerifyViewModel: ObservableObject {
             
             // Check if this is an AddThorLP transaction that requires ERC20 approval
             var approvePayload: ERC20ApprovePayload?
+            var swapPayload: SwapPayload?
+            
             if !tx.memoFunctionDictionary.allItems().isEmpty,
                let _ = tx.memoFunctionDictionary.get("pool") { // This indicates it's an AddThorLP transaction
+                
+                // For THORChain LP, create a THORChain swap payload
+                let thorchainSwapPayload = THORChainSwapPayload(
+                    fromAddress: tx.fromAddress,
+                    fromCoin: tx.coin,
+                    toCoin: tx.coin, // For LP, we're not swapping to a different coin
+                    vaultAddress: tx.toAddress,
+                    routerAddress: tx.toAddress,
+                    fromAmount: tx.amountInRaw,
+                    toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw), // Convert BigInt to Decimal
+                    toAmountLimit: "",
+                    streamingInterval: "",
+                    streamingQuantity: "",
+                    expirationTime: 0,
+                    isAffiliate: false
+                )
+                swapPayload = .thorchain(thorchainSwapPayload)
                 
                 // Check if the coin requires approval (ERC20 tokens)
                 if tx.coin.shouldApprove && !tx.toAddress.isEmpty {
@@ -52,6 +71,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                                                                            amount: tx.amountInRaw,
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific,
+                                                                           swapPayload: swapPayload,
                                                                            approvePayload: approvePayload,
                                                                            vault: vault)
         } catch {
