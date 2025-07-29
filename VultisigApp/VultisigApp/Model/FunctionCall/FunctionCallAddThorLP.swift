@@ -106,9 +106,17 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                         return
                     }
                     
-                    // Set the inbound address as the destination for the transaction
-                    tx.toAddress = inbound.address
-                    print("FunctionCallAddThorLP: Set toAddress to \(inbound.address) for chain \(chainName)")
+                    // For ERC20 tokens, use router address; for native tokens, use inbound address
+                    let destinationAddress: String
+                    if tx.coin.shouldApprove { // ERC20 tokens
+                        destinationAddress = inbound.router ?? inbound.address
+                        print("FunctionCallAddThorLP: Using router address \(destinationAddress) for ERC20 token \(tx.coin.ticker)")
+                    } else { // Native tokens
+                        destinationAddress = inbound.address
+                        print("FunctionCallAddThorLP: Using inbound address \(destinationAddress) for native token \(tx.coin.ticker)")
+                    }
+                    
+                    tx.toAddress = destinationAddress
                 } else {
                     print("FunctionCallAddThorLP: No inbound address found for chain \(chainName)")
                 }

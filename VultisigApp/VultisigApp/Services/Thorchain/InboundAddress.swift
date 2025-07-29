@@ -26,6 +26,7 @@
 struct InboundAddress: Codable {
     let chain: String
     let address: String
+    let router: String? // Router address for ERC20 tokens
     let halted: Bool
     let global_trading_paused: Bool
     let chain_trading_paused: Bool
