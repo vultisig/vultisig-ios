@@ -152,7 +152,6 @@ struct FastVaultSetPasswordView: View {
         isLinkActive = true
     }
     func validatePassword()->Bool {
-        
         guard !password.isEmpty else {
             verifyFieldError = ""
             passwordFieldError = "emptyField"
@@ -174,7 +173,7 @@ struct FastVaultSetPasswordView: View {
         passwordFieldError = ""
         return true
     }
-    func handleTap() {
+    private func handleTap() {
         isLinkActive = validatePassword()
     }
 }
