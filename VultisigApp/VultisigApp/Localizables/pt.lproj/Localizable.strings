@@ -1,3 +1,4 @@
+"back" = "Voltar";
 "backupNow" = "Faça backup agora";
 "backupSetupTitle" = "Faça backup do seu cofre\ncompartilhe online";
 "backupSetupSubtitle" = "O armazenamento online é recomendado e seguro –\nas partilhas do cofre foram concebidas para isso.";
@@ -460,7 +461,7 @@
 "generatingECDSAText2" = "dando controle total sobre seus ativos";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Criando Cofre";
-"invalidEmailPleaseCheck" = "E-mail inválido, verifique.";
+"invalidEmailPleaseCheck" = "E-mail incorreto, verifique.";
 "emptyEmailPleaseCheck" = "E-mail vazio, verifique.";
 "enterYourEmail" = "Digite seu e-mail";
 "enterYourEmailDescription" = "Este e-mail é usado apenas para enviar o backup do servidor.";

@@ -13,32 +13,31 @@ extension OnboardingView {
         content
     }
     
+    var view: some View {
+        VStack(spacing: 0) {
+            header
+            progressBar
+            animation
+            text
+            button
+        }
+    }
+    
     var text: some View {
         OnboardingTextCard(
             index: tabIndex,
             textPrefix: "OnboardingCard"
         )
         .frame(maxWidth: .infinity)
+        .frame(height: 100)
     }
     
     var button: some View {
         HStack {
-            if tabIndex != 0 {
-                prevButton
-            }
-            
             nextButton
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
-    }
-    
-    var prevButton: some View {
-        IconButton(icon: "chevron.left") {
-            prevTapped()
-        }
-        .frame(width: 80)
-        .padding(.bottom, getBottomPadding())
     }
     
     var animation: some View {

@@ -1,3 +1,4 @@
+"back" = "Natrag";
 "backupNow" = "Napravite sigurnosnu kopiju sada";
 "backupSetupTitle" = "Napravite sigurnosnu kopiju svog trezora\npodijelite ga online";
 "backupSetupSubtitle" = "Online pohrana je preporučena i sigurna –\ndijelovi trezora su dizajnirani za to.";
@@ -459,7 +460,7 @@
 "generatingECDSAText2" = "potpuna kontrola nad vašom imovinom";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Stvaranje Trezora";
-"invalidEmailPleaseCheck" = "Neispravna e-mail adresa, provjerite.";
+"invalidEmailPleaseCheck" = "Netočna e-mail adresa, molimo provjerite.";
 "emptyEmailPleaseCheck" = "Prazno polje za e-mail, provjerite.";
 "enterYourEmail" = "Unesite svoju e-mail adresu";
 "enterYourEmailDescription" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije poslužitelja.";

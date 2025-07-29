@@ -46,14 +46,18 @@ struct SendCryptoSecondaryDoneView: View {
     
     var summary: some View {
         VStack(spacing: 18) {
-            Group {
-                transactionHashLink
-                separator
-            }
+            SendCryptoTransactionHashRowView(
+                hash: input.hash,
+                explorerLink: input.explorerLink,
+                showCopy: false,
+                showAlert: .constant(false)
+            )
             .showIf(input.hash.isNotEmpty)
             
+            separator
+            
             if let vaultName = homeViewModel.selectedVault?.name, vaultName.isNotEmpty {
-                getCell(
+                SendCryptoTransactionDetailsRow(
                     title: "from",
                     description: vaultName,
                     bracketValue: input.fromAddress
@@ -62,7 +66,7 @@ struct SendCryptoSecondaryDoneView: View {
             }
             
             Group {
-                getCell(
+                SendCryptoTransactionDetailsRow(
                     title: "to",
                     description: input.toAddress
                 )
@@ -71,7 +75,7 @@ struct SendCryptoSecondaryDoneView: View {
             .showIf(input.toAddress.isNotEmpty)
             
             Group {
-                getCell(
+                SendCryptoTransactionDetailsRow(
                     title: "memo",
                     description: input.memo
                 )
@@ -80,7 +84,7 @@ struct SendCryptoSecondaryDoneView: View {
             .showIf(input.memo.isNotEmpty)
             
             
-            getCell(
+            SendCryptoTransactionDetailsRow(
                     title: "network",
                     description: input.coin.chain.name,
                     icon: input.coin.chain.logo
@@ -88,7 +92,7 @@ struct SendCryptoSecondaryDoneView: View {
             
             separator
             
-            getCell(
+            SendCryptoTransactionDetailsRow(
                 title: "estNetworkFee",
                 description: input.fee.crypto,
                 secondaryDescription: input.fee.fiat
@@ -106,27 +110,6 @@ struct SendCryptoSecondaryDoneView: View {
     var separator: some View {
         Separator()
             .opacity(0.8)
-    }
-    
-    var transactionHashLink: some View {
-        Button {
-            openLink()
-        } label: {
-            transactionHashLabel
-        }
-    }
-    
-    var transactionHashLabel: some View {
-        HStack {
-            getCell(
-                title: "transactionHash",
-                description: input.hash
-            )
-            
-            Image(systemName: "arrow.up.forward.app")
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
-        }
     }
     
     var continueButton: some View {
@@ -171,49 +154,6 @@ struct SendCryptoSecondaryDoneView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.blue600, lineWidth: 1)
         )
-    }
-    
-    private func getCell(title: String, description: String, secondaryDescription: String? = nil, bracketValue: String? = nil, icon: String? = nil) -> some View {
-        HStack(spacing: 2) {
-            Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            
-            Spacer()
-            
-            if let icon {
-                Image(icon)
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                    .cornerRadius(32)
-            }
-            
-            
-            VStack(alignment: .trailing, spacing: 2) {
-                HStack(spacing: 2) {
-                    Text(description)
-                        .foregroundColor(.neutral0)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    
-                    if let bracketValue {
-                        Text("(\(bracketValue))")
-                            .foregroundColor(.extraLightGray)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                }
-                
-                if let secondaryDescription {
-                    Text(secondaryDescription)
-                        .foregroundColor(.extraLightGray)
-                        .lineLimit(1)
-                }
-            }
-        }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.neutral0)
     }
 }
 

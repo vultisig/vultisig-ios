@@ -1,0 +1,143 @@
+[
+    {
+        "name": "Swap from SOL to SOL.RAY",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Solana",
+                "ticker": "SOL",
+                "address": "8vdCT37Lc6MLXfep8K5XFyYU6HTPpaqjJ7hyXJjUCc12",
+                "decimals": 9,
+                "price_provider_id": "solana",
+                "is_native_token": true,
+                "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+                "contract_address":"",
+                "logo": "sol"
+            },
+            "to_address": "",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "SolanaSpecific": {
+                    "recent_block_hash": "ChGn9VLAKcy878i2qC7KiLGL19gGreSnjDuNbUreURfN",
+                    "priority_fee": "0",
+                    "has_program_id": false
+                }
+            },
+            "memo": "",
+            "utxo_info": [],
+            "SwapPayload": {
+                "OneinchSwapPayload":{
+                    "from_coin": {
+                        "ticker": "SOL",
+                        "chain": "Solana",
+                        "address": "8vdCT37Lc6MLXfep8K5XFyYU6HTPpaqjJ7hyXJjUCc12",
+                        "contract_address": "",
+                        "decimals": 9,
+                        "is_native_token": true,
+                        "price_provider_id": "solana",
+                        "logo": "sol",
+                        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5"
+                    },
+                    "to_coin": {
+                        "ticker": "RAY",
+                        "chain": "Solana",
+                        "address": "8vdCT37Lc6MLXfep8K5XFyYU6HTPpaqjJ7hyXJjUCc12",
+                        "contract_address": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+                        "decimals": 6,
+                        "is_native_token": false,
+                        "price_provider_id": "",
+                        "logo": "ray",
+                        "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5"
+                    },
+                    "from_amount": "100000000",
+                    "to_amount_decimal": "5.97518",
+                    "to_amount_limit": "0",
+                    "quote": {
+                        "dst_amount": "5975180",
+                        "tx": {
+                            "data": "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAKEXW+hReIFts7xxpPPmTlyJhm2LfaroJ7qc9OzR7Z5kXVDuVlASeCAElI4MSEiQiFnjfuh5yzd9uuxg0IR+OLQTu0McE4cUcre+KWf55ywrlE9sLoScUaYFwMQGgVA8IVt2im6in7YWXLsp5WmT+UGDYr7F45urTOIHH+ZXIHw7Rz5oNr+FhQ1oKF1yJpe2KKD1SoTk0xmb0ADtKt2veinf7YECKefVETHnTH96uQ1vXBLbqvOtQuMxOrrL5TswVbMB6MT6uJlElMjx5cEodEWykX1gxDx5qpWRYvXWAAWY0yAwZGb+UhFzL\/7K26csOb57yM5bvF9xJrLEObOkAAAACMlyWPTiSJ8bs9ECkUjg2DC1oTmdr\/EIQEjnvY2+n4WQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7\/AKkEedVb8jHAbu50xW7OaBUH\/bGy3qP0jlECsc2iVrwTjzeZjMvy0EWLYVy8xrGjZ8R0np\/vcwZiLhsbWJEBILyatD\/6J\/XX9kp0wJsfKVh53ksJqzbfyd1RSzIap7OM5egoPQ3SgjVP7wrjsOIn03zYnKJm+xfd+PfLfM775OvcVQan1RcYx3TJKFZjmGkdXraLXrijm0ttXHNVWyEAAAAAb+0kbSOOdPdvFLMJMba23fblpf\/hbgUfS8V0yVZTv6qiUB1YZWrLYMca7kjm03jiEslhX2UoX69F+hToOamQiQkHAAUC8zwDAAcACQMlZx8AAAAAAAgGAAEAFgkKAQEJAgABDAIAAABwEPIFAAAAAAoBAQERCxgKAAECCwwLDQsXABgRAQISExQKAxUEBQsj5RfLl3rjrSoBAAAAGmQAAXAQ8gUAAAAA+StbAAAAAAAyAAAKAwEAAAEJDgIPEAkAFs9hAilYcwAJAgAGDAIAAACQ0AMAAAAAAAEH99LRJxEhvVJD39QhIbNQafijVcKEM21AqrLRk68POgXo5d3i5wOFAOQ=",
+                            "from": "",
+                            "gas": 441734,
+                            "gas_price": "",
+                            "to": "",
+                            "value": ""
+                        }
+                    }
+                }
+            },
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["8001000a1175be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d50ee565012782004948e0c4848908859e37ee879cb377dbaec60d0847e38b413bb431c13871472b7be2967f9e72c2b944f6c2e849c51a605c0c40681503c215b768a6ea29fb6165cbb29e56993f9418362bec5e39bab4ce2071fe657207c3b473e6836bf85850d68285d722697b628a0f54a84e4d3199bd000ed2addaf7a29dfed810229e7d51131e74c7f7ab90d6f5c12dbaaf3ad42e3313abacbe53b3055b301e8c4fab8994494c8f1e5c1287445b2917d60c43c79aa959162f5d6000598d320306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a400000008c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f859000000000000000000000000000000000000000000000000000000000000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90479d55bf231c06eee74c56ece681507fdb1b2dea3f48e5102b1cda256bc138f37998ccbf2d0458b615cbcc6b1a367c4749e9fef7306622e1b1b58910120bc9ab43ffa27f5d7f64a74c09b1f295879de4b09ab36dfc9dd514b321aa7b38ce5e8283d0dd282354fef0ae3b0e227d37cd89ca266fb17ddf8f7cb7ccefbe4ebdc5506a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b21000000006fed246d238e74f76f14b30931b6b6ddf6e5a5ffe16e051f4bc574c95653bfaaadc1a115399240fddf1d9905fb57cd5b57be5005af540405fc6ddd56476a07f90907000502f33c03000700090325671f0000000000080600010016090a0101090200010c020000007010f205000000000a010101110b180a0001020b0c0b0d0b1700181101021213140a031504050b23e517cb977ae3ad2a010000001a6400017010f20500000000f92b5b00000000003200000a0301000001090e020f10090016cf610229587300090200060c0200000090d00300000000000107f7d2d1271121bd5243dfd42121b35069f8a355c284336d40aab2d193af0f3a05e8e5dde2e7038500e4"]
+    },
+    {
+        "name": "Swap from ARB.ETH to BASE.ETH",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Arbitrum",
+                "ticker": "ETH",
+                "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                "decimals": 18,
+                "price_provider_id": "eth",
+                "is_native_token": true,
+                "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725",
+                "contract_address":"",
+                "logo": "eth"
+            },
+            "to_address": "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+            "to_amount": "1000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "15000000",
+                    "priority_fee": "0",
+                    "nonce": 22,
+                    "gas_limit": "600000"
+                }
+            },
+            "memo": "",
+            "utxo_info": [],
+            "SwapPayload": {
+                "OneinchSwapPayload":{
+                    "from_coin": {
+                        "ticker": "ETH",
+                        "chain": "Arbitrum",
+                        "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                        "contract_address": "",
+                        "decimals": 18,
+                        "is_native_token": true,
+                        "price_provider_id": "eth",
+                        "logo": "eth",
+                        "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725"
+                    },
+                    "to_coin": {
+                        "ticker": "ETH",
+                        "chain": "Base",
+                        "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                        "contract_address": "",
+                        "decimals": 18,
+                        "is_native_token": true,
+                        "price_provider_id": "eth",
+                        "logo": "ETH",
+                        "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725"
+                    },
+                    "from_amount": "1000000000000000",
+                    "to_amount_decimal": "0.000991932538885999",
+                    "quote": {
+                        "dst_amount": "991932538885999",
+                        "tx": {
+                            "data": "0x606326ff0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000024007773707bda78ac4052f736544928b15dd31c5cc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000369441827a2b4190e529bce5eb25257f457a7ca956703389cd4380d307b07329ad000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000001800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007773707bda78ac4052f736544928b15dd31c5cc000000000000000000000000000000000000000000000000000386ac69f08800000000000000000000000000000000000000000000000000000000000000210500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c6761735a69704272696467650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c76756c74697369672d696f73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000b0210de78e28e2633ca200609d9f528c13c26cd9000000000000000000000000b0210de78e28e2633ca200609d9f528c13c26cd90000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000064e0cbc5f20000000000000000000000000000000000000000000000000000048c2739500000000000000000000000000000000000000000000000000000000246139ca800000000000000000000000000a4a4f610e89488eb4ecc6c63069f241a5448526900000000000000000000000000000000000000000000000000000000",
+                            "from": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                            "gas": 2723707,
+                            "gas_price": "10000000",
+                            "to": "0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE",
+                            "value": "1000000000000000"
+                        }
+                    }
+                }
+            },
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["4324862d2c76549bdf6578d070258f1c6c8bcbad27ab7b3dc8ca8af8452fb125"]
+    }
+    
+]

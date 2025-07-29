@@ -1,3 +1,4 @@
+"back" = "Atrás";
 "backupNow" = "Realiza copia de seguridad ahora";
 "backupSetupTitle" = "Realiza copia de seguridad de tu bóveda\ncompártela online";
 "backupSetupSubtitle" = "El almacenamiento en línea es recomendado y seguro –\nlos fragmentos de la bóveda están diseñados para ello.";
@@ -459,7 +460,7 @@
 "generatingECDSAText2" = "dándote control total sobre tus activos";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Creando Bóveda";
-"invalidEmailPleaseCheck" = "Correo electrónico no válido, por favor verifique.";
+"invalidEmailPleaseCheck" = "Correo electrónico incorrecto, por favor verifique.";
 "emptyEmailPleaseCheck" = "Campo de correo electrónico vacío, por favor verifique.";
 "enterYourEmail" = "Introduce tu correo electrónico";
 "enterYourEmailDescription" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad del servidor.";

@@ -80,7 +80,8 @@ struct JoinKeysignDoneSummary: View {
                     fromAddress: keysignPayload.coin.address,
                     toAddress: keysignPayload.toAddress,
                     fee: (fees.feeCrypto, fees.feeFiat)
-                )
+                ),
+                showAlert: $showAlert
             ) {}
         }
     }

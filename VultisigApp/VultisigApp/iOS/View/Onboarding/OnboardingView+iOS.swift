@@ -16,6 +16,17 @@ extension OnboardingView {
             .toolbar(.hidden, for: .navigationBar)
     }
     
+    @ViewBuilder
+    var view: some View {
+        animation
+        VStack(spacing: 0) {
+            header
+            progressBar
+            text
+            button
+        }
+    }
+    
     var text: some View {
         TabView(selection: $tabIndex) {
             ForEach(0..<totalTabCount, id: \.self) { index in
@@ -41,7 +52,7 @@ extension OnboardingView {
     var animation: some View {
         animationVM?.view()
             .scaleEffect(animationScale)
-            .padding(.bottom, idiom == .pad ? 100 : 0)
+            .padding(.bottom, 100)
             .onAppear {
                 getScale()
             }

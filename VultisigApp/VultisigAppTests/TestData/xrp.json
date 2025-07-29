@@ -1,0 +1,91 @@
+[
+    {
+        "name": "Send XRP",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Ripple",
+                "ticker": "XRP",
+                "address": "rMwdVSrJte3z8zJsdDySGSgBq27xWqt9VW",
+                "decimals": 6,
+                "price_provider_id": "ripple",
+                "is_native_token": true,
+                "hex_public_key": "03fab84530e73b1688faf877df4012f8ff5e763d0073b8427777985b8f295c752f",
+                "logo": "solana"
+            },
+            "to_address": "rhZF88o88oc29XzEahzYyPtBwYF7insUSF",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "RippleSpecific": {
+                    "sequence": 95705312,
+                    "gas": 180000,
+                    "last_ledger_sequence": 97710230
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["345d97cf0407b433caef1f764c88341f073ba62fa96ee3eacb04c59de26220c2"]
+    },
+    {
+        "name": "Send XRP with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Ripple",
+                "ticker": "XRP",
+                "address": "rMwdVSrJte3z8zJsdDySGSgBq27xWqt9VW",
+                "decimals": 6,
+                "price_provider_id": "ripple",
+                "is_native_token": true,
+                "hex_public_key": "03fab84530e73b1688faf877df4012f8ff5e763d0073b8427777985b8f295c752f",
+                "logo": "solana"
+            },
+            "to_address": "rhZF88o88oc29XzEahzYyPtBwYF7insUSF",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "RippleSpecific": {
+                    "sequence": 95705312,
+                    "gas": 180000,
+                    "last_ledger_sequence": 97710230
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["a6e55bd51249c16404d9a93abb097517d4e5c62ea21afebde521b811a0002d6a"]
+    },
+    {
+        "name": "Send XRP with memo using destination tag",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Ripple",
+                "ticker": "XRP",
+                "address": "rMwdVSrJte3z8zJsdDySGSgBq27xWqt9VW",
+                "decimals": 6,
+                "price_provider_id": "ripple",
+                "is_native_token": true,
+                "hex_public_key": "03fab84530e73b1688faf877df4012f8ff5e763d0073b8427777985b8f295c752f",
+                "logo": "solana"
+            },
+            "to_address": "rhZF88o88oc29XzEahzYyPtBwYF7insUSF",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "RippleSpecific": {
+                    "sequence": 95705312,
+                    "gas": 180000,
+                    "last_ledger_sequence": 97710230
+                }
+            },
+            "memo": "12345",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["7fa76f213b11e651274e938362676f34b56be5afa03d51568a14b93e6f5f32c7"]
+    }
+]
