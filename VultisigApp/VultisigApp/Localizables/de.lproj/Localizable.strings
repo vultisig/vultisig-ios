@@ -477,7 +477,7 @@
 "generatingECDSAText2" = "gibt Ihnen die vollständige Kontrolle über Ihre Vermögenswerte";
 "generatingEdDSAText1" = "Kettenübergreifend. ";
 "creatingVault" = "Tresor wird erstellt";
-"invalidEmailPleaseCheck" = "Ungültige E-Mail, bitte überprüfen.";
+"invalidEmailPleaseCheck" = "Falsche E-Mail, bitte überprüfen.";
 "emptyEmailPleaseCheck" = "Leere E-Mail, bitte überprüfen.";
 "enterYourEmail" = "Geben Sie Ihre E-Mail ein";
 "enterYourEmailDescription" = "Diese E-Mail wird nur zum Senden des Server-Backups verwendet.";

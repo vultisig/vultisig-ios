@@ -494,7 +494,7 @@
 "generatingECDSAText2" = "giving complete control over your assets";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Creating Vault";
-"invalidEmailPleaseCheck" = "Invalid e-mail, please check.";
+"invalidEmailPleaseCheck" = "Incorrect e-mail, please check.";
 "emptyEmailPleaseCheck" = "Empty e-mail, please check.";
 "enterYourEmail" = "Enter your e-mail";
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
