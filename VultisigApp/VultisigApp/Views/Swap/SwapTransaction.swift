@@ -8,7 +8,7 @@
 import Foundation
 import BigInt
 
-@MainActor
+//@MainActor
 class SwapTransaction: ObservableObject {
 
     @Published var fromAmount: String = .empty

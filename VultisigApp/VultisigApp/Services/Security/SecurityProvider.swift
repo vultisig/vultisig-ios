@@ -77,7 +77,7 @@ struct SecurityScanResponse {
 }
 
 /// Individual security warning
-struct SecurityWarning {
+struct SecurityWarning2 {
     let type: SecurityWarningType
     let severity: SecuritySeverity
     let message: String
@@ -94,7 +94,7 @@ struct SecurityWarning {
 // MARK: - Enums
 
 /// Types of security transactions
-enum SecurityTransactionType {
+enum SecurityTransactionType2 {
     case transfer
     case swap
     case contractInteraction
@@ -105,7 +105,7 @@ enum SecurityTransactionType {
 }
 
 /// Security risk levels
-enum SecurityRiskLevel: String, CaseIterable {
+enum SecurityRiskLevel2: String, CaseIterable {
     case none = "NONE"
     case low = "LOW"
     case medium = "MEDIUM"

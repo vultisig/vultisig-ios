@@ -18,7 +18,7 @@ class SecurityScanViewModel: ObservableObject {
     @Published var showAlert = false
     @Published var userAcknowledgedRisk = false
     
-    private let securityService = SecurityService.shared
+//    private let securityService = SecurityService.shared
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties
@@ -137,34 +137,34 @@ class SecurityScanViewModel: ObservableObject {
     
     /// Scan a transaction from a KeysignPayload
     func scanTransaction(from payload: KeysignPayload) async {
-        let request = securityService.createSecurityScanRequest(from: payload)
-        await scanTransaction(request)
+//        let request = securityService.createSecurityScanRequest(from: payload)
+//        await scanTransaction(request)
     }
     
     /// Scan a transaction from a SendTransaction
     func scanTransaction(from tx: SendTransaction) async {
-        let request = securityService.createSecurityScanRequest(from: tx)
-        await scanTransaction(request)
+//        let request = securityService.createSecurityScanRequest(from: tx)
+//        await scanTransaction(request)
     }
     
     /// Scan a transaction with a custom request
     func scanTransaction(_ request: SecurityScanRequest) async {
-        isScanning = true
-        errorMessage = nil
-        
-        do {
-            let response = try await securityService.scanTransaction(request)
-            self.scanResponse = response
-            
-
-            
-        } catch {
-            self.errorMessage = error.localizedDescription
-            self.showAlert = true
-
-        }
-        
-        isScanning = false
+//        isScanning = true
+//        errorMessage = nil
+//        
+//        do {
+//            let response = try await securityService.scanTransaction(request)
+//            self.scanResponse = response
+//            
+//
+//            
+//        } catch {
+//            self.errorMessage = error.localizedDescription
+//            self.showAlert = true
+//
+//        }
+//        
+//        isScanning = false
     }
     
     /// Reset the scan state
@@ -178,97 +178,8 @@ class SecurityScanViewModel: ObservableObject {
     
     /// Check if security scanning is available for a chain
     func isScanningAvailable(for chain: Chain) -> Bool {
-        return securityService.isSecurityScanningAvailable(for: chain)
-    }
-    
-    /// Scan a token for security risks
-    func scanToken(address: String, chain: Chain) async {
-        guard securityService.isEnabled else { return }
-        
-        isScanning = true
-        errorMessage = nil
-        showAlert = false
-        
-        do {
-            let response = try await securityService.scanToken(address, for: chain)
-            self.scanResponse = response
-            
-
-            
-        } catch {
-            self.errorMessage = "Failed to scan token: \(error.localizedDescription)"
-            self.showAlert = true
-
-        }
-        
-        isScanning = false
-    }
-    
-    /// Validate an address for security risks
-    func validateAddress(_ address: String, chain: Chain) async {
-        guard securityService.isEnabled else { return }
-        
-        isScanning = true
-        errorMessage = nil
-        showAlert = false
-        
-        do {
-            let response = try await securityService.validateAddress(address, for: chain)
-            self.scanResponse = response
-            
-
-            
-        } catch {
-            self.errorMessage = "Failed to validate address: \(error.localizedDescription)"
-            self.showAlert = true
-
-        }
-        
-        isScanning = false
-    }
-    
-    // MARK: - Utility Methods
-    
-    /// Get a user-friendly summary of the scan results
-    func getScanSummary() -> String {
-        guard let response = scanResponse else {
-            return "No scan results available"
-        }
-        
-        if response.isSecure {
-            return "Transaction verified by \(response.provider). No security issues detected."
-        } else {
-            let warningCount = response.warnings.count
-            let riskLevel = response.riskLevel.displayName
-            return "Security scan detected \(warningCount) warning\(warningCount == 1 ? "" : "s") with \(riskLevel) risk level."
-        }
-    }
-    
-    /// Get warnings grouped by severity
-    func getWarningsGroupedBySeverity() -> [SecuritySeverity: [SecurityWarning]] {
-        guard let response = scanResponse else { return [:] }
-        
-        return Dictionary(grouping: response.warnings) { $0.severity }
-    }
-    
-    /// Get the highest severity warning
-    func getHighestSeverityWarning() -> SecurityWarning? {
-        guard let response = scanResponse else { return nil }
-        
-        return response.warnings.max { warning1, warning2 in
-            let severity1 = getSeverityPriority(warning1.severity)
-            let severity2 = getSeverityPriority(warning2.severity)
-            return severity1 < severity2
-        }
-    }
-    
-    private func getSeverityPriority(_ severity: SecuritySeverity) -> Int {
-        switch severity {
-        case .info: return 1
-        case .warning: return 2
-        case .error: return 3
-        case .critical: return 4
-        }
+        fatalError()
+//        return securityService.isSecurityScanningAvailable(for: chain)
     }
 }
 

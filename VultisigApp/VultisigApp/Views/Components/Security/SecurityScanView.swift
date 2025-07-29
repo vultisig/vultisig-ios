@@ -75,10 +75,10 @@ struct SecurityScanView: View {
     
     private var mainContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(viewModel.getScanSummary())
-                .foregroundColor(.neutral0)
-                .font(.body12MontserratSemiBold)
-                .multilineTextAlignment(.leading)
+//            Text(viewModel.getScanSummary())
+//                .foregroundColor(.neutral0)
+//                .font(.body12MontserratSemiBold)
+//                .multilineTextAlignment(.leading)
             
             if !viewModel.isScanning {
                 providerLabel
@@ -175,7 +175,7 @@ struct SecurityRiskBadge: View {
     let riskLevel: SecurityRiskLevel
     
     var body: some View {
-        Text(riskLevel.displayName.uppercased())
+        Text("riskLevel.displayName.uppercased()")
             .font(.body10MontserratSemiBold)
             .foregroundColor(.white)
             .padding(.horizontal, 8)
