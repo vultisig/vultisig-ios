@@ -21,7 +21,7 @@ struct WasmExecuteContractPayload: Codable, Hashable {
     }
     
     init?(proto: VSWasmExecuteContractPayload) throws {
-        guard proto.senderAddress.isNotEmpty else {
+        guard proto.senderAddress.isNotEmpty, proto.contractAddress.isNotEmpty else {
             return nil
         }
         self.senderAddress = proto.senderAddress
