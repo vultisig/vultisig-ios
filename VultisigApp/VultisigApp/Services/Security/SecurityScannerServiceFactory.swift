@@ -6,7 +6,7 @@
 //
 
 enum SecurityScannerServiceFactory {
-    func buildSecurityScannerService() -> SecurityScannerService {
+    static func buildSecurityScannerService() -> SecurityScannerService {
         SecurityScannerService(
             providers: [
                 BlockaidScannerService(blockaidRpcClient: BlockaidRpcClient(httpClient: HTTPClient()))

@@ -51,7 +51,7 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         return try await firstProvider.scanTransaction(transaction)
     }
     
-    func isSecurityServiceEnabled() async throws -> Bool {
+    func isSecurityServiceEnabled() -> Bool {
         return settingsService.isEnabled
     }
     

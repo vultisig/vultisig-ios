@@ -12,6 +12,12 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     let contentPadding: CGFloat
     let contentFooter: () -> ContentFooter
     
+    init(input: SendCryptoVerifySummary, contentPadding: CGFloat = 0) where ContentFooter == EmptyView {
+        self.input = input
+        self.contentPadding = contentPadding
+        self.contentFooter = { EmptyView() }
+    }
+    
     init(input: SendCryptoVerifySummary, contentPadding: CGFloat = 0, @ViewBuilder contentFooter: @escaping () -> ContentFooter) {
         self.input = input
         self.contentPadding = contentPadding

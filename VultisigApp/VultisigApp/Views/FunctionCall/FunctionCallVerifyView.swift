@@ -80,7 +80,7 @@ struct FunctionCallVerifyView: View {
                 coinTicker: tx.coin.ticker,
                 showScannedBy: false
             )
-        ) {}
+        )
         .padding(.horizontal, 16)
     }
     

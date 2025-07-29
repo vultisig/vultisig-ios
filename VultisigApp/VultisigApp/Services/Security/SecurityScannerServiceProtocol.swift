@@ -17,7 +17,7 @@ protocol SecurityScannerServiceProtocol {
     
     /// Check if security scanning service is enabled
     /// - Returns: true if service is enabled, false otherwise
-    func isSecurityServiceEnabled() async throws -> Bool
+    func isSecurityServiceEnabled() -> Bool
     
     /// Create SecurityScannerTransaction from a regular transaction
     /// - Parameter transaction: The transaction to convert

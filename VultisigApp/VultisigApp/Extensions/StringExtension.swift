@@ -210,3 +210,9 @@ extension String {
         return "0x1111111111111111111111111111111111111111"
     }
 }
+
+extension String {
+    var localized: String {
+        NSLocalizedString(self, comment: "")
+    }
+}

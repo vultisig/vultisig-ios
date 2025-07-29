@@ -18,7 +18,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
-    @Published var securityScanViewModel = SecurityScanViewModel()
+    @Published var securityScanViewModel = SecurityScannerViewModel()
     @Published var showSecurityScan = false
     
     @Published var utxo = BlockchairService.shared

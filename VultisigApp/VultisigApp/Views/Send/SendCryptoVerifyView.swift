@@ -79,8 +79,9 @@ struct SendCryptoVerifyView: View {
             contentPadding: 16
         ) {
             checkboxes
-            SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
-                .showIf(sendCryptoVerifyViewModel.showSecurityScan)
+            // TODO: - Add bottom sheet
+//            SecurityScannerBottomSheet(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
+//                .showIf(sendCryptoVerifyViewModel.showSecurityScan)
         }
     }
     var checkboxes: some View {
