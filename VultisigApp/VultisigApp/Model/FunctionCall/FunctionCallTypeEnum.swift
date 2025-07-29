@@ -74,11 +74,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             }
             return [.bond, .unbond, .leave, .merge, .unmerge, .custom]
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            // Add THORChain LP function for supported L1 assets
-            if coin.isNativeToken {
-                return [.addThorLP]
-            }
-            return []
+            return [.addThorLP]
         case .mayaChain:
             return [.bondMaya, .unbondMaya, .leave, .custom, .addPool, .removePool]
         case .dydx:
@@ -116,10 +112,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .kujira:
             return .cosmosIBC
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            if coin.isNativeToken {
-                return .addThorLP
-            }
-            return .custom
+            return .addThorLP
         default:
             return .custom
         }

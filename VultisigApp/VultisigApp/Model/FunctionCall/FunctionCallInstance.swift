@@ -299,10 +299,7 @@ enum FunctionCallInstance {
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            if coin.isNativeToken {
-                return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
-            }
-            return .custom(FunctionCallCustom())
+            return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         default:
             return .custom(FunctionCallCustom())
         }
