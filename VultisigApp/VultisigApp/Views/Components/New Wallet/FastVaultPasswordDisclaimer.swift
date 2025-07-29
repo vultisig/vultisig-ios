@@ -102,6 +102,10 @@ struct FastVaultPasswordDisclaimer: View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
             .foregroundColor(.extraLightGray)
             .font(.body14MontserratMedium)
+            .multilineTextAlignment(.leading)
+            .lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity,alignment: .leading)
     }
 }
 

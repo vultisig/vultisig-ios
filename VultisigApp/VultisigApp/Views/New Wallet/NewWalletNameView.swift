@@ -135,7 +135,9 @@ struct NewWalletNameView: View {
     }
     
     private func resetPlaceholderName() {
+        isNameFocused = false
         name = ""
+        isNameFocused = true
     }
 }
 
