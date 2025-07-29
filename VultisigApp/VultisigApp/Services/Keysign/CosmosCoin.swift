@@ -11,7 +11,7 @@ struct CosmosCoin: Codable, Hashable {
     let amount: String
     let denom: String
     
-    init?(proto: VSCosmosCoin) {
+    init(proto: VSCosmosCoin) {
         self.amount = proto.amount
         self.denom = proto.denom
     }
