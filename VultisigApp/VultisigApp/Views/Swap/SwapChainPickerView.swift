@@ -85,7 +85,7 @@ struct SwapChainPickerView: View {
                 searchBar
                 
                 if filteredChains.count > 0 {
-                    networkTitle
+                    listHeader
                     list
                 } else {
                     emptyMessage
@@ -97,11 +97,19 @@ struct SwapChainPickerView: View {
         }
     }
     
-    var networkTitle: some View {
-        Text(NSLocalizedString("network", comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    var listHeader: some View {
+        HStack {
+            Text(NSLocalizedString("chain", comment: ""))
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer()
+            Text(NSLocalizedString("balance", comment: ""))
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(.horizontal, 24)
     }
     
     var list: some View {
