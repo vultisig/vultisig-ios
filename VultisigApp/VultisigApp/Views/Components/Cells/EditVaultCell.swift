@@ -11,7 +11,22 @@ struct EditVaultCell: View {
     let title: String
     let description: String
     let icon: String
+    let assetIcon: String?
     var isDestructive: Bool = false
+    
+    init(
+        title: String,
+        description: String,
+        icon: String = "",
+        assetIcon: String? = nil,
+        isDestructive: Bool = false
+    ) {
+        self.title = title
+        self.description = description
+        self.icon = icon
+        self.assetIcon = assetIcon
+        self.isDestructive = isDestructive
+    }
     
     var body: some View {
         HStack(spacing: 15) {
@@ -29,10 +44,18 @@ struct EditVaultCell: View {
     }
     
     var image: some View {
-        Image(systemName: icon)
+        iconImage
             .font(.body24MontserratMedium)
             .foregroundColor(isDestructive ? .destructive : .neutral200)
             .frame(width: 30)
+    }
+    
+    var iconImage: some View {
+        if let assetIcon {
+            Image(assetIcon)
+        } else {
+            Image(systemName: icon)
+        }
     }
     
     var content: some View {

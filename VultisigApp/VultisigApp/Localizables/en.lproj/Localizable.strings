@@ -756,3 +756,10 @@
 "securityScannerTransactionScannedBy" = "Transaction scanned by";
 "securityScannerTransactionScanning" = "Scanning…";
 "securityScannerTransactionNotScanned" = "Transaction not scanned by";
+"vaultSettingsSecurityTitle" = "On-chain Security";
+"vaultSettingsSecuritySubtitle" = "Manage your on-chain security";
+"vaultSettingsSecurityScreenTitle" = "Security";
+"vaultSettingsSecurityScreenTitleBottomsheet" = "On-chain security disabled";
+"vaultSettingsSecurityScreenContentBottomsheet" = "Disabling on-chain security means Blockaid can\'t verify transactions. You\'ll be less protected";
+"vaultSettingsSecurityScreenTitleSwitch" = "Manage your on-chain security";
+"vaultSettingsSecurityScreenTitleContent" = "You can disable your realtime on-chain security";

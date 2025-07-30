@@ -38,6 +38,7 @@ extension EditVaultView {
                 }
                 
                 customMessage
+                onChainSecurityCell
                 deleteVault
             }
         }

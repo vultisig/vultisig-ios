@@ -79,6 +79,24 @@ struct SecurityScannerBottomSheetContent: View {
     }
 }
 
+struct SettingsSecurityScannerBottomSheet: View, BottomSheetProperties {
+    let onDismissRequest: () -> Void
+    let onContinueAnyway: () -> Void
+    var body: some View {
+        SecurityScannerBottomSheetContent(
+            contentStyle: SecurityScannerBottomSheetStyle(
+                title: "vaultSettingsSecurityScreenTitleBottomsheet".localized,
+                description: "vaultSettingsSecurityScreenContentBottomsheet".localized,
+                image: "exclamationmark.circle",
+                imageColor: Color.alertYellow
+            ),
+            securityScannerProvider: nil,
+            onDismissRequest: onDismissRequest,
+            onContinueAnyway: onContinueAnyway
+        )
+    }
+}
+
 private extension SecurityScannerResult {
     func getSecurityScannerBottomSheetStyle() -> SecurityScannerBottomSheetStyle {
         let title: String

@@ -126,6 +126,14 @@ struct EditVaultView: View {
             }
     }
     
+    var onChainSecurityCell: some View {
+        NavigationLink {
+            OnChainSecurityScreen()
+        } label: {
+            EditVaultCell(title: "vaultSettingsSecurityTitle", description: "vaultSettingsSecuritySubtitle", assetIcon: "folder-lock")
+        }
+    }
+    
     private func setData() {
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)

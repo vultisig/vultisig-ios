@@ -52,16 +52,15 @@ class SecurityScannerViewModel: ObservableObject {
     }
     
     private func scan(transactionType: SecurityScannerTransactionType) async {
-        await update(state: .scanning)
         do {
             let tx: SecurityScannerTransaction
-            
             switch transactionType {
             case .swap(let swapTransaction):
                 tx = try await service.createSecurityScannerTransaction(transaction: swapTransaction)
             case .send(let sendTransaction, let vault):
                 tx = try await service.createSecurityScannerTransaction(transaction: sendTransaction, vault: vault)
             }
+            await update(state: .scanning)
             
             let result = try await service.scanTransaction(tx)
             await update(state: .scanned(result))
