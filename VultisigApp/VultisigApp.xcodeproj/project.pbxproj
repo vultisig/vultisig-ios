@@ -30,8 +30,6 @@
 		137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */; };
 		137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */; };
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
-		137B2C802E3A4B990074F648 /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7F2E3A4B950074F648 /* CornerRadius.swift */; };
-		137B2C842E3A4BC20074F648 /* RoundedCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C832E3A4BBE0074F648 /* RoundedCorner.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -770,9 +768,6 @@
 		A6SEC0012E1234567890AB01 /* SecurityScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */; };
 		A6SEC0072E1234567890AB01 /* BlockaidScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */; };
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
-		A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */; };
-		A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */; };
-		A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */; };
 		B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F46742DA9A308007B16DE /* Chain+ibc.swift */; };
@@ -1019,8 +1014,6 @@
 		137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetModifier.swift; sourceTree = "<group>"; };
 		137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerHeightPreferenceKey.swift; sourceTree = "<group>"; };
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
-		137B2C7F2E3A4B950074F648 /* CornerRadius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
-		137B2C832E3A4BBE0074F648 /* RoundedCorner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedCorner.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -1758,9 +1751,6 @@
 		A6SEC0012E1234567890AB02 /* SecurityScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerService.swift; sourceTree = "<group>"; };
 		A6SEC0072E1234567890AB02 /* BlockaidScannerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidScannerService.swift; sourceTree = "<group>"; };
 		A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerBottomSheet.swift; sourceTree = "<group>"; };
-		A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceTests.swift; sourceTree = "<group>"; };
-		A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceAPIResponseTests.swift; sourceTree = "<group>"; };
-		A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SecurityServiceChainCoverageTests.swift; sourceTree = "<group>"; };
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
@@ -2136,7 +2126,6 @@
 		1334C73D2E30079000CBAA3E /* ViewModifiers */ = {
 			isa = PBXGroup;
 			children = (
-				137B2C7F2E3A4B950074F648 /* CornerRadius.swift */,
 				1334C73E2E30079F00CBAA3E /* OnLoad.swift */,
 			);
 			path = ViewModifiers;
@@ -2196,14 +2185,6 @@
 			children = (
 			);
 			path = "New Group";
-			sourceTree = "<group>";
-		};
-		137B2C822E3A4BBB0074F648 /* Shapes */ = {
-			isa = PBXGroup;
-			children = (
-				137B2C832E3A4BBE0074F648 /* RoundedCorner.swift */,
-			);
-			path = Shapes;
 			sourceTree = "<group>";
 		};
 		138574122E2DA91E002532BF /* PrimaryButton */ = {
@@ -3725,7 +3706,6 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				137B2C822E3A4BBB0074F648 /* Shapes */,
 				137B2C7E2E3A4B870074F648 /* New Group */,
 				137B2C792E3A4A970074F648 /* PreferenceKeys */,
 				13095A342E3264E1009F8785 /* Utils */,
@@ -4037,9 +4017,6 @@
 				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* VultisigAppTests.swift */,
-				A6SEC9912E1234567890AB02 /* Services/SecurityServiceTests.swift */,
-				A6SEC9922E1234567890AB02 /* Services/SecurityServiceAPIResponseTests.swift */,
-				A6SEC9932E1234567890AB02 /* Services/SecurityServiceChainCoverageTests.swift */,
 				927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */,
 			);
 			path = VultisigAppTests;
@@ -4581,7 +4558,6 @@
 				A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
 				1390D8C42E394271003F3E20 /* BlockaidScannerServiceProtocol.swift in Sources */,
-				137B2C842E3A4BC20074F648 /* RoundedCorner.swift in Sources */,
 				1390D8BC2E39397E003F3E20 /* BlockaidExtensions.swift in Sources */,
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
 				DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */,
@@ -4757,7 +4733,6 @@
 				A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */,
 				A6A816402CBCB018009EE114 /* FileQRCodeImporterMac+macOS.swift in Sources */,
 				A6ECA1862C93F37200456110 /* NavigationQRShareButton+macOS.swift in Sources */,
-				137B2C802E3A4B990074F648 /* CornerRadius.swift in Sources */,
 				B52243432D239BC2003C734A /* akash.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				A6C670D32C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift in Sources */,
@@ -5239,10 +5214,7 @@
 				DE214FF82E30B3EE00CEEA71 /* KeysignPayloadCodable.swift in Sources */,
 				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
-				A6SEC9912E1234567890AB01 /* Services/SecurityServiceTests.swift in Sources */,
 				DE214FF62E308EEE00CEEA71 /* ChainHelperTests.swift in Sources */,
-				A6SEC9922E1234567890AB01 /* Services/SecurityServiceAPIResponseTests.swift in Sources */,
-				A6SEC9932E1234567890AB01 /* Services/SecurityServiceChainCoverageTests.swift in Sources */,
 				927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

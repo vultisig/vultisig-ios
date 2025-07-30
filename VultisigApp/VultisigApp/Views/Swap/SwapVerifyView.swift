@@ -32,7 +32,12 @@ struct SwapVerifyView: View {
         .onDisappear {
             swapViewModel.isLoading = false
         }
-        .onLoad(perform: verifyViewModel.onLoad)
+        .onLoad {
+            verifyViewModel.onLoad()
+            Task {
+                await verifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
         .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
                 verifyViewModel.showSecurityScannerSheet = false
@@ -40,9 +45,6 @@ struct SwapVerifyView: View {
             } onDismissRequest: {
                 verifyViewModel.showSecurityScannerSheet = false
             }
-        }
-        .task {
-            await verifyViewModel.scan(transaction: tx, vault: vault)
         }
     }
 

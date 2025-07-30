@@ -19,8 +19,7 @@ enum EthereumFunction {
         let encodedFunction = EthereumAbiFunction(name: "transfer")
         encodedFunction.addParamAddress(val: destinationAddress!.data, isOutput: false)
         encodedFunction.addParamUInt256(val: amountOut, isOutput: false)
-        // TODO: - Check if it adds 0x
-        return EthereumAbi.encode(fn: encodedFunction).toHexString()
+        return EthereumAbi.encode(fn: encodedFunction).toHexString().add0x
     }
 
     static func approvalErc20Encoder(address: String, amount: BigInt) throws -> String {
@@ -33,7 +32,6 @@ enum EthereumFunction {
         let encodedFunction = EthereumAbiFunction(name: "approve")
         encodedFunction.addParamAddress(val: destinationAddress!.data, isOutput: false)
         encodedFunction.addParamUInt256(val: amountOut, isOutput: false)
-        
-        return EthereumAbi.encode(fn: encodedFunction).toHexString()
+        return EthereumAbi.encode(fn: encodedFunction).toHexString().add0x
     }
 }

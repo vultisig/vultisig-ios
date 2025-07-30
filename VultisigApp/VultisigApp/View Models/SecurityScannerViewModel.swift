@@ -44,30 +44,33 @@ class SecurityScannerViewModel: ObservableObject {
     }
     
     func scan(transaction: SendTransaction, vault: Vault) async {
-        await update(state: .scanning)
-        do {
-            let tx = try await service.createSecurityScannerTransaction(transaction: transaction, vault: vault)
-            let result = try await service.scanTransaction(tx)
-            await update(state: .scanned(result))
-        } catch {
-            guard case let SecurityscannerError.notScanned(provider) = error else {
-                return
-            }
-            await update(state: .notScanned(provider: provider))
-        }
+        await scan(transactionType: .send(transaction, vault))
     }
     
     func scan(transaction: SwapTransaction, vault: Vault) async {
+        await scan(transactionType: .swap(transaction))
+    }
+    
+    private func scan(transactionType: SecurityScannerTransactionType) async {
         await update(state: .scanning)
         do {
-            let tx = try await service.createSecurityScannerTransaction(transaction: transaction)
+            let tx: SecurityScannerTransaction
+            
+            switch transactionType {
+            case .swap(let swapTransaction):
+                tx = try await service.createSecurityScannerTransaction(transaction: swapTransaction)
+            case .send(let sendTransaction, let vault):
+                tx = try await service.createSecurityScannerTransaction(transaction: sendTransaction, vault: vault)
+            }
+            
             let result = try await service.scanTransaction(tx)
             await update(state: .scanned(result))
         } catch {
-            guard case let SecurityscannerError.notScanned(provider) = error else {
-                return
+            if case let SecurityscannerError.notScanned(provider) = error {
+                await update(state: .notScanned(provider: provider))
+            } else {
+                await update(state: .idle)
             }
-            await update(state: .notScanned(provider: provider))
         }
     }
     
@@ -77,5 +80,10 @@ class SecurityScannerViewModel: ObservableObject {
     
     private func update(state: SecurityScannerState) async {
         await MainActor.run { self.state = state }
+    }
+    
+    private enum SecurityScannerTransactionType {
+        case swap(SwapTransaction)
+        case send(SendTransaction, Vault)
     }
 }

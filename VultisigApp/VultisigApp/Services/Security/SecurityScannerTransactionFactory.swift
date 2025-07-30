@@ -51,14 +51,14 @@ private extension SecurityScannerTransactionFactory {
         let to: String
         
         if (!transaction.coin.isNativeToken) {
-            let tokenAmount = BigInt(transaction.amount) ?? .zero
+            let tokenAmount = transaction.amountInRaw
             transferType = SecurityTransactionType.tokenTransfer
             amount = BigInt.zero
             data = try EthereumFunction.transferErc20Encoder(address: transaction.toAddress, amount: tokenAmount)
             to = transaction.coin.contractAddress
         } else {
             transferType = SecurityTransactionType.coinTransfer
-            amount = BigInt(transaction.amount) ?? .zero
+            amount = transaction.amountInRaw
             data = "0x"
             to = transaction.toAddress
         }
@@ -66,7 +66,7 @@ private extension SecurityScannerTransactionFactory {
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
             type: transferType,
-            from: transaction.toAddress,
+            from: transaction.fromAddress,
             to: to,
             amount: amount,
             data: data
@@ -91,7 +91,6 @@ private extension SecurityScannerTransactionFactory {
             blockchainSpecific = BlockChainSpecific.Solana(
                 recentBlockHash: recentBlockHash,
                 priorityFee: priorityFee,
-                // TODO: - Check
                 fromAddressPubKey: fromAddressPubKey,
                 toAddressPubKey: toAddressPubKey,
                 hasProgramId: hasProgramId
@@ -101,7 +100,7 @@ private extension SecurityScannerTransactionFactory {
         let keysignPayload = KeysignPayload(
             coin: transaction.coin,
             toAddress: transaction.toAddress,
-            toAmount: BigInt(transaction.amount) ?? .zero,
+            toAmount: transaction.amountInRaw,
             chainSpecific: blockchainSpecific,
             utxos: [],
             memo: transaction.memo,

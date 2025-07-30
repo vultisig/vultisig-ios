@@ -72,7 +72,7 @@ private extension BottomSheetModifier {
                 $0.interactiveDismissDisabled()
             }
             .onPreferenceChange(InnerHeightPreferenceKey.self) { newHeight in
-                if sizedSheetHeight == 0, newHeight > 0, newHeight < UIScreen.main.bounds.height {
+                if sizedSheetHeight == 0, newHeight > 0 {
                     sizedSheetHeight = newHeight
                 }
             }

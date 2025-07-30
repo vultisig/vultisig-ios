@@ -27,7 +27,6 @@ struct BottomSheetContainer<Content: View>: View {
             content
         }
         .background(Color.blue600)
-        .cornerRadius(20, corners: [.topLeft, .topRight])
         .padding(.top, 8)
         .padding(.horizontal, 16)
     }

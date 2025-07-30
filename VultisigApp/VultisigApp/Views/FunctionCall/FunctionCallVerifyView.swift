@@ -32,7 +32,12 @@ struct FunctionCallVerifyView: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
         }
-        .onLoad(perform: depositVerifyViewModel.onLoad)
+        .onLoad {
+            depositVerifyViewModel.onLoad()
+            Task {
+                await depositVerifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
         .bottomSheet(isPresented: $depositVerifyViewModel.showSecurityScannerSheet) {
             SecurityScannerBottomSheet(securityScannerModel: depositVerifyViewModel.securityScannerState.result) {
                 depositVerifyViewModel.showSecurityScannerSheet = false
@@ -40,9 +45,6 @@ struct FunctionCallVerifyView: View {
             } onDismissRequest: {
                 depositVerifyViewModel.showSecurityScannerSheet = false
             }
-        }
-        .task {
-            await depositVerifyViewModel.scan(transaction: tx, vault: vault)
         }
     }
     

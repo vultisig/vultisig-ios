@@ -30,15 +30,17 @@ struct SendCryptoVerifyView: View {
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
-        .onLoad(perform: sendCryptoVerifyViewModel.onLoad)
+        .onLoad {
+            sendCryptoVerifyViewModel.onLoad()
+            Task {
+                await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
             setData()
-        }
-        .task {
-            await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
         }
     }
     

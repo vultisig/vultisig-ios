@@ -29,6 +29,10 @@ extension String {
         return self
     }
     
+    var add0x: String {
+        "0x" + self
+    }
+    
     var isZero: Bool {
         return self == .zero
     }
