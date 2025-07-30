@@ -30,8 +30,7 @@ struct SwapChainCell: View {
     var label: some View {
         VStack(spacing: 0) {
             content
-            Separator()
-                .opacity(0.2)
+            GradientListSeparator()
         }
         .background(isSelected ? Color.blue400 : Color.blue600)
     }
@@ -41,12 +40,7 @@ struct SwapChainCell: View {
             icon
             title
             Spacer()
-            
-            if isSelected {
-                check
-            } else {
-                balanceInfo
-            }
+            balanceInfo
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
@@ -62,16 +56,6 @@ struct SwapChainCell: View {
         Text(chain.name)
             .font(.body14BrockmannMedium)
             .foregroundColor(.neutral0)
-    }
-    
-    var check: some View {
-        Image(systemName: "checkmark")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.alertTurquoise)
-            .frame(width: 24, height: 24)
-            .background(Color.blue600)
-            .cornerRadius(32)
-            .bold()
     }
     
     var balanceInfo: some View {
