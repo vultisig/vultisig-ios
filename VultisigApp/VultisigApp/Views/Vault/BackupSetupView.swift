@@ -15,13 +15,8 @@ struct BackupSetupView: View {
 
     @State var navigationLinkActive = false
 
-    @State var showSkipShareSheet = false
-    @State var showSaveShareSheet = false
-
     @State var animation: RiveViewModel?
-
-    @Environment(\.dismiss) var dismiss
-    
+   
     var body: some View {
         mainContent
             .navigationDestination(isPresented: $navigationLinkActive) {
