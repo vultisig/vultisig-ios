@@ -212,7 +212,7 @@ private extension SecurityScannerTransactionFactory {
         to: String,
         amount: String,
         data: String,
-        isApprovalRequired: Bool,
+        isApprovalRequired: Bool
     ) throws -> SecurityScannerTransaction {
         let chain = srcToken.chain
         
