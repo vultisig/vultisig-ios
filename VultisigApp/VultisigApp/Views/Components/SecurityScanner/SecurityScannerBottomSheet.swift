@@ -74,6 +74,7 @@ struct SecurityScannerBottomSheetContent: View {
                 .foregroundStyle(Color.textDisabled)
                 .font(.body10BrockmannMedium)
                 .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
             }
         }
     }

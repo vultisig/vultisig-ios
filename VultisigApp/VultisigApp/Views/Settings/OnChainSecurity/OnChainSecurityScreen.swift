@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct OnChainSecurityScreen: View {
+    let title = "vaultSettingsSecurityTitle".localized
     let service = SecurityScannerSettingsService()
     
     @State var securityScannerEnabled: Bool = false
     @State var showSecurityScannerSheet: Bool = false
     
     var body: some View {
-        Screen {
+        Screen(title: title) {
             ScrollView {
                 securityScannerCell
             }
             .frame(maxWidth: .infinity)
         }
-        .navigationTitle("vaultSettingsSecurityTitle".localized)
         .onLoad {
             securityScannerEnabled = service.isEnabled
         }
@@ -46,6 +46,7 @@ struct OnChainSecurityScreen: View {
                 .labelsHidden()
                 .scaleEffect(0.8)
                 .tint(.persianBlue200)
+                .toggleStyle(.switch)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
