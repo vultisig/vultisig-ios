@@ -47,7 +47,9 @@ private struct ShareSheetViewController: UIViewControllerRepresentable {
             if let error = error {
                 print("Error sharing: \(error.localizedDescription)")
             }
-            isPresented = false
+            DispatchQueue.main.async {
+                isPresented = false
+            }
             // Added delay on completion execution to wait for sheet dismissal for smoother experience
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 context.coordinator.completion?(completed)
