@@ -31,7 +31,7 @@ private struct ShareSheetViewController: UIViewControllerRepresentable {
     
     class Coordinator: NSObject {
         // Weak reference to prevent retain cycles
-        weak var activityViewController: UIActivityViewController?
+        var activityViewController: UIActivityViewController?
         var completion: ((Bool) -> Void)?
         var hasCompleted: Bool = false
         
