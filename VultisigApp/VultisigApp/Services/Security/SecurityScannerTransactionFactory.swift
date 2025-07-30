@@ -118,7 +118,7 @@ private extension SecurityScannerTransactionFactory {
             from: transaction.fromAddress,
             to: transaction.toAddress,
             amount: BigInt.zero, // encoded in tx
-            data: transactionZeroX,
+            data: transactionZeroX
         )
     }
     
@@ -131,7 +131,7 @@ private extension SecurityScannerTransactionFactory {
         let coins = !specificCoins.isEmpty ? specificCoins : try await SuiService.shared.getAllCoins(coin: transaction.coin)
         specific = BlockChainSpecific.Sui(
             referenceGasPrice: referenceGasPrice,
-            coins: coins,
+            coins: coins
         )
         
         let keySignPayload = try await KeysignPayloadFactory().buildTransfer(
@@ -150,7 +150,7 @@ private extension SecurityScannerTransactionFactory {
             from: transaction.fromAddress,
             to: transaction.toAddress,
             amount: BigInt.zero,
-            data: serializedTransaction,
+            data: serializedTransaction
         )
     }
     
@@ -173,7 +173,7 @@ private extension SecurityScannerTransactionFactory {
             from: transaction.fromAddress,
             to: transaction.toAddress,
             amount: BigInt.zero,
-            data: preHash[0],
+            data: preHash[0]
         )
     }
 }
@@ -223,7 +223,7 @@ private extension SecurityScannerTransactionFactory {
                 from: from,
                 to: srcToken.contractAddress,
                 amount: BigInt.zero,
-                data: try EthereumFunction.approvalErc20Encoder(address: to, amount: BigInt(amount) ?? .zero),
+                data: try EthereumFunction.approvalErc20Encoder(address: to, amount: BigInt(amount) ?? .zero)
             )
         } else {
             return SecurityScannerTransaction(
@@ -232,7 +232,7 @@ private extension SecurityScannerTransactionFactory {
                 from: from,
                 to: to,
                 amount: BigInt(amount) ?? .zero,
-                data: data,
+                data: data
             )
         }
     }
