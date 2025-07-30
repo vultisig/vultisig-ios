@@ -25,18 +25,18 @@ extension SendCryptoVerifyView {
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
                     fastPasswordPresented = true
                 } longPressAction: {
-                    signPressed()
+                    onSignPress()
                 }
                 .sheet(isPresented: $fastPasswordPresented) {
                     FastVaultEnterPasswordView(
                         password: $tx.fastVaultPassword,
                         vault: vault,
-                        onSubmit: { signPressed() }
+                        onSubmit: { onSignPress() }
                     )
                 }
             } else {
                 PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    signPressed()
+                    onSignPress()
                 }
             }
         }

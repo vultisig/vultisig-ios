@@ -27,7 +27,8 @@ struct KeysignMessageConfirmView: View {
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,
                         amount: viewModel.keysignPayload?.toAmountString ?? .empty,
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty
-                    )
+                    ),
+                    securityScannerState: .constant(.idle)
                 )
                 
                 PrimaryButton(title: "joinTransactionSigning") {

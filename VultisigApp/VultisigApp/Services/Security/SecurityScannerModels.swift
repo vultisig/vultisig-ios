@@ -32,7 +32,7 @@ struct SecurityScannerTransaction {
     }
 }
 
-struct SecurityScannerMetadata {
+struct SecurityScannerMetadata: Equatable {
     let requestId: String
     let classification: String
     let resultType: String
@@ -56,7 +56,7 @@ enum SecurityTransactionType: String {
     case smartContract = "SMART_CONTRACT"
 }
 
-struct SecurityScannerResult {
+struct SecurityScannerResult: Equatable {
     let provider: String
     let isSecure: Bool
     let riskLevel: SecurityRiskLevel
@@ -66,14 +66,14 @@ struct SecurityScannerResult {
     let metadata: SecurityScannerMetadata
 }
 
-struct SecurityWarning {
+struct SecurityWarning: Equatable {
     let type: SecurityRiskLevel
     let severity: String
     let message: String
     let details: String?
 }
 
-enum SecurityRiskLevel: String {
+enum SecurityRiskLevel: String, Equatable {
     case none = "NONE"
     case low = "LOW"
     case medium = "MEDIUM"

@@ -31,7 +31,7 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
         case .sui:
             return try await scanSuiTransaction(transaction)
         default:
-            throw SecurityScannerError.scannerError("Chain \(chain) is not supported", payload: nil)
+            throw BlockaidScannerError.scannerError("Chain \(chain) is not supported", payload: nil)
         }
     }
     

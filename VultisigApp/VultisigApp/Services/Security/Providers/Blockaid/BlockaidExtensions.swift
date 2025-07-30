@@ -10,7 +10,7 @@ import OSLog
 
 // MARK: - SecurityScannerError
 
-enum SecurityScannerError: Error, LocalizedError {
+enum BlockaidScannerError: Error, LocalizedError {
     case scannerError(String, payload: String?)
     case invalidResponse(String, payload: String?)
     
@@ -34,11 +34,11 @@ extension BlockaidTransactionScanResponseJson {
         // Check for errors first
         if status?.lowercased() == "error" || error != nil {
             let errorMessage = error ?? "Unknown error"
-            throw SecurityScannerError.scannerError(errorMessage, payload: "\(self)")
+            throw BlockaidScannerError.scannerError(errorMessage, payload: "\(self)")
         }
         
         guard let result = result else {
-            throw SecurityScannerError.invalidResponse("'result' is null", payload: "\(self)")
+            throw BlockaidScannerError.invalidResponse("'result' is null", payload: "\(self)")
         }
         
         let riskLevel = result.validation.toSolanaValidationRiskLevel()
@@ -129,7 +129,7 @@ private extension BlockaidTransactionScanResponseJson {
            resultType?.lowercased() == "error" ||
            globalStatus?.lowercased() == "error" {
             let errorMessage = validation?.error ?? "Scanning failed"
-            throw SecurityScannerError.scannerError(errorMessage, payload: "\(self)")
+            throw BlockaidScannerError.scannerError(errorMessage, payload: "\(self)")
         }
         
         // Check if benign

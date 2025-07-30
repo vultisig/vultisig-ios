@@ -8,6 +8,10 @@
 import Foundation
 import OSLog
 
+enum SecurityscannerError: Error {
+    case notScanned(providerName: String)
+}
+
 class SecurityScannerService: SecurityScannerServiceProtocol {
     
     private let providers: [BlockaidScannerServiceProtocol]
@@ -44,11 +48,15 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         guard let firstProvider = enabledProviders.first else {
             let errorMessage = "SecurityScanner: No enabled provider available for scanning \(transaction.chain) tx"
             logger.warning("\(errorMessage)")
-            throw SecurityScannerError.scannerError(errorMessage, payload: nil)
+            throw BlockaidScannerError.scannerError(errorMessage, payload: nil)
         }
         
         logger.info("🔍 Scanning \(transaction.chain.name) transaction with provider: \(firstProvider.getProviderName())")
-        return try await firstProvider.scanTransaction(transaction)
+        do {
+            return try await firstProvider.scanTransaction(transaction)
+        } catch {
+            throw SecurityscannerError.notScanned(providerName: firstProvider.getProviderName())
+        }
     }
     
     func isSecurityServiceEnabled() -> Bool {

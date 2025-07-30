@@ -32,6 +32,18 @@ struct SwapVerifyView: View {
         .onDisappear {
             swapViewModel.isLoading = false
         }
+        .onLoad(perform: verifyViewModel.onLoad)
+        .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
+            SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
+                verifyViewModel.showSecurityScannerSheet = false
+                signAndMoveToNextView()
+            } onDismissRequest: {
+                verifyViewModel.showSecurityScannerSheet = false
+            }
+        }
+        .task {
+            await verifyViewModel.scan(transaction: tx, vault: vault)
+        }
     }
 
     var view: some View {
@@ -50,53 +62,57 @@ struct SwapVerifyView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            summaryTitle
-            summaryFromToContent
+            SecurityScannerHeaderView(state: verifyViewModel.securityScannerState)
             
-            if let providerName = tx.quote?.displayName {
+            VStack(spacing: 16) {
+                summaryTitle
+                summaryFromToContent
+                
+                if let providerName = tx.quote?.displayName {
+                    separator
+                    getValueCell(
+                        for: "provider",
+                        with: providerName,
+                        showIcon: true
+                    )
+                }
+                
+                if swapViewModel.showGas(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "networkFee",
+                        with: swapViewModel.swapGasString(tx: tx),
+                        bracketValue: swapViewModel.approveFeeString(tx: tx)
+                    )
+                }
+                
+                if swapViewModel.showFees(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "swapFee",
+                        with: swapViewModel.swapGasString(tx: tx),
+                        bracketValue: swapViewModel.swapFeeString(tx: tx)
+                    )
+                }
+                
+                if swapViewModel.showTotalFees(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "maxTotalFee",
+                        with: swapViewModel.totalFeeString(tx: tx)
+                    )
+                }
+                
                 separator
                 getValueCell(
-                    for: "provider",
-                    with: providerName,
-                    showIcon: true
+                    for: "vault",
+                    with: vault.name
                 )
             }
-            
-            if swapViewModel.showGas(tx: tx) {
-                separator
-                getValueCell(
-                    for: "networkFee",
-                    with: swapViewModel.swapGasString(tx: tx),
-                    bracketValue: swapViewModel.approveFeeString(tx: tx)
-                )
-            }
-            
-            if swapViewModel.showFees(tx: tx) {
-                separator
-                getValueCell(
-                    for: "swapFee",
-                    with: swapViewModel.swapGasString(tx: tx),
-                    bracketValue: swapViewModel.swapFeeString(tx: tx)
-                )
-            }
-            
-            if swapViewModel.showTotalFees(tx: tx) {
-                separator
-                getValueCell(
-                    for: "maxTotalFee",
-                    with: swapViewModel.totalFeeString(tx: tx)
-                )
-            }
-            
-            separator
-            getValueCell(
-                for: "vault",
-                with: vault.name
-            )
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(10)
         }
-        .padding(16)
-        .background(Color.blue600)
-        .cornerRadius(10)
     }
     
     var summaryFromToContent: some View {
@@ -179,7 +195,7 @@ struct SwapVerifyView: View {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
                 vault: vault, 
-                onSubmit: { signPressed() }
+                onSubmit: { onSignPress() }
             )
         }
     }
@@ -197,7 +213,7 @@ struct SwapVerifyView: View {
                 title: tx.isFastVault ? "Paired sign" : "startTransaction",
                 type: tx.isFastVault ? .secondary : .primary
             ) {
-                signPressed()
+                onSignPress()
             }
             .disabled(isDisabled)
             .padding(.horizontal, 24)
@@ -205,7 +221,14 @@ struct SwapVerifyView: View {
         }
     }
 
-    func signPressed() {
+    private func onSignPress() {
+        let canSign = verifyViewModel.validateSecurityScanner()
+        if canSign {
+            signAndMoveToNextView()
+        }
+    }
+    
+    func signAndMoveToNextView() {
         Task {
             if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                 swapViewModel.moveToNextView()
