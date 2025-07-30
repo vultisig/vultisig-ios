@@ -23,7 +23,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
     
     let blockChainService = BlockChainService.shared
     
-    func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
+    func createKeysignPayload(tx: SendTransaction, vault: Vault, wasmExecuteContractPayload: WasmExecuteContractPayload?) async -> KeysignPayload? {
         
         var keysignPayload: KeysignPayload?
         
@@ -32,11 +32,15 @@ class FunctionCallVerifyViewModel: ObservableObject {
             
             let keysignPayloadFactory = KeysignPayloadFactory()
             
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
-                                                                           toAddress: tx.toAddress,
-                                                                           amount: tx.amountInRaw,
-                                                                           memo: tx.memo,
-                                                                           chainSpecific: chainSpecific, vault: vault)
+            keysignPayload = try await keysignPayloadFactory.buildTransfer(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                amount: tx.amountInRaw,
+                memo: tx.memo,
+                chainSpecific: chainSpecific,
+                vault: vault,
+                wasmExecuteContractPayload: wasmExecuteContractPayload
+            )
         } catch {
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:

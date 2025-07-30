@@ -118,7 +118,9 @@ struct FunctionCallVerifyView: View {
     
     private func handleSubmit() {
         Task {
-            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
+            
+            let wasmExecuteContractPayload = depositViewModel.buildWasmPayload(from: tx.memoFunctionDictionary, sender: tx.fromAddress)
+            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault, wasmExecuteContractPayload: wasmExecuteContractPayload)
             
             if keysignPayload != nil {
                 depositViewModel.moveToNextView()
