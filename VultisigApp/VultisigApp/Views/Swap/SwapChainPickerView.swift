@@ -157,12 +157,25 @@ struct SwapChainPickerView: View {
                 .foregroundColor(.extraLightGray)
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(.body16BrockmannMedium)
+                .foregroundColor(.extraLightGray)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
+            
+            if !searchText.isEmpty {
+                clearButton
+            }
+        }
+    }
+    
+    var clearButton: some View {
+        Button {
+            searchText = .empty
+        } label: {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundColor(.neutral500)
         }
     }
 }
