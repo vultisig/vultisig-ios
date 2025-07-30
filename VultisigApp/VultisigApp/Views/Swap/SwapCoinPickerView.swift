@@ -66,9 +66,8 @@ struct SwapCoinPickerView: View {
                     emptyMessage
                 }
                 
-                // Chain carousel at bottom
-                chainCarousel
-                
+                GradientListSeparator()
+                chainCarousel                
             }
             .padding(.vertical, 8)
             .padding(.bottom, 50)
@@ -152,22 +151,26 @@ struct SwapCoinPickerView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(availableChains, id: \.self) { chain in
-                    Button {
+                    let isSelected = selectedChain == chain
+                return Button {
                         selectChain(chain)
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 4) {
                             Image(chain.logo)
                                 .resizable()
-                                .frame(width: 16, height: 16)
-                            
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: 28)
                             Text(chain.name)
                                 .font(.body12BrockmannMedium)
-                                .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
+                                .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(selectedChain == chain ? Color.turquoise600 : Color.blue600)
-                        .cornerRadius(20)
+                        .padding(8)
+                        .background(
+                            Capsule()
+                                .strokeBorder(isSelected ? Color.persianBlue400 : .blue400, lineWidth: isSelected ? 2 : 1)
+                                .background(Color.blue600)
+                                .clipShape(Capsule())
+                        )
                     }
                 }
             }
