@@ -2,7 +2,7 @@
 //  FunctionCallCosmosYVault.swift
 //  VultisigApp
 //
-//  Refactor: supports **deposit** *and* **withdraw** (re‑usable UI)
+//  Refactor: supports **deposit** *and* **withdraw** (re-usable UI)
 //  Updated: 30/07/25  – raw JSON msgs, direct contract (no affiliate)
 //
 import SwiftUI
@@ -27,20 +27,20 @@ enum YVaultAction {
     case withdraw(slippage: Decimal) // default slippage chosen in UI
 }
 
-// MARK: - View‑Model
+// MARK: - View-Model
 class FunctionCallCosmosYVault: ObservableObject {
-    // UI‑bound fields
+    // UI-bound fields
     @Published var amount: Decimal = 0.0 { didSet { recalcMicroAmount() } }
     @Published var amountValid = false
     @Published var isTheFormValid = false
     @Published var balanceLabel = "( Balance: -- )"
-    @Published var selectedSlippage: Decimal = YVaultConstants.slippageOptions.first! // only matters for withdraw
+    @Published var selectedSlippage: Decimal = YVaultConstants.slippageOptions.first!
     @Published var destinationAddress: String = ""
+    @Published var action: YVaultAction // 🔸 now mutable so UI can switch
     
     // Deps
     @ObservedObject var tx: SendTransaction
     private let vault: Vault
-    private let action: YVaultAction
     private let contractAddress: String
     
     private var amountMicro: UInt64 = 0
@@ -94,64 +94,86 @@ class FunctionCallCosmosYVault: ObservableObject {
         return dict
     }
     
-    var description: String { "yVault‑\(tx.coin.ticker.uppercased())‑\(actionStr)" }
+    var description: String { "yVault-\(tx.coin.ticker.uppercased())-\(actionStr)" }
     private var actionStr: String { action.isDeposit ? "deposit" : "withdraw" }
     
     
-    // MARK: Wasm Payload Helper
-    /**
-     Build a `WasmExecuteContractPayload` ready to be passed to `createKeysignPayload()`. Returns **nil** if mandatory fields are missing.
-     - parameter sender: the wallet address that signs the Tx (`tx.fromAddress`).
-     */
-    func buildWasmExecuteContractPayload(sender: String) -> WasmExecuteContractPayload? {
-        // Ensure we have required values
-        guard !sender.isEmpty,
-              !destinationAddress.isEmpty,
-              !buildExecuteMsg().isEmpty,
-              amountMicro > 0 else { return nil }
-        
-        let coin = CosmosCoin(amount: String(amountMicro),
-                              denom: tx.coin.ticker.lowercased())
-        return WasmExecuteContractPayload(
-            senderAddress: sender,
-            contractAddress: destinationAddress,
-            executeMsg: buildExecuteMsg(),
-            coins: [coin]
-        )
-    }
-    
     // MARK: UI
     func getView() -> AnyView {
-        AnyView(VStack {
+        AnyView(FunctionCallCosmosYVaultView(viewModel: self))
+    }
+}
+
+// MARK: - Helpers
+private extension YVaultAction {
+    var isDeposit: Bool {
+        if case .deposit = self { return true } else { return false }
+    }
+}
+
+// MARK: - View
+struct FunctionCallCosmosYVaultView: View {
+    @ObservedObject var viewModel: FunctionCallCosmosYVault
+    
+    var body: some View {
+        VStack {
+            // 🔹 Action selector (Deposit / Withdraw)
+            GenericSelectorDropDown(
+                items: Binding(
+                    get: { ["Deposit", "Withdraw"].map { IdentifiableString(value: $0) } },
+                    set: { _ in }
+                ),
+                selected: Binding(
+                    get: {
+                        switch viewModel.action {
+                        case .deposit:   return IdentifiableString(value: "Deposit")
+                        case .withdraw:  return IdentifiableString(value: "Withdraw")
+                        }
+                    },
+                    set: { sel in
+                        if sel.value.lowercased() == "deposit" {
+                            viewModel.action = .deposit
+                        } else {
+                            viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
+                        }
+                    }
+                ),
+                mandatoryMessage: "*",
+                descriptionProvider: { $0.value },
+                onSelect: { _ in }
+            )
+            .padding(.bottom, 8)
+            
             // Amount field (always)
             StyledFloatingPointField(
                 placeholder: Binding(
-                    get: { self.balanceLabel },
-                    set: { self.balanceLabel = $0 }
+                    get: { viewModel.balanceLabel },
+                    set: { viewModel.balanceLabel = $0 }
                 ),
                 value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
+                    get: { viewModel.amount },
+                    set: { viewModel.amount = $0 }
                 ),
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { viewModel.amountValid },
+                    set: { viewModel.amountValid = $0 }
                 )
             )
-            .id("field-\(balanceLabel)-\(amount)")
             
             // Slippage selector only in withdraw mode
-            if case .withdraw = action {
+            if case .withdraw = viewModel.action {
                 GenericSelectorDropDown(
                     items: Binding(
                         get: { YVaultConstants.slippageOptions.map { IdentifiableString(value: "\($0 * 100)%") } },
                         set: { _ in }
                     ),
                     selected: Binding(
-                        get: { IdentifiableString(value: "\(self.selectedSlippage * 100)%") },
+                        get: { IdentifiableString(value: "\(viewModel.selectedSlippage * 100)%") },
                         set: { sel in
                             if let val = Decimal(string: sel.value.replacingOccurrences(of: "%", with: "")) {
-                                self.selectedSlippage = val / 100
+                                viewModel.selectedSlippage = val / 100
+                                // update action with new slippage
+                                viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
                             }
                         }
                     ),
@@ -160,13 +182,6 @@ class FunctionCallCosmosYVault: ObservableObject {
                     onSelect: { _ in }
                 )
             }
-        })
-    }
-}
-
-// MARK: - Helpers
-private extension YVaultAction {
-    var isDeposit: Bool {
-        if case .deposit = self { return true } else { return false }
+        }
     }
 }
