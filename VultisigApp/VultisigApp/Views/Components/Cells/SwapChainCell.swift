@@ -77,7 +77,7 @@ struct SwapChainCell: View {
     var balanceInfo: some View {
         Text(totalUSDValue)
             .font(.body12BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(.extraLightGray)
     }
     
     private func setData() {
