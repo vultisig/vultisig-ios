@@ -75,6 +75,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     // TODO: Refactor to remove duplication
     func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {
+        errorMessage = ""
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
@@ -572,7 +573,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID,
-            libType: (vault.libType ?? .GG20).toString()
+            libType: (vault.libType ?? .GG20).toString(),
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
         )
         
         guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {

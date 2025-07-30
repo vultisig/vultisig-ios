@@ -28,15 +28,33 @@ private struct ShareSheetViewController: UIViewControllerRepresentable {
     var applicationActivities: [UIActivity]?
     var completion: ((Bool) -> Void)?
     
+    class Coordinator: NSObject {
+        // Strong reference to the UIActivityViewController
+        var activityViewController: UIActivityViewController?
+        var completion: ((Bool) -> Void)?
+        init(completion: ((Bool) -> Void)? = nil) {
+            self.completion = completion
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(completion: self.completion)
+    }
     func makeUIViewController(context: UIViewControllerRepresentableContext<ShareSheetViewController>) -> UIActivityViewController {
         let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-        controller.completionWithItemsHandler = { _, completed, _, _ in
+        context.coordinator.activityViewController = controller
+        controller.completionWithItemsHandler = { _, completed, _, error in
+            if let error = error {
+                print("Error sharing: \(error.localizedDescription)")
+            }
             isPresented = false
             // Added delay on completion execution to wait for sheet dismissal for smoother experience
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                completion?(completed)
+                context.coordinator.completion?(completed)
             }
+            context.coordinator.activityViewController = nil
         }
+        
         return controller
     }
     

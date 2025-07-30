@@ -32,6 +32,7 @@
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
 		137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */; };
 		137B2C892E3A84460074F648 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C882E3A84440074F648 /* Screen.swift */; };
+		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -53,6 +54,7 @@
 		1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */; };
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
+		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
 		13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */; };
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
@@ -1018,6 +1020,7 @@
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
 		137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnChainSecurityScreen.swift; sourceTree = "<group>"; };
 		137B2C882E3A84440074F648 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -1039,6 +1042,7 @@
 		1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceProtocol.swift; sourceTree = "<group>"; };
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
+		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
 		13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFormExpandableSection.swift; sourceTree = "<group>"; };
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
@@ -2540,6 +2544,8 @@
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				1398804F2E39007900EC5D3F /* CosmosCoin.swift */,
+				1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */,
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
@@ -4872,6 +4878,7 @@
 				A6B7F49E2C496EA8006D83D1 /* VaultDetailMacQRCode.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
+				1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */,
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
@@ -5181,6 +5188,7 @@
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				B55246C92CF5639A00E3532C /* NobleService.swift in Sources */,
 				A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */,
+				139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
 				A6C6709A2C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift in Sources */,

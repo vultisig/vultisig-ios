@@ -18,6 +18,8 @@ struct KeysignPayload: Codable, Hashable {
     let vaultPubKeyECDSA: String
     let vaultLocalPartyID: String
     let libType: String
+    let wasmExecuteContractPayload: WasmExecuteContractPayload?
+    let skipBroadcast: Bool
     
     var fromAmountString: String {
         let decimalAmount = Decimal(string: swapPayload?.fromAmount.description ?? "") ?? Decimal.zero
@@ -54,5 +56,19 @@ struct KeysignPayload: Codable, Hashable {
         return coin.fiat(decimal: toAmountDecimal).description
     }
 
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, approvePayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100",libType: LibType.DKLS.toString())
+    static let example = KeysignPayload(
+        coin: Coin.example,
+        toAddress: "toAddress",
+        toAmount: 100,
+        chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false),
+        utxos: [],
+        memo: "Memo",
+        swapPayload: nil,
+        approvePayload: nil,
+        vaultPubKeyECDSA: "12345",
+        vaultLocalPartyID: "iPhone-100",
+        libType: LibType.DKLS.toString(),
+        wasmExecuteContractPayload: nil,
+        skipBroadcast: false
+    )
 }

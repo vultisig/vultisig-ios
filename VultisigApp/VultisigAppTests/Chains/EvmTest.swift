@@ -28,20 +28,26 @@ final class EVMChainsHelperTest: XCTestCase {
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
         let eth = try CoinFactory.create(asset: TokensStore.Token.ethereum, vault: vaultForTest)
-        let keysignPayload = KeysignPayload(coin: eth,
-                                            toAddress: "0xfA0635a1d083D0bF377EFbD48DA46BB17e0106cA",
-                                            toAmount: 10000000,
-                                            chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasWei: BigInt(10),
-                                                                                       priorityFeeWei: BigInt(1),
-                                                                                       nonce: 0,
-                                                                                       gasLimit: BigInt(24000)),
-                                            utxos: [],
-                                            memo: "voltix",
-                                            swapPayload: nil,
-                                            approvePayload: nil,
-                                            vaultPubKeyECDSA: "ECDSAKey",
-                                            vaultLocalPartyID: "localPartyID",
-                                            libType: LibType.DKLS.toString())
+        let keysignPayload = KeysignPayload(
+            coin: eth,
+            toAddress: "0xfA0635a1d083D0bF377EFbD48DA46BB17e0106cA",
+            toAmount: 10000000,
+            chainSpecific: BlockChainSpecific.Ethereum(
+                maxFeePerGasWei: BigInt(10),
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: BigInt(24000)
+            ),
+            utxos: [],
+            memo: "voltix",
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "ECDSAKey",
+            vaultLocalPartyID: "localPartyID",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
+        )
         let evmHelper = EVMHelper(coinType: .ethereum)
         let preImageHashes = try evmHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         XCTAssertEqual(preImageHashes.count,1)

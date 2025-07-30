@@ -75,9 +75,6 @@ private extension SecurityScannerTransactionFactory {
     
     func createSOLSecurityScanner(transaction: SendTransaction) async throws -> SecurityScannerTransaction {
         let vaultHexPubKey = Base58.decodeNoCheck(string: transaction.fromAddress)?.toHexString() ?? .empty
-        //        val solanaHelper = SolanaHelper(vaultHexPubKey)
-        
-        
         var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         let type: SecurityTransactionType
         
@@ -109,10 +106,12 @@ private extension SecurityScannerTransactionFactory {
             vaultPubKeyECDSA: "", // no need for SOL prehash
             vaultLocalPartyID: "", // no need for SOL prehash
             libType: .empty, // no need for SOL prehash
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
         )
         
         let transactionZeroX = try SolanaHelper.getZeroSignedTransaction(vaultHexPublicKey: vaultHexPubKey, keysignPayload: keysignPayload)
-        //
+        
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
             type: type,

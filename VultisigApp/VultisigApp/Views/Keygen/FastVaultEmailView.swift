@@ -23,7 +23,13 @@ struct FastVaultEmailView: View {
     @FocusState var isEmailFocused: Bool
     
     var body: some View {
-        content.onAppear(){
+        content
+            .onChange(of: email) { _ ,newValue in
+                if !newValue.isEmpty {
+                    isEmptyEmail = false
+                }
+            }
+            .onAppear(){
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isEmailFocused = true
             }
@@ -41,7 +47,7 @@ struct FastVaultEmailView: View {
                 .font(.body14BrockmannMedium)
                 .foregroundColor(.extraLightGray)
             
-            textfield(title: NSLocalizedString("email", comment: ""), text: $email)
+            textfield(title: NSLocalizedString("email", comment: ""),text: $email)
         }
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEmptyEmail)
@@ -86,7 +92,9 @@ struct FastVaultEmailView: View {
     
     var clearButton: some View {
         Button {
+            isEmailFocused = false
             email = ""
+            isEmptyEmail = true
         } label: {
             Image(systemName: "xmark.circle.fill")
                 .foregroundColor(.neutral500)

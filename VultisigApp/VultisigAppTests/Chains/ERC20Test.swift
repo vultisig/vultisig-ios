@@ -28,19 +28,26 @@ final class ERC20ChainsHelperTest: XCTestCase {
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
         let usdc = try CoinFactory.create(asset: TokensStore.Token.ethereumUsdc, vault: vaultForTest)
-        let keysignPayload = KeysignPayload(coin: usdc,
-                                            toAddress: "0xfA0635a1d083D0bF377EFbD48DA46BB17e0106cA",
-                                            toAmount: 10000000,
-                                            chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasWei: BigInt(10),
-                                                                                       priorityFeeWei: BigInt(1),
-                                                                                       nonce: 0,
-                                                                                       gasLimit: BigInt(120000)),
-                                            utxos: [],
-                                            memo: "voltix",
-                                            swapPayload: nil,
-                                            approvePayload: nil,
-                                            vaultPubKeyECDSA: "ECDSAKey",
-                                            vaultLocalPartyID: "localPartyID",libType: LibType.DKLS.toString())
+        let keysignPayload = KeysignPayload(
+            coin: usdc,
+            toAddress: "0xfA0635a1d083D0bF377EFbD48DA46BB17e0106cA",
+            toAmount: 10000000,
+            chainSpecific: BlockChainSpecific.Ethereum(
+                maxFeePerGasWei: BigInt(10),
+                priorityFeeWei: BigInt(1),
+                nonce: 0,
+                gasLimit: BigInt(120000)
+            ),
+            utxos: [],
+            memo: "voltix",
+            swapPayload: nil,
+            approvePayload: nil,
+            vaultPubKeyECDSA: "ECDSAKey",
+            vaultLocalPartyID: "localPartyID",
+            libType: LibType.DKLS.toString(),
+            wasmExecuteContractPayload: nil,
+            skipBroadcast: false
+        )
         let eRC20Helper = ERC20Helper(coinType: .ethereum)
         let preImageHashes = try eRC20Helper.getPreSignedImageHash(keysignPayload: keysignPayload)
         XCTAssertEqual(preImageHashes.count,1)
