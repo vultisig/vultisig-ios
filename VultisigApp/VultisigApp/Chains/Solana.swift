@@ -202,12 +202,14 @@ enum SolanaHelper {
     }
     
     static func getZeroSignedTransaction(vaultHexPublicKey: String, keysignPayload: KeysignPayload) throws -> String {
-        let publicKey = PublicKey(data: Data(hex: vaultHexPublicKey), type: PublicKeyType.ed25519)
+        guard let publicKey = PublicKey(data: Data(hex: vaultHexPublicKey), type: PublicKeyType.ed25519) else {
+            throw HelperError.runtimeError("Not a valid public key")
+        }
         let input = try getPreSignedInputData(keysignPayload: keysignPayload)
         let allSignatures = DataVector()
         let publicKeys = DataVector()
         allSignatures.add(data: Data(hex: Array.init(repeating: "0", count: 128).joined()))
-        publicKeys.add(data: publicKey!.data)
+        publicKeys.add(data: publicKey.data)
         let compiledWithSignature = TransactionCompiler.compileWithSignatures(
             coinType: .solana,
             txInputData: input,
