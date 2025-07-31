@@ -142,7 +142,8 @@ private extension HTTPClient {
         var queryItems: [URLQueryItem] = []
         
         for (key, value) in parameters {
-            let queryItem = URLQueryItem(name: key, value: "\(value)")
+            let valueString = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "\(value)"
+            let queryItem = URLQueryItem(name: key, value: valueString)
             queryItems.append(queryItem)
         }
         
