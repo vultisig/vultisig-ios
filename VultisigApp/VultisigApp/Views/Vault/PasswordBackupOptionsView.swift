@@ -75,8 +75,7 @@ struct PasswordBackupOptionsView: View {
             BackupPasswordSetupView(
                 tssType: tssType,
                 vault: vault,
-                isNewVault: isNewVault,
-                showSkipPasswordButton: false
+                isNewVault: isNewVault
             )
         }
     }
