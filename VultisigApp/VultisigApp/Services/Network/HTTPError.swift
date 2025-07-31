@@ -2,7 +2,7 @@
 //  HTTPError.swift
 //  VultisigApp
 //
-//  Created by Claude on 2025-07-29.
+//  Created by Gaston Mazzeo on 2025-07-29.
 //
 
 import Foundation

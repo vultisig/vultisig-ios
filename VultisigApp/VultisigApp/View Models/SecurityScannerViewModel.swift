@@ -2,7 +2,7 @@
 //  SecurityScanViewModel.swift
 //  VultisigApp
 //
-//  Created by Assistant on 2025-01-14.
+//  Created by Gaston Mazzeo on 2025-07-29.
 //
 
 import Foundation
