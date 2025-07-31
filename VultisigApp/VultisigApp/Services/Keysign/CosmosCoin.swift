@@ -16,6 +16,11 @@ struct CosmosCoin: Codable, Hashable {
         self.denom = proto.denom
     }
     
+    init(amount: String, denom: String) {
+        self.amount = amount
+        self.denom = denom
+    }
+    
     func mapToProtobuff() -> VSCosmosCoin {
         .with {
             $0.amount = self.amount

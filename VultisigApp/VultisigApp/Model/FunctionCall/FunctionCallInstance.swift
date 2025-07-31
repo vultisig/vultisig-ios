@@ -28,6 +28,7 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case yRuneTcy(FunctionCallCosmosYVault)
     
     var view: AnyView {
         switch self {
@@ -64,6 +65,8 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .yRuneTcy(let memo):
             return memo.getView()
         }
     }
@@ -104,6 +107,8 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .yRuneTcy(let memo):
+            return memo.description
         }
     }
     
@@ -143,6 +148,8 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .yRuneTcy(let memo):
+            return memo.amount
         }
     }
     
@@ -159,6 +166,8 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.destinationAddress
         case .theSwitch(let memo):
+            return memo.destinationAddress
+        case .yRuneTcy(let memo):
             return memo.destinationAddress
         default:
             return nil
@@ -201,6 +210,8 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
+        case .yRuneTcy(let memo):
+            return memo.toDictionary()
         }
     }
     
@@ -214,6 +225,8 @@ enum FunctionCallInstance {
             return VSTransactionType.thorMerge
         case .unmerge(_):
             return VSTransactionType.thorUnmerge
+        case .yRuneTcy(_):
+            return VSTransactionType.genericContract
         default:
             return .unspecified
         }
@@ -255,6 +268,9 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
+        case .yRuneTcy(let memo):
+            return memo.isTheFormValid
+        
         }
     }
     
