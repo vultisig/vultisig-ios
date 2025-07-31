@@ -23,6 +23,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
+    var wasmContractPayload: WasmExecuteContractPayload?
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified

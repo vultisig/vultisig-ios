@@ -59,10 +59,8 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack {
             StyledFloatingPointField(
-                placeholder: Binding(
-                    get: { "Amount" },
-                    set: { _ in }
-                ),
+                label: NSLocalizedString("amount", comment: ""),
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }

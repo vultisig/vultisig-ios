@@ -84,7 +84,7 @@ class FunctionCallCosmosMerge: ObservableObject {
         
     }
     
-    private var selectedVaultCoin: Coin? {
+    var selectedVaultCoin: Coin? {
         let ticker = selectedToken.value
             .lowercased()
             .replacingOccurrences(of: "thor.", with: "")
@@ -131,70 +131,70 @@ class FunctionCallCosmosMerge: ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(VStack {
+        AnyView(FunctionCallCosmosMergeView(viewModel: self))
+    }
+}
+
+private struct FunctionCallCosmosMergeView: View {
+    @ObservedObject var viewModel: FunctionCallCosmosMerge
+    
+    var body: some View {
+        VStack {
             
             GenericSelectorDropDown(
                 items: Binding(
-                    get: { self.tokens },
-                    set: { self.tokens = $0 }
+                    get: { viewModel.tokens },
+                    set: { viewModel.tokens = $0 }
                 ),
                 selected: Binding(
-                    get: { self.selectedToken },
-                    set: { self.selectedToken = $0 }
+                    get: { viewModel.selectedToken },
+                    set: { viewModel.selectedToken = $0 }
                 ),
                 mandatoryMessage: "*",
                 descriptionProvider: { $0.value },
                 onSelect: { asset in
-                    self.selectedToken = asset
-                    self.tokenValid = asset.value.lowercased() != "select the token to be merged"
-                    self.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
+                    viewModel.selectedToken = asset
+                    viewModel.tokenValid = asset.value.lowercased() != "select the token to be merged"
+                    viewModel.destinationAddress = ThorchainMergeTokens.tokensToMerge.first {
                         $0.denom.lowercased() == asset.value.lowercased()
                     }?.wasmContractAddress ?? ""
                     
-                    if let coin = self.selectedVaultCoin {
+                    if let coin = viewModel.selectedVaultCoin {
                         
                         withAnimation {
-                            self.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatForDisplay()) \(coin.ticker.uppercased()) )"
-                            self.amount = coin.balanceDecimal
-                            
-                            self.objectWillChange.send()
+                            viewModel.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatForDisplay()) \(coin.ticker.uppercased()) )"
+                            viewModel.amount = coin.balanceDecimal
+                        
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                self.tx.coin = coin
-                                self.objectWillChange.send()
+                                viewModel.tx.coin = coin
+                                viewModel.objectWillChange.send()
                             }
                         }
                     } else {
-                        self.balanceLabel = "Amount ( Select a token )"
-                        self.objectWillChange.send()
+                        viewModel.balanceLabel = "Amount ( Select a token )"
+                        viewModel.objectWillChange.send()
                     }
                 }
             )
             
             StyledFloatingPointField(
-                placeholder: Binding(
-                    get: { self.balanceLabel },
-                    set: {
-                        self.balanceLabel = $0
-                        DispatchQueue.main.async {
-                            self.objectWillChange.send()
-                        }
-                    }
-                ),
+                label: viewModel.balanceLabel,
+                placeholder: viewModel.balanceLabel,
                 value: Binding(
-                    get: { self.amount },
+                    get: { viewModel.amount },
                     set: {
-                        self.amount = $0
+                        viewModel.amount = $0
                         DispatchQueue.main.async {
-                            self.objectWillChange.send()
+                            viewModel.objectWillChange.send()
                         }
                     }
                 ),
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { viewModel.amountValid },
+                    set: { viewModel.amountValid = $0 }
                 )
             )
-            .id("field-\(self.balanceLabel)-\(self.amount)")
-        })
+            .id("field-\(viewModel.balanceLabel)-\(viewModel.amount)")
+        }
     }
 }
