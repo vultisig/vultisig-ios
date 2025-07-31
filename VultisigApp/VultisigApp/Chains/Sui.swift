@@ -163,11 +163,13 @@ enum SuiHelper {
     }
     
     static func getZeroSignedTransaction(keysignPayload: KeysignPayload) throws -> String {
-        let preSigningOutput = try getPreSignedInputData(keysignPayload: keysignPayload)
-       
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
+        
         // Drop 3 first bytes which represents signature, they're added by WalletCore
         // but for simulations or blockaid is not required
-        let tx = Data(preSigningOutput.bytes.dropFirst(3))
+        let tx = Data(preSigningOutput.data.dropFirst(3))
 
         return Base64.encode(data: tx)
     }

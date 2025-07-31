@@ -138,8 +138,9 @@ private extension BlockaidScannerService {
             .polygon,
             .polygonV2,
             .sui,
-            .solana
-            // Note: Bitcoin is commented out in original Kotlin, keeping it out for now
+            .solana,
+            // TODO: - Enable BTC Sec scanner once it's ready
+//            .bitcoin
         ]
         
         static let providerName = "blockaid"
