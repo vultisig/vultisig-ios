@@ -18,7 +18,6 @@ struct SendCryptoVerifySummary {
     let coinImage: String
     let amount: String
     let coinTicker: String
-    let showScannedBy: Bool
     
     init(
         fromName: String,
@@ -33,8 +32,7 @@ struct SendCryptoVerifySummary {
         feeFiat: String,
         coinImage: String,
         amount: String,
-        coinTicker: String,
-        showScannedBy: Bool = true
+        coinTicker: String
     ) {
         self.fromName = fromName
         self.fromAddress = fromAddress
@@ -48,6 +46,5 @@ struct SendCryptoVerifySummary {
         self.coinImage = coinImage
         self.amount = amount
         self.coinTicker = coinTicker
-        self.showScannedBy = showScannedBy
     }
 }

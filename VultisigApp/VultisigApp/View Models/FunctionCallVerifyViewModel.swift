@@ -12,6 +12,8 @@ import WalletCore
 
 @MainActor
 class FunctionCallVerifyViewModel: ObservableObject {
+    let securityScanViewModel = SecurityScannerViewModel()
+    
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
@@ -21,7 +23,15 @@ class FunctionCallVerifyViewModel: ObservableObject {
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
     
+    @Published var showSecurityScannerSheet: Bool = false
+    @Published var securityScannerState: SecurityScannerState = .idle
+    
     let blockChainService = BlockChainService.shared
+    
+    func onLoad() {
+        securityScanViewModel.$state
+            .assign(to: &$securityScannerState)
+    }
     
     func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
@@ -59,5 +69,14 @@ class FunctionCallVerifyViewModel: ObservableObject {
             return nil
         }
         return keysignPayload
+    }
+    
+    func scan(transaction: SendTransaction, vault: Vault) async {
+        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+    }
+    
+    func validateSecurityScanner() -> Bool {
+        showSecurityScannerSheet = securityScannerState.shouldShowWarning
+        return !securityScannerState.shouldShowWarning
     }
 }

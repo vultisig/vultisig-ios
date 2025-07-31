@@ -27,12 +27,9 @@ struct KeysignMessageConfirmView: View {
                         coinImage: viewModel.keysignPayload?.coin.logo ?? .empty,
                         amount: viewModel.keysignPayload?.toAmountString ?? .empty,
                         coinTicker: viewModel.keysignPayload?.coin.ticker ?? .empty
-                    )
-                ) {
-                    SecurityScanView(viewModel: viewModel.securityScanViewModel)
-                        .padding(.horizontal, 16)
-                        .showIf(viewModel.showSecurityScan)
-                }
+                    ),
+                    securityScannerState: .constant(.idle)
+                )
                 
                 PrimaryButton(title: "joinTransactionSigning") {
                     viewModel.joinKeysignCommittee()
@@ -41,7 +38,6 @@ struct KeysignMessageConfirmView: View {
             .task {
                 await viewModel.loadThorchainID()
                 await viewModel.loadFunctionName()
-                await viewModel.performSecurityScan()
             }
         }
         .navigationTitle("sendOverview")
