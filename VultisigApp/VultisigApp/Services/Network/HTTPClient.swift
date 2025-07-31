@@ -65,7 +65,7 @@ public final class HTTPClient: HTTPClientProtocol {
         } catch {
             let duration = CFAbsoluteTimeGetCurrent() - startTime
             let httpError: HTTPError
-            if error.localizedDescription.contains("timeout") {
+            if let urlError = error as? URLError, urlError.code == .timedOut {
                 httpError = HTTPError.timeout
             } else {
                 httpError = HTTPError.networkError(error)
@@ -165,7 +165,13 @@ private extension HTTPClient {
     /// Encodes parameters as form data
     func encodeFormParameters(_ parameters: [String: Any], request: inout URLRequest) throws {
         let formData = parameters
-            .map { key, value in "\(key)=\(value)" }
+            .compactMap { key, value in
+                guard let encodedKey = key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                      let encodedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+                    return nil
+                }
+                return "\(encodedKey)=\(encodedValue)"
+            }
             .joined(separator: "&")
         
         guard let data = formData.data(using: .utf8) else {
