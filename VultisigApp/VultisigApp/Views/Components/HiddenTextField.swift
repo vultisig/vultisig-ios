@@ -11,7 +11,7 @@ struct HiddenTextField: View {
     let placeholder: String
     @Binding var password: String
     var showHideOption: Bool = true
-    var errorMessage: String = ""
+    var errorMessage: String
     
     @State var isPasswordVisible: Bool = false
     
@@ -102,8 +102,8 @@ struct HiddenTextField: View {
     ZStack {
         Background()
         VStack {
-            HiddenTextField(placeholder: "verifyPassword", password: .constant("password"))
-            HiddenTextField(placeholder: "verifyPassword", password: .constant(""))
+            HiddenTextField(placeholder: "verifyPassword", password: .constant("password"), errorMessage: "")
+            HiddenTextField(placeholder: "verifyPassword", password: .constant(""), errorMessage: "")
         }
     }
 }
