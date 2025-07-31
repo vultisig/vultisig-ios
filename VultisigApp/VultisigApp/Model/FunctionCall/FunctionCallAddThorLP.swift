@@ -7,125 +7,361 @@ import SwiftUI
 import Foundation
 import Combine
 
+// MARK: - Helper logging
+fileprivate func log(_ message: String) {
+    print("FunctionCallAddThorLP: \(message)")
+}
+
+// MARK: - Main ViewModel
+
 class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
+    // MARK: Published inputs / UI state
     @Published var amount: Decimal = 0.0
     @Published var pairedAddress: String = ""
     @Published var selectedPool: IdentifiableString = .init(value: "")
     
-    // Internal validation
+    // Validation flags
     @Published var amountValid: Bool = false
     @Published var pairedAddressValid: Bool = true
     @Published var poolValid: Bool = false
     @Published var isTheFormValid: Bool = false
     
-    // Available pools
+    // Pools
     @Published var availablePools: [IdentifiableString] = []
-    @Published var isLoadingPools: Bool = true  // Start as loading
+    @Published var isLoadingPools: Bool = true
     @Published var loadError: String? = nil
     
-    // Map of display names to full pool names
+    // Mapping display name -> full pool asset string
     private var poolNameMap: [String: String] = [:]
-    var retryCount = 0
-    private let maxRetries = 3
-    
-    // Balance display for paired asset
     @Published var pairedAssetBalance: String = ""
     
-    // ERC20 approval support
+    // ERC20 approval
     @Published var isApprovalRequired: Bool = false
     @Published var approvePayload: ERC20ApprovePayload?
     
+    // Internals
+    private var cancellables = Set<AnyCancellable>()
+    private let maxRetries = 3
+    var retryCount = 0
+    
+    // Domain models
     var tx: SendTransaction
     private var functionCallViewModel: FunctionCallViewModel
     private var vault: Vault
     
+    // MARK: Addressable conformance helpers
     var addressFields: [String: String] {
-        get {
-            if tx.coin.chain == .thorChain {
-                // For THORChain, pairedAddress is used in the memo
-                let fields = ["pairedAddress": pairedAddress]
-                return fields
-            } else {
-                // For L1 assets, pairedAddress is used in the memo (THORChain address)
-                // toAddress is automatically set by fetchInboundAddress()
-                let fields = ["pairedAddress": pairedAddress]
-                return fields
-            }
-        }
+        get { ["pairedAddress": pairedAddress] }
         set {
-            if let value = newValue["pairedAddress"] {
-                pairedAddress = value
+            if let v = newValue["pairedAddress"] {
+                pairedAddress = v
             }
         }
     }
     
-    private var cancellables = Set<AnyCancellable>()
-    
+    // MARK: Init
     required init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         
-        // Prefill paired address based on the asset type
         prefillPairedAddress()
-        
         setupValidation()
-        
-        // Fetch the inbound address (pool address) for the transaction
-        fetchInboundAddress()
-        
-        // Check if ERC20 approval is required
-        checkApprovalRequirement()
-        
-        // Load pools for both RUNE and L1 assets from the service
-        self.isLoadingPools = true
-        
-        // Load pools after a small delay to ensure UI is ready
-        Task {
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second delay
-            loadPools()
+        loadInitialState()
+    }
+    
+    private func loadInitialState() {
+        fetchInboundAddressAndSetupApproval()
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s delay to let UI settle
+            await loadPools()
         }
     }
     
-    private func fetchInboundAddress() {
+    // MARK: - Inbound address + approval
+    
+    private func fetchInboundAddressAndSetupApproval() {
         Task { @MainActor in
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
             
             if tx.coin.chain == .thorChain {
-                // For THORChain, we don't need an inbound address (it's a deposit)
+                // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
                 // The toAddress will be set when pool is selected
+                log("ThorChain/RUNE selected: toAddress will be set when pool is selected")
+                isApprovalRequired = false
+                approvePayload = nil
                 return
             } else {
-                // For L1 assets, find the inbound address for this chain
+                // Normal send path: need inbound address for L1/EVM chains.
                 let chainName = getInboundChainName(for: tx.coin.chain)
+                guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                    log("No inbound address found for chain \(chainName)")
+                    return
+                }
                 
-                if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) {
-                    // Check if chain is halted or paused
-                    if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-                        print("FunctionCallAddThorLP: Chain \(chainName) is halted or paused for LP operations")
-                        return
-                    }
-                    
-                    // For ERC20 tokens, use router address; for native tokens, use inbound address
-                    let destinationAddress: String
-                    if tx.coin.shouldApprove { // ERC20 tokens
-                        destinationAddress = inbound.router ?? inbound.address
-                        print("FunctionCallAddThorLP: Using router address \(destinationAddress) for ERC20 token \(tx.coin.ticker)")
-                    } else { // Native tokens
-                        destinationAddress = inbound.address
-                        print("FunctionCallAddThorLP: Using inbound address \(destinationAddress) for native token \(tx.coin.ticker)")
-                    }
-                    
-                    tx.toAddress = destinationAddress
+                if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+                    log("Chain \(chainName) is halted or paused for LP operations")
+                    return
+                }
+                
+                let destinationAddress: String
+                if tx.coin.shouldApprove {
+                    // ERC20 token (e.g., USDC) → approval to router
+                    destinationAddress = inbound.router ?? inbound.address
+                    log("Using router address \(destinationAddress) for ERC20 token \(tx.coin.ticker)")
                 } else {
-                    print("FunctionCallAddThorLP: No inbound address found for chain \(chainName)")
+                    // Native token (e.g., ETH) → direct to inbound address
+                    destinationAddress = inbound.address
+                    log("Using inbound address \(destinationAddress) for native token \(tx.coin.ticker)")
+                }
+                
+                tx.toAddress = destinationAddress
+                
+                // ERC20 approval only for non-RUNE ERC20 tokens
+                isApprovalRequired = tx.coin.shouldApprove
+                if isApprovalRequired {
+                    if !tx.toAddress.isEmpty {
+                        let payload = ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+                        self.approvePayload = payload
+                        log("Created ERC20 approval payload for \(tx.coin.ticker)")
+                    } else {
+                        Task {
+                            for attempt in 0..<5 {
+                                try? await Task.sleep(nanoseconds: 300_000_000)
+                                if !tx.toAddress.isEmpty {
+                                    let payload = ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+                                    await MainActor.run {
+                                        self.approvePayload = payload
+                                        log("Created ERC20 approval payload after waiting for router address for \(tx.coin.ticker)")
+                                    }
+                                    break
+                                }
+                                log("Waiting for toAddress to become available for approval (attempt \(attempt + 1))")
+                            }
+                        }
+                    }
                 }
             }
         }
     }
     
+    // MARK: - Pool loading
+    
+    private func cleanPoolName(_ asset: String) -> String {
+        if let dashIndex = asset.firstIndex(of: "-") {
+            let suffix = asset[asset.index(after: dashIndex)...]
+            if suffix.uppercased().starts(with: "0X") {
+                return String(asset[..<dashIndex])
+            }
+        }
+        return asset
+    }
+    
+    @MainActor
+    func loadPools() async {
+        log("loadPools() called, isLoadingPools = \(self.isLoadingPools)")
+        isLoadingPools = true
+        loadError = nil
+        
+        let timeoutTask = Task {
+            try? await Task.sleep(nanoseconds: 15_000_000_000) // 15s
+            if isLoadingPools {
+                log("Pool loading timeout!")
+                await MainActor.run {
+                    self.availablePools = []
+                    self.isLoadingPools = false
+                    self.loadError = "Timeout loading pools."
+                }
+            }
+        }
+        
+        do {
+            let allPools = try await Task.detached {
+                try await ThorchainService.shared.fetchLPPools()
+            }.value
+            
+            timeoutTask.cancel()
+            
+            var poolOptions: [IdentifiableString] = []
+            var nameMap: [String: String] = [:]
+            
+            if tx.coin.chain == .thorChain {
+                log("Loading pools for RUNE...")
+                for pool in allPools {
+                    let assetName = pool.asset
+                    let cleanName = cleanPoolName(assetName)
+                    poolOptions.append(IdentifiableString(value: cleanName))
+                    nameMap[cleanName] = assetName
+                }
+            } else {
+                let currentSwap = tx.coin.chain.swapAsset.uppercased()
+                log("Loading pools for L1 asset \(currentSwap)...")
+                let filtered = allPools.filter { pool in
+                    let components = pool.asset
+                        .split(separator: ".")
+                        .map { String($0).uppercased() }
+                    return components.count >= 2 && components[0] == currentSwap
+                }
+                for pool in filtered {
+                    let assetName = pool.asset
+                    let cleanName = cleanPoolName(assetName)
+                    poolOptions.append(IdentifiableString(value: cleanName))
+                    nameMap[cleanName] = assetName
+                }
+            }
+            
+            // Commit
+            self.poolNameMap = nameMap
+            self.availablePools = poolOptions
+            self.isLoadingPools = false
+            self.loadError = nil
+            self.retryCount = 0
+            
+            log("Updated availablePools with \(poolOptions.count) options")
+            if !poolOptions.isEmpty {
+                log("First few pools: \(poolOptions.prefix(5).map { $0.value })")
+            }
+            
+            if tx.coin.chain != .thorChain && poolOptions.count == 1 {
+                // auto-select single pool for L1
+                self.selectedPool = poolOptions[0]
+                self.poolValid = true
+                log("Auto-selected single pool: \(poolOptions[0].value)")
+            }
+        } catch {
+            timeoutTask.cancel()
+            log("Error loading pools: \(error.localizedDescription)")
+            
+            if retryCount < maxRetries {
+                retryCount += 1
+                log("Retrying... (attempt \(retryCount + 1)/\(maxRetries + 1))")
+                let delay = UInt64(pow(2.0, Double(retryCount - 1))) * 1_000_000_000
+                try? await Task.sleep(nanoseconds: delay)
+                await loadPools()
+            } else {
+                self.availablePools = []
+                self.isLoadingPools = false
+                self.loadError = "Failed to load pools. Please check your connection and try again."
+            }
+        }
+    }
+    
+    // MARK: - Prefill logic
+    
+    private func prefillPairedAddress() {
+        if tx.coin.chain == .thorChain {
+            pairedAddress = ""
+            pairedAddressValid = false
+        } else if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
+            pairedAddress = thorCoin.address
+            pairedAddressValid = true
+        } else {
+            pairedAddress = ""
+            pairedAddressValid = false
+        }
+    }
+    
+    func prefillPairedAddressForPool(_ poolName: String) {
+        let components = poolName.split(separator: ".").map { String($0).uppercased() }
+        guard components.count >= 2 else {
+            pairedAddress = ""
+            pairedAddressValid = false
+            pairedAssetBalance = ""
+            return
+        }
+        
+        let chainPrefix = components[0]
+        let assetTicker = components[1]
+        
+        guard let chainCoin = vault.coins.first(where: {
+            $0.isNativeToken && $0.chain.swapAsset.uppercased() == chainPrefix
+        }) else {
+            pairedAddress = ""
+            pairedAddressValid = false
+            pairedAssetBalance = ""
+            return
+        }
+        
+        pairedAddress = chainCoin.address
+        pairedAddressValid = true
+        
+        if tx.coin.chain == .thorChain {
+            Task { @MainActor in
+                let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+                let chainName = getInboundChainName(for: chainCoin.chain)
+                if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }),
+                   !(inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused) {
+                    tx.toAddress = inbound.address
+                    log("Set toAddress to \(inbound.address) for RUNE->pool \(poolName)")
+                } else {
+                    log("Inbound for chain \(chainName) halted/paused or missing when prefilling pool")
+                }
+            }
+        }
+        
+        if let assetCoin = vault.coins.first(where: { $0.chain == chainCoin.chain && $0.ticker.uppercased() == assetTicker }) {
+            let balance = assetCoin.balanceDecimal.formatForDisplay()
+            pairedAssetBalance = "( Balance: \(balance) \(assetCoin.ticker.uppercased()) )"
+        } else if assetTicker == chainPrefix {
+            let balance = chainCoin.balanceDecimal.formatForDisplay()
+            pairedAssetBalance = "( Balance: \(balance) \(chainCoin.ticker.uppercased()) )"
+        } else {
+            pairedAssetBalance = "( \(assetTicker) not found in vault )"
+        }
+    }
+    
+    // MARK: - Validation
+    
+    private func setupValidation() {
+        Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
+            .map { $0 && $1 && $2 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Memo / Dictionary
+    
+    private var fullPoolName: String {
+        poolNameMap[selectedPool.value] ?? selectedPool.value
+    }
+    
+    var description: String {
+        toString()
+    }
+    
+    func toString() -> String {
+        let address = pairedAddress.nilIfEmpty
+        let lpData = AddLPMemoData(pool: fullPoolName, pairedAddress: address)
+        return lpData.memo
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("pool", fullPoolName)
+        dict.set("pairedAddress", pairedAddress)
+        dict.set("memo", toString())
+        return dict
+    }
+    
+    func buildApprovePayload() async throws -> ERC20ApprovePayload? {
+        guard isApprovalRequired, !tx.toAddress.isEmpty else {
+            return nil
+        }
+        return ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+    }
+    
+    var balance: String {
+        let b = tx.coin.balanceDecimal.formatForDisplay()
+        return "( Balance: \(b) \(tx.coin.ticker.uppercased()) )"
+    }
+    
+    func getView() -> AnyView {
+        AnyView(FunctionCallAddThorLPView(model: self))
+    }
+    
+    // MARK: - Chain name mapping
+    
     private func getInboundChainName(for chain: Chain) -> String {
-        // Map internal chain names to THORChain inbound address chain names
         switch chain {
         case .bitcoin:
             return "BTC"
@@ -154,509 +390,165 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         case .thorChain:
             return "THOR"
         default:
-            // For unknown chains, use the chain's swapAsset
             return chain.swapAsset.uppercased()
         }
     }
-    
-    private func checkApprovalRequirement() {
-        // ERC20 tokens on EVM chains require approval to the THORChain router
-        isApprovalRequired = tx.coin.shouldApprove
-        
-        if isApprovalRequired {
-            // Create approval payload when we have the router address (inbound address)
-            Task { @MainActor in
-                // Wait a bit for the inbound address to be fetched
-                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
-                
-                if !tx.toAddress.isEmpty {
-                    let payload = ERC20ApprovePayload(
-                        amount: tx.amountInRaw,
-                        spender: tx.toAddress
-                    )
-                    self.approvePayload = payload
-                    print("FunctionCallAddThorLP: Created ERC20 approval payload for \(tx.coin.ticker) to spender \(tx.toAddress)")
-                } else {
-                    print("FunctionCallAddThorLP: Router address not available yet for ERC20 approval")
-                }
-            }
-        }
-    }
-    
-    func buildApprovePayload() async throws -> ERC20ApprovePayload? {
-        guard isApprovalRequired, !tx.toAddress.isEmpty else {
-            return nil
-        }
-        
-        // Create approval payload with the current amount and router address
-        let payload = ERC20ApprovePayload(
-            amount: tx.amountInRaw,
-            spender: tx.toAddress
-        )
-        
-        return payload
-    }
-    
-    var balance: String {
-        let balance = tx.coin.balanceDecimal.formatForDisplay()
-        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
-    }
-    
-    private func prefillPairedAddress() {
-        if tx.coin.chain == .thorChain {
-            // For RUNE, paired address will be set when user selects a pool
-            pairedAddress = ""
-            pairedAddressValid = false // Will be set to true when pool is selected
-        } else {
-            // For L1 assets, automatically get user's THORChain address
-            if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
-                pairedAddress = thorCoin.address
-                pairedAddressValid = true
-            } else {
-                pairedAddress = ""
-                pairedAddressValid = false
-            }
-        }
-    }
-    
-    func prefillPairedAddressForPool(_ poolName: String) {
-        // Split pool name to get chain and asset (e.g., "ETH.USDC" -> ["ETH", "USDC"])
-        let poolComponents = poolName.split(separator: ".").map { String($0).uppercased() }
-        guard poolComponents.count >= 2 else {
-            pairedAddress = ""
-            pairedAddressValid = false
-            self.pairedAssetBalance = ""
-            return
-        }
-        
-        let chainPrefix = poolComponents[0]
-        let assetTicker = poolComponents[1]
-        
-        // Find the chain by matching swap asset
-        if let chainCoin = vault.coins.first(where: { coin in
-            coin.isNativeToken && coin.chain.swapAsset.uppercased() == chainPrefix
-        }) {
-            pairedAddress = chainCoin.address
-            pairedAddressValid = true
-            
-            // For THORChain adding to a pool, set the inbound address as destination
-            if tx.coin.chain == .thorChain {
-                Task { @MainActor in
-                    let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                    let chainName = getInboundChainName(for: chainCoin.chain)
-                    
-                    if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) {
-                        // Check if chain is halted or paused
-                        if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-                            print("FunctionCallAddThorLP: Chain \(chainName) is halted or paused for LP operations")
-                            return
-                        }
-                        
-                        // Set the inbound address as the destination for RUNE transaction
-                        tx.toAddress = inbound.address
-                        print("FunctionCallAddThorLP: Set toAddress to \(inbound.address) for RUNE->pool \(poolName)")
-                    }
-                }
-            }
-            
-            // Now find the specific asset on that chain to show its balance
-            if let assetCoin = vault.coins.first(where: { coin in
-                coin.chain == chainCoin.chain && coin.ticker.uppercased() == assetTicker
-            }) {
-                // Show the balance of the specific asset in the pool
-                let balance = assetCoin.balanceDecimal.formatForDisplay()
-                self.pairedAssetBalance = "( Balance: \(balance) \(assetCoin.ticker.uppercased()) )"
-            } else if assetTicker == chainPrefix {
-                // For native token pools (e.g., "BTC.BTC"), use the chain coin
-                let balance = chainCoin.balanceDecimal.formatForDisplay()
-                self.pairedAssetBalance = "( Balance: \(balance) \(chainCoin.ticker.uppercased()) )"
-            } else {
-                // Asset not found in vault
-                self.pairedAssetBalance = "( \(assetTicker) not found in vault )"
-            }
-        } else {
-            // Chain not found
-            pairedAddress = ""
-            pairedAddressValid = false
-            self.pairedAssetBalance = ""
-        }
-    }
-    
-    private func setupValidation() {
-        Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
-            .map { amountValid, pairedAddressValid, poolValid in
-                // For validation, we need:
-                // - Valid amount
-                // - Valid pool (always true for L1 assets, selected for RUNE)
-                // - Valid paired address (automatically set)
-                return amountValid && poolValid && pairedAddressValid
-            }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-    }
-    
-    private func cleanPoolName(_ asset: String) -> String {
-        // Remove contract addresses from pool names
-        // Examples: 
-        // "AVAX.SOL-0XFE6B19286885A4F7F55ADAD09C3CD1F906D2478F" -> "AVAX.SOL"
-        // "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48" -> "ETH.USDC"
-        
-        if let dashIndex = asset.firstIndex(of: "-"),
-           let hexPrefix = asset[asset.index(after: dashIndex)...].firstIndex(of: "0"),
-           asset[hexPrefix...].starts(with: "0X") {
-            // Remove everything from the dash onwards
-            return String(asset[..<dashIndex])
-        }
-        
-        // Return as-is if no contract address found
-        return asset
-    }
-    
-    func loadPools() {
-        Task { @MainActor in
-            print("FunctionCallAddThorLP: loadPools() called, isLoadingPools = \(self.isLoadingPools)")
-            
-            // Set a timeout for the entire operation
-            let timeoutTask = Task {
-                try await Task.sleep(nanoseconds: 15_000_000_000) // 15 second timeout
-                if self.isLoadingPools {
-                    print("FunctionCallAddThorLP: Pool loading timeout!")
-                    await MainActor.run {
-                        self.availablePools = []
-                        self.isLoadingPools = false
-                    }
-                }
-            }
-            
-            do {
-                if tx.coin.chain == .thorChain {
-                    // For RUNE, fetch all available pools
-                    print("FunctionCallAddThorLP: Loading pools for RUNE...")
-                    
-                    let startTime = Date()
-                    let pools = try await Task.detached {
-                        try await ThorchainService.shared.fetchLPPools()
-                    }.value
-                    let loadTime = Date().timeIntervalSince(startTime)
-                    
-                    // Cancel timeout task if we finished successfully
-                    timeoutTask.cancel()
-                    
-                    print("FunctionCallAddThorLP: Fetched \(pools.count) pools in \(String(format: "%.2f", loadTime))s")
-                    
-                    // Build pool options without "Select pool" prefix
-                    var poolOptions: [IdentifiableString] = []
-                    var nameMap: [String: String] = [:]
-                    
-                    for pool in pools {
-                        // Clean up pool name by removing contract addresses
-                        let cleanName = cleanPoolName(pool.asset)
-                        poolOptions.append(IdentifiableString(value: cleanName))
-                        nameMap[cleanName] = pool.asset  // Map display name to full name
-                    }
-                    
-                    // Force UI update on main thread
-                    await MainActor.run {
-                        self.objectWillChange.send()  // Force SwiftUI to update
-                        self.poolNameMap = nameMap
-                        self.availablePools = poolOptions
-                        self.isLoadingPools = false
-                        self.loadError = nil  // Clear any previous errors
-                        self.retryCount = 0   // Reset retry count on success
-                        print("FunctionCallAddThorLP: Updated availablePools with \(self.availablePools.count) options")
-                        print("FunctionCallAddThorLP: availablePools.isEmpty = \(self.availablePools.isEmpty)")
-                        print("FunctionCallAddThorLP: isLoadingPools = \(self.isLoadingPools)")
-                        
-                        // Debug: print first few pools
-                        if pools.count > 0 {
-                            print("FunctionCallAddThorLP: First few pools: \(pools.prefix(5).map { cleanPoolName($0.asset) })")
-                        }
-                    }
-                } else {
-                    // For L1 assets, fetch all available pools from ThorchainService
-                    print("FunctionCallAddThorLP: Loading pools for L1 asset...")
-                    
-                    let startTime = Date()
-                    let allPools = try await Task.detached {
-                        try await ThorchainService.shared.fetchLPPools()
-                    }.value
-                    let loadTime = Date().timeIntervalSince(startTime)
-                    
-                    // Cancel timeout task
-                    timeoutTask.cancel()
-                    
-                    print("FunctionCallAddThorLP: Fetched \(allPools.count) pools in \(String(format: "%.2f", loadTime))s")
-                    
-                    // Filter pools to find ones matching the current chain's swap asset
-                    let currentChainSwapAsset = tx.coin.chain.swapAsset.uppercased()
-                    let filteredPools = allPools.filter { pool in
-                        let poolComponents = pool.asset.split(separator: ".").map { String($0).uppercased() }
-                        return poolComponents.count >= 2 && poolComponents[0] == currentChainSwapAsset
-                    }
-                    
-                    // Build pool options without "Select pool" prefix
-                    var poolOptions: [IdentifiableString] = []
-                    var nameMap: [String: String] = [:]
-                    
-                    for pool in filteredPools {
-                        // Clean up pool name by removing contract addresses
-                        let cleanName = cleanPoolName(pool.asset)
-                        poolOptions.append(IdentifiableString(value: cleanName))
-                        nameMap[cleanName] = pool.asset  // Map display name to full name
-                    }
-                    
-                    // Force UI update on main thread
-                    await MainActor.run {
-                        self.objectWillChange.send()  // Force SwiftUI to update
-                        self.poolNameMap = nameMap
-                        self.availablePools = poolOptions
-                        self.isLoadingPools = false
-                        self.loadError = nil  // Clear any previous errors
-                        self.retryCount = 0   // Reset retry count on success
-                        print("FunctionCallAddThorLP: Updated availablePools with \(self.availablePools.count) options for \(currentChainSwapAsset)")
-                        print("FunctionCallAddThorLP: availablePools.isEmpty = \(self.availablePools.isEmpty)")
-                        print("FunctionCallAddThorLP: isLoadingPools = \(self.isLoadingPools)")
-                        
-                        // Debug: print first few pools
-                        if filteredPools.count > 0 {
-                            print("FunctionCallAddThorLP: First few pools: \(filteredPools.prefix(5).map { cleanPoolName($0.asset) })")
-                        }
-                        
-                        // Auto-select the first pool if there's only one matching pool
-                        if poolOptions.count == 1 {
-                            self.selectedPool = poolOptions[0]
-                            self.poolValid = true
-                            print("FunctionCallAddThorLP: Auto-selected single pool: \(poolOptions[0].value)")
-                        }
-                    }
-                }
-            } catch {
-                print("FunctionCallAddThorLP: Error loading pools: \(error)")
-                print("FunctionCallAddThorLP: Error details: \(error.localizedDescription)")
-                
-                // Cancel timeout task
-                timeoutTask.cancel()
-                
-                // Check if we should retry
-                if retryCount < maxRetries {
-                    retryCount += 1
-                    print("FunctionCallAddThorLP: Retrying... (attempt \(retryCount + 1)/\(maxRetries + 1))")
-                    
-                    // Wait before retrying (exponential backoff)
-                    let retryDelay = UInt64(pow(2.0, Double(retryCount - 1))) * 1_000_000_000
-                    try? await Task.sleep(nanoseconds: retryDelay)
-                    
-                    // Retry
-                    loadPools()
-                } else {
-                    // Keep empty on error to show retry button
-                    await MainActor.run {
-                        self.objectWillChange.send()  // Force SwiftUI to update
-                        self.availablePools = []
-                        self.isLoadingPools = false
-                        self.loadError = "Failed to load pools. Please check your connection and try again."
-                    }
-                }
-            }
-        }
-    }
-    
-    var description: String {
-        return toString()
-    }
-    
-    func toString() -> String {
-        // Get the full pool name from the map (or use the display name if not found)
-        let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
-        
-        if tx.coin.chain == .thorChain {
-            // For THORChain: include the paired asset's address (required)
-            let address = pairedAddress.nilIfEmpty
-            let lpData = AddLPMemoData(
-                pool: fullPoolName,
-                pairedAddress: address
-            )
-            return lpData.memo
-        } else {
-            // For L1 assets: just include the pool name in the memo
-            // The destination address is already set in tx.toAddress via fetchInboundAddress()
-            let lpData = AddLPMemoData(
-                pool: fullPoolName,
-                pairedAddress: pairedAddress.nilIfEmpty
-            )
-            return lpData.memo
-        }
-    }
-    
-    func toDictionary() -> ThreadSafeDictionary<String, String> {
-        let dict = ThreadSafeDictionary<String, String>()
-        // Store the full pool name in the dictionary
-        let fullPoolName = poolNameMap[selectedPool.value] ?? selectedPool.value
-        dict.set("pool", fullPoolName)
-        
-        if tx.coin.chain == .thorChain {
-            // For THORChain, store pairedAddress in the memo dictionary
-            dict.set("pairedAddress", pairedAddress)
-        } else {
-            // For L1 assets, store the THORChain address in pairedAddress
-            dict.set("pairedAddress", pairedAddress)
-        }
-        
-        dict.set("memo", toString())
-        return dict
-    }
-    
-    func getView() -> AnyView {
-        AnyView(FunctionCallAddThorLPView(model: self))
-    }
 }
+
+// MARK: - Views
 
 struct FunctionCallAddThorLPView: View {
     @ObservedObject var model: FunctionCallAddThorLP
     
     var body: some View {
         VStack {
+            PoolSelectorSection(model: model)
             
-            // Pool selection for both RUNE and L1 assets
-            VStack(alignment: .leading, spacing: 0) {
-                let _ = print("FunctionCallAddThorLP UI: Rendering pool selector - isLoadingPools=\(model.isLoadingPools), availablePools.count=\(model.availablePools.count)")
-                
-                if model.isLoadingPools {
-                        // Show loading state as a disabled dropdown
-                        HStack(spacing: 12) {
-                            Text("Loading pools...")
-                                .font(.body16Menlo)
-                                .foregroundColor(.neutral0)
-                                .onAppear {
-                                    print("FunctionCallAddThorLP UI: Showing loading state")
-                                }
-                            
-                            Spacer()
-                            
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(0.7)
-                        }
-                        .frame(height: 48)
-                        .padding(.horizontal, 12)
-                        .background(Color.blue600)
-                        .cornerRadius(10)
-                                            } else if !model.isLoadingPools && model.availablePools.isEmpty {
-                        // Show error state
-                        VStack(spacing: 8) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .font(.body16Menlo)
-                                    .foregroundColor(.orange)
-                                
-                                Text(model.loadError ?? "No pools available")
-                                    .font(.body14Menlo)
-                                    .foregroundColor(.neutral0)
-                                    .lineLimit(2)
-                                    .onAppear {
-                                        print("FunctionCallAddThorLP UI: Showing error - availablePools.count = \(model.availablePools.count)")
-                                    }
-                                
-                                Spacer()
-                                
-                                Button {
-                                    model.retryCount = 0  // Reset retry count
-                                    model.loadError = nil
-                                    model.isLoadingPools = true
-                                    model.loadPools()
-                                } label: {
-                                    Text("Retry")
-                                        .font(.caption)
-                                        .foregroundColor(.turquoise600)
-                                }
-                            }
-                            .frame(minHeight: 48)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(Color.blue600)
-                            .cornerRadius(10)
-                        }
-                        } else {
-                            GenericSelectorDropDown(
-                                items: Binding(
-                                    get: { model.availablePools },
-                                    set: { _ in }
-                                ),
-                                selected: Binding(
-                                    get: { model.selectedPool },
-                                    set: { model.selectedPool = $0 }
-                                ),
-                                mandatoryMessage: "*",
-                                descriptionProvider: { $0.value.isEmpty ? "Select pool" : $0.value },
-                                onSelect: { pool in
-                                    model.selectedPool = pool
-                                    model.poolValid = !pool.value.isEmpty
-                                    
-                                    // When RUNE selects a pool, prefill the paired address
-                                    // L1 assets don't need this since they already have the THORChain address
-                                    if model.tx.coin.chain == .thorChain && !pool.value.isEmpty {
-                                        model.prefillPairedAddressForPool(pool.value)
-                                    }
-                                }
-                            )
-                            .onAppear {
-                                print("FunctionCallAddThorLP UI: Showing dropdown - availablePools.count = \(model.availablePools.count)")
-                                print("FunctionCallAddThorLP UI: selectedPool = \(model.selectedPool.value)")
-                                print("FunctionCallAddThorLP UI: isLoadingPools = \(model.isLoadingPools)")
-                            }
-                    }
-                }
-            
-            // ERC20 Approval Information
             if model.isApprovalRequired {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("ERC20 Approval Required")
-                        .font(.body16MenloBold)
-                        .foregroundColor(.neutral0)
-                    
-                    Text("This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:")
-                        .font(.body14Menlo)
-                        .foregroundColor(.neutral0)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("1. Approval transaction")
-                            .font(.body12Menlo)
-                            .foregroundColor(.turquoise600)
-                        Text("2. Add liquidity transaction")
-                            .font(.body12Menlo)
-                            .foregroundColor(.turquoise600)
-                    }
-                    .padding(.leading, 16)
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .background(Color.blue600.opacity(0.1))
-                .cornerRadius(10)
+                ApprovalInfoSection()
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(Color.blue600.opacity(0.1))
+                    .cornerRadius(10)
             }
             
-            // Amount field - shows balance of the asset being added
             StyledFloatingPointField(
                 placeholder: Binding(
-                    get: { 
-                        if model.tx.coin.chain == .thorChain && !model.pairedAssetBalance.isEmpty {
-                            // For RUNE, show the selected pool asset's balance
+                    get: {
+                        // If adding RUNE (thorChain), show RUNE balance. Otherwise prefer the paired asset balance if available.
+                        if model.tx.coin.chain == .thorChain {
+                            return "Amount \(model.balance)"
+                        } else if !model.pairedAssetBalance.isEmpty {
                             return "Amount \(model.pairedAssetBalance)"
                         } else {
-                            // For L1 assets, show their own balance
                             return "Amount \(model.balance)"
                         }
                     },
                     set: { _ in }
                 ),
-                value: Binding(
-                    get: { model.amount },
-                    set: { model.amount = $0 }
-                ),
-                isValid: Binding(
-                    get: { model.amountValid },
-                    set: { model.amountValid = $0 }
-                )
+                value: Binding(get: { model.amount }, set: { model.amount = $0 }),
+                isValid: Binding(get: { model.amountValid }, set: { model.amountValid = $0 })
             )
         }
     }
-} 
+}
+
+struct PoolSelectorSection: View {
+    @ObservedObject var model: FunctionCallAddThorLP
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            let _ = logUI("Rendering pool selector - isLoadingPools=\(model.isLoadingPools), availablePools.count=\(model.availablePools.count)")
+            
+            if model.isLoadingPools {
+                loadingView
+            } else if !model.isLoadingPools && model.availablePools.isEmpty {
+                errorView
+            } else {
+                dropdownView
+            }
+        }
+    }
+    
+    private var loadingView: some View {
+        HStack(spacing: 12) {
+            Text("Loading pools...")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .onAppear { logUI("Showing loading state") }
+            
+            Spacer()
+            
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle())
+                .scaleEffect(0.7)
+        }
+        .frame(height: 48)
+        .padding(.horizontal, 12)
+        .background(Color.blue600)
+        .cornerRadius(10)
+    }
+    
+    private var errorView: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.body16Menlo)
+                    .foregroundColor(.orange)
+                
+                Text(model.loadError ?? "No pools available")
+                    .font(.body14Menlo)
+                    .foregroundColor(.neutral0)
+                    .lineLimit(2)
+                    .onAppear { logUI("Showing error - availablePools.count = \(model.availablePools.count)") }
+                
+                Spacer()
+                
+                Button {
+                    model.retryCount = 0
+                    model.loadError = nil
+                    model.isLoadingPools = true
+                    Task {
+                        await model.loadPools()
+                    }
+                } label: {
+                    Text("Retry")
+                        .font(.caption)
+                        .foregroundColor(.turquoise600)
+                }
+            }
+            .frame(minHeight: 48)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.blue600)
+            .cornerRadius(10)
+        }
+    }
+    
+    private var dropdownView: some View {
+        GenericSelectorDropDown(
+            items: Binding(get: { model.availablePools }, set: { _ in }),
+            selected: Binding(get: { model.selectedPool }, set: { model.selectedPool = $0 }),
+            mandatoryMessage: "*",
+            descriptionProvider: { $0.value.isEmpty ? "Select pool" : $0.value },
+            onSelect: { pool in
+                model.selectedPool = pool
+                model.poolValid = !pool.value.isEmpty
+                if model.tx.coin.chain == .thorChain && !pool.value.isEmpty {
+                    model.prefillPairedAddressForPool(pool.value)
+                }
+            }
+        )
+        .onAppear {
+            logUI("Showing dropdown - availablePools.count = \(model.availablePools.count), selectedPool = \(model.selectedPool.value), isLoadingPools = \(model.isLoadingPools)")
+        }
+    }
+    
+    private func logUI(_ msg: String) {
+        print("FunctionCallAddThorLP UI: \(msg)")
+    }
+}
+
+struct ApprovalInfoSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("ERC20 Approval Required")
+                .font(.body16MenloBold)
+                .foregroundColor(.neutral0)
+            
+            Text("This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:")
+                .font(.body14Menlo)
+                .foregroundColor(.neutral0)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("1. Approval transaction")
+                    .font(.body12Menlo)
+                    .foregroundColor(.turquoise600)
+                Text("2. Add liquidity transaction")
+                    .font(.body12Menlo)
+                    .foregroundColor(.turquoise600)
+            }
+            .padding(.leading, 16)
+        }
+    }
+}

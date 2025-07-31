@@ -42,27 +42,35 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 // For THORChain LP, create a THORChain swap payload
                 let expirationTime = Date().addingTimeInterval(60 * 15) // 15 minutes
                 
-                // Fetch inbound addresses to get correct vault address
-                let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                let chainName = getInboundChainName(for: tx.coin.chain)
-                
-                guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                    print("FunctionCallVerifyViewModel: No inbound address found for chain \(chainName)")
-                    return nil
-                }
-                
-                // For ERC20 tokens, we need both vault (inbound) and router addresses
+                // Handle RUNE deposits vs L1 asset sends differently
                 let vaultAddress: String
                 let routerAddress: String?
                 
-                if tx.coin.shouldApprove { // ERC20 tokens
-                    // For ERC20: vault = inbound address, router = router address
-                    vaultAddress = inbound.address // Asgard vault address
-                    routerAddress = inbound.router // Router contract address
-                } else { // Native tokens
-                    // For native tokens: vault = inbound address, no router needed
-                    vaultAddress = inbound.address // Asgard vault address
+                if tx.coin.chain == .thorChain {
+                    // For RUNE LP, we send to paired chain's inbound address (set in tx.toAddress)
+                    // We don't lookup inbound for RUNE chain itself - that would fail
+                    vaultAddress = tx.toAddress // Use the paired chain's inbound address
                     routerAddress = nil
+                    print("FunctionCallVerifyViewModel: RUNE LP - using paired chain inbound address: \(tx.toAddress)")
+                } else {
+                    // For L1 assets, fetch inbound addresses to get correct vault address
+                    let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+                    let chainName = getInboundChainName(for: tx.coin.chain)
+                    
+                    guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                        print("FunctionCallVerifyViewModel: No inbound address found for chain \(chainName)")
+                        return nil
+                    }
+                    
+                    if tx.coin.shouldApprove { // ERC20 tokens
+                        // For ERC20: vault = inbound address, router = router address
+                        vaultAddress = inbound.address // Asgard vault address
+                        routerAddress = inbound.router // Router contract address
+                    } else { // Native tokens
+                        // For native tokens: vault = inbound address, no router needed
+                        vaultAddress = inbound.address // Asgard vault address
+                        routerAddress = nil
+                    }
                 }
                 
                 let thorchainSwapPayload = THORChainSwapPayload(
