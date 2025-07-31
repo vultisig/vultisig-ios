@@ -77,6 +77,10 @@ struct PeerDiscoveryInfoBanner: View {
             .font(.body14BrockmannMedium)
             .foregroundColor(.lightText)
             .padding(.horizontal, 32)
+            .multilineTextAlignment(.leading)
+            .lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var button: some View {
