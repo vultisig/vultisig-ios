@@ -57,7 +57,10 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .theSwitch:
             return "Switch"
         case .yRuneTcy:
-            return "Exchange yRUNE/yTCY"
+            if coin.ticker == "RUNE" {
+                return "Mint and Redeem yRUNE"
+            }
+            return "Mint and Redeem yTCY"
         }
     }
     
