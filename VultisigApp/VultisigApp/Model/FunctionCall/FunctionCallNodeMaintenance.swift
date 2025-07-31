@@ -115,7 +115,8 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                 )
             )
             StyledFloatingPointField(
-                placeholder: .constant("Fee"),
+                label: "Fee",
+                placeholder: "Fee",
                 value: Binding<Decimal>(
                     get: { self.fee },
                     set: { self.fee = $0 }
@@ -126,7 +127,8 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
                 )
             )
             StyledFloatingPointField(
-                placeholder: .constant("Amount"),
+                label: NSLocalizedString("amount", comment: ""),
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding<Decimal>(
                     get: { self.amount },
                     set: { self.amount = $0 }

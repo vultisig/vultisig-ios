@@ -9,7 +9,8 @@ import Foundation
 import SwiftUI
 
 struct StyledFloatingPointField: View {
-    @Binding var placeholder: String
+    let label: String
+    let placeholder: String
     @Binding var value: Decimal
     @Binding var isValid: Bool
     
@@ -21,7 +22,7 @@ struct StyledFloatingPointField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("\(placeholder)\(optionalMessage)")
+                Text(label)
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                 if !localIsValid {

@@ -28,6 +28,9 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case stakeRuji(FunctionCallStakeRuji)
+    case unstakeRuji(FunctionCallUnstakeRuji)
+    case withdrawRujiRewards(FunctionCallWithdrawRujiRewards)
     
     var view: AnyView {
         switch self {
@@ -64,6 +67,12 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .stakeRuji(let memo):
+            return memo.getView()
+        case .unstakeRuji(let memo):
+            return memo.getView()
+        case .withdrawRujiRewards(let memo):
             return memo.getView()
         }
     }
@@ -104,6 +113,12 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .stakeRuji(let memo):
+            return memo.description
+        case .unstakeRuji(let memo):
+            return memo.description
+        case .withdrawRujiRewards(let memo):
+            return memo.description
         }
     }
     
@@ -143,6 +158,12 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .stakeRuji(let memo):
+            return memo.amount
+        case .unstakeRuji(_):
+            return .zero  // The amount goes in the memo
+        case .withdrawRujiRewards(let memo):
+            return memo.amount
         }
     }
     
@@ -159,6 +180,12 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.destinationAddress
         case .theSwitch(let memo):
+            return memo.destinationAddress
+        case .stakeRuji(let memo):
+            return memo.destinationAddress
+        case .unstakeRuji(let memo):
+            return memo.destinationAddress
+        case .withdrawRujiRewards(let memo):
             return memo.destinationAddress
         default:
             return nil
@@ -201,6 +228,12 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
+        case .stakeRuji(let memo):
+            return memo.toDictionary()
+        case .unstakeRuji(let memo):
+            return memo.toDictionary()
+        case .withdrawRujiRewards(let memo):
+            return memo.toDictionary()
         }
     }
     
@@ -214,6 +247,8 @@ enum FunctionCallInstance {
             return VSTransactionType.thorMerge
         case .unmerge(_):
             return VSTransactionType.thorUnmerge
+        case .stakeRuji, .unstakeRuji, .withdrawRujiRewards:
+            return VSTransactionType.genericContract
         default:
             return .unspecified
         }
@@ -255,6 +290,12 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
+        case .stakeRuji(let memo):
+            return memo.isTheFormValid
+        case .unstakeRuji(let memo):
+            return memo.isTheFormValid
+        case .withdrawRujiRewards(let memo):
+            return memo.isTheFormValid
         }
     }
     
@@ -274,6 +315,19 @@ enum FunctionCallInstance {
             return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         default:
             return .custom(FunctionCallCustom())
+        }
+    }
+    
+    var wasmContractPayload: WasmExecuteContractPayload? {
+        switch self {
+        case .stakeRuji(let call):
+            return call.wasmContractPayload
+        case .unstakeRuji(let call):
+            return call.wasmContractPayload
+        case .withdrawRujiRewards(let call):
+            return call.wasmContractPayload
+        default:
+            return nil
         }
     }
 }
