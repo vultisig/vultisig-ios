@@ -130,7 +130,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
                 return
             }
             
-            let rujiBalance = try await ThorchainService.shared.fetchRujiBalance(
+            let rujiBalance = try await ThorchainService.shared.fetchRujiMergeBalance(
                 thorAddr: thorAddress,
                 tokenSymbol: selectedToken.value
             )
@@ -248,10 +248,8 @@ struct UnmergeView: View {
                     .progressViewStyle(CircularProgressViewStyle())
             } else {
                 StyledFloatingPointField(
-                    placeholder: Binding(
-                        get: { viewModel.balanceLabel },
-                        set: { viewModel.balanceLabel = $0 }
-                    ),
+                    label: viewModel.balanceLabel,
+                    placeholder: viewModel.balanceLabel,
                     value: Binding(
                         get: { viewModel.amount },
                         set: { 
