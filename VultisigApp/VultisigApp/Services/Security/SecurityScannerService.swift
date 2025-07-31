@@ -8,7 +8,7 @@
 import Foundation
 import OSLog
 
-enum SecurityscannerError: Error {
+enum SecurityScannerError: Error {
     case notScanned(providerName: String)
 }
 
@@ -55,7 +55,9 @@ class SecurityScannerService: SecurityScannerServiceProtocol {
         do {
             return try await firstProvider.scanTransaction(transaction)
         } catch {
-            throw SecurityscannerError.notScanned(providerName: firstProvider.getProviderName())
+            logger.error("Scan failed with provider \(firstProvider.getProviderName()): \(error)")
+            // Optionally, enhance the error to include the original error
+            throw SecurityScannerError.notScanned(providerName: firstProvider.getProviderName())
         }
     }
     

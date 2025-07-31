@@ -11,6 +11,8 @@ import BigInt
 enum SecurityScannerTransactionFactoryError: Error {
     case notSupported(chain: Chain)
     case swapProviderNotSupported
+    case invalidAddress(String)
+    case invalidBlockchainSpecific(String)
 }
 
 struct SecurityScannerTransactionFactory: SecurityScannerTransactionFactoryProtocol {
@@ -74,7 +76,10 @@ private extension SecurityScannerTransactionFactory {
     }
     
     func createSOLSecurityScanner(transaction: SendTransaction) async throws -> SecurityScannerTransaction {
-        let vaultHexPubKey = Base58.decodeNoCheck(string: transaction.fromAddress)?.toHexString() ?? .empty
+        guard let decodedKey = Base58.decodeNoCheck(string: transaction.fromAddress) else {
+            throw SecurityScannerTransactionFactoryError.invalidAddress(transaction.fromAddress)
+        }
+        let vaultHexPubKey = decodedKey.toHexString()
         var blockchainSpecific: BlockChainSpecific = try await BlockChainService.shared.fetchSpecific(tx: transaction)
         let type: SecurityTransactionType
         
@@ -83,7 +88,7 @@ private extension SecurityScannerTransactionFactory {
         } else {
             type = .tokenTransfer
             guard case let .Solana(recentBlockHash, priorityFee, fromAddressPubKey, toAddressPubKey, hasProgramId) = blockchainSpecific else {
-                fatalError()
+                throw SecurityScannerTransactionFactoryError.invalidBlockchainSpecific("Expected Solana specific data")
             }
             blockchainSpecific = BlockChainSpecific.Solana(
                 recentBlockHash: recentBlockHash,
@@ -167,13 +172,17 @@ private extension SecurityScannerTransactionFactory {
         )
         let preHash = try UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: "", vaultHexChainCode: "").getPreSignedImageHash(keysignPayload: keySignPayload)
         
+        guard let firstPreHash = preHash.first else {
+            throw HelperError.runtimeError("No valid prehash")
+        }
+        
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
             type: SecurityTransactionType.coinTransfer,
             from: transaction.fromAddress,
             to: transaction.toAddress,
             amount: BigInt.zero,
-            data: preHash[0]
+            data: firstPreHash
         )
     }
 }

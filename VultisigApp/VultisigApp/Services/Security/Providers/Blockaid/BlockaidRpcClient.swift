@@ -173,7 +173,7 @@ private extension Chain {
         case .solana:
             return "solana"
         default:
-            fatalError("Chain: \(self) not supported by Blockaid")
+            return .empty
         }
     }
 }

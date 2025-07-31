@@ -24,7 +24,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
     @Published var isHackedOrPhished = false
     
     @Published var showSecurityScannerSheet: Bool = false
-    @Published var securityScannerState: SecurityScannerState = .scanning
+    @Published var securityScannerState: SecurityScannerState = .idle
     
     let blockChainService = BlockChainService.shared
     

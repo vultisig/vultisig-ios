@@ -20,7 +20,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var errorMessage = ""
     
     @Published var showSecurityScannerSheet: Bool = false
-    @Published var securityScannerState: SecurityScannerState = .scanning
+    @Published var securityScannerState: SecurityScannerState = .idle
     
     @Published var utxo = BlockchairService.shared
     let blockChainService = BlockChainService.shared

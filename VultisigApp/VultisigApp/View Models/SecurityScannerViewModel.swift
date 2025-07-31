@@ -67,7 +67,7 @@ class SecurityScannerViewModel: ObservableObject {
             let result = try await service.scanTransaction(tx)
             await update(state: .scanned(result))
         } catch {
-            if case let SecurityscannerError.notScanned(provider) = error {
+            if case let SecurityScannerError.notScanned(provider) = error {
                 await update(state: .notScanned(provider: provider))
             } else {
                 await update(state: .idle)
@@ -76,7 +76,14 @@ class SecurityScannerViewModel: ObservableObject {
     }
     
     func isScanningAvailable(for chain: Chain) -> Bool {
-        service.isSecurityServiceEnabled()
+        guard service.isSecurityServiceEnabled() else { return false }
+        // Check if any provider supports this chain for transaction scanning
+        let supportedChains = service.getSupportedChainsByFeature()
+        return supportedChains.contains { support in
+            support.feature.contains { feature in
+                feature.featureType == .scanTransaction && feature.chains.contains(chain)
+            }
+        }
     }
     
     private func update(state: SecurityScannerState) async {
