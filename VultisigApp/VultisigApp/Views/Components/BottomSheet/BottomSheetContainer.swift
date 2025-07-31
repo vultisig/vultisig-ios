@@ -8,14 +8,10 @@
 import SwiftUI
 
 struct BottomSheetContainer<Content: View>: View {
-    let showCloseButton: Bool
     let content: Content
-    let onDismiss: () -> Void
 
-    init(showCloseButton: Bool, @ViewBuilder content: () -> Content, onDismiss: @escaping () -> Void) {
-        self.showCloseButton = showCloseButton
+    init(@ViewBuilder content: () -> Content) {
         self.content = content()
-        self.onDismiss = onDismiss
     }
 
     var body: some View {

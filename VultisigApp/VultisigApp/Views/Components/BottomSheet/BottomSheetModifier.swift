@@ -16,14 +16,7 @@ public extension View {
     }
 }
 
-public protocol BottomSheetProperties {
-    var showCloseButton: Bool { get }
-}
-
-public extension BottomSheetProperties {
-    var showCloseButton: Bool { false }
-}
-
+public protocol BottomSheetProperties {}
 public typealias BottomSheetContentView = View & BottomSheetProperties
 
 struct BottomSheetModifier<SheetContent: BottomSheetContentView>: ViewModifier {
@@ -54,10 +47,8 @@ private extension BottomSheetModifier {
     func nativeBottomSheet(content: Content) -> some View {
         content.sheet(isPresented: $isPresented) {
             VStack {
-                BottomSheetContainer(showCloseButton: sheetContent.showCloseButton) {
+                BottomSheetContainer {
                     sheetContent
-                } onDismiss: {
-                    isPresented = false
                 }
                 .overlay {
                     GeometryReader { geometry in
