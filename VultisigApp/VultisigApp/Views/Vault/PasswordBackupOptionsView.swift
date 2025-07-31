@@ -92,16 +92,7 @@ struct PasswordBackupOptionsView: View {
     }
     
     func dismissView() {
-        if #available(iOS 26.0, *) {
-            print("iOS 26.0 or later")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                if isNewVault {
-                    navigationLinkActive = true
-                } else {
-                    homeLinkActive = true
-                }
-            }
-        } else {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             if isNewVault {
                 navigationLinkActive = true
             } else {
