@@ -92,10 +92,12 @@ struct PasswordBackupOptionsView: View {
     }
     
     func dismissView() {
-        if isNewVault {
-            navigationLinkActive = true
-        } else {
-            homeLinkActive = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if isNewVault {
+                navigationLinkActive = true
+            } else {
+                homeLinkActive = true
+            }
         }
     }
 }
