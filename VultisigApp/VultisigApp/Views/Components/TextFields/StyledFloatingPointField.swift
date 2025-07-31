@@ -22,7 +22,7 @@ struct StyledFloatingPointField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(label)
+                Text("\(label)\(optionalMessage)")
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                 if !localIsValid {
