@@ -10,20 +10,21 @@ import SwiftUI
 struct EditVaultCell: View {
     let title: String
     let description: String
-    let icon: String
+    // TODO: - To remove after we moved all icons to new Design System
+    let systemIcon: String
     let assetIcon: String?
     var isDestructive: Bool = false
     
     init(
         title: String,
         description: String,
-        icon: String = "",
+        systemIcon: String = "",
         assetIcon: String? = nil,
         isDestructive: Bool = false
     ) {
         self.title = title
         self.description = description
-        self.icon = icon
+        self.systemIcon = systemIcon
         self.assetIcon = assetIcon
         self.isDestructive = isDestructive
     }
@@ -54,7 +55,7 @@ struct EditVaultCell: View {
         if let assetIcon {
             Image(assetIcon)
         } else {
-            Image(systemName: icon)
+            Image(systemName: systemIcon)
         }
     }
     
@@ -78,5 +79,5 @@ struct EditVaultCell: View {
 }
 
 #Preview {
-    EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
+    EditVaultCell(title: "backup", description: "backupVault", systemIcon: "arrow.down.circle.fill")
 }
