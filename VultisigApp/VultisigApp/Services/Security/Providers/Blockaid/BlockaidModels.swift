@@ -54,6 +54,14 @@ struct SuiScanTransactionRequestJson: Codable {
     let options: [String]
     let accountAddress: String
     let transaction: String
+    
+    enum CodingKeys: String, CodingKey {
+        case chain
+        case metadata
+        case options
+        case accountAddress = "account_address"
+        case transaction
+    }
 }
 
 // MARK: - Bitcoin Transaction Request
