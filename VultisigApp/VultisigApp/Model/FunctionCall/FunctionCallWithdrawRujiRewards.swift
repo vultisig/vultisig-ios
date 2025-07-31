@@ -8,10 +8,6 @@
 import SwiftUI
 import Foundation
 import Combine
-
-import SwiftUI
-import Foundation
-import Combine
 import BigInt
 
 class FunctionCallWithdrawRujiRewards: ObservableObject {
@@ -48,7 +44,6 @@ class FunctionCallWithdrawRujiRewards: ObservableObject {
         $amountValid
             .receive(on: DispatchQueue.main)
             .map { $0 && !self.amount.isZero && self.rewardsAmount >= self.amount }
-            .map { _ in true }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
