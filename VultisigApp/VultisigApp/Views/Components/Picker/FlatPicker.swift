@@ -30,7 +30,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var lastOffset: CGFloat = 0.0
     @State private var currentVisibleIndex: Int = 0
-    @State private var scrollViewProxy: ScrollViewProxy? = nil
+    @State private var scrollViewProxy: ScrollViewProxy?
     @State private var scrollCheckWorkItem: DispatchWorkItem?
 #if os(iOS)
     private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -74,7 +74,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         scrollCheckWorkItem = workItem
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: workItem)
                     }
-                    .onChange(of: lastOffset) { _, newValue in
+                    .onChange(of: lastOffset) { _, _ in
                         let center = (containerSize - itemSize) / 2
                         let offset = -scrollOffset + center
                         let index = Int(round(offset / itemSize))
@@ -91,7 +91,7 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
                         // Initialize current visible index
                         updateCurrentVisibilityIndex(animated: false)
                     }
-                    .onChange(of: selectedItem) { oldValue, newValue in
+                    .onChange(of: selectedItem) { _, _ in
                         updateCurrentVisibilityIndex(animated: true)
                     }
                 }
