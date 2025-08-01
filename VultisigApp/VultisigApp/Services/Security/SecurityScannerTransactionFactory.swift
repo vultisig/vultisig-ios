@@ -192,7 +192,7 @@ private extension SecurityScannerTransactionFactory {
 private extension SecurityScannerTransactionFactory {
     func createEVMSecurityScanner(transaction: SwapTransaction) async throws -> SecurityScannerTransaction {
         switch transaction.quote {
-        case .oneinch(let quote, _):
+        case .oneinch(let quote, _), .lifi(let quote, _):
             try buildSwapSecurityScannerTransaction(
                 srcToken: transaction.fromCoin,
                 from: quote.tx.from,
@@ -210,7 +210,7 @@ private extension SecurityScannerTransactionFactory {
                 data: quote.tx.data,
                 isApprovalRequired: transaction.isApproveRequired
             )
-        case .lifi, .mayachain, .thorchain, .none:
+        case .mayachain, .thorchain, .none:
             throw SecurityScannerTransactionFactoryError.swapProviderNotSupported
         }
     }
