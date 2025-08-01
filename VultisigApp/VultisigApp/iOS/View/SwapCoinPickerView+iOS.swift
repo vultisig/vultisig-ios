@@ -10,9 +10,11 @@ import SwiftUI
 
 extension SwapCoinPickerView {
     var body: some View {
-        VStack {
-            header
-            content
+        Screen {
+            VStack {
+                header
+                content
+            }
         }
     }
 }
