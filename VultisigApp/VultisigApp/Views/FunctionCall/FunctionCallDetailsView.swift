@@ -12,6 +12,7 @@ struct FunctionCallDetailsView: View {
     @State private var showInvalidFormAlert = false
     
     @State var fnCallInstance: FunctionCallInstance
+    @State var defaultCoin: Coin
     
     @StateObject var keyboardObserver = KeyboardObserver()
 
@@ -22,7 +23,7 @@ struct FunctionCallDetailsView: View {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         let defaultCoin = tx.coin
-        
+        self.defaultCoin = defaultCoin
         let dict = tx.memoFunctionDictionary
         if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
             if let actionStr = dict.get("action") {
@@ -88,7 +89,8 @@ struct FunctionCallDetailsView: View {
             }
             .onChange(of: selectedFunctionMemoType) {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
-                
+                // Reset to default coin
+                tx.coin = defaultCoin
                 switch selectedFunctionMemoType {
                 case .bond:
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
@@ -193,6 +195,15 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:
                     fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .stakeRuji:
+                    functionCallViewModel.setRujiToken(to: tx, vault: vault)
+                    fnCallInstance = .stakeRuji(FunctionCallStakeRuji(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
+                case .unstakeRuji:
+                    functionCallViewModel.setRujiToken(to: tx, vault: vault)
+                    fnCallInstance = .unstakeRuji(FunctionCallUnstakeRuji(tx: tx, functionCallViewModel: functionCallViewModel))
+                case .withdrawRujiRewards:
+                    functionCallViewModel.setRujiToken(to: tx, vault: vault)
+                    fnCallInstance = .withdrawRujiRewards(FunctionCallWithdrawRujiRewards(tx: tx, functionCallViewModel: functionCallViewModel))
                 }
             }
     }
@@ -251,6 +262,7 @@ struct FunctionCallDetailsView: View {
                     tx.memo = fnCallInstance.description
                     tx.memoFunctionDictionary = fnCallInstance.toDictionary()
                     tx.transactionType = fnCallInstance.getTransactionType()
+                    tx.wasmContractPayload = fnCallInstance.wasmContractPayload
                     
                     if let toAddress = fnCallInstance.toAddress {
                         tx.toAddress = toAddress

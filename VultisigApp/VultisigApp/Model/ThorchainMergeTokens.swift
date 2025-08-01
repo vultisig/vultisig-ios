@@ -25,3 +25,7 @@ enum ThorchainMergeTokens {
         TokenMergeInfo(denom: "thor.lvn", wasmContractAddress: "thor1ltd0maxmte3xf4zshta9j5djrq9cl692ctsp9u5q0p9wss0f5lms7us4yf")
     ]
 } 
+
+enum RUJIStakingConstants {
+    static let contract = "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+}

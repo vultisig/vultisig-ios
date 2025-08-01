@@ -12,6 +12,8 @@ import WalletCore
 
 @MainActor
 class FunctionCallVerifyViewModel: ObservableObject {
+    let securityScanViewModel = SecurityScannerViewModel()
+    
     @Published var showAlert = false
     @Published var isLoading = false
     @Published var errorMessage = ""
@@ -21,7 +23,15 @@ class FunctionCallVerifyViewModel: ObservableObject {
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
     
+    @Published var showSecurityScannerSheet: Bool = false
+    @Published var securityScannerState: SecurityScannerState = .idle
+    
     let blockChainService = BlockChainService.shared
+    
+    func onLoad() {
+        securityScanViewModel.$state
+            .assign(to: &$securityScannerState)
+    }
     
     func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
@@ -51,14 +61,12 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     // We don't lookup inbound for RUNE chain itself - that would fail
                     vaultAddress = tx.toAddress // Use the paired chain's inbound address
                     routerAddress = nil
-                    print("FunctionCallVerifyViewModel: RUNE LP - using paired chain inbound address: \(tx.toAddress)")
                 } else {
                     // For L1 assets, fetch inbound addresses to get correct vault address
                     let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
                     let chainName = getInboundChainName(for: tx.coin.chain)
                     
                     guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
-                        print("FunctionCallVerifyViewModel: No inbound address found for chain \(chainName)")
                         return nil
                     }
                     
@@ -95,18 +103,20 @@ class FunctionCallVerifyViewModel: ObservableObject {
                         amount: tx.amountInRaw,
                         spender: tx.toAddress
                     )
-                    print("FunctionCallVerifyViewModel: Created ERC20 approval payload for \(tx.coin.ticker) to spender \(tx.toAddress)")
                 }
             }
             
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
-                                                                           toAddress: tx.toAddress,
-                                                                           amount: tx.amountInRaw,
-                                                                           memo: tx.memo,
-                                                                           chainSpecific: chainSpecific,
-                                                                           swapPayload: swapPayload,
-                                                                           approvePayload: approvePayload,
-                                                                           vault: vault)
+            keysignPayload = try await keysignPayloadFactory.buildTransfer(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                amount: tx.amountInRaw,
+                memo: tx.memo,
+                chainSpecific: chainSpecific,
+                swapPayload: swapPayload,
+                approvePayload: approvePayload,
+                vault: vault,
+                wasmExecuteContractPayload: tx.wasmContractPayload
+            )
         } catch {
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:
@@ -160,5 +170,14 @@ class FunctionCallVerifyViewModel: ObservableObject {
             // For unknown chains, use the chain's swapAsset
             return chain.swapAsset.uppercased()
         }
+    }
+    
+    func scan(transaction: SendTransaction, vault: Vault) async {
+        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+    }
+    
+    func validateSecurityScanner() -> Bool {
+        showSecurityScannerSheet = securityScannerState.shouldShowWarning
+        return !securityScannerState.shouldShowWarning
     }
 }

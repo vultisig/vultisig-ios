@@ -66,7 +66,7 @@ struct EditVaultView: View {
         NavigationLink {
             VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
         } label: {
-            EditVaultCell(title: "vaultDetailsTitle", description: "vaultDetailsDescription", icon: "info")
+            EditVaultCell(title: "vaultDetailsTitle", description: "vaultDetailsDescription", systemIcon: "info")
         }
     }
     
@@ -74,7 +74,7 @@ struct EditVaultView: View {
         NavigationLink {
             PasswordBackupOptionsView(tssType: .Keygen, vault: vault)
         } label: {
-            EditVaultCell(title: "backup", description: "backupVault", icon: "icloud.and.arrow.up")
+            EditVaultCell(title: "backup", description: "backupVault", systemIcon: "icloud.and.arrow.up")
         }
     }
 
@@ -82,7 +82,7 @@ struct EditVaultView: View {
         NavigationLink {
             SettingsCustomMessageView(vault: vault)
         } label: {
-            EditVaultCell(title: "Sign", description: "Sign custom message", icon: "signature")
+            EditVaultCell(title: "Sign", description: "Sign custom message", systemIcon: "signature")
         }
     }
 
@@ -90,7 +90,7 @@ struct EditVaultView: View {
         NavigationLink {
             RenameVaultView(vaults: vaults, folders: folders, vault: vault)
         } label: {
-            EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
+            EditVaultCell(title: "rename", description: "renameVault", systemIcon: "square.and.pencil")
         }
     }
     
@@ -98,7 +98,7 @@ struct EditVaultView: View {
         NavigationLink {
             VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo, vaults: vaults)
         } label: {
-            EditVaultCell(title: "delete", description: "deleteVault", icon: "trash", isDestructive: true)
+            EditVaultCell(title: "delete", description: "deleteVault", systemIcon: "trash", isDestructive: true)
         }
         
     }
@@ -107,7 +107,7 @@ struct EditVaultView: View {
         NavigationLink {
             ReshareView(vault: vault)
         } label: {
-            EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
+            EditVaultCell(title: "reshare", description: "reshareVault", systemIcon: "tray.and.arrow.up")
         }
     }
 
@@ -115,15 +115,23 @@ struct EditVaultView: View {
         NavigationLink {
             SettingsBiometryView(vault: vault)
         } label: {
-            EditVaultCell(title: "settingsBiometricsTitle", description: "settingsBiometricsSubtitle", icon: "person.badge.key")
+            EditVaultCell(title: "settingsBiometricsTitle", description: "settingsBiometricsSubtitle", systemIcon: "person.badge.key")
         }
     }
     
     var migrateVault: some View {
-        EditVaultCell(title: "migrate", description: "migrateVault", icon: "arrow.up.circle")
+        EditVaultCell(title: "migrate", description: "migrateVault", systemIcon: "arrow.up.circle")
             .onTapGesture {
                 showUpgradeYourVaultSheet = true
             }
+    }
+    
+    var onChainSecurityCell: some View {
+        NavigationLink {
+            OnChainSecurityScreen()
+        } label: {
+            EditVaultCell(title: "vaultSettingsSecurityTitle", description: "vaultSettingsSecuritySubtitle", assetIcon: "folder-lock")
+        }
     }
     
     private func setData() {

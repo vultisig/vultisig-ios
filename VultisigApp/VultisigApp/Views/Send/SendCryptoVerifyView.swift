@@ -30,14 +30,17 @@ struct SendCryptoVerifyView: View {
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
+        .onLoad {
+            sendCryptoVerifyViewModel.onLoad()
+            Task {
+                await sendCryptoVerifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
             setData()
-        }
-        .task {
-            await sendCryptoVerifyViewModel.performSecurityScan(tx: tx)
         }
     }
     
@@ -76,11 +79,18 @@ struct SendCryptoVerifyView: View {
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
             ),
+            securityScannerState: $sendCryptoVerifyViewModel.securityScannerState,
             contentPadding: 16
         ) {
             checkboxes
-            SecurityScanView(viewModel: sendCryptoVerifyViewModel.securityScanViewModel)
-                .showIf(sendCryptoVerifyViewModel.showSecurityScan)
+        }
+        .bottomSheet(isPresented: $sendCryptoVerifyViewModel.showSecurityScannerSheet) {
+            SecurityScannerBottomSheet(securityScannerModel: sendCryptoVerifyViewModel.securityScannerState.result) {
+                sendCryptoVerifyViewModel.showSecurityScannerSheet = false
+                signAndMoveToNextView()
+            } onDismissRequest: {
+                sendCryptoVerifyViewModel.showSecurityScannerSheet = false
+            }
         }
     }
     var checkboxes: some View {
@@ -94,7 +104,14 @@ struct SendCryptoVerifyView: View {
         isButtonDisabled = false
     }
     
-    func signPressed() {
+    func onSignPress() {
+        let canSign = sendCryptoVerifyViewModel.validateSecurityScanner()
+        if canSign {
+            signAndMoveToNextView()
+        }
+    }
+    
+    func signAndMoveToNextView() {
         guard !isButtonDisabled else {
             return
         }

@@ -10,8 +10,24 @@ import SwiftUI
 struct EditVaultCell: View {
     let title: String
     let description: String
-    let icon: String
+    // TODO: - To remove after we moved all icons to new Design System
+    let systemIcon: String
+    let assetIcon: String?
     var isDestructive: Bool = false
+    
+    init(
+        title: String,
+        description: String,
+        systemIcon: String = "",
+        assetIcon: String? = nil,
+        isDestructive: Bool = false
+    ) {
+        self.title = title
+        self.description = description
+        self.systemIcon = systemIcon
+        self.assetIcon = assetIcon
+        self.isDestructive = isDestructive
+    }
     
     var body: some View {
         HStack(spacing: 15) {
@@ -29,10 +45,18 @@ struct EditVaultCell: View {
     }
     
     var image: some View {
-        Image(systemName: icon)
+        iconImage
             .font(.body24MontserratMedium)
             .foregroundColor(isDestructive ? .destructive : .neutral200)
             .frame(width: 30)
+    }
+    
+    var iconImage: some View {
+        if let assetIcon {
+            Image(assetIcon)
+        } else {
+            Image(systemName: systemIcon)
+        }
     }
     
     var content: some View {
@@ -55,5 +79,5 @@ struct EditVaultCell: View {
 }
 
 #Preview {
-    EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
+    EditVaultCell(title: "backup", description: "backupVault", systemIcon: "arrow.down.circle.fill")
 }

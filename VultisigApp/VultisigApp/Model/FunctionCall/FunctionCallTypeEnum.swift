@@ -10,7 +10,28 @@ import Foundation
 import Combine
 
 enum FunctionCallType: String, CaseIterable, Identifiable {
-    case bond, unbond, bondMaya, unbondMaya, leave, custom, vote, stake, stakeTcy, unstake, unstakeTcy, addPool, removePool, cosmosIBC, merge, unmerge, theSwitch, addThorLP, removeThorLP
+    case bond,
+         unbond,
+         bondMaya,
+         unbondMaya,
+         leave,
+         custom,
+         vote,
+         stake,
+         stakeTcy,
+         unstake,
+         unstakeTcy,
+         addPool,
+         removePool,
+         cosmosIBC,
+         merge,
+         unmerge,
+         theSwitch,
+         addThorLP,
+         removeThorLP,
+         stakeRuji,
+         unstakeRuji,
+         withdrawRujiRewards
     
     var id: String { self.rawValue }
     
@@ -60,29 +81,54 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Add THORChain LP"
         case .removeThorLP:
             return "Remove THORChain LP"
+        case .stakeRuji:
+            return "Stake RUJI"
+        case .unstakeRuji:
+            return "Unstake RUJI"
+        case .withdrawRujiRewards:
+            return "Withdraw RUJI Rewards"
         }
     }
     
     static func getCases(for coin: Coin) -> [FunctionCallType] {
         switch coin.chain {
         case .thorChain:
-            if coin.ticker.uppercased() == "TCY" {
-                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .stakeTcy, .unstakeTcy, .addThorLP, .removeThorLP]
+            let defaultFunctions = [
+                FunctionCallType.bond,
+                .unbond,
+                .leave,
+                .merge,
+                .unmerge,
+                .custom,
+                .addThorLP,
+                .removeThorLP,
+                .stakeRuji,
+                .unstakeRuji,
+                .withdrawRujiRewards
+            ]
+            switch coin.ticker.uppercased() {
+            case "TCY":
+                return defaultFunctions + [.stakeTcy, .unstakeTcy]
+            default:
+                return defaultFunctions
             }
-            if coin.ticker.uppercased() == "RUNE" {
-                return [.bond, .unbond, .leave, .merge, .unmerge, .custom, .addThorLP, .removeThorLP]
-            }
-            return [.bond, .unbond, .leave, .merge, .unmerge, .custom]
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return [.addThorLP]
         case .mayaChain:
-            return [.bondMaya, .unbondMaya, .leave, .custom, .addPool, .removePool]
+            return [.bondMaya,
+                    .unbondMaya,
+                    .leave,
+                    .custom,
+                    .addPool,
+                    .removePool]
         case .dydx:
             return [.vote]
         case .ton:
-            return [.stake, .unstake]
+            return [.stake,
+                    .unstake]
         case .gaiaChain:
-            return [.cosmosIBC, .theSwitch]
+            return [.cosmosIBC,
+                    .theSwitch]
         case .kujira:
             return [.cosmosIBC]
         case .osmosis:

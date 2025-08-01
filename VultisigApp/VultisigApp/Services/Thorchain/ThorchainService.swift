@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 extension Array {
     func chunked(into size: Int) -> [[Element]] {
@@ -339,12 +340,22 @@ extension ThorchainService {
         let shares: String
     }
     
+    /// Structure representing a RUJI Stake balance result
+    struct RujiStakeBalance {
+        let stakeAmount: BigInt
+        let stakeTicker: String
+        let rewardsAmount: BigInt
+        let rewardsTicker: String
+        
+        static let empty = RujiStakeBalance(stakeAmount: .zero, stakeTicker: "", rewardsAmount: .zero, rewardsTicker: "")
+    }
+    
     /// Fetch merged RUJI balance for a specific token
     /// - Parameters:
     ///   - thorAddress: The THORChain address to query
     ///   - tokenSymbol: The token symbol to check (e.g., "THOR.KUJI", "THOR.RKUJI")
     /// - Returns: A tuple containing (ruji amount, shares, price per share)
-    func fetchRujiBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
+    func fetchRujiMergeBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiBalance {
         let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
         
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
@@ -363,7 +374,7 @@ extension ThorchainService {
 
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        let decoded = try JSONDecoder().decode(UnmergeAccountResponse.self, from: data)
+        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
 
         // Find the account matching the selected token
         let cleanTokenSymbol = tokenSymbol.lowercased().replacingOccurrences(of: "thor.", with: "")
@@ -384,6 +395,7 @@ extension ThorchainService {
 
         return RujiBalance(ruji: ruji, shares: shares, price: price)
     }
+    
     
     /// Fetch all merged RUJI positions for an address
     /// - Parameter thorAddress: The THORChain address to query
@@ -407,7 +419,7 @@ extension ThorchainService {
 
         let (data, _) = try await URLSession.shared.data(for: request)
         
-        let decoded = try JSONDecoder().decode(UnmergeAccountResponse.self, from: data)
+        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
 
         var positions: [MergedPosition] = []
         
@@ -421,6 +433,45 @@ extension ThorchainService {
         }
         
         return positions
+    }
+    
+    func fetchRujiStakeBalance(thorAddr: String, tokenSymbol: String) async throws -> RujiStakeBalance {
+        let id = "Account:\(thorAddr)".data(using: .utf8)?.base64EncodedString() ?? ""
+        
+        guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
+            throw HelperError.runtimeError("Invalid GraphQL URL")
+        }
+
+        let query = String(format: Self.stakeQuery, id)
+
+        let requestBody: [String: Any] = ["query": query]
+
+        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
+
+        guard let stake =
+                decoded.data.node?.stakingV2.first else {
+            return .empty
+        }
+
+        let stakeAmount = BigInt(stake.bonded.amount) ?? .zero
+        let stakeTicker = stake.bonded.asset.metadata?.symbol ?? ""
+        let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? .empty) ?? .zero
+        let rewardsTicker = stake.pendingRevenue?.asset.metadata?.symbol ?? .empty
+
+        return RujiStakeBalance(
+            stakeAmount: stakeAmount,
+            stakeTicker: stakeTicker,
+            rewardsAmount: rewardsAmount,
+            rewardsTicker: rewardsTicker
+        )
     }
 }
 
@@ -603,6 +654,34 @@ private extension ThorchainService {
                   metadata {
                     symbol
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+    
+    static let stakeQuery = """
+    {
+      node(id:"%@") {
+        ... on Account {
+          stakingV2 {
+            account
+            bonded {
+              amount
+              asset {
+                metadata {
+                  symbol
+                }
+              }
+            }
+            pendingRevenue {
+              amount
+              asset {
+                metadata {
+                  symbol
                 }
               }
             }
