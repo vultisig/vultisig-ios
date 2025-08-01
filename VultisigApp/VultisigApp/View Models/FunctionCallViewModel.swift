@@ -104,4 +104,37 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
         
         return dict
     }
+    
+    // MARK: - Wasm Payload Builder
+    /// Converts a dictionary produced by `toDictionary()` back into a `WasmExecuteContractPayload`.
+    /// - Parameters:
+    ///   - dict: The `ThreadSafeDictionary` containing the required keys.
+    ///   - sender: The wallet address that will sign the transaction.
+    /// - Returns: A ready‑to‑use `WasmExecuteContractPayload` or `nil` if mandatory data is missing or invalid.
+    func buildWasmPayload(from dict: ThreadSafeDictionary<String, String>, sender: String) -> WasmExecuteContractPayload? {
+        guard
+            !sender.isEmpty,
+            let destination = dict.get("destinationAddress"), !destination.isEmpty,
+            let execMsg = dict.get("executeMsg"), !execMsg.isEmpty,
+            let denom = dict.get("denom"), !denom.isEmpty,
+            let amountStr = dict.get("amount"), !amountStr.isEmpty,
+            UInt64(amountStr) != nil
+        else {
+            return nil
+        }
+
+        let coin = CosmosCoin(amount: amountStr, denom: denom.lowercased())
+        return WasmExecuteContractPayload(
+            senderAddress: sender,
+            contractAddress: destination,
+            executeMsg: execMsg,
+            coins: [coin]
+        )
+    }
+    
+    func setRujiToken(to tx: SendTransaction, vault: Vault) {
+        let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
+        guard let rujiToken else { return }
+        tx.coin = rujiToken
+    }
 }

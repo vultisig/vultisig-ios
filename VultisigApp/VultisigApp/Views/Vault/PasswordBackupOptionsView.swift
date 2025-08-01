@@ -75,8 +75,7 @@ struct PasswordBackupOptionsView: View {
             BackupPasswordSetupView(
                 tssType: tssType,
                 vault: vault,
-                isNewVault: isNewVault,
-                showSkipPasswordButton: false
+                isNewVault: isNewVault
             )
         }
     }
@@ -92,10 +91,12 @@ struct PasswordBackupOptionsView: View {
     }
     
     func dismissView() {
-        if isNewVault {
-            navigationLinkActive = true
-        } else {
-            homeLinkActive = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if isNewVault {
+                navigationLinkActive = true
+            } else {
+                homeLinkActive = true
+            }
         }
     }
 }

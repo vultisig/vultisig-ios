@@ -30,5 +30,9 @@ extension BigInt {
     func toDecimal(decimals: Int) -> Decimal {
         self.description.toDecimal().truncated(toPlaces: decimals)
     }
+    
+    func toDisplayDecimal(decimals: Int) -> Decimal {
+        self.description.toDecimal() / pow(10, decimals)
+    }
 }
 

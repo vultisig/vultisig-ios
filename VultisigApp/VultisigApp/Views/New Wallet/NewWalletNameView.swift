@@ -14,8 +14,8 @@ struct NewWalletNameView: View {
 
     @State var name: String
     @State var isLinkActive = false
-    @State var showAlert = false
     @FocusState private var isNameFocused: Bool
+    @State var errorMessage: String = ""
     
     @Query var vaults: [Vault]
     
@@ -26,17 +26,23 @@ struct NewWalletNameView: View {
     var view: some View {
         VStack {
             fields
+            if !errorMessage.isEmpty {
+                error
+            }
             Spacer()
             button
         }
         .onAppear() {
             isNameFocused = true
         }
-        .alert(isPresented: $showAlert) {
-            alert
-        }
     }
-    
+    var error: some View {
+        Text(NSLocalizedString(errorMessage, comment: ""))
+            .font(.body14BrockmannMedium)
+            .foregroundColor(.alertRed)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+    }
     var textfield: some View {
         HStack {
             TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
@@ -62,7 +68,7 @@ struct NewWalletNameView: View {
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Color.blue200 : Color.alertRed, lineWidth: 1)
         )
         .padding(.top, 32)
     }
@@ -91,14 +97,6 @@ struct NewWalletNameView: View {
         }
     }
     
-    var alert: Alert {
-        Alert(
-            title: Text(getVaultName() + NSLocalizedString("alreadyExists", comment: "")),
-            message: Text(NSLocalizedString("vaultNameUnique", comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("dismiss", comment: "")))
-        )
-    }
-    
     var fields: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("nameYourVault", comment: ""))
@@ -116,13 +114,18 @@ struct NewWalletNameView: View {
     }
 
     private func verifyVault() {
+        if name.isEmpty {
+            errorMessage = NSLocalizedString("enterVaultName", comment: "")
+            return
+        }
+        
         for vault in vaults {
-            if name.isEmpty || vault.name == name {
-                showAlert = true
+            if vault.name.caseInsensitiveCompare(name) == .orderedSame {
+                errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
                 return
             }
         }
-        
+        errorMessage = ""
         isLinkActive = true
     }
     
