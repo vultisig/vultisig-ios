@@ -175,7 +175,7 @@ struct SwapCoinPickerView: View {
         }
         
         // Sort coins: native token first, then by USD balance in descending order
-        let sortedCoins = filteredCoins.sorted { first, second in
+        var sortedCoins = filteredCoins.sorted { first, second in
             // Native token always comes first
             if first.isNativeToken && !second.isNativeToken {
                 return true
@@ -186,6 +186,11 @@ struct SwapCoinPickerView: View {
             
             // If both are native or both are not native, sort by USD balance
             return first.balanceInFiatDecimal > second.balanceInFiatDecimal
+        }
+        
+        if let indexOfSelected = sortedCoins.firstIndex(of: selectedCoin) {
+            sortedCoins.remove(at: indexOfSelected)
+            sortedCoins = [selectedCoin] + sortedCoins
         }
         
         return sortedCoins
