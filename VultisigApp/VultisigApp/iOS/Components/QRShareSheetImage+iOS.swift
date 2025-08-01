@@ -20,13 +20,12 @@ extension QRShareSheetImage {
     var qrCode: some View {
         image
             .resizable()
-            .frame(width: 250, height: 250)
-            .frame(width: 300, height: 300)
-            .background(Color.turquoise600.opacity(0.15))
+            .aspectRatio(contentMode: .fit)
+            .padding(24)
             .cornerRadius(cornerRadius)
             .overlay (
                 RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [24]))
+                    .strokeBorder(Color.borderBlue, lineWidth: 2)
             )
             .padding(.horizontal, padding)
     }

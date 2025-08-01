@@ -85,7 +85,7 @@ struct SwapChainPickerView: View {
                 searchBar
                 
                 if filteredChains.count > 0 {
-                    networkTitle
+                    listHeader
                     list
                 } else {
                     emptyMessage
@@ -97,11 +97,19 @@ struct SwapChainPickerView: View {
         }
     }
     
-    var networkTitle: some View {
-        Text(NSLocalizedString("network", comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    var listHeader: some View {
+        HStack {
+            Text(NSLocalizedString("chain", comment: ""))
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer()
+            Text(NSLocalizedString("balance", comment: ""))
+                .font(.body12BrockmannMedium)
+                .foregroundColor(.extraLightGray)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(.horizontal, 24)
     }
     
     var list: some View {
@@ -132,30 +140,10 @@ struct SwapChainPickerView: View {
     }
 
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .padding(.horizontal, 12)
+        SearchTextField(value: $searchText)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
-    }
-
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .disableAutocorrection(true)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-                .padding(.horizontal, 8)
-        }
     }
 }
 

@@ -10,15 +10,12 @@ import SwiftUI
 
 extension SwapCoinPickerView {
     var body: some View {
-        content
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            main
+        Screen {
+            VStack {
+                header
+                content
+            }
         }
-        .buttonStyle(BorderlessButtonStyle())
     }
 }
 #endif
