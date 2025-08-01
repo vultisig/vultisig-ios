@@ -141,7 +141,6 @@ struct SwapChainPickerView: View {
 
     var searchBar: some View {
         SearchTextField(value: $searchText)
-            .padding(.horizontal, 12)
             .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
