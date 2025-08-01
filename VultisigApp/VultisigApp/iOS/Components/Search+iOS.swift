@@ -12,7 +12,7 @@ extension Search {
     var textField: some View {
         TextField(NSLocalizedString("search", comment: ""), text: $searchText)
             .foregroundColor(.neutral700)
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()

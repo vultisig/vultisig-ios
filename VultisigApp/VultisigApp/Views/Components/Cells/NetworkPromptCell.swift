@@ -19,7 +19,7 @@ struct NetworkPromptCell: View {
     var phoneCell: some View {
         HStack(spacing: 8) {
             network.getImage()
-                .font(.body14Menlo)
+                .font(theme.fonts.bodySRegular)
                 .foregroundColor(.turquoise600)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))

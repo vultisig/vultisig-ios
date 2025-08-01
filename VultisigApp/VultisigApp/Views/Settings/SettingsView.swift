@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.theme) var theme
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -192,7 +193,7 @@ struct SettingsView: View {
             Text("(Build \(build ?? "1"))")
         }
         .textCase(.uppercase)
-        .font(.body14Menlo)
+        .font(theme.fonts.bodySRegular)
         .foregroundColor(.turquoise600)
         .scaleEffect(scale)
         .onTapGesture {

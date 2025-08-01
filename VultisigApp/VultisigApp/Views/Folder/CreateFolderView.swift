@@ -9,6 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct CreateFolderView: View {
+    @Environment(\.theme) var theme
+    
     let count: Int
     let filteredVaults: [Vault]
     
@@ -63,7 +65,7 @@ struct CreateFolderView: View {
             NSLocalizedString("typeHere", comment: ""),
             text: $viewModel.name
         )
-        .font(.body14Menlo)
+        .font(theme.fonts.bodySRegular)
         .foregroundColor(.neutral0)
         .submitLabel(.done)
         .padding(12)

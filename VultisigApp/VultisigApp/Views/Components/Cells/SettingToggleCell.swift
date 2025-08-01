@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingToggleCell: View {
+    @Environment(\.theme) var theme
+    
     let title: String
     let icon: String
     @Binding var isEnabled: Bool
@@ -35,7 +37,7 @@ struct SettingToggleCell: View {
     
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
     

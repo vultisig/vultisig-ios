@@ -48,7 +48,7 @@ struct SettingFAQCell: View {
     
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
     
@@ -60,7 +60,7 @@ struct SettingFAQCell: View {
     
     var chevron: some View {
         Image(systemName: "chevron.down")
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
             .rotationEffect(.degrees(isExpanded ? 180 : 0))
     }

@@ -12,6 +12,8 @@ import Tss
 import RiveRuntime
 
 struct KeygenView: View {
+    @Environment(\.theme) var theme
+    
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -277,7 +279,7 @@ struct KeygenView: View {
             Text("(Build \(build ?? "1"))")
         }
         .textCase(.uppercase)
-        .font(.body14Menlo)
+        .font(theme.fonts.bodySRegular)
         .foregroundColor(.turquoise600)
     }
     

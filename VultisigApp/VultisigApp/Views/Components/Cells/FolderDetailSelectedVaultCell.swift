@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FolderDetailSelectedVaultCell: View {
+    @Environment(\.theme) var theme
+    
     let vault: Vault
     let isEditing: Bool
     let handleVaultSelection: (Vault) -> ()
@@ -92,13 +94,13 @@ struct FolderDetailSelectedVaultCell: View {
     
     var partAssignedCell: some View {
         Text("Share \(viewModel.order)of\(viewModel.totalSigners)")
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.body)
             .padding(4)
             .padding(.horizontal, 2)

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingVaultRegistrationCell: View {
+    @Environment(\.theme) var theme
+    
     var body: some View {
         HStack(spacing: 12) {
             iconBlock
@@ -28,7 +30,7 @@ struct SettingVaultRegistrationCell: View {
     
     var titleBlock: some View {
         Text(NSLocalizedString("registerYourVaults", comment: ""))
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral900)
     }
     

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct VaultDeletionDetails: View {
+    @Environment(\.theme) var theme
+    
     let vault: Vault
     let devicesInfo: [DeviceInfo]
     
@@ -95,7 +97,7 @@ struct VaultDeletionDetails: View {
             Text(NSLocalizedString(title, comment: "")) +
             Text(": ")
         }
-        .font(.body14Menlo)
+        .font(theme.fonts.bodySRegular)
         .foregroundColor(.neutral0)
     }
     

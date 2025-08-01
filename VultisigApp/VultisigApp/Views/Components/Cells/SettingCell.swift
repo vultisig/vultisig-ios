@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingCell: View {
+    @Environment(\.theme) var theme
+    
     let title: String
     let icon: String
     var selection: String? = nil
@@ -37,7 +39,7 @@ struct SettingCell: View {
     
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
     
@@ -49,7 +51,7 @@ struct SettingCell: View {
     
     func getSelectionBlock(_ value: String) -> some View {
         Text(value)
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
 }

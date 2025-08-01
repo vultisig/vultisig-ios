@@ -134,7 +134,7 @@ struct TokenSelectionView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                             Text("Searching...")
-                                .font(.body14Menlo)
+                                .font(theme.fonts.bodySRegular)
                                 .foregroundColor(.neutral0)
                         }
                         .padding(.horizontal, 16)

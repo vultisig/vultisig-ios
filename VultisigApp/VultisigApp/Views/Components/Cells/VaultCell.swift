@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct VaultCell: View {
+    @Environment(\.theme) var theme
+    
     let vault: Vault
     let isEditing: Bool
     
@@ -67,13 +69,13 @@ struct VaultCell: View {
             Text(NSLocalizedString("of", comment: "")) +
             Text("\(viewModel.totalSigners)")
         }
-        .font(.body14Menlo)
+        .font(theme.fonts.bodySRegular)
         .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.body)
             .padding(4)
             .padding(.horizontal, 2)

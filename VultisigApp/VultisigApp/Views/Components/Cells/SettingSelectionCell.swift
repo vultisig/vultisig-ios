@@ -37,7 +37,7 @@ struct SettingSelectionCell: View {
     
     var titleBlock: some View {
         Text(title)
-            .font(.body14Menlo)
+            .font(theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
     

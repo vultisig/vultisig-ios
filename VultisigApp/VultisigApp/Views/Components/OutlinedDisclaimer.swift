@@ -20,7 +20,7 @@ struct OutlinedDisclaimer: View {
         HStack(spacing: 12) {
             Image(systemName: "info.circle")
                 .foregroundStyle(LinearGradient.primaryGradient)
-                .font(.body14Menlo)
+                .font(theme.fonts.bodySRegular)
             
             Text(text)
                 .font(theme.fonts.caption12)

@@ -63,7 +63,7 @@ struct EditVaultCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(NSLocalizedString(title, comment: ""))
-                .font(.body14Menlo)
+                .font(theme.fonts.bodySRegular)
                 .foregroundColor(isDestructive ? .destructive : .neutral0)
             
             Text(NSLocalizedString(description, comment: ""))
