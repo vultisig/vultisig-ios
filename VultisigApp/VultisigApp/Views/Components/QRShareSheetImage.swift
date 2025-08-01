@@ -31,14 +31,8 @@ struct QRShareSheetImage: View {
     // Address
     let address: String
     
-    let padding: CGFloat = 30
-    
-    
-#if os(iOS)
-    let cornerRadius: CGFloat = 6
-#elseif os(macOS)
+    let padding: CGFloat = 15
     let cornerRadius: CGFloat = 30
-#endif
     
     var body: some View {
         content
