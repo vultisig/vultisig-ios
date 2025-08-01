@@ -36,6 +36,12 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
+        
+        // Set transaction amount to THORChain native fee (0.02 RUNE)
+        // This is the minimum dust amount to initiate withdrawal on THORChain
+        self.tx.amount = "0.02"
+        print("FunctionCallRemoveThorLP: Initial transaction amount set to 0.02 RUNE for withdrawal initiation")
+        
         setupValidation()
         
         // Automatically get the THORChain address to load positions
@@ -128,9 +134,23 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
             dict.set("pool", position.asset)
             dict.set("withdrawPercentage", "\(withdrawPercentage)%")
             dict.set("units", position.poolUnits)
+            dict.set("dustAmount", "0.02 RUNE")
         }
         dict.set("memo", toString())
         return dict
+    }
+    
+    var balance: String {
+        let balance = tx.coin.balanceDecimal.formatToDecimal(digits: 8)
+        return "( Balance: \(balance) \(tx.coin.ticker.uppercased()) )"
+    }
+    
+    var transactionAmountInfo: String {
+        return "Sending: 0.02 RUNE (THORChain native fee to initiate withdrawal)"
+    }
+    
+    var dustAmount: Decimal {
+        return Decimal(string: "0.02") ?? 0.02
     }
     
     func getView() -> AnyView {
@@ -216,6 +236,39 @@ struct FunctionCallRemoveThorLPView: View {
                 }
                 .padding(.horizontal)
                 
+                // Transaction info
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Transaction Details")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Chain: THORChain")
+                                .font(.caption)
+                                .foregroundColor(.neutral0)
+                            Text(model.transactionAmountInfo)
+                                .font(.caption)
+                                .foregroundColor(.turquoise600)
+                                .fontWeight(.semibold)
+                            Text("Withdrawal initiated on THORChain")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+                    .padding()
+                    .background(Color.blue600.opacity(0.1))
+                    .cornerRadius(8)
+                    
+                    Text("LP withdrawals are always initiated on THORChain using RUNE. Ensure your LP position value exceeds the outbound fees for successful withdrawal.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                
                 // Show withdrawal details if position selected
                 if let position = model.selectedPosition {
                     VStack(alignment: .leading, spacing: 4) {
@@ -267,7 +320,7 @@ private struct PositionRowView: View {
         // Convert from base units (1e8) to display format
         if let decimal = Decimal(string: value) {
             let displayValue = decimal / 100_000_000 // Convert from 1e8
-            return displayValue.formatForDisplay()
+            return displayValue.formatToDecimal(digits: 8)
         }
         return value
     }
@@ -333,4 +386,4 @@ private struct PositionRowView: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-} 
+}

@@ -155,8 +155,8 @@ enum FunctionCallInstance {
             return memo.amount
         case .addThorLP(let memo):
             return memo.amount
-        case .removeThorLP:
-            return .zero // Remove LP doesn't require sending amount
+        case .removeThorLP(let removeLP):
+            return removeLP.dustAmount // Use the dust amount from the instance
         }
     }
     

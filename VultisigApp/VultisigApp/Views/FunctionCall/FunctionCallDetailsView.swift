@@ -247,7 +247,7 @@ struct FunctionCallDetailsView: View {
         PrimaryButton(title: "continue") {
             Task {
                 if fnCallInstance.isTheFormValid {
-                    tx.amount = fnCallInstance.amount.formatDecimalToLocale()
+                    tx.amount = fnCallInstance.amount.description
                     tx.memo = fnCallInstance.description
                     tx.memoFunctionDictionary = fnCallInstance.toDictionary()
                     tx.transactionType = fnCallInstance.getTransactionType()
