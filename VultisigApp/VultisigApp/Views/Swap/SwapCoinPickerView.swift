@@ -19,13 +19,6 @@ struct SwapCoinPickerView: View {
     
     private let balanceService = BalanceService.shared
     
-    var main: some View {
-        VStack {
-            header
-            content
-        }
-    }
-    
     var header: some View {
         HStack {
             backButton
@@ -137,26 +130,27 @@ struct SwapCoinPickerView: View {
             
             FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
                 let isSelected = selectedChain == chain
-                HStack(spacing: 4) {
-                    Image(chain.logo)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 28)
-                    Text(chain.name)
-                        .font(.body12BrockmannMedium)
-                        .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
-                }
-                .padding(8)
-                .frame(width: itemSize)
-                .background(
-                    Capsule()
-                        .strokeBorder(Color.blue400, lineWidth: 1)
-                        .fill(Color.blue600)
-                )
-                .padding(.horizontal, 4)
-                .contentShape(Capsule())
-                .onTapGesture {
+                Button {
                     selectedChain = chain
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(chain.logo)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 28)
+                        Text(chain.name)
+                            .font(.body12BrockmannMedium)
+                            .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
+                    }
+                    .padding(8)
+                    .frame(width: itemSize)
+                    .background(
+                        Capsule()
+                            .strokeBorder(Color.blue400, lineWidth: 1)
+                            .fill(Color.blue600)
+                    )
+                    .padding(.horizontal, 4)
+                    .contentShape(Rectangle())
                 }
             }
             

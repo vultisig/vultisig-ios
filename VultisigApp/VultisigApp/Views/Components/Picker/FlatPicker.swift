@@ -82,7 +82,6 @@ public struct FlatPicker<ItemView: View, Item: Equatable & Hashable>: View {
 
                         if selectedItem != items[newItemIndex] {
                             selectedItem = items[newItemIndex]
-                            currentVisibleIndex = newItemIndex
                         }
                             
                         updateSelectedItem(animated: true)
@@ -113,7 +112,11 @@ private extension FlatPicker {
     }
     
     func updateSelectedItem(animated: Bool) {
-        withAnimation(.easeInOut(duration: animated ? 0.1 : 0)) {
+        if animated {
+            withAnimation(.easeInOut(duration: 0.1)) {
+                scrollViewProxy?.scrollTo(currentVisibleIndex, anchor: .center)
+            }
+        } else {
             scrollViewProxy?.scrollTo(currentVisibleIndex, anchor: .center)
         }
     }

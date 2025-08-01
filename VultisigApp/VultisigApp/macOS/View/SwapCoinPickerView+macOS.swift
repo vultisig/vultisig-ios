@@ -10,8 +10,8 @@ import SwiftUI
 
 extension SwapCoinPickerView {
     var body: some View {
-        Screen {
-            main
+        Screen(title: NSLocalizedString("selectAsset", comment: "")) {
+            content
         }.frame(width: 700, height: 450)
     }
 }
