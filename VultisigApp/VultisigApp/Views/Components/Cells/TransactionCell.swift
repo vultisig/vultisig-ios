@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct TransactionCell: View {
+    @Environment(\.theme) var theme
+    
     let title: String
     let id: String
     let url: String
@@ -48,7 +50,7 @@ struct TransactionCell: View {
     
     var content: some View {
         Text(id)
-            .font(.body13Menlo)
+            .font(theme.fonts.footnote)
             .foregroundColor(.turquoise600)
             .multilineTextAlignment(.leading)
     }

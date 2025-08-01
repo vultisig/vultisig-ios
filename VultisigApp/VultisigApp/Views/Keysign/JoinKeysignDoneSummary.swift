@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct JoinKeysignDoneSummary: View {
+    @Environment(\.theme) var theme
+    
     let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
@@ -160,7 +162,7 @@ struct JoinKeysignDoneSummary: View {
             titleSection(title: title, txid: txid)
             
             Text(txid)
-                .font(.body13Menlo)
+                .font(theme.fonts.footnote)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
