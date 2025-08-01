@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SearchTextField: View {
     @Binding var value: String
+    @FocusState var isFocused: Bool
     
     var showClearButton: Bool {
         value.isNotEmpty
@@ -26,6 +27,7 @@ struct SearchTextField: View {
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
+                .focused($isFocused)
             
             clearButton
                 .opacity(showClearButton ? 1 : 0)
@@ -41,6 +43,7 @@ struct SearchTextField: View {
     var clearButton: some View {
         Button {
             value = .empty
+            isFocused = false
         } label: {
             Image(systemName: "xmark.circle.fill")
                 .foregroundColor(.neutral500)

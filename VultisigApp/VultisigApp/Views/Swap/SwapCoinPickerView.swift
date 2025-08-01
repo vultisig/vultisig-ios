@@ -22,20 +22,20 @@ struct SwapCoinPickerView: View {
     var main: some View {
         VStack {
             header
-            views
+            content
         }
     }
     
     var header: some View {
         HStack {
             backButton
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             title
+                .frame(maxWidth: .infinity, alignment: .center)
             Spacer()
-            backButton
-                .opacity(0)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
     }
     
     var backButton: some View {
@@ -52,26 +52,32 @@ struct SwapCoinPickerView: View {
             .font(.body18BrockmannMedium)
     }
     
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                searchBar
-                
-                if isLoading {
-                    loadingView
-                } else if getCoins().count > 0 {
-                    networkTitle
-                    list
-                } else {
-                    emptyMessage
+    var content: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    searchBar
+                    
+                    if isLoading {
+                        loadingView
+                    } else if getCoins().count > 0 {
+                        networkTitle
+                        list
+                    } else {
+                        emptyMessage
+                    }
                 }
-                
-                GradientListSeparator()
-                chainCarousel                
+                .padding(.vertical, 8)
+                .padding(.bottom, 50)
             }
-            .padding(.vertical, 8)
-            .padding(.bottom, 50)
-            .padding(.horizontal, 16)
+            
+            VStack(spacing: 12) {
+                GradientListSeparator()
+                chainCarousel
+            }
+            .padding(.top, 4)
+            .background(Color.backgroundBlue)
+            .shadow(color: Color.backgroundBlue, radius: 15)
         }
     }
     
@@ -111,13 +117,6 @@ struct SwapCoinPickerView: View {
     var emptyMessage: some View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
-    }
-    
-    var views: some View {
-        ZStack {
-            Background()
-            view
-        }
     }
 
     var searchBar: some View {
