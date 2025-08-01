@@ -19,23 +19,16 @@ struct SwapCoinPickerView: View {
     
     private let balanceService = BalanceService.shared
     
-    var main: some View {
-        VStack {
-            header
-            views
-        }
-    }
-    
     var header: some View {
         HStack {
             backButton
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             title
+                .frame(maxWidth: .infinity, alignment: .center)
             Spacer()
-            backButton
-                .opacity(0)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
     }
     
     var backButton: some View {
@@ -52,27 +45,32 @@ struct SwapCoinPickerView: View {
             .font(.body18BrockmannMedium)
     }
     
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                searchBar
-                
-                if isLoading {
-                    loadingView
-                } else if getCoins().count > 0 {
-                    networkTitle
-                    list
-                } else {
-                    emptyMessage
+    var content: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    searchBar
+                    
+                    if isLoading {
+                        loadingView
+                    } else if getCoins().count > 0 {
+                        networkTitle
+                        list
+                    } else {
+                        emptyMessage
+                    }
                 }
-                
-                // Chain carousel at bottom
-                chainCarousel
-                
+                .padding(.vertical, 8)
+                .padding(.bottom, 50)
             }
-            .padding(.vertical, 8)
-            .padding(.bottom, 50)
-            .padding(.horizontal, 16)
+            
+            VStack(spacing: 12) {
+                GradientListSeparator()
+                chainCarousel
+            }
+            .padding(.top, 4)
+            .background(Color.backgroundBlue)
+            .shadow(color: Color.backgroundBlue, radius: 15)
         }
     }
     
@@ -114,64 +112,53 @@ struct SwapCoinPickerView: View {
             .padding(.top, 48)
     }
     
-    var views: some View {
-        ZStack {
-            Background()
-            view
-        }
-    }
-
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .padding(.horizontal, 12)
+        SearchTextField(value: $searchText)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
     }
     
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .foregroundColor(.neutral0)
-                .disableAutocorrection(true)
-                .padding(.horizontal, 8)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-        }
-        .font(.body16Menlo)
-    }
-    
+    let itemSize: CGFloat = 120
     var chainCarousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(availableChains, id: \.self) { chain in
-                    Button {
-                        selectChain(chain)
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(chain.logo)
-                                .resizable()
-                                .frame(width: 16, height: 16)
-                            
-                            Text(chain.name)
-                                .font(.body12BrockmannMedium)
-                                .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(selectedChain == chain ? Color.turquoise600 : Color.blue600)
-                        .cornerRadius(20)
+        ZStack {
+            Capsule()
+                .fill(Color.blue600)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
+                .shadow(color: .blue200, radius: 6)
+            
+            FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
+                let isSelected = selectedChain == chain
+                Button {
+                    selectedChain = chain
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(chain.logo)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 28)
+                        Text(chain.name)
+                            .font(.body12BrockmannMedium)
+                            .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
                     }
+                    .padding(8)
+                    .frame(width: itemSize)
+                    .background(
+                        Capsule()
+                            .strokeBorder(Color.blue400, lineWidth: 1)
+                            .fill(Color.blue600)
+                    )
+                    .padding(.horizontal, 4)
+                    .contentShape(Rectangle())
+                    .animation(.easeInOut, value: isSelected)
                 }
             }
-            .padding(.horizontal, 4)
+            
+            Capsule()
+                .strokeBorder(Color.persianBlue400, lineWidth: 2)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
         }
         .frame(height: 44)
     }
@@ -193,7 +180,7 @@ struct SwapCoinPickerView: View {
         }
         
         // Sort coins: native token first, then by USD balance in descending order
-        let sortedCoins = filteredCoins.sorted { first, second in
+        var sortedCoins = filteredCoins.sorted { first, second in
             // Native token always comes first
             if first.isNativeToken && !second.isNativeToken {
                 return true
@@ -204,6 +191,11 @@ struct SwapCoinPickerView: View {
             
             // If both are native or both are not native, sort by USD balance
             return first.balanceInFiatDecimal > second.balanceInFiatDecimal
+        }
+        
+        if let indexOfSelected = sortedCoins.firstIndex(of: selectedCoin) {
+            sortedCoins.remove(at: indexOfSelected)
+            sortedCoins = [selectedCoin] + sortedCoins
         }
         
         return sortedCoins
