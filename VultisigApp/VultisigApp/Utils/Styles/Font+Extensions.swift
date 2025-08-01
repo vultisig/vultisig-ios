@@ -13,7 +13,6 @@ extension Font {
     static let body15SystemLight = Font.system(size: 15, weight: .light)
     
     // Regular
-    static let body8Menlo = Font.custom("Menlo", size: 8)
     static let body10Menlo = Font.custom("Menlo", size: 10)
     static let body12Menlo = Font.custom("Menlo", size: 12)
     static let body13Menlo = Font.custom("Menlo", size: 13)

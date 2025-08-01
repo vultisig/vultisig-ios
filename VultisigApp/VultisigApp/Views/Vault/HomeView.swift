@@ -33,6 +33,7 @@ struct HomeView: View {
     @State var selectedFolder: Folder = Folder.example
     
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
     
     var body: some View {
         container
@@ -44,7 +45,7 @@ struct HomeView: View {
             
             if viewModel.selectedVault != nil {
                 Image(systemName: "chevron.up")
-                    .font(.body8Menlo)
+                    .font(theme.fonts.caption10)
                     .bold()
                     .foregroundColor(.neutral0)
                     .rotationEffect(.degrees(showVaultsList ? 0 : 180))
