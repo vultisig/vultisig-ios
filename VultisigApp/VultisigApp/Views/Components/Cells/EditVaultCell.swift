@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct EditVaultCell: View {
+    @Environment(\.theme) var theme
     let title: String
     let description: String
     // TODO: - To remove after we moved all icons to new Design System
@@ -66,7 +67,7 @@ struct EditVaultCell: View {
                 .foregroundColor(isDestructive ? .destructive : .neutral0)
             
             Text(NSLocalizedString(description, comment: ""))
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(isDestructive ? .destructive : .neutral300)
         }
     }

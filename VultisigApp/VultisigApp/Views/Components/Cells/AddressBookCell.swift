@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct AddressBookCell: View {
+    @Environment(\.theme) var theme
     let address: AddressBookItem
     let shouldReturnAddress: Bool
     let isEditing: Bool
@@ -92,7 +93,7 @@ struct AddressBookCell: View {
     var networkContent: some View {
         Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
             .foregroundColor(.neutral300)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -100,7 +101,7 @@ struct AddressBookCell: View {
     var addressContent: some View {
         Text(address.address)
             .foregroundColor(.neutral0)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.middle)
     }

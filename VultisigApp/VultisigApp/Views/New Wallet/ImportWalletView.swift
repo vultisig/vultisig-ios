@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ImportWalletView: View {
+    @Environment(\.theme) var theme
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
@@ -60,7 +61,7 @@ struct ImportWalletView: View {
     
     var instruction: some View {
         Text(NSLocalizedString("supportedFileTypesUpload", comment: ""))
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

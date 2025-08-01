@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChainSelectionView: View {
+    @Environment(\.theme) var theme
     @Binding var showChainSelectionSheet: Bool
     let vault: Vault
     
@@ -57,7 +58,7 @@ struct ChainSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)

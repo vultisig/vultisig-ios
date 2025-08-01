@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ImportFileCell: View {
+    @Environment(\.theme) var theme
     let name: String
     let resetData: () -> ()
     
@@ -29,7 +30,7 @@ struct ImportFileCell: View {
     
     func fileName(_ name: String) -> some View {
         Text(name)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral0)
     }
     

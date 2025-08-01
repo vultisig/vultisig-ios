@@ -12,7 +12,7 @@ import CodeScanner
 extension SendCryptoAddressTextField {
     var container: some View {
         content
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)

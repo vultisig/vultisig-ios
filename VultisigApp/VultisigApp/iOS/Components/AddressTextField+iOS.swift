@@ -14,7 +14,7 @@ extension AddressTextField {
         ZStack(alignment: .trailing) {
             field
         }
-        .font(.body12Menlo)
+        .font(theme.fonts.caption12)
         .foregroundColor(.neutral0)
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .leading)

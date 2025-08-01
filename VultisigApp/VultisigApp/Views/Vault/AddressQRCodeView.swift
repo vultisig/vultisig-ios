@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AddressQRCodeView: View {
+    @Environment(\.theme) var theme
     let addressData: String
     let vault: Vault
     let groupedChain: GroupedChain
@@ -39,7 +40,7 @@ struct AddressQRCodeView: View {
     
     var address: some View {
         Text(addressData)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
             .padding(.horizontal, padding)

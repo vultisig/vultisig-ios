@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingSelectionCell: View {
+    @Environment(\.theme) var theme
     let title: String
     let isSelected: Bool
     var description: String? = nil
@@ -50,7 +51,7 @@ struct SettingSelectionCell: View {
     
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral300)
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VaultSetupCard: View {
+    @Environment(\.theme) var theme
     let title: String
     let buttonTitle: String
     let icon: String
@@ -40,7 +41,7 @@ struct VaultSetupCard: View {
     
     var text: some View {
         Text(NSLocalizedString("ThisDeviceIs", comment: ""))
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral0)
     }
     

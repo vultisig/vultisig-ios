@@ -10,6 +10,7 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
+    @Environment(\.theme) var theme
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -104,7 +105,7 @@ struct CustomTokenView: View {
                 .foregroundColor(.neutral0)
             
             Text(contractAddress)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
     }

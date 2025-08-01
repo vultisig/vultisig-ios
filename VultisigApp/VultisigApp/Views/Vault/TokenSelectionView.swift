@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TokenSelectionView: View {
+    @Environment(\.theme) var theme
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -49,7 +50,7 @@ struct TokenSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)

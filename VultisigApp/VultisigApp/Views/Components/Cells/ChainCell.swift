@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChainCell: View {
+    @Environment(\.theme) var theme
     @ObservedObject var group: GroupedChain
     @Binding var isEditingChains: Bool
     
@@ -74,7 +75,7 @@ struct ChainCell: View {
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
             .truncationMode(.middle)
@@ -82,7 +83,7 @@ struct ChainCell: View {
     
     var count: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : viewModel.getGroupCount(group))
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral100)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
@@ -92,7 +93,7 @@ struct ChainCell: View {
     
     var quantity: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral100)
     }
     

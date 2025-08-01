@@ -10,7 +10,7 @@ import SwiftUI
 struct NetworkPromptCell: View {
     let network: NetworkPromptType
     let isSelected: Bool
-    @Environment(\.theme) private var theme
+    @Environment(\.theme) var theme
     
     var body: some View {
         content

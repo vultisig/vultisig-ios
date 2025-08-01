@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingFAQCell: View {
+    @Environment(\.theme) var theme
     let question: String
     let answer: String
     
@@ -53,7 +54,7 @@ struct SettingFAQCell: View {
     
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral300)
     }
     

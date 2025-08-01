@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct InstructionPrompt: View {
+    @Environment(\.theme) var theme
     let networkType: NetworkPromptType
-    @Environment(\.theme) private var theme
     
     var body: some View {
         content
@@ -36,7 +36,7 @@ struct InstructionPrompt: View {
                 .foregroundColor(.turquoise600)
             
             Text(networkType.getInstruction())
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
         }

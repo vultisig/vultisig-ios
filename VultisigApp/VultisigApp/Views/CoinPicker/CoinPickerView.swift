@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CoinPickerView: View {
+    @Environment(\.theme) var theme
     @State var searchText: String = .empty
     @State var isSearching = false
 
@@ -59,7 +60,7 @@ struct CoinPickerView: View {
                         .foregroundColor(.neutral500)
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)

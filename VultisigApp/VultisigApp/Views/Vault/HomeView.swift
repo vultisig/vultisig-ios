@@ -33,7 +33,7 @@ struct HomeView: View {
     @State var selectedFolder: Folder = Folder.example
     
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.theme) private var theme
+    @Environment(\.theme) var theme
     
     var body: some View {
         container

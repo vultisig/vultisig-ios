@@ -10,6 +10,8 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct SendCryptoAddressTextField: View {
+    @Environment(\.theme) var theme
+    
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     

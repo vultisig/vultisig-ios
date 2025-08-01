@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct KeysignCustomMessageConfirmView: View {
+    @Environment(\.theme) var theme
     @ObservedObject var viewModel: JoinKeysignViewModel
 
     var body: some View {
@@ -68,7 +69,7 @@ struct KeysignCustomMessageConfirmView: View {
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             Text(value)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

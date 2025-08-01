@@ -15,13 +15,13 @@ extension VaultDeletionDetails {
 }
 
 private struct VaultDeletionDescriptionText: View {
+    @Environment(\.theme) var theme
     let description: String
     let shouldShrink: Bool
-    @Environment(\.theme) private var theme
     
     var body: some View {
         Text(NSLocalizedString(description, comment: ""))
-            .font(shouldShrink ? theme.fonts.caption10 : .body12Menlo)
+            .font(shouldShrink ? theme.fonts.caption10 : theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .fixedSize(horizontal: false, vertical: true)
     }

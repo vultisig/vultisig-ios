@@ -10,6 +10,7 @@ import RiveRuntime
 import BigInt
 
 struct JoinSwapDoneSummary: View {
+    @Environment(\.theme) var theme
     let vault: Vault
     let keysignViewModel: KeysignViewModel
     let summaryViewModel: JoinKeysignSummaryViewModel
@@ -117,7 +118,7 @@ struct JoinSwapDoneSummary: View {
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(.disabledText)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Color.blue600)

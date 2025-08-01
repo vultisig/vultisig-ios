@@ -9,6 +9,7 @@ import SwiftUI
 import WalletCore
 
 struct SwapCustomTokenView: View {
+    @Environment(\.theme) var theme
     let vault: Vault
     let chain: Chain
     @Binding var showSheet: Bool
@@ -131,7 +132,7 @@ struct SwapCustomTokenView: View {
                 .foregroundColor(.neutral0)
             
             Text(contractAddress)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
     }

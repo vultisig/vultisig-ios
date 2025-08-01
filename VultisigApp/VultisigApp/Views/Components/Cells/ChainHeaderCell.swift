@@ -9,6 +9,7 @@ import SwiftUI
 
 
 struct ChainHeaderCell: View {
+    @Environment(\.theme) var theme
     let vault: Vault
     @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
@@ -118,7 +119,7 @@ struct ChainHeaderCell: View {
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
     }

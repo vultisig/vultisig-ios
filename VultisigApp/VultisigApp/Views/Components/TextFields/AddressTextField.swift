@@ -3,6 +3,8 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct AddressTextField: View {
+    @Environment(\.theme) var theme
+    
     @Binding var contractAddress: String
     var validateAddress: (String) -> Void
     

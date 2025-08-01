@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SendCryptoStartErrorView: View {
+    @Environment(\.theme) var theme
     let errorText: String
     
     @Environment(\.dismiss) var dismiss
@@ -34,7 +35,7 @@ struct SendCryptoStartErrorView: View {
     
     var sameWifiInstruction: some View {
         Text(errorText)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .padding(.horizontal, 50)
             .multilineTextAlignment(.center)

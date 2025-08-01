@@ -18,7 +18,7 @@ struct StyledFloatingPointField: View {
     
     @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
-    @Environment(\.theme) private var theme
+    @Environment(\.theme) var theme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

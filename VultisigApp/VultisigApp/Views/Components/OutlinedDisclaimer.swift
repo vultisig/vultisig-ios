@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OutlinedDisclaimer: View {
+    @Environment(\.theme) var theme
     let text: String
     var alignment: TextAlignment = .leading
 
@@ -22,7 +23,7 @@ struct OutlinedDisclaimer: View {
                 .font(.body14Menlo)
             
             Text(text)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .foregroundColor(.neutral0)
                 .lineSpacing(4)
                 .multilineTextAlignment(alignment)

@@ -16,7 +16,7 @@ struct HomeHeader: View {
     
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
-    @Environment(\.theme) private var theme
+    @Environment(\.theme) var theme
     
     var body: some View {
         HStack(spacing: 22) {

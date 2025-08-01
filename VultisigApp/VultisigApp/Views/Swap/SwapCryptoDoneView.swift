@@ -9,6 +9,7 @@ import SwiftUI
 import RiveRuntime
 
 struct SwapCryptoDoneView: View {
+    @Environment(\.theme) var theme
     let tx: SwapTransaction
     let vault: Vault
     let hash: String
@@ -120,7 +121,7 @@ struct SwapCryptoDoneView: View {
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(.disabledText)
-            .font(.body12Menlo)
+            .font(theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Color.blue600)

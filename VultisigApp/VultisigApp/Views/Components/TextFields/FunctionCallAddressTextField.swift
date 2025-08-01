@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 import WalletCore
 
 struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
+    @Environment(\.theme) var theme
     @ObservedObject var memo: MemoType
     var addressKey: String
     var isOptional: Bool = false

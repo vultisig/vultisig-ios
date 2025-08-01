@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SwapDetailsSummary: View {
+    @Environment(\.theme) var theme
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -144,7 +145,7 @@ struct SwapDetailsSummary: View {
         HStack() {
             Text(text)
                 .foregroundColor(.destructive)
-                .font(.body12Menlo)
+                .font(theme.fonts.caption12)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
 

@@ -41,7 +41,7 @@ extension TokenSelectionView {
                         .scaleEffect(0.6)
                         .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
                     Text("Loading tokens...")
-                        .font(.body12Menlo)
+                        .font(theme.fonts.caption12)
                         .foregroundColor(.neutral0)
                         .opacity(0.8)
                 }

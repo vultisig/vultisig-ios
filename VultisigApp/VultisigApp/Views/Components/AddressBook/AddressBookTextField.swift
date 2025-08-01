@@ -9,6 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AddressBookTextField: View {
+    @Environment(\.theme) var theme
     let title: String
     @Binding var text: String
     var showActions = false
