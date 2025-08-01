@@ -121,30 +121,10 @@ struct SwapCoinPickerView: View {
     }
 
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .padding(.horizontal, 12)
+        SearchTextField(value: $searchText)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
-    }
-    
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .foregroundColor(.neutral0)
-                .disableAutocorrection(true)
-                .padding(.horizontal, 8)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-        }
-        .font(.body16Menlo)
     }
     
     var chainCarousel: some View {

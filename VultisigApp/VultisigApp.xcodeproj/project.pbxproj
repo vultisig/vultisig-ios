@@ -35,6 +35,7 @@
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
 		13B6764E2E37D0E7002F016C /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B6764D2E37D0DB002F016C /* ClipboardManager.swift */; };
+		13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DF05742E3CEF710000188C /* SearchTextField.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
@@ -1010,6 +1011,7 @@
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
 		13B6764D2E37D0DB002F016C /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
+		13DF05742E3CEF710000188C /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
@@ -2017,6 +2019,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13DF05732E3CEF580000188C /* TextField */,
 				135C88182E3AADB000FD097D /* GradientListSeparator.swift */,
 				135C88172E3AAD5F00FD097D /* Untitled.swift */,
 				A6725D3F2C40C36700D47716 /* AddressBook */,
@@ -2147,6 +2150,14 @@
 				138574202E2DB6D2002532BF /* IconButtonView.swift */,
 			);
 			path = IconButton;
+			sourceTree = "<group>";
+		};
+		13DF05732E3CEF580000188C /* TextField */ = {
+			isa = PBXGroup;
+			children = (
+				13DF05742E3CEF710000188C /* SearchTextField.swift */,
+			);
+			path = TextField;
 			sourceTree = "<group>";
 		};
 		13EFA1C92E313886009838EB /* Components */ = {
@@ -4353,6 +4364,7 @@
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
+				13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,

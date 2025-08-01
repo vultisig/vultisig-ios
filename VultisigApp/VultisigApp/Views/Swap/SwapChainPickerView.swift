@@ -140,43 +140,11 @@ struct SwapChainPickerView: View {
     }
 
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
+        SearchTextField(value: $searchText)
             .padding(.horizontal, 12)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
-    }
-
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-                .disableAutocorrection(true)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-                .padding(.horizontal, 8)
-            
-            if !searchText.isEmpty {
-                clearButton
-            }
-        }
-    }
-    
-    var clearButton: some View {
-        Button {
-            searchText = .empty
-        } label: {
-            Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
-        }
     }
 }
 
