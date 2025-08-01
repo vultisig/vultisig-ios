@@ -13,7 +13,6 @@ extension Font {
     static let body15SystemLight = Font.system(size: 15, weight: .light)
     
     // Regular
-    static let body10Menlo = Font.custom("Menlo", size: 10)
     static let body12Menlo = Font.custom("Menlo", size: 12)
     static let body13Menlo = Font.custom("Menlo", size: 13)
     static let body14Menlo = Font.custom("Menlo", size: 14)
@@ -59,7 +58,6 @@ extension Font {
     static let body16BrockmannSemiBold = Font.custom("Brockmann-SemiBold", size: 16)
     
     // Bold
-    static let body10MenloBold = Font.custom("Menlo", size: 10).bold()
     static let body12MenloBold = Font.custom("Menlo", size: 12).bold()
     static let body13MenloBold = Font.custom("Menlo", size: 13).bold()
     static let body14MenloBold = Font.custom("Menlo", size: 14).bold()

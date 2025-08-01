@@ -10,6 +10,7 @@ import SwiftUI
 struct NetworkPromptCell: View {
     let network: NetworkPromptType
     let isSelected: Bool
+    @Environment(\.theme) private var theme
     
     var body: some View {
         content
@@ -22,7 +23,7 @@ struct NetworkPromptCell: View {
                 .foregroundColor(.turquoise600)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
-                .font(.body10MenloBold)
+                .font(theme.fonts.caption10)
                 .foregroundColor(.neutral0)
         }
         .frame(maxWidth: .infinity)

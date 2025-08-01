@@ -10,8 +10,18 @@ import SwiftUI
 
 extension VaultDeletionDetails {
     func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
+        VaultDeletionDescriptionText(description: description, shouldShrink: shouldShrink)
+    }
+}
+
+private struct VaultDeletionDescriptionText: View {
+    let description: String
+    let shouldShrink: Bool
+    @Environment(\.theme) private var theme
+    
+    var body: some View {
         Text(NSLocalizedString(description, comment: ""))
-            .font(shouldShrink ? .body10Menlo : .body12Menlo)
+            .font(shouldShrink ? theme.fonts.caption10 : .body12Menlo)
             .foregroundColor(.neutral0)
             .fixedSize(horizontal: false, vertical: true)
     }
