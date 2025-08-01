@@ -64,7 +64,7 @@ struct UpgradeYourVaultView: View {
             showSheet = false
             navigationLinkActive = true
         }
-        .frame(width: 160)
+        .frame(width: 180)
         .padding(.vertical, 36)
     }
     
