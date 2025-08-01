@@ -33,13 +33,16 @@ struct OffsetObservingScrollView<Content: View>: View {
 
     var body: some View {
         ScrollView(axes, showsIndicators: showsIndicators) {
-            content()
-                .background(GeometryReader { proxy in
-                    Color.clear
-                        .preference(key: ScrollOffsetPreferenceKey.self, value: preferenceValue(proxy: proxy))
-                })
+            contentContainer {
+                insetView
+                content()
+                    .background(GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: ScrollOffsetPreferenceKey.self, value: preferenceValue(proxy: proxy))
+                    })
+                insetView
+            }
         }
-        .contentMargins(axes == .vertical ? .vertical : .horizontal, contentInset)
         .coordinateSpace(name: coordinateSpaceName)
         .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
             scrollOffset = value
@@ -48,11 +51,19 @@ struct OffsetObservingScrollView<Content: View>: View {
 }
 
 private extension OffsetObservingScrollView {
+    @ViewBuilder
+    func contentContainer<ScrollViewContent: View>(@ViewBuilder content: () -> ScrollViewContent) -> some View {
+        if axes == .vertical {
+            VStack(spacing: 0) { content() }
+        } else {
+            HStack(spacing: 0) { content() }
+        }
+    }
     var insetView: some View {
         if axes == .vertical {
-            Spacer().frame(height: contentInset)
+            Color.clear.frame(height: contentInset)
         } else {
-            Spacer().frame(width: contentInset)
+            Color.clear.frame(width: contentInset)
         }
     }
     

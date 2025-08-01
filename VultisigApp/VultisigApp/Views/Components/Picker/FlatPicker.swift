@@ -113,7 +113,7 @@ private extension FlatPicker {
     
     func updateSelectedItem(animated: Bool) {
         if animated {
-            withAnimation(.easeInOut(duration: 0.1)) {
+            withAnimation(.easeInOut(duration: 0.2)) {
                 scrollViewProxy?.scrollTo(currentVisibleIndex, anchor: .center)
             }
         } else {

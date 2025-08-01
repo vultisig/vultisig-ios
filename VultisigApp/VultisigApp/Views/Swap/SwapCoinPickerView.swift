@@ -151,6 +151,7 @@ struct SwapCoinPickerView: View {
                     )
                     .padding(.horizontal, 4)
                     .contentShape(Rectangle())
+                    .animation(.easeInOut, value: isSelected)
                 }
             }
             
