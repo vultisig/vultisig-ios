@@ -118,7 +118,7 @@ struct SwapCoinPickerView: View {
         ErrorMessage(text: "noResultFound")
             .padding(.top, 48)
     }
-
+    
     var searchBar: some View {
         SearchTextField(value: $searchText)
             .padding(.bottom, 12)
@@ -126,34 +126,44 @@ struct SwapCoinPickerView: View {
             .listRowSeparator(.hidden)
     }
     
+    let itemSize: CGFloat = 120
     var chainCarousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(availableChains, id: \.self) { chain in
-                    let isSelected = selectedChain == chain
-                return Button {
-                        selectChain(chain)
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(chain.logo)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 28)
-                            Text(chain.name)
-                                .font(.body12BrockmannMedium)
-                                .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
-                        }
-                        .padding(8)
-                        .background(
-                            Capsule()
-                                .strokeBorder(isSelected ? Color.persianBlue400 : .blue400, lineWidth: isSelected ? 2 : 1)
-                                .background(Color.blue600)
-                                .clipShape(Capsule())
-                        )
-                    }
+        ZStack {
+            Capsule()
+                .fill(Color.blue600)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
+                .shadow(color: .blue200, radius: 6)
+            
+            FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
+                let isSelected = selectedChain == chain
+                HStack(spacing: 4) {
+                    Image(chain.logo)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 28)
+                    Text(chain.name)
+                        .font(.body12BrockmannMedium)
+                        .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
+                }
+                .padding(8)
+                .frame(width: itemSize)
+                .background(
+                    Capsule()
+                        .strokeBorder(Color.blue400, lineWidth: 1)
+                        .fill(Color.blue600)
+                )
+                .padding(.horizontal, 4)
+                .contentShape(Capsule())
+                .onTapGesture {
+                    selectedChain = chain
                 }
             }
-            .padding(.horizontal, 4)
+            
+            Capsule()
+                .strokeBorder(Color.persianBlue400, lineWidth: 2)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
         }
         .frame(height: 44)
     }
