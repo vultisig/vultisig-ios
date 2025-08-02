@@ -18,10 +18,6 @@ struct ImportWalletView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     
-    var isButtonEnabled: Bool {
-        backupViewModel.isFileUploaded && !backupViewModel.showAlert
-    }
-    
     var body: some View {
         content
             .fileImporter(

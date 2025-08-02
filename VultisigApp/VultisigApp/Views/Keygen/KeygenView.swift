@@ -53,8 +53,7 @@ struct KeygenView: View {
                     FastBackupVaultOverview(
                         tssType: tssType,
                         vault: vault,
-                        email: fastSignConfig.email,
-                        viewModel: viewModel
+                        email: fastSignConfig.email
                     )
                 } else {
                     if tssType == .Migrate {
