@@ -12,17 +12,20 @@ struct FunctionCallDetailsView: View {
     @State private var showInvalidFormAlert = false
     
     @State var fnCallInstance: FunctionCallInstance
-    @State var defaultCoin: Coin
+    let defaultCoin: Coin
     
     @StateObject var keyboardObserver = KeyboardObserver()
 
     init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
+        tx: SendTransaction,
+        functionCallViewModel: FunctionCallViewModel,
+        vault: Vault,
+        defaultCoin: Coin?
     ) {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
-        let defaultCoin = tx.coin
+        let defaultCoin = defaultCoin ?? tx.coin
         self.defaultCoin = defaultCoin
         let dict = tx.memoFunctionDictionary
         if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {

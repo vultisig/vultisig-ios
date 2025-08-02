@@ -28,7 +28,7 @@ class FunctionCallUnstakeRuji: ObservableObject {
     }
     
     var balance: String {
-        return "(\(NSLocalizedString("balance", comment: "")): \(balanceAmountText)"
+        return "(\(NSLocalizedString("balance", comment: "")): \(balanceAmountText))"
     }
     
     var balanceAmountText: String {
