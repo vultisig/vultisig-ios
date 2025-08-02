@@ -15,9 +15,6 @@ struct SwapCoinPickerView: View {
     let isLoading: Bool
     
     @State var searchText = ""
-    @EnvironmentObject var viewModel: CoinSelectionViewModel
-    
-    private let balanceService = BalanceService.shared
     
     var header: some View {
         HStack {

@@ -12,7 +12,6 @@ struct FastBackupVaultOverview: View {
     let tssType: TssType
     let vault: Vault
     let email: String
-    @ObservedObject var viewModel: KeygenViewModel
     
     let totalTabCount = 4
     
@@ -176,7 +175,8 @@ struct FastBackupVaultOverview: View {
     FastBackupVaultOverview(
         tssType: .Keygen,
         vault: Vault.example,
-        email: "mail@email.com",
-        viewModel: KeygenViewModel()
+        email: "mail@email.com"
     )
 }
+
+

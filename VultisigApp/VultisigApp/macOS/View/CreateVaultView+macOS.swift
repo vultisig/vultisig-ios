@@ -18,7 +18,7 @@ extension CreateVaultView {
     
     var scanButton: some View {
         PrimaryNavigationButton(title: "scanQRStartScreen", type: .secondary) {
-            MacScannerView(vault: createVault(), type: .NewVault, sendTx: SendTransaction(), selectedVault: selectedVault)
+            MacScannerView(type: .NewVault, sendTx: SendTransaction(), selectedVault: selectedVault)
         }
     }
 }

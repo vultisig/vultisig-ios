@@ -55,11 +55,7 @@ struct CoinDetailView: View {
                 }
             }
     }
-    
-    var loader: some View {
-        Loader()
-    }
-    
+       
     var actionButtons: some View {
         ChainDetailActionButtons(
             isChainDetail: true,

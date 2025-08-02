@@ -160,23 +160,6 @@ struct VaultDetailView: View {
         }
     }
     
-    var loader: some View {
-        HStack(spacing: 20) {
-            Text(NSLocalizedString("fetchingVaultDetails", comment: ""))
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-            
-            ProgressView()
-                .preferredColorScheme(.dark)
-        }
-        .padding(.vertical, 50)
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
-        .frame(maxWidth: .infinity)
-        .multilineTextAlignment(.center)
-        .background(Color.backgroundBlue)
-    }
-    
     var backupNowWidget: some View {
         BackupNowDisclaimer(vault: vault)
             .padding(.horizontal, 16)
