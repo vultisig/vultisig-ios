@@ -50,12 +50,6 @@ extension SendCryptoDetailsView {
         }
     }
     
-    private func scrollToField(_ value: ScrollViewProxy) {
-        withAnimation {
-            value.scrollTo(focusedField, anchor: .top)
-        }
-    }
-    
     private func getButtonBackground() -> Color {
         if keyboardObserver.keyboardHeight == 0 {
             return Color.clear
