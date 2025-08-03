@@ -15,7 +15,7 @@ class FunctionCallWithdrawRujiRewards: ObservableObject {
     @Published var amountValid: Bool = false
     @Published var isTheFormValid: Bool = false
     @Published private var rewardsAmount: Decimal = .zero
-    @Published private var rewardsTicker: String = ""
+    @Published private var rewardsTicker: String = "USDC"
     @Published private var fetchingBalance = false
 
     let destinationAddress = RUJIStakingConstants.contract
@@ -29,7 +29,7 @@ class FunctionCallWithdrawRujiRewards: ObservableObject {
     }
     
     var balance: String {
-        return "(\(NSLocalizedString("balance", comment: "")): \(balanceAmountText)"
+        return "(\(NSLocalizedString("balance", comment: "")): \(balanceAmountText))"
     }
     
     var balanceAmountText: String {
@@ -83,7 +83,9 @@ class FunctionCallWithdrawRujiRewards: ObservableObject {
             guard let balances else { return }
             await MainActor.run {
                 rewardsAmount = balances.rewardsAmount.toDisplayDecimal(decimals: tx.coin.decimals)
-                rewardsTicker = balances.rewardsTicker
+                if balances.rewardsTicker.isNotEmpty {
+                    rewardsTicker = balances.rewardsTicker
+                }
                 fetchingBalance = false
             }
         }
