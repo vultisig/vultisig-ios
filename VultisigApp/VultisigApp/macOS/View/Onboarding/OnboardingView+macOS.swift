@@ -44,16 +44,6 @@ extension OnboardingView {
         animationVM?.view()
     }
     
-    private func prevTapped() {
-        guard tabIndex>0 else {
-            return
-        }
-        
-        withAnimation {
-            tabIndex-=1
-        }
-    }
-    
     func getBottomPadding() -> CGFloat {
         50
     }
