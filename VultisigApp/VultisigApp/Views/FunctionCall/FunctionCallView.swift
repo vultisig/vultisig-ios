@@ -16,7 +16,7 @@ struct FunctionCallView: View {
     
     var body: some View {
         content
-            .onAppear {
+            .onLoad {
                 Task {
                     await setData()
                     await loadGasInfo()
@@ -63,7 +63,8 @@ struct FunctionCallView: View {
         FunctionCallDetailsView(
             tx: tx,
             functionCallViewModel: functionCallViewModel,
-            vault: vault
+            vault: vault,
+            defaultCoin: coin
         )
     }
     
