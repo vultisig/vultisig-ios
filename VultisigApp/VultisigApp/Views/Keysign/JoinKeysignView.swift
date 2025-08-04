@@ -102,7 +102,15 @@ struct JoinKeysignView: View {
     var keysignMessageConfirm: some View {
         ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
-                KeysignSwapConfirmView(viewModel: viewModel)
+                // Check if it's an LP operation by looking at the memo
+                if let memo = viewModel.keysignPayload?.memo,
+                   (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                    // LP operation - show regular message confirm instead of swap
+                    KeysignMessageConfirmView(viewModel: viewModel)
+                } else {
+                    // Regular swap
+                    KeysignSwapConfirmView(viewModel: viewModel)
+                }
             } else if viewModel.customMessagePayload != nil {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
             } else {
