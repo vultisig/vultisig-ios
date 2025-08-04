@@ -17,18 +17,18 @@ extension SwapCryptoDetailsView {
         }
         .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
             SwapChainPickerView(
+                filterType: .swap,
                 vault: vault,
                 showSheet: $swapViewModel.showFromChainSelector,
-                selectedChain: $swapViewModel.fromChain,
-                selectedCoin: $tx.fromCoin
+                selectedChain: $swapViewModel.fromChain
             )
         })
         .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
             SwapChainPickerView(
+                filterType: .swap,
                 vault: vault,
                 showSheet: $swapViewModel.showToChainSelector,
-                selectedChain: $swapViewModel.toChain,
-                selectedCoin: $tx.toCoin
+                selectedChain: $swapViewModel.toChain
             )
         })
         .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
@@ -36,8 +36,7 @@ extension SwapCryptoDetailsView {
                 vault: vault,
                 showSheet: $swapViewModel.showFromCoinSelector,
                 selectedCoin: $tx.fromCoin,
-                selectedChain: $swapViewModel.fromChain,
-                isLoading: swapViewModel.isLoading
+                selectedChain: swapViewModel.fromChain
             )
         })
         .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
@@ -45,8 +44,7 @@ extension SwapCryptoDetailsView {
                 vault: vault,
                 showSheet: $swapViewModel.showToCoinSelector,
                 selectedCoin: $tx.toCoin,
-                selectedChain: $swapViewModel.toChain,
-                isLoading: swapViewModel.isLoading
+                selectedChain: swapViewModel.toChain
             )
         })
     }

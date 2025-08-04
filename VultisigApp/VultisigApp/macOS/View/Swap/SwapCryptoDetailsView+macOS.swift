@@ -21,19 +21,19 @@ extension SwapCryptoDetailsView {
             VStack {
                 if swapViewModel.showFromChainSelector {
                     SwapChainPickerView(
+                        filterType: .swap,
                         vault: vault,
                         showSheet: $swapViewModel.showFromChainSelector,
-                        selectedChain: $swapViewModel.fromChain,
-                        selectedCoin: $tx.fromCoin
+                        selectedChain: $swapViewModel.fromChain
                     )
                 }
                 
                 if swapViewModel.showToChainSelector {
                     SwapChainPickerView(
+                        filterType: .swap,
                         vault: vault,
                         showSheet: $swapViewModel.showToChainSelector,
-                        selectedChain: $swapViewModel.toChain,
-                        selectedCoin: $tx.toCoin
+                        selectedChain: $swapViewModel.toChain
                     )
                 }
                 
@@ -42,8 +42,7 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showFromCoinSelector,
                         selectedCoin: $tx.fromCoin,
-                        selectedChain: $swapViewModel.fromChain,
-                        isLoading: swapViewModel.isLoading
+                        selectedChain: swapViewModel.fromChain
                     )
                 }
                 
@@ -52,8 +51,7 @@ extension SwapCryptoDetailsView {
                         vault: vault,
                         showSheet: $swapViewModel.showToCoinSelector,
                         selectedCoin: $tx.toCoin,
-                        selectedChain: $swapViewModel.toChain,
-                        isLoading: swapViewModel.isLoading
+                        selectedChain: swapViewModel.toChain
                     )
                 }
             }
