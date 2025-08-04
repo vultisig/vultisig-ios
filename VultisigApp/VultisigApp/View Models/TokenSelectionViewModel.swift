@@ -104,9 +104,9 @@ class TokenSelectionViewModel: ObservableObject {
         
         isLoading = true
         
-        let currentTokensTickers = tokens.map(\.ticker)
+        let currentTokenIdentifiers = Set(tokens.map { "\($0.chain.rawValue):\($0.ticker)" })
         let newTokens = (try? await searchService.loadTokens(for: groupedChain.chain)) ?? []
-        let uniqueTokens = newTokens.filter { !currentTokensTickers.contains($0.ticker) }
+        let uniqueTokens = newTokens.filter { !currentTokenIdentifiers.contains("\($0.chain.rawValue):\($0.ticker)") }
         tokens.append(contentsOf: uniqueTokens)
         
         // Update selected and preExist tokens after loading external tokens

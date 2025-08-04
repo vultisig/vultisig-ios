@@ -210,7 +210,6 @@ struct SwapCoinPickerView: View {
             }
             
             await MainActor.run {
-                selectedChain = selectedChain
                 selectedCoin = newCoin
                 showSheet = false
             }

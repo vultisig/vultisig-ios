@@ -19,24 +19,20 @@ struct TokenSearchService {
             let presetTickers = presetTokens.map { $0.ticker.lowercased() }
             let filtered = externalTokens.filter { !presetTickers.contains($0.ticker.lowercased()) }
             
-            guard !Task.isCancelled else { return [] }
+            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
             
             return presetTokens + filtered
         } catch let error as NSError {
-            if !Task.isCancelled {
-                // Check for rate limit error (429)
-                if error.code == 429 {
-                    throw TokenSearchServiceError.rateLimitExceeded
-                } else {
-                    throw TokenSearchServiceError.networkError
-                }
-            }
-            throw error
-        } catch {
-            if !Task.isCancelled {
+            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
+            // Check for rate limit error (429)
+            if error.code == 429 {
+                throw TokenSearchServiceError.rateLimitExceeded
+            } else {
                 throw TokenSearchServiceError.networkError
             }
-            throw error
+        } catch {
+            guard !Task.isCancelled else { throw TokenSearchServiceError.cancelled }
+            throw TokenSearchServiceError.networkError
         }
     }
     
