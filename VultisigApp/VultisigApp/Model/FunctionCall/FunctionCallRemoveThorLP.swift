@@ -262,11 +262,7 @@ private struct PositionRowView: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-    private func formatDepositValue(_ value: String) -> String {
-        guard let decimal = Decimal(string: value) else { return value }
-        let displayValue = decimal / 100_000_000
-        return displayValue.formatToDecimal(digits: 8)
-    }
+
     
     private func getAssetTicker(from poolName: String) -> String {
         let cleanName = ThorchainService.cleanPoolName(poolName)
@@ -296,7 +292,7 @@ private struct PositionRowView: View {
                             Text("RUNE Deposited")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
-                            Text(formatDepositValue(position.runeDepositValue))
+                            Text((position.runeDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
                                 .font(.caption)
                                 .foregroundColor(.neutral0)
                         }
@@ -305,7 +301,7 @@ private struct PositionRowView: View {
                             Text("\(getAssetTicker(from: position.asset)) Deposited")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
-                            Text(formatDepositValue(position.assetDepositValue))
+                            Text((position.assetDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
                                 .font(.caption)
                                 .foregroundColor(.neutral0)
                         }
