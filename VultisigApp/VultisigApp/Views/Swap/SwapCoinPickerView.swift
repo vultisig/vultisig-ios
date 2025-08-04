@@ -186,9 +186,9 @@ struct SwapCoinPickerView: View {
     }
     
     private var availableChains: [Chain] {
-        coinSelectionViewModel.groupedAssets.compactMap { _, value in
-            value.first?.chain
-        }
+        return coinSelectionViewModel.groupedAssets.keys.compactMap { chainName in
+            coinSelectionViewModel.groupedAssets[chainName]?.first?.chain
+        }.filter(\.isSwapAvailable)
     }
     
     private func reloadCoins() {

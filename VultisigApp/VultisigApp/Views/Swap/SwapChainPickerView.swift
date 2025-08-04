@@ -8,12 +8,30 @@
 import SwiftUI
 
 struct SwapChainPickerView: View {
+    enum FilterType {
+        case swap
+        case send
+    }
+    
+    let filterType: FilterType
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
 
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    
+    init(
+        filterType: FilterType = .send,
+        vault: Vault,
+        showSheet: Binding<Bool>,
+        selectedChain: Binding<Chain?>
+    ) {
+        self.filterType = filterType
+        self.vault = vault
+        self._showSheet = showSheet
+        self._selectedChain = selectedChain
+    }
     
     var content: some View {
         ZStack {
@@ -123,11 +141,7 @@ struct SwapChainPickerView: View {
     }
     
     var sortedChains: [(chain: Chain, balance: String)] {
-        let chains = viewModel.groupedAssets.keys.compactMap { chainName in
-            viewModel.groupedAssets[chainName]?.first?.chain
-        }
-        
-        return chains.map { chain in
+        filteredChains.map { chain in
             let totalFiat = vault.coins
                 .filter { $0.chain == chain }
                 .reduce(Decimal.zero) { sum, coin in
@@ -137,6 +151,17 @@ struct SwapChainPickerView: View {
         }
         .sorted(by: { $0.1 > $1.1 })
         .map { (chain: $0.0, balance: $0.1.formatToFiat())}
+    }
+    
+    var filteredChains: [Chain] {
+        switch filterType {
+        case .swap:
+            return viewModel.groupedAssets.keys.compactMap { chainName in
+                viewModel.groupedAssets[chainName]?.first?.chain
+            }.filter(\.isSwapAvailable)
+        case .send:
+            return vault.coins.map { $0.chain }.uniqueBy { $0.chainType }
+        }
     }
 }
 

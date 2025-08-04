@@ -418,4 +418,46 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     }
     
     static let example = Chain(name: "Bitcoin")!
+    
+    var isSwapAvailable: Bool {
+        switch self {
+        case .thorChain,
+                .mayaChain,
+                .gaiaChain,
+                .kujira,
+                .bitcoin,
+                .dogecoin,
+                .bitcoinCash,
+                .litecoin,
+                .dash,
+                .ripple,
+                .avalanche,
+                .base,
+                .bscChain,
+                .ethereum,
+                .optimism,
+                .polygon,
+                .arbitrum,
+                .blast,
+                .cronosChain,
+                .solana,
+                .zksync,
+                .zcash:
+            return true
+        case .polygonV2,
+            .cardano,
+            .sui,
+            .polkadot,
+            .dydx,
+            .ton,
+            .osmosis,
+            .terra,
+            .terraClassic,
+            .noble,
+            .akash,
+            .tron,
+            .ethereumSepolia:
+            return false
+        }
+    }
 }

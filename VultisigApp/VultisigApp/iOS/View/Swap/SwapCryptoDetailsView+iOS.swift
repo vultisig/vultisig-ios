@@ -17,6 +17,7 @@ extension SwapCryptoDetailsView {
         }
         .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {
             SwapChainPickerView(
+                filterType: .swap,
                 vault: vault,
                 showSheet: $swapViewModel.showFromChainSelector,
                 selectedChain: $swapViewModel.fromChain
@@ -24,6 +25,7 @@ extension SwapCryptoDetailsView {
         })
         .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
             SwapChainPickerView(
+                filterType: .swap,
                 vault: vault,
                 showSheet: $swapViewModel.showToChainSelector,
                 selectedChain: $swapViewModel.toChain
