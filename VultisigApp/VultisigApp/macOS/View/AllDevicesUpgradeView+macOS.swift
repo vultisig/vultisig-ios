@@ -10,7 +10,7 @@ import SwiftUI
 #if os(macOS)
 extension AllDevicesUpgradeView {
     var content: some View {
-        VStack(spacing: 0) {
+        VStack {
             header
             Spacer()
             animation
@@ -18,11 +18,11 @@ extension AllDevicesUpgradeView {
             description
             button
         }
-        .padding(36)
+        .padding(.bottom,30)
     }
     
     var header: some View {
-        GeneralMacHeader(title: "")
+        GeneralMacHeader(title: "Upgrade")
     }
 }
 #endif
