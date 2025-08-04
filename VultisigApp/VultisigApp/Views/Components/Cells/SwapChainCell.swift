@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct SwapChainCell: View {
-    let coins: [Coin]
+    let vault: Vault
     let chain: Chain
-    @Binding var selectedCoin: Coin
+    let balance: String
     @Binding var selectedChain: Chain?
     @Binding var showSheet: Bool
     
@@ -22,6 +22,7 @@ struct SwapChainCell: View {
         } label: {
             label
         }
+        .buttonStyle(.borderless)
         .onAppear {
             setData()
         }
@@ -59,7 +60,7 @@ struct SwapChainCell: View {
     }
     
     var balanceInfo: some View {
-        Text(totalUSDValue)
+        Text(balance)
             .font(.body12BrockmannMedium)
             .foregroundColor(.extraLightGray)
     }
@@ -70,35 +71,15 @@ struct SwapChainCell: View {
     
     private func handleTap() {
         selectedChain = chain
-        
-        let availableCoins = coins.filter { coin in
-            coin.chain == selectedChain
-        }.sorted {
-            $0.ticker < $1.ticker
-        }
-        
-        if let firstCoin = availableCoins.first {
-            selectedCoin = firstCoin
-        }
-        
         showSheet = false
-    }
-    
-    private var totalUSDValue: String {
-        let totalValue = coins
-            .filter { $0.chain == chain }
-            .reduce(Decimal.zero) { sum, coin in
-                sum + coin.balanceInFiatDecimal
-            }
-        return totalValue.formatToFiat()
     }
 }
 
 #Preview {
     SwapChainCell(
-        coins: [],
+        vault: .example,
         chain: Chain.example,
-        selectedCoin: .constant(Coin.example),
+        balance: "10000",
         selectedChain: .constant(Chain.example),
         showSheet: .constant(true)
     )

@@ -8,20 +8,18 @@
 import SwiftUI
 
 struct SwapCoinCell: View {
-    let coin: Coin
-    @Binding var selectedCoin: Coin
-    @Binding var showSheet: Bool
+    let coin: CoinMeta
+    let balance: String?
+    let balanceFiat: String?
+    let isSelected: Bool
     
-    @State var isSelected = false
+    var onSelect: () -> Void
     
     var body: some View {
         Button {
-            handleTap()
+            onSelect()
         } label: {
             label
-        }
-        .onAppear {
-            setData()
         }
     }
     
@@ -44,7 +42,7 @@ struct SwapCoinCell: View {
             if isSelected {
                 check
             } else {
-                balance
+                balanceView
             }
         }
         .padding(.horizontal, 22)
@@ -88,31 +86,27 @@ struct SwapCoinCell: View {
             .bold()
     }
     
-    var balance: some View {
-        VStack(alignment: .trailing, spacing: 4) {
-            Text(coin.balanceString)
-                .foregroundColor(.neutral0)
-            
-            Text(coin.balanceInFiat)
-                .foregroundColor(.extraLightGray)
+    @ViewBuilder
+    var balanceView: some View {
+        if let balance, let balanceFiat {
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(balance)
+                    .foregroundColor(.neutral0)
+                
+                Text(balanceFiat)
+                    .foregroundColor(.extraLightGray)
+            }
+            .font(.body12BrockmannMedium)
         }
-        .font(.body12BrockmannMedium)
-    }
-    
-    private func setData() {
-        isSelected = coin == selectedCoin
-    }
-    
-    private func handleTap() {
-        selectedCoin = coin
-        showSheet = false
     }
 }
 
 #Preview {
     SwapCoinCell(
-        coin: Coin.example,
-        selectedCoin: .constant(Coin.example),
-        showSheet: .constant(true)
+        coin: CoinMeta.example,
+        balance: "1000",
+        balanceFiat: "10",
+        isSelected: true,
+        onSelect: {}
     )
 }
