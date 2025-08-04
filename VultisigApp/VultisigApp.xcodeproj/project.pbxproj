@@ -546,7 +546,6 @@
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */; };
 		A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */; };
-		A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */; };
 		A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */; };
 		A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */; };
 		A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */; };
@@ -954,6 +953,7 @@
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEE4AD0C2DBCFC08003A2FC0 /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DEE4AD0B2DBCFC08003A2FC0 /* walletcore */; };
 		DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */; };
+		DEE8B2AC2E40842B0020DA63 /* upgrade_success.riv in Resources */ = {isa = PBXBuildFile; fileRef = DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */; };
 		DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */; };
@@ -1541,7 +1541,6 @@
 		A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeFromGG20HomeBanner.swift; sourceTree = "<group>"; };
 		A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeYourVaultView.swift; sourceTree = "<group>"; };
 		A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_animation.riv; sourceTree = "<group>"; };
-		A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_succes.riv; sourceTree = "<group>"; };
 		A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllDevicesUpgradeView.swift; sourceTree = "<group>"; };
 		A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultShareBackupsView.swift; sourceTree = "<group>"; };
 		A6BB9BCA2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AllDevicesUpgradeView+iOS.swift"; sourceTree = "<group>"; };
@@ -1946,6 +1945,7 @@
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignWrongVaultTypeErrorView.swift; sourceTree = "<group>"; };
+		DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_success.riv; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeysign.swift; sourceTree = "<group>"; };
 		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
@@ -3514,6 +3514,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
@@ -3534,7 +3535,6 @@
 				A67EC5B32E0502CD0031A22A /* quick_summary.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
 				A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */,
-				A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */,
 				A6BB9BCE2DA9E43B0085E117 /* all_devices_animation.riv */,
 			);
 			path = Animations;
@@ -4285,6 +4285,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEE8B2AC2E40842B0020DA63 /* upgrade_success.riv in Resources */,
 				A67EC5B42E0502CD0031A22A /* quick_summary.riv in Resources */,
 				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
@@ -4316,7 +4317,6 @@
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
-				A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */,
 				A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
