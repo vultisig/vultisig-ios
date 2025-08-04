@@ -126,11 +126,11 @@ struct FunctionCallVerifyView: View {
         }
     }
     
-    private func getAmount() -> String {
+        private func getAmount() -> String {
         // Check if this is a THORChain LP operation
         if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
             // For LP operations, show context about which pool
-            let cleanPoolName = cleanPoolNameForDisplay(pool)
+            let cleanPoolName = ThorchainService.cleanPoolName(pool)
             if tx.coin.chain == .thorChain {
                 // Adding RUNE to a specific pool
                 return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
@@ -142,16 +142,6 @@ struct FunctionCallVerifyView: View {
         
         // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
-    }
-    
-    private func cleanPoolNameForDisplay(_ poolName: String) -> String {
-        // Remove contract addresses from pool names for cleaner display
-        if let dashIndex = poolName.firstIndex(of: "-"),
-           let hexPrefix = poolName[poolName.index(after: dashIndex)...].firstIndex(of: "0"),
-           poolName[hexPrefix...].starts(with: "0X") {
-            return String(poolName[..<dashIndex])
-        }
-        return poolName
     }
     
     private func onSignPress() {
