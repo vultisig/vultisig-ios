@@ -29,6 +29,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     // Mapping display name -> full pool asset string
     private var poolNameMap: [String: String] = [:]
     @Published var pairedAssetBalance: String = ""
+    @Published var selectedPoolBalance: String = ""
     
     // ERC20 approval
     @Published var isApprovalRequired: Bool = false
@@ -244,6 +245,46 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         }
     }
     
+    func updateSelectedPoolBalance(_ poolName: String) {
+        // If on THORChain, balance is always RUNE
+        if tx.coin.chain == .thorChain {
+            selectedPoolBalance = balance  // This is RUNE balance
+            return
+        }
+        
+        // For external chains, show balance of the asset being added to the pool
+        let components = poolName.split(separator: ".").map { String($0).uppercased() }
+        guard components.count >= 2 else {
+            selectedPoolBalance = balance  // fallback to tx.coin balance
+            return
+        }
+        
+        let chainPrefix = components[0]
+        let assetTicker = components[1]
+        
+        // Find the chain's coins
+        let chainCoins = vault.coins.filter { $0.chain.swapAsset.uppercased() == chainPrefix }
+        
+        // Check if it's the native token (e.g., BASE.ETH -> ETH on Base chain)
+        if assetTicker == chainPrefix || assetTicker == "ETH" {
+            if let nativeCoin = chainCoins.first(where: { $0.isNativeToken }) {
+                let b = nativeCoin.balanceDecimal.formatForDisplay()
+                selectedPoolBalance = "( Balance: \(b) \(nativeCoin.ticker.uppercased()) )"
+                return
+            }
+        }
+        
+        // Check for specific token (e.g., BASE.USDC -> USDC on Base chain)
+        if let tokenCoin = chainCoins.first(where: { $0.ticker.uppercased() == assetTicker }) {
+            let b = tokenCoin.balanceDecimal.formatForDisplay()
+            selectedPoolBalance = "( Balance: \(b) \(tokenCoin.ticker.uppercased()) )"
+            return
+        }
+        
+        // Asset not found in vault
+        selectedPoolBalance = "( \(assetTicker) not found in vault )"
+    }
+    
     // MARK: - Validation
     
     private func setupValidation() {
@@ -315,11 +356,11 @@ struct FunctionCallAddThorLPView: View {
             
             StyledFloatingPointField(
                 label: {
-                    // If adding RUNE (thorChain), show RUNE balance. Otherwise prefer the paired asset balance if available.
+                    // If adding RUNE (thorChain), show RUNE balance. Otherwise show the selected pool's asset balance.
                     if model.tx.coin.chain == .thorChain {
                         return "Amount \(model.balance)"
-                    } else if !model.pairedAssetBalance.isEmpty {
-                        return "Amount \(model.pairedAssetBalance)"
+                    } else if !model.selectedPoolBalance.isEmpty {
+                        return "Amount \(model.selectedPoolBalance)"
                     } else {
                         return "Amount \(model.balance)"
                     }
@@ -409,8 +450,13 @@ struct PoolSelectorSection: View {
             onSelect: { pool in
                 model.selectedPool = pool
                 model.poolValid = !pool.value.isEmpty
-                if model.tx.coin.chain == .thorChain && !pool.value.isEmpty {
-                    model.prefillPairedAddressForPool(pool.value)
+                if !pool.value.isEmpty {
+                    if model.tx.coin.chain == .thorChain {
+                        model.prefillPairedAddressForPool(pool.value)
+                    } else {
+                        // Only update balance for external chains
+                        model.updateSelectedPoolBalance(pool.value)
+                    }
                 }
             }
         )
