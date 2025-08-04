@@ -527,11 +527,8 @@ extension ThorchainService {
         // Check cache first
         if let cached = cacheLPPositions.get(cacheKey),
            Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            print("ThorchainService: Using cached LP positions for \(address) (count: \(cached.data.count))")
             return cached.data
         }
-        
-        print("ThorchainService: Fetching LP positions for address: \(address)")
         
         // Get all available pools first (this will use cache if available)
         let pools = try await fetchLPPools()
@@ -570,7 +567,6 @@ extension ThorchainService {
                             assetGrowthPct: nil
                         )
                         allPositions.append(position)
-                        print("ThorchainService: Found LP position in \(pool.asset) with \(lpResponse.units) units")
                     }
                 }
                 
@@ -585,7 +581,6 @@ extension ThorchainService {
         
         // Cache the result
         cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
-        print("ThorchainService: Cached \(allPositions.count) LP positions for \(address)")
         
         return allPositions
     }
@@ -611,7 +606,6 @@ extension ThorchainService {
         // Check cache first
         if let cached = cacheLPPools.get(cacheKey),
            Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
-            print("ThorchainService: Using cached LP pools (count: \(cached.data.count))")
             return cached.data
         }
         
@@ -637,7 +631,6 @@ extension ThorchainService {
             
             // Cache the result
             cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
-            print("ThorchainService: Cached \(availablePools.count) LP pools")
             
             return availablePools
         }
@@ -656,7 +649,6 @@ extension ThorchainService {
                     // Exponential backoff: 1s, 2s, 4s
                     let delay = retryDelay * pow(2.0, Double(attempt - 1))
                     try await Task.sleep(for: .seconds(delay))
-                    print("ThorchainService: Retry attempt \(attempt) after \(delay)s delay")
                 }
             }
         }
