@@ -14,12 +14,10 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var preExistTokens: [CoinMeta] = []
     @Published var searchedTokens: [CoinMeta] = []
     @Published var isLoading: Bool = false
-    @Published var isLoadingEVMTokens: Bool = false
-    @Published var isLoadingSolanaTokens: Bool = false
     @Published var error: Error?
-    
-    private let oneInchservice = OneInchService.shared
     private var loadingTask: Task<Void, Never>?
+    
+    private let searchService = TokenSearchService()
     
     func selectedTokens(groupedChain: GroupedChain) -> [CoinMeta] {
         let tickers = groupedChain.coins
@@ -40,7 +38,7 @@ class TokenSelectionViewModel: ObservableObject {
         return filteredTokens + tickerTokens
     }
     
-    func preExistingTokens(groupedChain: GroupedChain) ->[CoinMeta] {
+    func preExistingTokens(groupedChain: GroupedChain) -> [CoinMeta] {
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
@@ -72,7 +70,7 @@ class TokenSelectionViewModel: ObservableObject {
     
     var showRetry: Bool {
         switch error {
-        case let error as Errors:
+        case let error as TokenSearchServiceError:
             return error == .networkError
         default:
             return false
@@ -87,7 +85,6 @@ class TokenSelectionViewModel: ObservableObject {
         error = nil
         
         // Load basic tokens immediately (synchronous)
-        loadOtherTokens(chain: groupedChain.chain)
         selectedTokens = selectedTokens(groupedChain: groupedChain)
         preExistTokens = preExistingTokens(groupedChain: groupedChain)
         
@@ -100,8 +97,6 @@ class TokenSelectionViewModel: ObservableObject {
     func cancelLoading() {
         loadingTask?.cancel()
         isLoading = false
-        isLoadingEVMTokens = false
-        isLoadingSolanaTokens = false
     }
     
     private func loadExternalTokens(groupedChain: GroupedChain) async {
@@ -109,14 +104,10 @@ class TokenSelectionViewModel: ObservableObject {
         
         isLoading = true
         
-        switch groupedChain.chain.chainType {
-        case .EVM:
-            await loadTokens(for: groupedChain.chain, type: .evm)
-        case .Solana:
-            await loadTokens(for: groupedChain.chain, type: .solana)
-        default:
-            break
-        }
+        let currentTokensTickers = tokens.map(\.ticker)
+        let newTokens = (try? await searchService.loadTokens(for: groupedChain.chain)) ?? []
+        let uniqueTokens = newTokens.filter { !currentTokensTickers.contains($0.ticker) }
+        tokens.append(contentsOf: uniqueTokens)
         
         // Update selected and preExist tokens after loading external tokens
         if !Task.isCancelled {
@@ -125,99 +116,5 @@ class TokenSelectionViewModel: ObservableObject {
         }
         
         isLoading = false
-    }
-}
-
-private extension TokenSelectionViewModel {
-    
-    enum Errors: Error, LocalizedError {
-        case noTokens
-        case networkError
-        case rateLimitExceeded
-        
-        var errorDescription: String? {
-            switch self {
-            case .noTokens:
-                return "Tokens not found"
-            case .networkError:
-                return "Unable to connect.\nPlease check your internet connection and try again"
-            case .rateLimitExceeded:
-                return "Too many requests.\nPlease close this screen and try again later"
-            }
-        }
-    }
-    
-    enum TokenLoadingType {
-        case evm
-        case solana
-    }
-    
-    func loadTokens(for chain: Chain, type: TokenLoadingType) async {
-        guard !Task.isCancelled else { return }
-        
-        // Set chain-specific loading flag
-        setLoadingFlag(for: type, isLoading: true)
-        
-        do {
-            let newTokens = try await fetchTokens(for: chain, type: type)
-            
-            guard !Task.isCancelled else { return }
-            
-            // Filter out duplicates
-            let uniqueTokens = newTokens.filter { item in
-                !tokens.contains { $0.ticker == item.ticker }
-            }
-            
-            tokens.append(contentsOf: uniqueTokens)
-            
-        } catch let error as NSError {
-            if !Task.isCancelled {
-                // Check for rate limit error (429)
-                if error.code == 429 {
-                    self.error = Errors.rateLimitExceeded
-                } else {
-                    self.error = Errors.networkError
-                }
-            }
-        } catch {
-            if !Task.isCancelled {
-                self.error = Errors.networkError
-            }
-        }
-        
-        // Reset chain-specific loading flag
-        setLoadingFlag(for: type, isLoading: false)
-    }
-    
-    func fetchTokens(for chain: Chain, type: TokenLoadingType) async throws -> [CoinMeta] {
-        switch type {
-        case .evm:
-            if oneInchservice.isChainSupported(chain: chain) == false {
-                return []
-            }
-            guard let chainID = chain.chainID else { return [] }
-            let oneInchTokens = try await oneInchservice.fetchTokens(chain: chainID)
-                .sorted(by: { $0.name < $1.name })
-                .map { $0.toCoinMeta(chain: chain) }
-            return oneInchTokens
-            
-        case .solana:
-            let jupTokens = try await SolanaService.shared.fetchSolanaJupiterTokenList()
-            return jupTokens
-        }
-    }
-    
-    func setLoadingFlag(for type: TokenLoadingType, isLoading: Bool) {
-        switch type {
-        case .evm:
-            isLoadingEVMTokens = isLoading
-        case .solana:
-            isLoadingSolanaTokens = isLoading
-        }
-    }
-    
-    func loadOtherTokens(chain: Chain) {
-        tokens = TokensStore.TokenSelectionAssets
-            .filter { $0.chain == chain && !$0.isNativeToken }
     }
 }

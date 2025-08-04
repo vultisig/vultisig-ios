@@ -357,12 +357,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
+        fromChain = coin.chain
         fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.toCoin = coin
+        toChain = coin.chain
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
@@ -545,6 +547,37 @@ private extension SwapCryptoViewModel {
             
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .Ton, .Ripple, .Tron, .Cardano:
             return chainSpecific.gas
+        }
+    }
+}
+
+// MARK: - Asset Selection
+
+extension SwapCryptoViewModel {
+    func handleFromChainUpdate(tx: SwapTransaction, vault: Vault) {
+        guard let fromChain, let coin = getDefaultCoin(for: fromChain, vault: vault) else { return }
+        tx.fromCoin = coin
+    }
+    
+    func handleToChainUpdate(tx: SwapTransaction, vault: Vault) {
+        guard let toChain, let coin = getDefaultCoin(for: toChain, vault: vault) else { return }
+        tx.toCoin = coin
+    }
+    
+    func getDefaultCoin(for chain: Chain, vault: Vault) -> Coin? {
+        let firstVaultCoin = vault.coins
+            .filter { $0.chain == chain }
+            .sorted { $0.balanceInFiatDecimal > $1.balanceInFiatDecimal }
+            .first
+
+        if let firstVaultCoin {
+            return firstVaultCoin
+        } else {
+            let coinMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain })
+            guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta, vault: vault) else {
+                return nil
+            }
+            return coin
         }
     }
 }

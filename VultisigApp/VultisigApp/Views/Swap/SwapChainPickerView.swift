@@ -11,39 +11,15 @@ struct SwapChainPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
-    @Binding var selectedCoin: Coin
 
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
-    var filteredChains: [Chain] {
-        let chains = vault.coins.map { coin in
-            coin.chain
-        }
-        
-        let chainsArray = Array(Set(chains)).sorted {
-            $0.name < $1.name
-        }
-        
-        return searchText.isEmpty
-            ? chainsArray
-            : chainsArray
-            .filter { chain in
-                // Search by chain name
-                chain.name.lowercased().contains(searchText.lowercased()) ||
-                // Search by native token ticker
-                chain.ticker.lowercased().contains(searchText.lowercased())
-            }
-    }
-    
     var content: some View {
         ZStack {
-            ZStack {
-                Background()
-                main
-            }
+            Background()
+            main
         }
-        .buttonStyle(BorderlessButtonStyle())
     }
     
     var main: some View {
@@ -84,7 +60,7 @@ struct SwapChainPickerView: View {
             VStack(spacing: 12) {
                 searchBar
                 
-                if filteredChains.count > 0 {
+                if viewModel.filteredChains.count > 0 {
                     listHeader
                     list
                 } else {
@@ -114,11 +90,11 @@ struct SwapChainPickerView: View {
     
     var list: some View {
         LazyVStack(spacing: 0) {
-            ForEach(filteredChains, id: \.self) { chain in
+            ForEach(sortedChains, id: \.chain) { (chain, balance) in
                 SwapChainCell(
-                    coins: vault.coins,
+                    vault: vault,
                     chain: chain,
-                    selectedCoin: $selectedCoin,
+                    balance: balance,
                     selectedChain: $selectedChain,
                     showSheet: $showSheet
                 )
@@ -145,13 +121,29 @@ struct SwapChainPickerView: View {
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
     }
+    
+    var sortedChains: [(chain: Chain, balance: String)] {
+        let chains = viewModel.groupedAssets.keys.compactMap { chainName in
+            viewModel.groupedAssets[chainName]?.first?.chain
+        }
+        
+        return chains.map { chain in
+            let totalFiat = vault.coins
+                .filter { $0.chain == chain }
+                .reduce(Decimal.zero) { sum, coin in
+                    sum + coin.balanceInFiatDecimal
+                }
+            return (chain, totalFiat)
+        }
+        .sorted(by: { $0.1 > $1.1 })
+        .map { (chain: $0.0, balance: $0.1.formatToFiat())}
+    }
 }
 
 #Preview {
     SwapChainPickerView(
         vault: Vault.example,
         showSheet: .constant(true),
-        selectedChain: .constant(Chain.example),
-        selectedCoin: .constant(Coin.example)
+        selectedChain: .constant(Chain.example)
     )
 }
