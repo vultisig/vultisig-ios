@@ -6,6 +6,7 @@
 import SwiftUI
 import Foundation
 import Combine
+import BigInt
 
 class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     @Published var selectedPosition: ThorchainLPPosition?
@@ -40,7 +41,6 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         // Set transaction amount to THORChain native fee (0.02 RUNE)
         // This is the minimum dust amount to initiate withdrawal on THORChain
         self.tx.amount = "0.02"
-        print("FunctionCallRemoveThorLP: Initial transaction amount set to 0.02 RUNE for withdrawal initiation")
         
         setupValidation()
         
@@ -54,15 +54,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         }
     }
     
-    func cleanPoolName(_ asset: String) -> String {
-        // Remove contract addresses from pool names
-        if let dashIndex = asset.firstIndex(of: "-"),
-           let hexPrefix = asset[asset.index(after: dashIndex)...].firstIndex(of: "0"),
-           asset[hexPrefix...].starts(with: "0X") {
-            return String(asset[..<dashIndex])
-        }
-        return asset
-    }
+    // Clean pool name functionality moved to THORChainUtils
     
     private func setupValidation() {
         Publishers.CombineLatest($positionValid, $percentageValid)
@@ -85,9 +77,8 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
                 print("FunctionCallRemoveThorLP: Loading positions for RUNE address: \(runeAddress)")
                 
                 let positions = try await ThorchainService.shared.fetchLPPositions(runeAddress: runeAddress)
-                print("FunctionCallRemoveThorLP: Found \(positions.count) positions")
                 
-                await MainActor.run {
+                DispatchQueue.main.async {
                     self.lpPositions = positions
                     self.isLoading = false
                     if positions.isEmpty {
@@ -101,7 +92,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
             } catch {
                 print("FunctionCallRemoveThorLP: Error loading LP positions: \(error)")
                 print("FunctionCallRemoveThorLP: Error details: \(error.localizedDescription)")
-                await MainActor.run {
+                DispatchQueue.main.async {
                     self.isLoading = false
                     self.errorMessage = "Failed to load LP positions: \(error.localizedDescription)"
                 }
@@ -278,7 +269,7 @@ struct FunctionCallRemoveThorLPView: View {
                         
                         HStack {
                             Text("Pool:")
-                            Text(model.cleanPoolName(position.asset))
+                            Text(ThorchainService.cleanPoolName(position.asset))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -306,15 +297,7 @@ private struct PositionRowView: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-    private func cleanPoolName(_ asset: String) -> String {
-        // Remove contract addresses from pool names
-        if let dashIndex = asset.firstIndex(of: "-"),
-           let hexPrefix = asset[asset.index(after: dashIndex)...].firstIndex(of: "0"),
-           asset[hexPrefix...].starts(with: "0X") {
-            return String(asset[..<dashIndex])
-        }
-        return asset
-    }
+    // Clean pool name functionality moved to THORChainUtils
     
     private func formatDepositValue(_ value: String) -> String {
         // Convert from base units (1e8) to display format
@@ -327,7 +310,7 @@ private struct PositionRowView: View {
     
     private func getAssetTicker(from poolName: String) -> String {
         // Extract asset ticker from pool name (e.g., "ETH.USDC" -> "USDC")
-        let cleanName = cleanPoolName(poolName)
+        let cleanName = ThorchainService.cleanPoolName(poolName)
         let components = cleanName.split(separator: ".")
         if components.count >= 2 {
             return String(components[1])
@@ -339,7 +322,7 @@ private struct PositionRowView: View {
         Button(action: onTap) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(cleanPoolName(position.asset))
+                    Text(ThorchainService.cleanPoolName(position.asset))
                         .font(.body16MenloBold)
                         .foregroundColor(.primary)
                     

@@ -67,6 +67,9 @@ class FunctionCallVerifyViewModel: ObservableObject {
                     let chainName = getInboundChainName(for: tx.coin.chain)
                     
                     guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                        self.errorMessage = "Failed to find inbound address for \(chainName)"
+                        showAlert = true
+                        isLoading = false
                         return nil
                     }
                     
@@ -137,39 +140,9 @@ class FunctionCallVerifyViewModel: ObservableObject {
         return keysignPayload
     }
     
+    // Use THORChainUtils for chain name mapping
     private func getInboundChainName(for chain: Chain) -> String {
-        // Map internal chain names to THORChain inbound address chain names
-        switch chain {
-        case .bitcoin:
-            return "BTC"
-        case .ethereum:
-            return "ETH"
-        case .avalanche:
-            return "AVAX"
-        case .bscChain:
-            return "BSC"
-        case .arbitrum:
-            return "ARB"
-        case .base:
-            return "BASE"
-        case .optimism:
-            return "OP"
-        case .polygon:
-            return "MATIC"
-        case .litecoin:
-            return "LTC"
-        case .bitcoinCash:
-            return "BCH"
-        case .dogecoin:
-            return "DOGE"
-        case .gaiaChain:
-            return "GAIA"
-        case .thorChain:
-            return "THOR"
-        default:
-            // For unknown chains, use the chain's swapAsset
-            return chain.swapAsset.uppercased()
-        }
+        return ThorchainService.getInboundChainName(for: chain)
     }
     
     func scan(transaction: SendTransaction, vault: Vault) async {

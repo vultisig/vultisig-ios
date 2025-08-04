@@ -36,8 +36,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     // Internals
     private var cancellables = Set<AnyCancellable>()
-    private let maxRetries = 3
-    var retryCount = 0
     
     // Domain models
     var tx: SendTransaction
@@ -68,7 +66,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     private func loadInitialState() {
         fetchInboundAddressAndSetupApproval()
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s delay to let UI settle
             await loadPools()
         }
     }
@@ -88,7 +85,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 return
             } else {
                 // Normal send path: need inbound address for L1/EVM chains.
-                let chainName = getInboundChainName(for: tx.coin.chain)
+                let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
                 guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
                     return
                 }
@@ -118,18 +115,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                         self.approvePayload = payload
 
                     } else {
-                        Task {
-                            for attempt in 0..<5 {
-                                try? await Task.sleep(nanoseconds: 300_000_000)
-                                if !tx.toAddress.isEmpty {
-                                    let payload = ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
-                                    await MainActor.run {
-                                        self.approvePayload = payload
-                                    }
-                                    break
-                                }
-                            }
-                        }
+                        // Address not yet set, wait for pool selection
+                        self.approvePayload = nil
                     }
                 }
             }
@@ -138,38 +125,14 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     // MARK: - Pool loading
     
-    private func cleanPoolName(_ asset: String) -> String {
-        if let dashIndex = asset.firstIndex(of: "-") {
-            let suffix = asset[asset.index(after: dashIndex)...]
-            if suffix.uppercased().starts(with: "0X") {
-                return String(asset[..<dashIndex])
-            }
-        }
-        return asset
-    }
-    
     @MainActor
     func loadPools() async {
         isLoadingPools = true
         loadError = nil
         
-        let timeoutTask = Task {
-            try? await Task.sleep(nanoseconds: 15_000_000_000) // 15s
-            if isLoadingPools {
-                await MainActor.run {
-                    self.availablePools = []
-                    self.isLoadingPools = false
-                    self.loadError = "Timeout loading pools."
-                }
-            }
-        }
-        
         do {
-            let allPools = try await Task.detached {
-                try await ThorchainService.shared.fetchLPPools()
-            }.value
-            
-            timeoutTask.cancel()
+            // The retry logic is now handled within ThorchainService.fetchLPPools()
+            let allPools = try await ThorchainService.shared.fetchLPPools()
             
             var poolOptions: [IdentifiableString] = []
             var nameMap: [String: String] = [:]
@@ -177,7 +140,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             if tx.coin.chain == .thorChain {
                 for pool in allPools {
                     let assetName = pool.asset
-                    let cleanName = cleanPoolName(assetName)
+                    let cleanName = ThorchainService.cleanPoolName(assetName)
                     poolOptions.append(IdentifiableString(value: cleanName))
                     nameMap[cleanName] = assetName
                 }
@@ -191,7 +154,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 }
                 for pool in filtered {
                     let assetName = pool.asset
-                    let cleanName = cleanPoolName(assetName)
+                    let cleanName = ThorchainService.cleanPoolName(assetName)
                     poolOptions.append(IdentifiableString(value: cleanName))
                     nameMap[cleanName] = assetName
                 }
@@ -202,10 +165,8 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             self.availablePools = poolOptions
             self.isLoadingPools = false
             self.loadError = nil
-            self.retryCount = 0
             
-            if !poolOptions.isEmpty {
-            }
+            // Pool options loaded successfully
             
             if tx.coin.chain != .thorChain && poolOptions.count == 1 {
                 // auto-select single pool for L1
@@ -213,18 +174,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 self.poolValid = true
             }
         } catch {
-            timeoutTask.cancel()
-            
-            if retryCount < maxRetries {
-                retryCount += 1
-                let delay = UInt64(pow(2.0, Double(retryCount - 1))) * 1_000_000_000
-                try? await Task.sleep(nanoseconds: delay)
-                await loadPools()
-            } else {
-                self.availablePools = []
-                self.isLoadingPools = false
-                self.loadError = "Failed to load pools. Please check your connection and try again."
-            }
+            self.availablePools = []
+            self.isLoadingPools = false
+            self.loadError = "Failed to load pools. Please check your connection and try again."
         }
     }
     
@@ -270,11 +222,13 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         if tx.coin.chain == .thorChain {
             Task { @MainActor in
                 let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                let chainName = getInboundChainName(for: chainCoin.chain)
+                let chainName = ThorchainService.getInboundChainName(for: chainCoin.chain)
                 if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }),
                    !(inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused) {
                     tx.toAddress = inbound.address
                 } else {
+                    // Inbound address not available or chain is halted
+                    print("Warning: Inbound address not available for chain \(chainName)")
                 }
             }
         }
@@ -339,40 +293,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         AnyView(FunctionCallAddThorLPView(model: self))
     }
     
-    // MARK: - Chain name mapping
-    
-    private func getInboundChainName(for chain: Chain) -> String {
-        switch chain {
-        case .bitcoin:
-            return "BTC"
-        case .ethereum:
-            return "ETH"
-        case .avalanche:
-            return "AVAX"
-        case .bscChain:
-            return "BSC"
-        case .arbitrum:
-            return "ARB"
-        case .base:
-            return "BASE"
-        case .optimism:
-            return "OP"
-        case .polygon:
-            return "MATIC"
-        case .litecoin:
-            return "LTC"
-        case .bitcoinCash:
-            return "BCH"
-        case .dogecoin:
-            return "DOGE"
-        case .gaiaChain:
-            return "GAIA"
-        case .thorChain:
-            return "THOR"
-        default:
-            return chain.swapAsset.uppercased()
-        }
-    }
+    // MARK: - Chain name mapping moved to THORChainUtils
 }
 
 // MARK: - Views
@@ -460,7 +381,6 @@ struct PoolSelectorSection: View {
                 Spacer()
                 
                 Button {
-                    model.retryCount = 0
                     model.loadError = nil
                     model.isLoadingPools = true
                     Task {
