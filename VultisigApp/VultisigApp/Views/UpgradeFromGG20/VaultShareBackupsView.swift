@@ -56,7 +56,7 @@ struct VaultShareBackupsView: View {
                 selectedTab: .secure,
                 fastSignConfig: nil
             )
-        }.frame(width: 100)
+        }.frame(width: 120)
     }
     
     var migrateFastVault: some View {
