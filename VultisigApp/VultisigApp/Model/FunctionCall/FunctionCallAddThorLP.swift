@@ -80,7 +80,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
             if tx.coin.chain == .thorChain {
                 // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
                 // The toAddress will be set when pool is selected
-
+                
                 isApprovalRequired = false
                 approvePayload = nil
                 return
@@ -99,11 +99,11 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 if tx.coin.shouldApprove {
                     // ERC20 token (e.g., USDC) → approval to router
                     destinationAddress = inbound.router ?? inbound.address
-
+                    
                 } else {
                     // Native token (e.g., ETH) → direct to inbound address
                     destinationAddress = inbound.address
-
+                    
                 }
                 
                 tx.toAddress = destinationAddress
@@ -111,14 +111,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 // ERC20 approval only for non-RUNE ERC20 tokens
                 isApprovalRequired = tx.coin.shouldApprove
                 if isApprovalRequired {
-                    if !tx.toAddress.isEmpty {
-                        let payload = ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
-                        self.approvePayload = payload
-
-                    } else {
-                        // Address not yet set, wait for pool selection
-                        self.approvePayload = nil
-                    }
+                    self.approvePayload = tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
                 }
             }
         }
@@ -227,9 +220,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }),
                    !(inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused) {
                     tx.toAddress = inbound.address
-                } else {
-                    // Inbound address not available or chain is halted
-                    print("Warning: Inbound address not available for chain \(chainName)")
                 }
             }
         }
@@ -246,46 +236,59 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func updateSelectedPoolBalance(_ poolName: String) {
-        // If on THORChain, balance is always RUNE
         if tx.coin.chain == .thorChain {
-            selectedPoolBalance = balance  // This is RUNE balance
+            selectedPoolBalance = balance  // RUNE
             return
         }
         
-        // For external chains, show balance of the asset being added to the pool
         let components = poolName.split(separator: ".").map { String($0).uppercased() }
         guard components.count >= 2 else {
-            selectedPoolBalance = balance  // fallback to tx.coin balance
+            selectedPoolBalance = balance
             return
         }
         
         let chainPrefix = components[0]
         let assetTicker = components[1]
         
-        // Find the chain's coins
+        // Todas as moedas da mesma chain
         let chainCoins = vault.coins.filter { $0.chain.swapAsset.uppercased() == chainPrefix }
         
-        // Check if it's the native token (e.g., BASE.ETH -> ETH on Base chain)
-        if assetTicker == chainPrefix || assetTicker == "ETH" {
-            if let nativeCoin = chainCoins.first(where: { $0.isNativeToken }) {
-                let b = nativeCoin.balanceDecimal.formatForDisplay()
-                selectedPoolBalance = "( Balance: \(b) \(nativeCoin.ticker.uppercased()) )"
-                return
-            }
-        }
-        
-        // Check for specific token (e.g., BASE.USDC -> USDC on Base chain)
-        if let tokenCoin = chainCoins.first(where: { $0.ticker.uppercased() == assetTicker }) {
-            let b = tokenCoin.balanceDecimal.formatForDisplay()
-            selectedPoolBalance = "( Balance: \(b) \(tokenCoin.ticker.uppercased()) )"
+        // 1. Verifica se é token nativo com o mesmo ticker
+        if let native = chainCoins.first(where: { $0.isNativeToken && $0.ticker.uppercased() == assetTicker }) {
+            selectedPoolBalance = formatBalance(native.balanceDecimal, ticker: native.ticker)
             return
         }
         
-        // Asset not found in vault
+        // 2. Verifica se existe token com esse ticker
+        if let token = chainCoins.first(where: { $0.ticker.uppercased() == assetTicker }) {
+            selectedPoolBalance = formatBalance(token.balanceDecimal, ticker: token.ticker)
+            return
+        }
+        
+        // 3. Não encontrou
         selectedPoolBalance = "( \(assetTicker) not found in vault )"
     }
     
-    // MARK: - Validation
+    func updateSelectedCoin(from poolName: String) {
+        let components = poolName.split(separator: ".").map { String($0).uppercased() }
+        guard components.count >= 2 else { return }
+        
+        let chainPrefix = components[0]
+        let assetTicker = components[1]
+        
+        // Match correct coin in vault (native or token)
+        if let coin = vault.coins.first(where: {
+            $0.chain.swapAsset.uppercased() == chainPrefix &&
+            $0.ticker.uppercased() == assetTicker
+        }) {
+            tx.coin = coin
+        }
+    }
+    
+    
+    private func formatBalance(_ balance: Decimal, ticker: String) -> String {
+        return "( Balance: \(balance.formatForDisplay()) \(ticker.uppercased()) )"
+    }
     
     private func setupValidation() {
         Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
@@ -334,7 +337,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         AnyView(FunctionCallAddThorLPView(model: self))
     }
     
-    // MARK: - Chain name mapping moved to THORChainUtils
 }
 
 // MARK: - Views
@@ -381,7 +383,7 @@ struct PoolSelectorSection: View {
             
             if model.isLoadingPools {
                 loadingView
-            } else if !model.isLoadingPools && model.availablePools.isEmpty {
+            } else if model.availablePools.isEmpty {
                 errorView
             } else {
                 dropdownView
@@ -443,25 +445,24 @@ struct PoolSelectorSection: View {
     
     private var dropdownView: some View {
         GenericSelectorDropDown(
-            items: Binding(get: { model.availablePools }, set: { _ in }),
+            items: .constant(model.availablePools),
             selected: Binding(get: { model.selectedPool }, set: { model.selectedPool = $0 }),
             mandatoryMessage: "*",
             descriptionProvider: { $0.value.isEmpty ? "Select pool" : $0.value },
             onSelect: { pool in
                 model.selectedPool = pool
                 model.poolValid = !pool.value.isEmpty
+                
                 if !pool.value.isEmpty {
                     if model.tx.coin.chain == .thorChain {
                         model.prefillPairedAddressForPool(pool.value)
                     } else {
-                        // Only update balance for external chains
+                        model.updateSelectedCoin(from: pool.value)
                         model.updateSelectedPoolBalance(pool.value)
                     }
                 }
             }
         )
-        .onAppear {
-        }
     }
 }
 
