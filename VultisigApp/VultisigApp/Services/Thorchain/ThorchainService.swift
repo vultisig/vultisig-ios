@@ -588,15 +588,6 @@ extension ThorchainService {
         print("ThorchainService: Cached \(allPositions.count) LP positions for \(address)")
         
         return allPositions
-        
-        // For RUNE addresses, we also need to check by searching for the Thor address in pool LPs
-        if runeAddress != nil {
-            // The RUNE LP would be matched via the asset address field when adding symmetric LP
-            // But for pure RUNE LP, we need a different approach
-            // For now, we'll rely on the asset-side matching above
-        }
-        
-        return allPositions
     }
     
     /// Fetch pool information for a specific asset
@@ -671,31 +662,6 @@ extension ThorchainService {
         }
         
         throw lastError ?? HelperError.runtimeError("Unknown error after \(maxAttempts) attempts")
-    }
-    
-    /// Clear LP pools cache
-    func clearLPPoolsCache() async {
-        await cacheLPPools.clear()
-        print("ThorchainService: Cleared LP pools cache")
-    }
-    
-    /// Clear all LP-related caches
-    func clearAllLPCaches() async {
-        await cacheLPPools.clear()
-        await cacheLPPositions.clear()
-        print("ThorchainService: Cleared all LP caches")
-    }
-    
-    /// Calculate asset amount needed for symmetric LP
-    func calculateSymmetricLPAssetAmount(runeAmount: Decimal, pool: ThorchainPool) -> Decimal? {
-        guard let balanceRune = Decimal(string: pool.balanceRune),
-              let balanceAsset = Decimal(string: pool.balanceAsset),
-              balanceRune > 0 else {
-            return nil
-        }
-        
-        // For symmetric LP: assetAmount = runeAmount * (balanceAsset / balanceRune)
-        return runeAmount * (balanceAsset / balanceRune)
     }
 }
 
