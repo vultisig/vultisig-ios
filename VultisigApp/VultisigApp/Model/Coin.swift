@@ -20,6 +20,7 @@ class Coin: ObservableObject, Codable, Hashable {
     var stakedBalance: String = ""
     
     @Transient var bondedNodes: [RuneBondNode] = []
+    @Relationship(inverse: \Vault.coins) var vault: Vault?
     
     var decimals: Int {
         get {
