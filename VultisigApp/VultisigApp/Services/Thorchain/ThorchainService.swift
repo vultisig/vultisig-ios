@@ -541,7 +541,7 @@ extension ThorchainService {
         // Use sequential requests with small delay to avoid rate limiting
         for pool in pools {
             do {
-                let poolUrlString = "https://thornode.ninerealms.com/thorchain/pool/\(pool.asset)/liquidity_provider/\(address)"
+                let poolUrlString = Endpoint.fetchThorchainPoolLiquidityProvider(asset: pool.asset, address: address)
                 guard let poolUrl = URL(string: poolUrlString) else { continue }
                 
                 let (poolData, response) = try await URLSession.shared.data(for: get9RRequest(url: poolUrl))
@@ -592,7 +592,7 @@ extension ThorchainService {
     
     /// Fetch pool information for a specific asset
     func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
-        let urlString = "https://thornode.ninerealms.com/thorchain/pool/\(asset)"
+        let urlString = Endpoint.fetchPoolInfo(asset: asset)
         
         guard let url = URL(string: urlString) else {
             throw HelperError.runtimeError("Invalid URL")
@@ -617,7 +617,7 @@ extension ThorchainService {
         
         // Use retry mechanism for network call
         return try await withRetry(maxAttempts: 3) {
-            let urlString = "https://thornode.ninerealms.com/thorchain/pools"
+            let urlString = Endpoint.fetchThorchainPools
             
             guard let url = URL(string: urlString) else {
                 throw HelperError.runtimeError("Invalid URL")
