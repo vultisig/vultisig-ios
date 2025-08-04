@@ -360,12 +360,20 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         fromChain = coin.chain
         fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        updateBalance(for: coin)
     }
     
     func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.toCoin = coin
         toChain = coin.chain
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        updateBalance(for: coin)
+    }
+    
+    func updateBalance(for coin: Coin) {
+        Task {
+            await BalanceService.shared.updateBalance(for: coin)
+        }
     }
     
     func handleBackTap() {
