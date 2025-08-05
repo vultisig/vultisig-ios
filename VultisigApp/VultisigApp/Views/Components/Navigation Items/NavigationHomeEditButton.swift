@@ -106,7 +106,7 @@ struct NavigationHomeEditButton: View {
         } label: {
             Image(systemName: "trash")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(.miamiMarmalade)
+                .foregroundColor(Theme.colors.bgAlert)
         }
     }
     

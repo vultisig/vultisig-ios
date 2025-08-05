@@ -11,7 +11,7 @@ struct ImportWalletUploadSection: View {
     @ObservedObject var viewModel: EncryptedBackupViewModel
     let isUploading: Bool
     
-    @State var backgroundColor: Color = .borderBlue
+    @State var backgroundColor: Color = Theme.colors.border
     
     var body: some View {
         uploadSection
@@ -50,7 +50,7 @@ struct ImportWalletUploadSection: View {
     
     var isUploadingContent: some View {
         VStack(spacing: 16) {
-            getIcon(tint: .persianBlue400)
+            getIcon(tint: Theme.colors.bgButtonTertiary)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.bodySMedium)
@@ -60,22 +60,22 @@ struct ImportWalletUploadSection: View {
     
     var errorContent: some View {
         VStack(spacing: 16) {
-            getIcon(tint: .invalidRed)
+            getIcon(tint: Theme.colors.alertError)
             
             Text(NSLocalizedString(viewModel.alertTitle, comment: ""))
                 .font(Theme.fonts.bodySMedium)
         }
-        .foregroundColor(.invalidRed)
+        .foregroundColor(Theme.colors.alertError)
         .onAppear {
             withAnimation {
-                backgroundColor = .invalidRed
+                backgroundColor = Theme.colors.alertError
             }
         }
     }
     
     var importFileContent: some View {
         VStack(spacing: 16) {
-            getIcon(tint: .persianBlue400)
+            getIcon(tint: Theme.colors.bgButtonTertiary)
             
             Text(NSLocalizedString("importYourVaultShare", comment: ""))
                 .font(Theme.fonts.bodySMedium)
@@ -92,7 +92,7 @@ struct ImportWalletUploadSection: View {
     
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
         ZStack {
-            if backgroundColor == .turquoise600 {
+            if backgroundColor == Theme.colors.bgButtonPrimary {
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(backgroundColor, lineWidth: 1)
             } else {
@@ -104,15 +104,15 @@ struct ImportWalletUploadSection: View {
     
     private func getUploadedFileContent(_ filename: String) -> some View {
         VStack(spacing: 16) {
-            getIcon(isFileUploaded: true, tint: .alertTurquoise)
+            getIcon(isFileUploaded: true, tint: Theme.colors.alertInfo)
             
             Text(filename)
                 .font(Theme.fonts.bodySMedium)
         }
-        .foregroundColor(.alertTurquoise)
+        .foregroundColor(Theme.colors.alertInfo)
         .onAppear {
             withAnimation {
-                backgroundColor = .turquoise600
+                backgroundColor = Theme.colors.bgButtonPrimary
             }
         }
     }

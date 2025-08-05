@@ -55,13 +55,13 @@ struct SendCryptoAddressTextField: View {
     
     var overlay: some View {
         ZStack {
-            Color.turquoise600.opacity(0.2)
+            Theme.colors.bgButtonPrimary.opacity(0.2)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .cornerRadius(10)
             
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 1, dash: [10]))
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
@@ -107,7 +107,7 @@ struct SendCryptoAddressTextField: View {
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.alertYellow)
+            .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

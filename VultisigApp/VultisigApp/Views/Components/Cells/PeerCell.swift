@@ -30,11 +30,11 @@ struct PeerCell: View {
         }
         .padding(16)
         .frame(height: 70)
-        .background(Color.checkboxBlue)
+        .background(Theme.colors.bgSuccess)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.alertTurquoise, lineWidth: 2)
+                .stroke(Theme.colors.alertInfo, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
         .padding(1)
@@ -51,7 +51,7 @@ struct PeerCell: View {
     var description: some View {
         Text(id)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -59,7 +59,7 @@ struct PeerCell: View {
     var check: some View {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
             .font(Theme.fonts.title2)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
     }
     
     private func getDeviceName() -> String {

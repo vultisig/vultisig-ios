@@ -73,12 +73,12 @@ struct ReferredOnboardingGuideAnimation: View {
 
     var icon: some View {
         Image(systemName: "horn")
-            .foregroundColor(.infoBlue)
+            .foregroundColor(Theme.colors.alertInfo)
     }
 
     var text: some View {
         Text(NSLocalizedString("referralProgram", comment: ""))
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .font(Theme.fonts.caption12)
     }
 
@@ -93,7 +93,7 @@ struct ReferredOnboardingGuideAnimation: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -151,7 +151,7 @@ struct ReferredOnboardingGuideAnimation: View {
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .foregroundColor(.persianBlue200)
+                    .foregroundColor(Theme.colors.primaryAccent4)
                     .font(Theme.fonts.bodyLMedium)
 
                 VStack(alignment: .leading, spacing: 4) {

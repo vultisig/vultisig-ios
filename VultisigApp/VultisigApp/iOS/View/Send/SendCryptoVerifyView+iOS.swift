@@ -19,7 +19,7 @@ extension SendCryptoVerifyView {
         VStack {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {

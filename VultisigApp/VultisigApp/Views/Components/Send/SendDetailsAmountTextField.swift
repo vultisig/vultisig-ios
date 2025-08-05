@@ -50,7 +50,7 @@ struct SendDetailsAmountTextField: View {
     var selectorOvelay: some View {
         Circle()
             .frame(width: 32, height: 32)
-            .foregroundColor(.persianBlue400)
+            .foregroundColor(Theme.colors.bgButtonTertiary)
             .offset(y: isCryptoSelected ? -16 : 16)
     }
     
@@ -135,7 +135,7 @@ struct SendDetailsAmountTextField: View {
     private func getDescriptionText(for value: String) -> some View {
         Text(value)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .padding(.top, 8)
     }
     

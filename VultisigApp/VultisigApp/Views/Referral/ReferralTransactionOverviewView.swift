@@ -58,7 +58,7 @@ struct ReferralTransactionOverviewView: View {
             
             Text("\(referralViewModel.totalFeeFiat)")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
@@ -77,7 +77,7 @@ struct ReferralTransactionOverviewView: View {
             Image(systemName: "chevron.right")
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.lightText)
+        .foregroundColor(Theme.colors.textLight)
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
         .background(Theme.colors.bgSecondary)

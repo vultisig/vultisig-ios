@@ -23,7 +23,7 @@ struct KeysignStartView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
             .padding(-15)
@@ -65,7 +65,7 @@ struct KeysignStartView: View {
                 .padding(.leading)
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.extraLightGray)
+        .foregroundColor(Theme.colors.textExtraLight)
     }
 }
 

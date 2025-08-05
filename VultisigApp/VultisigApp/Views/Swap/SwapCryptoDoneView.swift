@@ -119,14 +119,14 @@ struct SwapCryptoDoneView: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(.disabledText)
+            .foregroundColor(Theme.colors.textButtonDisabled)
             .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(60)
             .padding(8)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
             .cornerRadius(60)
             .overlay(
                 Circle()
@@ -137,7 +137,7 @@ struct SwapCryptoDoneView: View {
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {
@@ -225,7 +225,7 @@ struct SwapCryptoDoneView: View {
         HStack {
             Rectangle()
                 .frame(width: 1)
-                .foregroundColor(.persianBlue200)
+                .foregroundColor(Theme.colors.primaryAccent4)
             
             expandableFees
         }
@@ -275,7 +275,7 @@ struct SwapCryptoDoneView: View {
             
             Text(description.formatToFiat(includeCurrencySymbol: true))
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
@@ -297,7 +297,7 @@ struct SwapCryptoDoneView: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -313,7 +313,7 @@ struct SwapCryptoDoneView: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)

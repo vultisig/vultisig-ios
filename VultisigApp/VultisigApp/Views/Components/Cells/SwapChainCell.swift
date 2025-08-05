@@ -67,7 +67,7 @@ struct SwapChainCell: View {
     var check: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(32)

@@ -121,7 +121,7 @@ struct SendDetailsAssetTab: View {
     var chainSelectionTitle: some View {
         Text(NSLocalizedString("from", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
     
     var selectedChainCell: some View {
@@ -156,7 +156,7 @@ struct SendDetailsAssetTab: View {
             
             Text(tx.coin.balanceInFiat)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -172,7 +172,7 @@ struct SendDetailsAssetTab: View {
             
             Text("\(tx.coin.ticker)")
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     

@@ -144,7 +144,7 @@ struct SendDetailsAmountTab: View {
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.alertYellow)
+            .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

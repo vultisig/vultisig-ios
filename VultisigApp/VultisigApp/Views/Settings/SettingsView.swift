@@ -193,7 +193,7 @@ struct SettingsView: View {
         }
         .textCase(.uppercase)
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.turquoise600)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
         .scaleEffect(scale)
         .onTapGesture {
             handleVersionTap()

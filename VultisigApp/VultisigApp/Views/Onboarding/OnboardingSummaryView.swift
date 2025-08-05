@@ -77,7 +77,7 @@ struct OnboardingSummaryView: View {
     var disclaimerLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: didAgree ? "checkmark.circle" : "circle")
-                .foregroundColor(.alertTurquoise)
+                .foregroundColor(Theme.colors.alertInfo)
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)

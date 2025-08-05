@@ -45,7 +45,7 @@ struct OnChainSecurityScreen: View {
             Toggle("", isOn: $securityScannerEnabled)
                 .labelsHidden()
                 .scaleEffect(0.8)
-                .tint(.persianBlue200)
+                .tint(Theme.colors.primaryAccent4)
                 .toggleStyle(.switch)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

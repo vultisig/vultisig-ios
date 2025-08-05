@@ -128,7 +128,7 @@ struct VaultDetailView: View {
             .listRowSeparator(.hidden)
             .frame(maxWidth: .infinity)
             .multilineTextAlignment(.center)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var balanceContent: some View {
@@ -141,13 +141,13 @@ struct VaultDetailView: View {
             Spacer()
         }
         .padding(16)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
     
     var pad: some View {
-        Color.backgroundBlue
+        Theme.colors.bgPrimary
             .frame(height: 150)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
@@ -174,14 +174,14 @@ struct VaultDetailView: View {
         .listRowSeparator(.hidden)
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var backupNowWidget: some View {
         BackupNowDisclaimer(vault: vault)
             .padding(.horizontal, 16)
             .padding(.top, 20)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var popup: some View {
@@ -240,7 +240,7 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.horizontal, 12)
         .redacted(reason: selectedGroup == nil ? .placeholder : [])
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }

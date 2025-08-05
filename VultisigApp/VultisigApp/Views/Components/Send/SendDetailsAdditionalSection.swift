@@ -81,7 +81,7 @@ struct SendDetailsAdditionalSection: View {
             
             if let selectedVault = homeViewModel.selectedVault {
                 Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
-                    .foregroundStyle(Color.extraLightGray)
+                    .foregroundStyle(Theme.colors.textExtraLight)
             }
         }
         .font(Theme.fonts.bodySMedium)
@@ -90,7 +90,7 @@ struct SendDetailsAdditionalSection: View {
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 }
 

@@ -55,13 +55,13 @@ struct SwapFromToField: View {
     var fromToLabel: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
     
     var balance: some View {
         Text("\(coin.balanceString) \(coin.ticker)")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
     
     var unevenRectangle: some View {
@@ -126,7 +126,7 @@ struct SwapFromToField: View {
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)
             .redacted(reason: title == "to" && swapViewModel.isLoadingQuotes ? .placeholder : [])

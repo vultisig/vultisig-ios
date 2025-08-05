@@ -119,7 +119,7 @@ struct ChainHeaderCell: View {
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.turquoise600)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .lineLimit(1)
     }
 }

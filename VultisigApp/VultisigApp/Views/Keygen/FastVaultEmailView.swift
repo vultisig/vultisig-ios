@@ -45,7 +45,7 @@ struct FastVaultEmailView: View {
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             textfield(title: NSLocalizedString("email", comment: ""),text: $email)
         }
@@ -58,7 +58,7 @@ struct FastVaultEmailView: View {
     var emptyEmailLabel: some View {
         HStack {
             Text(NSLocalizedString("emptyEmailPleaseCheck", comment: ""))
-                .foregroundColor(.alertRed)
+                .foregroundColor(Theme.colors.alertError)
                 .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
@@ -69,7 +69,7 @@ struct FastVaultEmailView: View {
     var validEmailLabel: some View {
         HStack {
             Text(NSLocalizedString("invalidEmailPleaseCheck", comment: ""))
-                .foregroundColor(.alertRed)
+                .foregroundColor(Theme.colors.alertError)
                 .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
@@ -129,7 +129,7 @@ struct FastVaultEmailView: View {
     
     func getBorderColor() -> Color {
         if isEmptyEmail || isInvalidEmail {
-            return .alertRed
+            return Theme.colors.alertError
         } else {
             return Theme.colors.border
         }

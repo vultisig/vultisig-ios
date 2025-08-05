@@ -132,7 +132,7 @@ struct SwapCustomTokenView: View {
             
             Text(contractAddress)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
     }
     

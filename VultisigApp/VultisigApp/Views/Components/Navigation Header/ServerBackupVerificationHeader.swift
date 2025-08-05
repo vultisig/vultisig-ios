@@ -20,7 +20,7 @@ struct ServerBackupVerificationHeader: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
         .padding(.top, 8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var leadingAction: some View {

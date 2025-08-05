@@ -37,8 +37,8 @@ extension SendCryptoDetailsView {
         button
             .padding(.horizontal, 16)
             .padding(.vertical, idiom == .pad ? 30 : 8)
-            .background(keyboardObserver.keyboardHeight == 0 ? .clear : .backgroundBlue)
-            .shadow(color: .backgroundBlue, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
+            .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
+            .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }
     
     
@@ -60,7 +60,7 @@ extension SendCryptoDetailsView {
         if keyboardObserver.keyboardHeight == 0 {
             return Color.clear
         } else {
-            return Color.backgroundBlue
+            return Theme.colors.bgPrimary
         }
     }
 }

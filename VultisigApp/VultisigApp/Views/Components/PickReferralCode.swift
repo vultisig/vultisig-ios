@@ -66,19 +66,19 @@ struct PickReferralCode: View {
                 ProgressView()
             } else {
                 Text(NSLocalizedString("search", comment: ""))
-                    .foregroundColor(.lightText)
+                    .foregroundColor(Theme.colors.textLight)
                     .font(Theme.fonts.bodySMedium)
             }
         }
         .frame(width: 100, height: 60)
-        .background(Color.persianBlue400)
+        .background(Theme.colors.bgButtonTertiary)
         .cornerRadius(16)
     }
     
     var status: some View {
         HStack {
             Text(NSLocalizedString("status", comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -92,10 +92,10 @@ struct PickReferralCode: View {
         Group {
             if referralViewModel.showReferralAvailabilitySuccess {
                 Text(NSLocalizedString("available", comment: ""))
-                    .foregroundColor(.alertTurquoise)
+                    .foregroundColor(Theme.colors.alertInfo)
             } else {
                 Text(NSLocalizedString(referralViewModel.referralAvailabilityErrorMessage, comment: ""))
-                    .foregroundColor(.alertRed)
+                    .foregroundColor(Theme.colors.alertError)
             }
         }
         .padding(.vertical, 8)

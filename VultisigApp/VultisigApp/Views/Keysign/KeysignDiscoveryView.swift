@@ -100,7 +100,7 @@ struct KeysignDiscoveryView: View {
     
     var button: some View {
         switchLink
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var portraitContent: some View {

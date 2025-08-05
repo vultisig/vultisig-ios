@@ -17,7 +17,7 @@ struct OpenButton: View {
             .padding(.vertical, 5)
             .padding(.horizontal, 20)
             .frame(width: 170, height: 54)
-            .background(Color.turquoise600)
+            .background(Theme.colors.bgButtonPrimary)
             .cornerRadius(100)
     }
     

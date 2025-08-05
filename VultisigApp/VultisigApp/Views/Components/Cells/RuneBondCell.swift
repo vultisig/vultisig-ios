@@ -80,11 +80,11 @@ struct RuneBondCell: View {
     private var statusColor: Color {
         switch bondNode.status.lowercased() {
         case "active":
-            return .reshareCellGreen
+            return Theme.colors.alertSuccess
         case "standby":
-            return .alertYellow
+            return Theme.colors.alertWarning
         case "disabled":
-            return .alertRed
+            return Theme.colors.alertError
         default:
             return Theme.colors.textLight
         }

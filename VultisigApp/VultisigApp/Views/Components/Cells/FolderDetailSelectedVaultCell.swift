@@ -74,7 +74,7 @@ struct FolderDetailSelectedVaultCell: View {
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
@@ -112,7 +112,7 @@ struct FolderDetailSelectedVaultCell: View {
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? 0 : nil)
             .padding(.vertical, 8)
     }

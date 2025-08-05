@@ -48,11 +48,11 @@ struct SendCryptoPairView: View {
             .padding(24)
             .frame(maxWidth: .infinity)
             .frame(height: geometry.size.width-(2*padding))
-            .background(Color.turquoise600.opacity(0.15))
+            .background(Theme.colors.bgButtonPrimary.opacity(0.15))
             .cornerRadius(20)
             .overlay (
                 RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [72]))
+                    .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [72]))
             )
             .padding(.horizontal, padding)
         }

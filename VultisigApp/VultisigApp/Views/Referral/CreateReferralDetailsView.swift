@@ -211,7 +211,7 @@ struct CreateReferralDetailsView: View {
                 .font(Theme.fonts.bodyMMedium)
             
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodySMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -252,7 +252,7 @@ struct CreateReferralDetailsView: View {
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -262,7 +262,7 @@ struct CreateReferralDetailsView: View {
                 
                 if !description2.isEmpty {
                     Text(description2)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])

@@ -35,7 +35,7 @@ struct EmptyPeerCell: View {
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.borderBlue, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                .strokeBorder(Theme.colors.border, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
         )
         .padding(1)
     }

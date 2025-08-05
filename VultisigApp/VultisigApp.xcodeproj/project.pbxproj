@@ -476,7 +476,6 @@
 		A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696592C1F72FF004EDE0B /* HiddenTextField.swift */; };
 		A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */; };
 		A68C00A52DF7B78C00FDE2AD /* PickReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */; };
-		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
 		A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */; };
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
 		A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */; };
@@ -1476,7 +1475,6 @@
 		A68696592C1F72FF004EDE0B /* HiddenTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenTextField.swift; sourceTree = "<group>"; };
 		A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSetupCard.swift; sourceTree = "<group>"; };
 		A68C00A42DF7B78C00FDE2AD /* PickReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickReferralCode.swift; sourceTree = "<group>"; };
-		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
 		A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptType.swift; sourceTree = "<group>"; };
@@ -2089,7 +2087,6 @@
 				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
 				A65BA9832BAA07B500B2D8AA /* Background.swift */,
 				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
-				A69069A02BCDEFD400F28A8B /* ProgressRing.swift */,
 				A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */,
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 				A69069B42BCF538000F28A8B /* NetworkPrompts.swift */,
@@ -5066,7 +5063,6 @@
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				1390D8C02E393FB6003F3E20 /* BlockaidConstants.swift in Sources */,
-				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
 				1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */,
 				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,

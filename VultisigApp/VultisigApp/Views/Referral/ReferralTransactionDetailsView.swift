@@ -48,7 +48,7 @@ struct ReferralTransactionDetailsView: View {
             
             Text("\(referralViewModel.totalFeeFiat)")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
@@ -140,7 +140,7 @@ struct ReferralTransactionDetailsView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -160,7 +160,7 @@ struct ReferralTransactionDetailsView: View {
             
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }

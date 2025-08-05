@@ -37,7 +37,7 @@ struct SendDetailsAddressFields: View {
             }
             
             Text(tx.fromAddress)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
@@ -68,7 +68,7 @@ struct SendDetailsAddressFields: View {
     private func getTitle(for title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -41,14 +41,14 @@ struct VaultDetailMacQRCode: View {
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var logo: some View {
         Image("VultisigLogoTemplate")
             .resizable()
             .frame(width: 64, height: 64)
-            .foregroundColor(.logoBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
             .padding(8)
             .background(Theme.colors.textPrimary)
             .cornerRadius(10)

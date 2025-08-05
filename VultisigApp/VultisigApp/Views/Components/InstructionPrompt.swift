@@ -19,7 +19,7 @@ struct InstructionPrompt: View {
         VStack(spacing: 12) {
             networkType.getImage()
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(networkType.getInstruction())
                 .font(Theme.fonts.caption10)
@@ -33,7 +33,7 @@ struct InstructionPrompt: View {
         VStack(spacing: 12) {
             networkType.getImage()
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(networkType.getInstruction())
                 .font(Theme.fonts.caption12)

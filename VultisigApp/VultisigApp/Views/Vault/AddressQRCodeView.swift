@@ -55,7 +55,7 @@ struct AddressQRCodeView: View {
             .cornerRadius(20)
             .overlay (
                 RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [100]))
+                    .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [100]))
             )
             .padding(.horizontal, padding)
             .frame(maxWidth: .infinity, alignment: .center)

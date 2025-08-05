@@ -66,7 +66,7 @@ struct ReferralLaunchView: View {
         Text(NSLocalizedString(referredViewModel.referredLaunchViewErrorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.alertRed)
+            .foregroundColor(Theme.colors.alertError)
             .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
     }
     

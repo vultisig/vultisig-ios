@@ -21,13 +21,13 @@ struct ErrorMessage: View {
     var logo: some View {
         Image(systemName: "exclamationmark.circle.fill")
             .font(Theme.fonts.title2)
-            .foregroundColor(.alertYellow)
+            .foregroundColor(Theme.colors.alertWarning)
     }
     
     var title: some View {
         Text(NSLocalizedString(text, comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.alertYellow)
+            .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: width)
             .multilineTextAlignment(.center)
     }

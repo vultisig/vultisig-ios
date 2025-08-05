@@ -117,7 +117,7 @@ struct KeygenView: View {
     
     var title: some View {
         Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .font(Theme.fonts.bodyMMedium)
     }
     
@@ -279,7 +279,7 @@ struct KeygenView: View {
         }
         .textCase(.uppercase)
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.turquoise600)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
     }
     
     var button: some View {

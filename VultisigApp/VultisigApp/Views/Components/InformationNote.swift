@@ -17,7 +17,7 @@ struct InformationNote: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.warningYellow.opacity(0.35))
+        .background(Theme.colors.bgAlert.opacity(0.35))
         .cornerRadius(12)
         .overlay(
             overlay
@@ -27,7 +27,7 @@ struct InformationNote: View {
     
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .foregroundColor(Color.warningYellow)
+            .foregroundColor(Theme.colors.bgAlert)
     }
     
     var text: some View {

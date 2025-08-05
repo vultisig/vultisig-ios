@@ -29,7 +29,7 @@ struct VaultDetailBalanceContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }

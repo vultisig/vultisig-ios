@@ -99,7 +99,7 @@ struct ReferralTextField: View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.invalidRed)
+            .foregroundColor(Theme.colors.alertError)
     }
     
     private func clearCode() {
@@ -108,9 +108,9 @@ struct ReferralTextField: View {
     
     private func getOutlineColor() -> Color {
         if showSuccess {
-            Color.alertTurquoise
+            Theme.colors.alertInfo
         } else if showError {
-            Color.invalidRed
+            Theme.colors.alertError
         } else {
             Theme.colors.border
         }

@@ -177,7 +177,7 @@ struct JoinKeygenView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -276,7 +276,7 @@ struct JoinKeygenView: View {
                 .font(Theme.fonts.title1)
             
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)

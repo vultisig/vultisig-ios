@@ -41,7 +41,7 @@ struct ChainCell: View {
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditingChains ? nil : 0)
             .clipped()
     }
@@ -75,7 +75,7 @@ struct ChainCell: View {
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.turquoise600)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .lineLimit(1)
             .truncationMode(.middle)
     }
@@ -83,7 +83,7 @@ struct ChainCell: View {
     var count: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : viewModel.getGroupCount(group))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
             .background(Theme.colors.bgTertiary)
@@ -93,13 +93,13 @@ struct ChainCell: View {
     var quantity: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var balance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

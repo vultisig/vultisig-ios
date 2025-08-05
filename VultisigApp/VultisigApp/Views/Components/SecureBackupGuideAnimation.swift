@@ -82,12 +82,12 @@ struct SecureBackupGuideAnimation: View {
 
     var icon: some View {
         Image(systemName: "shield")
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
     }
 
     var text: some View {
         Text(NSLocalizedString("secureVault", comment: ""))
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .font(Theme.fonts.caption12)
     }
 
@@ -126,7 +126,7 @@ struct SecureBackupGuideAnimation: View {
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .foregroundColor(.iconLightBlue)
+                    .foregroundColor(Theme.colors.primaryAccent4)
 
                 Text(NSLocalizedString(text, comment: ""))
                     .foregroundColor(Theme.colors.textPrimary)

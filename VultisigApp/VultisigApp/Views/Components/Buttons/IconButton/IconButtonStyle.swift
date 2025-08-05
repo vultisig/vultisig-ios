@@ -58,20 +58,20 @@ private extension IconButtonStyle {
         switch type {
         case .primary:
             if !isEnabled {
-                return .disabledButtonBackground
+                return Theme.colors.bgButtonDisabled
             } else if isPressed {
-                return .turquoise800
+                return Theme.colors.bgButtonPrimaryPressed
             } else {
-                return .turquoise600
+                return Theme.colors.bgButtonPrimary
             }
             
         case .secondary:
             if !isEnabled {
-                return .disabledButtonBackground
+                return Theme.colors.bgButtonDisabled
             } else if isPressed {
                 return Theme.colors.bgButtonSecondaryPressed
             } else {
-                return .disabledButtonBackground
+                return Theme.colors.bgButtonDisabled
             }
         }
     }
@@ -80,13 +80,13 @@ private extension IconButtonStyle {
         switch type {
         case .primary:
             if !isEnabled {
-                return .disabledText
+                return Theme.colors.textButtonDisabled
             } else {
-                return .blue800
+                return Theme.colors.textButtonDark
             }
         case .secondary:
             if !isEnabled {
-                return .disabledText
+                return Theme.colors.textButtonDisabled
             } else {
                 return Theme.colors.textPrimary
             }
@@ -99,9 +99,9 @@ private extension IconButtonStyle {
             return .clear
         case .secondary:
             if !isEnabled {
-                return .persianBlue400.opacity(0.6)
+                return Theme.colors.bgButtonTertiary.opacity(0.6)
             } else {
-                return .persianBlue400
+                return Theme.colors.bgButtonTertiary
             }
         }
     }

@@ -39,7 +39,7 @@ struct NewWalletNameView: View {
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.alertRed)
+            .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
     }
@@ -68,7 +68,7 @@ struct NewWalletNameView: View {
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(errorMessage.isEmpty ? Theme.colors.border : Color.alertRed, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
         )
         .padding(.top, 32)
     }
@@ -106,7 +106,7 @@ struct NewWalletNameView: View {
             
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             textfield
         }

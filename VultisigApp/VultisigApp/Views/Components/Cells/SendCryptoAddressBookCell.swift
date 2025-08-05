@@ -32,7 +32,7 @@ struct SendCryptoAddressBookCell: View {
         .padding(.horizontal, 22)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.borderBlue, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -45,7 +45,7 @@ struct SendCryptoAddressBookCell: View {
             
             Text(description)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.lightText)
+                .foregroundColor(Theme.colors.textLight)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }

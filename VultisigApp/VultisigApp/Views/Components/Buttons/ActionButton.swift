@@ -28,5 +28,5 @@ struct ActionButton: View {
 }
 
 #Preview {
-    ActionButton(title: "send", fontColor: .turquoise600)
+    ActionButton(title: "send", fontColor: Theme.colors.bgButtonPrimary)
 }

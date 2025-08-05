@@ -57,14 +57,14 @@ extension AddressBookView {
                     .onMove(perform: isEditing ? move: nil)
                     .padding(.horizontal, 15)
                     .padding(.horizontal, 18)
-                    .background(Color.backgroundBlue)
+                    .background(Theme.colors.bgPrimary)
                 }
                 .listStyle(PlainListStyle())
                 .buttonStyle(BorderlessButtonStyle())
                 .colorScheme(.dark)
                 .scrollContentBackground(.hidden)
                 .padding(.top, 30)
-                .background(Color.backgroundBlue.opacity(0.9))
+                .background(Theme.colors.bgPrimary.opacity(0.9))
             } else {
                 emptyViewChain
             }

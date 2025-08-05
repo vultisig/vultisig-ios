@@ -99,7 +99,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .font(Theme.fonts.bodyMMedium)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -116,7 +116,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .foregroundColor(Theme.colors.textPrimary)
             
             Text(input.coinTicker)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
         }
@@ -132,7 +132,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -150,7 +150,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 
                 if let secondRowText {
                     Text(secondRowText)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
             
@@ -160,7 +160,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.middle)
             }

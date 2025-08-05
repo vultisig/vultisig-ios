@@ -58,7 +58,7 @@ struct SwapPercentageButtons: View {
             .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.blue800 : Theme.colors.bgSecondary)
+            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
             .cornerRadius(32)
     }
 }

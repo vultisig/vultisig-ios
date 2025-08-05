@@ -100,7 +100,7 @@ struct SwapChainPickerView: View {
     var networkTitle: some View {
         Text(NSLocalizedString("network", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -146,7 +146,7 @@ struct SwapChainPickerView: View {
     var searchField: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
                 .font(Theme.fonts.bodyMRegular)

@@ -88,7 +88,7 @@ struct KeygenViewInstructionsMac: View {
                 .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart2", comment: ""))
-                .foregroundColor(.turquoise400)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
                 .font(Theme.fonts.caption12) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart3", comment: ""))
                 .foregroundColor(Theme.colors.textPrimary)

@@ -11,7 +11,7 @@ struct WifiInstruction: View {
         VStack(spacing: 8) {
             Image(systemName: "wifi")
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(NSLocalizedString("devicesOnSameWifi", comment: ""))
                 .font(Theme.fonts.caption12)

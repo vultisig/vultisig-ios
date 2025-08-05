@@ -17,7 +17,7 @@ struct BottomSheetContainer<Content: View>: View {
     var body: some View {
         VStack(spacing: 14) {
             Capsule()
-                .fill(Color.borderBlue)
+                .fill(Theme.colors.border)
                 .frame(width: 64, height: 4)
                 .cornerRadius(99)
             content

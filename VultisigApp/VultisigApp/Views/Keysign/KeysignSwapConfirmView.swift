@@ -56,7 +56,7 @@ struct KeysignSwapConfirmView: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -112,7 +112,7 @@ struct KeysignSwapConfirmView: View {
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.persianBlue200)
+            .foregroundColor(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgTertiary)
             .cornerRadius(32)
@@ -127,7 +127,7 @@ struct KeysignSwapConfirmView: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -142,7 +142,7 @@ struct KeysignSwapConfirmView: View {
             
             if let bracketValue {
                 Text(bracketValue)
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
             }
             
         }
@@ -165,7 +165,7 @@ struct KeysignSwapConfirmView: View {
             if let chain {
                 HStack(spacing: 2) {
                     Text(NSLocalizedString("on", comment: ""))
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                         .padding(.trailing, 4)
                     
                     Image(chain.logo)

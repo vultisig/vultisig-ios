@@ -35,14 +35,14 @@ struct SwapRefreshQuoteCounter: View {
         ZStack {
             Circle()
                 .stroke(
-                    Color.borderBlue,
+                    Theme.colors.border,
                     lineWidth: 2
                 )
             
             Circle()
                 .trim(from: 0, to: Double(timer)/60)
                 .stroke(
-                    Color.persianBlue200,
+                    Theme.colors.primaryAccent4,
                     lineWidth: 2
                 )
                 .rotationEffect(.degrees(-90))

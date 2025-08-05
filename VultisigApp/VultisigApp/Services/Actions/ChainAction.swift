@@ -23,9 +23,9 @@ enum CoinAction: String, Codable {
     var color: Color {
         switch self {
         case .send:
-            return .turquoise600
+            return Theme.colors.bgButtonPrimary
         case .swap:
-            return .persianBlue200
+            return Theme.colors.primaryAccent4
         case .deposit, .bridge, .memo,.buy,.sell:
             return .mediumPurple
         }

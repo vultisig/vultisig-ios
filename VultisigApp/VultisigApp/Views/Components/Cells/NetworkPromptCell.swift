@@ -20,7 +20,7 @@ struct NetworkPromptCell: View {
         HStack(spacing: 8) {
             network.getImage()
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.caption10)
@@ -37,7 +37,7 @@ struct NetworkPromptCell: View {
         HStack(spacing: 8) {
             network.getImage()
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.bodySMedium)

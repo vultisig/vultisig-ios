@@ -53,13 +53,13 @@ struct BackupSetupView: View {
 
             Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Color.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .multilineTextAlignment(.center)
 
             Link(destination: StaticURL.VultBackupURL) {
                 Text(NSLocalizedString("learnMore", comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(Color.lightText)
+                    .foregroundColor(Theme.colors.textLight)
                     .underline()
             }
         }

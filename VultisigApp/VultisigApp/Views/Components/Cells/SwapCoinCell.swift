@@ -68,7 +68,7 @@ struct SwapCoinCell: View {
     
     var chain: some View {
         Text(coin.chain.name)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
@@ -81,7 +81,7 @@ struct SwapCoinCell: View {
     var check: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(32)
@@ -94,7 +94,7 @@ struct SwapCoinCell: View {
                 .foregroundColor(Theme.colors.textPrimary)
             
             Text(coin.balanceInFiat)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .font(Theme.fonts.caption12)
     }

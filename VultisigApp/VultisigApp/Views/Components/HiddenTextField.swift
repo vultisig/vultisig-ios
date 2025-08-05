@@ -32,7 +32,7 @@ struct HiddenTextField: View {
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.alertRed)
+            .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -50,7 +50,7 @@ struct HiddenTextField: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(errorMessage.isEmpty ? Theme.colors.border : Color.alertRed, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
         )
     }
     

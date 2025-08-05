@@ -18,7 +18,7 @@ struct SettingVaultRegistrationCell: View {
             chevron
         }
         .padding(12)
-        .background(Color.turquoise600)
+        .background(Theme.colors.bgButtonPrimary)
         .cornerRadius(10)
     }
     

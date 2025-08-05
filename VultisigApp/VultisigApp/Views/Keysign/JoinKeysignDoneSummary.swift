@@ -137,7 +137,7 @@ struct JoinKeysignDoneSummary: View {
                         .font(Theme.fonts.bodyLMedium)
                     
                     Text(description)
-                        .foregroundColor(.turquoise400)
+                        .foregroundColor(Theme.colors.bgButtonPrimary)
                         .font(Theme.fonts.footnote)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -152,7 +152,7 @@ struct JoinKeysignDoneSummary: View {
                 .font(Theme.fonts.bodyMMedium)
             }
         }
-        .foregroundColor(.neutral100)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func card(title: String, txid: String) -> some View {
@@ -161,7 +161,7 @@ struct JoinKeysignDoneSummary: View {
             
             Text(txid)
                 .font(Theme.fonts.footnote)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -213,7 +213,7 @@ struct JoinKeysignDoneSummary: View {
         } label: {
             Text(NSLocalizedString(viewModel.keysignPayload?.swapPayload != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
                 .underline()
                 .padding(.vertical, 8)
         }

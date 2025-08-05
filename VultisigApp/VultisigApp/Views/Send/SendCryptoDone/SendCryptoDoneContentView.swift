@@ -43,7 +43,7 @@ struct SendCryptoDoneContentView: View {
                 .font(Theme.fonts.bodySMedium)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
-                .foregroundColor(.lightText)
+                .foregroundColor(Theme.colors.textLight)
                 .background(Theme.colors.bgSecondary)
                 .cornerRadius(16)
                 .overlay(
@@ -105,7 +105,7 @@ struct SendCryptoDoneContentView: View {
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)

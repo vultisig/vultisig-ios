@@ -75,7 +75,7 @@ struct PeerDiscoveryInfoBanner: View {
         Text(NSLocalizedString("peerDiscoveryInfoDescription", comment: ""))
             .multilineTextAlignment(.center)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .padding(.horizontal, 32)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)

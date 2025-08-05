@@ -17,18 +17,18 @@ struct UpgradeFromGG20HomeBanner: View {
         }
         .padding(.vertical)
         .frame(height: 48)
-        .foregroundColor(.alertTurquoise)
-        .background(Color.checkboxBlue)
+        .foregroundColor(Theme.colors.alertInfo)
+        .background(Theme.colors.bgSuccess)
         .cornerRadius(12)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.alertTurquoise, lineWidth: 1)
+                .stroke(Theme.colors.alertInfo, lineWidth: 1)
                 .opacity(0.25)
         )
         .padding(16)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var icon: some View {

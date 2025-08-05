@@ -54,7 +54,7 @@ extension VaultDeletionConfirmView {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(Theme.fonts.heroDisplay)
                 .symbolRenderingMode(.palette)
-                .foregroundStyle(Theme.colors.textPrimary, Color.alertRed)
+                .foregroundStyle(Theme.colors.textPrimary, Theme.colors.alertError)
             
             Text(NSLocalizedString("youArePermanentlyDeletingVault", comment: ""))
                 .font(Theme.fonts.bodyMMedium)

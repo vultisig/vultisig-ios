@@ -25,11 +25,11 @@ struct ThisDevicePeerCell: View {
         }
         .padding(16)
         .frame(height: 70)
-        .background(Color.checkboxBlue)
+        .background(Theme.colors.bgSuccess)
         .cornerRadius(10)
         .overlay (
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.alertTurquoise.opacity(0.25), lineWidth: 1)
+                .stroke(Theme.colors.alertInfo.opacity(0.25), lineWidth: 1)
         )
         .padding(1)
     }
@@ -45,7 +45,7 @@ struct ThisDevicePeerCell: View {
     var description: some View {
         Text(NSLocalizedString("thisDevice", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

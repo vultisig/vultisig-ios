@@ -115,7 +115,7 @@ struct SwapCryptoDetailsView: View {
             swapLabel
         }
         .padding(8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .cornerRadius(60)
         .overlay(
             Circle()
@@ -138,7 +138,7 @@ struct SwapCryptoDetailsView: View {
                     .frame(width: 38, height: 38)
             }
         }
-        .background(Color.persianBlue400)
+        .background(Theme.colors.bgButtonTertiary)
         .cornerRadius(50)
         .padding(2)
         .background(Color.black.opacity(0.2))
@@ -150,7 +150,7 @@ struct SwapCryptoDetailsView: View {
     var filler: some View {
         Rectangle()
             .frame(width: 12, height: 10)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {

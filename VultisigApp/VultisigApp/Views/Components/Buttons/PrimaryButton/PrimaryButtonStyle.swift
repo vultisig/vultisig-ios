@@ -83,11 +83,11 @@ private extension PrimaryButtonStyle {
         switch type {
         case .primary:
             if !isEnabled {
-                return .disabledButtonBackground
+                return Theme.colors.bgButtonDisabled
             } else if shouldHighlight {
                 return Theme.colors.bgButtonTertiaryPressed
             } else {
-                return .persianBlue400
+                return Theme.colors.bgButtonTertiary
             }
             
         case .secondary:
@@ -103,7 +103,7 @@ private extension PrimaryButtonStyle {
     
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         if !isEnabled {
-            return .disabledText
+            return Theme.colors.textButtonDisabled
         } else {
             return Theme.colors.textPrimary
         }
@@ -115,9 +115,9 @@ private extension PrimaryButtonStyle {
             return .clear
         case .secondary:
             if !isEnabled {
-                return .persianBlue400.opacity(0.6)
+                return Theme.colors.bgButtonTertiary.opacity(0.6)
             } else {
-                return .persianBlue400
+                return Theme.colors.bgButtonTertiary
             }
         }
     }

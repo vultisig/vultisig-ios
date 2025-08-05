@@ -69,7 +69,7 @@ struct ServerBackupVerificationView: View {
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 
     private var cancelButton: some View {
@@ -79,11 +79,11 @@ struct ServerBackupVerificationView: View {
             VStack(spacing: 12) {
                 Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
 
                 Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.lightText)
+                    .foregroundColor(Theme.colors.textLight)
                     .underline()
             }
         }
@@ -109,7 +109,7 @@ struct ServerBackupVerificationView: View {
 
     func getBorderColor(_ index: Int) -> Color {
         if showAlert {
-            return .alertRed
+            return Theme.colors.alertError
         } else {
             return focusedField == index ? Theme.colors.border : Theme.colors.bgTertiary
         }
@@ -151,7 +151,7 @@ struct ServerBackupVerificationView: View {
     var alertText: some View {
         Text(NSLocalizedString(alertDescription, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundColor(.alertRed)
+            .foregroundColor(Theme.colors.alertError)
             .font(Theme.fonts.bodySMedium)
     }
     

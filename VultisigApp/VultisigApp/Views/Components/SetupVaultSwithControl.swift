@@ -66,7 +66,7 @@ struct SetupVaultSwithControl: View {
         HStack(spacing: 8) {
             Image(systemName: "shield")
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(selectedTab == .secure ? .alertTurquoise : Theme.colors.textPrimary)
+                .foregroundColor(selectedTab == .secure ? Theme.colors.alertInfo : Theme.colors.textPrimary)
             
             Text(NSLocalizedString("secure", comment: ""))
                 .font(Theme.fonts.bodySMedium)

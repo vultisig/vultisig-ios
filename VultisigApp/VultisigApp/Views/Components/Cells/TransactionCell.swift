@@ -49,7 +49,7 @@ struct TransactionCell: View {
     var content: some View {
         Text(id)
             .font(Theme.fonts.footnote)
-            .foregroundColor(.turquoise600)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .multilineTextAlignment(.leading)
     }
     

@@ -116,14 +116,14 @@ struct JoinSwapDoneSummary: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(.disabledText)
+            .foregroundColor(Theme.colors.textButtonDisabled)
             .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(60)
             .padding(8)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
             .cornerRadius(60)
             .overlay(
                 Circle()
@@ -134,7 +134,7 @@ struct JoinSwapDoneSummary: View {
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {
@@ -203,7 +203,7 @@ struct JoinSwapDoneSummary: View {
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
@@ -225,7 +225,7 @@ struct JoinSwapDoneSummary: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -241,7 +241,7 @@ struct JoinSwapDoneSummary: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)

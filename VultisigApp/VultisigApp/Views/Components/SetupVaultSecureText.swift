@@ -31,7 +31,7 @@ struct SetupVaultSecureText: View {
                     .foregroundStyle(LinearGradient.primaryGradient)
             } else {
                 headerText
-                    .foregroundColor(.alertTurquoise)
+                    .foregroundColor(Theme.colors.alertInfo)
             }
         }
     }
@@ -57,7 +57,7 @@ struct SetupVaultSecureText: View {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(0..<3) { index in
                     Image(systemName: "checkmark")
-                        .foregroundColor(Color.turquoise400)
+                        .foregroundColor(Theme.colors.bgButtonPrimary)
                         .frame(width: 16, height: 16)
                 }
             }

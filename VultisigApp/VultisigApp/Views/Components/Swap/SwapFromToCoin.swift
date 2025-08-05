@@ -39,7 +39,7 @@ struct SwapFromToCoin: View {
             if coin.isNativeToken {
                 Text("Native")
                     .font(Theme.fonts.caption10)
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
             }
         }
     }

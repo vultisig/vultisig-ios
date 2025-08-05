@@ -26,7 +26,7 @@ struct SecurityScannerHeaderView: View {
             }
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundStyle(Color.lightText)
+        .foregroundStyle(Theme.colors.textLight)
         .frame(height: 20)
         .transition(.opacity)
         .animation(.easeOut, value: state)
@@ -44,7 +44,7 @@ struct SecurityScannerHeaderView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(height: 8)
-            .foregroundStyle(Color.alertTurquoise)
+            .foregroundStyle(Theme.colors.alertInfo)
             .font(.system(size: 10, weight: .bold))
         Text("securityScannerTransactionScannedBy".localized)
         providerImage(provider)
@@ -64,7 +64,7 @@ struct SecurityScannerHeaderView: View {
         Image(provider)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .tint(.lightText)
+            .tint(Theme.colors.textLight)
             .frame(height: 10)
     }
 }

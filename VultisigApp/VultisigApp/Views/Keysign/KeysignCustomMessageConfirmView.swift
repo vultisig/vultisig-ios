@@ -69,7 +69,7 @@ struct KeysignCustomMessageConfirmView: View {
                 .foregroundColor(Theme.colors.textPrimary)
             Text(value)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

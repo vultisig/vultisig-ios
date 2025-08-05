@@ -162,7 +162,7 @@ struct SwapVerifyView: View {
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.persianBlue200)
+            .foregroundColor(Theme.colors.primaryAccent4)
             .padding(6)
             .background(Theme.colors.bgTertiary)
             .cornerRadius(32)
@@ -172,7 +172,7 @@ struct SwapVerifyView: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.lightText)
+            .foregroundColor(Theme.colors.textLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -259,7 +259,7 @@ struct SwapVerifyView: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -278,7 +278,7 @@ struct SwapVerifyView: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             }
             
         }
@@ -296,7 +296,7 @@ struct SwapVerifyView: View {
             Text(value)
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral100)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func getSwapAssetCell(
@@ -310,14 +310,14 @@ struct SwapVerifyView: View {
                     .foregroundColor(Theme.colors.textPrimary) +
                 Text(" ") +
                 Text(ticker)
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
             }
             .font(Theme.fonts.bodyLMedium)
             
             if let chain {
                 HStack(spacing: 2) {
                     Text(NSLocalizedString("on", comment: ""))
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                         .padding(.trailing, 4)
                     
                     Image(chain.logo)

@@ -156,7 +156,7 @@ struct ChainDetailView: View {
             Spacer()
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.turquoise600)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
         .padding(.bottom, 32)
     }
 

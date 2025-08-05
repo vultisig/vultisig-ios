@@ -37,7 +37,7 @@ struct FastVaultSetHintView: View {
             
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             hintTextfield
         }

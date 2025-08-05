@@ -144,7 +144,7 @@ struct SendCryptoSecondaryDoneView: View {
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)

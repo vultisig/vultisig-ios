@@ -83,7 +83,7 @@ struct SwapCoinPickerView: View {
             
             Text(NSLocalizedString("loading", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
@@ -92,7 +92,7 @@ struct SwapCoinPickerView: View {
     var networkTitle: some View {
         Text(NSLocalizedString("network", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.extraLightGray)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -136,7 +136,7 @@ struct SwapCoinPickerView: View {
     var searchField: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -162,11 +162,11 @@ struct SwapCoinPickerView: View {
                             
                             Text(chain.name)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(selectedChain == chain ? Theme.colors.textPrimary : .extraLightGray)
+                                .foregroundColor(selectedChain == chain ? Theme.colors.textPrimary : Theme.colors.textExtraLight)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(selectedChain == chain ? Color.turquoise600 : Theme.colors.bgSecondary)
+                        .background(selectedChain == chain ? Theme.colors.bgButtonPrimary : Theme.colors.bgSecondary)
                         .cornerRadius(20)
                     }
                 }
