@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ReferralLaunchView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
-    
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
@@ -35,15 +34,15 @@ struct ReferralLaunchView: View {
             Spacer()
             referredContent
             
-            if referralViewModel.savedGeneratedReferralCode.isEmpty {
+//            if referralViewModel.savedGeneratedReferralCode.isEmpty {
                 orSeparator
                 createTitle
                 createButton
-            } else {
-                separator
-                referralTitle
-                referralCopyTextField
-            }
+//            } else {
+//                separator
+//                referralTitle
+//                referralCopyTextField
+//            }
         }
         .padding(24)
     }
@@ -102,7 +101,7 @@ struct ReferralLaunchView: View {
     
     var createButton: some View {
         PrimaryNavigationButton(title: "createReferral") {
-            ReferralMainScreen()
+            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
 //            CreateReferralView(referralViewModel: referralViewModel)
         }
     }

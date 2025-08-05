@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ReferralView: View {
     @StateObject var referredViewModel = ReferredViewModel()
-    
     @StateObject var referralViewModel = ReferralViewModel()
     
     var body: some View {

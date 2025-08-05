@@ -12,9 +12,13 @@
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
-		132666C22E428F27007FDAC5 /* EditReferralScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */; };
 		132666C42E42920C007FDAC5 /* BoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* BoxView.swift */; };
 		132666C62E429550007FDAC5 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C52E42954F007FDAC5 /* Icon.swift */; };
+		132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */; };
+		132666CC2E429F54007FDAC5 /* THORChainAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */; };
+		132666CE2E429FFE007FDAC5 /* THORChainReferralService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666CD2E429FF2007FDAC5 /* THORChainReferralService.swift */; };
+		132666D12E42A054007FDAC5 /* THORName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D02E42A051007FDAC5 /* THORName.swift */; };
+		132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D22E42A506007FDAC5 /* LastBlockResponse.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -1011,9 +1015,13 @@
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
-		132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralScreen.swift; sourceTree = "<group>"; };
 		132666C32E42920A007FDAC5 /* BoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxView.swift; sourceTree = "<group>"; };
 		132666C52E42954F007FDAC5 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
+		132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralMainScreen.swift; sourceTree = "<group>"; };
+		132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPI.swift; sourceTree = "<group>"; };
+		132666CD2E429FF2007FDAC5 /* THORChainReferralService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainReferralService.swift; sourceTree = "<group>"; };
+		132666D02E42A051007FDAC5 /* THORName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORName.swift; sourceTree = "<group>"; };
+		132666D22E42A506007FDAC5 /* LastBlockResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastBlockResponse.swift; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -2152,6 +2160,34 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		132666C92E429EC6007FDAC5 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */,
+				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
+			);
+			path = Referral;
+			sourceTree = "<group>";
+		};
+		132666CA2E429F45007FDAC5 /* THORChainReferralService */ = {
+			isa = PBXGroup;
+			children = (
+				132666CF2E42A04D007FDAC5 /* Models */,
+				132666CD2E429FF2007FDAC5 /* THORChainReferralService.swift */,
+				132666CB2E429F4E007FDAC5 /* THORChainAPI.swift */,
+			);
+			path = THORChainReferralService;
+			sourceTree = "<group>";
+		};
+		132666CF2E42A04D007FDAC5 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				132666D22E42A506007FDAC5 /* LastBlockResponse.swift */,
+				132666D02E42A051007FDAC5 /* THORName.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		1334C7382E2FE55C00CBAA3E /* SendCryptoVerifySummary */ = {
 			isa = PBXGroup;
 			children = (
@@ -2310,6 +2346,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				132666CA2E429F45007FDAC5 /* THORChainReferralService */,
 				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
 				135677B32E39369A002C10A2 /* Network */,
 				B547A3FE2DF3F9220052164D /* Cardano */,
@@ -3125,6 +3162,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				132666C92E429EC6007FDAC5 /* Referral */,
 				13D764362E4102F100F048DE /* Swap */,
 				1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */,
 				A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */,
@@ -3168,8 +3206,6 @@
 				A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */,
 				A672643E2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift */,
 				A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */,
-				A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */,
-				A685245E2DFCD47E00FEE2E4 /* ReferralViewModel.swift */,
 				A6D739DF2E0B993A0005697D /* SendDetailsViewModel.swift */,
 			);
 			path = "View Models";
@@ -3503,7 +3539,7 @@
 		A6E0C90D2DE4E86900A01543 /* Referral */ = {
 			isa = PBXGroup;
 			children = (
-				132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */,
+				132666C72E429C91007FDAC5 /* ReferralMainScreen.swift */,
 				A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */,
 				A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */,
 				A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */,
@@ -4378,6 +4414,7 @@
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
+				132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
 				A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */,
@@ -4450,6 +4487,7 @@
 				A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */,
 				A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */,
 				A6505AD02CA668AF0002FBF4 /* InformationNote+iOS.swift in Sources */,
+				132666CC2E429F54007FDAC5 /* THORChainAPI.swift in Sources */,
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A62268FE2DC0005800F378E0 /* SwapChainPickerView+iOS.swift in Sources */,
@@ -4625,7 +4663,6 @@
 				A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */,
 				A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
-				132666C22E428F27007FDAC5 /* EditReferralScreen.swift in Sources */,
 				A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,
@@ -4718,6 +4755,7 @@
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
+				132666D12E42A054007FDAC5 /* THORName.swift in Sources */,
 				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
@@ -4766,6 +4804,7 @@
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				A6C670AC2C9D117800F59B6A /* TokenSelectionView+iOS.swift in Sources */,
+				132666C82E429C91007FDAC5 /* ReferralMainScreen.swift in Sources */,
 				B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */,
 				B5A80F1B2D0645E100DC9069 /* RippleService.swift in Sources */,
 				A6833D952C66A697002029E1 /* SendCryptoHeader.swift in Sources */,
@@ -5039,6 +5078,7 @@
 				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
+				132666CE2E429FFE007FDAC5 /* THORChainReferralService.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,

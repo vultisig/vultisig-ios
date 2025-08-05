@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct ReferralMainScreen: View {
-    @State var referralCode: String = "TEST"
-    @State var collectedRewards: String = "10.4 RUNE"
-    @State var expiresOn: String = "25 May of 2027"
-    @State var yourFriendsReferralCode: String = "XYZ"
+    @ObservedObject var referredViewModel: ReferredViewModel
+    @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        
         Screen(title: "referral".localized) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 14) {
@@ -31,6 +28,11 @@ struct ReferralMainScreen: View {
                 }
             }
         }
+        .onLoad {
+            Task {
+                await referralViewModel.fetchReferralCodeDetails()
+            }
+        }
     }
     
     var referralCodeSection: some View {
@@ -40,7 +42,7 @@ struct ReferralMainScreen: View {
                 .font(.body14MontserratMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
-                text: $referralCode,
+                text: $referralViewModel.savedGeneratedReferralCode,
                 placeholderText: .empty,
                 action: .Copy,
                 isDisabled: true
@@ -56,9 +58,10 @@ struct ReferralMainScreen: View {
                 Text("collectedRewards".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)
-                Text(collectedRewards)
+                Text(referralViewModel.collectedRewards)
                     .foregroundStyle(Color.neutral50)
                     .font(.body18BrockmannMedium)
+                    .redacted(reason: referralViewModel.isLoading ? .placeholder : [])
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -70,9 +73,10 @@ struct ReferralMainScreen: View {
                 Text("expiresOn".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)
-                Text(expiresOn)
+                Text(referralViewModel.expiresOn)
                     .foregroundStyle(Color.neutral50)
                     .font(.body18BrockmannMedium)
+                    .redacted(reason: referralViewModel.isLoading ? .placeholder : [])
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -85,7 +89,7 @@ struct ReferralMainScreen: View {
                 .font(.body14MontserratMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
-                text: $yourFriendsReferralCode,
+                text: $referredViewModel.savedReferredCode,
                 placeholderText: .empty,
                 action: .None,
                 isDisabled: true
@@ -118,5 +122,5 @@ struct ReferralMainScreen: View {
 
 
 #Preview {
-    ReferralMainScreen()
+    ReferralMainScreen(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
 }
