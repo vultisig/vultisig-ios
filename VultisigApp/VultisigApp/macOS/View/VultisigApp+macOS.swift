@@ -22,7 +22,6 @@ extension VultisigApp {
             .environmentObject(vultExtensionViewModel)
             .environmentObject(macCheckUpdateViewModel)
             .environmentObject(globalStateViewModel)
-            .environment(\.theme, DefaultTheme())
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
             .onAppear{

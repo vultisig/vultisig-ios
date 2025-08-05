@@ -10,7 +10,6 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
-    @Environment(\.theme) var theme
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -76,7 +75,7 @@ struct CustomTokenView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
             
@@ -97,15 +96,15 @@ struct CustomTokenView: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(self.token?.ticker ?? .empty)
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
             
             Text(self.token?.chain.name ?? .empty)
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
             
             Text(contractAddress)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
     }

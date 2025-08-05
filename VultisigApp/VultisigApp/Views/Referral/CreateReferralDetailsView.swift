@@ -73,7 +73,7 @@ struct CreateReferralDetailsView: View {
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -126,7 +126,7 @@ struct CreateReferralDetailsView: View {
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -136,7 +136,7 @@ struct CreateReferralDetailsView: View {
             Spacer()
         }
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(12)
@@ -193,14 +193,14 @@ struct CreateReferralDetailsView: View {
                 .frame(width: 32, height: 32)
             
             Text("RUNE")
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
         }
     }
     
     var infoLabel: some View {
         Image(systemName: "info.circle")
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     
@@ -208,11 +208,11 @@ struct CreateReferralDetailsView: View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("referralProgram", comment: ""))
                 .foregroundColor(.neutral900)
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
             
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
                 .foregroundColor(.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
@@ -232,13 +232,13 @@ struct CreateReferralDetailsView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(Color.blue600)
-                    .font(.body22BrockmannMedium)
+                    .font(Theme.fonts.title2)
             } else if let value {
                 Text(value)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(.clear)
-                    .font(.body16BrockmannMedium)
+                    .font(Theme.fonts.bodyMMedium)
             }
         }
         .foregroundColor(.neutral0)
@@ -267,7 +267,7 @@ struct CreateReferralDetailsView: View {
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func setData() {

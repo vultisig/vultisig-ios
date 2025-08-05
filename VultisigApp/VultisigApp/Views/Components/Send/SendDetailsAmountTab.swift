@@ -47,7 +47,7 @@ struct SendDetailsAmountTab: View {
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("amount", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             Spacer()
@@ -81,7 +81,7 @@ struct SendDetailsAmountTab: View {
     var editLabel: some View {
         Image(systemName: "fuelpump")
             .foregroundColor(.neutral0)
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
     }
     
     var amountFieldSection: some View {
@@ -129,7 +129,7 @@ struct SendDetailsAmountTab: View {
             Spacer()
             Text(tx.coin.balanceString + " " + tx.coin.ticker)
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.neutral0)
         .padding(12)
         .padding(.vertical, 8)
@@ -143,7 +143,7 @@ struct SendDetailsAmountTab: View {
     
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
-            .font(.body12MontserratSemiBold)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.alertYellow)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

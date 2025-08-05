@@ -31,7 +31,7 @@ struct SendCryptoAddressBookView: View {
     
     var title: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
-            .font(.body16MontserratMedium)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
     }
     
@@ -115,14 +115,14 @@ struct SendCryptoAddressBookView: View {
     
     var errorMessage: some View {
         Text(NSLocalizedString("noSavedAddresses", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.lightText)
             .padding(.top, 32)
     }
     
     private func getCell(for title: String, isSelected: Bool) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity)
             .frame(height: 42)

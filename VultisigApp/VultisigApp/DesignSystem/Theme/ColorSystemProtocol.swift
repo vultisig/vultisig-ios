@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public protocol ColorSystem {
+public protocol ColorSystemProtocol {
     var bgButtonPrimary: Color { get }
     var bgButtonSecondary: Color { get }
     var bgButtonTertiary: Color { get }

@@ -29,7 +29,7 @@ extension FastVaultEnterPasswordView {
             dismiss()
         }) {
             Image("x")
-                .font(.body18MenloBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(Color.neutral0)
         }
     }

@@ -56,7 +56,7 @@ extension ServerBackupVerificationView {
                 .foregroundColor(.neutral0)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .frame(width: 46, height: 46)
                 .background(Color.blue600)
                 .cornerRadius(12)

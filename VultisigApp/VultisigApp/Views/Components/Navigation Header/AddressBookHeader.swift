@@ -64,7 +64,7 @@ struct AddressBookHeader: View {
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18Menlo)
+            .font(Theme.fonts.bodyLRegular)
     }
     
     private func toggleEdit() {

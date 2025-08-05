@@ -68,13 +68,13 @@ struct PeerDiscoveryInfoBanner: View {
             Text(NSLocalizedString("peerDiscoveryInfoTitle2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
     }
     
     var description: some View {
         Text(NSLocalizedString("peerDiscoveryInfoDescription", comment: ""))
             .multilineTextAlignment(.center)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.lightText)
             .padding(.horizontal, 32)
             .multilineTextAlignment(.leading)

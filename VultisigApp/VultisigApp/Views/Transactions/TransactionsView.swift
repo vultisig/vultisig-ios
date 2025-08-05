@@ -40,7 +40,7 @@ struct TransactionsView: View {
             if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chain:coin.chain,address:coin.address) {
                 if let url = URL(string: explorerUrl) {
                     Link("checkExplorer",destination: url)
-                        .font(.body16MenloBold)
+                        .font(Theme.fonts.bodyMMedium)
                         .foregroundColor(.neutral0)
                         .underline()
                 }

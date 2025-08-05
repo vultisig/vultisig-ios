@@ -23,7 +23,7 @@ struct FastVaultPasswordDisclaimer: View {
             Spacer()
             info
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.alertYellow)
         .padding(16)
         .background(Color.alertYellowBackground)
@@ -86,7 +86,7 @@ struct FastVaultPasswordDisclaimer: View {
             Spacer()
             closeButton
         }
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
     }
     
     var closeButton: some View {
@@ -101,7 +101,7 @@ struct FastVaultPasswordDisclaimer: View {
     var description: some View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
             .foregroundColor(.extraLightGray)
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)

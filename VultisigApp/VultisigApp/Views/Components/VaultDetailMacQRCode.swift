@@ -56,7 +56,7 @@ struct VaultDetailMacQRCode: View {
     
     var name: some View {
         Text(vault.name)
-            .font(.title60MenloBold)
+            .font(Theme.fonts.display)
             .foregroundColor(.neutral0)
             .padding(.top, 60)
             .lineLimit(2)
@@ -66,9 +66,9 @@ struct VaultDetailMacQRCode: View {
     var uid: some View {
         Group {
             Text("UID\n")
-                .font(.title36MontserratSemiBold) +
+                .font(Theme.fonts.largeTitle) +
             Text(viewModel.getId(for: vault))
-                .font(.title36MontserratSemiBold)
+                .font(Theme.fonts.largeTitle)
         }
         .multilineTextAlignment(.center)
         .foregroundColor(.neutral0)
@@ -78,7 +78,7 @@ struct VaultDetailMacQRCode: View {
     
     var webLink: some View {
         Text("vultisig.com")
-            .font(.title36MontserratSemiBold)
+            .font(Theme.fonts.largeTitle)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
             .padding(.bottom, 32)

@@ -71,7 +71,7 @@ struct SendCryptoHeader: View {
                 }
             }
             .foregroundColor(.neutral0)
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .opacity(sendCryptoViewModel.currentIndex == 1 ? 1 : 0)
             .disabled(sendCryptoViewModel.currentIndex != 1)
         }

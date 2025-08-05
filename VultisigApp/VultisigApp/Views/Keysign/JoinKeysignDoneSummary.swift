@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct JoinKeysignDoneSummary: View {
-    @Environment(\.theme) var theme
-    
     let vault: Vault
     let viewModel: KeysignViewModel
     @Binding var showAlert: Bool
@@ -136,11 +134,11 @@ struct JoinKeysignDoneSummary: View {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
-                        .font(.body20MontserratSemiBold)
+                        .font(Theme.fonts.bodyLMedium)
                     
                     Text(description)
                         .foregroundColor(.turquoise400)
-                        .font(.body13MenloBold)
+                        .font(Theme.fonts.footnote)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -151,7 +149,7 @@ struct JoinKeysignDoneSummary: View {
                     
                     Text(description)
                 }
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
             }
         }
         .foregroundColor(.neutral100)
@@ -162,7 +160,7 @@ struct JoinKeysignDoneSummary: View {
             titleSection(title: title, txid: txid)
             
             Text(txid)
-                .font(theme.fonts.footnote)
+                .font(Theme.fonts.footnote)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -175,7 +173,7 @@ struct JoinKeysignDoneSummary: View {
     private func titleSection(title: String, txid: String) -> some View {
         HStack(spacing: 12) {
             Text(title)
-                .font(.body20MontserratSemiBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(.neutral0)
             
             copyButton(txid: txid)
@@ -188,7 +186,7 @@ struct JoinKeysignDoneSummary: View {
             copyHash(txid: txid)
         } label: {
             Image(systemName: "square.on.square")
-                .font(.body18Menlo)
+                .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(.neutral0)
         }
         
@@ -199,7 +197,7 @@ struct JoinKeysignDoneSummary: View {
             shareLink(txid: txid)
         } label: {
             Image(systemName: "link")
-                .font(.body18Menlo)
+                .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(.neutral0)
         }
         
@@ -214,7 +212,7 @@ struct JoinKeysignDoneSummary: View {
             }
         } label: {
             Text(NSLocalizedString(viewModel.keysignPayload?.swapPayload != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
-                .font(.body14MontserratBold)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.turquoise600)
                 .underline()
                 .padding(.vertical, 8)

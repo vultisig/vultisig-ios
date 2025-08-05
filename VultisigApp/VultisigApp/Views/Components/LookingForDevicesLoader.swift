@@ -62,7 +62,7 @@ struct LookingForDevicesLoader: View {
     
     var title: some View {
         Text(getTitle())
-            .font(.body14Montserrat)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
             .bold()
             .multilineTextAlignment(.center)
@@ -71,10 +71,10 @@ struct LookingForDevicesLoader: View {
     var fastContent: some View {
         VStack {
             Text(NSLocalizedString("connectingWithServer...", comment: ""))
-                .font(.body22BrockmannMedium)
+                .font(Theme.fonts.title2)
             
             Text(NSLocalizedString("shouldOnlyTakeAMinute...", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
         .foregroundColor(.lightText)
     }

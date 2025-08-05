@@ -103,7 +103,7 @@ struct FunctionCallVerifyView: View {
             if tx.isFastVault {
                 Text(NSLocalizedString("holdForPairedSign", comment: ""))
                     .foregroundColor(.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
                 
                 LongPressPrimaryButton(
                     title: NSLocalizedString("signTransaction", comment: "")) {

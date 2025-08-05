@@ -55,7 +55,7 @@ struct VaultDetailQRCode: View {
     
     var name: some View {
         Text(vault.name)
-            .font(.body20MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
             .padding(.top, 10)
             .lineLimit(2)
@@ -65,9 +65,9 @@ struct VaultDetailQRCode: View {
     var uid: some View {
         Group {
             Text("UID\n")
-                .font(.body16MontserratSemiBold) +
+                .font(Theme.fonts.bodyMMedium) +
             Text(viewModel.getId(for: vault))
-                .font(.body12Montserrat)
+                .font(Theme.fonts.bodySRegular)
         }
         .multilineTextAlignment(.center)
         .foregroundColor(.neutral0)
@@ -77,7 +77,7 @@ struct VaultDetailQRCode: View {
     
     var webLink: some View {
         Text("vultisig.com")
-            .font(.body18MontserratMedium)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
     }

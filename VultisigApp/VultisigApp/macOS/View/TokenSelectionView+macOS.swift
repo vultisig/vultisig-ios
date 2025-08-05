@@ -41,7 +41,7 @@ extension TokenSelectionView {
                         .scaleEffect(0.6)
                         .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
                     Text("Loading tokens...")
-                        .font(theme.fonts.caption12)
+                        .font(Theme.fonts.caption12)
                         .foregroundColor(.neutral0)
                         .opacity(0.8)
                 }
@@ -82,7 +82,7 @@ extension TokenSelectionView {
 
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)

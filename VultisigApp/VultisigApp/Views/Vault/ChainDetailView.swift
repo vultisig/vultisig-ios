@@ -155,7 +155,7 @@ struct ChainDetailView: View {
             Text(text)
             Spacer()
         }
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.turquoise600)
         .padding(.bottom, 32)
     }

@@ -18,7 +18,7 @@ struct KeygenStatusText: View {
             Text(NSLocalizedString(plainText, comment: ""))
                 .foregroundColor(.neutral0)
         }
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
         .padding(.horizontal, 32)
         .multilineTextAlignment(.center)
     }

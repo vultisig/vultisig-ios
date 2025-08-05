@@ -60,7 +60,7 @@ struct ServerBackupVerificationView: View {
     
     var title: some View {
         Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
-            .font(.body34BrockmannMedium)
+            .font(Theme.fonts.largeTitle)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.leading)
             .padding(.top, 50)
@@ -68,7 +68,7 @@ struct ServerBackupVerificationView: View {
     
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.extraLightGray)
     }
 
@@ -78,11 +78,11 @@ struct ServerBackupVerificationView: View {
         } label: {
             VStack(spacing: 12) {
                 Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
                     .foregroundColor(.extraLightGray)
 
                 Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
                     .foregroundColor(.lightText)
                     .underline()
             }
@@ -122,7 +122,7 @@ struct ServerBackupVerificationView: View {
             Text(NSLocalizedString("paste", comment: ""))
                 .padding(12)
                 .frame(height: 46)
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .background(Color.blue600)
                 .cornerRadius(12)
@@ -142,7 +142,7 @@ struct ServerBackupVerificationView: View {
             
             Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
             
             Spacer()
         }
@@ -152,7 +152,7 @@ struct ServerBackupVerificationView: View {
         Text(NSLocalizedString(alertDescription, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .foregroundColor(.alertRed)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
     }
     
     private func verifyCode() {

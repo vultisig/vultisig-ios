@@ -74,7 +74,7 @@ struct SendDetailsAssetTab: View {
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("asset", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             if viewModel.assetSetupDone {
@@ -120,7 +120,7 @@ struct SendDetailsAssetTab: View {
     
     var chainSelectionTitle: some View {
         Text(NSLocalizedString("from", comment: ""))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
     }
     
@@ -151,11 +151,11 @@ struct SendDetailsAssetTab: View {
                 Text(": ") +
                 Text(tx.coin.balanceString)
             }
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
             
             Text(tx.coin.balanceInFiat)
-                .font(.body12BrockmannMedium)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.extraLightGray)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -171,7 +171,7 @@ struct SendDetailsAssetTab: View {
             )
             
             Text("\(tx.coin.ticker)")
-                .font(.body12BrockmannMedium)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.extraLightGray)
         }
     }

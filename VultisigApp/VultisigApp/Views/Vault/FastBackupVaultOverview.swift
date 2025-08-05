@@ -88,7 +88,7 @@ struct FastBackupVaultOverview: View {
     var headerTitle: some View {
         Text(NSLocalizedString(getTitle(), comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var migrateText: some View {
@@ -98,7 +98,7 @@ struct FastBackupVaultOverview: View {
             Text(NSLocalizedString("FastMigrateOverviewText2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 36)
         .padding(.bottom, 24)

@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 struct VaultPairDetailCell: View {
-    @Environment(\.theme) var theme
+    
     let title: String
     let description: String
     var isBold: Bool = false
@@ -32,13 +32,13 @@ struct VaultPairDetailCell: View {
         VStack(alignment: .leading, spacing: 5) {
             if !title.isEmpty {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(isBold ? .body20MenloBold : .body16MenloBold)
+                    .font(isBold ? Theme.fonts.bodyLMedium : Theme.fonts.bodyMMedium)
                     .foregroundColor( .neutral0)
             }
             
             if !description.isEmpty {
                 Text(NSLocalizedString(description, comment: ""))
-                    .font(isBold ? .body16Menlo : theme.fonts.caption12)
+                    .font(isBold ? Theme.fonts.bodyMRegular : Theme.fonts.caption12)
                     .foregroundColor(.neutral0)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineLimit(nil)

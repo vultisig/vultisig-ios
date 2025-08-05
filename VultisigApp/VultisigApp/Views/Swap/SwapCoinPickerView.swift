@@ -49,7 +49,7 @@ struct SwapCoinPickerView: View {
     var title: some View {
         Text(NSLocalizedString("selectAsset", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var view: some View {
@@ -82,7 +82,7 @@ struct SwapCoinPickerView: View {
                 .scaleEffect(1.2)
             
             Text(NSLocalizedString("loading", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.extraLightGray)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -91,7 +91,7 @@ struct SwapCoinPickerView: View {
     
     var networkTitle: some View {
         Text(NSLocalizedString("network", comment: ""))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -145,7 +145,7 @@ struct SwapCoinPickerView: View {
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
         }
-        .font(.body16Menlo)
+        .font(Theme.fonts.bodyMRegular)
     }
     
     var chainCarousel: some View {
@@ -161,7 +161,7 @@ struct SwapCoinPickerView: View {
                                 .frame(width: 16, height: 16)
                             
                             Text(chain.name)
-                                .font(.body12BrockmannMedium)
+                                .font(Theme.fonts.caption12)
                                 .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
                         }
                         .padding(.horizontal, 12)

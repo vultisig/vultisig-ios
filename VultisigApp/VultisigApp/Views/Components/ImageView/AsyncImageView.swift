@@ -64,7 +64,7 @@ struct AsyncImageView: View {
 
     var fallbackText: some View {
         Text(String(ticker.prefix(1)).uppercased())
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
             .frame(width: size.width, height: size.height)
             .background(Color.white)
             .foregroundColor(.blue600)

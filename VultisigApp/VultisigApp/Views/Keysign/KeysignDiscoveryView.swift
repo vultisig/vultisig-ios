@@ -135,7 +135,7 @@ struct KeysignDiscoveryView: View {
             Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
         .foregroundColor(.neutral0)
         .padding(.bottom, 8)
         .padding(.horizontal, 24)

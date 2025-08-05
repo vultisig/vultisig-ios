@@ -9,7 +9,6 @@ import SwiftUI
 
 
 struct ChainHeaderCell: View {
-    @Environment(\.theme) var theme
     let vault: Vault
     @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
@@ -64,7 +63,7 @@ struct ChainHeaderCell: View {
     
     var title: some View {
         Text(group.name.capitalized)
-            .font(.body20MontserratSemiBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     
@@ -78,7 +77,7 @@ struct ChainHeaderCell: View {
     
     var fiatBalance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
-            .font(.body20MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     
@@ -88,14 +87,14 @@ struct ChainHeaderCell: View {
         } label: {
             Image(systemName: "square.on.square")
                 .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
+                .font(Theme.fonts.bodyLMedium)
         }
     }
     
     var qrCodeLabel: some View {
         Image(systemName: "qrcode")
             .foregroundColor(.neutral0)
-            .font(.body18MenloMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var showTransactionsButton: some View {
@@ -109,7 +108,7 @@ struct ChainHeaderCell: View {
                 Link(destination: linkURL) {
                     Image(systemName: "cube")
                         .foregroundColor(.neutral0)
-                        .font(.body18MenloMedium)
+                        .font(Theme.fonts.bodyLMedium)
                 }
             } else {
                 EmptyView()
@@ -119,7 +118,7 @@ struct ChainHeaderCell: View {
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
     }

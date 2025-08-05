@@ -50,12 +50,12 @@ struct UpgradingVaultView: View {
     var title: some View {
         Text(NSLocalizedString("upgradingVault", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body22BrockmannMedium)
+            .font(Theme.fonts.title2)
     }
     
     var appVersion: some View {
         Text("Version \(version ?? "1").\(build ?? "1")")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .padding(.bottom, 30)
     }

@@ -32,13 +32,13 @@ struct WarningView: View {
 
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.alertRed)
     }
 
     var title: some View {
         Text(text)
-            .font(.body16MontserratMedium)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)

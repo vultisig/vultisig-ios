@@ -165,7 +165,7 @@ struct SendCryptoDoneSummary: View {
                 }
             }
         }
-        .font(.body16Menlo)
+        .font(Theme.fonts.bodyMRegular)
         .foregroundColor(.neutral100)
         .bold(isBold)
     }

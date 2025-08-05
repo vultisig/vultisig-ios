@@ -40,12 +40,12 @@ struct SecurityScannerBottomSheetContent: View {
             VStack(spacing: 12) {
                 Text(contentStyle.title)
                     .foregroundColor(contentStyle.imageColor)
-                    .font(.body22BrockmannMedium)
+                    .font(Theme.fonts.title2)
                     .multilineTextAlignment(.center)
                 
                 Text(contentStyle.description)
                     .foregroundStyle(Color.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.center)
                     .frame(height: 60)
             }
@@ -55,7 +55,7 @@ struct SecurityScannerBottomSheetContent: View {
                     Spacer()
                     Text("securityScannerPoweredBy".localized)
                         .foregroundStyle(Color.extraLightGray)
-                        .font(.body14BrockmannMedium)
+                        .font(Theme.fonts.bodySMedium)
                     Image(securityScannerProvider)
                         .foregroundStyle(Color.extraLightGray)
                     Spacer()
@@ -72,7 +72,7 @@ struct SecurityScannerBottomSheetContent: View {
                 }
                 .frame(height: 42, alignment: .center)
                 .foregroundStyle(Color.textDisabled)
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .frame(maxWidth: .infinity)
                 .buttonStyle(.plain)
             }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DefaultFontSystem: FontSystem {
+struct FontSystem: FontSystemProtocol {
     var heroDisplay: Font { FontStyle.medium.size(72) }
     var display: Font { FontStyle.medium.size(60) }
     

@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct TransactionCell: View {
-    @Environment(\.theme) var theme
-    
     let title: String
     let id: String
     let url: String
@@ -44,13 +42,13 @@ struct TransactionCell: View {
             
             Text(NSLocalizedString(title, comment: "Transaction ID"))
         }
-        .font(.body20MontserratSemiBold)
+        .font(Theme.fonts.bodyLMedium)
         .foregroundColor(.neutral0)
     }
     
     var content: some View {
         Text(id)
-            .font(theme.fonts.footnote)
+            .font(Theme.fonts.footnote)
             .foregroundColor(.turquoise600)
             .multilineTextAlignment(.leading)
     }
@@ -58,7 +56,7 @@ struct TransactionCell: View {
     var chevron: some View {
         Image(systemName: "chevron.forward")
             .foregroundColor(.neutral0)
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 

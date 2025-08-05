@@ -33,12 +33,12 @@ struct UpgradeFromGG20HomeBanner: View {
     
     var icon: some View {
         Image(systemName: "arrow.up.circle")
-            .font(.body20MontserratMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var title: some View {
         Text(NSLocalizedString("upgradeYourVaultNow", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
     }
 }
 

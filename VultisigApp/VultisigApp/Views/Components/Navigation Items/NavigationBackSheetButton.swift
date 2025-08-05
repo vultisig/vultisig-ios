@@ -16,7 +16,7 @@ struct NavigationBackSheetButton: View {
             showSheet.toggle()
         }) {
             Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(tint)
         }
         .offset(x: -8)

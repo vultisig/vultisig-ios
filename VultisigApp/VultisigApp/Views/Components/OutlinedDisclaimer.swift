@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct OutlinedDisclaimer: View {
-    @Environment(\.theme) var theme
+    
     let text: String
     var alignment: TextAlignment = .leading
 
@@ -20,10 +20,10 @@ struct OutlinedDisclaimer: View {
         HStack(spacing: 12) {
             Image(systemName: "info.circle")
                 .foregroundStyle(LinearGradient.primaryGradient)
-                .font(theme.fonts.bodySRegular)
+                .font(Theme.fonts.bodySRegular)
             
             Text(text)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
                 .lineSpacing(4)
                 .multilineTextAlignment(alignment)

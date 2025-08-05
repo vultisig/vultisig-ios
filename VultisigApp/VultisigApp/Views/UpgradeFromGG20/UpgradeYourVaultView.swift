@@ -39,7 +39,7 @@ struct UpgradeYourVaultView: View {
     var title: some View {
         Text(NSLocalizedString("upgradeYourVault", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var animation: some View {
@@ -56,7 +56,7 @@ struct UpgradeYourVaultView: View {
                 .foregroundColor(.neutral0)
         }
         .multilineTextAlignment(.center)
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
     }
     
     var button: some View {

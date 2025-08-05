@@ -53,7 +53,7 @@ struct ImportWalletUploadSection: View {
             getIcon(tint: .persianBlue400)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
         }
     }
@@ -63,7 +63,7 @@ struct ImportWalletUploadSection: View {
             getIcon(tint: .invalidRed)
             
             Text(NSLocalizedString(viewModel.alertTitle, comment: ""))
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
         }
         .foregroundColor(.invalidRed)
         .onAppear {
@@ -78,14 +78,14 @@ struct ImportWalletUploadSection: View {
             getIcon(tint: .persianBlue400)
             
             Text(NSLocalizedString("importYourVaultShare", comment: ""))
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
         }
     }
     
     private func textFile(for text: String) -> some View {
         Text(text)
-            .font(.body12MontserratSemiBold)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .padding(12)
     }
@@ -107,7 +107,7 @@ struct ImportWalletUploadSection: View {
             getIcon(isFileUploaded: true, tint: .alertTurquoise)
             
             Text(filename)
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
         }
         .foregroundColor(.alertTurquoise)
         .onAppear {
@@ -120,7 +120,7 @@ struct ImportWalletUploadSection: View {
     private func getIcon(isFileUploaded: Bool = false, tint: Color) -> some View {
         Image(systemName: isFileUploaded ? "text.document" : "icloud.and.arrow.up")
             .foregroundColor(tint)
-            .font(.body34BrockmannMedium)
+            .font(Theme.fonts.largeTitle)
     }
 }
 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public protocol FontSystem {
+public protocol FontSystemProtocol {
     var heroDisplay: Font { get }
     var display: Font { get }
     

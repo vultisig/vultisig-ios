@@ -35,7 +35,7 @@ struct SendCryptoTransactionHashRowView: View {
                 explorerLinkView
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     var explorerLinkView: some View {

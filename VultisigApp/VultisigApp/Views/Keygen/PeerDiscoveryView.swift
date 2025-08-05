@@ -166,7 +166,7 @@ struct PeerDiscoveryView: View {
     var failureText: some View {
         VStack{
             Text(self.viewModel.errorMessage)
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.red)
         }
@@ -183,7 +183,7 @@ struct PeerDiscoveryView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
         .foregroundColor(.neutral0)
         .padding(.bottom, 8)
         .padding(.horizontal, 8)

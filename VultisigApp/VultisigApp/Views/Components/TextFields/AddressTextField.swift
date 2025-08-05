@@ -3,7 +3,7 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct AddressTextField: View {
-    @Environment(\.theme) var theme
+    
     
     @Binding var contractAddress: String
     var validateAddress: (String) -> Void
@@ -35,7 +35,7 @@ struct AddressTextField: View {
             pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -46,7 +46,7 @@ struct AddressTextField: View {
             showScanner.toggle()
         } label: {
             Image(systemName: "camera")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -57,7 +57,7 @@ struct AddressTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -68,7 +68,7 @@ struct AddressTextField: View {
             AddressBookView(returnAddress: $contractAddress)
         } label: {
             Image(systemName: "text.book.closed")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }

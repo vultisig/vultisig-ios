@@ -42,7 +42,7 @@ struct PeerCell: View {
     
     var deviceId: some View {
         Text(getDeviceName())
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -50,7 +50,7 @@ struct PeerCell: View {
     
     var description: some View {
         Text(id)
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.lightText)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -58,7 +58,7 @@ struct PeerCell: View {
     
     var check: some View {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.alertTurquoise)
     }
     

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ChainSelectionView: View {
-    @Environment(\.theme) var theme
     @Binding var showChainSelectionSheet: Bool
     let vault: Vault
     
@@ -58,7 +57,7 @@ struct ChainSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)
@@ -75,7 +74,7 @@ struct ChainSelectionView: View {
 
     var searchField: some View {
         TextField(NSLocalizedString("Search", comment: "Search"), text: $viewModel.searchText)
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral0)
             .disableAutocorrection(true)
             .padding(.horizontal, 8)

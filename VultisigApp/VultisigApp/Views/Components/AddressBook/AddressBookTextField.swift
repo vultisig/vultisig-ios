@@ -9,7 +9,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct AddressBookTextField: View {
-    @Environment(\.theme) var theme
     let title: String
     @Binding var text: String
     var showActions = false
@@ -53,7 +52,7 @@ struct AddressBookTextField: View {
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
         }
     }
@@ -61,7 +60,7 @@ struct AddressBookTextField: View {
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(Color.neutral0)
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
     }
     
    
@@ -70,7 +69,7 @@ struct AddressBookTextField: View {
             pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -81,7 +80,7 @@ struct AddressBookTextField: View {
             showScanner.toggle()
         } label: {
             Image(systemName: "camera")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -92,7 +91,7 @@ struct AddressBookTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }

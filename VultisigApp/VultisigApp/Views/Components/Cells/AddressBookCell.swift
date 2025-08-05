@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct AddressBookCell: View {
-    @Environment(\.theme) var theme
+    
     let address: AddressBookItem
     let shouldReturnAddress: Bool
     let isEditing: Bool
@@ -85,7 +85,7 @@ struct AddressBookCell: View {
     var titleContent: some View {
         Text(address.title)
             .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .font(Theme.fonts.bodySMedium)
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -93,7 +93,7 @@ struct AddressBookCell: View {
     var networkContent: some View {
         Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
             .foregroundColor(.neutral300)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -101,14 +101,14 @@ struct AddressBookCell: View {
     var addressContent: some View {
         Text(address.address)
             .foregroundColor(.neutral0)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.middle)
     }
     
     var rearrangeIcon: some View {
         Image(systemName: "square.grid.4x3.fill")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .rotationEffect(.degrees(90))
             .foregroundColor(.neutral300)
             .scaleEffect(isEditing ? 1 : 0)
@@ -125,7 +125,7 @@ struct AddressBookCell: View {
     
     var deleteIconLabel: some View {
         Image(systemName: "trash")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.neutral0)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)

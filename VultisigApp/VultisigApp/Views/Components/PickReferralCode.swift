@@ -31,7 +31,7 @@ struct PickReferralCode: View {
     var pickReferralTitle: some View {
         Text(NSLocalizedString("pickReferralCode", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -67,7 +67,7 @@ struct PickReferralCode: View {
             } else {
                 Text(NSLocalizedString("search", comment: ""))
                     .foregroundColor(.lightText)
-                    .font(.body14BrockmannSemiBold)
+                    .font(Theme.fonts.bodySMedium)
             }
         }
         .frame(width: 100, height: 60)
@@ -84,7 +84,7 @@ struct PickReferralCode: View {
             
             statusCapsule
         }
-        .font(.body14MontserratMedium)
+        .font(Theme.fonts.bodySMedium)
         .padding(.top, 2)
     }
     

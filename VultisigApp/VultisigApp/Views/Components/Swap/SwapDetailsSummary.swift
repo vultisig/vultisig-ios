@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SwapDetailsSummary: View {
-    @Environment(\.theme) var theme
+    
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -63,7 +63,7 @@ struct SwapDetailsSummary: View {
     
     var chevron: some View {
         Image(systemName: "chevron.up")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
@@ -132,7 +132,7 @@ struct SwapDetailsSummary: View {
                 .foregroundColor(.lightText)
                 .redacted(reason: swapViewModel.isLoading ? .placeholder : [])
         }
-        .font(.body12BrockmannMedium)
+        .font(Theme.fonts.caption12)
     }
     
     private func getImage(_ image: String) -> some View {
@@ -145,7 +145,7 @@ struct SwapDetailsSummary: View {
         HStack() {
             Text(text)
                 .foregroundColor(.destructive)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
 

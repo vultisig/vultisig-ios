@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingSelectionCell: View {
-    @Environment(\.theme) var theme
+    
     let title: String
     let isSelected: Bool
     var description: String? = nil
@@ -37,13 +37,13 @@ struct SettingSelectionCell: View {
     
     var titleBlock: some View {
         Text(title)
-            .font(theme.fonts.bodySRegular)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.neutral0)
     }
     
     var chevron: some View {
         Image(systemName: "checkmark")
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral0)
             .offset(x: -5)
             .opacity(isSelected ? 1 : 0)
@@ -51,7 +51,7 @@ struct SettingSelectionCell: View {
     
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral300)
     }
 }

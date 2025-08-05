@@ -64,7 +64,7 @@ struct JoinKeysignView: View {
                 keysignView
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
-                    .font(.body15MenloBold)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
@@ -93,7 +93,7 @@ struct JoinKeysignView: View {
             Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
             Text(viewModel.errorMsg)
         }
-        .font(.body15MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 30)

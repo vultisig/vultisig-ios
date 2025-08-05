@@ -39,12 +39,12 @@ struct SendCryptoAddressBookCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
                 .lineLimit(1)
             
             Text(description)
-                .font(.body12BrockmannMedium)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.lightText)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -73,7 +73,7 @@ struct SendCryptoAddressBookCell: View {
                 .opacity(0.1)
             
             Text(title.prefix(1).uppercased())
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(color)
         }
     }

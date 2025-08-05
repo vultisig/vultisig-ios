@@ -133,7 +133,7 @@ struct SwapCryptoDetailsView: View {
             } else {
                 // Show swap icon when not loading
                 Image(systemName: "arrow.up.arrow.down")
-                    .font(.body16MontserratMedium)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
                     .frame(width: 38, height: 38)
             }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DefaultColorSystem: ColorSystem {
+struct ColorSystem: ColorSystemProtocol {
     var bgButtonPrimary: Color { .init(hex: "33E6BF") }
     var bgButtonSecondary: Color { .init(hex: "061B3A") }
     var bgButtonTertiary: Color { .init(hex: "2155DF") }

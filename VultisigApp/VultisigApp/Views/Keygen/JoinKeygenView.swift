@@ -97,7 +97,7 @@ struct JoinKeygenView: View {
     
     var keygenErrorText: some View {
         Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
-            .font(.body15MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
     }
@@ -105,7 +105,7 @@ struct JoinKeygenView: View {
     var failToStartKeygen: some View {
         VStack{
             Text(viewModel.errorMessage)
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 30)
@@ -132,7 +132,7 @@ struct JoinKeygenView: View {
                 informationNote
             }
         }
-        .font(.body15MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
@@ -199,7 +199,7 @@ struct JoinKeygenView: View {
             showFileImporter.toggle()
         } label: {
             Image(systemName: "photo.on.rectangle.angled")
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
@@ -273,11 +273,11 @@ struct JoinKeygenView: View {
         VStack(spacing: 12) {
             Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body28BrockmannMedium)
+                .font(Theme.fonts.title1)
             
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
                 .foregroundColor(.extraLightGray)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal)

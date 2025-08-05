@@ -27,13 +27,13 @@ struct NoCameraPermissionView: View {
     
     var logo: some View {
         Image(systemName: "exclamationmark.triangle.fill")
-            .font(.title80Menlo)
+            .font(Theme.fonts.heroDisplay)
             .symbolRenderingMode(.multicolor)
     }
     
     var title: some View {
         Text(NSLocalizedString("noCameraPermissionError", comment: ""))
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
             .frame(maxWidth: 300)
             .multilineTextAlignment(.center)

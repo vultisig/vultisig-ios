@@ -52,13 +52,13 @@ struct FolderDetailHeader: View {
     var editIcon: some View {
         Image(systemName: "square.and.pencil")
             .foregroundColor(Color.neutral0)
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var doneLabel: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(Color.neutral0)
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 

@@ -163,7 +163,7 @@ struct VaultDetailView: View {
     var loader: some View {
         HStack(spacing: 20) {
             Text(NSLocalizedString("fetchingVaultDetails", comment: ""))
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
             
             ProgressView()

@@ -155,7 +155,7 @@ struct SendCryptoDetailsView: View {
             Spacer()
             Text(trailingText)
         }
-        .font(.body14MenloBold)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.neutral0)
     }
 
@@ -164,14 +164,14 @@ struct SendCryptoDetailsView: View {
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
-        .font(.body14MontserratMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.neutral0)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
-            .font(.body12MenloBold)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)

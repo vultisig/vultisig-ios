@@ -88,7 +88,7 @@ struct VultisigLogo: View {
     
     var title: some View {
         Text("Vultisig")
-            .font(.title40MontserratSemiBold)
+            .font(Theme.fonts.headline)
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .animation(

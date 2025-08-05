@@ -63,7 +63,7 @@ struct ProgressRing: View {
             
             if progress>=0.99 {
                 Image(systemName: "checkmark")
-                    .font(.title40MontserratSemiBold)
+                    .font(Theme.fonts.headline)
                     .foregroundColor(.neutral0)
                     .scaleEffect(pulseIcon ? 1.1 : 0)
                     .animation(animation, value: pulseIcon)
@@ -79,7 +79,7 @@ struct ProgressRing: View {
     
     var doneTitle: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
             .offset(y: progress>=0.99 ? 0 : -50)
             .zIndex(0)

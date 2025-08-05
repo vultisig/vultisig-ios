@@ -128,20 +128,20 @@ struct SendDetailsAmountTextField: View {
     
     private func getUnit(for unit: String) -> some View {
         Text(unit)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
     }
     
     private func getDescriptionText(for value: String) -> some View {
         Text(value)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.extraLightGray)
             .padding(.top, 8)
     }
     
     private func getSelector(for icon: String) -> some View {
         Image(systemName: icon)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
             .frame(width: 32, height: 32)
     }

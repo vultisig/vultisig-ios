@@ -28,7 +28,7 @@ struct FolderDetailRemainingVaultCell: View {
     var text: some View {
         Text(vault.name)
             .foregroundColor(.neutral0)
-            .font(.body14MontserratBold)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var toggle: some View {

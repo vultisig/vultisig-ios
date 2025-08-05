@@ -37,7 +37,7 @@ struct AllDevicesUpgradeView: View {
                 .foregroundColor(.neutral0)
         }
         .multilineTextAlignment(.center)
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
     }
     
     var button: some View {

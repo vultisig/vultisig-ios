@@ -26,7 +26,7 @@ struct SwapCryptoAmountTextField: View {
     
     var textField: some View {
         field
-            .font(.body20MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     

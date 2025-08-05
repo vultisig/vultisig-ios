@@ -46,12 +46,12 @@ struct RuneBondCell: View {
     var headerView: some View {
         HStack {
             Text(nodeIdentifier)
-                .font(.body20Menlo)
+                .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(.neutral0)
             
             Button(action: openExplorer) {
                 Image(systemName: "link")
-                    .font(.body18Menlo) 
+                    .font(Theme.fonts.bodyLRegular) 
                     .foregroundColor(.neutral0)
             }
             .padding(.leading, 4) 
@@ -59,7 +59,7 @@ struct RuneBondCell: View {
             Spacer()
             
             Text(bondValueInFiat)
-                .font(.body16MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
         }
     }
@@ -67,11 +67,11 @@ struct RuneBondCell: View {
     var detailsView: some View {
         HStack {
             Text(bondValueInRune)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
             Spacer()
             Text(nodeStatus)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(statusColor) 
         }
     }

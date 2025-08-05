@@ -62,14 +62,14 @@ struct SwapCoinCell: View {
     
     var title: some View {
         Text(coin.ticker)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
     }
     
     var chain: some View {
         Text(coin.chain.name)
             .foregroundColor(.lightText)
-            .font(.body10BrockmannMedium)
+            .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .overlay(
@@ -80,7 +80,7 @@ struct SwapCoinCell: View {
     
     var check: some View {
         Image(systemName: "checkmark")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.alertTurquoise)
             .frame(width: 24, height: 24)
             .background(Color.blue600)
@@ -96,7 +96,7 @@ struct SwapCoinCell: View {
             Text(coin.balanceInFiat)
                 .foregroundColor(.extraLightGray)
         }
-        .font(.body12BrockmannMedium)
+        .font(Theme.fonts.caption12)
     }
     
     private func setData() {

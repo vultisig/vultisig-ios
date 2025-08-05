@@ -108,7 +108,7 @@ extension HomeView {
             showFolderDetails = false
         } label: {
             Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(.neutral0)
         }
     }

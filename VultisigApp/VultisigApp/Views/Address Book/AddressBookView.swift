@@ -71,7 +71,7 @@ struct AddressBookView: View {
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     

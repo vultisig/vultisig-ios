@@ -12,7 +12,6 @@ import Tss
 import RiveRuntime
 
 struct KeygenView: View {
-    @Environment(\.theme) var theme
     
     let vault: Vault
     let tssType: TssType // keygen or reshare
@@ -119,7 +118,7 @@ struct KeygenView: View {
     var title: some View {
         Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
             .foregroundColor(.extraLightGray)
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
     }
     
     var preparingVaultText: some View {
@@ -204,7 +203,7 @@ struct KeygenView: View {
                 Text(NSLocalizedString("successfully", comment: ""))
                     .foregroundStyle(LinearGradient.primaryGradient)
             }
-            .font(.body28BrockmannMedium)
+            .font(Theme.fonts.title1)
             .opacity(progressCounter == 4 ? 1 : 0)
             .animation(.easeInOut, value: progressCounter)
             .padding(.top, 60)
@@ -238,11 +237,11 @@ struct KeygenView: View {
     var migrateFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
         }
@@ -251,11 +250,11 @@ struct KeygenView: View {
     var keygenFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
         }
@@ -279,7 +278,7 @@ struct KeygenView: View {
             Text("(Build \(build ?? "1"))")
         }
         .textCase(.uppercase)
-        .font(theme.fonts.bodySRegular)
+        .font(Theme.fonts.bodySRegular)
         .foregroundColor(.turquoise600)
     }
     

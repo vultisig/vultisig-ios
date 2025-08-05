@@ -38,7 +38,7 @@ struct SetupVaultSecureText: View {
     
     var headerText: some View {
         Text(selectedTab.secureTextTitle)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
     }
@@ -69,7 +69,7 @@ struct SetupVaultSecureText: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity,minHeight: 80)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .padding(24)
         .background(Color.blue600)
     }

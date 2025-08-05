@@ -50,7 +50,7 @@ extension VaultDetailView {
         }
         .padding(.horizontal, 16)
         .frame(height: 20)
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.turquoise600)
     }
     

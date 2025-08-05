@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FolderDetailSelectedVaultCell: View {
-    @Environment(\.theme) var theme
+    
     
     let vault: Vault
     let isEditing: Bool
@@ -73,7 +73,7 @@ struct FolderDetailSelectedVaultCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
@@ -82,7 +82,7 @@ struct FolderDetailSelectedVaultCell: View {
     var text: some View {
         Text(vault.name)
             .foregroundColor(.neutral0)
-            .font(.body14MontserratBold)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var toggle: some View {
@@ -94,13 +94,13 @@ struct FolderDetailSelectedVaultCell: View {
     
     var partAssignedCell: some View {
         Text("Share \(viewModel.order)of\(viewModel.totalSigners)")
-            .font(theme.fonts.bodySRegular)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(theme.fonts.bodySRegular)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.body)
             .padding(4)
             .padding(.horizontal, 2)
@@ -111,7 +111,7 @@ struct FolderDetailSelectedVaultCell: View {
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditing ? 0 : nil)
             .padding(.vertical, 8)

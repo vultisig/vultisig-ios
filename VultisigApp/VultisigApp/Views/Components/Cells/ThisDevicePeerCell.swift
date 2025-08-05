@@ -36,7 +36,7 @@ struct ThisDevicePeerCell: View {
     
     var deviceId: some View {
         Text(deviceName)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -44,7 +44,7 @@ struct ThisDevicePeerCell: View {
     
     var description: some View {
         Text(NSLocalizedString("thisDevice", comment: ""))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.lightText)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)

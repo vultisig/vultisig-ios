@@ -10,7 +10,7 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct SendCryptoAddressTextField: View {
-    @Environment(\.theme) var theme
+    
     
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
@@ -65,7 +65,7 @@ struct SendCryptoAddressTextField: View {
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
         }
     }
@@ -106,7 +106,7 @@ struct SendCryptoAddressTextField: View {
     
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
-            .font(.body12MontserratSemiBold)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.alertYellow)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -117,7 +117,7 @@ struct SendCryptoAddressTextField: View {
     
     func getButton(_ icon: String) -> some View {
         Image(systemName: icon)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
             .frame(maxWidth: .infinity)
             .frame(height: 44)

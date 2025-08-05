@@ -76,14 +76,14 @@ struct PasswordVerifyReminderView: View {
         Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
             .multilineTextAlignment(.center)
             .foregroundColor(.lightText)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var description: some View {
         Text(NSLocalizedString("biweeklyPasswordVerifyDescription", comment: ""))
             .multilineTextAlignment(.center)
             .foregroundColor(.extraLightGray)
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .padding(.horizontal, 28)
     }
     
@@ -113,7 +113,7 @@ struct PasswordVerifyReminderView: View {
         }
         .colorScheme(.dark)
         .foregroundColor(.neutral0)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .borderlessTextFieldStyle()
         .frame(height: 56)
         .padding(.horizontal, 24)
@@ -146,7 +146,7 @@ struct PasswordVerifyReminderView: View {
     
     var errorContent: some View {
         Text(NSLocalizedString(errorText, comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.invalidRed)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

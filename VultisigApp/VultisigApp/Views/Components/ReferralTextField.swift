@@ -31,7 +31,7 @@ struct ReferralTextField: View {
     var textField: some View {
         HStack {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
                 .colorScheme(.dark)
@@ -40,7 +40,7 @@ struct ReferralTextField: View {
             actionButton
         }
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(12)
@@ -66,7 +66,7 @@ struct ReferralTextField: View {
                 EmptyView()
             }
         }
-        .font(.body16Menlo)
+        .font(Theme.fonts.bodyMRegular)
         .foregroundColor(.neutral0)
     }
     
@@ -98,7 +98,7 @@ struct ReferralTextField: View {
     var errorText: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.invalidRed)
     }
     

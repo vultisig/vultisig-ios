@@ -119,7 +119,7 @@ struct UTXOTransactionCell: View {
             Text(value)
         }
         .frame(height: 32)
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
     }
 }

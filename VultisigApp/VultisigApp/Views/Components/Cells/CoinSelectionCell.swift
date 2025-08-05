@@ -41,11 +41,11 @@ struct CoinSelectionCell: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(asset.ticker)
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
             
             Text(asset.chain.name)
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
         }
     }

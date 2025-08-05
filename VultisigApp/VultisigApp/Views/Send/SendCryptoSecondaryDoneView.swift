@@ -139,11 +139,11 @@ struct SendCryptoSecondaryDoneView: View {
             }
             
             Text(title)
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.extraLightGray)
         }
         .frame(height: 130)

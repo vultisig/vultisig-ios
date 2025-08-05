@@ -45,9 +45,9 @@ extension FastVaultEmailView {
         HStack {
             TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
                 .foregroundColor(Color.neutral500)
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
             )
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
             .focused($isEmailFocused)

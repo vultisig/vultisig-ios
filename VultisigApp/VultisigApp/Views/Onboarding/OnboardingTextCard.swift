@@ -28,7 +28,7 @@ struct OnboardingTextCard: View {
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text4", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
         .frame(maxWidth: 1024)
         .padding(.horizontal, 36)
         .padding(.bottom, 24)

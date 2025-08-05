@@ -58,14 +58,14 @@ struct ReferralLaunchView: View {
     var title: some View {
         Text(NSLocalizedString("addYourFriendsCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
     }
     
     var errorText: some View {
         Text(NSLocalizedString(referredViewModel.referredLaunchViewErrorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.alertRed)
             .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
     }
@@ -81,7 +81,7 @@ struct ReferralLaunchView: View {
             separator
             
             Text(NSLocalizedString("or", comment: "").uppercased())
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             separator
@@ -91,7 +91,7 @@ struct ReferralLaunchView: View {
     var createTitle: some View {
         Text(NSLocalizedString("createYourCodeAndEarn", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
     }
     
@@ -143,7 +143,7 @@ struct ReferralLaunchView: View {
         .foregroundColor(.neutral0)
         .colorScheme(.dark)
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(12)
@@ -177,7 +177,7 @@ struct ReferralLaunchView: View {
     var referralTitle: some View {
         Text(NSLocalizedString("yourReferralCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
     }
     

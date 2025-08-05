@@ -45,7 +45,7 @@ struct SendDetailsAddressTab: View {
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("address", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             if viewModel.addressSetupDone {
@@ -68,7 +68,7 @@ struct SendDetailsAddressTab: View {
     
     var selectedAddress: some View {
         Text("\(tx.toAddress)")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .lineLimit(1)
             .truncationMode(.middle)

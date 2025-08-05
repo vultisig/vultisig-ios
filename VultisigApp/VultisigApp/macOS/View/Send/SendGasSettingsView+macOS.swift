@@ -29,7 +29,7 @@ extension SendGasSettingsView {
                     .borderlessTextFieldStyle()
                     .foregroundColor(disabled ? .neutral300 : .neutral0)
                     .tint(.neutral0)
-                    .font(.body16Menlo)
+                    .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.next)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())
@@ -40,7 +40,7 @@ extension SendGasSettingsView {
                 if let label {
                     Text(label)
                         .foregroundColor(.neutral300)
-                        .font(.body16Menlo)
+                        .font(Theme.fonts.bodyMRegular)
                 }
             }
             .padding(.horizontal, 12)

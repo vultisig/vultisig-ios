@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingVaultRegistrationCell: View {
-    @Environment(\.theme) var theme
+    
     
     var body: some View {
         HStack(spacing: 12) {
@@ -30,13 +30,13 @@ struct SettingVaultRegistrationCell: View {
     
     var titleBlock: some View {
         Text(NSLocalizedString("registerYourVaults", comment: ""))
-            .font(theme.fonts.bodySRegular)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.neutral900)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral900)
     }
     

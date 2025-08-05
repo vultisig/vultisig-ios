@@ -50,13 +50,13 @@ struct BackupNowDisclaimer: View {
     
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.alertRed)
     }
     
     var title: some View {
         Text(NSLocalizedString("backupYourVaultNow", comment: ""))
-            .font(.body16MontserratSemiBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
@@ -64,7 +64,7 @@ struct BackupNowDisclaimer: View {
     
     var chevron: some View {
         Image(systemName: "chevron.forward")
-            .font(.body12MenloMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
     }
 }

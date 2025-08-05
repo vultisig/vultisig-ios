@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 extension SendCryptoAddressTextField {
     var container: some View {
         content
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -60,7 +60,7 @@ extension SendCryptoAddressTextField {
                 }
             ))
             .foregroundColor(.neutral0)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()

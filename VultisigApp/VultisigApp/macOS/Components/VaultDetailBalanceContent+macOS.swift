@@ -24,7 +24,7 @@ extension VaultDetailBalanceContent {
                 Label("", systemImage: homeViewModel.hideVaultBalance ? "eye.slash" : "eye")
                     .labelsHidden()
                     .foregroundColor(.neutral0)
-                    .font(.body16Menlo)
+                    .font(Theme.fonts.bodyMRegular)
             }
             .contentTransition(.symbolEffect(.replace))
         }

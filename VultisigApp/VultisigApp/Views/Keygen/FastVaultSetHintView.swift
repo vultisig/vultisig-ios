@@ -31,12 +31,12 @@ struct FastVaultSetHintView: View {
     var hintField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
-                .font(.body34BrockmannMedium)
+                .font(Theme.fonts.largeTitle)
                 .foregroundColor(.neutral0)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.extraLightGray)
             
             hintTextfield
@@ -52,7 +52,7 @@ struct FastVaultSetHintView: View {
                     .textEditorStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .foregroundColor(.neutral500)
-                    .font(.body16BrockmannMedium)
+                    .font(Theme.fonts.bodyMMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
                     .focused($isFocused)
@@ -72,7 +72,7 @@ struct FastVaultSetHintView: View {
                     HStack {
                         Text(NSLocalizedString("enterHint", comment: ""))
                             .foregroundColor(.neutral500)
-                            .font(.body16BrockmannMedium)
+                            .font(Theme.fonts.bodyMMedium)
                             .padding(.top, 8)
                             .padding(.leading, 5)
                         Spacer()

@@ -105,7 +105,7 @@ struct NavigationHomeEditButton: View {
             deleteFolder()
         } label: {
             Image(systemName: "trash")
-                .font(.body18MenloBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(.miamiMarmalade)
         }
     }
@@ -113,7 +113,7 @@ struct NavigationHomeEditButton: View {
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(tint)
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     private func deleteFolder() {

@@ -28,15 +28,15 @@ struct CoinPickerCell: View {
                     Text(coin.ticker)
                     Spacer()
                     Text(coin.balanceString)
-                        .font(.body12MenloBold)
+                        .font(Theme.fonts.caption12)
                     
                     Text(coin.balanceInFiat)
                 }
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
 
                 Text(coin.address)
-                    .font(.body12MenloBold)
+                    .font(Theme.fonts.caption12)
                     .foregroundColor(.turquoise400)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(1)

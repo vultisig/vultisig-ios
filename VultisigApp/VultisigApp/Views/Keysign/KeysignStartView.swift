@@ -48,7 +48,7 @@ struct KeysignStartView: View {
     var title: some View {
         Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
             .preferredColorScheme(.dark)
-            .font(.body22BrockmannMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.neutral0)
     }
     
@@ -64,7 +64,7 @@ struct KeysignStartView: View {
             Text(viewModel.localPartyID)
                 .padding(.leading)
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.extraLightGray)
     }
 }

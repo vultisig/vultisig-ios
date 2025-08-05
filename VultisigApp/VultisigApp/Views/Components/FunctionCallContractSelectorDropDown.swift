@@ -51,7 +51,7 @@ struct FunctionCallContractSelectorDropDown: View {
             }
         }
         .redacted(reason: selected.rawValue.isEmpty ? .placeholder : [])
-        .font(.body16Menlo)
+        .font(Theme.fonts.bodyMRegular)
         .foregroundColor(.neutral0)
         .frame(height: 48)
     }
@@ -72,14 +72,14 @@ struct FunctionCallContractSelectorDropDown: View {
     private func getCell(for item: FunctionCallContractType) -> some View {
         HStack(spacing: 12) {
             Text(item.getDescription(for: coin))
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
             
             Spacer()
             
             if selected == item {
                 Image(systemName: "checkmark")
-                    .font(.body16Menlo)
+                    .font(Theme.fonts.bodyMRegular)
                     .foregroundColor(.neutral0)
             }
         }

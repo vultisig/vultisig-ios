@@ -16,7 +16,7 @@ struct HomeHeader: View {
     
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
-    @Environment(\.theme) var theme
+    
     
     var body: some View {
         HStack(spacing: 22) {
@@ -80,7 +80,7 @@ struct HomeHeader: View {
                 
                 if viewModel.selectedVault != nil {
                     Image(systemName: "chevron.up")
-                        .font(theme.fonts.caption10)
+                        .font(Theme.fonts.caption10)
                         .bold()
                         .foregroundColor(.neutral0)
                         .rotationEffect(.degrees(showVaultsList ? 0 : 180))

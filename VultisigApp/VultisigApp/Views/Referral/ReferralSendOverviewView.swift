@@ -50,7 +50,7 @@ struct ReferralSendOverviewView: View {
     var headerTitle: some View {
         Text(NSLocalizedString("sendOverview", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var content: some View {
@@ -76,7 +76,7 @@ struct ReferralSendOverviewView: View {
     var title: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.lightText)
     }
     
@@ -95,7 +95,7 @@ struct ReferralSendOverviewView: View {
             
             Spacer()
         }
-        .font(.body18BrockmannMedium)
+        .font(Theme.fonts.bodyLMedium)
     }
     
     var separator: some View {
@@ -165,7 +165,7 @@ struct ReferralSendOverviewView: View {
                     .truncationMode(.middle)
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getVaultAddress() -> String? {

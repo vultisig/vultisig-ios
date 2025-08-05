@@ -81,7 +81,7 @@ struct OnboardingSummaryView: View {
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 12)

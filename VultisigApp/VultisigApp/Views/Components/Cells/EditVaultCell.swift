@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct EditVaultCell: View {
-    @Environment(\.theme) var theme
     let title: String
     let description: String
     // TODO: - To remove after we moved all icons to new Design System
@@ -47,7 +46,7 @@ struct EditVaultCell: View {
     
     var image: some View {
         iconImage
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(isDestructive ? .destructive : .neutral200)
             .frame(width: 30)
     }
@@ -63,18 +62,18 @@ struct EditVaultCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(NSLocalizedString(title, comment: ""))
-                .font(theme.fonts.bodySRegular)
+                .font(Theme.fonts.bodySRegular)
                 .foregroundColor(isDestructive ? .destructive : .neutral0)
             
             Text(NSLocalizedString(description, comment: ""))
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(isDestructive ? .destructive : .neutral300)
         }
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body20Menlo)
+            .font(Theme.fonts.bodyLRegular)
             .foregroundColor(isDestructive ? .destructive : .neutral0)
     }
 }

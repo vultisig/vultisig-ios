@@ -54,7 +54,7 @@ struct SwapPercentageButtons: View {
     
     private func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(isSelected ? Color.white : .neutral0)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)

@@ -25,7 +25,7 @@ struct SecurityScannerHeaderView: View {
                 }
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundStyle(Color.lightText)
         .frame(height: 20)
         .transition(.opacity)

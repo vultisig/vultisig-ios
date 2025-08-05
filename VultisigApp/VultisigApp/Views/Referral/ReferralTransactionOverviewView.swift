@@ -52,12 +52,12 @@ struct ReferralTransactionOverviewView: View {
                 .cornerRadius(32)
             
             Text("\(sendTx.amount) RUNE")
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
                 .padding(.top, 12)
             
             Text("\(referralViewModel.totalFeeFiat)")
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.extraLightGray)
         }
         .frame(maxWidth: .infinity)
@@ -76,7 +76,7 @@ struct ReferralTransactionOverviewView: View {
             Spacer()
             Image(systemName: "chevron.right")
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.lightText)
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
@@ -108,7 +108,7 @@ struct ReferralTransactionOverviewView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var detailView: some View {
@@ -118,7 +118,7 @@ struct ReferralTransactionOverviewView: View {
     var headerTitle: some View {
         Text(NSLocalizedString("overview", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
     }

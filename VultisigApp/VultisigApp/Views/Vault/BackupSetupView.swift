@@ -46,19 +46,19 @@ struct BackupSetupView: View {
     var labels: some View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("backupSetupTitle", comment: ""))
-                .font(.body34BrockmannMedium)
+                .font(Theme.fonts.largeTitle)
                 .foregroundColor(Color.neutral0)
                 .padding(.bottom, 16)
                 .multilineTextAlignment(.center)
 
             Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(Color.extraLightGray)
                 .multilineTextAlignment(.center)
 
             Link(destination: StaticURL.VultBackupURL) {
                 Text(NSLocalizedString("learnMore", comment: ""))
-                    .font(.body14BrockmannMedium)
+                    .font(Theme.fonts.bodySMedium)
                     .foregroundColor(Color.lightText)
                     .underline()
             }

@@ -10,7 +10,7 @@ import SwiftUI
 struct NetworkPromptCell: View {
     let network: NetworkPromptType
     let isSelected: Bool
-    @Environment(\.theme) var theme
+    
     
     var body: some View {
         content
@@ -19,11 +19,11 @@ struct NetworkPromptCell: View {
     var phoneCell: some View {
         HStack(spacing: 8) {
             network.getImage()
-                .font(theme.fonts.bodySRegular)
+                .font(Theme.fonts.bodySRegular)
                 .foregroundColor(.turquoise600)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
-                .font(theme.fonts.caption10)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.neutral0)
         }
         .frame(maxWidth: .infinity)
@@ -36,11 +36,11 @@ struct NetworkPromptCell: View {
     var padCell: some View {
         HStack(spacing: 8) {
             network.getImage()
-                .font(.body20Menlo)
+                .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(.turquoise600)
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
-                .font(.body14MenloBold)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
         }
         .frame(maxWidth: .infinity)

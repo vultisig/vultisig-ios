@@ -42,7 +42,7 @@ struct EmptyPeerCell: View {
     
     var text: some View {
         Text(NSLocalizedString("waitingOnDevice", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral0)
             .lineLimit(2)
             .frame(maxWidth: .infinity, alignment: .leading)

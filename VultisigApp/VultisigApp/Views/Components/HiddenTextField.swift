@@ -31,7 +31,7 @@ struct HiddenTextField: View {
     
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.alertRed)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -74,7 +74,7 @@ struct HiddenTextField: View {
         }
         .submitLabel(.done)
         .colorScheme(.dark)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
     }
     

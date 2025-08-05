@@ -13,7 +13,7 @@ struct ActionButton: View {
     
     var body: some View {
         Text(NSLocalizedString(title, comment: "").uppercased())
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(fontColor)
             .padding(.vertical, 5)
             .frame(maxWidth: .infinity)

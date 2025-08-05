@@ -39,12 +39,12 @@ struct FastVaultEmailView: View {
     var emailField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("enterYourEmail", comment: ""))
-                .font(.body34BrockmannMedium)
+                .font(Theme.fonts.largeTitle)
                 .foregroundColor(.neutral0)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.extraLightGray)
             
             textfield(title: NSLocalizedString("email", comment: ""),text: $email)
@@ -59,7 +59,7 @@ struct FastVaultEmailView: View {
         HStack {
             Text(NSLocalizedString("emptyEmailPleaseCheck", comment: ""))
                 .foregroundColor(.alertRed)
-                .font(.body14Montserrat)
+                .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
         }
@@ -70,7 +70,7 @@ struct FastVaultEmailView: View {
         HStack {
             Text(NSLocalizedString("invalidEmailPleaseCheck", comment: ""))
                 .foregroundColor(.alertRed)
-                .font(.body14Montserrat)
+                .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
         }

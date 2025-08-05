@@ -72,7 +72,7 @@ struct GeneralQRImportMacView: View {
     
     var title: some View {
         Text(getDescription())
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
     }
     

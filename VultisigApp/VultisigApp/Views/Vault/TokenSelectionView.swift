@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct TokenSelectionView: View {
-    @Environment(\.theme) var theme
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -50,7 +49,7 @@ struct TokenSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)
@@ -70,7 +69,7 @@ struct TokenSelectionView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
             
@@ -89,7 +88,7 @@ struct TokenSelectionView: View {
             if tokenViewModel.searchText.isEmpty {
                 if !tokenViewModel.selectedTokens.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
-                        .font(.body16MenloBold)
+                        .font(Theme.fonts.bodyMMedium)
                         .foregroundColor(.neutral0)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -105,7 +104,7 @@ struct TokenSelectionView: View {
                 Section(
                     header:
                         Text(NSLocalizedString("tokens", comment:"Tokens"))
-                        .font(.body16MenloBold)
+                        .font(Theme.fonts.bodyMMedium)
                         .foregroundColor(.neutral0)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -118,7 +117,7 @@ struct TokenSelectionView: View {
                 }
             } else {
                 Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))
-                    .font(.body16MenloBold)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)) {
@@ -134,7 +133,7 @@ struct TokenSelectionView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                             Text("Searching...")
-                                .font(theme.fonts.bodySRegular)
+                                .font(Theme.fonts.bodySRegular)
                                 .foregroundColor(.neutral0)
                         }
                         .padding(.horizontal, 16)

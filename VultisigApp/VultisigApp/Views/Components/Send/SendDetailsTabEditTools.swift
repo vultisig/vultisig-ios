@@ -16,7 +16,7 @@ struct SendDetailsTabEditTools: View {
             checkmark
             editButton
         }
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
     }
     
     var checkmark: some View {

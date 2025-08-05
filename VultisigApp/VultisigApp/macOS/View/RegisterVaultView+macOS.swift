@@ -32,7 +32,7 @@ extension RegisterVaultView {
             deleteButton
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
         .padding(.horizontal, 40)
     }

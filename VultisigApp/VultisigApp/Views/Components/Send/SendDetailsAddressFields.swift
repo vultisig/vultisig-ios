@@ -42,7 +42,7 @@ struct SendDetailsAddressFields: View {
                 .truncationMode(.middle)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body12BrockmannMedium).padding(.vertical, 10)
+        .font(Theme.fonts.caption12).padding(.vertical, 10)
         .padding(.horizontal, 16)
         .background(Color.blue600)
         .cornerRadius(12)
@@ -67,7 +67,7 @@ struct SendDetailsAddressFields: View {
     
     private func getTitle(for title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

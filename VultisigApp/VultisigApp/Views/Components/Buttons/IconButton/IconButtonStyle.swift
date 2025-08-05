@@ -42,8 +42,8 @@ private extension IconButtonStyle {
     
     func font(for size: ButtonSize) -> Font {
         switch size {
-        case .medium, .small: return .body16BrockmannSemiBold
-        case .mini: return .body16BrockmannMedium
+        case .medium, .small: return Theme.fonts.buttonRegularSemibold
+        case .mini: return Theme.fonts.bodyMMedium
         }
     }
     

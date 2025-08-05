@@ -34,7 +34,7 @@ struct LocalModeDisclaimer: View {
     
     var text: some View {
         Text(NSLocalizedString("youAreInLocalMode", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

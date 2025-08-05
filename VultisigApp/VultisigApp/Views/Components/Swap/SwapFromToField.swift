@@ -54,13 +54,13 @@ struct SwapFromToField: View {
     
     var fromToLabel: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
     }
     
     var balance: some View {
         Text("\(coin.balanceString) \(coin.ticker)")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
     }
     
@@ -125,7 +125,7 @@ struct SwapFromToField: View {
     
     var fiatBalance: some View {
         Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .opacity(isFiatVisible() ? 1 : 0)

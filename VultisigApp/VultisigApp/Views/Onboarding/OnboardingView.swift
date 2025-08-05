@@ -81,7 +81,7 @@ struct OnboardingView: View {
                 Text(NSLocalizedString("back", comment: ""))
             }
             .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             .contentShape(Rectangle())
         }
     }
@@ -113,7 +113,7 @@ struct OnboardingView: View {
         } label: {
             Text(NSLocalizedString("skip", comment: ""))
                 .foregroundColor(Color.extraLightGray)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
     }
     
@@ -124,7 +124,7 @@ struct OnboardingView: View {
             Text(NSLocalizedString("seedPhrases", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
         .multilineTextAlignment(.center)
         .opacity(showStartupText ? 1 : 0)
         .offset(y: showStartupText ? 0 : 100)

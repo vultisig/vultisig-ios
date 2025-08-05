@@ -36,7 +36,7 @@ struct VaultDetailBalanceContent: View {
     
     var balanceContent: some View {
         Text(homeViewModel.hideVaultBalance ? redactedText : (homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? ""))
-            .font(.title32MenloBold)
+            .font(Theme.fonts.title1)
             .foregroundColor(.neutral0)
             .padding(.top, 10)
             .multilineTextAlignment(.center)

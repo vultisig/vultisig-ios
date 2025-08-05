@@ -79,13 +79,13 @@ struct ReferredOnboardingGuideAnimation: View {
     var text: some View {
         Text(NSLocalizedString("referralProgram", comment: ""))
             .foregroundColor(.extraLightGray)
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
     }
 
     var title: some View {
         Text(NSLocalizedString("howItWorks", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body34BrockmannMedium)
+            .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
     }
@@ -152,14 +152,14 @@ struct ReferredOnboardingGuideAnimation: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .foregroundColor(.persianBlue200)
-                    .font(.body20MontserratMedium)
+                    .font(Theme.fonts.bodyLMedium)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(NSLocalizedString(title, comment: ""))
-                        .font(.body14BrockmannMedium)
+                        .font(Theme.fonts.bodySMedium)
                     
                     Text(NSLocalizedString(description, comment: ""))
-                        .font(.body10BrockmannMedium)
+                        .font(Theme.fonts.caption10)
                 }
                 .foregroundColor(.neutral0)
                 .frame(maxWidth: .infinity, alignment: .leading)

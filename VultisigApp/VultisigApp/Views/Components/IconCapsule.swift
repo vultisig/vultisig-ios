@@ -32,13 +32,13 @@ struct IconCapsule: View {
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(.lightText)
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
     }
     
     func iconContent(_ icon: String) -> some View {
         Image(systemName: icon)
             .foregroundColor(.turquoise600)
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
     }
 }
 

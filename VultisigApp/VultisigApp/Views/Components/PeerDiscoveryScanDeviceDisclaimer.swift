@@ -36,7 +36,7 @@ struct PeerDiscoveryScanDeviceDisclaimer: View {
     
     var text: some View {
         Text(NSLocalizedString("peerDiscoveryScanDeviceDisclaimer", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

@@ -10,7 +10,6 @@ import RiveRuntime
 import BigInt
 
 struct JoinSwapDoneSummary: View {
-    @Environment(\.theme) var theme
     let vault: Vault
     let keysignViewModel: KeysignViewModel
     let summaryViewModel: JoinKeysignSummaryViewModel
@@ -79,7 +78,7 @@ struct JoinSwapDoneSummary: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var fromToCards: some View {
@@ -118,7 +117,7 @@ struct JoinSwapDoneSummary: View {
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(.disabledText)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Color.blue600)
@@ -199,11 +198,11 @@ struct JoinSwapDoneSummary: View {
             }
             
             Text(title)
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.extraLightGray)
         }
         .frame(height: 130)
@@ -253,7 +252,7 @@ struct JoinSwapDoneSummary: View {
             }
         }
         .padding(.vertical)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getCopyButton(for value: String?) -> some View {
@@ -262,7 +261,7 @@ struct JoinSwapDoneSummary: View {
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
     }
     

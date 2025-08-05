@@ -39,7 +39,7 @@ extension CustomTokenView {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18Menlo)
+                        .font(Theme.fonts.bodyLRegular)
                         .foregroundColor(Color.neutral0)
                 }
             }

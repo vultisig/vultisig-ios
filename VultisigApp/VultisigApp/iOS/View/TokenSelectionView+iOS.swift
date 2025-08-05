@@ -28,7 +28,7 @@ extension TokenSelectionView {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18MenloBold)
+                        .font(Theme.fonts.bodyLMedium)
                         .foregroundColor(Color.neutral0)
                 }
             }
@@ -81,7 +81,7 @@ extension TokenSelectionView {
 
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
-            .font(.body16Menlo)
+            .font(Theme.fonts.bodyMRegular)
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)

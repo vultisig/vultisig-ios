@@ -40,7 +40,7 @@ struct SendCryptoDoneContentView: View {
                     
                     transactionDetailsButton
                 }
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
                 .foregroundColor(.lightText)
@@ -84,7 +84,7 @@ struct SendCryptoDoneContentView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
@@ -100,11 +100,11 @@ struct SendCryptoDoneContentView: View {
             }
             
             Text(title)
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.extraLightGray)
         }
         .frame(height: 130)

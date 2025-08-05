@@ -25,7 +25,7 @@ struct ServerBackupVerificationHeader: View {
     
     var leadingAction: some View {
         Image(systemName: "chevron.backward")
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(.neutral0)
     }
     

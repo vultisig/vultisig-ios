@@ -58,11 +58,11 @@ struct SendCryptoKeysignView: View {
             
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
             } else {
                 Text(NSLocalizedString("signingTransaction", comment: ""))
-                    .font(.body16MenloBold)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
             }
         }
@@ -78,7 +78,7 @@ struct SendCryptoKeysignView: View {
             ErrorMessage(text: "signInErrorTryAgain")
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
+                    .font(Theme.fonts.bodyMMedium)
                     .foregroundColor(.neutral0)
             }
         }
@@ -110,7 +110,7 @@ struct SendCryptoKeysignView: View {
     
     var appVersion: some View {
         Text("Version \(version ?? "1").\(build ?? "1")")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.extraLightGray)
             .padding(.bottom, 30)
     }

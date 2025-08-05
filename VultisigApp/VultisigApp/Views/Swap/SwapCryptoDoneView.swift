@@ -9,7 +9,6 @@ import SwiftUI
 import RiveRuntime
 
 struct SwapCryptoDoneView: View {
-    @Environment(\.theme) var theme
     let tx: SwapTransaction
     let vault: Vault
     let hash: String
@@ -76,7 +75,7 @@ struct SwapCryptoDoneView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var fromToCards: some View {
@@ -121,7 +120,7 @@ struct SwapCryptoDoneView: View {
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
             .foregroundColor(.disabledText)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
             .background(Color.blue600)
@@ -217,7 +216,7 @@ struct SwapCryptoDoneView: View {
     
     var chevron: some View {
         Image(systemName: "chevron.up")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral0)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
@@ -271,11 +270,11 @@ struct SwapCryptoDoneView: View {
             .padding(.bottom, 8)
             
             Text(title)
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
             
             Text(description.formatToFiat(includeCurrencySymbol: true))
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .foregroundColor(.extraLightGray)
         }
         .frame(height: 130)
@@ -325,7 +324,7 @@ struct SwapCryptoDoneView: View {
             }
         }
         .padding(.vertical)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getCopyButton(for value: String) -> some View {
@@ -334,7 +333,7 @@ struct SwapCryptoDoneView: View {
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
     }
 }

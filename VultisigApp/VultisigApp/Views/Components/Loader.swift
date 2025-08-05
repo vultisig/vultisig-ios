@@ -27,7 +27,7 @@ struct Loader: View {
                 .scaleEffect(1.5)
             
             Text(NSLocalizedString("pleaseWait", comment: ""))
-                .font(.body16MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
         }
         .frame(width: 180, height: 120)

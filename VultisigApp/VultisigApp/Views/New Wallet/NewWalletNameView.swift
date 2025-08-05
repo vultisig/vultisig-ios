@@ -38,7 +38,7 @@ struct NewWalletNameView: View {
     }
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.alertRed)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
@@ -46,7 +46,7 @@ struct NewWalletNameView: View {
     var textfield: some View {
         HStack {
             TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
                 .focused($isNameFocused)
@@ -100,12 +100,12 @@ struct NewWalletNameView: View {
     var fields: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("nameYourVault", comment: ""))
-                .font(.body34BrockmannMedium)
+                .font(Theme.fonts.largeTitle)
                 .foregroundColor(.neutral0)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.extraLightGray)
             
             textfield

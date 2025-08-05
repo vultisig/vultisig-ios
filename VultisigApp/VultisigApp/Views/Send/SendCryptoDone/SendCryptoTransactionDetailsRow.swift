@@ -66,7 +66,7 @@ struct SendCryptoTransactionDetailsRow: View {
                 }
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .foregroundColor(.neutral0)
     }
 }

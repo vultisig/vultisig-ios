@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct KeysignCustomMessageConfirmView: View {
-    @Environment(\.theme) var theme
     @ObservedObject var viewModel: JoinKeysignViewModel
 
     var body: some View {
@@ -25,7 +24,7 @@ struct KeysignCustomMessageConfirmView: View {
     var title: some View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
-            .font(.body20MontserratSemiBold)
+            .font(Theme.fonts.bodyLMedium)
     }
 
     var summary: some View {
@@ -66,10 +65,10 @@ struct KeysignCustomMessageConfirmView: View {
     private func getPrimaryCell(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
-                .font(.body20MontserratSemiBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(.neutral0)
             Text(value)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -81,7 +80,7 @@ struct KeysignCustomMessageConfirmView: View {
             Spacer()
             Text(value)
         }
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral0)
     }
 }

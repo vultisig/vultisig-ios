@@ -88,13 +88,13 @@ struct SecureBackupGuideAnimation: View {
     var text: some View {
         Text(NSLocalizedString("secureVault", comment: ""))
             .foregroundColor(.extraLightGray)
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
     }
 
     var title: some View {
         Text(NSLocalizedString("backupGuide", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body34BrockmannMedium)
+            .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
     }
@@ -132,7 +132,7 @@ struct SecureBackupGuideAnimation: View {
                     .foregroundColor(.neutral0)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .padding(16)
             .background(Color.blue600)
             .cornerRadius(16)

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ChainCell: View {
-    @Environment(\.theme) var theme
     @ObservedObject var group: GroupedChain
     @Binding var isEditingChains: Bool
     
@@ -41,7 +40,7 @@ struct ChainCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditingChains ? nil : 0)
             .clipped()
@@ -69,13 +68,13 @@ struct ChainCell: View {
     
     var title: some View {
         Text(group.name)
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral0)
     }
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
             .truncationMode(.middle)
@@ -83,7 +82,7 @@ struct ChainCell: View {
     
     var count: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : viewModel.getGroupCount(group))
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral100)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
@@ -93,13 +92,13 @@ struct ChainCell: View {
     
     var quantity: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
-            .font(theme.fonts.caption12)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.neutral100)
     }
     
     var balance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral100)
     }
 }

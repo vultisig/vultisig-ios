@@ -41,7 +41,7 @@ struct KeysignDiscoveryDisclaimer: View {
         NSLocalizedString("keysignDiscoveryDisclaimerDevice", comment: "")
         
         return Text(value)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

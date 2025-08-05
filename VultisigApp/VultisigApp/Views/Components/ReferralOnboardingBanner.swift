@@ -45,7 +45,7 @@ struct ReferralOnboardingBanner: View {
             Text(NSLocalizedString("referralOnboardingBannerTitle3", comment: ""))
                 .foregroundColor(.neutral0)
         }
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
         .multilineTextAlignment(.center)
     }
     
@@ -80,7 +80,7 @@ struct ReferralOnboardingBanner: View {
     
     var closeLabel: some View {
         Image(systemName: "xmark")
-            .font(.body22BrockmannMedium)
+            .font(Theme.fonts.title2)
             .foregroundColor(.neutral0)
     }
     

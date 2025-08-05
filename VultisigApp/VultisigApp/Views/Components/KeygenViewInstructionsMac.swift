@@ -79,20 +79,20 @@ struct KeygenViewInstructionsMac: View {
     private func getTitle(for index: Int) -> some View {
         Text(NSLocalizedString("keygenInstructionsCar\(index+1)Title", comment: ""))
             .foregroundColor(.neutral0)
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
     }
     
     private func getDescription(for index: Int) -> some View {
         Group {
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart1", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body12MontserratSemiBold) +
+                .font(Theme.fonts.caption12) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart2", comment: ""))
                 .foregroundColor(.turquoise400)
-                .font(.body12MontserratSemiBold) +
+                .font(Theme.fonts.caption12) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart3", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
         }
         .multilineTextAlignment(.center)
     }

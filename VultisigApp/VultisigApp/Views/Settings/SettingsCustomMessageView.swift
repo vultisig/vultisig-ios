@@ -71,7 +71,7 @@ struct SettingsCustomMessageView: View {
     func title(text: String) -> some View {
         HStack {
             Text(text)
-                .font(.body14Montserrat)
+                .font(Theme.fonts.bodySRegular)
                 .foregroundColor(.white)
 
             Spacer()
@@ -85,7 +85,7 @@ struct SettingsCustomMessageView: View {
                     .borderlessTextFieldStyle()
                     .foregroundColor(.neutral0)
                     .tint(.neutral0)
-                    .font(.body16Menlo)
+                    .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.done)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())

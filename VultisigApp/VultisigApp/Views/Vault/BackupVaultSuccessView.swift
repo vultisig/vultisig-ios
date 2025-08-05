@@ -84,7 +84,7 @@ struct BackupVaultSuccessView: View {
             Text(NSLocalizedString("successfully", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body34BrockmannMedium)
+        .font(Theme.fonts.largeTitle)
         .padding(.horizontal, 32)
         .padding(.bottom, 32)
         .multilineTextAlignment(.center)
@@ -98,7 +98,7 @@ struct BackupVaultSuccessView: View {
             Text(NSLocalizedString("readyToUseNewWalletStandard.", comment: ""))
                 .foregroundColor(.neutral0)
         }
-        .font(.body34BrockmannMedium)
+        .font(Theme.fonts.largeTitle)
         .padding(.horizontal, 32)
         .multilineTextAlignment(.center)
     }

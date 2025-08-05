@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct VaultCell: View {
-    @Environment(\.theme) var theme
-    
     let vault: Vault
     let isEditing: Bool
     
@@ -42,7 +40,7 @@ struct VaultCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
@@ -51,7 +49,7 @@ struct VaultCell: View {
     
     var title: some View {
         Text(vault.name.capitalized)
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
@@ -69,13 +67,13 @@ struct VaultCell: View {
             Text(NSLocalizedString("of", comment: "")) +
             Text("\(viewModel.totalSigners)")
         }
-        .font(theme.fonts.bodySRegular)
+        .font(Theme.fonts.bodySRegular)
         .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(theme.fonts.bodySRegular)
+            .font(Theme.fonts.bodySRegular)
             .foregroundColor(.body)
             .padding(4)
             .padding(.horizontal, 2)
@@ -86,7 +84,7 @@ struct VaultCell: View {
     
     var selectOption: some View {
         Image(systemName: "chevron.right")
-            .font(.body16MontserratBold)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditing ? 0 : nil)
             .clipped()

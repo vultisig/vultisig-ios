@@ -14,7 +14,7 @@ struct MemoTextField: View {
     
     var body: some View {
         container
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
             .padding(16)
             .background(Color.blue600)
             .cornerRadius(12)

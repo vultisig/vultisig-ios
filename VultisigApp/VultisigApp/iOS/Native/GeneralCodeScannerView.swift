@@ -88,7 +88,7 @@ struct GeneralCodeScannerView: View {
             helpButton
         }
         .foregroundColor(.neutral0)
-        .font(.body18BrockmannMedium)
+        .font(Theme.fonts.bodyLMedium)
         .padding(16)
         .offset(y: 8)
     }

@@ -12,7 +12,7 @@ struct NavigationEditButton: View {
     
     var body: some View {
         Image(systemName: "square.and.pencil")
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)
             .offset(x: 8)
     }

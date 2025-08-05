@@ -46,7 +46,7 @@ struct BackupVaultWarningView: View {
             
             Text("Skip Backup")
                 .foregroundColor(.neutral0)
-                .font(.body20MontserratSemiBold)
+                .font(Theme.fonts.bodyLMedium)
             
             Spacer()
             Spacer()
@@ -59,7 +59,7 @@ struct BackupVaultWarningView: View {
         Checkbox(
             isChecked: $isChecked,
             text: "backupNowCheckbox",
-            font: .body14MenloBold,
+            font: Theme.fonts.bodySMedium,
             alignment: .leading
         )
         .padding(.horizontal, 28)

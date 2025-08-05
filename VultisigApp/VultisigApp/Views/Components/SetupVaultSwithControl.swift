@@ -65,11 +65,11 @@ struct SetupVaultSwithControl: View {
     var secureButtonLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: "shield")
-                .font(.body20Menlo)
+                .font(Theme.fonts.bodyLRegular)
                 .foregroundColor(selectedTab == .secure ? .alertTurquoise : .neutral0)
             
             Text(NSLocalizedString("secure", comment: ""))
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
         }
         .frame(height: 44)
@@ -88,7 +88,7 @@ struct SetupVaultSwithControl: View {
             }
             
             Text(NSLocalizedString("fast", comment: ""))
-                .font(.body14MontserratMedium)
+                .font(Theme.fonts.bodySMedium)
                 .foregroundColor(.neutral0)
         }
         .frame(height: 44)
@@ -98,7 +98,7 @@ struct SetupVaultSwithControl: View {
     
     var boltImage: some View {
         Image(systemName: "bolt")
-            .font(.body20Menlo)
+            .font(Theme.fonts.bodyLRegular)
     }
     
     private func handleSwitch(_ option: SetupVaultState) {

@@ -57,7 +57,7 @@ extension VaultDetailView {
         } label: {
             chooseChainButtonLabel
         }
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.turquoise600)
     }
     

@@ -9,7 +9,6 @@ import SwiftUI
 import WalletCore
 
 struct SwapCustomTokenView: View {
-    @Environment(\.theme) var theme
     let vault: Vault
     let chain: Chain
     @Binding var showSheet: Bool
@@ -53,7 +52,7 @@ struct SwapCustomTokenView: View {
                     showSheet = false
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18Menlo)
+                        .font(Theme.fonts.bodyLRegular)
                         .foregroundColor(Color.neutral0)
                 }
             }
@@ -103,7 +102,7 @@ struct SwapCustomTokenView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
             
@@ -124,15 +123,15 @@ struct SwapCustomTokenView: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(self.token?.ticker ?? .empty)
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(.neutral0)
             
             Text(self.token?.chain.name ?? .empty)
-                .font(.body12MontserratSemiBold)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.neutral0)
             
             Text(contractAddress)
-                .font(theme.fonts.caption12)
+                .font(Theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
         }
     }

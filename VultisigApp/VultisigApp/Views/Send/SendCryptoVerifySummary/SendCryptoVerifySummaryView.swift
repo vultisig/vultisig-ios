@@ -100,7 +100,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
             .foregroundColor(.lightText)
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -120,7 +120,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             
             Spacer()
         }
-        .font(.body18BrockmannMedium)
+        .font(Theme.fonts.bodyLMedium)
     }
     
     func getValueCell(
@@ -166,7 +166,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             }
             
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

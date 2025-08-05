@@ -161,7 +161,7 @@ struct SwapVerifyView: View {
     
     var chevronIcon: some View {
         Image(systemName: "arrow.down")
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
             .foregroundColor(.persianBlue200)
             .padding(6)
             .background(Color.blue400)
@@ -171,7 +171,7 @@ struct SwapVerifyView: View {
     
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSwapping", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .foregroundColor(.lightText)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -282,7 +282,7 @@ struct SwapVerifyView: View {
             }
             
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -295,7 +295,7 @@ struct SwapVerifyView: View {
             Spacer()
             Text(value)
         }
-        .font(.body16MenloBold)
+        .font(Theme.fonts.bodyMMedium)
         .foregroundColor(.neutral100)
     }
     
@@ -312,7 +312,7 @@ struct SwapVerifyView: View {
                 Text(ticker)
                     .foregroundColor(.extraLightGray)
             }
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             
             if let chain {
                 HStack(spacing: 2) {
@@ -329,7 +329,7 @@ struct SwapVerifyView: View {
                     
                     Spacer()
                 }
-                .font(.body10BrockmannMedium)
+                .font(Theme.fonts.caption10)
                 .offset(x: 2)
             }
         }
