@@ -11,7 +11,7 @@ struct CoinCell: View {
             content
         }
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
     
     var logo: some View {

@@ -20,7 +20,7 @@ struct SetupVaultSwithControl: View {
             content
         }
         .padding(6)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(100)
         .frame(height: 56)
     }
@@ -28,7 +28,7 @@ struct SetupVaultSwithControl: View {
     var capsule: some View {
         HStack {
             RoundedRectangle(cornerRadius: 100)
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
                 .frame(width: (width/2))
                 .offset(x: selectedTab == .fast ? 0 : (width/2))
             

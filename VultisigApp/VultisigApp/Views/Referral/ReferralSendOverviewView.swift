@@ -69,7 +69,7 @@ struct ReferralSendOverviewView: View {
             overview
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
     }
     

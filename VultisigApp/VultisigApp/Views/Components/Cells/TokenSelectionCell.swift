@@ -9,7 +9,7 @@ struct TokenSelectionCell: View {
     
     var body: some View {
         ZStack {
-            Color.blue600
+            Theme.colors.bgSecondary
                 .cornerRadius(10)
                 .onTapGesture {
                     isSelected.toggle()

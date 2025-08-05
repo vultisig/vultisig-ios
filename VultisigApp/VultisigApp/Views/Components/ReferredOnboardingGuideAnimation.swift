@@ -27,7 +27,7 @@ struct ReferredOnboardingGuideAnimation: View {
     var rectangle: some View {
         Rectangle()
             .frame(width: 2, height: contentHeight-cellHeight+6)
-            .foregroundColor(.blue600)
+            .foregroundColor(Theme.colors.bgSecondary)
             .offset(y: -2)
     }
 
@@ -62,7 +62,7 @@ struct ReferredOnboardingGuideAnimation: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(32)
         .overlay(
             RoundedRectangle(cornerRadius: 32)
@@ -147,7 +147,7 @@ struct ReferredOnboardingGuideAnimation: View {
         HStack(spacing: 0){
             Rectangle()
                 .frame(width: 22, height: 2)
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
@@ -165,7 +165,7 @@ struct ReferredOnboardingGuideAnimation: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(16)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)

@@ -17,7 +17,7 @@ struct ActionButton: View {
             .foregroundColor(fontColor)
             .padding(.vertical, 5)
             .frame(maxWidth: .infinity)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(50)
             .overlay(
                 RoundedRectangle(cornerRadius: 50)

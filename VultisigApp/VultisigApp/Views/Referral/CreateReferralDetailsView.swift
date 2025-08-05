@@ -138,7 +138,7 @@ struct CreateReferralDetailsView: View {
         .frame(height: 56)
         .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -231,7 +231,7 @@ struct CreateReferralDetailsView: View {
                 Image(systemName: icon)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(Color.blue600)
+                    .background(Theme.colors.bgSecondary)
                     .font(Theme.fonts.title2)
             } else if let value {
                 Text(value)
@@ -245,7 +245,7 @@ struct CreateReferralDetailsView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     

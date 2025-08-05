@@ -31,7 +31,7 @@ struct SwapPercentageButtons: View {
     var separator: some View {
         Rectangle()
             .frame(height: 1)
-            .foregroundColor(.blue400)
+            .foregroundColor(Theme.colors.bgTertiary)
     }
     
     var buttons: some View {
@@ -58,7 +58,7 @@ struct SwapPercentageButtons: View {
             .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.blue800 : Color.blue600)
+            .background(isSelected ? Color.blue800 : Theme.colors.bgSecondary)
             .cornerRadius(32)
     }
 }

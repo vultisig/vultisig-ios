@@ -175,7 +175,7 @@ struct SendCryptoDetailsView: View {
             .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(6)
     }
     

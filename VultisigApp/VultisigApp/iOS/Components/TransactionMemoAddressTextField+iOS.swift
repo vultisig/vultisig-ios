@@ -16,7 +16,7 @@ extension FunctionCallAddressTextField {
             .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .sheet(isPresented: $showScanner) {
                 codeScanner

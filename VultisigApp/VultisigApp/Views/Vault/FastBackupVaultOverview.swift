@@ -110,7 +110,7 @@ struct FastBackupVaultOverview: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? .turquoise400 : .blue400)
+                    .foregroundColor(index <= tabIndex ? .turquoise400 : Theme.colors.bgTertiary)
                     .animation(.easeInOut, value: tabIndex)
             }
         }

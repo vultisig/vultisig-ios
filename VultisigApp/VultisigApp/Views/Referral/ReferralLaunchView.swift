@@ -145,7 +145,7 @@ struct ReferralLaunchView: View {
         .frame(height: 56)
         .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

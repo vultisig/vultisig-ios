@@ -111,7 +111,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
                             .foregroundColor(Theme.colors.textPrimary)
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue600)
+                            .background(Theme.colors.bgSecondary)
                             .cornerRadius(32)
                     }
                 }
@@ -129,7 +129,7 @@ struct UnstakeView: View {
             .font(Theme.fonts.bodyMRegular)
             .foregroundColor(Theme.colors.textPrimary)
             .padding(12)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
     }
@@ -141,7 +141,7 @@ struct UnstakeView: View {
                 
                 Rectangle()
                     .frame(height: 1)
-                    .foregroundColor(.blue400)
+                    .foregroundColor(Theme.colors.bgTertiary)
             }
             .frame(maxWidth: .infinity)
             

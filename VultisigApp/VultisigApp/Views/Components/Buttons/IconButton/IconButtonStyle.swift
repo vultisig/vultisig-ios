@@ -69,7 +69,7 @@ private extension IconButtonStyle {
             if !isEnabled {
                 return .disabledButtonBackground
             } else if isPressed {
-                return .blue500
+                return Theme.colors.bgButtonSecondaryPressed
             } else {
                 return .disabledButtonBackground
             }

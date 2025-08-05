@@ -43,7 +43,7 @@ struct PasswordBackupOptionsView: View {
             .font(Theme.fonts.title1)
             .foregroundColor(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(16)
     }
     

@@ -32,7 +32,7 @@ struct VaultDeletionDetails: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear() {
             setData()

@@ -123,7 +123,7 @@ struct SwapCryptoDoneView: View {
             .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(60)
             .padding(8)
             .background(Color.backgroundBlue)
@@ -182,7 +182,7 @@ struct SwapCryptoDoneView: View {
             otherFees
         }
         .padding(.horizontal, 24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -279,7 +279,7 @@ struct SwapCryptoDoneView: View {
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)

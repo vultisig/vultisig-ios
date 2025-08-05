@@ -41,7 +41,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
             .foregroundColor(foregroundColor)
             .submitLabel(.done)
             .padding(12)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
             .onAppear {

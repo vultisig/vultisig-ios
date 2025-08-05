@@ -24,7 +24,7 @@ struct Search: View {
             }
         }
         .padding(18)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(cornerRadius)
         .colorScheme(.dark)
     }

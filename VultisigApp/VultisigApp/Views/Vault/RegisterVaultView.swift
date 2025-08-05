@@ -62,7 +62,7 @@ struct RegisterVaultView: View {
             .foregroundColor(.turquoise600)
             .padding(.vertical, 12)
             .padding(.horizontal, 28)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
     }
     

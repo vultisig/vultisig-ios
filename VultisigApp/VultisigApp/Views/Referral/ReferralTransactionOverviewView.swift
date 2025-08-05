@@ -62,11 +62,11 @@ struct ReferralTransactionOverviewView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -80,11 +80,11 @@ struct ReferralTransactionOverviewView: View {
         .foregroundColor(.lightText)
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
         .padding(.top, 8)
     }

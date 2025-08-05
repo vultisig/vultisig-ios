@@ -28,7 +28,7 @@ struct NetworkPromptCell: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(isSelected ? Theme.colors.border : Color.blue400)
+        .background(isSelected ? Theme.colors.border : Theme.colors.bgTertiary)
         .cornerRadius(20)
         .padding(.horizontal, 8)
     }
@@ -45,7 +45,7 @@ struct NetworkPromptCell: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(isSelected ? Theme.colors.border : Color.blue400)
+        .background(isSelected ? Theme.colors.border : Theme.colors.bgTertiary)
         .cornerRadius(20)
         .overlay (
             RoundedRectangle(cornerRadius: 20)

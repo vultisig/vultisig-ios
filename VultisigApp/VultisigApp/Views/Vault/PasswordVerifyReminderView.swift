@@ -117,7 +117,7 @@ struct PasswordVerifyReminderView: View {
         .borderlessTextFieldStyle()
         .frame(height: 56)
         .padding(.horizontal, 24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

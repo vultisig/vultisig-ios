@@ -133,7 +133,7 @@ struct SendDetailsAmountTab: View {
         .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .padding(.vertical, 8)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
     
@@ -155,7 +155,7 @@ struct SendDetailsAmountTab: View {
             .frame(maxWidth: .infinity)
             .overlay(
                 RoundedRectangle(cornerRadius: 32)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
     }
     

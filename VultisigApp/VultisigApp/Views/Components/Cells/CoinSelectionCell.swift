@@ -21,7 +21,7 @@ struct CoinSelectionCell: View {
         }
         .frame(height: 72)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear {
             setData()

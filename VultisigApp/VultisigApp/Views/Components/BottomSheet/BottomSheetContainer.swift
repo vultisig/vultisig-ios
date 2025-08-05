@@ -22,7 +22,7 @@ struct BottomSheetContainer<Content: View>: View {
                 .cornerRadius(99)
             content
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .padding(.top, 8)
         .padding(.horizontal, 16)
     }

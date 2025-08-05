@@ -44,11 +44,11 @@ struct SendCryptoDoneContentView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
                 .foregroundColor(.lightText)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue400, lineWidth: 1)
+                        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
                 )
             }
         }
@@ -109,11 +109,11 @@ struct SendCryptoDoneContentView: View {
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
 }

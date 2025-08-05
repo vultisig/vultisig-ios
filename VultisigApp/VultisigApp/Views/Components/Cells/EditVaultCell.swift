@@ -39,7 +39,7 @@ struct EditVaultCell: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .frame(height: 70)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }

@@ -88,7 +88,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             getValueCell(for: "estNetworkFee", with: input.feeCrypto, secondRowText: input.feeFiat)
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)

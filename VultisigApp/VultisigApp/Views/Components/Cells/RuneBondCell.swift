@@ -29,7 +29,7 @@ struct RuneBondCell: View {
             contentView
         }
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
     
     var logoView: some View {

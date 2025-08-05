@@ -111,7 +111,7 @@ extension TokenSelectionView {
         }
         .padding(.horizontal, 32)
         .frame(height: 44)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
 }

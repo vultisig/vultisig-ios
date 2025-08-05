@@ -138,7 +138,7 @@ struct SwapChainPickerView: View {
             .padding(.horizontal, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .padding(.bottom, 12)
     }

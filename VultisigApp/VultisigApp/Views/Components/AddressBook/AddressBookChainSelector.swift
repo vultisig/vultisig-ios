@@ -23,7 +23,7 @@ struct AddressBookChainSelector: View {
             }
         }
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     

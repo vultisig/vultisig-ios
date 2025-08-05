@@ -69,7 +69,7 @@ struct CreateFolderView: View {
         .submitLabel(.done)
         .padding(12)
         .padding(.vertical, 3)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()

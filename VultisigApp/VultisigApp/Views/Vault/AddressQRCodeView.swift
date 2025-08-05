@@ -51,7 +51,7 @@ struct AddressQRCodeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .padding(24)
             .aspectRatio(contentMode: .fit)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(20)
             .overlay (
                 RoundedRectangle(cornerRadius: 20)

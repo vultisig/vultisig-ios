@@ -112,7 +112,7 @@ struct SwapVerifyView: View {
                 )
             }
             .padding(16)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
         }
     }
@@ -137,7 +137,7 @@ struct SwapVerifyView: View {
     var verticalSeparator: some View {
         Rectangle()
             .frame(width: 1, height: 12)
-            .foregroundColor(.blue400)
+            .foregroundColor(Theme.colors.bgTertiary)
     }
     
     var summaryFromTo: some View {
@@ -164,7 +164,7 @@ struct SwapVerifyView: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(.persianBlue200)
             .padding(6)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(32)
             .bold()
     }
@@ -345,7 +345,7 @@ struct SwapVerifyView: View {
         )
         .overlay(
             Circle()
-                .stroke(Color.blue400, lineWidth: 2)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 2)
         )
     }
 }

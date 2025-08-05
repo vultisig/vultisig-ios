@@ -14,7 +14,7 @@ struct ColorSystem: ColorSystemProtocol {
     
     // Hover on Figma
     var bgButtonPrimaryPressed: Color { .init(hex: "0FBF93") }
-    var bgButtonSecondaryPressed: Color { .init(hex: "3B6A91") }
+    var bgButtonSecondaryPressed: Color { .init(hex: "0E2A41") }
     var bgButtonTertiaryPressed: Color { .init(hex: "1E6AD1") }
     
     var bgButtonDisabled: Color { .init(hex: "0B1A3A") }

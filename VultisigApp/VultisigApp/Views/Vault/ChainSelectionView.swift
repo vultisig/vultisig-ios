@@ -68,7 +68,7 @@ struct ChainSelectionView: View {
         .onChange(of: viewModel.searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
 

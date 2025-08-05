@@ -85,7 +85,7 @@ struct FastVaultSetHintView: View {
         .frame(height: 120)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

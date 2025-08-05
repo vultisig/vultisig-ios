@@ -111,7 +111,7 @@ struct ServerBackupVerificationView: View {
         if showAlert {
             return .alertRed
         } else {
-            return focusedField == index ? Theme.colors.border : .blue400
+            return focusedField == index ? Theme.colors.border : Theme.colors.bgTertiary
         }
     }
 
@@ -124,7 +124,7 @@ struct ServerBackupVerificationView: View {
                 .frame(height: 46)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundColor(Theme.colors.textPrimary)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

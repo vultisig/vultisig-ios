@@ -48,7 +48,7 @@ struct SetupVaultSecureText: View {
            .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
            .frame(height: 2)
            .frame(maxWidth: .infinity)
-           .foregroundColor(Color.blue400)
+           .foregroundColor(Theme.colors.bgTertiary)
            .offset(y: 1)
     }
     
@@ -71,7 +71,7 @@ struct SetupVaultSecureText: View {
         .frame(maxWidth: .infinity,minHeight: 80)
         .font(Theme.fonts.bodySMedium)
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
 }
 

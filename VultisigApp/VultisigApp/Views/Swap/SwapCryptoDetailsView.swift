@@ -119,7 +119,7 @@ struct SwapCryptoDetailsView: View {
         .cornerRadius(60)
         .overlay(
             Circle()
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     

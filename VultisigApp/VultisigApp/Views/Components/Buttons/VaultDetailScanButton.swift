@@ -30,7 +30,7 @@ struct VaultDetailScanButton: View {
             
             Image(systemName: "camera")
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         }
     }
 }

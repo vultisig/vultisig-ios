@@ -66,7 +66,7 @@ struct SettingsBiometryView: View {
         }
         .frame(height: 46)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.top, 16)
     }

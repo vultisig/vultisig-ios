@@ -18,7 +18,7 @@ struct SwapRefreshQuoteCounter: View {
         .animation(.easeInOut, value: timer)
         .padding(.vertical, 6)
         .padding(.horizontal, 12)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(24)
     }
     

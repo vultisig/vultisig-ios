@@ -43,7 +43,7 @@ struct SendDetailsAmountTextField: View {
             }
         }
         .padding(3)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(32)
     }
     

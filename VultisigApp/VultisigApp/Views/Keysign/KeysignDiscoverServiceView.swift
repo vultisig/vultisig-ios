@@ -22,7 +22,7 @@ struct KeysignDiscoverServiceView: View {
         .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(30)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear {
             viewModel.discoverService()

@@ -44,11 +44,11 @@ struct SendDetailsAddressFields: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.caption12).padding(.vertical, 10)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
         .padding(1)
     }

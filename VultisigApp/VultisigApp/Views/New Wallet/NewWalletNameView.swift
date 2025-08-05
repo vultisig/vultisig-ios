@@ -61,7 +61,7 @@ struct NewWalletNameView: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()

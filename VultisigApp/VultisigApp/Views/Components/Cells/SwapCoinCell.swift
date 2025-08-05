@@ -31,7 +31,7 @@ struct SwapCoinCell: View {
             Separator()
                 .opacity(0.2)
         }
-        .background(isSelected ? Color.blue400 : Color.blue600)
+        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
     
     var content: some View {
@@ -74,7 +74,7 @@ struct SwapCoinCell: View {
             .padding(.horizontal, 12)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
     }
     
@@ -83,7 +83,7 @@ struct SwapCoinCell: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(.alertTurquoise)
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(32)
             .bold()
     }

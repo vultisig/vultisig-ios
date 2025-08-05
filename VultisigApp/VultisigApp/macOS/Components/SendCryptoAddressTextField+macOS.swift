@@ -16,7 +16,7 @@ extension SendCryptoAddressTextField {
             .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .fileImporter(
                 isPresented: $showImagePicker,
@@ -43,7 +43,7 @@ extension SendCryptoAddressTextField {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(sendCryptoViewModel.showAddressAlert ? .alertYellow : Color.blue400, lineWidth: 1)
+                    .stroke(sendCryptoViewModel.showAddressAlert ? .alertYellow : Theme.colors.bgTertiary, lineWidth: 1)
             )
             .padding(1)
     }

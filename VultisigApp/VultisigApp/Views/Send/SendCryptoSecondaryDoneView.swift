@@ -99,7 +99,7 @@ struct SendCryptoSecondaryDoneView: View {
             )
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -148,11 +148,11 @@ struct SendCryptoSecondaryDoneView: View {
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue600, lineWidth: 1)
+                .stroke(Theme.colors.bgSecondary, lineWidth: 1)
         )
     }
 }

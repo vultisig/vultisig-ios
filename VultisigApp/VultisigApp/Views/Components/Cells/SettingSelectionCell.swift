@@ -21,7 +21,7 @@ struct SettingSelectionCell: View {
         }
         .padding(12)
         .frame(height: 64)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     

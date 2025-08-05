@@ -71,7 +71,7 @@ struct CoinPickerView: View {
         .onChange(of: searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
 

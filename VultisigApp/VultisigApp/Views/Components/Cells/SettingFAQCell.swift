@@ -16,7 +16,7 @@ struct SettingFAQCell: View {
     
     var body: some View {
         container
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .onTapGesture {
                 withAnimation {

@@ -94,7 +94,7 @@ private extension PrimaryButtonStyle {
             if !isEnabled {
                 return .clear
             } else if shouldHighlight {
-                return .blue500
+                return Theme.colors.bgButtonSecondaryPressed
             } else {
                 return .clear
             }

@@ -128,7 +128,7 @@ struct SwapCoinPickerView: View {
             .padding(.horizontal, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .padding(.bottom, 12)
     }
@@ -166,7 +166,7 @@ struct SwapCoinPickerView: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(selectedChain == chain ? Color.turquoise600 : Color.blue600)
+                        .background(selectedChain == chain ? Color.turquoise600 : Theme.colors.bgSecondary)
                         .cornerRadius(20)
                     }
                 }

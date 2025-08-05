@@ -18,7 +18,7 @@ struct PeerDiscoveryScanDeviceDisclaimer: View {
         }
         .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

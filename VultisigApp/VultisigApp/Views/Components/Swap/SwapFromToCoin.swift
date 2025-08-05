@@ -17,7 +17,7 @@ struct SwapFromToCoin: View {
             chevron
         }
         .padding(6)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(60)
     }
     

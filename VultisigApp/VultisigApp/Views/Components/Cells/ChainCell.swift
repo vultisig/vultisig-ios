@@ -25,7 +25,7 @@ struct ChainCell: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditingChains)
@@ -86,7 +86,7 @@ struct ChainCell: View {
             .foregroundColor(.neutral100)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(50)
     }
     

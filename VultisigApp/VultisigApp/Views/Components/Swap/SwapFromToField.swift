@@ -73,7 +73,7 @@ struct SwapFromToField: View {
                 topTrailing: 24
             )
         )
-        .foregroundColor(Color.blue600)
+        .foregroundColor(Theme.colors.bgSecondary)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     
@@ -86,7 +86,7 @@ struct SwapFromToField: View {
                 topTrailing: 24
             )
         )
-        .stroke(Color.blue400, lineWidth: 1)
+        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         .rotationEffect(.degrees(title=="from" ? 0 : 180))
     }
     

@@ -66,5 +66,5 @@ struct TransactionCell: View {
         id: "123456",
         url: Endpoint.bitcoinLabelTxHash("")
     )
-    .background(Color.blue600)
+    .background(Theme.colors.bgSecondary)
 }

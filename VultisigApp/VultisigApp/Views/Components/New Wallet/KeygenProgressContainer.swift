@@ -50,7 +50,7 @@ struct KeygenProgressContainer: View {
             }
             .padding(.horizontal, 36)
             .padding(.vertical, 28)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(24)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)

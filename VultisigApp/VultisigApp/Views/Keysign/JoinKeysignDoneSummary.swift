@@ -42,7 +42,7 @@ struct JoinKeysignDoneSummary: View {
             content
         }
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
@@ -165,7 +165,7 @@ struct JoinKeysignDoneSummary: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }

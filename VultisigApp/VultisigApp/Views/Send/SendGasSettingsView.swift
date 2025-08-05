@@ -119,7 +119,7 @@ struct SendGasSettingsView: View {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         )
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)

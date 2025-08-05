@@ -33,7 +33,7 @@ struct SwapChainCell: View {
             Separator()
                 .opacity(0.2)
         }
-        .background(isSelected ? Color.blue400 : Color.blue600)
+        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
     
     var content: some View {
@@ -69,7 +69,7 @@ struct SwapChainCell: View {
             .font(Theme.fonts.caption12)
             .foregroundColor(.alertTurquoise)
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(32)
             .bold()
     }

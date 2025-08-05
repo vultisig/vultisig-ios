@@ -37,7 +37,7 @@ struct ChainHeaderCell: View {
         content
             .padding(.horizontal, 16)
             .padding(.vertical, 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
     }
     
     var logo: some View {

@@ -19,7 +19,7 @@ extension AddressTextField {
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .sheet(isPresented: $showScanner) {
             codeScanner

@@ -49,7 +49,7 @@ extension SendGasSettingsView {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         )
         .padding(.horizontal, 16)
     }

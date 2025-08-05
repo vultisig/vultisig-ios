@@ -124,7 +124,7 @@ struct SendCryptoAddressTextField: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
             .padding(1)
     }

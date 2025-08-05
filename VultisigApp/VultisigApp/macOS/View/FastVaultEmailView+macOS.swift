@@ -65,7 +65,7 @@ extension FastVaultEmailView {
             }
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
