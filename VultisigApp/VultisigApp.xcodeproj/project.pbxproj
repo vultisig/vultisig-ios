@@ -66,6 +66,9 @@
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
 		13B6764E2E37D0E7002F016C /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B6764D2E37D0DB002F016C /* ClipboardManager.swift */; };
+		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
+		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
+		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DF05742E3CEF710000188C /* SearchTextField.swift */; };
@@ -1061,6 +1064,9 @@
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
 		13B6764D2E37D0DB002F016C /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
+		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
+		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
+		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DF05742E3CEF710000188C /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
@@ -2255,6 +2261,14 @@
 			path = Blockaid;
 			sourceTree = "<group>";
 		};
+		13D764362E4102F100F048DE /* Swap */ = {
+			isa = PBXGroup;
+			children = (
+				13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */,
+			);
+			path = Swap;
+			sourceTree = "<group>";
+		};
 		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
 			isa = PBXGroup;
 			children = (
@@ -2291,6 +2305,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
 				135677B32E39369A002C10A2 /* Network */,
 				B547A3FE2DF3F9220052164D /* Cardano */,
 				DE1509C32DCD93150030C9A0 /* MoonPay.swift */,
@@ -3105,6 +3120,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				13D764362E4102F100F048DE /* Swap */,
 				1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */,
 				A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */,
 				A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */,
@@ -3157,6 +3173,7 @@
 		A65649D62B96602700E4B329 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				13D764392E4127AF00F048DE /* Array.swift */,
 				B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */,
 				465036BA2BCF968E00856B34 /* BigInt.swift */,
 				A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */,
@@ -4568,6 +4585,7 @@
 				A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
+				13D7643A2E4127B100F048DE /* Array.swift in Sources */,
 				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
@@ -4938,6 +4956,7 @@
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
+				13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */,
 				A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
 				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
@@ -5145,6 +5164,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				A6833D842C65BC59002029E1 /* TransactionMemoHeader.swift in Sources */,
+				13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */,
 				DE8291942D891AAB0037E5FD /* MigrationRequest.swift in Sources */,

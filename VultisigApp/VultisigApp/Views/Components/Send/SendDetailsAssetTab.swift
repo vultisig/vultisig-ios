@@ -29,8 +29,7 @@ struct SendDetailsAssetTab: View {
                     SwapChainPickerView(
                         vault: vault,
                         showSheet: $viewModel.showChainPickerSheet,
-                        selectedChain: $viewModel.selectedChain,
-                        selectedCoin: $tx.coin
+                        selectedChain: $viewModel.selectedChain
                     )
                 }
             })
@@ -41,8 +40,7 @@ struct SendDetailsAssetTab: View {
                         vault: vault,
                         showSheet: $viewModel.showCoinPickerSheet,
                         selectedCoin: $tx.coin,
-                        selectedChain: $viewModel.selectedChain,
-                        isLoading: false
+                        selectedChain: viewModel.selectedChain
                     )
                 }
             })
@@ -53,10 +51,13 @@ struct SendDetailsAssetTab: View {
                 handleAssetSelection(oldValue, newValue)
             }
             .onChange(of: viewModel.selectedChain) { oldValue, newValue in
-                if let vault = homeViewModel.selectedVault {
-                    print("Selected chain changed: \(String(describing: newValue)) , update from address")
-                    let coin = vault.coins.first(where: { $0.chain == newValue })
-                    tx.fromAddress = coin?.address ?? ""
+                guard let vault = homeViewModel.selectedVault else { return }
+                print("Selected chain changed: \(String(describing: newValue)) , update from address")
+                let coin = vault.coins.first(where: { $0.chain == newValue })
+                tx.fromAddress = coin?.address ?? ""
+                // Update coin when chain changes
+                if let coin {
+                    tx.coin = coin
                 }
             }
             .clipped()
