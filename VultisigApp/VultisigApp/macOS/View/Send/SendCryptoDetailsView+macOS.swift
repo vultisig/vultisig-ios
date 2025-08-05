@@ -49,7 +49,7 @@ extension SendCryptoDetailsView {
     
     func closeSheets() {
         sendDetailsViewModel.showCoinPickerSheet = false
-        sendDetailsViewModel.showCoinPickerSheet = false
+        sendDetailsViewModel.showChainPickerSheet = false
     }
 }
 #endif
