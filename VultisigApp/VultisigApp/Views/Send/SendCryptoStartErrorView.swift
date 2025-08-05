@@ -35,7 +35,7 @@ struct SendCryptoStartErrorView: View {
     var sameWifiInstruction: some View {
         Text(errorText)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.horizontal, 50)
             .multilineTextAlignment(.center)
     }

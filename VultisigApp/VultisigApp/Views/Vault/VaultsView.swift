@@ -197,7 +197,7 @@ struct VaultsView: View {
     
     private func getTitle(for text: String) -> some View {
         Text(NSLocalizedString(text, comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding(.horizontal, 16)

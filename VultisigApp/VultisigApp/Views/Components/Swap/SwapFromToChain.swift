@@ -27,13 +27,13 @@ struct SwapFromToChain: View {
     var title: some View {
         Text(chain?.name ?? "")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.down")
             .font(Theme.fonts.caption10)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .cornerRadius(32)
             .bold()
     }

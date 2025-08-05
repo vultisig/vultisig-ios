@@ -134,7 +134,7 @@ struct SwapCryptoDetailsView: View {
                 // Show swap icon when not loading
                 Image(systemName: "arrow.up.arrow.down")
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 38, height: 38)
             }
         }

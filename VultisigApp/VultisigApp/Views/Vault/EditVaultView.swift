@@ -59,7 +59,7 @@ struct EditVaultView: View {
         Text(vault.localPartyID)
             .padding(.top, 30)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var vaultDetails: some View {

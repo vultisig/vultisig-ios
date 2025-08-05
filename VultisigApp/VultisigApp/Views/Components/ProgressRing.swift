@@ -64,7 +64,7 @@ struct ProgressRing: View {
             if progress>=0.99 {
                 Image(systemName: "checkmark")
                     .font(Theme.fonts.headline)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .scaleEffect(pulseIcon ? 1.1 : 0)
                     .animation(animation, value: pulseIcon)
                     .onAppear {
@@ -80,7 +80,7 @@ struct ProgressRing: View {
     var doneTitle: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .offset(y: progress>=0.99 ? 0 : -50)
             .zIndex(0)
             .opacity(progress>=0.99 ? 1 : 0)

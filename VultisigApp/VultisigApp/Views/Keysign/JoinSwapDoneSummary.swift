@@ -127,7 +127,7 @@ struct JoinSwapDoneSummary: View {
             .cornerRadius(60)
             .overlay(
                 Circle()
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
     
@@ -176,7 +176,7 @@ struct JoinSwapDoneSummary: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -199,7 +199,7 @@ struct JoinSwapDoneSummary: View {
             
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(Theme.fonts.caption10)
@@ -211,7 +211,7 @@ struct JoinSwapDoneSummary: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -232,7 +232,7 @@ struct JoinSwapDoneSummary: View {
             Text(value ?? "")
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
             
             if let bracketValue {
@@ -260,7 +260,7 @@ struct JoinSwapDoneSummary: View {
             copyHash(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
         }
     }

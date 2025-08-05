@@ -34,7 +34,7 @@ struct NoCameraPermissionView: View {
     var title: some View {
         Text(NSLocalizedString("noCameraPermissionError", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: 300)
             .multilineTextAlignment(.center)
     }

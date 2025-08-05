@@ -39,7 +39,7 @@ struct WarningView: View {
     var title: some View {
         Text(text)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
     }

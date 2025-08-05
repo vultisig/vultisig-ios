@@ -32,7 +32,7 @@ struct FastVaultSetHintView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
@@ -51,7 +51,7 @@ struct FastVaultSetHintView: View {
                 TextEditor(text: $hint)
                     .textEditorStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .foregroundColor(.neutral500)
+                    .foregroundColor(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodyMMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
@@ -71,7 +71,7 @@ struct FastVaultSetHintView: View {
                 VStack {
                     HStack {
                         Text(NSLocalizedString("enterHint", comment: ""))
-                            .foregroundColor(.neutral500)
+                            .foregroundColor(Theme.colors.textExtraLight)
                             .font(Theme.fonts.bodyMMedium)
                             .padding(.top, 8)
                             .padding(.leading, 5)
@@ -89,7 +89,7 @@ struct FastVaultSetHintView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -98,7 +98,7 @@ struct FastVaultSetHintView: View {
             hint = ""
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     

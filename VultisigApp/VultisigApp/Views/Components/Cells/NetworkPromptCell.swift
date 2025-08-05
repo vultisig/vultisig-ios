@@ -24,11 +24,11 @@ struct NetworkPromptCell: View {
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(isSelected ? Color.blue200 : Color.blue400)
+        .background(isSelected ? Theme.colors.border : Color.blue400)
         .cornerRadius(20)
         .padding(.horizontal, 8)
     }
@@ -41,15 +41,15 @@ struct NetworkPromptCell: View {
             
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(isSelected ? Color.blue200 : Color.blue400)
+        .background(isSelected ? Theme.colors.border : Color.blue400)
         .cornerRadius(20)
         .overlay (
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.neutral0, lineWidth: 2)
+                .stroke(Theme.colors.textPrimary, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
         .padding(.horizontal, 8)

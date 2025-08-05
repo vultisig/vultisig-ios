@@ -24,7 +24,7 @@ extension CoinPickerView {
                 }) {
                     Image(systemName: "chevron.backward")
                         .font(Theme.fonts.bodyLMedium)
-                        .foregroundColor(Color.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
             }
         }

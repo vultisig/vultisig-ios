@@ -81,7 +81,7 @@ struct CreateVaultView: View {
             Separator()
             
             Text(NSLocalizedString("or", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
             
             Separator()

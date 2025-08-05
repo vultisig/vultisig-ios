@@ -17,13 +17,13 @@ struct KeysignDiscoveryDisclaimer: View {
             text
             closeButton
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .background(Color.blue600)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(.horizontal, 8)
         .padding(.vertical, 12)
@@ -58,7 +58,7 @@ struct KeysignDiscoveryDisclaimer: View {
             .resizable()
             .frame(width: 8, height: 8)
             .padding(8)
-            .background(Color.blue200)
+            .background(Theme.colors.border)
             .cornerRadius(16)
     }
 }

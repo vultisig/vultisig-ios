@@ -74,14 +74,14 @@ struct FastVaultPasswordDisclaimer: View {
             description
         }
         .padding(16)
-        .background(Color.neutral200)
+        .background(Theme.colors.textLight)
         .cornerRadius(12)
     }
     
     var title: some View {
         HStack {
             Text(NSLocalizedString("moreInfo", comment: ""))
-                .foregroundColor(.neutral900)
+                .foregroundColor(Theme.colors.textDark)
             
             Spacer()
             closeButton

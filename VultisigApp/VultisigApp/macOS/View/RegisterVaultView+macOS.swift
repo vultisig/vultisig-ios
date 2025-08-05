@@ -33,7 +33,7 @@ extension RegisterVaultView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.horizontal, 40)
     }
     

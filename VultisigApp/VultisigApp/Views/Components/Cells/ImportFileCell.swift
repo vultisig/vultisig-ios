@@ -31,7 +31,7 @@ struct ImportFileCell: View {
     func fileName(_ name: String) -> some View {
         Text(name)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var closeButton: some View {
@@ -40,7 +40,7 @@ struct ImportFileCell: View {
         } label: {
             Image(systemName: "xmark")
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(8)
         }
         .buttonStyle(PlainButtonStyle())

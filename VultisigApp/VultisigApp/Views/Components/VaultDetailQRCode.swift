@@ -49,14 +49,14 @@ struct VaultDetailQRCode: View {
             .frame(width: 32, height: 32)
             .foregroundColor(.logoBlue)
             .padding(8)
-            .background(Color.neutral0)
+            .background(Theme.colors.textPrimary)
             .cornerRadius(10)
     }
     
     var name: some View {
         Text(vault.name)
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 10)
             .lineLimit(2)
             .multilineTextAlignment(.center)
@@ -70,7 +70,7 @@ struct VaultDetailQRCode: View {
                 .font(Theme.fonts.bodySRegular)
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 10)
         .padding(.horizontal, 14)
     }
@@ -78,7 +78,7 @@ struct VaultDetailQRCode: View {
     var webLink: some View {
         Text("vultisig.com")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     

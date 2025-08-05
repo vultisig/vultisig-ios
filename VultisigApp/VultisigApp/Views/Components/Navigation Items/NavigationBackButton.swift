@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NavigationBackButton: View {
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     
     @Environment(\.dismiss) var dismiss
     

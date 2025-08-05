@@ -164,7 +164,7 @@ struct VaultDetailView: View {
         HStack(spacing: 20) {
             Text(NSLocalizedString("fetchingVaultDetails", comment: ""))
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             ProgressView()
                 .preferredColorScheme(.dark)

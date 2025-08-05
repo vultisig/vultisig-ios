@@ -42,13 +42,13 @@ struct VaultSetupCard: View {
     var text: some View {
         Text(NSLocalizedString("ThisDeviceIs", comment: ""))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

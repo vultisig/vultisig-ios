@@ -15,7 +15,7 @@ extension AddressTextField {
             field
         }
         .font(Theme.fonts.caption12)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
@@ -32,7 +32,7 @@ extension AddressTextField {
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase(), text: $contractAddress)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)

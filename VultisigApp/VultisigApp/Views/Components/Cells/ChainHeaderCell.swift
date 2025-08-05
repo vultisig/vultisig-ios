@@ -64,7 +64,7 @@ struct ChainHeaderCell: View {
     var title: some View {
         Text(group.name.capitalized)
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var actions: some View {
@@ -78,7 +78,7 @@ struct ChainHeaderCell: View {
     var fiatBalance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var copyButton: some View {
@@ -86,14 +86,14 @@ struct ChainHeaderCell: View {
             copyAddress()
         } label: {
             Image(systemName: "square.on.square")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
         }
     }
     
     var qrCodeLabel: some View {
         Image(systemName: "qrcode")
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
@@ -107,7 +107,7 @@ struct ChainHeaderCell: View {
                let linkURL = URL(string: url) {
                 Link(destination: linkURL) {
                     Image(systemName: "cube")
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodyLMedium)
                 }
             } else {

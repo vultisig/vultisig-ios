@@ -75,7 +75,7 @@ struct SendDetailsAssetTab: View {
         HStack {
             Text(NSLocalizedString("asset", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             if viewModel.assetSetupDone {
                 doneSelectedAsset
@@ -152,7 +152,7 @@ struct SendDetailsAssetTab: View {
                 Text(tx.coin.balanceString)
             }
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             
             Text(tx.coin.balanceInFiat)
                 .font(Theme.fonts.caption12)

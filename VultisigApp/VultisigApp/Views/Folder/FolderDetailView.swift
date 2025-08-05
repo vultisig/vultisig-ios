@@ -98,7 +98,7 @@ struct FolderDetailView: View {
     
     var folderNameTitle: some View {
         Text(NSLocalizedString("folderName", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
     }
     
@@ -108,7 +108,7 @@ struct FolderDetailView: View {
             text: $folderName
         )
         .font(Theme.fonts.bodyMRegular)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .submitLabel(.done)
         .padding(12)
         .background(Color.blue600)
@@ -149,7 +149,7 @@ struct FolderDetailView: View {
     
     var listTitle: some View {
         Text(NSLocalizedString("currentVaults", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .padding(.top, 22)
             .padding(.horizontal, 16)
@@ -161,7 +161,7 @@ struct FolderDetailView: View {
     
     var vaultsTitle: some View {
         Text(NSLocalizedString("addVaultsToFolder", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .padding(.top, 22)
             .padding(.horizontal, 16)
@@ -199,13 +199,13 @@ struct FolderDetailView: View {
     
     var editIcon: some View {
         Image(systemName: "square.and.pencil")
-            .foregroundColor(Color.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
     var doneLabel: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .foregroundColor(Color.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     

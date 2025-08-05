@@ -61,7 +61,7 @@ struct ServerBackupVerificationView: View {
     var title: some View {
         Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
             .font(Theme.fonts.largeTitle)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.leading)
             .padding(.top, 50)
     }
@@ -111,7 +111,7 @@ struct ServerBackupVerificationView: View {
         if showAlert {
             return .alertRed
         } else {
-            return focusedField == index ? .blue200 : .blue400
+            return focusedField == index ? Theme.colors.border : .blue400
         }
     }
 
@@ -123,12 +123,12 @@ struct ServerBackupVerificationView: View {
                 .padding(12)
                 .frame(height: 46)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .background(Color.blue600)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue200, lineWidth: 1)
+                        .stroke(Theme.colors.border, lineWidth: 1)
                 )
         }
         .listStyle(PlainListStyle())
@@ -141,7 +141,7 @@ struct ServerBackupVerificationView: View {
                 .frame(width: 24, height: 24)
             
             Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
             
             Spacer()

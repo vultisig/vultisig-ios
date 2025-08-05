@@ -39,7 +39,7 @@ struct BackupVaultNowView: View {
             backupButton
         }
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
 
@@ -50,7 +50,7 @@ struct BackupVaultNowView: View {
 
     var title: some View {
         Text(NSLocalizedString("backupNowTitle", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.title2)
             .fixedSize(horizontal: false, vertical: true)
     }

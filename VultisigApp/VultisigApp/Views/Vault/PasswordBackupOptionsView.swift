@@ -41,7 +41,7 @@ struct PasswordBackupOptionsView: View {
     var icon: some View {
         Image(systemName: "person.badge.key")
             .font(Theme.fonts.title1)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
             .background(Color.blue400)
             .cornerRadius(16)
@@ -56,7 +56,7 @@ struct PasswordBackupOptionsView: View {
                 .font(Theme.fonts.bodySMedium)
                 .opacity(0.6)
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
     

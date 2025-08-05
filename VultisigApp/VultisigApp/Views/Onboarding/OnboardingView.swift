@@ -80,7 +80,7 @@ struct OnboardingView: View {
                 Image(systemName: "chevron.backward")
                 Text(NSLocalizedString("back", comment: ""))
             }
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
             .contentShape(Rectangle())
         }
@@ -120,7 +120,7 @@ struct OnboardingView: View {
     var startupText: some View {
         Group {
             Text(NSLocalizedString("sayGoodbyeTo", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("seedPhrases", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }

@@ -48,7 +48,7 @@ struct QRShareSheetImage: View {
         }
         .padding(.vertical, 48)
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
     
@@ -57,7 +57,7 @@ struct QRShareSheetImage: View {
             .font(Theme.fonts.bodyMMedium)
             .frame(maxWidth: 200)
             .lineLimit(2)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     

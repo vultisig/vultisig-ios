@@ -49,7 +49,7 @@ struct ReferralSendOverviewView: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("sendOverview", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
@@ -88,7 +88,7 @@ struct ReferralSendOverviewView: View {
                 .cornerRadius(32)
             
             Text("\(sendTx.amount)")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text("RUNE")
                 .foregroundColor(.lightText)
@@ -154,7 +154,7 @@ struct ReferralSendOverviewView: View {
             }
             
             Text(description)
-                .foregroundColor(isForMemo ? .extraLightGray : .neutral0)
+                .foregroundColor(isForMemo ? .extraLightGray : Theme.colors.textPrimary)
                 .lineLimit(isForMemo ? 2 : 1)
                 .truncationMode(.tail)
             

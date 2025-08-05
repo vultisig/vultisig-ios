@@ -11,19 +11,8 @@ extension Color {
     static let gray500 = Color(red: 0.96, green: 0.96, blue: 0.96)
     static let gray400 = Color(red: 0.92, green: 0.92, blue: 0.93)
     
-    static let body = Color(hex: "BBC1C7")
-    static let neutral0 = Color(hex: "FFFFFF")
     static let neutral100 = Color(hex: "F3F4F5")
-    static let neutral50 = Color(hex: "F0F4FC")
-    static let neutral200 = Color(hex: "EBECED")
-    static let neutral300 = Color(hex: "BDBDBD")
-    static let neutral400 = Color(hex: "A7A7A7")
-    static let neutral500 = Color(hex: "9F9F9F")
-    static let neutral700 = Color(hex: "737373")
-    static let neutral900 = Color(hex: "000000")
     
-    static let blue100 = Color(hex: "1E6AD1")
-    static let blue200 = Color(hex: "1B3F73")
     static let blue400 = Color(hex: "11284A")
     static let blue500 = Color(hex: "0E2A41")
     static let blue600 = Color(hex: "061B3A")
@@ -79,7 +68,7 @@ extension LinearGradient {
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
     static let cancelRed = LinearGradient(colors: [Color.red], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidBlue = LinearGradient(colors: [Color.persianBlue400], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let solidWhite = LinearGradient(colors: [Color.neutral0], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let solidWhite = LinearGradient(colors: [Theme.colors.textPrimary], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let solidGray = LinearGradient(colors: [Color.lightText], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let borderGreen = LinearGradient(colors: [Color(hex: "0FBF93"), Color(hex: "0FBF93").opacity(0)], startPoint: .top, endPoint: .bottom)
 }

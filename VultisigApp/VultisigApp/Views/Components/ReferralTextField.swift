@@ -32,7 +32,7 @@ struct ReferralTextField: View {
         HStack {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
@@ -67,7 +67,7 @@ struct ReferralTextField: View {
             }
         }
         .font(Theme.fonts.bodyMRegular)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var copyButton: some View {
@@ -112,7 +112,7 @@ struct ReferralTextField: View {
         } else if showError {
             Color.invalidRed
         } else {
-            Color.blue200
+            Theme.colors.border
         }
     }
 }

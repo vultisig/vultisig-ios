@@ -25,20 +25,20 @@ struct UpdateCheckUpdateNowView: View {
     var updateLogo: some View {
         Image(systemName: "arrow.down.circle.dotted")
             .font(Theme.fonts.display)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
     
     var updateDescription: some View {
         Text(latestVersion)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var updateButton: some View {

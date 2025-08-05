@@ -108,7 +108,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
                     }) {
                         Text("\(option)%")
                             .font(Theme.fonts.caption12)
-                            .foregroundColor(.neutral0)
+                            .foregroundColor(Theme.colors.textPrimary)
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity)
                             .background(Color.blue600)
@@ -127,7 +127,7 @@ struct UnstakeView: View {
         TextField("Enter percentage", text: $viewModel.amount)
             .id(viewModel.lastUpdateTime)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
@@ -149,7 +149,7 @@ struct UnstakeView: View {
                 HStack {
                     Text("Percentage to Unstake \(viewModel.balance)")
                         .font(Theme.fonts.bodySMedium)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                     if !viewModel.amountValid {
                         Text("*")
                             .font(Theme.fonts.bodySMedium)

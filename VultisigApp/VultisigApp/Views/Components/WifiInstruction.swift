@@ -15,7 +15,7 @@ struct WifiInstruction: View {
             
             Text(NSLocalizedString("devicesOnSameWifi", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: 250)
                 .multilineTextAlignment(.center)
         }

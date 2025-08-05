@@ -84,7 +84,7 @@ struct AddressBookCell: View {
     
     var titleContent: some View {
         Text(address.title)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .lineLimit(1)
             .truncationMode(.tail)
@@ -92,7 +92,7 @@ struct AddressBookCell: View {
     
     var networkContent: some View {
         Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
-            .foregroundColor(.neutral300)
+            .foregroundColor(Theme.colors.textLight)
             .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.tail)
@@ -100,7 +100,7 @@ struct AddressBookCell: View {
     
     var addressContent: some View {
         Text(address.address)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.middle)
@@ -110,7 +110,7 @@ struct AddressBookCell: View {
         Image(systemName: "square.grid.4x3.fill")
             .font(Theme.fonts.title2)
             .rotationEffect(.degrees(90))
-            .foregroundColor(.neutral300)
+            .foregroundColor(Theme.colors.textLight)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -126,7 +126,7 @@ struct AddressBookCell: View {
     var deleteIconLabel: some View {
         Image(systemName: "trash")
             .font(Theme.fonts.title2)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

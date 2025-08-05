@@ -73,7 +73,7 @@ struct GeneralQRImportMacView: View {
     var title: some View {
         Text(getDescription())
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var uploadSection: some View {

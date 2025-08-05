@@ -48,7 +48,7 @@ struct SwapCoinPickerView: View {
     
     var title: some View {
         Text(NSLocalizedString("selectAsset", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
@@ -139,7 +139,7 @@ struct SwapCoinPickerView: View {
                 .foregroundColor(.extraLightGray)
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .padding(.horizontal, 8)
                 .borderlessTextFieldStyle()
@@ -162,7 +162,7 @@ struct SwapCoinPickerView: View {
                             
                             Text(chain.name)
                                 .font(Theme.fonts.caption12)
-                                .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
+                                .foregroundColor(selectedChain == chain ? Theme.colors.textPrimary : .extraLightGray)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)

@@ -75,7 +75,7 @@ struct MacCheckUpdateView: View {
     var checkUpdateLabel: some View {
         Text(NSLocalizedString("checkingForUpdate", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var tryAgainButton: some View {

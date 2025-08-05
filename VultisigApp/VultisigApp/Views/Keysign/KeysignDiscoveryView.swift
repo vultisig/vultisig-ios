@@ -136,7 +136,7 @@ struct KeysignDiscoveryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.title2)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
         .padding(.horizontal, 24)
     }

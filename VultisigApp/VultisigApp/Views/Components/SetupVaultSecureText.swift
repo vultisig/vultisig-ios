@@ -18,7 +18,7 @@ struct SetupVaultSecureText: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .cornerRadius(16)
         .padding(.vertical, 16)
@@ -63,7 +63,7 @@ struct SetupVaultSecureText: View {
             }
             
             Text(selectedTab.secureTextDecription)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineSpacing(12)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)

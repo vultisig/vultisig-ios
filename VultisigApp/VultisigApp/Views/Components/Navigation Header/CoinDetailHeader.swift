@@ -30,7 +30,7 @@ struct CoinDetailHeader: View {
     
     var text: some View {
         Text(title)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     

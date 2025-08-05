@@ -17,7 +17,7 @@ extension SendGasSettingsView {
             }
             .navigationTitle("Advanced")
             .navigationBarItems(leading: backButton, trailing: saveButton)
-            .navigationBarTitleTextColor(.neutral0)
+            .navigationBarTitleTextColor(Theme.colors.textPrimary)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -25,10 +25,10 @@ extension SendGasSettingsView {
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textLight))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? .neutral300 : .neutral0)
-                    .tint(.neutral0)
+                    .foregroundColor(disabled ? Theme.colors.textLight : Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.next)
                     .disableAutocorrection(true)
@@ -40,7 +40,7 @@ extension SendGasSettingsView {
 
                 if let label {
                     Text(label)
-                        .foregroundColor(.neutral300)
+                        .foregroundColor(Theme.colors.textLight)
                         .font(Theme.fonts.bodyMRegular)
                 }
             }

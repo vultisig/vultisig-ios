@@ -66,7 +66,7 @@ struct SendCryptoAddressTextField: View {
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -118,7 +118,7 @@ struct SendCryptoAddressTextField: View {
     func getButton(_ icon: String) -> some View {
         Image(systemName: icon)
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .cornerRadius(12)

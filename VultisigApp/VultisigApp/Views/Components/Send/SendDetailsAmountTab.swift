@@ -48,7 +48,7 @@ struct SendDetailsAmountTab: View {
         HStack {
             Text(NSLocalizedString("amount", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Spacer()
             
@@ -80,7 +80,7 @@ struct SendDetailsAmountTab: View {
     
     var editLabel: some View {
         Image(systemName: "fuelpump")
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyMMedium)
     }
     
@@ -130,7 +130,7 @@ struct SendDetailsAmountTab: View {
             Text(tx.coin.balanceString + " " + tx.coin.ticker)
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .padding(.vertical, 8)
         .background(Color.blue600)
@@ -150,7 +150,7 @@ struct SendDetailsAmountTab: View {
     
     private func getPercentageButtons(for value: String) -> some View {
         Text(value)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(4)
             .frame(maxWidth: .infinity)
             .overlay(

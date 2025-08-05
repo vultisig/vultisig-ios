@@ -30,7 +30,7 @@ struct RenameVaultView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("vaultName", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             textfield
         }
@@ -41,7 +41,7 @@ struct RenameVaultView: View {
     var textfield: some View {
         TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $name)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.done)
             .padding(12)
             .background(Color.blue600)

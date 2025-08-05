@@ -33,13 +33,13 @@ struct InformationNote: View {
     var text: some View {
         if message == nil {
             Text(NSLocalizedString("joinKeygenConnectionDisclaimer", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
                 .lineSpacing(8)
                 .multilineTextAlignment(.leading)
         } else {
             Text(message ?? "")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.caption12)
                 .lineSpacing(8)
                 .multilineTextAlignment(.leading)

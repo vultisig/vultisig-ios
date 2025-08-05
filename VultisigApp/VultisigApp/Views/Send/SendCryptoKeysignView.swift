@@ -59,11 +59,11 @@ struct SendCryptoKeysignView: View {
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 Text(NSLocalizedString("signingTransaction", comment: ""))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }
@@ -79,7 +79,7 @@ struct SendCryptoKeysignView: View {
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }

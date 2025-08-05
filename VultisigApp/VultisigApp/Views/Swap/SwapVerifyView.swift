@@ -270,7 +270,7 @@ struct SwapVerifyView: View {
             }
             
             Text(value)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             if let bracketValue {
                 Group {
@@ -307,7 +307,7 @@ struct SwapVerifyView: View {
         VStack(alignment: .leading, spacing: 4) {
             Group {
                 Text(amount)
-                    .foregroundColor(.neutral0) +
+                    .foregroundColor(Theme.colors.textPrimary) +
                 Text(" ") +
                 Text(ticker)
                     .foregroundColor(.extraLightGray)
@@ -325,7 +325,7 @@ struct SwapVerifyView: View {
                         .frame(width: 12, height: 12)
                     
                     Text(chain.name)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                     
                     Spacer()
                 }

@@ -49,7 +49,7 @@ struct KeysignStartView: View {
         Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
             .preferredColorScheme(.dark)
             .font(Theme.fonts.title2)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var loader: some View {

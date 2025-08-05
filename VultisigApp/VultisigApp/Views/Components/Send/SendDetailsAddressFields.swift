@@ -33,7 +33,7 @@ struct SendDetailsAddressFields: View {
         VStack(alignment: .leading, spacing: 2) {
             if let vaultName = homeViewModel.selectedVault?.name {
                 Text(vaultName)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
             
             Text(tx.fromAddress)

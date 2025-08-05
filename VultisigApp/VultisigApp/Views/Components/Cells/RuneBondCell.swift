@@ -47,12 +47,12 @@ struct RuneBondCell: View {
         HStack {
             Text(nodeIdentifier)
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Button(action: openExplorer) {
                 Image(systemName: "link")
                     .font(Theme.fonts.bodyLRegular) 
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
             .padding(.leading, 4) 
             
@@ -60,7 +60,7 @@ struct RuneBondCell: View {
             
             Text(bondValueInFiat)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
 
@@ -68,7 +68,7 @@ struct RuneBondCell: View {
         HStack {
             Text(bondValueInRune)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             Spacer()
             Text(nodeStatus)
                 .font(Theme.fonts.bodyMRegular)
@@ -86,7 +86,7 @@ struct RuneBondCell: View {
         case "disabled":
             return .alertRed
         default:
-            return .neutral400
+            return Theme.colors.textLight
         }
     }
     

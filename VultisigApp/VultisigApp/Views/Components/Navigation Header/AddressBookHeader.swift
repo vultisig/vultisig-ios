@@ -30,7 +30,7 @@ struct AddressBookHeader: View {
     
     var text: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     
@@ -63,7 +63,7 @@ struct AddressBookHeader: View {
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLRegular)
     }
     

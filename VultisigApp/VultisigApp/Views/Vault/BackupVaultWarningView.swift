@@ -45,7 +45,7 @@ struct BackupVaultWarningView: View {
             Spacer()
             
             Text("Skip Backup")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodyLMedium)
             
             Spacer()

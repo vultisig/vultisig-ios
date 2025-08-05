@@ -112,7 +112,7 @@ struct PasswordVerifyReminderView: View {
             hideButton
         }
         .colorScheme(.dark)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .font(Theme.fonts.bodySMedium)
         .borderlessTextFieldStyle()
         .frame(height: 56)
@@ -132,7 +132,7 @@ struct PasswordVerifyReminderView: View {
             }
         }) {
             Image(systemName: isPasswordVisible ? "eye": "eye.slash")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))

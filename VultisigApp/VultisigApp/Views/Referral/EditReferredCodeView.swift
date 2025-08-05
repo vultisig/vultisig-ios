@@ -43,7 +43,7 @@ struct EditReferredCodeView: View {
                 textField
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(24)
     }
     

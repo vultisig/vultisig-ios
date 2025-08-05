@@ -54,7 +54,7 @@ struct KeygenProgressContainer: View {
             .cornerRadius(24)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
         }
         .animation(.easeInOut, value: progressCounter)

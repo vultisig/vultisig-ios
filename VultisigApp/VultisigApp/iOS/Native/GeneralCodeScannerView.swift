@@ -87,7 +87,7 @@ struct GeneralCodeScannerView: View {
             Spacer()
             helpButton
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .font(Theme.fonts.bodyLMedium)
         .padding(16)
         .offset(y: 8)
@@ -126,7 +126,7 @@ struct GeneralCodeScannerView: View {
     
     var border: some View {
         RoundedRectangle(cornerRadius: 16)
-            .stroke(Color.neutral0, lineWidth: 1)
+            .stroke(Theme.colors.textPrimary, lineWidth: 1)
             .opacity(0.2)
     }
     

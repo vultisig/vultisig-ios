@@ -93,7 +93,7 @@ struct PeerDiscoveryView: View {
                 failureText
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .blur(radius: showInfoSheet ? 1 : 0)
         .animation(.easeInOut, value: showInfoSheet)
     }
@@ -184,7 +184,7 @@ struct PeerDiscoveryView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(Theme.fonts.title2)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
         .padding(.horizontal, 8)
     }

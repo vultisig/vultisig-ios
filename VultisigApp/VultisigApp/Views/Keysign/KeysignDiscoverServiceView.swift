@@ -19,7 +19,7 @@ struct KeysignDiscoverServiceView: View {
             Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(30)
         .background(Color.blue600)

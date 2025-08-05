@@ -37,7 +37,7 @@ struct SendCryptoAmountTextField: View {
         .font(Theme.fonts.largeTitle)
         .disableAutocorrection(true)
         .textFieldStyle(TappableTextFieldStyle())
-        .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+        .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textLight)
         .maxLength(Binding<String>(
             get: { amount },
             set: {
@@ -59,7 +59,7 @@ struct SendCryptoAmountTextField: View {
         Button { onMaxPressed?() } label: {
             Text(NSLocalizedString("max", comment: "").uppercased())
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }

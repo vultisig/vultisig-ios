@@ -17,7 +17,7 @@ struct KeysignCustomMessageConfirmView: View {
                 summary
                 button
             }
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
         }
     }
 
@@ -66,7 +66,7 @@ struct KeysignCustomMessageConfirmView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             Text(value)
                 .font(Theme.fonts.caption12)
                 .foregroundColor(.turquoise600)
@@ -81,6 +81,6 @@ struct KeysignCustomMessageConfirmView: View {
             Text(value)
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 }

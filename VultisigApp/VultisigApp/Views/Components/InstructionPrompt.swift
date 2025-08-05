@@ -23,7 +23,7 @@ struct InstructionPrompt: View {
             
             Text(networkType.getInstruction())
                 .font(Theme.fonts.caption10)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
         .frame(height: 60)
@@ -37,7 +37,7 @@ struct InstructionPrompt: View {
             
             Text(networkType.getInstruction())
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
         .frame(height: 80)

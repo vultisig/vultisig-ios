@@ -30,7 +30,7 @@ struct TransactionsView: View {
                 errorText
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var errorText: some View {
@@ -41,7 +41,7 @@ struct TransactionsView: View {
                 if let url = URL(string: explorerUrl) {
                     Link("checkExplorer",destination: url)
                         .font(Theme.fonts.bodyMMedium)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .underline()
                 }
                 Spacer()

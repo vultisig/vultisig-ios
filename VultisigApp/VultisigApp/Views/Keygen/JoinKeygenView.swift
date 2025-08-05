@@ -98,7 +98,7 @@ struct JoinKeygenView: View {
     var keygenErrorText: some View {
         Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     
@@ -106,7 +106,7 @@ struct JoinKeygenView: View {
         VStack{
             Text(viewModel.errorMessage)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 30)
             
@@ -133,7 +133,7 @@ struct JoinKeygenView: View {
             }
         }
         .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .onAppear {
@@ -200,7 +200,7 @@ struct JoinKeygenView: View {
         } label: {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -272,7 +272,7 @@ struct JoinKeygenView: View {
     private func getKeygenCardContent(_ title: String) -> some View {
         VStack(spacing: 12) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.title1)
             
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))

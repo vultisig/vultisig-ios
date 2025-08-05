@@ -40,7 +40,7 @@ struct AddressQRCodeView: View {
     var address: some View {
         Text(addressData)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, padding)
     }

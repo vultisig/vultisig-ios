@@ -13,7 +13,7 @@ extension FunctionCallAddressTextField {
     var container: some View {
         content
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.blue600)
@@ -37,7 +37,7 @@ extension FunctionCallAddressTextField {
                     }
                 }
             ))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()

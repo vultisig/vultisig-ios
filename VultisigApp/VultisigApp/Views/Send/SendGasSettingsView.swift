@@ -109,7 +109,7 @@ struct SendGasSettingsView: View {
             HStack {
                 Text(text.isEmpty ? title : text)
                     .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(.neutral300)
+                    .foregroundColor(Theme.colors.textLight)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 16)
 
@@ -137,7 +137,7 @@ struct SendGasSettingsView: View {
         }) {
             Image("x")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Color.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
 

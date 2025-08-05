@@ -13,7 +13,7 @@ struct LocalModeDisclaimer: View {
             infoIcon
             text
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .background(Color.blue600)
         .cornerRadius(12)

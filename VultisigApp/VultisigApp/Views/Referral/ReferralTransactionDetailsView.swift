@@ -43,7 +43,7 @@ struct ReferralTransactionDetailsView: View {
             
             Text("\(sendTx.amount) RUNE")
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 12)
             
             Text("\(referralViewModel.totalFeeFiat)")
@@ -117,13 +117,13 @@ struct ReferralTransactionDetailsView: View {
             
             Image(systemName: "arrow.up.forward.app")
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var headerTitle: some View {
         Text(NSLocalizedString("transactionDetails", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
@@ -154,7 +154,7 @@ struct ReferralTransactionDetailsView: View {
             }
             
             Text(description)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
             
@@ -166,7 +166,7 @@ struct ReferralTransactionDetailsView: View {
             }
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var button: some View {

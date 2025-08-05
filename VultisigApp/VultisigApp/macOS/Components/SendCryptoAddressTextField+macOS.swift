@@ -13,7 +13,7 @@ extension SendCryptoAddressTextField {
     var container: some View {
         content
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.blue600)
@@ -59,7 +59,7 @@ extension SendCryptoAddressTextField {
                     }
                 }
             ))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .submitLabel(.next)
             .disableAutocorrection(true)

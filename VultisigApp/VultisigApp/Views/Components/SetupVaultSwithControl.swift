@@ -66,11 +66,11 @@ struct SetupVaultSwithControl: View {
         HStack(spacing: 8) {
             Image(systemName: "shield")
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(selectedTab == .secure ? .alertTurquoise : .neutral0)
+                .foregroundColor(selectedTab == .secure ? .alertTurquoise : Theme.colors.textPrimary)
             
             Text(NSLocalizedString("secure", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)
@@ -81,7 +81,7 @@ struct SetupVaultSwithControl: View {
         HStack(spacing: 8) {
             if selectedTab == .secure {
                 boltImage
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 boltImage
                     .foregroundStyle(LinearGradient.primaryGradient)
@@ -89,7 +89,7 @@ struct SetupVaultSwithControl: View {
             
             Text(NSLocalizedString("fast", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)

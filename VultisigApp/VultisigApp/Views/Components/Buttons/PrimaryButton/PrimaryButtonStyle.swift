@@ -85,7 +85,7 @@ private extension PrimaryButtonStyle {
             if !isEnabled {
                 return .disabledButtonBackground
             } else if shouldHighlight {
-                return .blue100
+                return Theme.colors.bgButtonTertiaryPressed
             } else {
                 return .persianBlue400
             }
@@ -105,7 +105,7 @@ private extension PrimaryButtonStyle {
         if !isEnabled {
             return .disabledText
         } else {
-            return .neutral50
+            return Theme.colors.textPrimary
         }
     }
     

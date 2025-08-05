@@ -174,7 +174,7 @@ struct JoinKeysignDoneSummary: View {
         HStack(spacing: 12) {
             Text(title)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             copyButton(txid: txid)
             linkButton(txid: txid)
@@ -187,7 +187,7 @@ struct JoinKeysignDoneSummary: View {
         } label: {
             Image(systemName: "square.on.square")
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         
     }
@@ -198,7 +198,7 @@ struct JoinKeysignDoneSummary: View {
         } label: {
             Image(systemName: "link")
                 .font(Theme.fonts.bodyLRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         
     }

@@ -101,7 +101,7 @@ struct SendCryptoDoneContentView: View {
             
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
                 .font(Theme.fonts.caption10)

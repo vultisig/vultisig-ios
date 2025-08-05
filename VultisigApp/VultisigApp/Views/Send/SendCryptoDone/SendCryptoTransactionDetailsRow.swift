@@ -47,7 +47,7 @@ struct SendCryptoTransactionDetailsRow: View {
             VStack(alignment: .trailing, spacing: 2) {
                 HStack(spacing: 2) {
                     Text(description)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     
@@ -67,7 +67,7 @@ struct SendCryptoTransactionDetailsRow: View {
             }
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

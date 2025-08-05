@@ -30,11 +30,11 @@ struct AllDevicesUpgradeView: View {
     var description: some View {
         Group {
             Text(NSLocalizedString("allDevicesUpgradeTitle1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("allDevicesUpgradeTitle2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("allDevicesUpgradeTitle3", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)

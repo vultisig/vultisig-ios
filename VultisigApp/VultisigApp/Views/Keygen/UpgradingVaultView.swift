@@ -49,7 +49,7 @@ struct UpgradingVaultView: View {
     
     var title: some View {
         Text(NSLocalizedString("upgradingVault", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.title2)
     }
     

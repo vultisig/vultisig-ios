@@ -42,11 +42,11 @@ struct CoinSelectionCell: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(asset.ticker)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(asset.chain.name)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

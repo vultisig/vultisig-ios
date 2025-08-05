@@ -68,16 +68,16 @@ struct VaultCell: View {
             Text("\(viewModel.totalSigners)")
         }
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.body)
+        .foregroundColor(Theme.colors.textLight)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.body)
+            .foregroundColor(Theme.colors.textLight)
             .padding(4)
             .padding(.horizontal, 2)
-            .background(Color.blue200)
+            .background(Theme.colors.border)
             .cornerRadius(5)
             .lineLimit(1)
     }

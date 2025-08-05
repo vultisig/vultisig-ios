@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NavigationHelpButton: View {
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     
     var body: some View {
         Link(destination: URL(string: Endpoint.supportDocumentLink)!) {

@@ -24,7 +24,7 @@ struct OutlinedDisclaimer: View {
             
             Text(text)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineSpacing(4)
                 .multilineTextAlignment(alignment)
                 .frame(maxWidth: .infinity, alignment: .leading)

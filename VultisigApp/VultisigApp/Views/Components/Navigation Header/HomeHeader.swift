@@ -82,7 +82,7 @@ struct HomeHeader: View {
                     Image(systemName: "chevron.up")
                         .font(Theme.fonts.caption10)
                         .bold()
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .rotationEffect(.degrees(showVaultsList ? 0 : 180))
                 }
             }
@@ -101,7 +101,7 @@ struct HomeHeader: View {
         .frame(height: 20)
         .clipped()
         .bold()
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .font(.title2)
     }
     

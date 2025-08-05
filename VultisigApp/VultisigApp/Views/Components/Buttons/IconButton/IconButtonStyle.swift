@@ -88,7 +88,7 @@ private extension IconButtonStyle {
             if !isEnabled {
                 return .disabledText
             } else {
-                return .neutral50
+                return Theme.colors.textPrimary
             }
         }
     }

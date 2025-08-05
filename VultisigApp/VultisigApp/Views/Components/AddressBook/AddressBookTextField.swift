@@ -53,13 +53,13 @@ struct AddressBookTextField: View {
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Color.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
     }
     
@@ -70,7 +70,7 @@ struct AddressBookTextField: View {
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -81,7 +81,7 @@ struct AddressBookTextField: View {
         } label: {
             Image(systemName: "camera")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -92,7 +92,7 @@ struct AddressBookTextField: View {
         } label: {
             Image(systemName: "photo.badge.plus")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }    

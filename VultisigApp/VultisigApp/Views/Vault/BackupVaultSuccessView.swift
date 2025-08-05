@@ -79,7 +79,7 @@ struct BackupVaultSuccessView: View {
     var migrateText: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("vaultUpgraded", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(NSLocalizedString("successfully", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
@@ -96,7 +96,7 @@ struct BackupVaultSuccessView: View {
                 .foregroundStyle(LinearGradient.primaryGradient)
             
             Text(NSLocalizedString("readyToUseNewWalletStandard.", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.largeTitle)
         .padding(.horizontal, 32)

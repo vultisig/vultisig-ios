@@ -38,7 +38,7 @@ struct FastVaultEnterPasswordView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("enterServerPassword", comment: ""))
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 24)
             
             textfield

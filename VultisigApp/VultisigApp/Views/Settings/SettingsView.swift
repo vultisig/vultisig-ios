@@ -222,7 +222,7 @@ struct SettingsView: View {
     private func getTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

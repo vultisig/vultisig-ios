@@ -47,7 +47,7 @@ struct EditVaultCell: View {
     var image: some View {
         iconImage
             .font(Theme.fonts.title2)
-            .foregroundColor(isDestructive ? .destructive : .neutral200)
+            .foregroundColor(isDestructive ? .destructive : Theme.colors.textLight)
             .frame(width: 30)
     }
     
@@ -63,18 +63,18 @@ struct EditVaultCell: View {
         VStack(alignment: .leading, spacing: 5) {
             Text(NSLocalizedString(title, comment: ""))
                 .font(Theme.fonts.bodySRegular)
-                .foregroundColor(isDestructive ? .destructive : .neutral0)
+                .foregroundColor(isDestructive ? .destructive : Theme.colors.textPrimary)
             
             Text(NSLocalizedString(description, comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(isDestructive ? .destructive : .neutral300)
+                .foregroundColor(isDestructive ? .destructive : Theme.colors.textLight)
         }
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyLRegular)
-            .foregroundColor(isDestructive ? .destructive : .neutral0)
+            .foregroundColor(isDestructive ? .destructive : Theme.colors.textPrimary)
     }
 }
 

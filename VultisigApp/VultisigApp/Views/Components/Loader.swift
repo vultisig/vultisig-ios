@@ -28,7 +28,7 @@ struct Loader: View {
             
             Text(NSLocalizedString("pleaseWait", comment: ""))
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(width: 180, height: 120)
         .background(Color.blue600)

@@ -70,7 +70,7 @@ struct TokenSelectionView: View {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.horizontal, 16)
             
             if tokenViewModel.showRetry {
@@ -89,7 +89,7 @@ struct TokenSelectionView: View {
                 if !tokenViewModel.selectedTokens.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
                         .font(Theme.fonts.bodyMMedium)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)) {
@@ -105,7 +105,7 @@ struct TokenSelectionView: View {
                     header:
                         Text(NSLocalizedString("tokens", comment:"Tokens"))
                         .font(Theme.fonts.bodyMMedium)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                 ) {
@@ -118,7 +118,7 @@ struct TokenSelectionView: View {
             } else {
                 Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))
                     .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)) {
                     if !tokenViewModel.searchedTokens.isEmpty {
@@ -134,7 +134,7 @@ struct TokenSelectionView: View {
                                 .scaleEffect(0.8)
                             Text("Searching...")
                                 .font(Theme.fonts.bodySRegular)
-                                .foregroundColor(.neutral0)
+                                .foregroundColor(Theme.colors.textPrimary)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)

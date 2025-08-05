@@ -59,7 +59,7 @@ struct ReferralLaunchView: View {
         Text(NSLocalizedString("addYourFriendsCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var errorText: some View {
@@ -82,7 +82,7 @@ struct ReferralLaunchView: View {
             
             Text(NSLocalizedString("or", comment: "").uppercased())
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             separator
         }
@@ -92,7 +92,7 @@ struct ReferralLaunchView: View {
         Text(NSLocalizedString("createYourCodeAndEarn", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var separator: some View {
@@ -140,7 +140,7 @@ struct ReferralLaunchView: View {
             Text(referredViewModel.savedReferredCode)
             Spacer()
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .colorScheme(.dark)
         .frame(height: 56)
         .font(Theme.fonts.bodyMMedium)
@@ -149,7 +149,7 @@ struct ReferralLaunchView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
@@ -178,7 +178,7 @@ struct ReferralLaunchView: View {
         Text(NSLocalizedString("yourReferralCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var referralCopyTextField: some View {

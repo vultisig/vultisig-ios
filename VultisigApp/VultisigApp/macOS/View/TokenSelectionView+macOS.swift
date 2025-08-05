@@ -39,10 +39,10 @@ extension TokenSelectionView {
                 HStack(spacing: 6) {
                     ProgressView()
                         .scaleEffect(0.6)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Theme.colors.textPrimary))
                     Text("Loading tokens...")
                         .font(Theme.fonts.caption12)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .opacity(0.8)
                 }
                 .padding(.trailing, 40)
@@ -83,7 +83,7 @@ extension TokenSelectionView {
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textContentType(.oneTimeCode)
@@ -103,10 +103,10 @@ extension TokenSelectionView {
                 if tokenViewModel.isLoading {
                     ProgressView()
                         .scaleEffect(0.6)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Theme.colors.textPrimary))
                 }
                 Text("Save")
-                    .foregroundColor(Color.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
         .padding(.horizontal, 32)

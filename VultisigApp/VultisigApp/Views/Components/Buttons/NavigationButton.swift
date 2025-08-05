@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NavigationButton: View {
     var font = Theme.fonts.title1
-    var tint = Color.neutral200
+    var tint = Theme.colors.textLight
     var isLeft: Bool = false
     
     var body: some View {

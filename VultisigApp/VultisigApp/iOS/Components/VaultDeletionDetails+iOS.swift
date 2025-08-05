@@ -22,7 +22,7 @@ private struct VaultDeletionDescriptionText: View {
     var body: some View {
         Text(NSLocalizedString(description, comment: ""))
             .font(shouldShrink ? Theme.fonts.caption10 : Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .fixedSize(horizontal: false, vertical: true)
     }
 }

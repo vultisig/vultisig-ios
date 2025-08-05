@@ -81,10 +81,10 @@ struct SettingsCustomMessageView: View {
     func textField(title: String, text: Binding<String>) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textLight))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(.neutral0)
-                    .tint(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.done)
                     .disableAutocorrection(true)

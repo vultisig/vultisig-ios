@@ -113,7 +113,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .cornerRadius(32)
             
             Text(input.amount)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(input.coinTicker)
                 .foregroundColor(.extraLightGray)
@@ -144,7 +144,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text(value)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 

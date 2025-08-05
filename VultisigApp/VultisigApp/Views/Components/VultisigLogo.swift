@@ -89,7 +89,7 @@ struct VultisigLogo: View {
     var title: some View {
         Text("Vultisig")
             .font(Theme.fonts.headline)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .opacity(didAppear ? 1 : 0)
             .animation(
                 isAnimated ? .easeIn(duration: 1) : .none,

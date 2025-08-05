@@ -16,7 +16,7 @@ struct NavigationHomeEditButton: View {
     @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
     
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     
     @Query var folders: [Folder]
     

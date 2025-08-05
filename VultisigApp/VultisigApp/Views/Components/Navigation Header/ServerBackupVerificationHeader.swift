@@ -26,12 +26,12 @@ struct ServerBackupVerificationHeader: View {
     var leadingAction: some View {
         Image(systemName: "chevron.backward")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var text: some View {
         Text(NSLocalizedString("", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
 }

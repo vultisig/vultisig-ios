@@ -138,7 +138,7 @@ struct KeysignSwapConfirmView: View {
             }
             
             Text(value)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             if let bracketValue {
                 Text(bracketValue)
@@ -158,7 +158,7 @@ struct KeysignSwapConfirmView: View {
         VStack(alignment: .leading, spacing: 4) {
             Group {
                 Text(amount ?? "")
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
             .font(Theme.fonts.bodyLMedium)
             
@@ -173,7 +173,7 @@ struct KeysignSwapConfirmView: View {
                         .frame(width: 12, height: 12)
                     
                     Text(chain.name)
-                        .foregroundColor(.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                     
                     Spacer()
                 }

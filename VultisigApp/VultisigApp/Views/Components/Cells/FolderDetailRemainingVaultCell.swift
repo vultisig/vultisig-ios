@@ -27,7 +27,7 @@ struct FolderDetailRemainingVaultCell: View {
     
     var text: some View {
         Text(vault.name)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
     }
     

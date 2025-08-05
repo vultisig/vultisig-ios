@@ -39,7 +39,7 @@ struct MemoTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
-            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+            .foregroundColor(isEnabled ? Theme.colors.textPrimary : Theme.colors.textLight)
     }
     
     var pasteButton: some View {

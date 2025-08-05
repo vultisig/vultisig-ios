@@ -45,7 +45,7 @@ struct Checkbox: View {
     var description: some View {
         Text(NSLocalizedString(text, comment: "Checkbox description"))
             .font(font)
-            .foregroundColor(.neutral200)
+            .foregroundColor(Theme.colors.textLight)
             .multilineTextAlignment(alignment)
     }
 }

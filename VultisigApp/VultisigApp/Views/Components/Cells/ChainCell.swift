@@ -69,7 +69,7 @@ struct ChainCell: View {
     var title: some View {
         Text(group.name)
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var address: some View {

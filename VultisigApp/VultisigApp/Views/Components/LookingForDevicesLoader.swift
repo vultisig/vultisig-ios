@@ -63,7 +63,7 @@ struct LookingForDevicesLoader: View {
     var title: some View {
         Text(getTitle())
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .bold()
             .multilineTextAlignment(.center)
     }

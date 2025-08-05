@@ -31,13 +31,13 @@ struct TokenSelectionHeader: View {
         }) {
             Image(systemName: "chevron.backward")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Color.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var text: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
 }

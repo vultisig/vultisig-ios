@@ -39,11 +39,11 @@ struct ReferralOnboardingBanner: View {
     var title: some View {
         Group {
             Text(NSLocalizedString("referralOnboardingBannerTitle1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("referralOnboardingBannerTitle2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("referralOnboardingBannerTitle3", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .font(Theme.fonts.title2)
         .multilineTextAlignment(.center)
@@ -81,7 +81,7 @@ struct ReferralOnboardingBanner: View {
     var closeLabel: some View {
         Image(systemName: "xmark")
             .font(Theme.fonts.title2)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func handleTap() {

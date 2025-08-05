@@ -11,7 +11,7 @@ import SwiftUI
 extension Search {
     var textField: some View {
         TextField(NSLocalizedString("search", comment: ""), text: $searchText)
-            .foregroundColor(.neutral700)
+            .foregroundColor(Theme.colors.textExtraLight)
             .font(Theme.fonts.bodySRegular)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {

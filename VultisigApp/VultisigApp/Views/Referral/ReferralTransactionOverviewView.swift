@@ -53,7 +53,7 @@ struct ReferralTransactionOverviewView: View {
             
             Text("\(sendTx.amount) RUNE")
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 12)
             
             Text("\(referralViewModel.totalFeeFiat)")
@@ -117,7 +117,7 @@ struct ReferralTransactionOverviewView: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("overview", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)

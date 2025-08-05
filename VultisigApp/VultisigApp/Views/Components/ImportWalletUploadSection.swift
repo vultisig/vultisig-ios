@@ -54,7 +54,7 @@ struct ImportWalletUploadSection: View {
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -79,14 +79,14 @@ struct ImportWalletUploadSection: View {
             
             Text(NSLocalizedString("importYourVaultShare", comment: ""))
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     private func textFile(for text: String) -> some View {
         Text(text)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(12)
     }
     

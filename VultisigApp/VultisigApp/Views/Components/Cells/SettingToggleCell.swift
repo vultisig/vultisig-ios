@@ -32,13 +32,13 @@ struct SettingToggleCell: View {
     var iconBlock: some View {
         Image(systemName: icon)
             .font(Theme.fonts.bodyLRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var toggle: some View {

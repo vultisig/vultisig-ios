@@ -43,7 +43,7 @@ struct PeerCell: View {
     var deviceId: some View {
         Text(getDeviceName())
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
     }

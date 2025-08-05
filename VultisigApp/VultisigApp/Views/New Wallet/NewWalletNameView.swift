@@ -47,7 +47,7 @@ struct NewWalletNameView: View {
         HStack {
             TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .focused($isNameFocused)
                 .onSubmit {
@@ -68,7 +68,7 @@ struct NewWalletNameView: View {
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(errorMessage.isEmpty ? Color.blue200 : Color.alertRed, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Theme.colors.border : Color.alertRed, lineWidth: 1)
         )
         .padding(.top, 32)
     }
@@ -78,7 +78,7 @@ struct NewWalletNameView: View {
             resetPlaceholderName()
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     
@@ -101,7 +101,7 @@ struct NewWalletNameView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("nameYourVault", comment: ""))
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))

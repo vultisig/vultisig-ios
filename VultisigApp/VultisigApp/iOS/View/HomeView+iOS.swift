@@ -109,7 +109,7 @@ extension HomeView {
         } label: {
             Image(systemName: "chevron.backward")
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

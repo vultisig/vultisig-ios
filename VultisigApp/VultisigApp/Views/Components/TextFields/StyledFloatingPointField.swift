@@ -25,7 +25,7 @@ struct StyledFloatingPointField: View {
             HStack {
                 Text("\(label)\(optionalMessage)")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
                         .font(Theme.fonts.caption10)
@@ -45,7 +45,7 @@ struct StyledFloatingPointField: View {
                     .foregroundColor(.gray)
             }
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.done)
             .padding(12)
             .background(Color.blue600)

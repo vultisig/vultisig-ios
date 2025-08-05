@@ -80,7 +80,7 @@ struct OnboardingSummaryView: View {
                 .foregroundColor(.alertTurquoise)
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

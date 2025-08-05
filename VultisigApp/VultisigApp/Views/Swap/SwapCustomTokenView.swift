@@ -53,7 +53,7 @@ struct SwapCustomTokenView: View {
                 }) {
                     Image(systemName: "chevron.backward")
                         .font(Theme.fonts.bodyLRegular)
-                        .foregroundColor(Color.neutral0)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
             }
         }
@@ -103,7 +103,7 @@ struct SwapCustomTokenView: View {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.horizontal, 16)
             
             if !(error is RateLimitError) {
@@ -124,11 +124,11 @@ struct SwapCustomTokenView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(self.token?.ticker ?? .empty)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(self.token?.chain.name ?? .empty)
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(contractAddress)
                 .font(Theme.fonts.caption12)

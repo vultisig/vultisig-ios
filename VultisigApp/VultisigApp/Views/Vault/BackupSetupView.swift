@@ -47,7 +47,7 @@ struct BackupSetupView: View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("backupSetupTitle", comment: ""))
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(Color.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.bottom, 16)
                 .multilineTextAlignment(.center)
 

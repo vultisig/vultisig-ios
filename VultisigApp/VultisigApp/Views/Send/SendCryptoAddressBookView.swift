@@ -32,7 +32,7 @@ struct SendCryptoAddressBookView: View {
     var title: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var listSelector: some View {

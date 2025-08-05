@@ -156,7 +156,7 @@ struct SendCryptoDetailsView: View {
             Text(trailingText)
         }
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
@@ -165,14 +165,14 @@ struct SendCryptoDetailsView: View {
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
         .font(Theme.fonts.bodySMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
             .background(Color.blue600)

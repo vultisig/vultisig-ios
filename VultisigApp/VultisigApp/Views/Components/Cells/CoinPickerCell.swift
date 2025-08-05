@@ -33,7 +33,7 @@ struct CoinPickerCell: View {
                     Text(coin.balanceInFiat)
                 }
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
 
                 Text(coin.address)
                     .font(Theme.fonts.caption12)

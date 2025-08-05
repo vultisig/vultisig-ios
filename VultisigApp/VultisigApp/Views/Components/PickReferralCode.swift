@@ -30,7 +30,7 @@ struct PickReferralCode: View {
     
     var pickReferralTitle: some View {
         Text(NSLocalizedString("pickReferralCode", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -103,7 +103,7 @@ struct PickReferralCode: View {
         .cornerRadius(24)
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
 }

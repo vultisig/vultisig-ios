@@ -38,13 +38,13 @@ struct SettingSelectionCell: View {
     var titleBlock: some View {
         Text(title)
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var chevron: some View {
         Image(systemName: "checkmark")
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .offset(x: -5)
             .opacity(isSelected ? 1 : 0)
     }
@@ -52,7 +52,7 @@ struct SettingSelectionCell: View {
     private func getDescriptionBlock(_ value: String) -> some View {
         Text(value)
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral300)
+            .foregroundColor(Theme.colors.textLight)
     }
 }
 

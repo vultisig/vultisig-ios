@@ -38,7 +38,7 @@ struct UpgradeYourVaultView: View {
     
     var title: some View {
         Text(NSLocalizedString("upgradeYourVault", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
@@ -49,11 +49,11 @@ struct UpgradeYourVaultView: View {
     var description: some View {
         Group {
             Text(NSLocalizedString("upgradeYourVaultTitle1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("upgradeYourVaultTitle2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("upgradeYourVaultTitle3", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .multilineTextAlignment(.center)
         .font(Theme.fonts.title1)

@@ -31,13 +31,13 @@ struct SettingVaultRegistrationCell: View {
     var titleBlock: some View {
         Text(NSLocalizedString("registerYourVaults", comment: ""))
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral900)
+            .foregroundColor(Theme.colors.textDark)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral900)
+            .foregroundColor(Theme.colors.textDark)
     }
     
 }

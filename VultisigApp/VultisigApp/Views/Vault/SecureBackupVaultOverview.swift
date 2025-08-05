@@ -58,7 +58,7 @@ struct SecureBackupVaultOverview: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("vaultOverview", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     

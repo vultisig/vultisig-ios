@@ -66,7 +66,7 @@ struct ReferredOnboardingGuideAnimation: View {
         .cornerRadius(32)
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .offset(x: -2)
     }
@@ -84,7 +84,7 @@ struct ReferredOnboardingGuideAnimation: View {
 
     var title: some View {
         Text(NSLocalizedString("howItWorks", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
@@ -161,7 +161,7 @@ struct ReferredOnboardingGuideAnimation: View {
                     Text(NSLocalizedString(description, comment: ""))
                         .font(Theme.fonts.caption10)
                 }
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(16)
@@ -169,7 +169,7 @@ struct ReferredOnboardingGuideAnimation: View {
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
         }
         .opacity(showCell ? 1 : 0)

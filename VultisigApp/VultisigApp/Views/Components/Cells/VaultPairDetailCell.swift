@@ -33,13 +33,13 @@ struct VaultPairDetailCell: View {
             if !title.isEmpty {
                 Text(NSLocalizedString(title, comment: ""))
                     .font(isBold ? Theme.fonts.bodyLMedium : Theme.fonts.bodyMMedium)
-                    .foregroundColor( .neutral0)
+                    .foregroundColor( Theme.colors.textPrimary)
             }
             
             if !description.isEmpty {
                 Text(NSLocalizedString(description, comment: ""))
                     .font(isBold ? Theme.fonts.bodyMRegular : Theme.fonts.caption12)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineLimit(nil)
                     .opacity(0.8)

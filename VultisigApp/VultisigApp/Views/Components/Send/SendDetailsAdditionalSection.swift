@@ -40,7 +40,7 @@ struct SendDetailsAdditionalSection: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.down")
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .rotationEffect(.degrees(isMemoExpanded ? 180 : 0))
             .animation(.easeInOut, value: isMemoExpanded)

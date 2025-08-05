@@ -64,7 +64,7 @@ struct SwapDetailsSummary: View {
     var chevron: some View {
         Image(systemName: "chevron.up")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
     

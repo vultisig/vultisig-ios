@@ -46,7 +46,7 @@ struct VaultDeletionDetails: View {
         }
         .multilineTextAlignment(.leading)
         .font(Theme.fonts.bodyLMedium)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 8)
     }
     
@@ -98,7 +98,7 @@ struct VaultDeletionDetails: View {
             Text(": ")
         }
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func titlePartText() -> String {

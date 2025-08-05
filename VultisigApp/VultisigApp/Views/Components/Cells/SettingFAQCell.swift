@@ -49,19 +49,19 @@ struct SettingFAQCell: View {
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral300)
+            .foregroundColor(Theme.colors.textLight)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.down")
             .font(Theme.fonts.bodySRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(.degrees(isExpanded ? 180 : 0))
     }
 }

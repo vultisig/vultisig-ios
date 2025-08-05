@@ -55,7 +55,7 @@ extension ServerBackupVerificationView {
                 BackspaceDetectingTextField(text: $otp[index]) {
                     handleBackspaceTap(index: index)
                 }
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .disableAutocorrection(true)
                     .borderlessTextFieldStyle()
                     .font(Theme.fonts.bodyMMedium)

@@ -26,7 +26,7 @@ struct AddressTextField: View {
     
     var placeholder: some View {
         Text(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase())
-            .foregroundColor(Color.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -36,7 +36,7 @@ struct AddressTextField: View {
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -47,7 +47,7 @@ struct AddressTextField: View {
         } label: {
             Image(systemName: "camera")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -58,7 +58,7 @@ struct AddressTextField: View {
         } label: {
             Image(systemName: "photo.badge.plus")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -69,7 +69,7 @@ struct AddressTextField: View {
         } label: {
             Image(systemName: "text.book.closed")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }

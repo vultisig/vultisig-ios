@@ -79,7 +79,7 @@ struct FileQRCodeImporterMac: View {
     var title: some View {
         Text(NSLocalizedString(isUploading ? "dropFileHere" : "uploadQRCodeImage", comment: "Upload backup file"))
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .animation(.none, value: isUploading)
     }
     

@@ -23,7 +23,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
             HStack {
                 Text("\(placeholder)\(optionalMessage)")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
                         .font(Theme.fonts.bodySMedium)
@@ -52,7 +52,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     }
 
     var foregroundColor: Color {
-        isEnabled ? .neutral0 : .neutral500
+        isEnabled ? Theme.colors.textPrimary : Theme.colors.textExtraLight
     }
 
     var customBinding: Binding<Value> {

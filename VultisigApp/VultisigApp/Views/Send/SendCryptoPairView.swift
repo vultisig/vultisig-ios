@@ -35,7 +35,7 @@ struct SendCryptoPairView: View {
     var pairDeviceText: some View {
         Text(NSLocalizedString("scanWithPairedDevice", comment: ""))
             .font(Theme.fonts.bodySMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 30)
     }
     

@@ -57,7 +57,7 @@ struct BackupNowDisclaimer: View {
     var title: some View {
         Text(NSLocalizedString("backupYourVaultNow", comment: ""))
             .font(Theme.fonts.bodyMMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
     }
@@ -65,7 +65,7 @@ struct BackupNowDisclaimer: View {
     var chevron: some View {
         Image(systemName: "chevron.forward")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

@@ -75,7 +75,7 @@ struct SwapChainPickerView: View {
     
     var title: some View {
         Text(NSLocalizedString("selectNetwork", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }
     
@@ -150,7 +150,7 @@ struct SwapChainPickerView: View {
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)

@@ -40,7 +40,7 @@ struct SendCryptoAddressBookCell: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineLimit(1)
             
             Text(description)

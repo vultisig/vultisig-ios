@@ -75,7 +75,7 @@ struct SecureBackupGuideAnimation: View {
         .cornerRadius(32)
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .offset(x: -2)
     }
@@ -93,7 +93,7 @@ struct SecureBackupGuideAnimation: View {
 
     var title: some View {
         Text(NSLocalizedString("backupGuide", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
@@ -129,7 +129,7 @@ struct SecureBackupGuideAnimation: View {
                     .foregroundColor(.iconLightBlue)
 
                 Text(NSLocalizedString(text, comment: ""))
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .font(Theme.fonts.bodySMedium)
@@ -138,7 +138,7 @@ struct SecureBackupGuideAnimation: View {
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
         }
         .opacity(showCell ? 1 : 0)

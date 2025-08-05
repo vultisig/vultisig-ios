@@ -55,7 +55,7 @@ struct CreateFolderView: View {
     
     var folderNameTitle: some View {
         Text(NSLocalizedString("folderName", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
     }
     
@@ -65,7 +65,7 @@ struct CreateFolderView: View {
             text: $viewModel.name
         )
         .font(Theme.fonts.bodySRegular)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .submitLabel(.done)
         .padding(12)
         .padding(.vertical, 3)
@@ -86,7 +86,7 @@ struct CreateFolderView: View {
     
     var vaultsTitle: some View {
         Text(NSLocalizedString("addVaultsToFolder", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .padding(.top, 22)
     }

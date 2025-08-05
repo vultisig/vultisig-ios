@@ -34,7 +34,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             HStack {
                 Text("\(addressKey.toFormattedTitleCase())\(optionalMessage)")
                     .font(Theme.fonts.bodySMedium)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !isAddressValid {
                     Text("*")
@@ -74,7 +74,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
                 .font(Theme.fonts.caption12)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -84,7 +84,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -95,7 +95,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
         } label: {
             Image(systemName: "camera")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -106,7 +106,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
         } label: {
             Image(systemName: "photo.badge.plus")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -125,7 +125,7 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
         } label: {
             Image(systemName: "text.book.closed")
                 .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }

@@ -34,7 +34,7 @@ struct SendDetailsTabEditTools: View {
     
     var editLabel: some View {
         Image(systemName: "pencil")
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

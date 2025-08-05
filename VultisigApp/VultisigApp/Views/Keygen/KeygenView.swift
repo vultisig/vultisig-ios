@@ -199,7 +199,7 @@ struct KeygenView: View {
             
             VStack {
                 Text(NSLocalizedString("vaultCreated", comment: ""))
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 Text(NSLocalizedString("successfully", comment: ""))
                     .foregroundStyle(LinearGradient.primaryGradient)
             }
@@ -238,11 +238,11 @@ struct KeygenView: View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -251,11 +251,11 @@ struct KeygenView: View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
     }

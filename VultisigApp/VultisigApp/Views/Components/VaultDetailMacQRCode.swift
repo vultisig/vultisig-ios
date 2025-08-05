@@ -50,14 +50,14 @@ struct VaultDetailMacQRCode: View {
             .frame(width: 64, height: 64)
             .foregroundColor(.logoBlue)
             .padding(8)
-            .background(Color.neutral0)
+            .background(Theme.colors.textPrimary)
             .cornerRadius(10)
     }
     
     var name: some View {
         Text(vault.name)
             .font(Theme.fonts.display)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 60)
             .lineLimit(2)
             .multilineTextAlignment(.center)
@@ -71,7 +71,7 @@ struct VaultDetailMacQRCode: View {
                 .font(Theme.fonts.largeTitle)
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 10)
         .padding(.horizontal, 14)
     }
@@ -79,7 +79,7 @@ struct VaultDetailMacQRCode: View {
     var webLink: some View {
         Text("vultisig.com")
             .font(Theme.fonts.largeTitle)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.bottom, 32)
     }

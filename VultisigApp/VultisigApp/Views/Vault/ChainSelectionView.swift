@@ -75,7 +75,7 @@ struct ChainSelectionView: View {
     var searchField: some View {
         TextField(NSLocalizedString("Search", comment: "Search"), text: $viewModel.searchText)
             .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .disableAutocorrection(true)
             .padding(.horizontal, 8)
             .borderlessTextFieldStyle()

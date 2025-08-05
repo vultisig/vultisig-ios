@@ -25,7 +25,7 @@ struct IconCapsule: View {
         .cornerRadius(50)
         .overlay(
             RoundedRectangle(cornerRadius: 50)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     

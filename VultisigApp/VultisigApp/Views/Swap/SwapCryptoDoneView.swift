@@ -130,7 +130,7 @@ struct SwapCryptoDoneView: View {
             .cornerRadius(60)
             .overlay(
                 Circle()
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
     
@@ -186,7 +186,7 @@ struct SwapCryptoDoneView: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -217,7 +217,7 @@ struct SwapCryptoDoneView: View {
     var chevron: some View {
         Image(systemName: "chevron.up")
             .font(Theme.fonts.caption12)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
     
@@ -271,7 +271,7 @@ struct SwapCryptoDoneView: View {
             
             Text(title)
                 .font(Theme.fonts.bodySMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description.formatToFiat(includeCurrencySymbol: true))
                 .font(Theme.fonts.caption10)
@@ -283,7 +283,7 @@ struct SwapCryptoDoneView: View {
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -304,7 +304,7 @@ struct SwapCryptoDoneView: View {
             Text(value)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
             
             if let bracketValue {
@@ -332,7 +332,7 @@ struct SwapCryptoDoneView: View {
             copyValue(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
         }
     }

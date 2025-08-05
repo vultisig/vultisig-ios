@@ -40,7 +40,7 @@ struct FastVaultEmailView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("enterYourEmail", comment: ""))
                 .font(Theme.fonts.largeTitle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
@@ -97,7 +97,7 @@ struct FastVaultEmailView: View {
             isEmptyEmail = true
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     
@@ -131,7 +131,7 @@ struct FastVaultEmailView: View {
         if isEmptyEmail || isInvalidEmail {
             return .alertRed
         } else {
-            return .blue200
+            return Theme.colors.border
         }
     }
 }

@@ -72,7 +72,7 @@ struct CreateReferralDetailsView: View {
     
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -125,7 +125,7 @@ struct CreateReferralDetailsView: View {
     
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -142,7 +142,7 @@ struct CreateReferralDetailsView: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)
     }
@@ -194,20 +194,20 @@ struct CreateReferralDetailsView: View {
             
             Text("RUNE")
                 .font(Theme.fonts.bodyMMedium)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var infoLabel: some View {
         Image(systemName: "info.circle")
             .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var tooltip: some View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(.neutral900)
+                .foregroundColor(Theme.colors.textDark)
                 .font(Theme.fonts.bodyMMedium)
             
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
@@ -217,7 +217,7 @@ struct CreateReferralDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color.neutral0)
+        .background(Theme.colors.textPrimary)
         .cornerRadius(8)
         .padding(.horizontal, 24)
         .onTapGesture {
@@ -241,7 +241,7 @@ struct CreateReferralDetailsView: View {
                     .font(Theme.fonts.bodyMMedium)
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -258,7 +258,7 @@ struct CreateReferralDetailsView: View {
             
             VStack(alignment: .trailing, spacing: 0) {
                 Text(description1)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !description2.isEmpty {
                     Text(description2)
