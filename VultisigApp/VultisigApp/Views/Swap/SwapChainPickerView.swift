@@ -160,7 +160,7 @@ struct SwapChainPickerView: View {
                 viewModel.groupedAssets[chainName]?.first?.chain
             }.filter(\.isSwapAvailable)
         case .send:
-            return vault.coins.map { $0.chain }.uniqueBy { $0.chainType }
+            return vault.coins.filter {$0.isNativeToken}.map{$0.chain}
         }
     }
 }
