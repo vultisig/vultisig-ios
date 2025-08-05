@@ -194,6 +194,10 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .addThorLP:
+                    fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .removeThorLP:
+                    fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .stakeRuji:
                     functionCallViewModel.setRujiToken(to: tx, vault: vault)
                     fnCallInstance = .stakeRuji(FunctionCallStakeRuji(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
@@ -257,7 +261,7 @@ struct FunctionCallDetailsView: View {
         PrimaryButton(title: "continue") {
             Task {
                 if fnCallInstance.isTheFormValid {
-                    tx.amount = fnCallInstance.amount.formatDecimalToLocale()
+                    tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
                     tx.memo = fnCallInstance.description
                     tx.memoFunctionDictionary = fnCallInstance.toDictionary()
                     tx.transactionType = fnCallInstance.getTransactionType()

@@ -42,12 +42,81 @@ class FunctionCallVerifyViewModel: ObservableObject {
             
             let keysignPayloadFactory = KeysignPayloadFactory()
             
+            // Check if this is an AddThorLP transaction that requires ERC20 approval
+            var approvePayload: ERC20ApprovePayload?
+            var swapPayload: SwapPayload?
+            
+            if !tx.memoFunctionDictionary.allItems().isEmpty,
+               let _ = tx.memoFunctionDictionary.get("pool") { // This indicates it's an AddThorLP transaction
+                
+                // For THORChain LP, create a THORChain swap payload
+                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 minutes
+                
+                // Handle RUNE deposits vs L1 asset sends differently
+                let vaultAddress: String
+                let routerAddress: String?
+                
+                if tx.coin.chain == .thorChain {
+                    // For RUNE LP, we send to paired chain's inbound address (set in tx.toAddress)
+                    // We don't lookup inbound for RUNE chain itself - that would fail
+                    vaultAddress = tx.toAddress // Use the paired chain's inbound address
+                    routerAddress = nil
+                } else {
+                    // For L1 assets, fetch inbound addresses to get correct vault address
+                    let inboundAddresses = await ThorchainService.shared.fetchThorchainInboundAddress()
+                    let chainName = getInboundChainName(for: tx.coin.chain)
+                    
+                    guard let inbound = inboundAddresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                        self.errorMessage = "Failed to find inbound address for \(chainName)"
+                        showAlert = true
+                        isLoading = false
+                        return nil
+                    }
+                    
+                    if tx.coin.shouldApprove { // ERC20 tokens
+                        // For ERC20: vault = inbound address, router = router address
+                        vaultAddress = inbound.address // Asgard vault address
+                        routerAddress = inbound.router // Router contract address
+                    } else { // Native tokens
+                        // For native tokens: vault = inbound address, no router needed
+                        vaultAddress = inbound.address // Asgard vault address
+                        routerAddress = nil
+                    }
+                }
+                
+                let thorchainSwapPayload = THORChainSwapPayload(
+                    fromAddress: tx.fromAddress,
+                    fromCoin: tx.coin,
+                    toCoin: tx.coin, // For LP, we're not swapping to a different coin
+                    vaultAddress: vaultAddress,
+                    routerAddress: routerAddress,
+                    fromAmount: tx.amountInRaw,
+                    toAmountDecimal: tx.coin.decimal(for: tx.amountInRaw), // Convert BigInt to Decimal
+                    toAmountLimit: "",
+                    streamingInterval: "",
+                    streamingQuantity: "",
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970),
+                    isAffiliate: false
+                )
+                swapPayload = .thorchain(thorchainSwapPayload)
+                
+                // Check if the coin requires approval (ERC20 tokens)
+                if tx.coin.shouldApprove && !tx.toAddress.isEmpty {
+                    approvePayload = ERC20ApprovePayload(
+                        amount: tx.amountInRaw,
+                        spender: tx.toAddress
+                    )
+                }
+            }
+            
             keysignPayload = try await keysignPayloadFactory.buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
                 memo: tx.memo,
                 chainSpecific: chainSpecific,
+                swapPayload: swapPayload,
+                approvePayload: approvePayload,
                 vault: vault,
                 wasmExecuteContractPayload: tx.wasmContractPayload
             )
@@ -69,6 +138,11 @@ class FunctionCallVerifyViewModel: ObservableObject {
             return nil
         }
         return keysignPayload
+    }
+    
+    // Use THORChainUtils for chain name mapping
+    private func getInboundChainName(for chain: Chain) -> String {
+        return ThorchainService.getInboundChainName(for: chain)
     }
     
     func scan(transaction: SendTransaction, vault: Vault) async {

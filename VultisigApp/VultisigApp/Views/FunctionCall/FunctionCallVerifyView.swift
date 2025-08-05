@@ -126,7 +126,21 @@ struct FunctionCallVerifyView: View {
         }
     }
     
-    private func getAmount() -> String {
+        private func getAmount() -> String {
+        // Check if this is a THORChain LP operation
+        if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
+            // For LP operations, show context about which pool
+            let cleanPoolName = ThorchainService.cleanPoolName(pool)
+            if tx.coin.chain == .thorChain {
+                // Adding RUNE to a specific pool
+                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
+            } else {
+                // Adding L1 asset to its pool
+                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
+            }
+        }
+        
+        // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
     
