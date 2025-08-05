@@ -24,6 +24,12 @@ extension SendCryptoDetailsView {
                     }
                 }
             }
+            .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+                chainPicker
+            }
+            .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+                coinPicker
+            }
     }
     
     var view: some View {

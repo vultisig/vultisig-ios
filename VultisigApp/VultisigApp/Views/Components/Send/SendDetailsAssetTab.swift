@@ -23,27 +23,6 @@ struct SendDetailsAssetTab: View {
             .onChange(of: tx.coin, { oldValue, newValue in
                 setData()
             })
-            // chain selector
-            .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapChainPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showChainPickerSheet,
-                        selectedChain: $viewModel.selectedChain
-                    )
-                }
-            })
-            // coin selector
-            .sheet(isPresented: $viewModel.showCoinPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showCoinPickerSheet,
-                        selectedCoin: $tx.coin,
-                        selectedChain: viewModel.selectedChain
-                    )
-                }
-            })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
@@ -194,6 +173,7 @@ struct SendDetailsAssetTab: View {
         viewModel.assetSetupDone = true
     }
 }
+
 
 #Preview {
     SendDetailsAssetTab(
