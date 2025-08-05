@@ -11,6 +11,10 @@
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
+		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
+		132666C22E428F27007FDAC5 /* EditReferralScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */; };
+		132666C42E42920C007FDAC5 /* BoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* BoxView.swift */; };
+		132666C62E429550007FDAC5 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C52E42954F007FDAC5 /* Icon.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -1006,6 +1010,10 @@
 		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
+		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
+		132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralScreen.swift; sourceTree = "<group>"; };
+		132666C32E42920A007FDAC5 /* BoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxView.swift; sourceTree = "<group>"; };
+		132666C52E42954F007FDAC5 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -2058,6 +2066,9 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				132666C52E42954F007FDAC5 /* Icon.swift */,
+				132666C32E42920A007FDAC5 /* BoxView.swift */,
+				132666BF2E428B72007FDAC5 /* CounterView.swift */,
 				13DD3B182E3CFE6600D46FA0 /* Picker */,
 				13DD3B152E3CFE4800D46FA0 /* ScrollView */,
 				13DF05732E3CEF580000188C /* TextField */,
@@ -3492,6 +3503,7 @@
 		A6E0C90D2DE4E86900A01543 /* Referral */ = {
 			isa = PBXGroup;
 			children = (
+				132666C12E428F1F007FDAC5 /* EditReferralScreen.swift */,
 				A6E0C90E2DE4E8CE00A01543 /* EditReferredCodeView.swift */,
 				A6E0C9162DE6B59D00A01543 /* ReferredOnboardingView.swift */,
 				A6E0C91C2DE7B22F00A01543 /* ReferralSendOverviewView.swift */,
@@ -4372,6 +4384,7 @@
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				132666C62E429550007FDAC5 /* Icon.swift in Sources */,
 				1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */,
 				A58760512CBD2D670070956A /* BiometryService.swift in Sources */,
 				A6BB9BD52DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift in Sources */,
@@ -4410,6 +4423,7 @@
 				A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
+				132666C02E428B76007FDAC5 /* CounterView.swift in Sources */,
 				A6C671232CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift in Sources */,
 				138574212E2DB6EC002532BF /* IconButtonView.swift in Sources */,
 				A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */,
@@ -4439,6 +4453,7 @@
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A62268FE2DC0005800F378E0 /* SwapChainPickerView+iOS.swift in Sources */,
+				132666C42E42920C007FDAC5 /* BoxView.swift in Sources */,
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
 				A6BB9BCD2DA9E1D60085E117 /* AllDevicesUpgradeView+macOS.swift in Sources */,
 				A6C556F22CE59A3F00E5E44E /* BackupNowDisclaimer+macOS.swift in Sources */,
@@ -4610,6 +4625,7 @@
 				A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */,
 				A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
+				132666C22E428F27007FDAC5 /* EditReferralScreen.swift in Sources */,
 				A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,

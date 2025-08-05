@@ -11,8 +11,8 @@ struct ReferralTextField: View {
     @Binding var text: String
     let placeholderText: String
     let action: ReferralTextFieldAction
-    let showError: Bool
-    let errorMessage: String
+    var showError: Bool = false
+    var errorMessage: String = .empty
     
     var showSuccess: Bool = false
     var isErrorLabelVisible: Bool = true

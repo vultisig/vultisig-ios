@@ -718,6 +718,10 @@
 "whitespaceNotAllowed" = "Whitespace character is not allowed";
 "referralProgram" = "Referral Program";
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
+"collectedRewards" = "Collected rewards";
+"expiresOn" = "Expires on";
+"yourFriendsReferralCode" = "Your friends referral code";
+"changeFriendsReferralCode" = "Change friends Referral Code used for swaps";
 "insufficientBalance" = "Insufficient Balance";
 "verifyBoxCheck" = "Please check all the boxes";
 "expirationDate" = "Expiration date";

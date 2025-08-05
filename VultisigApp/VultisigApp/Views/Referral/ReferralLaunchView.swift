@@ -102,7 +102,8 @@ struct ReferralLaunchView: View {
     
     var createButton: some View {
         PrimaryNavigationButton(title: "createReferral") {
-            CreateReferralView(referralViewModel: referralViewModel)
+            ReferralMainScreen()
+//            CreateReferralView(referralViewModel: referralViewModel)
         }
     }
     

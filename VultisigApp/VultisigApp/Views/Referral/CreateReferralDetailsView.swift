@@ -65,7 +65,7 @@ struct CreateReferralDetailsView: View {
     var setExpiration: some View {
         VStack(spacing: 8) {
             setExpirationTitle
-            setExpirationCounter
+            CounterView(count: $referralViewModel.expireInCount, minimumValue: 1)
             expirationDate
         }
     }
@@ -77,14 +77,6 @@ struct CreateReferralDetailsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    var setExpirationCounter: some View {
-        HStack {
-            decreaseExpirationButton
-            expiratingInCounter
-            increaseExpirationButton
-        }
-    }
-    
     var expirationDate: some View {
         getCell(
             title: "expirationDate",
@@ -92,28 +84,6 @@ struct CreateReferralDetailsView: View {
             description2: "",
             isPlaceholder: referralViewModel.expireInCount == 0
         )
-    }
-    
-    var decreaseExpirationButton: some View {
-        Button {
-            referralViewModel.handleCounterDecrease()
-        } label: {
-            getExpirationCounterButton(icon: "minus.circle")
-        }
-        .disabled(referralViewModel.expireInCount == 0)
-        .opacity(referralViewModel.expireInCount == 0 ? 0.2 : 1)
-    }
-    
-    var expiratingInCounter: some View {
-        getExpirationCounterButton(value: "\(referralViewModel.expireInCount)")
-    }
-    
-    var increaseExpirationButton: some View {
-        Button {
-            referralViewModel.handleCounterIncrease()
-        } label: {
-            getExpirationCounterButton(icon: "plus.circle")
-        }
     }
     
     var choosePayoutAsset: some View {
@@ -223,30 +193,6 @@ struct CreateReferralDetailsView: View {
         .onTapGesture {
             showTooltip = false
         }
-    }
-    
-    private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
-        ZStack {
-            if let icon {
-                Image(systemName: icon)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(Color.blue600)
-                    .font(.body22BrockmannMedium)
-            } else if let value {
-                Text(value)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(.clear)
-                    .font(.body16BrockmannMedium)
-            }
-        }
-        .foregroundColor(.neutral0)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
-        )
     }
     
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
