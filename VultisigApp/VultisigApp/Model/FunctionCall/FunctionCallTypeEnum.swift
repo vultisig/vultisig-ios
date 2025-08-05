@@ -70,9 +70,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .cosmosIBC:
             return "IBC Transfer"
         case .merge:
-            return "The Merge"
+            return "Merge"
         case .unmerge:
-            return "Unmerge RUJI"
+            return "Withdraw RUJI"
         case .theSwitch:
             return "Switch"
         case .stakeRuji:
