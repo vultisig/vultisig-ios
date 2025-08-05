@@ -66,52 +66,52 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     private func loadInitialState() {
         fetchInboundAddressAndSetupApproval()
-        Task { @MainActor in
-            await loadPools()
-        }
+        loadPools()
     }
     
     // MARK: - Inbound address + approval
     
     private func fetchInboundAddressAndSetupApproval() {
-        Task { @MainActor in
+        Task {
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
             
-            if tx.coin.chain == .thorChain {
-                // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
-                // The toAddress will be set when pool is selected
-                
-                isApprovalRequired = false
-                approvePayload = nil
-                return
-            } else {
-                // Normal send path: need inbound address for L1/EVM chains.
-                let chainName = ThorchainService.getInboundChainName(for: tx.coin.chain)
-                guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+            DispatchQueue.main.async {
+                if self.tx.coin.chain == .thorChain {
+                    // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
+                    // The toAddress will be set when pool is selected
+                    self.isApprovalRequired = false
+                    self.approvePayload = nil
                     return
-                }
-                
-                if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
-                    return
-                }
-                
-                let destinationAddress: String
-                if tx.coin.shouldApprove {
-                    // ERC20 token (e.g., USDC) → approval to router
-                    destinationAddress = inbound.router ?? inbound.address
-                    
                 } else {
-                    // Native token (e.g., ETH) → direct to inbound address
-                    destinationAddress = inbound.address
+                    // Normal send path: need inbound address for L1/EVM chains.
+                    let chainName = ThorchainService.getInboundChainName(for: self.tx.coin.chain)
+                    guard let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }) else {
+                        return
+                    }
                     
-                }
-                
-                tx.toAddress = destinationAddress
-                
-                // ERC20 approval only for non-RUNE ERC20 tokens
-                isApprovalRequired = tx.coin.shouldApprove
-                if isApprovalRequired {
-                    self.approvePayload = tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(amount: tx.amountInRaw, spender: tx.toAddress)
+                    if inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused {
+                        return
+                    }
+                    
+                    let destinationAddress: String
+                    if self.tx.coin.shouldApprove {
+                        // ERC20 token (e.g., USDC) → approval to router
+                        destinationAddress = inbound.router ?? inbound.address
+                    } else {
+                        // Native token (e.g., ETH) → direct to inbound address
+                        destinationAddress = inbound.address
+                    }
+                    
+                    self.tx.toAddress = destinationAddress
+                    
+                    // ERC20 approval only for non-RUNE ERC20 tokens
+                    self.isApprovalRequired = self.tx.coin.shouldApprove
+                    if self.isApprovalRequired {
+                        self.approvePayload = self.tx.toAddress.isEmpty ? nil : ERC20ApprovePayload(
+                            amount: self.tx.amountInRaw,
+                            spender: self.tx.toAddress
+                        )
+                    }
                 }
             }
         }
@@ -119,58 +119,58 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     
     // MARK: - Pool loading
     
-    @MainActor
-    func loadPools() async {
+    func loadPools() {
         isLoadingPools = true
         loadError = nil
         
-        do {
-            // The retry logic is now handled within ThorchainService.fetchLPPools()
-            let allPools = try await ThorchainService.shared.fetchLPPools()
-            
-            var poolOptions: [IdentifiableString] = []
-            var nameMap: [String: String] = [:]
-            
-            if tx.coin.chain == .thorChain {
-                for pool in allPools {
-                    let assetName = pool.asset
-                    let cleanName = ThorchainService.cleanPoolName(assetName)
-                    poolOptions.append(IdentifiableString(value: cleanName))
-                    nameMap[cleanName] = assetName
+        Task {
+            do {
+                let allPools = try await ThorchainService.shared.fetchLPPools()
+                
+                var poolOptions: [IdentifiableString] = []
+                var nameMap: [String: String] = [:]
+                
+                if self.tx.coin.chain == .thorChain {
+                    for pool in allPools {
+                        let assetName = pool.asset
+                        let cleanName = ThorchainService.cleanPoolName(assetName)
+                        poolOptions.append(IdentifiableString(value: cleanName))
+                        nameMap[cleanName] = assetName
+                    }
+                } else {
+                    let currentSwap = self.tx.coin.chain.swapAsset.uppercased()
+                    let filtered = allPools.filter { pool in
+                        let components = pool.asset
+                            .split(separator: ".")
+                            .map { String($0).uppercased() }
+                        return components.count >= 2 && components[0] == currentSwap
+                    }
+                    for pool in filtered {
+                        let assetName = pool.asset
+                        let cleanName = ThorchainService.cleanPoolName(assetName)
+                        poolOptions.append(IdentifiableString(value: cleanName))
+                        nameMap[cleanName] = assetName
+                    }
                 }
-            } else {
-                let currentSwap = tx.coin.chain.swapAsset.uppercased()
-                let filtered = allPools.filter { pool in
-                    let components = pool.asset
-                        .split(separator: ".")
-                        .map { String($0).uppercased() }
-                    return components.count >= 2 && components[0] == currentSwap
+                
+                DispatchQueue.main.async {
+                    self.poolNameMap = nameMap
+                    self.availablePools = poolOptions
+                    self.isLoadingPools = false
+                    self.loadError = nil
+                    
+                    if self.tx.coin.chain != .thorChain && poolOptions.count == 1 {
+                        self.selectedPool = poolOptions[0]
+                        self.poolValid = true
+                    }
                 }
-                for pool in filtered {
-                    let assetName = pool.asset
-                    let cleanName = ThorchainService.cleanPoolName(assetName)
-                    poolOptions.append(IdentifiableString(value: cleanName))
-                    nameMap[cleanName] = assetName
+            } catch {
+                DispatchQueue.main.async {
+                    self.availablePools = []
+                    self.isLoadingPools = false
+                    self.loadError = "Failed to load pools. Please check your connection and try again."
                 }
             }
-            
-            // Commit
-            self.poolNameMap = nameMap
-            self.availablePools = poolOptions
-            self.isLoadingPools = false
-            self.loadError = nil
-            
-            // Pool options loaded successfully
-            
-            if tx.coin.chain != .thorChain && poolOptions.count == 1 {
-                // auto-select single pool for L1
-                self.selectedPool = poolOptions[0]
-                self.poolValid = true
-            }
-        } catch {
-            self.availablePools = []
-            self.isLoadingPools = false
-            self.loadError = "Failed to load pools. Please check your connection and try again."
         }
     }
     
@@ -212,17 +212,6 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         
         pairedAddress = chainCoin.address
         pairedAddressValid = true
-        
-        if tx.coin.chain == .thorChain {
-            Task { @MainActor in
-                let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
-                let chainName = ThorchainService.getInboundChainName(for: chainCoin.chain)
-                if let inbound = addresses.first(where: { $0.chain.uppercased() == chainName.uppercased() }),
-                   !(inbound.halted || inbound.global_trading_paused || inbound.chain_trading_paused || inbound.chain_lp_actions_paused) {
-                    tx.toAddress = inbound.address
-                }
-            }
-        }
         
         if let assetCoin = vault.coins.first(where: { $0.chain == chainCoin.chain && $0.ticker.uppercased() == assetTicker }) {
             let balance = assetCoin.balanceDecimal.formatForDisplay()
@@ -285,14 +274,25 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         }
     }
     
-    
     private func formatBalance(_ balance: Decimal, ticker: String) -> String {
         return "( Balance: \(balance.formatForDisplay()) \(ticker.uppercased()) )"
     }
     
     private func setupValidation() {
+        // Recompute amount validity when amount or selectedPool changes
+        Publishers.CombineLatest($amount, $selectedPool)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] amount, _ in
+                guard let self = self else { return }
+                let currentBalance = self.tx.coin.balanceDecimal
+                self.amountValid = amount > 0 && amount <= currentBalance
+            }
+            .store(in: &cancellables)
+        
+        // Global form validity
         Publishers.CombineLatest3($amountValid, $pairedAddressValid, $poolValid)
             .map { $0 && $1 && $2 }
+            .receive(on: DispatchQueue.main)
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -380,7 +380,6 @@ struct PoolSelectorSection: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            
             if model.isLoadingPools {
                 loadingView
             } else if model.availablePools.isEmpty {
@@ -426,9 +425,7 @@ struct PoolSelectorSection: View {
                 Button {
                     model.loadError = nil
                     model.isLoadingPools = true
-                    Task {
-                        await model.loadPools()
-                    }
+                    model.loadPools()
                 } label: {
                     Text("Retry")
                         .font(.caption)

@@ -10,7 +10,7 @@ import BigInt
 
 class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     @Published var selectedPosition: ThorchainLPPosition?
-    @Published var withdrawPercentage: Decimal = 50.0
+    @Published var withdrawPercentage: Decimal = 100.0
     @Published var positionValid: Bool = false
     @Published var percentageValid: Bool = true
     @Published var isTheFormValid: Bool = false
