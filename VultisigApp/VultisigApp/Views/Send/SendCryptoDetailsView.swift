@@ -127,6 +127,23 @@ struct SendCryptoDetailsView: View {
         }
     }
     
+    var chainPicker: some View {
+        SwapChainPickerView(
+            vault: vault,
+            showSheet: $sendDetailsViewModel.showChainPickerSheet,
+            selectedChain: $sendDetailsViewModel.selectedChain
+        )
+    }
+
+    var coinPicker: some View {
+        SwapCoinPickerView(
+            vault: vault,
+            showSheet: $sendDetailsViewModel.showCoinPickerSheet,
+            selectedCoin: $tx.coin,
+            selectedChain: sendDetailsViewModel.selectedChain
+        )
+    }
+    
     func onChange(focusedField: Field?) {
         if focusedField == .toAddress {
             handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)

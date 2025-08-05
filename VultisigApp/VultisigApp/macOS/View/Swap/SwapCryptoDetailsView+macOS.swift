@@ -15,7 +15,8 @@ extension SwapCryptoDetailsView {
             view
             
             if showSheet() {
-                overlay
+                MacOSOverlay()
+                    .onTapGesture(perform: closeSheets)
             }
             
             VStack {
@@ -80,20 +81,6 @@ extension SwapCryptoDetailsView {
                 summary
             }
             .padding(.horizontal, 16)
-        }
-    }
-    
-    var overlay: some View {
-        ZStack(alignment: .top) {
-            Color.black
-                .frame(height: 200)
-                .offset(y: -200)
-            
-            Color.black
-        }
-        .opacity(0.8)
-        .onTapGesture {
-            closeSheets()
         }
     }
     

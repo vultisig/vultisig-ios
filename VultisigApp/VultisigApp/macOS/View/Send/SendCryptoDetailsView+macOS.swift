@@ -10,7 +10,15 @@ import SwiftUI
 
 extension SendCryptoDetailsView {
     var container: some View {
-        content
+        ZStack(alignment: .top) {
+            content
+            overlay
+                .showIf(sendDetailsViewModel.showCoinPickerSheet || sendDetailsViewModel.showChainPickerSheet)
+            chainPicker
+                .showIf(sendDetailsViewModel.showChainPickerSheet)
+            coinPicker
+                .showIf(sendDetailsViewModel.showCoinPickerSheet)
+        }
     }
     
     var view: some View {
@@ -32,6 +40,16 @@ extension SendCryptoDetailsView {
         Task {
             await getBalance()
         }
+    }
+    
+    var overlay: some View {
+        MacOSOverlay()
+            .onTapGesture(perform: closeSheets)
+    }
+    
+    func closeSheets() {
+        sendDetailsViewModel.showCoinPickerSheet = false
+        sendDetailsViewModel.showCoinPickerSheet = false
     }
 }
 #endif
