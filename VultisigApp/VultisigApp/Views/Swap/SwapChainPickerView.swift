@@ -17,7 +17,7 @@ struct SwapChainPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
-
+    
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -132,7 +132,7 @@ struct SwapChainPickerView: View {
             view
         }
     }
-
+    
     var searchBar: some View {
         SearchTextField(value: $searchText)
             .padding(.bottom, 12)
@@ -160,7 +160,7 @@ struct SwapChainPickerView: View {
                 viewModel.groupedAssets[chainName]?.first?.chain
             }.filter(\.isSwapAvailable)
         case .send:
-            return vault.coins.map { $0.chain }.uniqueBy { $0.chainType }
+            return vault.coins.filter {$0.isNativeToken}.map{$0.chain}
         }
     }
 }
