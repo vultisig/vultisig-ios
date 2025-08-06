@@ -1664,7 +1664,7 @@ class TokensStore {
             ticker: "RUJI",
             logo: "xruji",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "rujira",
             contractAddress: "x/ruji",
             isNativeToken: false
         ),
