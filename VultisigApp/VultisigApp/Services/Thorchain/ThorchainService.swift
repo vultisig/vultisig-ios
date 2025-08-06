@@ -266,6 +266,10 @@ class ThorchainService: ThorchainSwapProvider {
             return "GAIA"
         case .thorChain:
             return "THOR"
+        case .tron:
+            return "TRON"
+        case .noble:
+            return "NOBLE"
         default:
             return chain.swapAsset.uppercased()
         }

@@ -85,9 +85,9 @@ extension Coin {
             return [.lifi]
         case .zcash:
             return [.mayachain]
-        case .ripple:
+        case .ripple, .tron, .noble:
             return [.thorchain]
-        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .akash, .tron, .ethereumSepolia, .cardano:
+        case .sui, .polkadot, .dydx, .ton, .osmosis, .terra, .terraClassic, .akash, .ethereumSepolia, .cardano:
             return []
         }
     }
