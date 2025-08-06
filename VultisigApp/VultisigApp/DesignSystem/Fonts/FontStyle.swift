@@ -14,17 +14,10 @@ public enum FontStyle: String, CaseIterable {
     case semibold
 
     public func size(_ size: CGFloat) -> Font {
-        let customFont = UIFont(name: fontName, size: size)
-        return Font(customFont ?? UIFont.systemFont(ofSize: size))
+        return Font.custom(fontName, size: size)
     }
 
     var fontName: String {
         "Brockmann-\(rawValue.capitalized)"
-    }
-}
-
-extension UIFont {
-    var font: Font {
-        Font.custom(fontName, size: pointSize)
     }
 }

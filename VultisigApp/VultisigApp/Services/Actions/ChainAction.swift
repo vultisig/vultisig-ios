@@ -27,7 +27,7 @@ enum CoinAction: String, Codable {
         case .swap:
             return Theme.colors.primaryAccent4
         case .deposit, .bridge, .memo,.buy,.sell:
-            return .mediumPurple
+            return Theme.colors.primaryAccent3
         }
     }
 }

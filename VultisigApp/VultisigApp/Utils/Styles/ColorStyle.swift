@@ -7,11 +7,6 @@
 
 import SwiftUI
 
-extension Color {
-    // TODO: - Check which color to replace
-    static let mediumPurple = Color(hex: "9563FF")
-}
-
 extension LinearGradient {
     static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let primaryGradientLinear = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .top, endPoint: .bottom)
