@@ -2,9 +2,7 @@
 //  FunctionCallCosmosYVault.swift
 //  VultisigApp
 //
-//  Refactor: supports **deposit** *and* **withdraw** (re-usable UI)
-//  Updated: 30/07/25  – raw JSON msgs, direct contract (no affiliate)
-//
+
 import SwiftUI
 import Foundation
 import Combine
@@ -37,7 +35,7 @@ class FunctionCallCosmosYVault: ObservableObject {
     @Published var selectedSlippage: Decimal = YVaultConstants.slippageOptions.first!
     @Published var destinationAddress: String = ""
     @Published var action: YVaultAction
-
+    
     @ObservedObject var tx: SendTransaction
     private let vault: Vault
     private let contractAddress: String
