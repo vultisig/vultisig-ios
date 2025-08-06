@@ -146,18 +146,10 @@ struct FunctionCallCosmosYVaultView: View {
             
             // Amount field (always)
             StyledFloatingPointField(
-                placeholder: Binding(
-                    get: { viewModel.balanceLabel },
-                    set: { viewModel.balanceLabel = $0 }
-                ),
-                value: Binding(
-                    get: { viewModel.amount },
-                    set: { viewModel.amount = $0 }
-                ),
-                isValid: Binding(
-                    get: { viewModel.amountValid },
-                    set: { viewModel.amountValid = $0 }
-                )
+                label: "Amount",
+                placeholder: viewModel.balanceLabel,
+                value: $viewModel.amount,
+                isValid: $viewModel.amountValid
             )
             
             // Slippage selector only in withdraw mode
