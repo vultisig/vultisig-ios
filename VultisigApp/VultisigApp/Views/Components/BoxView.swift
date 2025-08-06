@@ -24,5 +24,6 @@ struct BoxView<Content: View>: View {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.blue200, lineWidth: 1)
             )
+            .padding(1)
     }
 }

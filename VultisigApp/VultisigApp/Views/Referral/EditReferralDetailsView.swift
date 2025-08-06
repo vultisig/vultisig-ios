@@ -1,13 +1,13 @@
 //
-//  CreateReferralDetailsView.swift
+//  EditReferralDetailsView.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2025-06-18.
+//  Created by Gaston Mazzeo on 06/08/2025.
 //
 
 import SwiftUI
 
-struct CreateReferralDetailsView: View {
+struct EditReferralDetailsView: View {
     @ObservedObject var sendTx: SendTransaction
     @ObservedObject var referralViewModel: ReferralViewModel
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
@@ -17,52 +17,60 @@ struct CreateReferralDetailsView: View {
     @State var showTooltip = false
     
     var body: some View {
-        container
-            .onAppear {
-                setData()
-            }
-            .alert(isPresented: $referralViewModel.showReferralAlert) {
-                alert
-            }
-            .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
-                calculateFees()
-            }
+        Screen {
+            content
+        }
+        .onAppear {
+            setData()
+        }
+        .alert(isPresented: $referralViewModel.showReferralAlert) {
+            alert
+        }
+        .onChange(of: referralViewModel.expireInCount) { oldValue, newValue in
+            calculateFees()
+        }
     }
     
     var content: some View {
-        ZStack {
-            Background()
-            
-            VStack {
-                if showTooltip {
-                    tooltip
-                }
-                main
-                button
+        VStack {
+            if showTooltip {
+                tooltip
             }
+            main
+            button
         }
     }
     
     var main: some View {
         ScrollView {
             VStack(spacing: 16) {
-                pickReferralCode
-                separator
-                setExpiration
-                separator
-//                choosePayoutAsset
-//                separator
+                yourReferralCodeSection
+                GradientListSeparator()
+                extendExpirationSection
+                GradientListSeparator()
+                choosePayoutAsset
+                GradientListSeparator()
                 summary
             }
-            .padding(24)
         }
     }
     
-    var pickReferralCode: some View {
-        PickReferralCode(referralViewModel: referralViewModel)
+    var yourReferralCodeSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("yourReferralCode".localized)
+                .foregroundColor(.neutral0)
+                .font(.body14MontserratMedium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            ReferralTextField(
+                text: $referralViewModel.savedGeneratedReferralCode,
+                placeholderText: .empty,
+                action: .Copy,
+                isDisabled: true
+            )
+        }
     }
     
-    var setExpiration: some View {
+    var extendExpirationSection: some View {
         VStack(spacing: 8) {
             setExpirationTitle
             CounterView(count: $referralViewModel.expireInCount, minimumValue: 1)
@@ -71,7 +79,7 @@ struct CreateReferralDetailsView: View {
     }
     
     var setExpirationTitle: some View {
-        Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
+        Text(NSLocalizedString("extendExpiration(inYears)", comment: ""))
             .foregroundColor(.neutral0)
             .font(.body14MontserratMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -84,6 +92,29 @@ struct CreateReferralDetailsView: View {
             description2: "",
             isPlaceholder: referralViewModel.expireInCount == 0
         )
+    }
+    
+    var choosePayoutAsset: some View {
+        VStack(spacing: 8) {
+            choosePayoutAssetTitle
+            choosePayoutAssetSelection
+        }
+    }
+    
+    var choosePayoutAssetTitle: some View {
+        Text(NSLocalizedString("choosePayoutAsset", comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratMedium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var choosePayoutAssetSelection: some View {
+        BoxView {
+            HStack {
+                selectedAsset
+                Spacer()
+            }
+        }
     }
     
     var summary: some View {
@@ -216,5 +247,5 @@ struct CreateReferralDetailsView: View {
 }
 
 #Preview {
-    CreateReferralDetailsView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel(), functionCallViewModel: FunctionCallViewModel())
+    EditReferralDetailsView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel(), functionCallViewModel: FunctionCallViewModel())
 }

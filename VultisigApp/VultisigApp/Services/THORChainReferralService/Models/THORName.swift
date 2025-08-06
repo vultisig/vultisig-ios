@@ -21,4 +21,8 @@ struct THORName: Codable {
     let preferredAsset: String
     let preferredAssetSwapThresholdRune: String
     let affiliateCollectorRune: String
+    
+    var isDefaultPreferredAsset: Bool {
+        preferredAsset == "."
+    }
 }

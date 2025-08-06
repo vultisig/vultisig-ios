@@ -34,15 +34,15 @@ struct ReferralLaunchView: View {
             Spacer()
             referredContent
             
-//            if referralViewModel.savedGeneratedReferralCode.isEmpty {
+            if referralViewModel.savedGeneratedReferralCode.isEmpty {
                 orSeparator
                 createTitle
                 createButton
-//            } else {
-//                separator
-//                referralTitle
-//                referralCopyTextField
-//            }
+            } else {
+                separator
+                referralTitle
+                referralCopyTextField
+            }
         }
         .padding(24)
     }
@@ -101,8 +101,7 @@ struct ReferralLaunchView: View {
     
     var createButton: some View {
         PrimaryNavigationButton(title: "createReferral") {
-            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-//            CreateReferralView(referralViewModel: referralViewModel)
+            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
         }
     }
     

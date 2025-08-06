@@ -300,7 +300,7 @@ extension ThorchainService {
         }
         
         let decoder = JSONDecoder()
-        let poolResponse = try decoder.decode(PoolResponse.self, from: data)
+        let poolResponse = try decoder.decode(THORChainPoolResponse.self, from: data)
         
         // Convert from 8 decimal places to a decimal value
         guard let priceValue = Double(poolResponse.assetTorPrice) else {
@@ -518,32 +518,32 @@ private extension ThorchainService {
     """
     
     // MARK: - Models
-    /// Response model for pool data from the THORChain API
-    struct PoolResponse: Codable {
-        let status: String
-        let asset: String
-        let decimals: Int
-        let balanceAsset: String
-        let balanceRune: String
-        
-        // The TCY price in TOR (8 decimal places)
-        let assetTorPrice: String
-        
-        enum CodingKeys: String, CodingKey {
-            case status
-            case asset
-            case decimals
-            case balanceAsset = "balance_asset"
-            case balanceRune = "balance_rune"
-            case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
-        }
-    }
-    
     enum Errors: Error {
         case tnsEntryNotFound
         case invalidURL
         case invalidPriceFormat
         case invalidResponse
         case apiError(String)
+    }
+}
+
+/// Response model for pool data from the THORChain API
+struct THORChainPoolResponse: Codable {
+    let status: String
+    let asset: String
+    let decimals: Int
+    let balanceAsset: String
+    let balanceRune: String
+    
+    // The TCY price in TOR (8 decimal places)
+    let assetTorPrice: String
+    
+    enum CodingKeys: String, CodingKey {
+        case status
+        case asset
+        case decimals
+        case balanceAsset = "balance_asset"
+        case balanceRune = "balance_rune"
+        case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
     }
 }

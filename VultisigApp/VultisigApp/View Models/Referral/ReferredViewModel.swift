@@ -12,7 +12,7 @@ class ReferredViewModel: ObservableObject {
     @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
     @Published var showReferralBannerSheet: Bool = false
     @Published var navigationToReferralOverview: Bool = false
-    @Published var navigationToCreateReferralView: Bool = false
+    @Published var navigationToReferralsView: Bool = false
     
     @Published var isLoading: Bool = false
     
@@ -24,6 +24,8 @@ class ReferredViewModel: ObservableObject {
     @Published var referredLaunchViewErrorMessage: String = ""
     @Published var referredLaunchViewSuccessMessage: String = ""
     
+    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
+    
     func closeBannerSheet() {
         showReferralBannerSheet = false
         navigationToReferralOverview = true
@@ -31,7 +33,7 @@ class ReferredViewModel: ObservableObject {
     
     func showReferralDashboard() {
         navigationToReferralOverview = false
-        navigationToCreateReferralView = true
+        navigationToReferralsView = true
         showReferralCodeOnboarding = false
     }
     

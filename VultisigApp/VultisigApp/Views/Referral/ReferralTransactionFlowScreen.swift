@@ -1,5 +1,5 @@
 //
-//  CreateReferralView.swift
+//  ReferralTransactionFlowScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-30.
@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-struct CreateReferralView: View {
+struct ReferralTransactionFlowScreen: View {
     @ObservedObject var referralViewModel: ReferralViewModel
+    let isEdit: Bool
     
     @StateObject var sendTx = SendTransaction()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -38,10 +39,22 @@ struct CreateReferralView: View {
             }
         }
         .frame(maxHeight: .infinity)
+        .onLoad {
+            Task {
+                if let vault = homeViewModel.selectedVault {
+                    await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
+                }
+            }
+        }
     }
     
+    @ViewBuilder
     var detailsView: some View {
-        CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        if isEdit {
+            EditReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        } else {
+            CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        }
     }
     
     var verifyView: some View {
@@ -161,6 +174,6 @@ struct CreateReferralView: View {
 }
 
 #Preview {
-    CreateReferralView(referralViewModel: ReferralViewModel())
+    ReferralTransactionFlowScreen(referralViewModel: ReferralViewModel(), isEdit: false)
         .environmentObject(HomeViewModel())
 }

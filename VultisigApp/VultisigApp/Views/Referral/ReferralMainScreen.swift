@@ -18,8 +18,8 @@ struct ReferralMainScreen: View {
                     referralCodeSection
                     collectedRewardsSection
                     expiresOnSection
-                    PrimaryButton(title: "editReferral".localized) {
-                        
+                    PrimaryNavigationButton(title: "editReferral") {
+                        ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
                     }
                     GradientListSeparator()
                     yourFriendsReferralCodeSection
@@ -52,9 +52,9 @@ struct ReferralMainScreen: View {
     
     var collectedRewardsSection: some View {
         BoxView {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Icon(named: "trophy")
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 10)
                 Text("collectedRewards".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)
@@ -69,7 +69,7 @@ struct ReferralMainScreen: View {
     
     var expiresOnSection: some View {
         BoxView {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("expiresOn".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)

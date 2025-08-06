@@ -18,7 +18,11 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     @Published var isValidAddress = false
     @Published var isValidForm = true
     @Published var showAlert = false
-    @Published var currentIndex = 1
+    @Published var currentIndex = 1 {
+        didSet {
+            print("Updated to \(currentIndex)")
+        }
+    }
     @Published var currentTitle = "function"
     @Published var priceRate = 0.0
     @Published var coinBalance: String = "0"

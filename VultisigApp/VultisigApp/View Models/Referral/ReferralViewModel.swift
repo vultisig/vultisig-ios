@@ -13,13 +13,13 @@ class ReferralViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     // Generated Referral Code
-    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = "VI"
+    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     @Published var referralCode: String = ""
     @Published var showReferralAvailabilityError: Bool = false
     @Published var referralAvailabilityErrorMessage: String = ""
     @Published var showReferralAvailabilitySuccess: Bool = false
     @Published var isReferralCodeVerified: Bool = false
-    @Published var expireInCount: Int = 0
+    @Published var expireInCount: Int = 1
     
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
@@ -37,7 +37,11 @@ class ReferralViewModel: ObservableObject {
     @Published var collectedRewards: String = ""
     
     let blockchainService = BlockChainService.shared
-    private let thorchainReferralService = THORChainReferralService()
+    private let thorchainReferralService = THORChainAPIService()
+    
+    var hasReferralCode: Bool {
+        savedGeneratedReferralCode.isNotEmpty
+    }
     
     var registrationFeeFiat: String {
         getFiatAmount(for: getRegistrationFee())
@@ -88,11 +92,6 @@ class ReferralViewModel: ObservableObject {
         
         guard isReferralCodeVerified else {
             showAlert(with: "pickValidCode")
-            return
-        }
-        
-        guard expireInCount>0 else {
-            showAlert(with: "pickValidExpiration")
             return
         }
         
@@ -150,7 +149,7 @@ class ReferralViewModel: ObservableObject {
         referralAvailabilityErrorMessage = ""
         showReferralAvailabilitySuccess = false
         isReferralCodeVerified = false
-        expireInCount = 0
+        expireInCount = 1
         
         showReferralAlert = false
         referralAlertMessage = ""
@@ -301,7 +300,7 @@ class ReferralViewModel: ObservableObject {
             let lastBlock = try await thorchainReferralService.getLastBlock()
             
             let expiresOn = calculateExpiresOn(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
-            let collectedRunes = calculateCollectedRewards(runes: details.affiliateCollectorRune)
+            let collectedRunes = await calculateCollectedRewards(details: details)
             
             await MainActor.run {
                 self.expiresOn = expiresOn
@@ -329,7 +328,28 @@ class ReferralViewModel: ObservableObject {
         return formattedDate
     }
     
-    func calculateCollectedRewards(runes: String) -> String {
-        return ""
+    func calculateCollectedRewards(details: THORName) async -> String {
+        let assetDecimals: Int
+        let assetMultiplier: Decimal
+        let assetTicker: String
+        
+        if details.isDefaultPreferredAsset {
+            let runeCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+            guard let runeCoin else { return "" }
+            assetDecimals = runeCoin.decimals
+            assetMultiplier = 1
+            assetTicker = runeCoin.ticker
+        } else {
+            let preferredAsset = try? await thorchainReferralService.getPoolAsset(asset: details.preferredAsset)
+            guard let preferredAsset else { return "" }
+            assetDecimals = preferredAsset.decimals
+            assetMultiplier = (preferredAsset.assetTorPrice.toDecimal() / 100_000_000)
+            assetTicker = String(preferredAsset.asset.split(separator: ".")[1].split(separator: "-").first ?? "")
+        }
+
+        let collectedRunesAmount = details.affiliateCollectorRune.toDecimal()
+        let collectedAssetAmount = collectedRunesAmount * assetMultiplier / pow(10, assetDecimals)
+        
+        return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
 }

@@ -11,6 +11,8 @@ import SwiftData
 struct ContentView: View {
     @Query var vaults: [Vault]
     
+    // TODO: - Remove only for testing
+    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
@@ -36,6 +38,10 @@ struct ContentView: View {
         }
         .id(accountViewModel.referenceID)
         .colorScheme(.dark)
+        .onLoad {
+            // TODO: - Remove only for testing
+            savedGeneratedReferralCode = "BNTT"
+        }
     }
     
     var content: some View {

@@ -678,6 +678,7 @@
 "transactionHash" = "Transaction Hash";
 "pickReferralCode" = "Pick Referral Code";
 "setExpiration(inYears)" = "Set Expiration (in years)";
+"extendExpiration(inYears)" = "Extend Expiration (in years)";
 "choosePayoutAsset" = "Choose payout asset";
 "select" = "Select";
 "registrationFee" = "Registration Fee";

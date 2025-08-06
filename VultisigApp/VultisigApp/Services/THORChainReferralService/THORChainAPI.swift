@@ -8,8 +8,10 @@
 import Foundation
 
 enum THORChainAPI: TargetType {
-    case thornameDetails(name: String)
-    case lastBlock
+    case getThornameDetails(name: String)
+    case getPools
+    case getPoolAsset(asset: String)
+    case getLastBlock
     
     var baseURL: URL {
         URL(string: "https://thornode.ninerealms.com/thorchain")!
@@ -17,26 +19,34 @@ enum THORChainAPI: TargetType {
     
     var path: String {
         switch self {
-        case .thornameDetails(let name):
+        case .getThornameDetails(let name):
             return "/thorname/\(name)"
-        case .lastBlock:
+        case .getLastBlock:
             return "/lastblock"
+        case .getPools:
+            return "/pools"
+        case .getPoolAsset(let asset):
+            return "/pool/\(asset)"
         }
     }
     
     var method: HTTPMethod {
         switch self {
-        case .thornameDetails, .lastBlock:
+        case .getThornameDetails,
+                .getLastBlock,
+                .getPools,
+                .getPoolAsset:
             return .get
         }
     }
     
     var task: HTTPTask {
         switch self {
-        case .thornameDetails, .lastBlock:
+        case .getThornameDetails,
+                .getLastBlock,
+                .getPools,
+                .getPoolAsset:
             return .requestPlain
         }
     }
-    
-    
 }

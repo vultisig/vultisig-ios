@@ -19,12 +19,12 @@ struct ReferralView: View {
                 referralCodeNavigationLink
             }
         }
-        .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview, destination: {
+        .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview) {
             ReferredOnboardingView(referredViewModel: referredViewModel)
-        })
-        .navigationDestination(isPresented: $referredViewModel.navigationToCreateReferralView, destination: {
-            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        })
+        }
+        .navigationDestination(isPresented: $referredViewModel.navigationToReferralsView) {
+            referralView
+        }
         .sheet(isPresented: $referredViewModel.showReferralBannerSheet) {
             referralOverviewSheet
         }
@@ -32,7 +32,7 @@ struct ReferralView: View {
     
     var referralCodeNavigationLink: some View {
         NavigationLink {
-            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+            referralView
         } label: {
             referralCodeLabel
         }
@@ -53,6 +53,15 @@ struct ReferralView: View {
     var referralOverviewSheet: some View {
         ReferralOnboardingBanner(referredViewModel: referredViewModel)
             .presentationDetents([.height(400)])
+    }
+    
+    @ViewBuilder
+    var referralView: some View {
+        if referralViewModel.hasReferralCode {
+            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        } else {
+            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        }
     }
 }
 
