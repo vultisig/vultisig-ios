@@ -21,7 +21,7 @@ struct SendDetailsTabEditTools: View {
     
     var checkmark: some View {
         Image(systemName: "checkmark.circle")
-            .foregroundColor(Theme.colors.alertInfo)
+            .foregroundColor(Theme.colors.alertSuccess)
     }
     
     var editButton: some View {
