@@ -323,15 +323,7 @@ extension ThorchainService {
     /// - Returns: Formatted asset name (e.g., "THOR.RUNE", "BTC.BTC")
     func formatAssetName(chain: Chain, symbol: String) -> String {
         // For THORChain assets, the chain code should be "THOR"
-        // For Noble assets, use "USDC" as the chain code since THORChain recognizes Noble USDC as "USDC.UUSDC"
-        let chainCode: String
-        if chain == .thorChain {
-            chainCode = "THOR"
-        } else if chain == .noble {
-            chainCode = "USDC"
-        } else {
-            chainCode = chain.rawValue.uppercased()
-        }
+        let chainCode = chain == .thorChain ? "THOR" : chain.rawValue.uppercased()
         
         // Uppercase the symbol
         let assetSymbol = symbol.uppercased()
