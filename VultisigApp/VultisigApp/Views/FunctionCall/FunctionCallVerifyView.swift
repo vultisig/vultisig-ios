@@ -153,7 +153,9 @@ struct FunctionCallVerifyView: View {
     
     func signAndMoveToNextView() {
         Task {
-            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
+            
+            let wasmExecuteContractPayload = depositViewModel.buildWasmPayload(from: tx.memoFunctionDictionary, sender: tx.coin.address)
+            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault, wasmExecuteContractPayload: wasmExecuteContractPayload)
             
             if keysignPayload != nil {
                 depositViewModel.moveToNextView()
