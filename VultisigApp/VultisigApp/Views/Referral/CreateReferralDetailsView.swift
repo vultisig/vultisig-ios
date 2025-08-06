@@ -72,8 +72,8 @@ struct CreateReferralDetailsView: View {
     
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -125,8 +125,8 @@ struct CreateReferralDetailsView: View {
     
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -136,13 +136,13 @@ struct CreateReferralDetailsView: View {
             Spacer()
         }
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)
     }
@@ -193,31 +193,31 @@ struct CreateReferralDetailsView: View {
                 .frame(width: 32, height: 32)
             
             Text("RUNE")
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var infoLabel: some View {
         Image(systemName: "info.circle")
-            .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var tooltip: some View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(.neutral900)
-                .font(.body16BrockmannMedium)
+                .foregroundColor(Theme.colors.textDark)
+                .font(Theme.fonts.bodyMMedium)
             
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color.neutral0)
+        .background(Theme.colors.textPrimary)
         .cornerRadius(8)
         .padding(.horizontal, 24)
         .onTapGesture {
@@ -231,43 +231,43 @@ struct CreateReferralDetailsView: View {
                 Image(systemName: icon)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(Color.blue600)
-                    .font(.body22BrockmannMedium)
+                    .background(Theme.colors.bgSecondary)
+                    .font(Theme.fonts.title2)
             } else if let value {
                 Text(value)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(.clear)
-                    .font(.body16BrockmannMedium)
+                    .font(Theme.fonts.bodyMMedium)
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 0) {
                 Text(description1)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !description2.isEmpty {
                     Text(description2)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func setData() {

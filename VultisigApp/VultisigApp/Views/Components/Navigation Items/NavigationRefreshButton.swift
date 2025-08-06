@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NavigationRefreshButton: View {
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     var action: () -> Void
     
     @State var animate: Bool = false
@@ -19,7 +19,7 @@ struct NavigationRefreshButton: View {
             handleTap()
         } label: {
             Image(systemName: "arrow.clockwise.circle")
-                .font(.body18MenloBold)
+                .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(tint)
                 .rotationEffect(.degrees(animate ? 360 : 0))
                 .animation(enableTransition ? .easeInOut(duration: 1) : nil, value: animate)

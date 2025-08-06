@@ -37,7 +37,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         .padding(16)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(1)
         .onChange(of: isExpanded) { _, _ in

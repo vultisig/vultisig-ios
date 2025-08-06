@@ -11,7 +11,7 @@ import SwiftUI
 extension InformationNote {
     var overlay: some View {
         RoundedRectangle(cornerRadius: 12)
-            .stroke(Color.warningYellow, lineWidth: 2)
+            .stroke(Theme.colors.bgAlert, lineWidth: 2)
     }
 }
 #endif

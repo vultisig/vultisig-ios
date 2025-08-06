@@ -23,14 +23,14 @@ struct FastVaultPasswordDisclaimer: View {
             Spacer()
             info
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.alertYellow)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.alertWarning)
         .padding(16)
-        .background(Color.alertYellowBackground)
+        .background(Theme.colors.bgAlert)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.alertYellow.opacity(0.25), lineWidth: 1)
+                .stroke(Theme.colors.alertWarning.opacity(0.25), lineWidth: 1)
         )
     }
     
@@ -74,19 +74,19 @@ struct FastVaultPasswordDisclaimer: View {
             description
         }
         .padding(16)
-        .background(Color.neutral200)
+        .background(Theme.colors.textLight)
         .cornerRadius(12)
     }
     
     var title: some View {
         HStack {
             Text(NSLocalizedString("moreInfo", comment: ""))
-                .foregroundColor(.neutral900)
+                .foregroundColor(Theme.colors.textDark)
             
             Spacer()
             closeButton
         }
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
     }
     
     var closeButton: some View {
@@ -94,14 +94,14 @@ struct FastVaultPasswordDisclaimer: View {
             showTooltip = false
         } label: {
             Image(systemName: "xmark")
-                .foregroundColor(.disabledText)
+                .foregroundColor(Theme.colors.textButtonDisabled)
         }
     }
     
     var description: some View {
         Text(NSLocalizedString("moreInfoDescription", comment: ""))
-            .foregroundColor(.extraLightGray)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
+            .font(Theme.fonts.bodySMedium)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)

@@ -12,7 +12,7 @@ extension ContentView {
     var container: some View {
         content
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarTitleTextColor(.neutral0)
+            .navigationBarTitleTextColor(Theme.colors.textPrimary)
     }
 }
 #endif

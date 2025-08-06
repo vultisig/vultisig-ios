@@ -12,11 +12,11 @@ import UniformTypeIdentifiers
 extension SendCryptoAddressTextField {
     var container: some View {
         content
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .fileImporter(
                 isPresented: $showImagePicker,
@@ -43,7 +43,7 @@ extension SendCryptoAddressTextField {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(sendCryptoViewModel.showAddressAlert ? .alertYellow : Color.blue400, lineWidth: 1)
+                    .stroke(sendCryptoViewModel.showAddressAlert ? Theme.colors.alertWarning : Theme.colors.bgTertiary, lineWidth: 1)
             )
             .padding(1)
     }
@@ -59,8 +59,8 @@ extension SendCryptoAddressTextField {
                     }
                 }
             ))
-            .foregroundColor(.neutral0)
-            .font(.body14BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()

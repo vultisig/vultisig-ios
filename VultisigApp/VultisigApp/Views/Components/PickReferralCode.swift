@@ -30,8 +30,8 @@ struct PickReferralCode: View {
     
     var pickReferralTitle: some View {
         Text(NSLocalizedString("pickReferralCode", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -66,25 +66,25 @@ struct PickReferralCode: View {
                 ProgressView()
             } else {
                 Text(NSLocalizedString("search", comment: ""))
-                    .foregroundColor(.lightText)
-                    .font(.body14BrockmannSemiBold)
+                    .foregroundColor(Theme.colors.textLight)
+                    .font(Theme.fonts.bodySMedium)
             }
         }
         .frame(width: 100, height: 60)
-        .background(Color.persianBlue400)
+        .background(Theme.colors.bgButtonTertiary)
         .cornerRadius(16)
     }
     
     var status: some View {
         HStack {
             Text(NSLocalizedString("status", comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             statusCapsule
         }
-        .font(.body14MontserratMedium)
+        .font(Theme.fonts.bodySMedium)
         .padding(.top, 2)
     }
     
@@ -92,10 +92,10 @@ struct PickReferralCode: View {
         Group {
             if referralViewModel.showReferralAvailabilitySuccess {
                 Text(NSLocalizedString("available", comment: ""))
-                    .foregroundColor(.alertTurquoise)
+                    .foregroundColor(Theme.colors.alertInfo)
             } else {
                 Text(NSLocalizedString(referralViewModel.referralAvailabilityErrorMessage, comment: ""))
-                    .foregroundColor(.alertRed)
+                    .foregroundColor(Theme.colors.alertError)
             }
         }
         .padding(.vertical, 8)
@@ -103,7 +103,7 @@ struct PickReferralCode: View {
         .cornerRadius(24)
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
 }

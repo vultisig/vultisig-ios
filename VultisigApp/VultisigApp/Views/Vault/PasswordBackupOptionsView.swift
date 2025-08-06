@@ -40,23 +40,23 @@ struct PasswordBackupOptionsView: View {
     
     var icon: some View {
         Image(systemName: "person.badge.key")
-            .font(.body28BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.title1)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(width: 64, height: 64)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(16)
     }
     
     var textContent: some View {
         VStack(spacing: 16) {
             Text(NSLocalizedString("doYouWantToAddPassword", comment: ""))
-                .font(.body22BrockmannMedium)
+                .font(Theme.fonts.title2)
             
             Text(NSLocalizedString("doYouWantToAddPasswordDescription", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .opacity(0.6)
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
     

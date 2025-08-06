@@ -71,8 +71,8 @@ struct AddressBookView: View {
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func toggleEdit() {

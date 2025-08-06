@@ -31,13 +31,13 @@ struct FastVaultSetHintView: View {
     var hintField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("setPasswordHintTitle", comment: ""))
-                .font(.body34BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("setPasswordHintSubtitle", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             hintTextfield
         }
@@ -51,8 +51,8 @@ struct FastVaultSetHintView: View {
                 TextEditor(text: $hint)
                     .textEditorStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .foregroundColor(.neutral500)
-                    .font(.body16BrockmannMedium)
+                    .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodyMMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
                     .focused($isFocused)
@@ -71,8 +71,8 @@ struct FastVaultSetHintView: View {
                 VStack {
                     HStack {
                         Text(NSLocalizedString("enterHint", comment: ""))
-                            .foregroundColor(.neutral500)
-                            .font(.body16BrockmannMedium)
+                            .foregroundColor(Theme.colors.textExtraLight)
+                            .font(Theme.fonts.bodyMMedium)
                             .padding(.top, 8)
                             .padding(.leading, 5)
                         Spacer()
@@ -85,11 +85,11 @@ struct FastVaultSetHintView: View {
         .frame(height: 120)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -98,7 +98,7 @@ struct FastVaultSetHintView: View {
             hint = ""
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     

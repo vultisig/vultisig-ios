@@ -49,7 +49,7 @@ struct TokenSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)
@@ -60,7 +60,7 @@ struct TokenSelectionView: View {
         .onChange(of: tokenViewModel.searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .colorScheme(.dark)
     }
@@ -69,8 +69,8 @@ struct TokenSelectionView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.horizontal, 16)
             
             if tokenViewModel.showRetry {
@@ -88,8 +88,8 @@ struct TokenSelectionView: View {
             if tokenViewModel.searchText.isEmpty {
                 if !tokenViewModel.selectedTokens.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))
-                        .font(.body16MenloBold)
-                        .foregroundColor(.neutral0)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)) {
@@ -104,8 +104,8 @@ struct TokenSelectionView: View {
                 Section(
                     header:
                         Text(NSLocalizedString("tokens", comment:"Tokens"))
-                        .font(.body16MenloBold)
-                        .foregroundColor(.neutral0)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                 ) {
@@ -117,8 +117,8 @@ struct TokenSelectionView: View {
                 }
             } else {
                 Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)) {
                     if !tokenViewModel.searchedTokens.isEmpty {
@@ -133,8 +133,8 @@ struct TokenSelectionView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                             Text("Searching...")
-                                .font(.body14Menlo)
-                                .foregroundColor(.neutral0)
+                                .font(Theme.fonts.bodySRegular)
+                                .foregroundColor(Theme.colors.textPrimary)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)

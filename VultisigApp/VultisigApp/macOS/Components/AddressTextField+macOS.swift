@@ -13,19 +13,19 @@ extension AddressTextField {
         ZStack(alignment: .trailing) {
             field
         }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.caption12)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase(), text: $contractAddress)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)

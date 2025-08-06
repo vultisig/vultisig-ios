@@ -12,6 +12,7 @@ import Tss
 import RiveRuntime
 
 struct KeygenView: View {
+    
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -115,8 +116,8 @@ struct KeygenView: View {
     
     var title: some View {
         Text(NSLocalizedString("whileYouWait", comment: "KEYGEN"))
-            .foregroundColor(.extraLightGray)
-            .font(.body16BrockmannMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
+            .font(Theme.fonts.bodyMMedium)
     }
     
     var preparingVaultText: some View {
@@ -197,11 +198,11 @@ struct KeygenView: View {
             
             VStack {
                 Text(NSLocalizedString("vaultCreated", comment: ""))
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 Text(NSLocalizedString("successfully", comment: ""))
                     .foregroundStyle(LinearGradient.primaryGradient)
             }
-            .font(.body28BrockmannMedium)
+            .font(Theme.fonts.title1)
             .opacity(progressCounter == 4 ? 1 : 0)
             .animation(.easeInOut, value: progressCounter)
             .padding(.top, 60)
@@ -235,12 +236,12 @@ struct KeygenView: View {
     var migrateFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("migrationFailed", comment: "migration failed"))
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -248,12 +249,12 @@ struct KeygenView: View {
     var keygenFailedText: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
             Text(viewModel.keygenError)
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -276,8 +277,8 @@ struct KeygenView: View {
             Text("(Build \(build ?? "1"))")
         }
         .textCase(.uppercase)
-        .font(.body14Menlo)
-        .foregroundColor(.turquoise600)
+        .font(Theme.fonts.bodySRegular)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
     }
     
     var button: some View {

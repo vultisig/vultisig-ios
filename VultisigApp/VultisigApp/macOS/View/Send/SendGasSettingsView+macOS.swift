@@ -25,11 +25,11 @@ extension SendGasSettingsView {
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textLight))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? .neutral300 : .neutral0)
-                    .tint(.neutral0)
-                    .font(.body16Menlo)
+                    .foregroundColor(disabled ? Theme.colors.textLight : Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.next)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())
@@ -39,8 +39,8 @@ extension SendGasSettingsView {
                 
                 if let label {
                     Text(label)
-                        .foregroundColor(.neutral300)
-                        .font(.body16Menlo)
+                        .foregroundColor(Theme.colors.textLight)
+                        .font(Theme.fonts.bodyMRegular)
                 }
             }
             .padding(.horizontal, 12)
@@ -48,7 +48,7 @@ extension SendGasSettingsView {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         )
         .padding(.horizontal, 16)
     }

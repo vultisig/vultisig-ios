@@ -25,7 +25,7 @@ struct ChainCell: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditingChains)
@@ -40,8 +40,8 @@ struct ChainCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditingChains ? nil : 0)
             .clipped()
     }
@@ -68,38 +68,38 @@ struct ChainCell: View {
     
     var title: some View {
         Text(group.name)
-            .font(.body16MontserratBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(.body12Menlo)
-            .foregroundColor(.turquoise600)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .lineLimit(1)
             .truncationMode(.middle)
     }
     
     var count: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : viewModel.getGroupCount(group))
-            .font(.body12Menlo)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(50)
     }
     
     var quantity: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var balance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

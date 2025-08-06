@@ -77,11 +77,11 @@ struct OnboardingSummaryView: View {
     var disclaimerLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: didAgree ? "checkmark.circle" : "circle")
-                .foregroundColor(.alertTurquoise)
+                .foregroundColor(Theme.colors.alertInfo)
 
             Text(NSLocalizedString("secureVaultSummaryDiscalimer", comment: ""))
-                .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 12)

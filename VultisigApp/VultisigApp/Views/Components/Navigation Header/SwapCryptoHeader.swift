@@ -40,7 +40,7 @@ struct SwapCryptoHeader: View {
     
     var text: some View {
         Text(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     

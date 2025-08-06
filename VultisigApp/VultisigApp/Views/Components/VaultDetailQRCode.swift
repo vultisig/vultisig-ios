@@ -47,16 +47,16 @@ struct VaultDetailQRCode: View {
         Image("VultisigLogoTemplate")
             .resizable()
             .frame(width: 32, height: 32)
-            .foregroundColor(.logoBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
             .padding(8)
-            .background(Color.neutral0)
+            .background(Theme.colors.textPrimary)
             .cornerRadius(10)
     }
     
     var name: some View {
         Text(vault.name)
-            .font(.body20MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 10)
             .lineLimit(2)
             .multilineTextAlignment(.center)
@@ -65,20 +65,20 @@ struct VaultDetailQRCode: View {
     var uid: some View {
         Group {
             Text("UID\n")
-                .font(.body16MontserratSemiBold) +
+                .font(Theme.fonts.bodyMMedium) +
             Text(viewModel.getId(for: vault))
-                .font(.body12Montserrat)
+                .font(Theme.fonts.bodySRegular)
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 10)
         .padding(.horizontal, 14)
     }
     
     var webLink: some View {
         Text("vultisig.com")
-            .font(.body18MontserratMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     

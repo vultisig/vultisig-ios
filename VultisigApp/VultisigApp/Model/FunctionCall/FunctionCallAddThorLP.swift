@@ -352,7 +352,7 @@ struct FunctionCallAddThorLPView: View {
                 ApprovalInfoSection()
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
-                    .background(Color.blue600.opacity(0.1))
+                    .background(Theme.colors.bgSecondary.opacity(0.1))
                     .cornerRadius(10)
             }
             
@@ -393,8 +393,8 @@ struct PoolSelectorSection: View {
     private var loadingView: some View {
         HStack(spacing: 12) {
             Text("Loading pools...")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Spacer()
             
@@ -404,7 +404,7 @@ struct PoolSelectorSection: View {
         }
         .frame(height: 48)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -412,12 +412,12 @@ struct PoolSelectorSection: View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle")
-                    .font(.body16Menlo)
+                    .font(Theme.fonts.bodyMRegular)
                     .foregroundColor(.orange)
                 
                 Text(model.loadError ?? "No pools available")
-                    .font(.body14Menlo)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .lineLimit(2)
                 
                 Spacer()
@@ -429,13 +429,13 @@ struct PoolSelectorSection: View {
                 } label: {
                     Text("Retry")
                         .font(.caption)
-                        .foregroundColor(.turquoise600)
+                        .foregroundColor(Theme.colors.primaryAccent1)
                 }
             }
             .frame(minHeight: 48)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
         }
     }
@@ -467,20 +467,20 @@ struct ApprovalInfoSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("ERC20 Approval Required")
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text("This ERC20 token requires approval before adding to liquidity pool. Two transactions will be signed:")
-                .font(.body14Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("1. Approval transaction")
-                    .font(.body12Menlo)
-                    .foregroundColor(.turquoise600)
+                    .font(Theme.fonts.caption12)
+                    .foregroundColor(Theme.colors.primaryAccent1)
                 Text("2. Add liquidity transaction")
-                    .font(.body12Menlo)
-                    .foregroundColor(.turquoise600)
+                    .font(Theme.fonts.caption12)
+                    .foregroundColor(Theme.colors.primaryAccent1)
             }
             .padding(.leading, 16)
         }

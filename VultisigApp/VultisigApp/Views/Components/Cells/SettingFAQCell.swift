@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingFAQCell: View {
+    
     let question: String
     let answer: String
     
@@ -15,7 +16,7 @@ struct SettingFAQCell: View {
     
     var body: some View {
         container
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .onTapGesture {
                 withAnimation {
@@ -47,20 +48,20 @@ struct SettingFAQCell: View {
     
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
-            .font(.body12Menlo)
-            .foregroundColor(.neutral300)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textLight)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.down")
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(.degrees(isExpanded ? 180 : 0))
     }
 }

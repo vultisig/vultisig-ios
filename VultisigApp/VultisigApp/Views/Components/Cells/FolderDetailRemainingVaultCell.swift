@@ -21,14 +21,14 @@ struct FolderDetailRemainingVaultCell: View {
             toggle
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
     var text: some View {
         Text(vault.name)
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var toggle: some View {

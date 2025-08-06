@@ -44,11 +44,11 @@ extension FastVaultEmailView {
     func textfield(title: String, text: Binding<String>) -> some View {
         HStack {
             TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(Color.neutral500)
-                .font(.body16BrockmannMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
+                .font(Theme.fonts.bodyMMedium)
             )
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.done)
             .focused($isEmailFocused)
             .onSubmit {
@@ -60,7 +60,7 @@ extension FastVaultEmailView {
         }
         .frame(height: 56)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

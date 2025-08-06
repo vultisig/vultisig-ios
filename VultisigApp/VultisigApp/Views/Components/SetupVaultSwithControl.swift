@@ -20,7 +20,7 @@ struct SetupVaultSwithControl: View {
             content
         }
         .padding(6)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(100)
         .frame(height: 56)
     }
@@ -28,7 +28,7 @@ struct SetupVaultSwithControl: View {
     var capsule: some View {
         HStack {
             RoundedRectangle(cornerRadius: 100)
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
                 .frame(width: (width/2))
                 .offset(x: selectedTab == .fast ? 0 : (width/2))
             
@@ -65,12 +65,12 @@ struct SetupVaultSwithControl: View {
     var secureButtonLabel: some View {
         HStack(spacing: 8) {
             Image(systemName: "shield")
-                .font(.body20Menlo)
-                .foregroundColor(selectedTab == .secure ? .alertTurquoise : .neutral0)
+                .font(Theme.fonts.bodyLRegular)
+                .foregroundColor(selectedTab == .secure ? Theme.colors.alertInfo : Theme.colors.textPrimary)
             
             Text(NSLocalizedString("secure", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)
@@ -81,15 +81,15 @@ struct SetupVaultSwithControl: View {
         HStack(spacing: 8) {
             if selectedTab == .secure {
                 boltImage
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 boltImage
                     .foregroundStyle(LinearGradient.primaryGradient)
             }
             
             Text(NSLocalizedString("fast", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)
@@ -98,7 +98,7 @@ struct SetupVaultSwithControl: View {
     
     var boltImage: some View {
         Image(systemName: "bolt")
-            .font(.body20Menlo)
+            .font(Theme.fonts.bodyLRegular)
     }
     
     private func handleSwitch(_ option: SetupVaultState) {

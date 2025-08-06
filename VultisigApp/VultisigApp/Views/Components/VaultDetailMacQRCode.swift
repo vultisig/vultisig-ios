@@ -41,23 +41,23 @@ struct VaultDetailMacQRCode: View {
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
-            .foregroundColor(.neutral100)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var logo: some View {
         Image("VultisigLogoTemplate")
             .resizable()
             .frame(width: 64, height: 64)
-            .foregroundColor(.logoBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
             .padding(8)
-            .background(Color.neutral0)
+            .background(Theme.colors.textPrimary)
             .cornerRadius(10)
     }
     
     var name: some View {
         Text(vault.name)
-            .font(.title60MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.display)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 60)
             .lineLimit(2)
             .multilineTextAlignment(.center)
@@ -66,20 +66,20 @@ struct VaultDetailMacQRCode: View {
     var uid: some View {
         Group {
             Text("UID\n")
-                .font(.title36MontserratSemiBold) +
+                .font(Theme.fonts.largeTitle) +
             Text(viewModel.getId(for: vault))
-                .font(.title36MontserratSemiBold)
+                .font(Theme.fonts.largeTitle)
         }
         .multilineTextAlignment(.center)
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 10)
         .padding(.horizontal, 14)
     }
     
     var webLink: some View {
         Text("vultisig.com")
-            .font(.title36MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.largeTitle)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.bottom, 32)
     }

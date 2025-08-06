@@ -25,7 +25,7 @@ struct UTXOTransactionCell: View {
             summary
         }
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }
@@ -119,7 +119,7 @@ struct UTXOTransactionCell: View {
             Text(value)
         }
         .frame(height: 32)
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 }

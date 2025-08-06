@@ -69,8 +69,8 @@ struct SwapChainPickerView: View {
     
     var title: some View {
         Text(NSLocalizedString("selectNetwork", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var view: some View {
@@ -94,13 +94,13 @@ struct SwapChainPickerView: View {
     var listHeader: some View {
         HStack {
             Text(NSLocalizedString("chain", comment: ""))
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
             Text(NSLocalizedString("balance", comment: ""))
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 24)

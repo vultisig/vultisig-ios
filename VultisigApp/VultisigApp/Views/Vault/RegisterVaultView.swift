@@ -59,10 +59,10 @@ struct RegisterVaultView: View {
     
     var webLabel: some View {
         Text("Vultisig Web")
-            .foregroundColor(.turquoise600)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .padding(.vertical, 12)
             .padding(.horizontal, 28)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
     }
     

@@ -18,11 +18,11 @@ struct KeysignDiscoverServiceView: View {
             
             Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(30)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear {
             viewModel.discoverService()

@@ -39,13 +39,13 @@ struct OnChainSecurityScreen: View {
     var securityScannerCell: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("vaultSettingsSecurityScreenTitleSwitch".localized)
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
             Text("vaultSettingsSecurityScreenTitleContent".localized)
-                .font(.body12BrockmannMedium)
+                .font(Theme.fonts.caption12)
             Toggle("", isOn: $securityScannerEnabled)
                 .labelsHidden()
                 .scaleEffect(0.8)
-                .tint(.persianBlue200)
+                .tint(Theme.colors.primaryAccent4)
                 .toggleStyle(.switch)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

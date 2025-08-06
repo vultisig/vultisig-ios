@@ -28,16 +28,16 @@ struct CoinPickerCell: View {
                     Text(coin.ticker)
                     Spacer()
                     Text(coin.balanceString)
-                        .font(.body12MenloBold)
+                        .font(Theme.fonts.caption12)
                     
                     Text(coin.balanceInFiat)
                 }
-                .font(.body16MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
 
                 Text(coin.address)
-                    .font(.body12MenloBold)
-                    .foregroundColor(.turquoise400)
+                    .font(Theme.fonts.caption12)
+                    .foregroundColor(Theme.colors.bgButtonPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -45,7 +45,7 @@ struct CoinPickerCell: View {
         }
         .frame(height: 72)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
 }

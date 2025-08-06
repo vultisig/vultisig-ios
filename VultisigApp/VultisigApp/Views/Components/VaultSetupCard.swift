@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VaultSetupCard: View {
+    
     let title: String
     let buttonTitle: String
     let icon: String
@@ -18,7 +19,7 @@ struct VaultSetupCard: View {
             button
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(20)
     }
     
@@ -40,14 +41,14 @@ struct VaultSetupCard: View {
     
     var text: some View {
         Text(NSLocalizedString("ThisDeviceIs", comment: ""))
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

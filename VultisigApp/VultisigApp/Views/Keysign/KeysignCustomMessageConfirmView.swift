@@ -17,14 +17,14 @@ struct KeysignCustomMessageConfirmView: View {
                 summary
                 button
             }
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
         }
     }
 
     var title: some View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
-            .font(.body20MontserratSemiBold)
+            .font(Theme.fonts.bodyLMedium)
     }
 
     var summary: some View {
@@ -36,7 +36,7 @@ struct KeysignCustomMessageConfirmView: View {
                 Separator()
             }
             .padding(16)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .padding(16)
         }
@@ -65,11 +65,11 @@ struct KeysignCustomMessageConfirmView: View {
     private func getPrimaryCell(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString(title, comment: "") + ":")
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             Text(value)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -80,7 +80,7 @@ struct KeysignCustomMessageConfirmView: View {
             Spacer()
             Text(value)
         }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 }

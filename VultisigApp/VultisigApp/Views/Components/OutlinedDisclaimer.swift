@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OutlinedDisclaimer: View {
+    
     let text: String
     var alignment: TextAlignment = .leading
 
@@ -19,11 +20,11 @@ struct OutlinedDisclaimer: View {
         HStack(spacing: 12) {
             Image(systemName: "info.circle")
                 .foregroundStyle(LinearGradient.primaryGradient)
-                .font(.body14Menlo)
+                .font(Theme.fonts.bodySRegular)
             
             Text(text)
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineSpacing(4)
                 .multilineTextAlignment(alignment)
                 .frame(maxWidth: .infinity, alignment: .leading)

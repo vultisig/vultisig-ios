@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct GradientSeparator: View {
-    var color: Color = .neutral0
+    var color: Color = Theme.colors.textPrimary
     var opacity: CGFloat = 1
     
     var body: some View {

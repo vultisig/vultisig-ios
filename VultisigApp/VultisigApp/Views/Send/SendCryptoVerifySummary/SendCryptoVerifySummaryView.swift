@@ -88,7 +88,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             getValueCell(for: "estNetworkFee", with: input.feeCrypto, secondRowText: input.feeFiat)
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -99,8 +99,8 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     
     var summaryTitle: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
-            .foregroundColor(.lightText)
-            .font(.body16BrockmannMedium)
+            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.bodyMMedium)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -113,14 +113,14 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                 .cornerRadius(32)
             
             Text(input.amount)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(input.coinTicker)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
         }
-        .font(.body18BrockmannMedium)
+        .font(Theme.fonts.bodyLMedium)
     }
     
     func getValueCell(
@@ -132,7 +132,7 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     ) -> some View {
         HStack(spacing: 4) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
@@ -144,13 +144,13 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text(value)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 
                 if let secondRowText {
                     Text(secondRowText)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
             
@@ -160,13 +160,13 @@ struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.middle)
             }
             
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

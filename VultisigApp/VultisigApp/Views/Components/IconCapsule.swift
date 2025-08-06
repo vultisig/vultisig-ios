@@ -21,24 +21,24 @@ struct IconCapsule: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .cornerRadius(50)
         .overlay(
             RoundedRectangle(cornerRadius: 50)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(.lightText)
-            .font(.body12BrockmannMedium)
+            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.caption12)
     }
     
     func iconContent(_ icon: String) -> some View {
         Image(systemName: icon)
-            .foregroundColor(.turquoise600)
-            .font(.body16BrockmannMedium)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
+            .font(Theme.fonts.bodyMMedium)
     }
 }
 

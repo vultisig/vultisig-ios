@@ -16,9 +16,9 @@ struct KeygenStatusText: View {
             Text(NSLocalizedString(gradientText, comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString(plainText, comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
         .padding(.horizontal, 32)
         .multilineTextAlignment(.center)
     }

@@ -17,19 +17,19 @@ struct OpenButton: View {
             .padding(.vertical, 5)
             .padding(.horizontal, 20)
             .frame(width: 170, height: 54)
-            .background(Color.turquoise600)
+            .background(Theme.colors.bgButtonPrimary)
             .cornerRadius(100)
     }
     
     var content: some View {
         HStack(spacing: 10) {
             Image(systemName: buttonIcon)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.blue600)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.bgSecondary)
             
             Text(NSLocalizedString(buttonLabel, comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.blue600)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.bgSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
         }

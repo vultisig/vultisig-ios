@@ -19,15 +19,16 @@ struct StyledFloatingPointField: View {
     @State private var textFieldValue: String = ""
     @State private var localIsValid: Bool = true
     
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("\(label)\(optionalMessage)")
-                    .font(.body14MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
-                        .font(.body8Menlo)
+                        .font(Theme.fonts.caption10)
                         .foregroundColor(.red)
                 }
             }
@@ -43,11 +44,11 @@ struct StyledFloatingPointField: View {
                 Text(placeholder.capitalized)
                     .foregroundColor(.gray)
             }
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.done)
             .padding(12)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
             .onChange(of: textFieldValue) { oldValue, newValue in

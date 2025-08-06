@@ -150,8 +150,8 @@ struct CreateReferralView: View {
     
     private func getNavigationTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .frame(maxWidth: .infinity)

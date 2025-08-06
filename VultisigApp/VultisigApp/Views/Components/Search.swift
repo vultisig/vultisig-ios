@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct Search: View {
+    
+    
     @Binding var searchText: String
     var cornerRadius: CGFloat = 10
 
@@ -22,7 +24,7 @@ struct Search: View {
             }
         }
         .padding(18)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(cornerRadius)
         .colorScheme(.dark)
     }
@@ -31,7 +33,7 @@ struct Search: View {
         Image(systemName: "magnifyingglass")
             .resizable()
             .frame(width: 24, height: 24)
-            .foregroundColor(.neutral500)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 
     var closeButton: some View {
@@ -41,7 +43,7 @@ struct Search: View {
             Image(systemName: "xmark.circle.fill")
                 .resizable()
                 .frame(width: 20, height: 20)
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
 

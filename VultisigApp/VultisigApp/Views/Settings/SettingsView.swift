@@ -192,8 +192,8 @@ struct SettingsView: View {
             Text("(Build \(build ?? "1"))")
         }
         .textCase(.uppercase)
-        .font(.body14Menlo)
-        .foregroundColor(.turquoise600)
+        .font(Theme.fonts.bodySRegular)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
         .scaleEffect(scale)
         .onTapGesture {
             handleVersionTap()
@@ -221,8 +221,8 @@ struct SettingsView: View {
     
     private func getTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -93,7 +93,7 @@ struct PeerDiscoveryView: View {
                 failureText
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .blur(radius: showInfoSheet ? 1 : 0)
         .animation(.easeInOut, value: showInfoSheet)
     }
@@ -166,7 +166,7 @@ struct PeerDiscoveryView: View {
     var failureText: some View {
         VStack{
             Text(self.viewModel.errorMessage)
-                .font(.body15MenloBold)
+                .font(Theme.fonts.bodyMMedium)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.red)
         }
@@ -183,8 +183,8 @@ struct PeerDiscoveryView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body22BrockmannMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.title2)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
         .padding(.horizontal, 8)
     }

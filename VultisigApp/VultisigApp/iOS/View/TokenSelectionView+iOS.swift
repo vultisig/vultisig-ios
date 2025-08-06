@@ -28,8 +28,8 @@ extension TokenSelectionView {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18MenloBold)
-                        .foregroundColor(Color.neutral0)
+                        .font(Theme.fonts.bodyLMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
             }
             
@@ -38,7 +38,7 @@ extension TokenSelectionView {
                 if tokenViewModel.isLoading {
                     ProgressView()
                         .scaleEffect(0.8)
-                        .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                        .progressViewStyle(CircularProgressViewStyle(tint: Theme.colors.textPrimary))
                 }
             }
         }
@@ -81,8 +81,8 @@ extension TokenSelectionView {
 
     var textField: some View {
         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textContentType(.oneTimeCode)
@@ -99,7 +99,7 @@ extension TokenSelectionView {
             if tokenViewModel.isLoading {
                 ProgressView()
                     .scaleEffect(0.8)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .neutral0))
+                    .progressViewStyle(CircularProgressViewStyle(tint: Theme.colors.textPrimary))
             }
             PrimaryButton(title: "save") {
                 saveAssets()

@@ -28,11 +28,11 @@ struct TokenSelectorDropdown: View {
             arrow
         }
         .redacted(reason: coin.balanceString.isEmpty ? .placeholder : [])
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -47,8 +47,8 @@ struct TokenSelectorDropdown: View {
     
     var ticker: some View {
         Text("\(coin.ticker)")
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 
     var arrow: some View {
@@ -69,8 +69,8 @@ struct TokenSelectorDropdown: View {
                 Text(coin.balanceString)
             }
         }
-        .font(.body12MenloBold)
-        .foregroundColor(.neutral200)
+        .font(Theme.fonts.caption12)
+        .foregroundColor(Theme.colors.textLight)
     }
     
 }

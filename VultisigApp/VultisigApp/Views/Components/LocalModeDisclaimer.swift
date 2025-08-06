@@ -13,13 +13,13 @@ struct LocalModeDisclaimer: View {
             infoIcon
             text
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.persianBlue200, lineWidth: 1)
+                .stroke(Theme.colors.primaryAccent4, lineWidth: 1)
         )
         .padding(.horizontal, 8)
         .padding(.vertical, 12)
@@ -29,12 +29,12 @@ struct LocalModeDisclaimer: View {
         Image(systemName: "icloud.slash")
             .resizable()
             .frame(width: 16, height: 16)
-            .foregroundColor(.persianBlue200)
+            .foregroundColor(Theme.colors.primaryAccent4)
     }
     
     var text: some View {
         Text(NSLocalizedString("youAreInLocalMode", comment: ""))
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

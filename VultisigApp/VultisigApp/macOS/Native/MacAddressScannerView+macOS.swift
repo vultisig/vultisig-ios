@@ -77,8 +77,8 @@ struct MacAddressScannerView: View {
             
             HStack(spacing: 20) {
                 Text(NSLocalizedString("initializingCamera", comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 ProgressView()
                     .preferredColorScheme(.dark)

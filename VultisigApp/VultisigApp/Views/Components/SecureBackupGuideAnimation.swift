@@ -36,7 +36,7 @@ struct SecureBackupGuideAnimation: View {
     var rectangle: some View {
         Rectangle()
             .frame(width: 2, height: contentHeight-cellHeight+6)
-            .foregroundColor(.blue600)
+            .foregroundColor(Theme.colors.bgSecondary)
             .offset(y: -2)
     }
 
@@ -71,30 +71,30 @@ struct SecureBackupGuideAnimation: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(32)
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .offset(x: -2)
     }
 
     var icon: some View {
         Image(systemName: "shield")
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
     }
 
     var text: some View {
         Text(NSLocalizedString("secureVault", comment: ""))
-            .foregroundColor(.extraLightGray)
-            .font(.body12BrockmannMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
+            .font(Theme.fonts.caption12)
     }
 
     var title: some View {
         Text(NSLocalizedString("backupGuide", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body34BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.largeTitle)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.leading, 24)
     }
@@ -122,23 +122,23 @@ struct SecureBackupGuideAnimation: View {
         HStack(spacing: 0){
             Rectangle()
                 .frame(width: 22, height: 2)
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .foregroundColor(.iconLightBlue)
+                    .foregroundColor(Theme.colors.primaryAccent4)
 
                 Text(NSLocalizedString(text, comment: ""))
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
             .padding(16)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
         }
         .opacity(showCell ? 1 : 0)

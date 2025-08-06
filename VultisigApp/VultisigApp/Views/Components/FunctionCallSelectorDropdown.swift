@@ -21,7 +21,7 @@ struct FunctionCallSelectorDropdown: View {
             }
         }
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -43,8 +43,8 @@ struct FunctionCallSelectorDropdown: View {
             Image(systemName: "chevron.down")
         }
         .redacted(reason: selected.rawValue.isEmpty ? .placeholder : [])
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
     }
     
@@ -64,15 +64,15 @@ struct FunctionCallSelectorDropdown: View {
     private func getCell(for item: FunctionCallType) -> some View {
         HStack(spacing: 12) {
             Text(item.display(coin: coin))
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Spacer()
             
             if selected == item {
                 Image(systemName: "checkmark")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
         .frame(height: 48)

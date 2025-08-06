@@ -32,11 +32,11 @@ struct BackupNowDisclaimer: View {
         }
         .frame(height: 76)
         .padding(.horizontal, 12)
-        .background(Color.alertRed.opacity(0.3))
+        .background(Theme.colors.alertError.opacity(0.3))
         .cornerRadius(12)
         .overlay (
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.alertRed, lineWidth: 1)
+                .stroke(Theme.colors.alertError, lineWidth: 1)
         )
     }
     
@@ -50,22 +50,22 @@ struct BackupNowDisclaimer: View {
     
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .font(.body24MontserratMedium)
-            .foregroundColor(.alertRed)
+            .font(Theme.fonts.title2)
+            .foregroundColor(Theme.colors.alertError)
     }
     
     var title: some View {
         Text(NSLocalizedString("backupYourVaultNow", comment: ""))
-            .font(.body16MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 24)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.forward")
-            .font(.body12MenloMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

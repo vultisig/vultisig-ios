@@ -146,7 +146,7 @@ private extension FlatPicker {
     func gradientView(isStart: Bool) -> some View {
         let size = itemSize * 0.2
         LinearGradient(
-            gradient: Gradient(colors: [Color.backgroundBlue, Color.backgroundBlue.opacity(0.8), Color.backgroundBlue.opacity(0)]),
+            gradient: Gradient(colors: [Theme.colors.bgPrimary, Theme.colors.bgPrimary.opacity(0.8), Theme.colors.bgPrimary.opacity(0)]),
             startPoint: gradientStartPoint(isStart: isStart),
             endPoint: gradientEndPoint(isStart: isStart)
         )

@@ -31,8 +31,8 @@ struct SendCryptoAddressBookView: View {
     
     var title: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
-            .font(.body16MontserratMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var listSelector: some View {
@@ -43,7 +43,7 @@ struct SendCryptoAddressBookView: View {
         .animation(.easeInOut, value: isSavedAddressesSelected)
         .overlay(
             RoundedRectangle(cornerRadius: 60)
-                .stroke(Color.borderBlue, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .padding(.top, 12)
     }
@@ -115,18 +115,18 @@ struct SendCryptoAddressBookView: View {
     
     var errorMessage: some View {
         Text(NSLocalizedString("noSavedAddresses", comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.lightText)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textLight)
             .padding(.top, 32)
     }
     
     private func getCell(for title: String, isSelected: Bool) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.lightText)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textLight)
             .frame(maxWidth: .infinity)
             .frame(height: 42)
-            .background(isSelected ? Color.persianBlue400 : .clear)
+            .background(isSelected ? Theme.colors.bgButtonTertiary : .clear)
             .cornerRadius(60)
     }
     

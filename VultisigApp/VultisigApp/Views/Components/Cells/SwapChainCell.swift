@@ -33,7 +33,7 @@ struct SwapChainCell: View {
             content
             GradientListSeparator()
         }
-        .background(isSelected ? Color.blue400 : Color.blue600)
+        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
     
     var content: some View {
@@ -55,14 +55,14 @@ struct SwapChainCell: View {
     
     var title: some View {
         Text(chain.name)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var balanceInfo: some View {
         Text(balance)
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func setData() {

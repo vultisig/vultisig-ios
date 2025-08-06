@@ -18,7 +18,7 @@ struct SwapRefreshQuoteCounter: View {
         .animation(.easeInOut, value: timer)
         .padding(.vertical, 6)
         .padding(.horizontal, 12)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(24)
     }
     
@@ -27,22 +27,22 @@ struct SwapRefreshQuoteCounter: View {
             Text("0:") +
             Text(String(format: "%02d", timer))
         }
-        .font(.body12MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.caption12)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var loader: some View {
         ZStack {
             Circle()
                 .stroke(
-                    Color.borderBlue,
+                    Theme.colors.border,
                     lineWidth: 2
                 )
             
             Circle()
                 .trim(from: 0, to: Double(timer)/60)
                 .stroke(
-                    Color.persianBlue200,
+                    Theme.colors.primaryAccent4,
                     lineWidth: 2
                 )
                 .rotationEffect(.degrees(-90))

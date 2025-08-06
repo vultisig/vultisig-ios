@@ -28,15 +28,15 @@ struct UpdateCheckUpToDateView: View {
     
     var upToDateTitle: some View {
         Text(NSLocalizedString("appUpToDate", comment: ""))
-            .font(.body16MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
     
     var upToDateDescription: some View {
         Text(currentVersion)
-            .font(.body12Montserrat)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

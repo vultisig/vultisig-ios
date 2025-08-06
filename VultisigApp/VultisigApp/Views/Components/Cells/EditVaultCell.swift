@@ -39,15 +39,15 @@ struct EditVaultCell: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
         .frame(height: 70)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }
     
     var image: some View {
         iconImage
-            .font(.body24MontserratMedium)
-            .foregroundColor(isDestructive ? .destructive : .neutral200)
+            .font(Theme.fonts.title2)
+            .foregroundColor(isDestructive ? Theme.colors.alertError : Theme.colors.textLight)
             .frame(width: 30)
     }
     
@@ -62,19 +62,19 @@ struct EditVaultCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(NSLocalizedString(title, comment: ""))
-                .font(.body14Menlo)
-                .foregroundColor(isDestructive ? .destructive : .neutral0)
+                .font(Theme.fonts.bodySRegular)
+                .foregroundColor(isDestructive ? Theme.colors.alertError : Theme.colors.textPrimary)
             
             Text(NSLocalizedString(description, comment: ""))
-                .font(.body12Menlo)
-                .foregroundColor(isDestructive ? .destructive : .neutral300)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(isDestructive ? Theme.colors.alertError : Theme.colors.textLight)
         }
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body20Menlo)
-            .foregroundColor(isDestructive ? .destructive : .neutral0)
+            .font(Theme.fonts.bodyLRegular)
+            .foregroundColor(isDestructive ? Theme.colors.alertError : Theme.colors.textPrimary)
     }
 }
 

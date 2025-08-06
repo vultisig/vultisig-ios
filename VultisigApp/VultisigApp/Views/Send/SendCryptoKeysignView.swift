@@ -58,12 +58,12 @@ struct SendCryptoKeysignView: View {
             
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 Text(NSLocalizedString("signingTransaction", comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }
@@ -78,8 +78,8 @@ struct SendCryptoKeysignView: View {
             ErrorMessage(text: "signInErrorTryAgain")
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }
@@ -87,7 +87,7 @@ struct SendCryptoKeysignView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -110,8 +110,8 @@ struct SendCryptoKeysignView: View {
     
     var appVersion: some View {
         Text("Version \(version ?? "1").\(build ?? "1")")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .padding(.bottom, 30)
     }
     
@@ -122,7 +122,7 @@ struct SendCryptoKeysignView: View {
 
 #Preview {
     ZStack {
-        Color.blue800
+        Theme.colors.bgPrimary
             .ignoresSafeArea()
         
         SendCryptoKeysignView()

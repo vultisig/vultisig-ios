@@ -55,12 +55,12 @@ extension ServerBackupVerificationView {
                 BackspaceDetectingTextField(text: $otp[index]) {
                     handleBackspaceTap(index: index)
                 }
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .disableAutocorrection(true)
                     .borderlessTextFieldStyle()
-                    .font(.body16BrockmannMedium)
+                    .font(Theme.fonts.bodyMMedium)
                     .frame(width: 46, height: 46)
-                    .background(Color.blue600)
+                    .background(Theme.colors.bgSecondary)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)

@@ -27,7 +27,7 @@ struct SwitchToLocalLink: View {
                 switchToInternetLabel
             }
         }
-        .font(.body12BrockmannMedium)
+        .font(Theme.fonts.caption12)
         .frame(maxWidth: .infinity, alignment: .center)
     }
     
@@ -47,7 +47,7 @@ struct SwitchToLocalLink: View {
     var switchToInternetLabel: some View {
         Text(NSLocalizedString("switchBackToInternetMode", comment: ""))
         .underline()
-        .font(.body12BrockmannMedium)
+        .font(Theme.fonts.caption12)
     }
     
     private func toggleNetwork() {

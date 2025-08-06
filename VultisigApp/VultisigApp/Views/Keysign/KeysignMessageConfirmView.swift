@@ -46,7 +46,7 @@ struct KeysignMessageConfirmView: View {
     var title: some View {
         Text(NSLocalizedString("verify", comment: ""))
             .frame(maxWidth: .infinity, alignment: .center)
-            .font(.body20MontserratSemiBold)
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 

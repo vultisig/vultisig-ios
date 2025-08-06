@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct InstructionPrompt: View {
+    
     let networkType: NetworkPromptType
     
     var body: some View {
@@ -17,12 +18,12 @@ struct InstructionPrompt: View {
     var phoneContent: some View {
         VStack(spacing: 12) {
             networkType.getImage()
-                .font(.body20MenloMedium)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(networkType.getInstruction())
-                .font(.body10Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
         .frame(height: 60)
@@ -31,12 +32,12 @@ struct InstructionPrompt: View {
     var padContent: some View {
         VStack(spacing: 12) {
             networkType.getImage()
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(networkType.getInstruction())
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
         }
         .frame(height: 80)

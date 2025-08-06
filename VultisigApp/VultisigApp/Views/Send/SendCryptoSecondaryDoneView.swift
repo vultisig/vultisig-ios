@@ -99,11 +99,11 @@ struct SendCryptoSecondaryDoneView: View {
             )
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -139,20 +139,20 @@ struct SendCryptoSecondaryDoneView: View {
             }
             
             Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue600, lineWidth: 1)
+                .stroke(Theme.colors.bgSecondary, lineWidth: 1)
         )
     }
 }

@@ -25,32 +25,32 @@ struct SettingCell: View {
             chevron
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
     var iconBlock: some View {
         Image(systemName: icon)
-            .font(.body20Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     func getSelectionBlock(_ value: String) -> some View {
         Text(value)
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

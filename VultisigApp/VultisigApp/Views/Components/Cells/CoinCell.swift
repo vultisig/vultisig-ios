@@ -11,7 +11,7 @@ struct CoinCell: View {
             content
         }
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
     
     var logo: some View {
@@ -43,16 +43,16 @@ struct CoinCell: View {
     
     var title: some View {
         Text(coin.ticker)
-            .font(.body20Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var quantity: some View {
         let displayBalance = homeViewModel.hideVaultBalance ? "****" : coin.balanceDecimal.formatForDisplay()
         
         return Text(displayBalance)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
     }
     
@@ -69,15 +69,15 @@ struct CoinCell: View {
         }
         
         return Text(homeViewModel.hideVaultBalance ? "****" : "\(formattedStakedBalance) \(labelText)")
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .redacted(reason: coin.stakedBalance.isEmpty ? .placeholder : [])
     }
     
     var amount: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceInFiat)
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .redacted(reason: coin.balanceInFiat.isEmpty ? .placeholder : [])
     }
 }

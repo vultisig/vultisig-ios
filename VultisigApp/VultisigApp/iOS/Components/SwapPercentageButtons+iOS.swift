@@ -21,7 +21,7 @@ extension SwapPercentageButtons {
         buttons
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
 }
 #endif

@@ -33,22 +33,22 @@ struct SendDetailsAddressFields: View {
         VStack(alignment: .leading, spacing: 2) {
             if let vaultName = homeViewModel.selectedVault?.name {
                 Text(vaultName)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
             
             Text(tx.fromAddress)
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.middle)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body12BrockmannMedium).padding(.vertical, 10)
+        .font(Theme.fonts.caption12).padding(.vertical, 10)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
         .padding(1)
     }
@@ -67,8 +67,8 @@ struct SendDetailsAddressFields: View {
     
     private func getTitle(for title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

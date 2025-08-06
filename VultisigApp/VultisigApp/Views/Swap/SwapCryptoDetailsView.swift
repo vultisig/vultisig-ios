@@ -108,11 +108,11 @@ struct SwapCryptoDetailsView: View {
             swapLabel
         }
         .padding(8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .cornerRadius(60)
         .overlay(
             Circle()
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -126,12 +126,12 @@ struct SwapCryptoDetailsView: View {
             } else {
                 // Show swap icon when not loading
                 Image(systemName: "arrow.up.arrow.down")
-                    .font(.body16MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 38, height: 38)
             }
         }
-        .background(Color.persianBlue400)
+        .background(Theme.colors.bgButtonTertiary)
         .cornerRadius(50)
         .padding(2)
         .background(Color.black.opacity(0.2))
@@ -143,7 +143,7 @@ struct SwapCryptoDetailsView: View {
     var filler: some View {
         Rectangle()
             .frame(width: 12, height: 10)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {

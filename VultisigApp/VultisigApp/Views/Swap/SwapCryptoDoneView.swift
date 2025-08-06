@@ -75,7 +75,7 @@ struct SwapCryptoDoneView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var fromToCards: some View {
@@ -119,25 +119,25 @@ struct SwapCryptoDoneView: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(.disabledText)
-            .font(.body12Menlo)
+            .foregroundColor(Theme.colors.textButtonDisabled)
+            .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(60)
             .padding(8)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
             .cornerRadius(60)
             .overlay(
                 Circle()
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
     
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {
@@ -182,11 +182,11 @@ struct SwapCryptoDoneView: View {
             otherFees
         }
         .padding(.horizontal, 24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -216,8 +216,8 @@ struct SwapCryptoDoneView: View {
     
     var chevron: some View {
         Image(systemName: "chevron.up")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
     
@@ -225,7 +225,7 @@ struct SwapCryptoDoneView: View {
         HStack {
             Rectangle()
                 .frame(width: 1)
-                .foregroundColor(.persianBlue200)
+                .foregroundColor(Theme.colors.primaryAccent4)
             
             expandableFees
         }
@@ -270,20 +270,20 @@ struct SwapCryptoDoneView: View {
             .padding(.bottom, 8)
             
             Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description.formatToFiat(includeCurrencySymbol: true))
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -297,14 +297,14 @@ struct SwapCryptoDoneView: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             Text(value)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
             
             if let bracketValue {
@@ -313,7 +313,7 @@ struct SwapCryptoDoneView: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)
@@ -324,7 +324,7 @@ struct SwapCryptoDoneView: View {
             }
         }
         .padding(.vertical)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getCopyButton(for value: String) -> some View {
@@ -332,8 +332,8 @@ struct SwapCryptoDoneView: View {
             copyValue(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
         }
     }
 }

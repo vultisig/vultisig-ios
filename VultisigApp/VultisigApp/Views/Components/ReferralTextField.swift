@@ -31,8 +31,8 @@ struct ReferralTextField: View {
     var textField: some View {
         HStack {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
@@ -40,9 +40,9 @@ struct ReferralTextField: View {
             actionButton
         }
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -66,8 +66,8 @@ struct ReferralTextField: View {
                 EmptyView()
             }
         }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var copyButton: some View {
@@ -98,8 +98,8 @@ struct ReferralTextField: View {
     var errorText: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.invalidRed)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.alertError)
     }
     
     private func clearCode() {
@@ -108,11 +108,11 @@ struct ReferralTextField: View {
     
     private func getOutlineColor() -> Color {
         if showSuccess {
-            Color.alertTurquoise
+            Theme.colors.alertInfo
         } else if showError {
-            Color.invalidRed
+            Theme.colors.alertError
         } else {
-            Color.blue200
+            Theme.colors.border
         }
     }
 }

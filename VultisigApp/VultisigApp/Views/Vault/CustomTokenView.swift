@@ -61,7 +61,7 @@ struct CustomTokenView: View {
                 }
                 .frame(height: 72)
                 .padding(.horizontal, 16)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(10)
                 
                 PrimaryButton(title: "Add \(tokenSymbol) token") {
@@ -75,8 +75,8 @@ struct CustomTokenView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.horizontal, 16)
             
             if !(error is RateLimitError) {
@@ -96,16 +96,16 @@ struct CustomTokenView: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(self.token?.ticker ?? .empty)
-                .font(.body16MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(self.token?.chain.name ?? .empty)
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(contractAddress)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
     }
     

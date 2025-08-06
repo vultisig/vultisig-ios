@@ -24,21 +24,21 @@ struct UpdateCheckUpdateNowView: View {
     
     var updateLogo: some View {
         Image(systemName: "arrow.down.circle.dotted")
-            .font(.title60MontserratLight)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.display)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var updateTitle: some View {
         Text(NSLocalizedString("newUpdateAvailable", comment: ""))
-            .font(.body16MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 24)
     }
     
     var updateDescription: some View {
         Text(latestVersion)
-            .font(.body12Montserrat)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var updateButton: some View {

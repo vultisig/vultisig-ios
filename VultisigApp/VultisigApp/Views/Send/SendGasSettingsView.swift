@@ -96,7 +96,7 @@ struct SendGasSettingsView: View {
     func title(text: String) -> some View {
         HStack {
             Text(text)
-                .font(.body14Montserrat)
+                .font(Theme.fonts.bodySRegular)
                 .foregroundColor(.white)
 
             Spacer()
@@ -108,8 +108,8 @@ struct SendGasSettingsView: View {
         VStack {
             HStack {
                 Text(text.isEmpty ? title : text)
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral300)
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundColor(Theme.colors.textLight)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 16)
 
@@ -119,7 +119,7 @@ struct SendGasSettingsView: View {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         )
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
@@ -136,8 +136,8 @@ struct SendGasSettingsView: View {
             presentationMode.wrappedValue.dismiss()
         }) {
             Image("x")
-                .font(.body18MenloBold)
-                .foregroundColor(Color.neutral0)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
 

@@ -37,7 +37,7 @@ struct UpgradingVaultView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -49,14 +49,14 @@ struct UpgradingVaultView: View {
     
     var title: some View {
         Text(NSLocalizedString("upgradingVault", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body22BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.title2)
     }
     
     var appVersion: some View {
         Text("Version \(version ?? "1").\(build ?? "1")")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .padding(.bottom, 30)
     }
     
