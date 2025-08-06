@@ -114,7 +114,6 @@ struct FunctionCallCosmosYVaultView: View {
     
     var body: some View {
         VStack {
-            // 🔹 Action selector (Deposit / Withdraw)
             GenericSelectorDropDown(
                 items: Binding(
                     get: { ["Deposit", "Withdraw"].map { IdentifiableString(value: $0) } },
@@ -141,7 +140,6 @@ struct FunctionCallCosmosYVaultView: View {
             )
             .padding(.bottom, 8)
             
-            // Amount field (always)
             StyledFloatingPointField(
                 label: "Amount",
                 placeholder: viewModel.balanceLabel,
@@ -149,7 +147,6 @@ struct FunctionCallCosmosYVaultView: View {
                 isValid: $viewModel.amountValid
             )
             
-            // Slippage selector only in withdraw mode
             if case .withdraw = viewModel.action {
                 GenericSelectorDropDown(
                     items: Binding(
@@ -161,7 +158,6 @@ struct FunctionCallCosmosYVaultView: View {
                         set: { sel in
                             if let val = Decimal(string: sel.value.replacingOccurrences(of: "%", with: "")) {
                                 viewModel.selectedSlippage = val / 100
-                                // update action with new slippage
                                 viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
                             }
                         }
