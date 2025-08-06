@@ -24,6 +24,12 @@ extension SendCryptoDetailsView {
                     }
                 }
             }
+            .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+                chainPicker
+            }
+            .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+                coinPicker
+            }
     }
     
     var view: some View {
@@ -47,12 +53,6 @@ extension SendCryptoDetailsView {
         Task {
             await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
             await getBalance()
-        }
-    }
-    
-    private func scrollToField(_ value: ScrollViewProxy) {
-        withAnimation {
-            value.scrollTo(focusedField, anchor: .top)
         }
     }
     

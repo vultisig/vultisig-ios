@@ -44,7 +44,7 @@ struct AllDevicesUpgradeView: View {
         PrimaryNavigationButton(title: "next") {
             VaultShareBackupsView(vault: vault)
         }
-        .frame(width: 100)
+        .frame(width: 120)
         .padding(.vertical, 36)
     }
     

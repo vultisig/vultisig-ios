@@ -18,7 +18,7 @@ extension VaultShareBackupsView {
             description
             button
         }
-        .padding(36)
+        .padding(.bottom,36)
     }
     
     var header: some View {

@@ -28,6 +28,8 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case addThorLP(FunctionCallAddThorLP)
+    case removeThorLP(FunctionCallRemoveThorLP)
     case stakeRuji(FunctionCallStakeRuji)
     case unstakeRuji(FunctionCallUnstakeRuji)
     case withdrawRujiRewards(FunctionCallWithdrawRujiRewards)
@@ -67,6 +69,10 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .addThorLP(let memo):
+            return memo.getView()
+        case .removeThorLP(let memo):
             return memo.getView()
         case .stakeRuji(let memo):
             return memo.getView()
@@ -113,6 +119,10 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .addThorLP(let memo):
+            return memo.description
+        case .removeThorLP(let memo):
+            return memo.description
         case .stakeRuji(let memo):
             return memo.description
         case .unstakeRuji(let memo):
@@ -158,6 +168,10 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .addThorLP(let memo):
+            return memo.amount
+        case .removeThorLP(let removeLP):
+            return removeLP.dustAmount // Use the dust amount from the instance
         case .stakeRuji(let memo):
             return memo.amount
         case .unstakeRuji(_):
@@ -181,6 +195,10 @@ enum FunctionCallInstance {
             return memo.destinationAddress
         case .theSwitch(let memo):
             return memo.destinationAddress
+        case .addThorLP(let memo):
+            // For addThorLP, return the inbound address that was set by fetchInboundAddress()
+            // This is essential for Bitcoin and other chains to know where to send funds
+            return memo.tx.toAddress.isEmpty ? nil : memo.tx.toAddress
         case .stakeRuji(let memo):
             return memo.destinationAddress
         case .unstakeRuji(let memo):
@@ -227,6 +245,10 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.toDictionary()
         case .theSwitch(let memo):
+            return memo.toDictionary()
+        case .addThorLP(let memo):
+            return memo.toDictionary()
+        case .removeThorLP(let memo):
             return memo.toDictionary()
         case .stakeRuji(let memo):
             return memo.toDictionary()
@@ -290,6 +312,10 @@ enum FunctionCallInstance {
             return memo.isTheFormValid
         case .theSwitch(let memo):
             return memo.isTheFormValid
+        case .addThorLP(let memo):
+            return memo.isTheFormValid
+        case .removeThorLP(let memo):
+            return memo.isTheFormValid
         case .stakeRuji(let memo):
             return memo.isTheFormValid
         case .unstakeRuji(let memo):
@@ -313,6 +339,8 @@ enum FunctionCallInstance {
             return .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .kujira:
             return .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            return .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         default:
             return .custom(FunctionCallCustom())
         }

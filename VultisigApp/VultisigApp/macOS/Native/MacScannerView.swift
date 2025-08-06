@@ -11,7 +11,6 @@ import SwiftData
 import AVFoundation
 
 struct MacScannerView: View {
-    let vault: Vault
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
     let selectedVault: Vault?
@@ -196,7 +195,7 @@ struct MacScannerView: View {
 }
 
 #Preview {
-    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
+    MacScannerView(type: .NewVault, sendTx: SendTransaction(), selectedVault: nil)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(VaultDetailViewModel())

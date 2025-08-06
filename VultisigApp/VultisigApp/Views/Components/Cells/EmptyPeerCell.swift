@@ -53,12 +53,6 @@ struct EmptyPeerCell: View {
             .frame(width: 24, height: 24)
     }
     
-    private func getDeviceNumber() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .ordinal
-        let number = NSNumber(value: counter+1)
-        return formatter.string(from: number) ?? "First"
-    }
 }
 
 #Preview {

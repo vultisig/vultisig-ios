@@ -12,17 +12,20 @@ struct FunctionCallDetailsView: View {
     @State private var showInvalidFormAlert = false
     
     @State var fnCallInstance: FunctionCallInstance
-    @State var defaultCoin: Coin
+    let defaultCoin: Coin
     
     @StateObject var keyboardObserver = KeyboardObserver()
 
     init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
+        tx: SendTransaction,
+        functionCallViewModel: FunctionCallViewModel,
+        vault: Vault,
+        defaultCoin: Coin?
     ) {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
-        let defaultCoin = tx.coin
+        let defaultCoin = defaultCoin ?? tx.coin
         self.defaultCoin = defaultCoin
         let dict = tx.memoFunctionDictionary
         if let nodeAddress = dict.get("nodeAddress"), !nodeAddress.isEmpty {
@@ -191,6 +194,10 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .addThorLP:
+                    fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .removeThorLP:
+                    fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .stakeRuji:
                     functionCallViewModel.setRujiToken(to: tx, vault: vault)
                     fnCallInstance = .stakeRuji(FunctionCallStakeRuji(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
@@ -254,7 +261,7 @@ struct FunctionCallDetailsView: View {
         PrimaryButton(title: "continue") {
             Task {
                 if fnCallInstance.isTheFormValid {
-                    tx.amount = fnCallInstance.amount.formatDecimalToLocale()
+                    tx.amount = fnCallInstance.amount.formatToDecimal(digits: tx.coin.decimals)
                     tx.memo = fnCallInstance.description
                     tx.memoFunctionDictionary = fnCallInstance.toDictionary()
                     tx.transactionType = fnCallInstance.getTransactionType()

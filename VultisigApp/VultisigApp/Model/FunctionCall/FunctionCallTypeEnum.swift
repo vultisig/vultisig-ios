@@ -27,6 +27,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          merge,
          unmerge,
          theSwitch,
+         addThorLP,
+         removeThorLP,
          stakeRuji,
          unstakeRuji,
          withdrawRujiRewards
@@ -70,11 +72,15 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
         case .cosmosIBC:
             return "IBC Transfer"
         case .merge:
-            return "The Merge"
+            return "Merge"
         case .unmerge:
-            return "Unmerge RUJI"
+            return "Withdraw RUJI"
         case .theSwitch:
             return "Switch"
+        case .addThorLP:
+            return "Add THORChain LP"
+        case .removeThorLP:
+            return "Remove THORChain LP"
         case .stakeRuji:
             return "Stake RUJI"
         case .unstakeRuji:
@@ -94,6 +100,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
+                .addThorLP,
+                .removeThorLP,
                 .stakeRuji,
                 .unstakeRuji,
                 .withdrawRujiRewards
@@ -104,6 +112,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             default:
                 return defaultFunctions
             }
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            return [.addThorLP]
         case .mayaChain:
             return [.bondMaya,
                     .unbondMaya,
@@ -147,6 +157,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return .theSwitch
         case .kujira:
             return .cosmosIBC
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
+            return .addThorLP
         default:
             return .custom
         }

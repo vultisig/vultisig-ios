@@ -23,29 +23,6 @@ struct SendDetailsAssetTab: View {
             .onChange(of: tx.coin, { oldValue, newValue in
                 setData()
             })
-            // chain selector
-            .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapChainPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showChainPickerSheet,
-                        selectedChain: $viewModel.selectedChain,
-                        selectedCoin: $tx.coin
-                    )
-                }
-            })
-            // coin selector
-            .sheet(isPresented: $viewModel.showCoinPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showCoinPickerSheet,
-                        selectedCoin: $tx.coin,
-                        selectedChain: $viewModel.selectedChain,
-                        isLoading: false
-                    )
-                }
-            })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
@@ -53,10 +30,13 @@ struct SendDetailsAssetTab: View {
                 handleAssetSelection(oldValue, newValue)
             }
             .onChange(of: viewModel.selectedChain) { oldValue, newValue in
-                if let vault = homeViewModel.selectedVault {
-                    print("Selected chain changed: \(String(describing: newValue)) , update from address")
-                    let coin = vault.coins.first(where: { $0.chain == newValue })
-                    tx.fromAddress = coin?.address ?? ""
+                guard let vault = homeViewModel.selectedVault else { return }
+                print("Selected chain changed: \(String(describing: newValue)) , update from address")
+                let coin = vault.coins.first(where: { $0.chain == newValue })
+                tx.fromAddress = coin?.address ?? ""
+                // Update coin when chain changes
+                if let coin {
+                    tx.coin = coin
                 }
             }
             .clipped()
@@ -193,6 +173,7 @@ struct SendDetailsAssetTab: View {
         viewModel.assetSetupDone = true
     }
 }
+
 
 #Preview {
     SendDetailsAssetTab(

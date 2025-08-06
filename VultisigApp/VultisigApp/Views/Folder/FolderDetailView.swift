@@ -117,21 +117,7 @@ struct FolderDetailView: View {
         .borderlessTextFieldStyle()
         .autocorrectionDisabled()
     }
-    
-    var navigationEditButton: some View {
-        Button {
-            withAnimation {
-                isEditingFolders.toggle()
-            }
-        } label: {
-            if isEditingFolders {
-                doneLabel
-            } else {
-                editIcon
-            }
-        }
-    }
-    
+       
     var selectedVaultsList: some View {
         ForEach(folderViewModel.selectedVaults.sorted(by: {
             $0.order < $1.order
@@ -195,18 +181,6 @@ struct FolderDetailView: View {
         .frame(maxHeight: isEditingFolders ? nil : 0)
         .clipped()
         .background(Theme.colors.bgPrimary)
-    }
-    
-    var editIcon: some View {
-        Image(systemName: "square.and.pencil")
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
-    }
-    
-    var doneLabel: some View {
-        Text(NSLocalizedString("done", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
     }
     
     var alert: Alert {

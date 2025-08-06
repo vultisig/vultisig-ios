@@ -12,8 +12,6 @@ struct SwapCryptoDetailsView: View {
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
     @State var buttonRotated = false
-    @State var isFromPickerActive = false
-    @State var isToPickerActive = false
     
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
@@ -30,22 +28,17 @@ struct SwapCryptoDetailsView: View {
             .onReceive(timer) { input in
                 swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
             }
-            .onChange(of: tx.fromCoin, { oldValue, newValue in
+            .onChange(of: tx.fromCoin, { _, _ in
                 handleFromCoinUpdate()
             })
-            .onChange(of: tx.toCoin, { oldValue, newValue in
+            .onChange(of: tx.toCoin, { _, _ in
                 handleToCoinUpdate()
             })
-            .navigationDestination(isPresented: $isFromPickerActive) {
-                CoinPickerView(coins: swapViewModel.pickerFromCoins(tx: tx)) { coin in
-                    swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                    swapViewModel.updateCoinLists(tx: tx)
-                }
+            .onChange(of: swapViewModel.fromChain) { _, _ in
+                swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
             }
-            .navigationDestination(isPresented: $isToPickerActive) {
-                CoinPickerView(coins: swapViewModel.pickerToCoins(tx: tx)) { coin in
-                    swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-                }
+            .onChange(of: swapViewModel.toChain) { _, _ in
+                swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
             }
     }
     

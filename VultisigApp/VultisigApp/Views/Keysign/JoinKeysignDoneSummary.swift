@@ -21,7 +21,15 @@ struct JoinKeysignDoneSummary: View {
         VStack {
             Group {
                 if viewModel.keysignPayload?.swapPayload != nil {
-                    swapContent
+                    // Check if it's an LP operation by looking at the memo
+                    if let memo = viewModel.keysignPayload?.memo,
+                       (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                        // LP operation - show regular send content instead of swap
+                        sendContent
+                    } else {
+                        // Regular swap
+                        swapContent
+                    }
                 } else if viewModel.customMessagePayload == nil {
                     sendContent
                 } else {

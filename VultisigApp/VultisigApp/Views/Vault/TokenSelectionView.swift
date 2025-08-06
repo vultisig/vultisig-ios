@@ -24,7 +24,7 @@ struct TokenSelectionView: View {
                 tokenViewModel.cancelLoading()
                 saveAssets()
             }
-            .onReceive(tokenViewModel.$searchText) {newVault in
+            .onReceive(tokenViewModel.$searchText) { newVault in
                 tokenViewModel.updateSearchedTokens(groupedChain: group)
             }
     }

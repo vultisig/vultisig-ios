@@ -159,6 +159,13 @@ class Endpoint {
     
     static let depositAssetsMaya = "https://mayanode.mayachain.info/mayachain/pools"
     
+    // THORChain LP endpoints
+    static func fetchThorchainPoolLiquidityProvider(asset: String, address: String) -> String {
+        "https://thornode.ninerealms.com/thorchain/pool/\(asset)/liquidity_provider/\(address)"
+    }
+    
+    static let fetchThorchainPools = "https://thornode.ninerealms.com/thorchain/pools"
+    
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool, referredCode: String) -> URL {
         let isAffiliateParams: String
         

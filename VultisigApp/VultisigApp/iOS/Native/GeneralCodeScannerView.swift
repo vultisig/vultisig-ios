@@ -29,9 +29,7 @@ struct GeneralCodeScannerView: View {
     @State var showAlert: Bool = false
     @State var newCoinMeta: CoinMeta? = nil
     
-    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -58,7 +56,7 @@ struct GeneralCodeScannerView: View {
                 }
                 
                 deeplinkViewModel.extractParameters(url, vaults: vaults)
-                presetValuesForDeeplink(url)
+                presetValuesForDeeplink()
             } catch {
                 print(error)
             }
@@ -122,12 +120,6 @@ struct GeneralCodeScannerView: View {
             
             overlay
         }
-    }
-    
-    var border: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .stroke(Theme.colors.textPrimary, lineWidth: 1)
-            .opacity(0.2)
     }
     
     var overlay: some View {
@@ -198,13 +190,13 @@ struct GeneralCodeScannerView: View {
                 return
             }
             deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink(url)
+            presetValuesForDeeplink()
         case .failure(_):
             return
         }
     }
     
-    private func presetValuesForDeeplink(_ url: URL) {
+    private func presetValuesForDeeplink() {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         

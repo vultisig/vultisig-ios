@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct SwapChainCell: View {
-    let coins: [Coin]
+    let vault: Vault
     let chain: Chain
-    @Binding var selectedCoin: Coin
+    let balance: String
     @Binding var selectedChain: Chain?
     @Binding var showSheet: Bool
     
@@ -22,6 +22,7 @@ struct SwapChainCell: View {
         } label: {
             label
         }
+        .buttonStyle(.borderless)
         .onAppear {
             setData()
         }
@@ -30,8 +31,7 @@ struct SwapChainCell: View {
     var label: some View {
         VStack(spacing: 0) {
             content
-            Separator()
-                .opacity(0.2)
+            GradientListSeparator()
         }
         .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
@@ -41,12 +41,7 @@ struct SwapChainCell: View {
             icon
             title
             Spacer()
-            
-            if isSelected {
-                check
-            } else {
-                balanceInfo
-            }
+            balanceInfo
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 12)
@@ -64,18 +59,8 @@ struct SwapChainCell: View {
             .foregroundColor(Theme.colors.textPrimary)
     }
     
-    var check: some View {
-        Image(systemName: "checkmark")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.alertInfo)
-            .frame(width: 24, height: 24)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(32)
-            .bold()
-    }
-    
     var balanceInfo: some View {
-        Text(totalUSDValue)
+        Text(balance)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textPrimary)
     }
@@ -86,35 +71,15 @@ struct SwapChainCell: View {
     
     private func handleTap() {
         selectedChain = chain
-        
-        let availableCoins = coins.filter { coin in
-            coin.chain == selectedChain
-        }.sorted {
-            $0.ticker < $1.ticker
-        }
-        
-        if let firstCoin = availableCoins.first {
-            selectedCoin = firstCoin
-        }
-        
         showSheet = false
-    }
-    
-    private var totalUSDValue: String {
-        let totalValue = coins
-            .filter { $0.chain == chain }
-            .reduce(Decimal.zero) { sum, coin in
-                sum + coin.balanceInFiatDecimal
-            }
-        return totalValue.formatToFiat()
     }
 }
 
 #Preview {
     SwapChainCell(
-        coins: [],
+        vault: .example,
         chain: Chain.example,
-        selectedCoin: .constant(Coin.example),
+        balance: "10000",
         selectedChain: .constant(Chain.example),
         showSheet: .constant(true)
     )

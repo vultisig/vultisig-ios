@@ -19,6 +19,9 @@
 		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
 		13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */; };
 		13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */; };
+		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
+		GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = T94FUQJYPRAV7FIDJNMPFKAH /* FunctionCallRemoveThorLP.swift */; };
+		F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */; };
 		13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */; };
 		135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */; };
 		135677A82E391AC9002C10A2 /* SecurityScannerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */; };
@@ -28,6 +31,7 @@
 		135677B62E39369A002C10A2 /* HTTPClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */; };
 		135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AE2E39369A002C10A2 /* HTTPClient.swift */; };
 		135677B92E39369A002C10A2 /* HTTPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677B02E39369A002C10A2 /* HTTPError.swift */; };
+		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
 		136A12DE2E395F4F0001B1CA /* SecurityScannerHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */; };
@@ -58,6 +62,7 @@
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
+		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */; };
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
@@ -70,6 +75,12 @@
 		13BD8D4F2E3D49AD0013B67E /* ThemeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */; };
 		13BD8D502E3D49AD0013B67E /* ColorSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D2B2E3D49AD0013B67E /* ColorSystem.swift */; };
 		13BD8D512E3D49AD0013B67E /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D292E3D49AD0013B67E /* Color.swift */; };
+		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
+		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
+		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
+		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
+		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
+		13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DF05742E3CEF710000188C /* SearchTextField.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
@@ -209,7 +220,6 @@
 		A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
 		A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B502CCA472000B6DA47 /* WarningView.swift */; };
-		A5E66B532CCAB4E800B6DA47 /* BackupVaultWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */; };
 		A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CA2C639556009325CB /* DatabaseRate.swift */; };
 		A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CC2C63A987009325CB /* RateProvider.swift */; };
 		A5F2C2352CD3FEE00086253E /* FastSignConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */; };
@@ -549,7 +559,6 @@
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */; };
 		A6BB9BBF2DA9A9B60085E117 /* UpgradeYourVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */; };
-		A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */; };
 		A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */; };
 		A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */; };
 		A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */; };
@@ -723,8 +732,6 @@
 		A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */; };
 		A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */; };
 		A6ECA1A22C93FC0D00456110 /* VaultSetupCard+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */; };
-		A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */; };
-		A6ECA1A72C94106700456110 /* JoinKeysignViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */; };
 		A6ECA1A92C9410D100456110 /* ShareSheetViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */; };
 		A6ECA1AC2C9410EA00456110 /* ShareSheetViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */; };
 		A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */; };
@@ -959,6 +966,7 @@
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEE4AD0C2DBCFC08003A2FC0 /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DEE4AD0B2DBCFC08003A2FC0 /* walletcore */; };
 		DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */; };
+		DEE8B2AC2E40842B0020DA63 /* upgrade_success.riv in Resources */ = {isa = PBXBuildFile; fileRef = DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */; };
 		DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */; };
@@ -1016,6 +1024,9 @@
 		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
 		13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeRuji.swift; sourceTree = "<group>"; };
 		13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeRuji.swift; sourceTree = "<group>"; };
+		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
+		T94FUQJYPRAV7FIDJNMPFKAH /* FunctionCallRemoveThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallRemoveThorLP.swift; sourceTree = "<group>"; };
+		VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainLP.swift; sourceTree = "<group>"; };
 		13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawRujiRewards.swift; sourceTree = "<group>"; };
 		135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerTransactionFactory.swift; sourceTree = "<group>"; };
 		135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerModels.swift; sourceTree = "<group>"; };
@@ -1025,6 +1036,7 @@
 		135677B02E39369A002C10A2 /* HTTPError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPError.swift; sourceTree = "<group>"; };
 		135677B12E39369A002C10A2 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		135677B22E39369A002C10A2 /* TargetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetType.swift; sourceTree = "<group>"; };
+		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
 		136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerHeaderView.swift; sourceTree = "<group>"; };
@@ -1055,6 +1067,7 @@
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
+		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFormExpandableSection.swift; sourceTree = "<group>"; };
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
@@ -1067,6 +1080,12 @@
 		13BD8D3B2E3D49AD0013B67E /* ColorSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3C2E3D49AD0013B67E /* FontSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeProtocol.swift; sourceTree = "<group>"; };
+		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
+		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
+		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
+		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
+		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
+		13DF05742E3CEF710000188C /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
@@ -1206,7 +1225,6 @@
 		A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMessagePayload.swift; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
 		A5E66B502CCA472000B6DA47 /* WarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningView.swift; sourceTree = "<group>"; };
-		A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultWarningView.swift; sourceTree = "<group>"; };
 		A5E841CA2C639556009325CB /* DatabaseRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRate.swift; sourceTree = "<group>"; };
 		A5E841CC2C63A987009325CB /* RateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateProvider.swift; sourceTree = "<group>"; };
 		A5F2C2342CD3FEE00086253E /* FastSignConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSignConfig.swift; sourceTree = "<group>"; };
@@ -1549,7 +1567,6 @@
 		A6BB9BBB2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeFromGG20HomeBanner.swift; sourceTree = "<group>"; };
 		A6BB9BBE2DA9A9B60085E117 /* UpgradeYourVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpgradeYourVaultView.swift; sourceTree = "<group>"; };
 		A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_animation.riv; sourceTree = "<group>"; };
-		A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_succes.riv; sourceTree = "<group>"; };
 		A6BB9BC62DA9D5B90085E117 /* AllDevicesUpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllDevicesUpgradeView.swift; sourceTree = "<group>"; };
 		A6BB9BC82DA9D7F70085E117 /* VaultShareBackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultShareBackupsView.swift; sourceTree = "<group>"; };
 		A6BB9BCA2DA9E1C30085E117 /* AllDevicesUpgradeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AllDevicesUpgradeView+iOS.swift"; sourceTree = "<group>"; };
@@ -1719,8 +1736,6 @@
 		A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Search+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultSetupCard+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultSetupCard+macOS.swift"; sourceTree = "<group>"; };
-		A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenViewModel+iOS.swift"; sourceTree = "<group>"; };
-		A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShareSheetViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShareSheetViewModel+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EncryptedBackupViewModel+iOS.swift"; sourceTree = "<group>"; };
@@ -1956,6 +1971,7 @@
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignWrongVaultTypeErrorView.swift; sourceTree = "<group>"; };
+		DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_success.riv; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEAE0D62D0A7EC9007FDA14 /* SchnorrKeysign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeysign.swift; sourceTree = "<group>"; };
 		DEEB571C2D08F80500B120D1 /* SchnorrKeygen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchnorrKeygen.swift; sourceTree = "<group>"; };
@@ -2062,6 +2078,11 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				139B400A2E42466400238C2C /* Covers */,
+				13DD3B182E3CFE6600D46FA0 /* Picker */,
+				13DD3B152E3CFE4800D46FA0 /* ScrollView */,
+				13DF05732E3CEF580000188C /* TextField */,
+				135C88182E3AADB000FD097D /* GradientListSeparator.swift */,
 				137B2C882E3A84440074F648 /* Screen.swift */,
 				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 				A6725D3F2C40C36700D47716 /* AddressBook */,
@@ -2301,6 +2322,46 @@
 			path = Theme;
 			sourceTree = "<group>";
 		};
+		139B400A2E42466400238C2C /* Covers */ = {
+			isa = PBXGroup;
+			children = (
+				139B400B2E42466800238C2C /* MacOSOverlay.swift */,
+			);
+			path = Covers;
+			sourceTree = "<group>";
+		};
+		13D764362E4102F100F048DE /* Swap */ = {
+			isa = PBXGroup;
+			children = (
+				13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */,
+			);
+			path = Swap;
+			sourceTree = "<group>";
+		};
+		13DD3B152E3CFE4800D46FA0 /* ScrollView */ = {
+			isa = PBXGroup;
+			children = (
+				13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */,
+			);
+			path = ScrollView;
+			sourceTree = "<group>";
+		};
+		13DD3B182E3CFE6600D46FA0 /* Picker */ = {
+			isa = PBXGroup;
+			children = (
+				13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */,
+			);
+			path = Picker;
+			sourceTree = "<group>";
+		};
+		13DF05732E3CEF580000188C /* TextField */ = {
+			isa = PBXGroup;
+			children = (
+				13DF05742E3CEF710000188C /* SearchTextField.swift */,
+			);
+			path = TextField;
+			sourceTree = "<group>";
+		};
 		13EFA1C92E313886009838EB /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -2313,6 +2374,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
 				135677B32E39369A002C10A2 /* Network */,
 				B547A3FE2DF3F9220052164D /* Cardano */,
 				DE1509C32DCD93150030C9A0 /* MoonPay.swift */,
@@ -3126,6 +3188,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				13D764362E4102F100F048DE /* Swap */,
 				1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */,
 				A66DFF3A2D141A1C00312F71 /* GlobalStateViewModel.swift */,
 				A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */,
@@ -3178,6 +3241,7 @@
 		A65649D62B96602700E4B329 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				13D764392E4127AF00F048DE /* Array.swift */,
 				B5E762642DF925F0006DF95D /* String+ExtensionMemo.swift */,
 				465036BA2BCF968E00856B34 /* BigInt.swift */,
 				A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */,
@@ -3518,8 +3582,6 @@
 		A6ECA1A32C940FC900456110 /* View Model */ = {
 			isa = PBXGroup;
 			children = (
-				A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */,
-				A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */,
 				A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */,
 				A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */,
 				A6ECA1B12C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift */,
@@ -3543,6 +3605,7 @@
 		A6F7B6702D42BDB700AC8104 /* Animations */ = {
 			isa = PBXGroup;
 			children = (
+				DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */,
 				1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */,
 				A6C58D832D7B6F3C000D2833 /* backup_vault.riv */,
 				A6EF93512D690BC8004D7EBF /* Onboarding.riv */,
@@ -3563,7 +3626,6 @@
 				A67EC5B32E0502CD0031A22A /* quick_summary.riv */,
 				A53065F92D5A9FEF000B82E6 /* fastvault_overview.riv */,
 				A6BB9BC12DA9AA320085E117 /* upgrade_animation.riv */,
-				A6BB9BC22DA9AA320085E117 /* upgrade_succes.riv */,
 				A6BB9BCE2DA9E43B0085E117 /* all_devices_animation.riv */,
 			);
 			path = Animations;
@@ -3717,6 +3779,9 @@
 				13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */,
 				13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */,
 				13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */,
+				BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */,
+				T94FUQJYPRAV7FIDJNMPFKAH /* FunctionCallRemoveThorLP.swift */,
+				VX9GYT3ZT7ENIW24C32BA8O7 /* ThorchainLP.swift */,
 				B5A97CFB2BF4365E007574D7 /* FunctionCallInstance.swift */,
 				B54E31822BF5A73500D4FC0A /* FunctionCallTypeEnum.swift */,
 				B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */,
@@ -3924,7 +3989,6 @@
 				A638752E2C38570F000CF242 /* BackupVaultNowView.swift */,
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
 				A5340A6A2CECF099002ADD35 /* MonthlyBackupView+macOS.swift */,
-				A5E66B522CCAB4E800B6DA47 /* BackupVaultWarningView.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
 				A65618022CB6500A00E9CF19 /* RegisterVaultView.swift */,
 				A6F7B6F92D4D515100AC8104 /* SecureBackupVaultOverview.swift */,
@@ -4316,6 +4380,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEE8B2AC2E40842B0020DA63 /* upgrade_success.riv in Resources */,
 				A67EC5B42E0502CD0031A22A /* quick_summary.riv in Resources */,
 				A6EF93522D690BC8004D7EBF /* Onboarding.riv in Resources */,
 				A65F8A162D42224100CF4DDB /* Brockmann-Bold.otf in Resources */,
@@ -4347,7 +4412,6 @@
 				A53065FC2D5AA5D3000B82E6 /* securevault_overview.riv in Resources */,
 				A6C58D822D7AD81D000D2833 /* securevault_summary.riv in Resources */,
 				A6C58D7E2D7AD7F6000D2833 /* fastvault_summary.riv in Resources */,
-				A6BB9BC42DA9AA320085E117 /* upgrade_succes.riv in Resources */,
 				A6BB9BC52DA9AA320085E117 /* upgrade_animation.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4475,6 +4539,7 @@
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
+				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
 				A6386D9C2C90224300DDD58E /* SendCryptoSigningErrorView+macOS.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
@@ -4495,6 +4560,7 @@
 				DEEB571D2D08F80C00B120D1 /* SchnorrKeygen.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
+				13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
@@ -4589,6 +4655,7 @@
 				A646DFA32E0CFF53006E8ECC /* ReferralMemoParameter.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
+				13D7643A2E4127B100F048DE /* Array.swift in Sources */,
 				A601D3AB2DBB687E004B6A0A /* PasswordVerifyReminderView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
@@ -4658,6 +4725,7 @@
 				1385741A2E2DAAE9002532BF /* PrimaryButtonView.swift in Sources */,
 				A6E0C9192DE6BAD600A01543 /* ReferredOnboardingGuideAnimation.swift in Sources */,
 				B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */,
+				13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */,
 				A6A6EFC32D703E700062F6EA /* LocalModeDisclaimer.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				B56324982E1E2635008E59A5 /* CetusAggregatorService.swift in Sources */,
@@ -4713,6 +4781,7 @@
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
 				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
 				138574142E2DA932002532BF /* PrimaryButton.swift in Sources */,
+				13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */,
 				135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */,
 				A6BFE1BD2D945AA5000B73C0 /* SwapFromToField.swift in Sources */,
 				A6386DB02C9025BC00DDD58E /* ChainNavigationCell+macOS.swift in Sources */,
@@ -4792,7 +4861,6 @@
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
 				A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */,
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
-				A5E66B532CCAB4E800B6DA47 /* BackupVaultWarningView.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A6C670D92C9E905B00F59B6A /* SendCryptoView+iOS.swift in Sources */,
@@ -4803,7 +4871,6 @@
 				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
 				A6C670AF2C9D118900F59B6A /* TokenSelectionView+macOS.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
-				A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				A6C6712D2CA3C24F00F59B6A /* AddressTextField+macOS.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
@@ -4843,6 +4910,9 @@
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
 				13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */,
+			BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */,
+			GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */,
+			F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */,
 				A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
@@ -4955,6 +5025,7 @@
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
+				13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */,
 				A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
 				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
@@ -4962,6 +5033,7 @@
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C671352CA3C53800F59B6A /* QRShareSheetImage+macOS.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
+				135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */,
 				A52FE09F2D5D5A280016C9A0 /* OnboardingSummaryView+macOS.swift in Sources */,
 				13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */,
 				B52196422C1296DF0021D27A /* IntExtension.swift in Sources */,
@@ -5036,7 +5108,6 @@
 				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
-				A6ECA1A72C94106700456110 /* JoinKeysignViewModel+iOS.swift in Sources */,
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
 				A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */,
 				A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */,
@@ -5169,6 +5240,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				A6833D842C65BC59002029E1 /* TransactionMemoHeader.swift in Sources */,
+				13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */,
 				DE8291942D891AAB0037E5FD /* MigrationRequest.swift in Sources */,
@@ -5485,7 +5557,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -5517,7 +5589,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.22;
+				MARKETING_VERSION = 1.23;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -5543,7 +5615,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -5576,7 +5648,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.22;
+				MARKETING_VERSION = 1.23;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -5597,7 +5669,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -5623,7 +5695,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -5649,7 +5721,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -5670,7 +5742,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

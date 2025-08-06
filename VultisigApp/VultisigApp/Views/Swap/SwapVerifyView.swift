@@ -55,10 +55,9 @@ struct SwapVerifyView: View {
     var content: some View {
         VStack(spacing: 16) {
             fields
-            if tx.isFastVault {
-                fastVaultButton
-            }
-            pairedSignButton
+            signButton
+                .padding(.horizontal, 16)
+                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         }
     }
 
@@ -186,40 +185,29 @@ struct SwapVerifyView: View {
         }
     }
 
-    var fastVaultButton: some View {
-        PrimaryButton(title: NSLocalizedString("fastSign", comment: "")) {
-            fastPasswordPresented = true
-        }
-        .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
-        .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
-        .padding(.horizontal, 24)
-        .sheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $tx.fastVaultPassword,
-                vault: vault, 
-                onSubmit: { onSignPress() }
-            )
-        }
-    }
-
     @ViewBuilder
-    var pairedSignButton: some View {
-        let isDisabled = !verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired)
-        
-        if swapViewModel.isLoadingTransaction {
-            ButtonLoader()
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-        } else {
-            PrimaryButton(
-                title: tx.isFastVault ? "Paired sign" : "startTransaction",
-                type: tx.isFastVault ? .secondary : .primary
-            ) {
+    var signButton: some View {
+        if tx.isFastVault {
+            Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                .foregroundColor(Theme.colors.textExtraLight)
+                .font(Theme.fonts.bodySMedium)
+            
+            LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                fastPasswordPresented = true
+            } longPressAction: {
                 onSignPress()
             }
-            .disabled(isDisabled)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .sheet(isPresented: $fastPasswordPresented) {
+                FastVaultEnterPasswordView(
+                    password: $tx.fastVaultPassword,
+                    vault: vault,
+                    onSubmit: { onSignPress() }
+                )
+            }
+        } else {
+            PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                onSignPress()
+            }
         }
     }
 
@@ -284,19 +272,6 @@ struct SwapVerifyView: View {
         }
         .font(Theme.fonts.bodySMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-            )
-            Spacer()
-            Text(value)
-        }
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func getSwapAssetCell(

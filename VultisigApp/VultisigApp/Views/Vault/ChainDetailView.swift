@@ -8,7 +8,12 @@ struct ChainDetailView: View {
     var tokens: [Coin] {
         return vault.coins
             .filter { $0.chain == group.chain }
-            .sorted()
+            .sorted {
+                if $0.isNativeToken != $1.isNativeToken {
+                    return $0.isNativeToken
+                }
+                return $0.balanceDecimal > $1.balanceDecimal
+            }
     }
 
     @StateObject var sendTx = SendTransaction()

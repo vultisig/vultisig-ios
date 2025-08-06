@@ -8,42 +8,36 @@
 import SwiftUI
 
 struct SwapChainPickerView: View {
+    enum FilterType {
+        case swap
+        case send
+    }
+    
+    let filterType: FilterType
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
-    @Binding var selectedCoin: Coin
-
+    
     @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
-    var filteredChains: [Chain] {
-        let chains = vault.coins.map { coin in
-            coin.chain
-        }
-        
-        let chainsArray = Array(Set(chains)).sorted {
-            $0.name < $1.name
-        }
-        
-        return searchText.isEmpty
-            ? chainsArray
-            : chainsArray
-            .filter { chain in
-                // Search by chain name
-                chain.name.lowercased().contains(searchText.lowercased()) ||
-                // Search by native token ticker
-                chain.ticker.lowercased().contains(searchText.lowercased())
-            }
+    init(
+        filterType: FilterType = .send,
+        vault: Vault,
+        showSheet: Binding<Bool>,
+        selectedChain: Binding<Chain?>
+    ) {
+        self.filterType = filterType
+        self.vault = vault
+        self._showSheet = showSheet
+        self._selectedChain = selectedChain
     }
     
     var content: some View {
         ZStack {
-            ZStack {
-                Background()
-                main
-            }
+            Background()
+            main
         }
-        .buttonStyle(BorderlessButtonStyle())
     }
     
     var main: some View {
@@ -84,8 +78,8 @@ struct SwapChainPickerView: View {
             VStack(spacing: 12) {
                 searchBar
                 
-                if filteredChains.count > 0 {
-                    networkTitle
+                if viewModel.filteredChains.count > 0 {
+                    listHeader
                     list
                 } else {
                     emptyMessage
@@ -97,20 +91,28 @@ struct SwapChainPickerView: View {
         }
     }
     
-    var networkTitle: some View {
-        Text(NSLocalizedString("network", comment: ""))
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    var listHeader: some View {
+        HStack {
+            Text(NSLocalizedString("chain", comment: ""))
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer()
+            Text(NSLocalizedString("balance", comment: ""))
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(.horizontal, 24)
     }
     
     var list: some View {
         LazyVStack(spacing: 0) {
-            ForEach(filteredChains, id: \.self) { chain in
+            ForEach(sortedChains, id: \.chain) { (chain, balance) in
                 SwapChainCell(
-                    coins: vault.coins,
+                    vault: vault,
                     chain: chain,
-                    selectedCoin: $selectedCoin,
+                    balance: balance,
                     selectedChain: $selectedChain,
                     showSheet: $showSheet
                 )
@@ -130,31 +132,35 @@ struct SwapChainPickerView: View {
             view
         }
     }
-
+    
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .padding(.horizontal, 12)
+        SearchTextField(value: $searchText)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
     }
-
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(Theme.colors.textExtraLight)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .disableAutocorrection(true)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-                .padding(.horizontal, 8)
+    
+    var sortedChains: [(chain: Chain, balance: String)] {
+        filteredChains.map { chain in
+            let totalFiat = vault.coins
+                .filter { $0.chain == chain }
+                .reduce(Decimal.zero) { sum, coin in
+                    sum + coin.balanceInFiatDecimal
+                }
+            return (chain, totalFiat)
+        }
+        .sorted(by: { $0.1 > $1.1 })
+        .map { (chain: $0.0, balance: $0.1.formatToFiat())}
+    }
+    
+    var filteredChains: [Chain] {
+        switch filterType {
+        case .swap:
+            return viewModel.groupedAssets.keys.compactMap { chainName in
+                viewModel.groupedAssets[chainName]?.first?.chain
+            }.filter(\.isSwapAvailable)
+        case .send:
+            return vault.coins.filter {$0.isNativeToken}.map{$0.chain}
         }
     }
 }
@@ -163,7 +169,6 @@ struct SwapChainPickerView: View {
     SwapChainPickerView(
         vault: Vault.example,
         showSheet: .constant(true),
-        selectedChain: .constant(Chain.example),
-        selectedCoin: .constant(Coin.example)
+        selectedChain: .constant(Chain.example)
     )
 }

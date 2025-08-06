@@ -14,6 +14,7 @@ struct BackupVaultSuccessView: View {
     
     @State var secureAnimationVM: RiveViewModel? = nil
     @State var fastAnimationVM: RiveViewModel? = nil
+    @State var upgradeAnimationVM: RiveViewModel? = nil
 
     @State var isHomeViewActive = false
     @State var isFastSummaryActive = false
@@ -40,6 +41,7 @@ struct BackupVaultSuccessView: View {
             .onDisappear {
                 secureAnimationVM?.stop()
                 fastAnimationVM?.stop()
+                upgradeAnimationVM?.stop()
             }
     }
     
@@ -70,7 +72,10 @@ struct BackupVaultSuccessView: View {
                 fastAnimationVM.view()
             } else if let secureAnimationVM {
                 secureAnimationVM.view()
-            } else {
+            } else if let upgradeAnimationVM {
+                upgradeAnimationVM.view()
+            }
+            else {
                 Spacer()
             }
         }
@@ -127,10 +132,14 @@ struct BackupVaultSuccessView: View {
     
     private func setData() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if vault.isFastVault {
-                fastAnimationVM = RiveViewModel(fileName: "FastVaultBackupSucces", autoPlay: true)
+            if tssType == .Migrate {
+                    upgradeAnimationVM = RiveViewModel(fileName: "upgrade_success", autoPlay: true)
             } else {
-                secureAnimationVM = RiveViewModel(fileName: "SecureVaultBackupSuccess", autoPlay: true)
+                if vault.isFastVault {
+                    fastAnimationVM = RiveViewModel(fileName: "FastVaultBackupSucces", autoPlay: true)
+                } else {
+                    secureAnimationVM = RiveViewModel(fileName: "SecureVaultBackupSuccess", autoPlay: true)
+                }
             }
         }
     }
