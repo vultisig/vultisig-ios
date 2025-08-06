@@ -24,7 +24,7 @@ struct YVaultConstants {
 // MARK: - Action Type
 enum YVaultAction {
     case deposit
-    case withdraw(slippage: Decimal) // default slippage chosen in UI
+    case withdraw(slippage: Decimal)
 }
 
 // MARK: - View-Model
@@ -36,9 +36,8 @@ class FunctionCallCosmosYVault: ObservableObject {
     @Published var balanceLabel = "( Balance: -- )"
     @Published var selectedSlippage: Decimal = YVaultConstants.slippageOptions.first!
     @Published var destinationAddress: String = ""
-    @Published var action: YVaultAction // 🔸 now mutable so UI can switch
-    
-    // Deps
+    @Published var action: YVaultAction
+
     @ObservedObject var tx: SendTransaction
     private let vault: Vault
     private let contractAddress: String
@@ -47,7 +46,6 @@ class FunctionCallCosmosYVault: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: Init
-    
     init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction) {
         self.tx = tx
         self.vault = vault
@@ -96,7 +94,6 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     var description: String { "yVault-\(tx.coin.ticker.uppercased())-\(actionStr)" }
     private var actionStr: String { action.isDeposit ? "deposit" : "withdraw" }
-    
     
     // MARK: UI
     func getView() -> AnyView {
