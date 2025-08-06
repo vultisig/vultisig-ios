@@ -442,21 +442,21 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .cronosChain,
                 .solana,
                 .zksync,
+                .tron,
+                .noble,
                 .zcash:
             return true
         case .polygonV2,
-            .cardano,
-            .sui,
-            .polkadot,
-            .dydx,
-            .ton,
-            .osmosis,
-            .terra,
-            .terraClassic,
-            .noble,
-            .akash,
-            .tron,
-            .ethereumSepolia:
+             .cardano,
+             .sui,
+             .polkadot,
+             .dydx,
+             .ton,
+             .osmosis,
+             .terra,
+             .terraClassic,
+             .akash,
+             .ethereumSepolia:
             return false
         }
     }
