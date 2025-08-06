@@ -50,8 +50,13 @@ struct ReferralTransactionFlowScreen: View {
     
     @ViewBuilder
     var detailsView: some View {
-        if isEdit {
-            EditReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        if isEdit, let details = referralViewModel.thornameDetails {
+            EditReferralDetailsView(
+                sendTx: sendTx,
+                referralViewModel: referralViewModel,
+                functionCallViewModel: functionCallViewModel,
+                thornameDetails: details
+            )
         } else {
             CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
         }

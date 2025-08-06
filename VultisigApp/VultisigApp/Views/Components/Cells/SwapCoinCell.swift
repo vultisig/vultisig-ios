@@ -26,8 +26,7 @@ struct SwapCoinCell: View {
     var label: some View {
         VStack(spacing: 0) {
             content
-            Separator()
-                .opacity(0.2)
+            GradientListSeparator()
         }
         .background(isSelected ? Color.blue400 : Color.blue600)
     }

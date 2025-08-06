@@ -111,7 +111,7 @@ struct ReferralMainScreen: View {
                             .layoutPriority(1)
                     }
                     Spacer()
-                    Image(systemName: "chevron.right")
+                    Icon(named: "arrow", color: Color.neutral0, size: 24)
                 }
             }
         }

@@ -15,9 +15,14 @@ struct EditReferralDetailsView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var showTooltip = false
+    @State var showPreferredAssetSelection: Bool = false
+    
+    let thornameDetails: THORName
+    
+    @State var preferredAsset: CoinMeta?
     
     var body: some View {
-        Screen {
+        container {
             content
         }
         .onAppear {
@@ -109,10 +114,15 @@ struct EditReferralDetailsView: View {
     }
     
     var choosePayoutAssetSelection: some View {
-        BoxView {
-            HStack {
-                selectedAsset
-                Spacer()
+        Button {
+            showPreferredAssetSelection = true
+        } label: {
+            BoxView {
+                HStack {
+                    selectedAsset
+                    Spacer()
+                    Icon(named: "arrow", color: Color.neutral0, size: 24)
+                }
             }
         }
     }
@@ -158,11 +168,14 @@ struct EditReferralDetailsView: View {
     
     var selectedAsset: some View {
         HStack(spacing: 8) {
-            Image("rune")
-                .resizable()
-                .frame(width: 32, height: 32)
+            AsyncImageView(
+                logo: preferredAsset?.logo ?? "rune",
+                size: CGSize(width: 32, height: 32),
+                ticker: preferredAsset?.ticker ?? .empty,
+                tokenChainLogo: preferredAsset?.chain.logo ?? .empty
+            )
             
-            Text("RUNE")
+            Text(preferredAsset?.ticker ?? "RUNE")
                 .font(.body16BrockmannMedium)
                 .foregroundColor(.neutral0)
         }
@@ -246,6 +259,50 @@ struct EditReferralDetailsView: View {
     }
 }
 
+#if os(iOS)
+extension EditReferralDetailsView {
+    @ViewBuilder
+    func container<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        Screen {
+            content()
+        }
+        .sheet(isPresented: $showPreferredAssetSelection) {
+            PreferredAssetSelectionView(preferredAsset: $preferredAsset)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.automatic)
+        }
+    }
+}
+#elseif os(macOS)
+extension EditReferralDetailsView {
+    @ViewBuilder
+    func container<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        Screen {
+            ZStack {
+                content()
+                
+                if showPreferredAssetSelection {
+                    PreferredAssetSelectionView(preferredAsset: $preferredAsset)
+                }
+            }
+        }
+    }
+}
+#endif
+
+
 #Preview {
-    EditReferralDetailsView(sendTx: SendTransaction(), referralViewModel: ReferralViewModel(), functionCallViewModel: FunctionCallViewModel())
+    EditReferralDetailsView(
+        sendTx: SendTransaction(),
+        referralViewModel: ReferralViewModel(),
+        functionCallViewModel: FunctionCallViewModel(),
+        thornameDetails: THORName(
+            name: "",
+            expireBlockHeight: 0,
+            owner: "",
+            preferredAsset: "",
+            preferredAssetSwapThresholdRune: "",
+            affiliateCollectorRune: ""
+        )
+    )
 }

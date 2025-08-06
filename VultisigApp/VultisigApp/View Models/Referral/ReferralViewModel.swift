@@ -39,6 +39,8 @@ class ReferralViewModel: ObservableObject {
     let blockchainService = BlockChainService.shared
     private let thorchainReferralService = THORChainAPIService()
     
+    private(set) var thornameDetails: THORName?
+    
     var hasReferralCode: Bool {
         savedGeneratedReferralCode.isNotEmpty
     }
@@ -305,6 +307,7 @@ class ReferralViewModel: ObservableObject {
             await MainActor.run {
                 self.expiresOn = expiresOn
                 self.collectedRewards = collectedRunes
+                self.thornameDetails = details
             }
         } catch {
             // TODO: - Show error
@@ -342,7 +345,7 @@ class ReferralViewModel: ObservableObject {
         } else {
             let preferredAsset = try? await thorchainReferralService.getPoolAsset(asset: details.preferredAsset)
             guard let preferredAsset else { return "" }
-            assetDecimals = preferredAsset.decimals
+            assetDecimals = preferredAsset.decimals ?? 6
             assetMultiplier = (preferredAsset.assetTorPrice.toDecimal() / 100_000_000)
             assetTicker = String(preferredAsset.asset.split(separator: ".")[1].split(separator: "-").first ?? "")
         }
