@@ -26,7 +26,7 @@ struct FastVaultPasswordDisclaimer: View {
         .font(Theme.fonts.bodySMedium)
         .foregroundColor(Theme.colors.alertWarning)
         .padding(16)
-        .background(Theme.colors.alertWarning)
+        .background(Theme.colors.bgAlert)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
