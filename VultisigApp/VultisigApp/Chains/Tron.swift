@@ -42,6 +42,11 @@ enum TronHelper {
                 $0.transaction = TronTransaction.with {
                     $0.contractOneof = .transfer(contract)
                     $0.timestamp = Int64(timestamp)
+                    
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                    
                     $0.blockHeader = TronBlockHeader.with {
                         $0.timestamp = Int64(blockHeaderTimestamp)
                         $0.number = Int64(blockHeaderNumber)
