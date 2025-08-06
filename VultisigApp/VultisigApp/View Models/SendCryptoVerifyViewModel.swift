@@ -11,6 +11,7 @@ import WalletCore
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
+    let securityScanViewModel = SecurityScannerViewModel()
     
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
@@ -18,16 +19,20 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
-    @Published var securityScanViewModel = SecurityScanViewModel()
-    @Published var showSecurityScan = false
+    @Published var showSecurityScannerSheet: Bool = false
+    @Published var securityScannerState: SecurityScannerState = .idle
     
     @Published var utxo = BlockchairService.shared
     let blockChainService = BlockChainService.shared
     
+    func onLoad() {
+        securityScanViewModel.$state
+            .assign(to: &$securityScannerState)
+    }
+    
     var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect
     }
-    
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         if !isValidForm {
@@ -68,15 +73,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return keysignPayload
     }
     
-    func performSecurityScan(tx: SendTransaction) async {
-        // Check if security scanning is available for this chain
-        guard securityScanViewModel.isScanningAvailable(for: tx.coin.chain) else {
-            print("Security scanning not available for chain: \(tx.coin.chain.name)")
-            showSecurityScan = false
-            return
-        }
-        
-        await securityScanViewModel.scanTransaction(from: tx)
-        showSecurityScan = true
+    func scan(transaction: SendTransaction, vault: Vault) async {
+        await securityScanViewModel.scan(transaction: transaction, vault: vault)
+    }
+    
+    func validateSecurityScanner() -> Bool {
+        showSecurityScannerSheet = securityScannerState.shouldShowWarning
+        return !securityScannerState.shouldShowWarning
     }
 }

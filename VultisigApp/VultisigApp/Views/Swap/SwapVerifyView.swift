@@ -32,6 +32,20 @@ struct SwapVerifyView: View {
         .onDisappear {
             swapViewModel.isLoading = false
         }
+        .onLoad {
+            verifyViewModel.onLoad()
+            Task {
+                await verifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
+        .bottomSheet(isPresented: $verifyViewModel.showSecurityScannerSheet) {
+            SecurityScannerBottomSheet(securityScannerModel: verifyViewModel.securityScannerState.result) {
+                verifyViewModel.showSecurityScannerSheet = false
+                signAndMoveToNextView()
+            } onDismissRequest: {
+                verifyViewModel.showSecurityScannerSheet = false
+            }
+        }
     }
 
     var view: some View {
@@ -41,62 +55,65 @@ struct SwapVerifyView: View {
     var content: some View {
         VStack(spacing: 16) {
             fields
-            if tx.isFastVault {
-                fastVaultButton
-            }
-            pairedSignButton
+            signButton
+                .padding(.horizontal, 16)
+                .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         }
     }
 
     var summary: some View {
         VStack(spacing: 16) {
-            summaryTitle
-            summaryFromToContent
+            SecurityScannerHeaderView(state: verifyViewModel.securityScannerState)
             
-            if let providerName = tx.quote?.displayName {
+            VStack(spacing: 16) {
+                summaryTitle
+                summaryFromToContent
+                
+                if let providerName = tx.quote?.displayName {
+                    separator
+                    getValueCell(
+                        for: "provider",
+                        with: providerName,
+                        showIcon: true
+                    )
+                }
+                
+                if swapViewModel.showGas(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "networkFee",
+                        with: swapViewModel.swapGasString(tx: tx),
+                        bracketValue: swapViewModel.approveFeeString(tx: tx)
+                    )
+                }
+                
+                if swapViewModel.showFees(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "swapFee",
+                        with: swapViewModel.swapGasString(tx: tx),
+                        bracketValue: swapViewModel.swapFeeString(tx: tx)
+                    )
+                }
+                
+                if swapViewModel.showTotalFees(tx: tx) {
+                    separator
+                    getValueCell(
+                        for: "maxTotalFee",
+                        with: swapViewModel.totalFeeString(tx: tx)
+                    )
+                }
+                
                 separator
                 getValueCell(
-                    for: "provider",
-                    with: providerName,
-                    showIcon: true
+                    for: "vault",
+                    with: vault.name
                 )
             }
-            
-            if swapViewModel.showGas(tx: tx) {
-                separator
-                getValueCell(
-                    for: "networkFee",
-                    with: swapViewModel.swapGasString(tx: tx),
-                    bracketValue: swapViewModel.approveFeeString(tx: tx)
-                )
-            }
-            
-            if swapViewModel.showFees(tx: tx) {
-                separator
-                getValueCell(
-                    for: "swapFee",
-                    with: swapViewModel.swapGasString(tx: tx),
-                    bracketValue: swapViewModel.swapFeeString(tx: tx)
-                )
-            }
-            
-            if swapViewModel.showTotalFees(tx: tx) {
-                separator
-                getValueCell(
-                    for: "maxTotalFee",
-                    with: swapViewModel.totalFeeString(tx: tx)
-                )
-            }
-            
-            separator
-            getValueCell(
-                for: "vault",
-                with: vault.name
-            )
+            .padding(16)
+            .background(Color.blue600)
+            .cornerRadius(10)
         }
-        .padding(16)
-        .background(Color.blue600)
-        .cornerRadius(10)
     }
     
     var summaryFromToContent: some View {
@@ -168,44 +185,40 @@ struct SwapVerifyView: View {
         }
     }
 
-    var fastVaultButton: some View {
-        PrimaryButton(title: NSLocalizedString("fastSign", comment: "")) {
-            fastPasswordPresented = true
-        }
-        .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
-        .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
-        .padding(.horizontal, 24)
-        .sheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $tx.fastVaultPassword,
-                vault: vault, 
-                onSubmit: { signPressed() }
-            )
-        }
-    }
-
     @ViewBuilder
-    var pairedSignButton: some View {
-        let isDisabled = !verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired)
-        
-        if swapViewModel.isLoadingTransaction {
-            ButtonLoader()
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-        } else {
-            PrimaryButton(
-                title: tx.isFastVault ? "Paired sign" : "startTransaction",
-                type: tx.isFastVault ? .secondary : .primary
-            ) {
-                signPressed()
+    var signButton: some View {
+        if tx.isFastVault {
+            Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                .foregroundColor(.extraLightGray)
+                .font(.body14BrockmannMedium)
+            
+            LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                fastPasswordPresented = true
+            } longPressAction: {
+                onSignPress()
             }
-            .disabled(isDisabled)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .sheet(isPresented: $fastPasswordPresented) {
+                FastVaultEnterPasswordView(
+                    password: $tx.fastVaultPassword,
+                    vault: vault,
+                    onSubmit: { onSignPress() }
+                )
+            }
+        } else {
+            PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                onSignPress()
+            }
         }
     }
 
-    func signPressed() {
+    private func onSignPress() {
+        let canSign = verifyViewModel.validateSecurityScanner()
+        if canSign {
+            signAndMoveToNextView()
+        }
+    }
+    
+    func signAndMoveToNextView() {
         Task {
             if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                 swapViewModel.moveToNextView()
@@ -259,19 +272,6 @@ struct SwapVerifyView: View {
         }
         .font(.body14BrockmannMedium)
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-            )
-            Spacer()
-            Text(value)
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
     }
     
     private func getSwapAssetCell(

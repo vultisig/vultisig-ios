@@ -39,32 +39,19 @@ extension BackupPasswordSetupView {
     
     @ViewBuilder
     var saveButton: some View {
-        if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
             PrimaryButton(title: "save") {
                 handleProxyTap()
+                if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+                    activityItems = [fileURL]
+                }
             }
-            .shareSheet(isPresented: $showSaveShareSheet, activityItems: [fileURL]) { didSave in
+            .shareSheet(isPresented: $showSaveShareSheet, activityItems: activityItems) { didSave in
                 if didSave {
                     fileSaved()
                     dismissView()
                 }
             }
-        }
     }
     
-    @ViewBuilder
-    var skipButton: some View {
-        if let fileURL = backupViewModel.encryptedFileURLWithoutPassword {
-            PrimaryButton(title: "skipPassword", type: .secondary) {
-                showSkipShareSheet = true
-            }
-            .shareSheet(isPresented: $showSkipShareSheet, activityItems: [fileURL]) { didSave in
-                if didSave {
-                    fileSaved()
-                    dismissView()
-                }
-            }
-        }
-    }
 }
 #endif

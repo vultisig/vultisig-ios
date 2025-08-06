@@ -131,4 +131,10 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
             coins: [coin]
         )
     }
+    
+    func setRujiToken(to tx: SendTransaction, vault: Vault) {
+        let rujiToken = vault.coins.first(where: { $0.chain == .thorChain && $0.ticker.uppercased() == "RUJI" })
+        guard let rujiToken else { return }
+        tx.coin = rujiToken
+    }
 }

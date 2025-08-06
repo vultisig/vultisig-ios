@@ -11,31 +11,34 @@ struct SwapCoinPickerView: View {
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedCoin: Coin
-    @Binding var selectedChain: Chain?
-    let isLoading: Bool
+    @State var selectedChain: Chain?
     
-    @State var searchText = ""
-    @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @StateObject var viewModel: SwapCoinSelectionViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
-    private let balanceService = BalanceService.shared
-    
-    var main: some View {
-        VStack {
-            header
-            views
-        }
+    init(
+        vault: Vault,
+        showSheet: Binding<Bool>,
+        selectedCoin: Binding<Coin>,
+        selectedChain: Chain?
+    ) {
+        self.vault = vault
+        self._showSheet = showSheet
+        self._selectedCoin = selectedCoin
+        self.selectedChain = selectedChain
+        self._viewModel = StateObject(wrappedValue: .init(vault: vault, selectedCoin: selectedCoin.wrappedValue))
     }
     
     var header: some View {
         HStack {
             backButton
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             title
+                .frame(maxWidth: .infinity, alignment: .center)
             Spacer()
-            backButton
-                .opacity(0)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
     }
     
     var backButton: some View {
@@ -52,27 +55,39 @@ struct SwapCoinPickerView: View {
             .font(.body18BrockmannMedium)
     }
     
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                searchBar
-                
-                if isLoading {
-                    loadingView
-                } else if getCoins().count > 0 {
-                    networkTitle
-                    list
-                } else {
-                    emptyMessage
+    var content: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    searchBar
+                    
+                    if viewModel.isLoading {
+                        loadingView
+                    } else if !viewModel.tokens.isEmpty {
+                        networkTitle
+                        list
+                    } else {
+                        emptyMessage
+                    }
                 }
-                
-                // Chain carousel at bottom
-                chainCarousel
-                
+                .padding(.vertical, 8)
+                .padding(.bottom, 50)
             }
-            .padding(.vertical, 8)
-            .padding(.bottom, 50)
-            .padding(.horizontal, 16)
+            
+            VStack(spacing: 12) {
+                GradientListSeparator()
+                chainCarousel
+            }
+            .padding(.top, 4)
+            .background(Color.backgroundBlue)
+            .shadow(color: Color.backgroundBlue, radius: 15)
+        }
+        .onLoad {
+            viewModel.setup()
+            reloadCoins()
+        }
+        .onChange(of: selectedChain) { _, _ in
+            reloadCoins()
         }
     }
     
@@ -96,14 +111,19 @@ struct SwapCoinPickerView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    @ViewBuilder
     var list: some View {
         LazyVStack(spacing: 0) {
-            ForEach(getCoins(), id: \.self) { coin in
+            ForEach(viewModel.filteredTokens, id: \.self) { coinMeta in
+                let vaultCoin = vault.coin(for: coinMeta)
                 SwapCoinCell(
-                    coin: coin,
-                    selectedCoin: $selectedCoin,
-                    showSheet: $showSheet
-                )
+                    coin: coinMeta,
+                    balance: vaultCoin?.balanceString,
+                    balanceFiat: vaultCoin?.balanceInFiat,
+                    isSelected: selectedCoin.toCoinMeta() == coinMeta
+                ) {
+                    onSelect(coin: coinMeta)
+                }
             }
         }
         .cornerRadius(12)
@@ -114,124 +134,94 @@ struct SwapCoinPickerView: View {
             .padding(.top, 48)
     }
     
-    var views: some View {
-        ZStack {
-            Background()
-            view
-        }
-    }
-
     var searchBar: some View {
-        searchField
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .padding(.horizontal, 12)
+        SearchTextField(value: $viewModel.searchText)
+            .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .padding(.bottom, 12)
     }
     
-    var searchField: some View {
-        HStack(spacing: 0) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
-            
-            TextField(NSLocalizedString("Search", comment: "Search"), text: $searchText)
-                .foregroundColor(.neutral0)
-                .disableAutocorrection(true)
-                .padding(.horizontal, 8)
-                .borderlessTextFieldStyle()
-                .colorScheme(.dark)
-        }
-        .font(.body16Menlo)
-    }
-    
+    let itemSize: CGFloat = 120
     var chainCarousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(availableChains, id: \.self) { chain in
-                    Button {
-                        selectChain(chain)
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(chain.logo)
-                                .resizable()
-                                .frame(width: 16, height: 16)
-                            
-                            Text(chain.name)
-                                .font(.body12BrockmannMedium)
-                                .foregroundColor(selectedChain == chain ? .neutral0 : .extraLightGray)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(selectedChain == chain ? Color.turquoise600 : Color.blue600)
-                        .cornerRadius(20)
+        ZStack {
+            Capsule()
+                .fill(Color.blue600)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
+                .shadow(color: .blue200, radius: 6)
+            
+            FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
+                let isSelected = selectedChain == chain
+                Button {
+                    onSelect(chain: chain)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(chain.logo)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 28)
+                        Text(chain.name)
+                            .font(.body12BrockmannMedium)
+                            .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
                     }
+                    .padding(8)
+                    .frame(width: itemSize)
+                    .background(
+                        Capsule()
+                            .strokeBorder(Color.blue400, lineWidth: 1)
+                            .fill(Color.blue600)
+                    )
+                    .padding(.horizontal, 4)
+                    .contentShape(Rectangle())
+                    .animation(.easeInOut, value: isSelected)
                 }
             }
-            .padding(.horizontal, 4)
+            
+            Capsule()
+                .strokeBorder(Color.persianBlue400, lineWidth: 2)
+                .allowsHitTesting(false)
+                .frame(width: itemSize)
         }
         .frame(height: 44)
     }
     
-    private func getCoins() -> [Coin] {
-        let availableCoins = vault.coins.filter { coin in
-            coin.chain == selectedChain
+    private var availableChains: [Chain] {
+        return coinSelectionViewModel.groupedAssets.keys.compactMap { chainName in
+            coinSelectionViewModel.groupedAssets[chainName]?.first?.chain
+        }.filter(\.isSwapAvailable)
+    }
+    
+    private func reloadCoins() {
+        Task {
+            guard let selectedChain else { return }
+            await viewModel.fetchCoins(chain: selectedChain)
         }
-        
-        // Filter by search text if not empty
-        let filteredCoins = if searchText.isEmpty {
-            availableCoins
-        } else {
-            availableCoins.filter { coin in
-                coin.ticker.localizedCaseInsensitiveContains(searchText) ||
-                coin.contractAddress.localizedCaseInsensitiveContains(searchText) ||
-                coin.chain.name.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-        
-        // Sort coins: native token first, then by USD balance in descending order
-        let sortedCoins = filteredCoins.sorted { first, second in
-            // Native token always comes first
-            if first.isNativeToken && !second.isNativeToken {
-                return true
-            }
-            if !first.isNativeToken && second.isNativeToken {
-                return false
+    }
+    
+    private func onSelect(chain: Chain) {
+        selectedChain = chain
+        reloadCoins()
+    }
+    
+    private func onSelect(coin: CoinMeta) {
+        Task {
+            guard let newCoin = await viewModel.onSelect(coin: coin) else {
+                return
             }
             
-            // If both are native or both are not native, sort by USD balance
-            return first.balanceInFiatDecimal > second.balanceInFiatDecimal
-        }
-        
-        return sortedCoins
-    }
-    
-    private var availableChains: [Chain] {
-        let chains = vault.coins.map { coin in
-            coin.chain
-        }
-        return Array(Set(chains)).sorted {
-            $0.name < $1.name
+            await MainActor.run {
+                selectedCoin = newCoin
+                showSheet = false
+            }
         }
     }
-    
-    private func selectChain(_ chain: Chain) {
-        selectedChain = chain
-        
-        // Select first coin of the chain automatically
-        let availableCoins = getCoins()
-        if let firstCoin = availableCoins.first {
-            selectedCoin = firstCoin
-        }
-        
-    }
-    
-    // Disabled along with custom token button
 }
 
 #Preview {
-    SwapCoinPickerView(vault: Vault.example, showSheet: .constant(true), selectedCoin: .constant(Coin.example), selectedChain: .constant(Chain.example), isLoading: false)
+    SwapCoinPickerView(
+        vault: Vault.example,
+        showSheet: .constant(true),
+        selectedCoin: .constant(Coin.example),
+        selectedChain: Chain.example
+    )
 }

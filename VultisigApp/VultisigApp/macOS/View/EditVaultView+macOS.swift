@@ -43,6 +43,7 @@ extension EditVaultView {
                 }
                 
                 customMessage
+                onChainSecurityCell
                 deleteVault
             }
             .padding(.horizontal, 24)

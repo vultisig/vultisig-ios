@@ -43,8 +43,6 @@ struct InlineLoader: View {
         SpinningLineLoader()
             .scaleEffect(0.6)
             .frame(width: 24, height: 24)
-            .background(Color.blue600.opacity(0.7))
-            .cornerRadius(8)
     }
 }
 

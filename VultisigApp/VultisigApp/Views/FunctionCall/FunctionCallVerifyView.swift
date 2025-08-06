@@ -32,6 +32,20 @@ struct FunctionCallVerifyView: View {
         .onDisappear {
             depositVerifyViewModel.isLoading = false
         }
+        .onLoad {
+            depositVerifyViewModel.onLoad()
+            Task {
+                await depositVerifyViewModel.scan(transaction: tx, vault: vault)
+            }
+        }
+        .bottomSheet(isPresented: $depositVerifyViewModel.showSecurityScannerSheet) {
+            SecurityScannerBottomSheet(securityScannerModel: depositVerifyViewModel.securityScannerState.result) {
+                depositVerifyViewModel.showSecurityScannerSheet = false
+                signAndMoveToNextView()
+            } onDismissRequest: {
+                depositVerifyViewModel.showSecurityScannerSheet = false
+            }
+        }
     }
     
     var content: some View {
@@ -77,10 +91,10 @@ struct FunctionCallVerifyView: View {
                 feeFiat: depositViewModel.feesInReadable(tx: tx, vault: vault),
                 coinImage: tx.coin.logo,
                 amount: getAmount(),
-                coinTicker: tx.coin.ticker,
-                showScannedBy: false
-            )
-        ) {}
+                coinTicker: tx.coin.ticker
+            ),
+            securityScannerState: $depositVerifyViewModel.securityScannerState
+        )
         .padding(.horizontal, 16)
     }
     
@@ -95,28 +109,49 @@ struct FunctionCallVerifyView: View {
                     title: NSLocalizedString("signTransaction", comment: "")) {
                         fastPasswordPresented = true
                     } longPressAction: {
-                        handleSubmit()
+                        onSignPress()
                     }
                     .sheet(isPresented: $fastPasswordPresented) {
                         FastVaultEnterPasswordView(
                             password: $tx.fastVaultPassword,
                             vault: vault,
-                            onSubmit: { handleSubmit() }
+                            onSubmit: { onSignPress() }
                         )
                     }
             } else {
                 PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
-                    handleSubmit()
+                    onSignPress()
                 }
             }
         }
     }
     
-    private func getAmount() -> String {
+        private func getAmount() -> String {
+        // Check if this is a THORChain LP operation
+        if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
+            // For LP operations, show context about which pool
+            let cleanPoolName = ThorchainService.cleanPoolName(pool)
+            if tx.coin.chain == .thorChain {
+                // Adding RUNE to a specific pool
+                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
+            } else {
+                // Adding L1 asset to its pool
+                return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker + " → " + cleanPoolName + " LP"
+            }
+        }
+        
+        // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
     
-    private func handleSubmit() {
+    private func onSignPress() {
+        let canSign = depositVerifyViewModel.validateSecurityScanner()
+        if canSign {
+            signAndMoveToNextView()
+        }
+    }
+    
+    func signAndMoveToNextView() {
         Task {
             
             let wasmExecuteContractPayload = depositViewModel.buildWasmPayload(from: tx.memoFunctionDictionary, sender: tx.coin.address)

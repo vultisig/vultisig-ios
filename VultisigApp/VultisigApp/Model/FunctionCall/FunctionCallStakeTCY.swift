@@ -56,10 +56,8 @@ class FunctionCallStakeTCY: ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack {
             StyledFloatingPointField(
-                placeholder: Binding(
-                    get: { "Amount \(self.balance)" },
-                    set: { _ in }
-                ),
+                label: "\(NSLocalizedString("amount", comment: "")) \(self.balance)",
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
                     get: { self.amount },
                     set: { self.amount = $0 }

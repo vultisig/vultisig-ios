@@ -21,20 +21,28 @@ struct ChainDetailActionButtons: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            ForEach(actions, id: \.rawValue) { action in
-                switch action {
-                case .send:
-                    sendButton
-                case .swap:
-                    swapButton
-                case .memo:
-                    memoButton
-                case .deposit, .bridge:
-                    ActionButton(title: "function", fontColor: action.color)
-                case .buy:
-                    buyButton
-                case .sell:
-                    sellButton
+            if !isChainDetail {
+                sendButton
+                swapButton
+                #if os(iOS)
+                buyButton
+                #endif
+            } else {
+                ForEach(actions, id: \.rawValue) { action in
+                    switch action {
+                    case .send:
+                        sendButton
+                    case .swap:
+                        swapButton
+                    case .memo:
+                        memoButton
+                    case .deposit, .bridge:
+                        ActionButton(title: "function", fontColor: action.color)
+                    case .buy:
+                        buyButton
+                    case .sell:
+                        sellButton
+                    }
                 }
             }
         }

@@ -9,26 +9,34 @@ import SwiftUI
 
 struct SendCryptoVerifySummaryView<ContentFooter: View>: View {
     let input: SendCryptoVerifySummary
+    @Binding var securityScannerState: SecurityScannerState
     let contentPadding: CGFloat
     let contentFooter: () -> ContentFooter
     
-    init(input: SendCryptoVerifySummary, contentPadding: CGFloat = 0, @ViewBuilder contentFooter: @escaping () -> ContentFooter) {
+    init(input: SendCryptoVerifySummary, securityScannerState: Binding<SecurityScannerState>, contentPadding: CGFloat = 0) where ContentFooter == EmptyView {
         self.input = input
+        self._securityScannerState = securityScannerState
+        self.contentPadding = contentPadding
+        self.contentFooter = { EmptyView() }
+    }
+    
+    init(input: SendCryptoVerifySummary, securityScannerState: Binding<SecurityScannerState>, contentPadding: CGFloat = 0, @ViewBuilder contentFooter: @escaping () -> ContentFooter) {
+        self.input = input
+        self._securityScannerState = securityScannerState
         self.contentPadding = contentPadding
         self.contentFooter = contentFooter
     }
     
     var body: some View {
         VStack(spacing: 16) {
-            blockAidBanner
-                .showIf(input.showScannedBy)
+            securityScannerHeader
             fields
         }
         .padding(.top, 20)
     }
     
-    var blockAidBanner: some View {
-        Image("blockaidScannedBanner")
+    var securityScannerHeader: some View {
+        SecurityScannerHeaderView(state: securityScannerState)
     }
     
     var fields: some View {

@@ -11,41 +11,44 @@ struct BackupPasswordSetupView: View {
     let tssType: TssType
     let vault: Vault
     var isNewVault = false
-    var showSkipPasswordButton = true
     
     @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
     @State var homeLinkActive = false
-    @State var alreadyShowingPopup = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var showSkipShareSheet = false
     @State var showSaveShareSheet = false
-    
-    @Environment(\.dismiss) var dismiss
+    @State var activityItems: [Any] = []
+    @State var passwordErrorMessage: String = ""
+    @State var passwordVerifyErrorMessage: String = ""
+    @FocusState var passwordFieldFocused
+    @FocusState var passwordVerifyFieldFocused
     
     var body: some View {
         ZStack {
             mainContent
-            popup
         }
         .sensoryFeedback(.success, trigger: vault.isBackedUp)
+        .onAppear(){
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                passwordFieldFocused = true
+            }
+        }
     }
     
     var mainContent: some View {
         content
-            .alert(isPresented: $backupViewModel.showAlert) {
-                alert
-            }
             .onAppear {
                 backupViewModel.resetData()
-                handleSkipTap()
             }
             .onDisappear {
                 backupViewModel.resetData()
             }
             .onChange(of: verifyPassword) { oldValue, newValue in
                 if backupViewModel.encryptionPassword == verifyPassword {
+                    passwordErrorMessage = ""
+                    passwordVerifyErrorMessage = ""
                     handleSaveTap()
                 }
             }
@@ -65,12 +68,25 @@ struct BackupPasswordSetupView: View {
     }
     
     var textfield: some View {
-        HiddenTextField(placeholder: "enterPassword", password: $backupViewModel.encryptionPassword)
+        HiddenTextField(placeholder: "enterPassword",
+                        password: $backupViewModel.encryptionPassword,
+                        errorMessage: passwordErrorMessage)
             .padding(.top, 8)
+            .focused($passwordFieldFocused)
+            .onSubmit {
+                if !backupViewModel.encryptionPassword.isEmpty {
+                    passwordVerifyFieldFocused = true
+                }
+            }
     }
     
     var verifyTextfield: some View {
-        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
+        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword, errorMessage: passwordVerifyErrorMessage)
+            .focused($passwordVerifyFieldFocused)
+            .onSubmit {
+                handleProxyTap()
+            }
+            
     }
     
     var disclaimer: some View {
@@ -81,61 +97,38 @@ struct BackupPasswordSetupView: View {
     var buttons: some View {
         VStack(spacing: 20) {
             saveButton
-            
-            if showSkipPasswordButton {
-                skipButton
-            }
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
     
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
-    var popup: some View {
-        PopupCapsule(
-            text: "useSkipInstead",
-            showPopup: $backupViewModel.showPopup
-        )
-    }
-    
     private func handleSaveTap() {
-        export()
-    }
-    
-    private func handleSkipTap() {
-        backupViewModel.encryptionPassword = ""
         export()
     }
     
     func handleProxyTap() {
         guard !backupViewModel.encryptionPassword.isEmpty else {
-            backupViewModel.showPopup = true
+            passwordErrorMessage = NSLocalizedString("emptyField", comment: "")
             return
         }
-        
-        guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
-            backupViewModel.alertTitle = "emptyField"
-            backupViewModel.showAlert = true
+        passwordErrorMessage = ""
+        guard !verifyPassword.isEmpty else {
+            passwordVerifyErrorMessage = NSLocalizedString("emptyField", comment: "")
             return
         }
-        
+        passwordVerifyErrorMessage = ""
         guard backupViewModel.encryptionPassword == verifyPassword else {
-            backupViewModel.alertTitle = "passwordMismatch"
-            backupViewModel.showAlert = true
+            passwordErrorMessage = NSLocalizedString("passwordMismatch", comment: "")
+            passwordVerifyErrorMessage = NSLocalizedString("passwordMismatch", comment: "")
             return
         }
-        
+        passwordErrorMessage = ""
+        passwordVerifyErrorMessage = ""
         showSaveShareSheet = true
     }
     
-    private func export() {
+    func export() {
         backupViewModel.exportFile(vault)
     }
     
@@ -145,11 +138,12 @@ struct BackupPasswordSetupView: View {
     }
     
     func dismissView() {
-        alreadyShowingPopup = false
-        if isNewVault {
-            navigationLinkActive = true
-        } else {
-            homeLinkActive = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if isNewVault {
+                navigationLinkActive = true
+            } else {
+                homeLinkActive = true
+            }
         }
     }
 }

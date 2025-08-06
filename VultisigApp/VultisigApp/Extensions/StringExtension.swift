@@ -29,6 +29,10 @@ extension String {
         return self
     }
     
+    var add0x: String {
+        "0x" + self
+    }
+    
     var isZero: Bool {
         return self == .zero
     }
@@ -208,5 +212,11 @@ extension String {
     
     static var anyAddress: String {
         return "0x1111111111111111111111111111111111111111"
+    }
+}
+
+extension String {
+    var localized: String {
+        NSLocalizedString(self, comment: "")
     }
 }

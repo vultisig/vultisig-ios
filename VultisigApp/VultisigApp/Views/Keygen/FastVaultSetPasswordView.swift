@@ -40,10 +40,16 @@ struct FastVaultSetPasswordView: View {
                     FastVaultSetHintView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
                 }
             }
-            .onAppear() {
+            .onLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     isPasswordFieldFocused = true
                 }
+            }
+            .onChange(of: password) { oldValue, newValue in
+                _ = validatePassword()
+            }
+            .onChange(of: verifyPassword) { oldValue, newValue in
+                _ = validatePassword()
             }
     }
     
@@ -62,9 +68,6 @@ struct FastVaultSetPasswordView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
-        .onAppear {
-            isLinkActive = false
-        }
     }
     
     var title: some View {

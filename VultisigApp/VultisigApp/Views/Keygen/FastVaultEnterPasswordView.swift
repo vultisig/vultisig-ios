@@ -48,7 +48,7 @@ struct FastVaultEnterPasswordView: View {
     }
     
     var textfield: some View {
-        HiddenTextField(placeholder: "enterPassword", password: $password)
+        HiddenTextField(placeholder: "enterPassword", password: $password,errorMessage: "")
             .padding(.top, 8)
     }
     

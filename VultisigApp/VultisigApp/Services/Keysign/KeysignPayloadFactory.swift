@@ -25,7 +25,17 @@ struct KeysignPayloadFactory {
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
     
-    func buildTransfer(coin: Coin, toAddress: String, amount: BigInt, memo: String?, chainSpecific: BlockChainSpecific, swapPayload: SwapPayload? = nil, approvePayload: ERC20ApprovePayload? = nil, vault: Vault, wasmExecuteContractPayload: WasmExecuteContractPayload? = nil) async throws -> KeysignPayload {
+    func buildTransfer(
+        coin: Coin,
+        toAddress: String,
+        amount: BigInt,
+        memo: String?,
+        chainSpecific: BlockChainSpecific,
+        swapPayload: SwapPayload? = nil,
+        approvePayload: ERC20ApprovePayload? = nil,
+        vault: Vault,
+        wasmExecuteContractPayload: WasmExecuteContractPayload? = nil
+    ) async throws -> KeysignPayload {
         
         var utxos: [UtxoInfo] = []
         

@@ -23,6 +23,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var isFastVault: Bool = false
     @Published var fastVaultPassword: String = .empty
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
+    var wasmContractPayload: WasmExecuteContractPayload?
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
@@ -47,7 +48,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isDeposit: Bool {
-        !memoFunctionDictionary.allItems().isEmpty
+        !memoFunctionDictionary.allItems().isEmpty && ![ChainType.UTXO, ChainType.Ripple, ChainType.Solana].contains(coin.chainType)
     }
     
     var canBeReaped: Bool {
