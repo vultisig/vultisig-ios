@@ -69,5 +69,44 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["f75f46b4f037a7824c1c8cff70f4ba546d276408413e24571bb4787d02ef9292"]
+    },
+    {
+        "name": "Send TRON TRC20 with memo",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Tron",
+                "ticker": "USDT",
+                "address": "TVNtPmF7JWw4xoA8GAxEZhCaw2khYn8viH",
+                "decimals": 6,
+                "price_provider_id": "tether",
+                "is_native_token": false,
+                "hex_public_key": "04b1da721787534c0e2ad123747cdd0bc1489891bcad078df294fce19decc66719037960758d79e135be8f4fe04d760e7b037b7983cafe05938125a90330548088",
+                "contract_address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+                "logo": "usdt"
+            },
+            "to_address": "TYwbooxVSPe4LZm7U72tuqUNNiQ15BNaLa",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "TronSpecific": {
+                    "timestamp": 1754542048730,
+                    "expiration": 1754545648730,
+                    "block_header_timestamp": 1754542047000,
+                    "block_header_number": 74627721,
+                    "block_header_version": 32,
+                    "block_header_tx_trie_root": "ae7c0edc210b83629b2dee89182fcd48f9559768e92c71c20b64e77897728558",
+                    "block_header_parent_hash": "000000000472ba882f790048d85d9cdef189bdb9ed5358cae72d637f70d18daa",
+                    "block_header_witness_address": "4170df4a99c7e3e249b290b43e11eb2368afd59899",
+                    "gas_estimation": 64657600
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "02d0f04dbae2bd3d71fbad1dcc4ded7fa7a5fc5e317eb7f08f1aad88a99a2d9502",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "26e3a2a424d552a1f7fb6b9767d55fcbcb24fa670b2ed03451bec8000dcf40ae"
+        ]
     }
 ]
