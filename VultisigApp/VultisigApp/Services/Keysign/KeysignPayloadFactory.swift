@@ -84,7 +84,7 @@ struct KeysignPayloadFactory {
             // estimate we will use maximum 10 utxos
             let totalAmount = amount + BigInt(byteFee * 1480)
             guard let info = utxo.blockchairData
-                .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
+                .get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType: coin.coinType)
                 .map({
                     UtxoInfo(
                         hash: $0.transactionHash ?? "",

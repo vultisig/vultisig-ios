@@ -28,7 +28,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
     @Published var ton: TonService = TonService.shared
-
+    
     @Published var utxo = BlockchairService.shared
     @Published var ripple: RippleService = RippleService.shared
     
@@ -395,6 +395,18 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isLoading = false
             return isValidForm
         }
+        // check UTXO minimum amount
+        if tx.coin.chainType == .UTXO {
+            let dustThreshold = tx.coin.coinType.getFixedDustThreshold()
+            if tx.amountInRaw < dustThreshold {
+                errorTitle = "error"
+                errorMessage = "amount is below the dust threshold."
+                showAmountAlert = true
+                isValidForm = false
+                isLoading = false
+                return isValidForm
+            }
+        }
         let validToAddress =  await validateToAddress(tx: tx)
         if !validToAddress {
             isValidForm = false
@@ -524,7 +536,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let fee = nativeCoin.decimal(for: tx.fee)
         return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
     }
-
+    
     func pickerCoins(vault: Vault, tx: SendTransaction) -> [Coin] {
         return vault.coins.sorted(by: {
             Int($0.chain == tx.coin.chain) > Int($1.chain == tx.coin.chain)
@@ -541,11 +553,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         showAmountAlert = false
         showAlert = false
     }
-
+    
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
         guard let utxoInfo = utxo.blockchairData
-            .get(key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount))
+            .get(key)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmount),coinType:tx.coin.coinType)
             .map({
                 UtxoInfo(
                     hash: $0.transactionHash ?? "",
