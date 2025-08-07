@@ -60,9 +60,9 @@ class EditReferralViewModel: ObservableObject {
     
     func setup(tx: SendTransaction) async {
         do {
-            let feePerBlockString = try await thorchainService.getNetworkInfo().tns_fee_per_block_rune
+            let feePerBlock = try await thorchainService.getNetworkInfo().tns_fee_per_block_rune.toDecimal()
             await MainActor.run {
-                self.feePerBlock = Decimal(string: feePerBlockString) ?? 0
+                self.feePerBlock = feePerBlock
                 self.preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
             }
         } catch {
