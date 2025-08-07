@@ -96,7 +96,7 @@ struct CreateReferralDetailsView: View {
             )
             
             getCell(
-                title: NSLocalizedString("totalFee", comment: ""),
+                title: NSLocalizedString("costs", comment: ""),
                 description1: "\(referralViewModel.getTotalFee()) RUNE",
                 description2: "\(referralViewModel.totalFeeFiat)",
                 isPlaceholder: referralViewModel.isTotalFeesLoading

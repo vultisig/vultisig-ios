@@ -132,7 +132,7 @@ struct EditReferralDetailsView: View {
     var summary: some View {
         VStack(spacing: 16) {
             getCell(
-                title: NSLocalizedString("totalFee", comment: ""),
+                title: "costs".localized,
                 description1: viewModel.totalFeeAmountText,
                 description2: viewModel.totalFeeFiatAmountText,
                 isPlaceholder: $viewModel.loadingFees
@@ -217,9 +217,11 @@ extension EditReferralDetailsView {
             content()
         }
         .sheet(isPresented: $showPreferredAssetSelection) {
-            PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.automatic)
+            PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset) {
+                showPreferredAssetSelection = false
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 }
@@ -228,12 +230,27 @@ extension EditReferralDetailsView {
     @ViewBuilder
     func container<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
         Screen(title: "editReferral".localized) {
-            ZStack {
-                content()
+            content()
+        }
+        .overlay(showPreferredAssetSelection ? preferredAssetSheet : nil)
+    }
+    
+    var preferredAssetSheet: some View {
+        ZStack {
+            ZStack(alignment: .top) {
+                Color.black
+                    .frame(height: 200)
+                    .offset(y: -200)
                 
-                if showPreferredAssetSelection {
-                    PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset)
-                }
+                Color.black
+            }
+            .opacity(0.8)
+            .onTapGesture {
+                showPreferredAssetSelection = false
+            }
+            
+            PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset) {
+                showPreferredAssetSelection = false
             }
         }
     }

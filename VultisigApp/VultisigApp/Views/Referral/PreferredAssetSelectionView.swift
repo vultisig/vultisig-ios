@@ -9,12 +9,11 @@ import SwiftUI
 
 struct PreferredAssetSelectionView: View {
     @Binding var preferredAsset: PreferredAsset?
-    
+    var onSelect: () -> Void
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
-    @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
-        Screen(title: "selectAssset".localized) {
+        Screen(title: "selectAsset".localized) {
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText, isFocused: .init())
                 ScrollView {
@@ -26,6 +25,7 @@ struct PreferredAssetSelectionView: View {
                         emptyMessage
                     }
                 }
+                .cornerRadius(12)
             }
         }
         .onLoad {
@@ -40,11 +40,10 @@ struct PreferredAssetSelectionView: View {
             ForEach(viewModel.filteredAssets, id: \.asset) { asset in
                 SwapCoinCell(coin: asset.asset, balance: nil, balanceFiat: nil, isSelected: preferredAsset?.asset == asset.asset) {
                     preferredAsset = asset
-                    dismiss()
+                    onSelect()
                 }
             }
         }
-        .cornerRadius(12)
     }
     
     var loadingView: some View {
@@ -67,5 +66,5 @@ struct PreferredAssetSelectionView: View {
 }
 
 #Preview {
-    PreferredAssetSelectionView(preferredAsset: .constant(PreferredAsset(thorchainAsset: ".", asset: .example)))
+    PreferredAssetSelectionView(preferredAsset: .constant(PreferredAsset(thorchainAsset: ".", asset: .example))) {}
 }

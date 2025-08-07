@@ -54,10 +54,15 @@ enum PreferredAssetFactory {
         var symbol = chain
         var contractAddress = ""
         
-        if let assetPart, assetPart.contains("-") {
-            let split = assetPart.split(separator: "-")
-            symbol = String(split[0])
-            contractAddress = String(split[1])
+        if let assetPart {
+            if assetPart.contains("-") {
+                let split = assetPart.split(separator: "-")
+                symbol = String(split[0])
+                contractAddress = String(split[1])
+            } else {
+                symbol = String(assetPart)
+                contractAddress = assetPart.lowercased()
+            }
         }
         
         let appChain = Chain.allCases.first { $0.swapAsset == chain }
