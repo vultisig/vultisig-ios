@@ -20,7 +20,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
             }
         }
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .disabled(!isActive)
     }
@@ -41,7 +41,7 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
             
             if !items.contains(selected) {
                 Text(mandatoryMessage ?? "")
-                    .font(.body14MontserratMedium)
+                    .font(Theme.fonts.bodySMedium)
                     .foregroundColor(.red)
             }
             
@@ -52,8 +52,8 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
             }
         }
         .redacted(reason: descriptionProvider(selected).isEmpty ? .placeholder : [])
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
     }
     
@@ -73,15 +73,15 @@ struct GenericSelectorDropDown<T: Identifiable & Equatable>: View {
     private func getCell(for item: T) -> some View {
         HStack(spacing: 12) {
             Text(descriptionProvider(item))
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Spacer()
             
             if selected == item {
                 Image(systemName: "checkmark")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
         .frame(height: 48)

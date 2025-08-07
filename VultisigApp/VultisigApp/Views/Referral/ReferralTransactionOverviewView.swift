@@ -53,21 +53,21 @@ struct ReferralTransactionOverviewView: View {
                 .cornerRadius(32)
             
             Text("\(sendTx.amount) RUNE")
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 12)
             
             Text("\(referralViewModel.totalFeeFiat)")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -77,15 +77,15 @@ struct ReferralTransactionOverviewView: View {
             Spacer()
             Image(systemName: "chevron.right")
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.lightText)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textLight)
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
         .padding(.top, 8)
     }
@@ -109,7 +109,7 @@ struct ReferralTransactionOverviewView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var detailView: some View {
@@ -118,8 +118,8 @@ struct ReferralTransactionOverviewView: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("overview", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
     }

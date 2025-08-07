@@ -18,11 +18,11 @@ struct SearchTextField: View {
     var body: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             TextField(NSLocalizedString("Search", comment: "Search"), text: $value)
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
@@ -36,7 +36,7 @@ struct SearchTextField: View {
         .frame(maxWidth: .infinity)
         .frame(height: 44)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
     
@@ -46,7 +46,7 @@ struct SearchTextField: View {
             isFocused = false
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textLight)
         }
     }
 }

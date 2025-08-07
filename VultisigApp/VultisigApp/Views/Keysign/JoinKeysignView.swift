@@ -64,8 +64,8 @@ struct JoinKeysignView: View {
                 keysignView
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
             }
@@ -93,8 +93,8 @@ struct JoinKeysignView: View {
             Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
             Text(viewModel.errorMsg)
         }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 30)
     }
@@ -102,7 +102,15 @@ struct JoinKeysignView: View {
     var keysignMessageConfirm: some View {
         ZStack {
             if viewModel.keysignPayload?.swapPayload != nil {
-                KeysignSwapConfirmView(viewModel: viewModel)
+                // Check if it's an LP operation by looking at the memo
+                if let memo = viewModel.keysignPayload?.memo,
+                   (memo.starts(with: "+:") || memo.starts(with: "-:")) {
+                    // LP operation - show regular message confirm instead of swap
+                    KeysignMessageConfirmView(viewModel: viewModel)
+                } else {
+                    // Regular swap
+                    KeysignSwapConfirmView(viewModel: viewModel)
+                }
             } else if viewModel.customMessagePayload != nil {
                 KeysignCustomMessageConfirmView(viewModel: viewModel)
             } else {

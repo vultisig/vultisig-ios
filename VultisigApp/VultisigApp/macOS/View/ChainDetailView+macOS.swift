@@ -40,7 +40,7 @@ extension ChainDetailView {
                 }
             }
             .buttonStyle(BorderlessButtonStyle())
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
             .colorScheme(.dark)
             .padding(.horizontal, 16)
             .padding(.horizontal, 24)

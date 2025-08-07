@@ -17,7 +17,7 @@ struct NavigationQRShareButton: View {
     let vault: Vault
     let type: NavigationQRType
     let renderedImage: Image?
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     
     var title: String = ""
     
@@ -49,7 +49,7 @@ struct NavigationQRShareButton: View {
     
     var content: some View {
         Image(systemName: "arrow.up.doc")
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)
             .onAppear {
                 setData()

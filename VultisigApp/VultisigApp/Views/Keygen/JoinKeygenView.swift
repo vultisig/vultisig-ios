@@ -97,16 +97,16 @@ struct JoinKeygenView: View {
     
     var keygenErrorText: some View {
         Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
-            .font(.body15MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     
     var failToStartKeygen: some View {
         VStack{
             Text(viewModel.errorMessage)
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 30)
             
@@ -132,8 +132,8 @@ struct JoinKeygenView: View {
                 informationNote
             }
         }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .onAppear {
@@ -170,14 +170,14 @@ struct JoinKeygenView: View {
             Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
         .padding(22)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
     
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -199,8 +199,8 @@ struct JoinKeygenView: View {
             showFileImporter.toggle()
         } label: {
             Image(systemName: "photo.on.rectangle.angled")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -272,12 +272,12 @@ struct JoinKeygenView: View {
     private func getKeygenCardContent(_ title: String) -> some View {
         VStack(spacing: 12) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.neutral0)
-                .font(.body28BrockmannMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.title1)
             
             Text(NSLocalizedString("joinKeygenViewDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
-                .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
+                .font(Theme.fonts.bodySMedium)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal)

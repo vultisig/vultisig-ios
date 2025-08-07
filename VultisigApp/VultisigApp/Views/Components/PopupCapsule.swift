@@ -28,11 +28,11 @@ struct PopupCapsule: View {
     
     var capsule: some View {
         Text(showText ? NSLocalizedString(text, comment: "") : "")
-            .foregroundColor(.neutral0.opacity(showText ? 1 : 0))
-            .font(.body14MenloBold)
+            .foregroundColor(Theme.colors.textPrimary.opacity(showText ? 1 : 0))
+            .font(Theme.fonts.bodySMedium)
             .padding()
             .padding(.horizontal, showText ? 16 : 8)
-            .background(Color.blue200)
+            .background(Theme.colors.border)
             .cornerRadius(100)
             .offset(y: offset)
     }

@@ -43,8 +43,8 @@ struct VaultPairDetailView: View {
                 )
                 
                 Text(NSLocalizedString("signers", comment: ""))
-                    .font(.body14MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .frame(maxWidth: .infinity, alignment: .center)

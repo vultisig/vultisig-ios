@@ -75,15 +75,15 @@ struct PasswordVerifyReminderView: View {
     var header: some View {
         Text(NSLocalizedString("biweeklyPasswordVerifyTitle", comment: ""))
             .multilineTextAlignment(.center)
-            .foregroundColor(.lightText)
-            .font(.body14BrockmannMedium)
+            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var description: some View {
         Text(NSLocalizedString("biweeklyPasswordVerifyDescription", comment: ""))
             .multilineTextAlignment(.center)
-            .foregroundColor(.extraLightGray)
-            .font(.body12BrockmannMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
+            .font(Theme.fonts.caption12)
             .padding(.horizontal, 28)
     }
     
@@ -112,16 +112,16 @@ struct PasswordVerifyReminderView: View {
             hideButton
         }
         .colorScheme(.dark)
-        .foregroundColor(.neutral0)
-        .font(.body14BrockmannMedium)
+        .foregroundColor(Theme.colors.textPrimary)
+        .font(Theme.fonts.bodySMedium)
         .borderlessTextFieldStyle()
         .frame(height: 56)
         .padding(.horizontal, 24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(showError ? Color.invalidRed : Color.clear, lineWidth: 1)
+                .stroke(showError ? Theme.colors.alertError : Color.clear, lineWidth: 1)
         )
     }
     
@@ -132,7 +132,7 @@ struct PasswordVerifyReminderView: View {
             }
         }) {
             Image(systemName: isPasswordVisible ? "eye": "eye.slash")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
@@ -146,8 +146,8 @@ struct PasswordVerifyReminderView: View {
     
     var errorContent: some View {
         Text(NSLocalizedString(errorText, comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.invalidRed)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

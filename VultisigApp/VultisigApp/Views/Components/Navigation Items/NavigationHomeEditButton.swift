@@ -16,7 +16,7 @@ struct NavigationHomeEditButton: View {
     @Binding var isEditingFolders: Bool
     @Binding var showFolderDetails: Bool
     
-    var tint: Color = Color.neutral0
+    var tint: Color = Theme.colors.textPrimary
     
     @Query var folders: [Folder]
     
@@ -105,15 +105,15 @@ struct NavigationHomeEditButton: View {
             deleteFolder()
         } label: {
             Image(systemName: "trash")
-                .font(.body18MenloBold)
-                .foregroundColor(.miamiMarmalade)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.bgAlert)
         }
     }
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(tint)
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     private func deleteFolder() {

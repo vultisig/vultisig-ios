@@ -47,17 +47,17 @@ struct QRShareSheetImage: View {
             logo
         }
         .padding(.vertical, 48)
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .multilineTextAlignment(.center)
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(type.rawValue, comment: ""))
-            .font(.body16MenloBold)
+            .font(Theme.fonts.bodyMMedium)
             .frame(maxWidth: 200)
             .lineLimit(2)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
     }
     

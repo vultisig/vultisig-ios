@@ -12,11 +12,11 @@ import CodeScanner
 extension FunctionCallAddressTextField {
     var container: some View {
         content
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(height: 48)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(10)
             .sheet(isPresented: $showScanner) {
                 codeScanner
@@ -37,7 +37,7 @@ extension FunctionCallAddressTextField {
                     }
                 }
             ))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()

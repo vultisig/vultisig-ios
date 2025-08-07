@@ -22,7 +22,7 @@ struct FolderDetailHeader: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
         .padding(.top, 8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var leadingAction: some View {
@@ -31,7 +31,7 @@ struct FolderDetailHeader: View {
     
     var text: some View {
         Text(title)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     
@@ -51,14 +51,14 @@ struct FolderDetailHeader: View {
     
     var editIcon: some View {
         Image(systemName: "square.and.pencil")
-            .foregroundColor(Color.neutral0)
-            .font(.body18MenloBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var doneLabel: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .foregroundColor(Color.neutral0)
-            .font(.body18MenloBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 

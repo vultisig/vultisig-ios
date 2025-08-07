@@ -38,8 +38,8 @@ struct MonthlyBackupView: View {
 
             VStack {
                 Text(NSLocalizedString("monthlyBackupTitle", comment: ""))
-                    .foregroundColor(.neutral0)
-                    .font(.body16MontserratSemiBold)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyMMedium)
                     .multilineTextAlignment(.center)
 
                 Spacer()

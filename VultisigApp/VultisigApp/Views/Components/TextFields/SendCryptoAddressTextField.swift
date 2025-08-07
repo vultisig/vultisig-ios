@@ -10,6 +10,8 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct SendCryptoAddressTextField: View {
+    
+    
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
@@ -53,18 +55,18 @@ struct SendCryptoAddressTextField: View {
     
     var overlay: some View {
         ZStack {
-            Color.turquoise600.opacity(0.2)
+            Theme.colors.bgButtonPrimary.opacity(0.2)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .cornerRadius(10)
             
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 1, dash: [10]))
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -104,8 +106,8 @@ struct SendCryptoAddressTextField: View {
     
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.alertYellow)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -115,14 +117,14 @@ struct SendCryptoAddressTextField: View {
     
     func getButton(_ icon: String) -> some View {
         Image(systemName: icon)
-            .font(.body18BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
             .padding(1)
     }

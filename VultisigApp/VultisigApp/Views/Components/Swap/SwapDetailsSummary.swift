@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SwapDetailsSummary: View {
+    
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
@@ -62,8 +63,8 @@ struct SwapDetailsSummary: View {
     
     var chevron: some View {
         Image(systemName: "chevron.up")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .rotationEffect(Angle(degrees: showFees ? 0 : 180))
     }
     
@@ -71,7 +72,7 @@ struct SwapDetailsSummary: View {
         HStack {
             Rectangle()
                 .frame(width: 1)
-                .foregroundColor(.persianBlue200)
+                .foregroundColor(Theme.colors.primaryAccent4)
             
             expandableFees
         }
@@ -123,15 +124,15 @@ struct SwapDetailsSummary: View {
     private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             Text(trailingText)
-                .foregroundColor(.lightText)
+                .foregroundColor(Theme.colors.textLight)
                 .redacted(reason: swapViewModel.isLoading ? .placeholder : [])
         }
-        .font(.body12BrockmannMedium)
+        .font(Theme.fonts.caption12)
     }
     
     private func getImage(_ image: String) -> some View {
@@ -143,8 +144,8 @@ struct SwapDetailsSummary: View {
     private func getErrorCell(text: String) -> some View {
         HStack() {
             Text(text)
-                .foregroundColor(.destructive)
-                .font(.body12Menlo)
+                .foregroundColor(Theme.colors.alertError)
+                .font(Theme.fonts.caption12)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(4)
 

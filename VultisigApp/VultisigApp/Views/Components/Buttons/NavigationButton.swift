@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct NavigationButton: View {
-    var font = Font.title32MenloBold
-    var tint = Color.neutral200
+    var font = Theme.fonts.title1
+    var tint = Theme.colors.textLight
     var isLeft: Bool = false
     
     var body: some View {

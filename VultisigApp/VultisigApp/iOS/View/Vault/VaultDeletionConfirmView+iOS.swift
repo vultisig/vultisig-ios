@@ -52,13 +52,13 @@ extension VaultDeletionConfirmView {
     var logo: some View {
         VStack(spacing: 28) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title80Menlo)
+                .font(Theme.fonts.heroDisplay)
                 .symbolRenderingMode(.palette)
-                .foregroundStyle(Color.neutral0, Color.alertRed)
+                .foregroundStyle(Theme.colors.textPrimary, Theme.colors.alertError)
             
             Text(NSLocalizedString("youArePermanentlyDeletingVault", comment: ""))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: 200)
                 .multilineTextAlignment(.center)
                 .fixedSize()

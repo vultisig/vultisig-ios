@@ -127,6 +127,23 @@ struct SendCryptoDetailsView: View {
         }
     }
     
+    var chainPicker: some View {
+        SwapChainPickerView(
+            vault: vault,
+            showSheet: $sendDetailsViewModel.showChainPickerSheet,
+            selectedChain: $sendDetailsViewModel.selectedChain
+        )
+    }
+
+    var coinPicker: some View {
+        SwapCoinPickerView(
+            vault: vault,
+            showSheet: $sendDetailsViewModel.showCoinPickerSheet,
+            selectedCoin: $tx.coin,
+            selectedChain: sendDetailsViewModel.selectedChain
+        )
+    }
+    
     func onChange(focusedField: Field?) {
         if focusedField == .toAddress {
             handleScroll(newValue: .address, oldValue: .asset, delay: 0.2)
@@ -155,8 +172,8 @@ struct SendCryptoDetailsView: View {
             Spacer()
             Text(trailingText)
         }
-        .font(.body14MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
@@ -164,18 +181,18 @@ struct SendCryptoDetailsView: View {
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
-        .font(.body14MontserratMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
-            .font(.body12MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(6)
     }
     

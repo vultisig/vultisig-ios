@@ -17,7 +17,7 @@ struct SwapFromToCoin: View {
             chevron
         }
         .padding(6)
-        .background(Color.blue400)
+        .background(Theme.colors.bgTertiary)
         .cornerRadius(60)
     }
     
@@ -33,21 +33,21 @@ struct SwapFromToCoin: View {
     var fromToCoinContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("\(coin.ticker)")
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
             
             if coin.isNativeToken {
                 Text("Native")
-                    .font(.body10BrockmannMedium)
-                    .foregroundColor(.extraLightGray)
+                    .font(Theme.fonts.caption10)
+                    .foregroundColor(Theme.colors.textExtraLight)
             }
         }
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(.neutral0)
-            .font(.body12BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.caption12)
             .bold()
             .padding(.trailing, 8)
     }

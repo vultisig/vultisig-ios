@@ -36,13 +36,13 @@ struct EditReferredCodeView: View {
                 textField
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var title: some View {
         Text(NSLocalizedString("useReferralCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var textField: some View {

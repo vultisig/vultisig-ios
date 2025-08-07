@@ -52,8 +52,8 @@ struct SwapCustomTokenView: View {
                     showSheet = false
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18Menlo)
-                        .foregroundColor(Color.neutral0)
+                        .font(Theme.fonts.bodyLRegular)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
             }
         }
@@ -84,7 +84,7 @@ struct SwapCustomTokenView: View {
                 }
                 .frame(height: 72)
                 .padding(.horizontal, 16)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(10)
                 
                 PrimaryButton(title: "Add \(tokenSymbol) token") {
@@ -102,8 +102,8 @@ struct SwapCustomTokenView: View {
         return VStack(spacing: 16) {
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.horizontal, 16)
             
             if !(error is RateLimitError) {
@@ -123,16 +123,16 @@ struct SwapCustomTokenView: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(self.token?.ticker ?? .empty)
-                .font(.body16MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(self.token?.chain.name ?? .empty)
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(contractAddress)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
     }
     

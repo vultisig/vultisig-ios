@@ -19,7 +19,7 @@ extension FastVaultEnterPasswordView {
                 }
             }
             .navigationBarItems(leading: backButton)
-            .navigationBarTitleTextColor(.neutral0)
+            .navigationBarTitleTextColor(Theme.colors.textPrimary)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -29,8 +29,8 @@ extension FastVaultEnterPasswordView {
             dismiss()
         }) {
             Image("x")
-                .font(.body18MenloBold)
-                .foregroundColor(Color.neutral0)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
 }

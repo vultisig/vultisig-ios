@@ -64,18 +64,18 @@ struct PeerDiscoveryInfoBanner: View {
     var title: some View {
         Group {
             Text(NSLocalizedString("peerDiscoveryInfoTitle1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("peerDiscoveryInfoTitle2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body22BrockmannMedium)
+        .font(Theme.fonts.title2)
     }
     
     var description: some View {
         Text(NSLocalizedString("peerDiscoveryInfoDescription", comment: ""))
             .multilineTextAlignment(.center)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.lightText)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textLight)
             .padding(.horizontal, 32)
             .multilineTextAlignment(.leading)
             .lineLimit(nil)

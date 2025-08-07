@@ -100,7 +100,7 @@ struct KeysignDiscoveryView: View {
     
     var button: some View {
         switchLink
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var portraitContent: some View {
@@ -135,8 +135,8 @@ struct KeysignDiscoveryView: View {
             Text("(\(viewModel.selections.count)/\(vault.getThreshold()+1))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body22BrockmannMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.title2)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
         .padding(.horizontal, 24)
     }

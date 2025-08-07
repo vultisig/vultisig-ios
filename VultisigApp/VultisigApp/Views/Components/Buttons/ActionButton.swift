@@ -13,11 +13,11 @@ struct ActionButton: View {
     
     var body: some View {
         Text(NSLocalizedString(title, comment: "").uppercased())
-            .font(.body16MenloBold)
+            .font(Theme.fonts.buttonSSemibold)
             .foregroundColor(fontColor)
             .padding(.vertical, 5)
             .frame(maxWidth: .infinity)
-            .background(Color.blue400)
+            .background(Theme.colors.bgTertiary)
             .cornerRadius(50)
             .overlay(
                 RoundedRectangle(cornerRadius: 50)
@@ -28,5 +28,5 @@ struct ActionButton: View {
 }
 
 #Preview {
-    ActionButton(title: "send", fontColor: .turquoise600)
+    ActionButton(title: "send", fontColor: Theme.colors.bgButtonPrimary)
 }

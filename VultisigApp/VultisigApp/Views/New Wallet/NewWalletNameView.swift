@@ -38,16 +38,16 @@ struct NewWalletNameView: View {
     }
     var error: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.alertRed)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.alertError)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
     }
     var textfield: some View {
         HStack {
             TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .focused($isNameFocused)
                 .onSubmit {
@@ -61,14 +61,14 @@ struct NewWalletNameView: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
         .autocorrectionDisabled()
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(errorMessage.isEmpty ? Color.blue200 : Color.alertRed, lineWidth: 1)
+                .stroke(errorMessage.isEmpty ? Theme.colors.border : Theme.colors.alertError, lineWidth: 1)
         )
         .padding(.top, 32)
     }
@@ -78,7 +78,7 @@ struct NewWalletNameView: View {
             resetPlaceholderName()
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     
@@ -100,13 +100,13 @@ struct NewWalletNameView: View {
     var fields: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("nameYourVault", comment: ""))
-                .font(.body34BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("newWalletNameDescription", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             textfield
         }

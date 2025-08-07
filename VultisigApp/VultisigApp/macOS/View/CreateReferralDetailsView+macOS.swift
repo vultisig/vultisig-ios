@@ -30,7 +30,7 @@ extension CreateReferralDetailsView {
             GeneralMacHeader(title: "createReferral")
             infoButton
         }
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
 }
 #endif

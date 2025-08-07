@@ -58,8 +58,8 @@ struct SecureBackupVaultOverview: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("vaultOverview", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var progressBar: some View {
@@ -68,7 +68,7 @@ struct SecureBackupVaultOverview: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? .turquoise400 : .blue400)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
                     .animation(.easeInOut, value: tabIndex)
             }
         }

@@ -40,15 +40,15 @@ struct SendCryptoDoneContentView: View {
                     
                     transactionDetailsButton
                 }
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
-                .foregroundColor(.lightText)
-                .background(Color.blue600)
+                .foregroundColor(Theme.colors.textLight)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue400, lineWidth: 1)
+                        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
                 )
             }
         }
@@ -84,7 +84,7 @@ struct SendCryptoDoneContentView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
@@ -100,20 +100,20 @@ struct SendCryptoDoneContentView: View {
             }
             
             Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
 }

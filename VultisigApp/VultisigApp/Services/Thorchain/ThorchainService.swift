@@ -15,6 +15,8 @@ class ThorchainService: ThorchainSwapProvider {
     private var cacheFeePrice = ThreadSafeDictionary<String,(data: ThorchainNetworkInfo, timestamp: Date)>()
     private var cacheInboundAddresses = ThreadSafeDictionary<String,(data: [InboundAddress], timestamp: Date)>()
     private var cacheAssetPrices = ThreadSafeDictionary<String,(data: Double, timestamp: Date)>()
+    private var cacheLPPools = ThreadSafeDictionary<String,(data: [ThorchainPool], timestamp: Date)>()
+    private var cacheLPPositions = ThreadSafeDictionary<String,(data: [ThorchainLPPosition], timestamp: Date)>()
     
     private init() {}
     
@@ -190,6 +192,50 @@ class ThorchainService: ThorchainSwapProvider {
         group.wait()
         return network
     }
+    
+    /// Clean pool name by removing contract addresses
+    /// Example: "ETH.USDC-0x1234..." -> "ETH.USDC"
+    static func cleanPoolName(_ asset: String) -> String {
+        if let dashIndex = asset.firstIndex(of: "-") {
+            let suffix = asset[asset.index(after: dashIndex)...]
+            if suffix.uppercased().starts(with: "0X") {
+                return String(asset[..<dashIndex])
+            }
+        }
+        return asset
+    }
+    
+    /// Get THORChain inbound chain name for a given chain
+    static func getInboundChainName(for chain: Chain) -> String {
+        switch chain {
+        case .bitcoin:
+            return "BTC"
+        case .ethereum:
+            return "ETH"
+        case .avalanche:
+            return "AVAX"
+        case .bscChain:
+            return "BSC"
+        case .arbitrum:
+            return "ARB"
+        case .base:
+            return "BASE"
+        case .optimism:
+            return "OP"
+        case .litecoin:
+            return "LTC"
+        case .bitcoinCash:
+            return "BCH"
+        case .dogecoin:
+            return "DOGE"
+        case .gaiaChain:
+            return "GAIA"
+        case .thorChain:
+            return "THOR"
+        default:
+            return chain.swapAsset.uppercased()
+        }
+    }
 }
 
 // MARK: - THORChain Pool Prices Functionality
@@ -317,21 +363,21 @@ extension ThorchainService {
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
             throw HelperError.runtimeError("Invalid GraphQL URL")
         }
-
+        
         let query = String(format: Self.mergedAssetsQuery, id)
-
+        
         let requestBody: [String: Any] = ["query": query]
-
+        
         let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = bodyData
-
+        
         let (data, _) = try await URLSession.shared.data(for: request)
         
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
-
+        
         // Find the account matching the selected token
         let cleanTokenSymbol = tokenSymbol.lowercased().replacingOccurrences(of: "thor.", with: "")
         
@@ -342,13 +388,13 @@ extension ThorchainService {
         guard let acc = acc else {
             return RujiBalance(ruji: 0, shares: "0", price: 0)
         }
-
+        
         let shares = acc.shares
         let ruji = Decimal(string: acc.size.amount) ?? 0
         // Calculate price per share based on user's own position
         let sharesDecimal = Decimal(string: shares) ?? 1
         let price = sharesDecimal > 0 ? ruji / sharesDecimal : 0
-
+        
         return RujiBalance(ruji: ruji, shares: shares, price: price)
     }
     
@@ -362,21 +408,21 @@ extension ThorchainService {
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
             throw HelperError.runtimeError("Invalid GraphQL URL")
         }
-
+        
         let query = String(format: Self.mergedAssetsQuery, id)
-
+        
         let requestBody: [String: Any] = ["query": query]
-
+        
         let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = bodyData
-
+        
         let (data, _) = try await URLSession.shared.data(for: request)
         
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
-
+        
         var positions: [MergedPosition] = []
         
         if let accounts = decoded.data.node?.merge?.accounts {
@@ -397,37 +443,183 @@ extension ThorchainService {
         guard let url = URL(string: Endpoint.fetchThorchainMergedAssets()) else {
             throw HelperError.runtimeError("Invalid GraphQL URL")
         }
-
+        
         let query = String(format: Self.stakeQuery, id)
-
+        
         let requestBody: [String: Any] = ["query": query]
-
+        
         let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = bodyData
-
+        
         let (data, _) = try await URLSession.shared.data(for: request)
         
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
-
+        
         guard let stake =
                 decoded.data.node?.stakingV2.first else {
             return .empty
         }
-
+        
         let stakeAmount = BigInt(stake.bonded.amount) ?? .zero
         let stakeTicker = stake.bonded.asset.metadata?.symbol ?? ""
         let rewardsAmount = BigInt(stake.pendingRevenue?.amount ?? .empty) ?? .zero
         let rewardsTicker = stake.pendingRevenue?.asset.metadata?.symbol ?? .empty
-
+        
         return RujiStakeBalance(
             stakeAmount: stakeAmount,
             stakeTicker: stakeTicker,
             rewardsAmount: rewardsAmount,
             rewardsTicker: rewardsTicker
         )
+    }
+}
+
+// MARK: - THORChain LP Functionality
+extension ThorchainService {
+    
+    /// Fetch LP positions for a given address with caching
+    func fetchLPPositions(runeAddress: String? = nil, assetAddress: String? = nil) async throws -> [ThorchainLPPosition] {
+        let targetAddress = runeAddress ?? assetAddress
+        guard let address = targetAddress else {
+            throw HelperError.runtimeError("Either rune address or asset address must be provided")
+        }
+        
+        let cacheKey = "lp_positions_\(address)"
+        let cacheExpirationMinutes = 2.0 // Cache for 2 minutes
+        
+        // Check cache first
+        if let cached = cacheLPPositions.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            return cached.data
+        }
+        
+        // Get all available pools first (this will use cache if available)
+        let pools = try await fetchLPPools()
+        var allPositions: [ThorchainLPPosition] = []
+        
+        // Check each pool for LP positions
+        // Use sequential requests with small delay to avoid rate limiting
+        for pool in pools {
+            do {
+                let poolUrlString = Endpoint.fetchThorchainPoolLiquidityProvider(asset: pool.asset, address: address)
+                guard let poolUrl = URL(string: poolUrlString) else { continue }
+                
+                let (poolData, response) = try await URLSession.shared.data(for: get9RRequest(url: poolUrl))
+                
+                // Check if we got a 404 (no position in this pool)
+                if let httpResponse = response as? HTTPURLResponse,
+                   httpResponse.statusCode == 404 {
+                    continue
+                }
+                
+                // Try to decode as pool LP response
+                if let lpResponse = try? JSONDecoder().decode(ThorchainPoolLPResponse.self, from: poolData) {
+                    // Only add if units > 0
+                    if let units = Int64(lpResponse.units), units > 0 {
+                        let position = ThorchainLPPosition(
+                            asset: lpResponse.asset,
+                            runeAddress: runeAddress,
+                            assetAddress: lpResponse.assetAddress,
+                            poolUnits: lpResponse.units,
+                            runeDepositValue: lpResponse.runeDepositValue,
+                            assetDepositValue: lpResponse.assetDepositValue,
+                            runeRedeemValue: nil,
+                            assetRedeemValue: nil,
+                            luvi: nil,
+                            gLPGrowth: nil,
+                            assetGrowthPct: nil
+                        )
+                        allPositions.append(position)
+                    }
+                }
+                
+                // Add small delay to avoid rate limiting
+                try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                
+            } catch {
+                // Skip pools where user has no position
+                continue
+            }
+        }
+        
+        // Cache the result
+        cacheLPPositions.set(cacheKey, (data: allPositions, timestamp: Date()))
+        
+        return allPositions
+    }
+    
+    /// Fetch pool information for a specific asset
+    func fetchPoolInfo(asset: String) async throws -> ThorchainPool {
+        let urlString = Endpoint.fetchPoolInfo(asset: asset)
+        
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("Invalid URL")
+        }
+        
+        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
+        let pool = try JSONDecoder().decode(ThorchainPool.self, from: data)
+        return pool
+    }
+    
+    /// Get supported pools for LP with caching
+    func fetchLPPools() async throws -> [ThorchainPool] {
+        let cacheKey = "lp_pools"
+        let cacheExpirationMinutes = 5.0 // Cache for 5 minutes
+        
+        // Check cache first
+        if let cached = cacheLPPools.get(cacheKey),
+           Date().timeIntervalSince(cached.timestamp) < cacheExpirationMinutes * 60 {
+            return cached.data
+        }
+        
+        // Use retry mechanism for network call
+        return try await withRetry(maxAttempts: 3) {
+            let urlString = Endpoint.fetchThorchainPools
+            
+            guard let url = URL(string: urlString) else {
+                throw HelperError.runtimeError("Invalid URL")
+            }
+            
+            // Create a URL session with timeout
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = 10.0 // 10 second timeout
+            config.timeoutIntervalForResource = 15.0
+            let session = URLSession(configuration: config)
+            
+            let (data, _) = try await session.data(for: get9RRequest(url: url))
+            let pools = try JSONDecoder().decode([ThorchainPool].self, from: data)
+            
+            // Filter only available pools
+            let availablePools = pools.filter { $0.status == "Available" }
+            
+            // Cache the result
+            cacheLPPools.set(cacheKey, (data: availablePools, timestamp: Date()))
+            
+            return availablePools
+        }
+    }
+    
+    /// Generic retry mechanism for async operations
+    private func withRetry<T>(maxAttempts: Int = 3, retryDelay: TimeInterval = 1.0, operation: () async throws -> T) async throws -> T {
+        var lastError: Error?
+        
+        for attempt in 1...maxAttempts {
+            do {
+                return try await operation()
+            } catch {
+                lastError = error
+                if attempt < maxAttempts {
+                    // Exponential backoff: 1s, 2s, 4s
+                    let delay = retryDelay * pow(2.0, Double(attempt - 1))
+                    try await Task.sleep(for: .seconds(delay))
+                }
+            }
+        }
+        
+        throw lastError ?? HelperError.runtimeError("Unknown error after \(maxAttempts) attempts")
     }
 }
 
@@ -491,6 +683,7 @@ private extension ThorchainService {
         case invalidResponse
         case apiError(String)
     }
+    
 }
 
 /// Response model for pool data from the THORChain API

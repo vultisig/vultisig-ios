@@ -39,8 +39,8 @@ extension CustomTokenView {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-                        .font(.body18Menlo)
-                        .foregroundColor(Color.neutral0)
+                        .font(Theme.fonts.bodyLRegular)
+                        .foregroundColor(Theme.colors.textPrimary)
                 }
             }
         }

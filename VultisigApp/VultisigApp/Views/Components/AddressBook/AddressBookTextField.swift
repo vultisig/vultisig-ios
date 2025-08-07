@@ -42,25 +42,25 @@ struct AddressBookTextField: View {
     
     var overlay: some View {
         ZStack {
-            Color.turquoise600.opacity(0.2)
+            Theme.colors.bgButtonPrimary.opacity(0.2)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .cornerRadius(10)
             
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 1, dash: [10]))
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var titleContent: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Color.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
     }
     
    
@@ -69,8 +69,8 @@ struct AddressBookTextField: View {
             pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -80,8 +80,8 @@ struct AddressBookTextField: View {
             showScanner.toggle()
         } label: {
             Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -91,8 +91,8 @@ struct AddressBookTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }    

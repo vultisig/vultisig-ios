@@ -18,17 +18,17 @@ struct OnboardingTextCard: View {
     var body: some View {
         Group {
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text1", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(deviceCount ?? "")
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text3", comment: ""))
-                .foregroundColor(.neutral0) +
+                .foregroundColor(Theme.colors.textPrimary) +
             Text(NSLocalizedString("\(textPrefix)\(index+1)Text4", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
         .frame(maxWidth: 1024)
         .padding(.horizontal, 36)
         .padding(.bottom, 24)

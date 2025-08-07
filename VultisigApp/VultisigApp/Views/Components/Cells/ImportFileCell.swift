@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ImportFileCell: View {
+    
     let name: String
     let resetData: () -> ()
     
@@ -29,8 +30,8 @@ struct ImportFileCell: View {
     
     func fileName(_ name: String) -> some View {
         Text(name)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var closeButton: some View {
@@ -38,8 +39,8 @@ struct ImportFileCell: View {
             resetData()
         } label: {
             Image(systemName: "xmark")
-                .font(.body16MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(8)
         }
         .buttonStyle(PlainButtonStyle())

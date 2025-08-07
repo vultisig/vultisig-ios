@@ -21,7 +21,7 @@ struct CoinSelectionCell: View {
         }
         .frame(height: 72)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear {
             setData()
@@ -41,12 +41,12 @@ struct CoinSelectionCell: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(asset.ticker)
-                .font(.body16MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(asset.chain.name)
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

@@ -57,15 +57,15 @@ struct ReferralLaunchView: View {
     var title: some View {
         Text(NSLocalizedString("addYourFriendsCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var errorText: some View {
         Text(NSLocalizedString(referredViewModel.referredLaunchViewErrorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.alertRed)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.alertError)
             .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
     }
     
@@ -82,8 +82,8 @@ struct ReferralLaunchView: View {
             separator
             
             Text(NSLocalizedString("or", comment: "").uppercased())
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             separator
         }
@@ -92,8 +92,8 @@ struct ReferralLaunchView: View {
     var createTitle: some View {
         Text(NSLocalizedString("createYourCodeAndEarn", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var separator: some View {
@@ -141,16 +141,16 @@ struct ReferralLaunchView: View {
             Text(referredViewModel.savedReferredCode)
             Spacer()
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .colorScheme(.dark)
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .autocorrectionDisabled()
         .borderlessTextFieldStyle()
@@ -178,8 +178,8 @@ struct ReferralLaunchView: View {
     var referralTitle: some View {
         Text(NSLocalizedString("yourReferralCode", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var referralCopyTextField: some View {

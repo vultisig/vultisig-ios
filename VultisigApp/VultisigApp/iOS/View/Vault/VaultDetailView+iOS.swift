@@ -48,7 +48,7 @@ extension VaultDetailView {
                 vault: vault
             )
         }
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var chooseChainButton: some View {
@@ -57,8 +57,8 @@ extension VaultDetailView {
         } label: {
             chooseChainButtonLabel
         }
-        .font(.body16MenloBold)
-        .foregroundColor(.turquoise600)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
     }
     
     var scanButton: some View {
@@ -97,7 +97,7 @@ extension VaultDetailView {
         }
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
 }
 #endif

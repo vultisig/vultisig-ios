@@ -36,8 +36,8 @@ struct SendCryptoSigningErrorView: View {
     
     var errorIcon: some View {
         Image(systemName: "xmark.circle.fill")
-            .font(.body24MontserratBold)
-            .foregroundColor(.alertRed)
+            .font(Theme.fonts.title2)
+            .foregroundColor(Theme.colors.alertError)
     }
     
     var backgroundImage: some View {
@@ -47,12 +47,12 @@ struct SendCryptoSigningErrorView: View {
     var errorMessage: some View {
         VStack(spacing: 18) {
             Text(NSLocalizedString("transactionFailed", comment: ""))
-                .font(.body22BrockmannMedium)
-                .foregroundColor(.alertRed)
+                .font(Theme.fonts.title2)
+                .foregroundColor(Theme.colors.alertError)
             
             Text(errorString)
-                .font(.body14MenloBold)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     

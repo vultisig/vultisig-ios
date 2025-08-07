@@ -49,8 +49,8 @@ struct ReferralSendOverviewView: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString("sendOverview", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var content: some View {
@@ -69,15 +69,15 @@ struct ReferralSendOverviewView: View {
             overview
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
     }
     
     var title: some View {
         Text(NSLocalizedString("youreSending", comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body16BrockmannMedium)
-            .foregroundColor(.lightText)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textLight)
     }
     
     var assetDetail: some View {
@@ -88,14 +88,14 @@ struct ReferralSendOverviewView: View {
                 .cornerRadius(32)
             
             Text("\(sendTx.amount)")
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text("RUNE")
-                .foregroundColor(.lightText)
+                .foregroundColor(Theme.colors.textLight)
             
             Spacer()
         }
-        .font(.body18BrockmannMedium)
+        .font(Theme.fonts.bodyLMedium)
     }
     
     var separator: some View {
@@ -140,7 +140,7 @@ struct ReferralSendOverviewView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil, isForMemo: Bool = false) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -154,18 +154,18 @@ struct ReferralSendOverviewView: View {
             }
             
             Text(description)
-                .foregroundColor(isForMemo ? .extraLightGray : .neutral0)
+                .foregroundColor(isForMemo ? Theme.colors.textExtraLight : Theme.colors.textPrimary)
                 .lineLimit(isForMemo ? 2 : 1)
                 .truncationMode(.tail)
             
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getVaultAddress() -> String? {

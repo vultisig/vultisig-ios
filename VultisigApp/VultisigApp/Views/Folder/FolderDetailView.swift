@@ -68,7 +68,7 @@ struct FolderDetailView: View {
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
         .padding(.bottom, isEditingFolders ? 80 : 0)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var spacer: some View {
@@ -77,7 +77,7 @@ struct FolderDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var folderRename: some View {
@@ -90,7 +90,7 @@ struct FolderDetailView: View {
         .frame(maxWidth: .infinity)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .onAppear {
             setupFolder()
         }
@@ -98,8 +98,8 @@ struct FolderDetailView: View {
     
     var folderNameTitle: some View {
         Text(NSLocalizedString("folderName", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var folderNameTextField: some View {
@@ -107,11 +107,11 @@ struct FolderDetailView: View {
             NSLocalizedString("typeHere", comment: ""),
             text: $folderName
         )
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
         .submitLabel(.done)
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .colorScheme(.dark)
         .borderlessTextFieldStyle()
@@ -126,35 +126,35 @@ struct FolderDetailView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
-                .background(Color.backgroundBlue)
+                .background(Theme.colors.bgPrimary)
         }
         .onMove(perform: isEditingFolders ? move : nil)
         .padding(.horizontal, 16)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var listTitle: some View {
         Text(NSLocalizedString("currentVaults", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .padding(.top, 22)
             .padding(.horizontal, 16)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var vaultsTitle: some View {
         Text(NSLocalizedString("addVaultsToFolder", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .padding(.top, 22)
             .padding(.horizontal, 16)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     var vaultsList: some View {
@@ -163,13 +163,13 @@ struct FolderDetailView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
-                .background(Color.backgroundBlue)
+                .background(Theme.colors.bgPrimary)
                 .onTapGesture {
                     selectVault(vault)
                 }
         }
         .padding(.horizontal, 16)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var saveButton: some View {
@@ -180,7 +180,7 @@ struct FolderDetailView: View {
         .edgesIgnoringSafeArea(.bottom)
         .frame(maxHeight: isEditingFolders ? nil : 0)
         .clipped()
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var alert: Alert {

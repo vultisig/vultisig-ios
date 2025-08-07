@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct FolderDetailSelectedVaultCell: View {
+    
+    
     let vault: Vault
     let isEditing: Bool
     let handleVaultSelection: (Vault) -> ()
@@ -51,7 +53,7 @@ struct FolderDetailSelectedVaultCell: View {
             action
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -71,16 +73,16 @@ struct FolderDetailSelectedVaultCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
     
     var text: some View {
         Text(vault.name)
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
     }
     
     var toggle: some View {
@@ -92,25 +94,25 @@ struct FolderDetailSelectedVaultCell: View {
     
     var partAssignedCell: some View {
         Text("Share \(viewModel.order)of\(viewModel.totalSigners)")
-            .font(.body14Menlo)
-            .foregroundColor(.body)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textLight)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(.body14Menlo)
-            .foregroundColor(.body)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textLight)
             .padding(4)
             .padding(.horizontal, 2)
-            .background(Color.blue200)
+            .background(Theme.colors.border)
             .cornerRadius(5)
             .lineLimit(1)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body16MontserratBold)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? 0 : nil)
             .padding(.vertical, 8)
     }

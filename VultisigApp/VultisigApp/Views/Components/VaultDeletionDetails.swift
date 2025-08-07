@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct VaultDeletionDetails: View {
+    
+    
     let vault: Vault
     let devicesInfo: [DeviceInfo]
     
@@ -30,7 +32,7 @@ struct VaultDeletionDetails: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onAppear() {
             setData()
@@ -43,8 +45,8 @@ struct VaultDeletionDetails: View {
             Text(":")
         }
         .multilineTextAlignment(.leading)
-        .font(.body20MontserratSemiBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyLMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(.top, 8)
     }
     
@@ -95,8 +97,8 @@ struct VaultDeletionDetails: View {
             Text(NSLocalizedString(title, comment: "")) +
             Text(": ")
         }
-        .font(.body14Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySRegular)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func titlePartText() -> String {

@@ -10,8 +10,8 @@ import SwiftUI
 
 extension KeygenViewInstructions {
     func setIndicator() {
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise400)
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.blue200)
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Theme.colors.bgButtonPrimary)
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Theme.colors.border)
     }
     
     var cards: some View {

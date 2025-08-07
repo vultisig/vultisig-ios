@@ -40,12 +40,12 @@ struct SecurityScannerBottomSheetContent: View {
             VStack(spacing: 12) {
                 Text(contentStyle.title)
                     .foregroundColor(contentStyle.imageColor)
-                    .font(.body22BrockmannMedium)
+                    .font(Theme.fonts.title2)
                     .multilineTextAlignment(.center)
                 
                 Text(contentStyle.description)
-                    .foregroundStyle(Color.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
                     .multilineTextAlignment(.center)
                     .frame(height: 60)
             }
@@ -54,10 +54,10 @@ struct SecurityScannerBottomSheetContent: View {
                 HStack(spacing: 4) {
                     Spacer()
                     Text("securityScannerPoweredBy".localized)
-                        .foregroundStyle(Color.extraLightGray)
-                        .font(.body14BrockmannMedium)
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                        .font(Theme.fonts.bodySMedium)
                     Image(securityScannerProvider)
-                        .foregroundStyle(Color.extraLightGray)
+                        .foregroundStyle(Theme.colors.textExtraLight)
                     Spacer()
                 }
             }
@@ -71,8 +71,8 @@ struct SecurityScannerBottomSheetContent: View {
                     onContinueAnyway()
                 }
                 .frame(height: 42, alignment: .center)
-                .foregroundStyle(Color.textDisabled)
-                .font(.body10BrockmannMedium)
+                .foregroundStyle(Theme.colors.textButtonDisabled)
+                .font(Theme.fonts.caption10)
                 .frame(maxWidth: .infinity)
                 .buttonStyle(.plain)
             }
@@ -89,7 +89,7 @@ struct SettingsSecurityScannerBottomSheet: View, BottomSheetProperties {
                 title: "vaultSettingsSecurityScreenTitleBottomsheet".localized,
                 description: "vaultSettingsSecurityScreenContentBottomsheet".localized,
                 image: "exclamationmark.circle",
-                imageColor: Color.alertYellow
+                imageColor: Theme.colors.alertWarning
             ),
             securityScannerProvider: nil,
             onDismissRequest: onDismissRequest,
@@ -114,9 +114,9 @@ private extension SecurityScannerResult {
         
         let description = self.description ?? "securityScannerDefaultDescription".localized
         let (color, icon) = if riskLevel == .critical || riskLevel == .high {
-            (Color.invalidRed, "exclamationmark.triangle")
+            (Theme.colors.alertError, "exclamationmark.triangle")
         } else {
-            (Color.alertYellow, "exclamationmark.circle")
+            (Theme.colors.alertWarning, "exclamationmark.circle")
         }
         
         return SecurityScannerBottomSheetStyle(

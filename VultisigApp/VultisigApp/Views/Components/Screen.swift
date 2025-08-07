@@ -19,7 +19,7 @@ struct Screen<Content: View>: View {
     var body: some View {
         container
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.backgroundBlue, ignoresSafeAreaEdges: .all)
+            .background(Theme.colors.bgPrimary, ignoresSafeAreaEdges: .all)
     }
     
     @ViewBuilder

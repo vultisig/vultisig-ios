@@ -38,7 +38,7 @@ extension VaultDetailView {
                 vault: vault
             )
         }
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .padding(.horizontal, 16)
     }
     
@@ -50,8 +50,8 @@ extension VaultDetailView {
         }
         .padding(.horizontal, 16)
         .frame(height: 20)
-        .font(.body16MenloBold)
-        .foregroundColor(.turquoise600)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
     }
     
     var scanButton: some View {

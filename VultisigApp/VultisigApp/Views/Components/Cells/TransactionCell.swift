@@ -42,21 +42,21 @@ struct TransactionCell: View {
             
             Text(NSLocalizedString(title, comment: "Transaction ID"))
         }
-        .font(.body20MontserratSemiBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyLMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var content: some View {
         Text(id)
-            .font(.body13Menlo)
-            .foregroundColor(.turquoise600)
+            .font(Theme.fonts.footnote)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .multilineTextAlignment(.leading)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.forward")
-            .foregroundColor(.neutral0)
-            .font(.body18MenloBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 
@@ -66,5 +66,5 @@ struct TransactionCell: View {
         id: "123456",
         url: Endpoint.bitcoinLabelTxHash("")
     )
-    .background(Color.blue600)
+    .background(Theme.colors.bgSecondary)
 }

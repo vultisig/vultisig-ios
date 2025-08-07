@@ -21,21 +21,21 @@ struct StyledTextField: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("\(placeholder)\(optionalMessage)")
-                    .font(.body14MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                 if !localIsValid {
                     Text("*")
-                        .font(.body14MontserratMedium)
+                        .font(Theme.fonts.bodySMedium)
                         .foregroundColor(.red)
                 }
             }
             
             TextField(placeholder.capitalized, text: customBinding)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .padding(12)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(12)
                 .borderlessTextFieldStyle()
                 .maxLength(customBinding, maxLengthSize)

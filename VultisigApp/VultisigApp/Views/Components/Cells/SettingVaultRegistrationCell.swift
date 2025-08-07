@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingVaultRegistrationCell: View {
+    
+    
     var body: some View {
         HStack(spacing: 12) {
             iconBlock
@@ -16,7 +18,7 @@ struct SettingVaultRegistrationCell: View {
             chevron
         }
         .padding(12)
-        .background(Color.turquoise600)
+        .background(Theme.colors.bgButtonPrimary)
         .cornerRadius(10)
     }
     
@@ -28,14 +30,14 @@ struct SettingVaultRegistrationCell: View {
     
     var titleBlock: some View {
         Text(NSLocalizedString("registerYourVaults", comment: ""))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral900)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textDark)
     }
     
     var chevron: some View {
         Image(systemName: "chevron.right")
-            .font(.body16Menlo)
-            .foregroundColor(.neutral900)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textDark)
     }
     
 }

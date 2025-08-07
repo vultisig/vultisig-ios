@@ -9,7 +9,7 @@ struct TokenSelectionCell: View {
     
     var body: some View {
         ZStack {
-            Color.blue600
+            Theme.colors.bgSecondary
                 .cornerRadius(10)
                 .onTapGesture {
                     isSelected.toggle()
@@ -35,12 +35,12 @@ struct TokenSelectionCell: View {
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(asset.ticker)
-                .font(.body16MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Text(chain.name)
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

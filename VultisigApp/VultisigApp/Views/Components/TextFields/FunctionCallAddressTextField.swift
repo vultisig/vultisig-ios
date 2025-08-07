@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 import WalletCore
 
 struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
+    
     @ObservedObject var memo: MemoType
     var addressKey: String
     var isOptional: Bool = false
@@ -32,12 +33,12 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("\(addressKey.toFormattedTitleCase())\(optionalMessage)")
-                    .font(.body14MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !isAddressValid {
                     Text("*")
-                        .font(.body14MontserratMedium)
+                        .font(Theme.fonts.bodySMedium)
                         .foregroundColor(.red)
                 }
             }
@@ -62,18 +63,18 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
     
     var overlay: some View {
         ZStack {
-            Color.turquoise600.opacity(0.2)
+            Theme.colors.bgButtonPrimary.opacity(0.2)
                 .frame(height: 48)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .cornerRadius(10)
             
             RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 1, dash: [10]))
                 .padding(5)
             
             Text(NSLocalizedString("dropFileHere", comment: ""))
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -82,8 +83,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -93,8 +94,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             showScanner.toggle()
         } label: {
             Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -104,8 +105,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -123,8 +124,8 @@ struct FunctionCallAddressTextField<MemoType: FunctionCallAddressable>: View {
             ))
         } label: {
             Image(systemName: "text.book.closed")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }

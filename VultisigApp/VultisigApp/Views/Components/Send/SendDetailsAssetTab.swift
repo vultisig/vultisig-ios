@@ -23,27 +23,6 @@ struct SendDetailsAssetTab: View {
             .onChange(of: tx.coin, { oldValue, newValue in
                 setData()
             })
-            // chain selector
-            .sheet(isPresented: $viewModel.showChainPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapChainPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showChainPickerSheet,
-                        selectedChain: $viewModel.selectedChain
-                    )
-                }
-            })
-            // coin selector
-            .sheet(isPresented: $viewModel.showCoinPickerSheet, content: {
-                if let vault = homeViewModel.selectedVault {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $viewModel.showCoinPickerSheet,
-                        selectedCoin: $tx.coin,
-                        selectedChain: viewModel.selectedChain
-                    )
-                }
-            })
             .onChange(of: viewModel.showCoinPickerSheet) { oldValue, newValue in
                 handleAssetSelection(oldValue, newValue)
             }
@@ -75,8 +54,8 @@ struct SendDetailsAssetTab: View {
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("asset", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             if viewModel.assetSetupDone {
                 doneSelectedAsset
@@ -121,8 +100,8 @@ struct SendDetailsAssetTab: View {
     
     var chainSelectionTitle: some View {
         Text(NSLocalizedString("from", comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
     
     var selectedChainCell: some View {
@@ -152,12 +131,12 @@ struct SendDetailsAssetTab: View {
                 Text(": ") +
                 Text(tx.coin.balanceString)
             }
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             
             Text(tx.coin.balanceInFiat)
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -172,8 +151,8 @@ struct SendDetailsAssetTab: View {
             )
             
             Text("\(tx.coin.ticker)")
-                .font(.body12BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     
@@ -194,6 +173,7 @@ struct SendDetailsAssetTab: View {
         viewModel.assetSetupDone = true
     }
 }
+
 
 #Preview {
     SendDetailsAssetTab(

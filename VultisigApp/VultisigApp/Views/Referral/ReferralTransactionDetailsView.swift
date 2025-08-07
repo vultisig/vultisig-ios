@@ -42,21 +42,21 @@ struct ReferralTransactionDetailsView: View {
                 .cornerRadius(32)
             
             Text("\(sendTx.amount) RUNE")
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 12)
             
             Text("\(referralViewModel.totalFeeFiat)")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.caption10)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity)
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -88,11 +88,11 @@ struct ReferralTransactionDetailsView: View {
             )
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -116,15 +116,15 @@ struct ReferralTransactionDetailsView: View {
             )
             
             Image(systemName: "arrow.up.forward.app")
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var headerTitle: some View {
         Text(NSLocalizedString("transactionDetails", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
     }
@@ -140,7 +140,7 @@ struct ReferralTransactionDetailsView: View {
     private func getCell(title: String, description: String, bracketValue: String? = nil, icon: String? = nil) -> some View {
         HStack(spacing: 2) {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -154,19 +154,19 @@ struct ReferralTransactionDetailsView: View {
             }
             
             Text(description)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
             
             if let bracketValue {
                 Text("(\(bracketValue))")
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var button: some View {

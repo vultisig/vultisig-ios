@@ -87,7 +87,7 @@ struct VaultsView: View {
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var foldersList: some View {
@@ -104,7 +104,7 @@ struct VaultsView: View {
             getButton(for: vault)
         }
         .onMove(perform: isEditingVaults ? moveVaults : nil)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var buttons: some View {
@@ -158,7 +158,7 @@ struct VaultsView: View {
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .padding(.vertical, 8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .disabled(isEditingVaults ? true : false)
     }
     
@@ -197,14 +197,14 @@ struct VaultsView: View {
     
     private func getTitle(for text: String) -> some View {
         Text(NSLocalizedString(text, comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
             .padding(.top, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
     }
     
     func moveVaults(from: IndexSet, to: Int) {

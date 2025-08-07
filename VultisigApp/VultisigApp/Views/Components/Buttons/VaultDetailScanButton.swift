@@ -20,17 +20,17 @@ struct VaultDetailScanButton: View {
     var label: some View {
         ZStack {
             Circle()
-                .foregroundColor(.blue800)
+                .foregroundColor(Theme.colors.bgPrimary)
                 .frame(width: 80, height: 80)
                 .opacity(0.8)
             
             Circle()
-                .foregroundColor(.turquoise600)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
                 .frame(width: 60, height: 60)
             
             Image(systemName: "camera")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.blue600)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.bgSecondary)
         }
     }
 }

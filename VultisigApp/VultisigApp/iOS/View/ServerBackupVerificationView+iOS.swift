@@ -53,12 +53,12 @@ extension ServerBackupVerificationView {
                 OTPCharTextField(text: $otp[index]) {
                     focusedField = max(0, index - 1)
                 }
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()
-                .font(.body16BrockmannMedium)
+                .font(Theme.fonts.bodyMMedium)
                 .frame(width: 46, height: 46)
-                .background(Color.blue600)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

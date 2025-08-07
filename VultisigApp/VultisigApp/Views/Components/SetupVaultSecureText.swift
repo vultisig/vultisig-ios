@@ -18,7 +18,7 @@ struct SetupVaultSecureText: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
         .cornerRadius(16)
         .padding(.vertical, 16)
@@ -31,14 +31,14 @@ struct SetupVaultSecureText: View {
                     .foregroundStyle(LinearGradient.primaryGradient)
             } else {
                 headerText
-                    .foregroundColor(.alertTurquoise)
+                    .foregroundColor(Theme.colors.alertInfo)
             }
         }
     }
     
     var headerText: some View {
         Text(selectedTab.secureTextTitle)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
     }
@@ -48,7 +48,7 @@ struct SetupVaultSecureText: View {
            .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
            .frame(height: 2)
            .frame(maxWidth: .infinity)
-           .foregroundColor(Color.blue400)
+           .foregroundColor(Theme.colors.bgTertiary)
            .offset(y: 1)
     }
     
@@ -57,21 +57,21 @@ struct SetupVaultSecureText: View {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(0..<3) { index in
                     Image(systemName: "checkmark")
-                        .foregroundColor(Color.turquoise400)
+                        .foregroundColor(Theme.colors.bgButtonPrimary)
                         .frame(width: 16, height: 16)
                 }
             }
             
             Text(selectedTab.secureTextDecription)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .lineSpacing(12)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity,minHeight: 80)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
 }
 

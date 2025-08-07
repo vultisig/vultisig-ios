@@ -72,8 +72,8 @@ struct CreateReferralDetailsView: View {
     
     var setExpirationTitle: some View {
         Text(NSLocalizedString("setExpiration(inYears)", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -132,31 +132,31 @@ struct CreateReferralDetailsView: View {
                 .frame(width: 32, height: 32)
             
             Text("RUNE")
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var infoLabel: some View {
         Image(systemName: "info.circle")
-            .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var tooltip: some View {
         VStack(alignment: .leading) {
             Text(NSLocalizedString("referralProgram", comment: ""))
-                .foregroundColor(.neutral900)
-                .font(.body16BrockmannMedium)
+                .foregroundColor(Theme.colors.textDark)
+                .font(Theme.fonts.bodyMMedium)
             
              Text(NSLocalizedString("referralProgramTooltipDescription", comment: ""))
-                .foregroundColor(.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
-        .background(Color.neutral0)
+        .background(Theme.colors.textPrimary)
         .cornerRadius(8)
         .padding(.horizontal, 24)
         .onTapGesture {
@@ -167,22 +167,22 @@ struct CreateReferralDetailsView: View {
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 0) {
                 Text(description1)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !description2.isEmpty {
                     Text(description2)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
             .redacted(reason: isPlaceholder ? .placeholder : [])
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func setData() {

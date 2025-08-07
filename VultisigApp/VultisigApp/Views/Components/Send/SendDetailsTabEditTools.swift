@@ -16,12 +16,12 @@ struct SendDetailsTabEditTools: View {
             checkmark
             editButton
         }
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
     }
     
     var checkmark: some View {
         Image(systemName: "checkmark.circle")
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertSuccess)
     }
     
     var editButton: some View {
@@ -34,7 +34,7 @@ struct SendDetailsTabEditTools: View {
     
     var editLabel: some View {
         Image(systemName: "pencil")
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
 }
 

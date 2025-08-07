@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CoinPickerView: View {
+    
     @State var searchText: String = .empty
     @State var isSearching = false
 
@@ -35,12 +36,12 @@ struct CoinPickerView: View {
     var searchBar: some View {
         HStack(spacing: 0) {
             Image(systemName: "magnifyingglass")
-                .font(.body20MontserratMedium)
-                .foregroundColor(.neutral500)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             TextField(NSLocalizedString("search...", comment: "Search...").toFormattedTitleCase(), text: $searchText)
-                .font(.body12MenloBold)
-                .foregroundColor(.neutral500)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)
@@ -56,10 +57,10 @@ struct CoinPickerView: View {
                     isSearching = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.neutral500)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)
@@ -70,7 +71,7 @@ struct CoinPickerView: View {
         .onChange(of: searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
 

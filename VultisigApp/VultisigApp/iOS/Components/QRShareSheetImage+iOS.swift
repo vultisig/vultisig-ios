@@ -25,7 +25,7 @@ extension QRShareSheetImage {
             .cornerRadius(cornerRadius)
             .overlay (
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Color.borderBlue, lineWidth: 2)
+                    .strokeBorder(Theme.colors.border, lineWidth: 2)
             )
             .padding(.horizontal, padding)
     }
