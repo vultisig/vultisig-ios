@@ -73,6 +73,7 @@ class UTXOChainsHelper {
             $0.toAddress = thorChainSwapPayload.vaultAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.outputOpReturn = memoData
+            $0.fixedDustThreshold = coin.getFixedDustThreshold()
         }
         
         return input
@@ -156,6 +157,7 @@ class UTXOChainsHelper {
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData
             }
+            $0.fixedDustThreshold = coin.getFixedDustThreshold()
         }
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)
