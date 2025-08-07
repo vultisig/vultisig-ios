@@ -31,7 +31,7 @@ struct CounterView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
                     .background(.clear)
-                    .font(.body16BrockmannMedium)
+                    .font(Theme.fonts.bodyMMedium)
             }
             
             counterButton(icon: "plus.circle") {
@@ -46,8 +46,8 @@ struct CounterView: View {
                 Image(systemName: icon)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
-                    .background(Color.blue600)
-                    .font(.body22BrockmannMedium)
+                    .background(Theme.colors.bgSecondary)
+                    .font(Theme.fonts.title2)
             }
         }
     }
@@ -57,11 +57,11 @@ struct CounterView: View {
         ZStack {
             content()
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
 }

@@ -64,8 +64,8 @@ struct EditReferralDetailsView: View {
     var yourReferralCodeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("yourReferralCode".localized)
-                .foregroundColor(.neutral0)
-                .font(.body14MontserratMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
                 text: $viewModel.savedGeneratedReferralCode,
@@ -86,8 +86,8 @@ struct EditReferralDetailsView: View {
     
     var setExpirationTitle: some View {
         Text(NSLocalizedString("extendExpiration(inYears)", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -110,8 +110,8 @@ struct EditReferralDetailsView: View {
     
     var choosePayoutAssetTitle: some View {
         Text(NSLocalizedString("choosePayoutAsset", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -123,7 +123,7 @@ struct EditReferralDetailsView: View {
                 HStack {
                     selectedAsset
                     Spacer()
-                    Icon(named: "arrow", color: Color.neutral0, size: 24)
+                    Icon(named: "arrow", color: Theme.colors.textPrimary, size: 24)
                 }
             }
         }
@@ -170,15 +170,15 @@ struct EditReferralDetailsView: View {
             )
             
             Text(viewModel.preferredAsset?.asset.ticker ?? "RUNE")
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
     var infoLabel: some View {
         Image(systemName: "info.circle")
-            .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func getCell(
@@ -191,21 +191,21 @@ struct EditReferralDetailsView: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 0) {
                 RedactedText(description1, redactedText: redactedDesc1, isLoading: isPlaceholder)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 if !description2.isEmpty {
                     RedactedText(description2, redactedText: redactedDesc2, isLoading: isPlaceholder)
-                        .foregroundColor(.extraLightGray)
+                        .foregroundColor(Theme.colors.textExtraLight)
                 }
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
 }
 

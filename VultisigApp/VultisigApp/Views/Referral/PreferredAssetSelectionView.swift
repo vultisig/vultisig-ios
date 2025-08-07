@@ -52,8 +52,8 @@ struct PreferredAssetSelectionView: View {
                 .scaleEffect(1.2)
             
             Text(NSLocalizedString("loading", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)

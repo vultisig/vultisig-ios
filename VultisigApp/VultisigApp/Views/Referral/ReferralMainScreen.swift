@@ -37,8 +37,8 @@ struct ReferralMainScreen: View {
     var referralCodeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("yourReferralCode".localized)
-                .foregroundColor(.neutral0)
-                .font(.body14MontserratMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
                 text: $referralViewModel.savedGeneratedReferralCode,
@@ -55,15 +55,15 @@ struct ReferralMainScreen: View {
                 Icon(named: "trophy")
                     .padding(.bottom, 10)
                 Text("collectedRewards".localized)
-                    .foregroundStyle(Color.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
                 RedactedText(
                     referralViewModel.collectedRewards,
                     redactedText: "10 RUNE",
                     isLoading: $referralViewModel.isLoading
                 )
-                .foregroundStyle(Color.neutral50)
-                .font(.body18BrockmannMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyLMedium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -73,15 +73,15 @@ struct ReferralMainScreen: View {
         BoxView {
             VStack(alignment: .leading, spacing: 2) {
                 Text("expiresOn".localized)
-                    .foregroundStyle(Color.extraLightGray)
-                    .font(.body14BrockmannMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
                 RedactedText(
                     referralViewModel.expiresOn,
                     redactedText: "01 Jan 2000",
                     isLoading: $referralViewModel.isLoading
                 )
-                .foregroundStyle(Color.neutral50)
-                .font(.body18BrockmannMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyLMedium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -98,8 +98,8 @@ struct ReferralMainScreen: View {
         Group {
             VStack(alignment: .leading, spacing: 8) {
                 Text( "yourFriendsReferralCode".localized)
-                    .foregroundColor(.neutral0)
-                    .font(.body14MontserratMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodySMedium)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 ReferralTextField(
                     text: $referredViewModel.savedReferredCode,
@@ -122,14 +122,14 @@ struct ReferralMainScreen: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Icon(named: "undo-dot")
                         Text(referredViewModel.referredTitleText.localized)
-                            .foregroundStyle(Color.neutral50)
-                            .font(.body14BrockmannMedium)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .font(Theme.fonts.bodySMedium)
                             .frame(maxWidth: 245)
                             .multilineTextAlignment(.leading)
                             .layoutPriority(1)
                     }
                     Spacer()
-                    Icon(named: "arrow", color: Color.neutral0, size: 24)
+                    Icon(named: "arrow", color: Theme.colors.textPrimary, size: 24)
                 }
             }
         }

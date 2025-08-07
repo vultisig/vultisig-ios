@@ -16,13 +16,13 @@ struct BoxView<Content: View>: View {
     
     var body: some View {
         content()
-            .font(.body16BrockmannMedium)
+            .font(Theme.fonts.bodyMMedium)
             .padding(14)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
             .padding(1)
     }

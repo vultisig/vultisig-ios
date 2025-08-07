@@ -12,7 +12,7 @@ struct Icon: View {
     let color: Color
     let size: CGFloat
     
-    init(named: String, color: Color = Color.persianBlue200, size: CGFloat = 20) {
+    init(named: String, color: Color = Theme.colors.primaryAccent4, size: CGFloat = 20) {
         self.name = named
         self.color = color
         self.size = size
