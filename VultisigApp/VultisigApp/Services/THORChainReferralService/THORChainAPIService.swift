@@ -19,7 +19,10 @@ struct THORChainAPIService {
     
     func getLastBlock() async throws -> UInt64 {
         let response = try await httpClient.request(THORChainAPI.getLastBlock, responseType: [LastBlockResponse].self)
-        return response.data.first?.thorchain ?? 0
+        guard let blockheight = response.data.first?.thorchain else {
+            throw THORChainAPIError.invalidResponse
+        }
+        return blockheight
     }
     
     func getPools() async throws -> [THORChainPoolResponse] {

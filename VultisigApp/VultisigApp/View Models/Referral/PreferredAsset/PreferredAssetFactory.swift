@@ -21,19 +21,22 @@ enum PreferredAssetFactory {
                 contractAddress = String(split[1])
             } else {
                 symbol = String(assetPart)
-                contractAddress = assetPart.lowercased()
+                contractAddress = chain == "THOR" ? assetPart.lowercased() : ""
             }
         }
         
         let appChain = Chain.allCases.first { $0.swapAsset == chain }
         guard let appChain else { return nil }
         
+        let priceProviderId = TokensStore.TokenSelectionAssets
+            .first { $0.chain == appChain && $0.ticker.localizedCaseInsensitiveContains(symbol) }?
+            .priceProviderId ?? ""
         let coin = CoinMeta(
             chain: appChain,
             ticker: symbol.uppercased(),
             logo: symbol.lowercased(),
             decimals: decimals ?? 6,
-            priceProviderId: "",
+            priceProviderId: priceProviderId,
             contractAddress: contractAddress,
             isNativeToken: contractAddress.isEmpty
         )

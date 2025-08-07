@@ -59,20 +59,20 @@ class EditReferralViewModel: ObservableObject {
     }
     
     func setup(tx: SendTransaction) async {
-        let feePerBlockString = (try? await thorchainService.getNetworkInfo())?.tns_fee_per_block_rune ?? ""
-        await MainActor.run {
-            self.feePerBlock = Decimal(string: feePerBlockString) ?? 0
-            self.preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
+        do {
+            let feePerBlockString = try await thorchainService.getNetworkInfo().tns_fee_per_block_rune
+            await MainActor.run {
+                self.feePerBlock = Decimal(string: feePerBlockString) ?? 0
+                self.preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
+            }
+        } catch {
+            await showError(message: "referralNetworkError")
         }
     }
     
     func verifyReferralEntries(tx: SendTransaction) async -> Bool {
         guard enoughGas(tx: tx) else {
-            await MainActor.run {
-                errorMessage = "insufficientBalance"
-                hasError = true
-            }
-            
+            await showError(message: "insufficientBalance")
             return false
         }
         
@@ -82,6 +82,13 @@ class EditReferralViewModel: ObservableObject {
 }
 
 private extension EditReferralViewModel {
+    func showError(message: String) async {
+        await MainActor.run {
+            errorMessage = message
+            hasError = true
+        }
+    }
+    
     func enoughGas(tx: SendTransaction) -> Bool {
         let decimals = tx.coin.decimals
         let gas = Decimal(tx.gas) / pow(10,decimals)

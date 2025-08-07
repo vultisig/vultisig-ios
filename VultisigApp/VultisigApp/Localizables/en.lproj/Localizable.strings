@@ -765,3 +765,4 @@
 "vaultSettingsSecurityScreenTitleContent" = "You can disable your realtime on-chain security";
 "pendingRewards" = "Pending Rewards";
 "loadingWithEllipsis" = "Loading...";
+"referralNetworkError" = "Error while fetching referral data.";
