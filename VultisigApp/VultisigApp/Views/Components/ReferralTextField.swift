@@ -32,7 +32,7 @@ struct ReferralTextField: View {
     }
     
     var textField: some View {
-        HStack {
+        HStack(spacing: 0) {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)

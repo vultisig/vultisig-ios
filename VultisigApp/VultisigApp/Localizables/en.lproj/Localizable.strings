@@ -683,7 +683,7 @@
 "select" = "Select";
 "registrationFee" = "Registration Fee";
 "costs" = "Costs";
-"createReferral" = "Create Referral";
+"createReferral" = "Create referral";
 "referralCode" = "Referral Code";
 "referralOnboardingBannerTitle1" = "Invite friends. ";
 "referralOnboardingBannerTitle2" = "Earn rewards.\n";
@@ -698,7 +698,7 @@
 "referralOnboardingDescription4" = "Use a code from your friend and save on swap fees.";
 "referral" = "Referral";
 "vultisig-referrals" = "Vultisig - Referrals";
-"referralLaunchCodeLengthError" = "Referral code can be upto 4 digits in length";
+"referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "Referral code not found";
 "referralCodeAdded" = "Referred code successfully linked";
@@ -711,8 +711,8 @@
 "alreadyTaken" = "Already taken";
 "available" = "Available";
 "status" = "Status";
-"invalid" = "Invalid";"enter4Characters";
-"enter4Characters" = "Enter 4 characters";
+"invalid" = "Invalid";
+"enter4Characters" = "Enter up to 4 characters";
 "pickValidCode" = "Please pick a valid referral code";
 "pickValidExpiration" = "Please set a valid expiration duration";
 "pickPayoutAsset" = "Please pick a payout asset option from the selection";
