@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WalletCore
 
 class BlockchairResponse: Codable {
 	let data: [String: Blockchair]
@@ -15,12 +16,15 @@ class Blockchair: Codable {
 	var address: BlockchairAddress?
 	var utxo: [BlockchairUtxo]?
 	
-    func selectUTXOsForPayment(amountNeeded: Int64) -> [BlockchairUtxo] {
+    func selectUTXOsForPayment(amountNeeded: Int64,coinType: CoinType) -> [BlockchairUtxo] {
 		let txrefs = self.utxo ?? []
 		let sortedTxRefs = txrefs.sorted { $0.value ?? 0 < $1.value  ?? 0 }
         var selectedTxRefs:[BlockchairUtxo] = []
         var total = 0
         for txref in sortedTxRefs {
+            if (txref.value ?? 0) < coinType.getFixedDustThreshold(){
+                continue
+            }
             selectedTxRefs.append(txref)
             total += Int(txref.value  ?? 0)
             if total >= amountNeeded {
