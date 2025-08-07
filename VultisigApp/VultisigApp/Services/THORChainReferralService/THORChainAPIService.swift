@@ -31,6 +31,11 @@ struct THORChainAPIService {
         let response = try await httpClient.request(THORChainAPI.getPoolAsset(asset: asset), responseType: THORChainPoolResponse.self)
         return response.data
     }
+    
+    func getNetworkInfo() async throws -> ThorchainNetworkAllFees {
+        let response = try await httpClient.request(THORChainAPI.getNetworkInfo, responseType: ThorchainNetworkAllFees.self)
+        return response.data
+    }
 }
 
 

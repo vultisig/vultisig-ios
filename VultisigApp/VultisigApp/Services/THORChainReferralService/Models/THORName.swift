@@ -25,4 +25,6 @@ struct THORName: Codable {
     var isDefaultPreferredAsset: Bool {
         preferredAsset == "."
     }
+    
+    static let example = THORName(name: "", expireBlockHeight: 0, owner: "", preferredAsset: "", preferredAssetSwapThresholdRune: "", affiliateCollectorRune: "")
 }

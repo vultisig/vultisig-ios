@@ -50,12 +50,20 @@ struct ReferralTransactionFlowScreen: View {
     
     @ViewBuilder
     var detailsView: some View {
-        if isEdit, let details = referralViewModel.thornameDetails {
+        if isEdit,
+           let details = referralViewModel.thornameDetails,
+           let nativeCoin = referralViewModel.nativeCoin,
+           let vault = homeViewModel.selectedVault
+        {
             EditReferralDetailsView(
+                viewModel: EditReferralViewModel(
+                    nativeCoin: nativeCoin,
+                    vault: vault,
+                    thornameDetails: details,
+                    currentBlockHeight: referralViewModel.currentBlockheight
+                ),
                 sendTx: sendTx,
-                referralViewModel: referralViewModel,
-                functionCallViewModel: functionCallViewModel,
-                thornameDetails: details
+                functionCallViewModel: functionCallViewModel
             )
         } else {
             CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
@@ -148,7 +156,12 @@ struct ReferralTransactionFlowScreen: View {
     var doneView: some View {
         ZStack {
             if let hash = functionCallViewModel.hash  {
-                ReferralTransactionOverviewView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
+                ReferralTransactionOverviewView(
+                    hash: hash,
+                    sendTx: sendTx,
+                    isEdit: isEdit,
+                    referralViewModel: referralViewModel
+                )
             } else {
                 errorView
             }

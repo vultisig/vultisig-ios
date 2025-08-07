@@ -11,6 +11,7 @@ import RiveRuntime
 struct ReferralTransactionOverviewView: View {
     let hash: String
     let sendTx: SendTransaction
+    let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
     
     @State var animationVM: RiveViewModel? = nil
@@ -125,9 +126,17 @@ struct ReferralTransactionOverviewView: View {
     
     private func setData() {
         animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
-        referralViewModel.savedGeneratedReferralCode = referralViewModel.referralCode    }
+        if !isEdit {
+            referralViewModel.savedGeneratedReferralCode = referralViewModel.referralCode
+        }
+    }
 }
 
 #Preview {
-    ReferralTransactionOverviewView(hash: "", sendTx: SendTransaction(), referralViewModel: ReferralViewModel())
+    ReferralTransactionOverviewView(
+        hash: "",
+        sendTx: SendTransaction(),
+        isEdit: false,
+        referralViewModel: ReferralViewModel()
+    )
 }

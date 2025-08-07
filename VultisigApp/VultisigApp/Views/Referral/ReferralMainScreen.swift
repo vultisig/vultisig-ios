@@ -21,6 +21,7 @@ struct ReferralMainScreen: View {
                     PrimaryNavigationButton(title: "editReferral") {
                         ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
                     }
+                    .disabled(!referralViewModel.canEditCode)
                     GradientListSeparator()
                     yourFriendsReferralCodeSection
                     GradientListSeparator()

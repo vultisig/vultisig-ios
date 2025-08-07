@@ -12,6 +12,7 @@ enum THORChainAPI: TargetType {
     case getPools
     case getPoolAsset(asset: String)
     case getLastBlock
+    case getNetworkInfo
     
     var baseURL: URL {
         URL(string: "https://thornode.ninerealms.com/thorchain")!
@@ -27,6 +28,8 @@ enum THORChainAPI: TargetType {
             return "/pools"
         case .getPoolAsset(let asset):
             return "/pool/\(asset)"
+        case .getNetworkInfo:
+            return "/network"
         }
     }
     
@@ -35,7 +38,8 @@ enum THORChainAPI: TargetType {
         case .getThornameDetails,
                 .getLastBlock,
                 .getPools,
-                .getPoolAsset:
+                .getPoolAsset,
+                .getNetworkInfo:
             return .get
         }
     }
@@ -45,7 +49,8 @@ enum THORChainAPI: TargetType {
         case .getThornameDetails,
                 .getLastBlock,
                 .getPools,
-                .getPoolAsset:
+                .getPoolAsset,
+                .getNetworkInfo:
             return .requestPlain
         }
     }

@@ -40,9 +40,14 @@ class ReferralViewModel: ObservableObject {
     private let thorchainReferralService = THORChainAPIService()
     
     private(set) var thornameDetails: THORName?
+    private(set) var currentBlockheight: UInt64 = 0
     
     var hasReferralCode: Bool {
         savedGeneratedReferralCode.isNotEmpty
+    }
+    
+    var canEditCode: Bool {
+        !isLoading && thornameDetails != nil
     }
     
     var registrationFeeFiat: String {
@@ -110,7 +115,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getTotalFee() -> Decimal {
-        let amount = registrationFee + (feePerBlock * Decimal(expireInCount) * 5256000)
+        let amount = registrationFee + (feePerBlock * Decimal(ReferralExpiryDataCalculator.blockPerYear * UInt64(expireInCount)))
         return amount / 100_000_000
     }
     
@@ -300,35 +305,23 @@ class ReferralViewModel: ObservableObject {
         do {
             let details = try await thorchainReferralService.getThornameDetails(name: savedGeneratedReferralCode)
             let lastBlock = try await thorchainReferralService.getLastBlock()
-            
-            let expiresOn = calculateExpiresOn(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
+            let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
             let collectedRunes = await calculateCollectedRewards(details: details)
             
             await MainActor.run {
+                self.currentBlockheight = lastBlock
                 self.expiresOn = expiresOn
                 self.collectedRewards = collectedRunes
                 self.thornameDetails = details
             }
         } catch {
-            // TODO: - Show error
+            await MainActor.run {
+                self.expiresOn = "-"
+                self.collectedRewards = "-"
+            }
         }
         
         await MainActor.run { isLoading = false }
-    }
-    
-    func calculateExpiresOn(expiryBlock: UInt64, currentBlock: UInt64) -> String {
-        let remainingBlocks = expiryBlock - currentBlock
-        // ~14400 blocks per day (6 seconds per block)
-        let remainingDays = Int(remainingBlocks / 14400)
-        
-        let currentDate = Date()
-        let oneYearLater = Calendar.current.date(byAdding: .day, value: remainingDays, to: currentDate)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "en_US")
-
-        let formattedDate = formatter.string(from: oneYearLater ?? Date())
-        return formattedDate
     }
     
     func calculateCollectedRewards(details: THORName) async -> String {
