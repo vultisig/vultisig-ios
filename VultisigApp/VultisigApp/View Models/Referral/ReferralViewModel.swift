@@ -117,8 +117,16 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getTotalFee() -> Decimal {
-        let amount = registrationFee + (feePerBlock * Decimal(ReferralExpiryDataCalculator.blockPerYear * UInt64(expireInCount)))
-        return amount / 100_000_000
+        let amount: Decimal
+        if expireInCount > 1 {
+            amount = (feePerBlock * Decimal(ReferralExpiryDataCalculator.blockPerYear * UInt64(expireInCount - 1)))
+        } else {
+            // Registration comes with 1 free year, but sending exactly 10 RUNE fails
+            // So we need to send a little bit more
+            amount = feePerBlock
+        }
+        
+        return (registrationFee + amount) / 100_000_000
     }
     
     func getFiatAmount(for amount: Decimal) -> String {
@@ -286,11 +294,7 @@ class ReferralViewModel: ObservableObject {
         let amount = totalFee + gas
         let vaultAmount = nativeCoin?.balanceDecimal ?? 0
         
-        if vaultAmount >= amount {
-            return true
-        } else {
-            return false
-        }
+        return vaultAmount >= amount
     }
     
     func fetchReferralCodeDetails(vaults: [Vault]) async {
