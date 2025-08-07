@@ -65,7 +65,7 @@ struct CreateReferralDetailsView: View {
     var setExpiration: some View {
         VStack(spacing: 8) {
             setExpirationTitle
-            setExpirationCounter
+            CounterView(count: $referralViewModel.expireInCount, minimumValue: 1)
             expirationDate
         }
     }
@@ -77,14 +77,6 @@ struct CreateReferralDetailsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    var setExpirationCounter: some View {
-        HStack {
-            decreaseExpirationButton
-            expiratingInCounter
-            increaseExpirationButton
-        }
-    }
-    
     var expirationDate: some View {
         getCell(
             title: "expirationDate",
@@ -92,59 +84,6 @@ struct CreateReferralDetailsView: View {
             description2: "",
             isPlaceholder: referralViewModel.expireInCount == 0
         )
-    }
-    
-    var decreaseExpirationButton: some View {
-        Button {
-            referralViewModel.handleCounterDecrease()
-        } label: {
-            getExpirationCounterButton(icon: "minus.circle")
-        }
-        .disabled(referralViewModel.expireInCount == 0)
-        .opacity(referralViewModel.expireInCount == 0 ? 0.2 : 1)
-    }
-    
-    var expiratingInCounter: some View {
-        getExpirationCounterButton(value: "\(referralViewModel.expireInCount)")
-    }
-    
-    var increaseExpirationButton: some View {
-        Button {
-            referralViewModel.handleCounterIncrease()
-        } label: {
-            getExpirationCounterButton(icon: "plus.circle")
-        }
-    }
-    
-    var choosePayoutAsset: some View {
-        VStack(spacing: 8) {
-            choosePayoutAssetTitle
-            choosePayoutAssetSelection
-        }
-    }
-    
-    var choosePayoutAssetTitle: some View {
-        Text(NSLocalizedString("choosePayoutAsset", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var choosePayoutAssetSelection: some View {
-        HStack {
-            selectedAsset
-            Spacer()
-        }
-        .frame(height: 56)
-        .font(Theme.fonts.bodyMMedium)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
-        .padding(1)
     }
     
     var summary: some View {
@@ -157,7 +96,7 @@ struct CreateReferralDetailsView: View {
             )
             
             getCell(
-                title: NSLocalizedString("totalFee", comment: ""),
+                title: NSLocalizedString("costs", comment: ""),
                 description1: "\(referralViewModel.getTotalFee()) RUNE",
                 description2: "\(referralViewModel.totalFeeFiat)",
                 isPlaceholder: referralViewModel.isTotalFeesLoading
@@ -223,30 +162,6 @@ struct CreateReferralDetailsView: View {
         .onTapGesture {
             showTooltip = false
         }
-    }
-    
-    private func getExpirationCounterButton(icon: String? = nil, value: String? = nil) -> some View {
-        ZStack {
-            if let icon {
-                Image(systemName: icon)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(Theme.colors.bgSecondary)
-                    .font(Theme.fonts.title2)
-            } else if let value {
-                Text(value)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(.clear)
-                    .font(Theme.fonts.bodyMMedium)
-            }
-        }
-        .foregroundColor(Theme.colors.textPrimary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-        )
     }
     
     private func getCell(title: String, description1: String, description2: String, isPlaceholder: Bool) -> some View {

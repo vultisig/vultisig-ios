@@ -11,8 +11,8 @@ struct ReferralTextField: View {
     @Binding var text: String
     let placeholderText: String
     let action: ReferralTextFieldAction
-    let showError: Bool
-    let errorMessage: String
+    var showError: Bool = false
+    var errorMessage: String = .empty
     
     var showSuccess: Bool = false
     var isErrorLabelVisible: Bool = true
@@ -26,10 +26,13 @@ struct ReferralTextField: View {
                 errorText
             }
         }
+        .onChange(of: text) { _, newValue in
+            sanitizeText(newValue)
+        }
     }
     
     var textField: some View {
-        HStack {
+        HStack(spacing: 0) {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
                 .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(Theme.colors.textPrimary)
@@ -114,6 +117,13 @@ struct ReferralTextField: View {
         } else {
             Theme.colors.border
         }
+    }
+    
+    // Based on thorname docs
+    // https://docs.thorchain.org/how-it-works/thorchain-name-service#overview
+    private func sanitizeText(_ text: String) {
+        let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_+"))
+        self.text = String(text.unicodeScalars.filter { allowedCharacterSet.contains($0) })
     }
 }
 

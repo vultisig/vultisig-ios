@@ -34,7 +34,7 @@ class ThorchainService: ThorchainSwapProvider {
             let balances: [CosmosBalance] =  try await fetchBalances(address)
             var coinMetaList = [CoinMeta]()
             for balance in balances {
-                let info = getTokenMetadata(for: balance.denom)
+                let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
                 
                 // We don't care about the chain in that case, since we only want the Price Provider ID and it is the same in all networks.
                 let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == info.symbol.uppercased() })
@@ -55,40 +55,6 @@ class ThorchainService: ThorchainSwapProvider {
             print("Error in fetchTokens: \(error)")
             throw error
         }
-    }
-    
-    func getTokenMetadata(for denom: String) -> TokenMetadata {
-        let decimals = 8
-        var chain = ""
-        var symbol = ""
-        var ticker = ""
-        var logo = ""
-        
-        if denom.contains(".") {
-            // Switch asset: thor.fuzn
-            let parts = denom.split(separator: ".")
-            if parts.count >= 2 {
-                chain = parts[0].uppercased()
-                symbol = parts[1].uppercased()
-                ticker = parts[1].lowercased()
-            }
-        } else if denom.contains("-") {
-            let parts = denom.split(separator: "-")
-            if parts.count >= 2 {
-                chain = parts[0].uppercased()
-                symbol = parts[1].uppercased()
-                ticker = parts[1].lowercased()
-            }
-        } else {
-            // Native THORChain asset (e.g., rune)
-            chain = "THOR"
-            symbol = denom.uppercased()
-            ticker = denom.lowercased()
-        }
-        
-        logo = ticker.replacingOccurrences(of: "/", with: "") // It will use whatever is in our asset list
-        
-        return TokenMetadata(chain: chain, ticker: ticker, symbol: symbol, decimals: decimals, logo: logo)
     }
     
     func resolveTNS(name: String, chain: Chain) async throws -> String {
@@ -346,7 +312,7 @@ extension ThorchainService {
         }
         
         let decoder = JSONDecoder()
-        let poolResponse = try decoder.decode(PoolResponse.self, from: data)
+        let poolResponse = try decoder.decode(THORChainPoolResponse.self, from: data)
         
         // Convert from 8 decimal places to a decimal value
         guard let priceValue = Double(poolResponse.assetTorPrice) else {
@@ -710,27 +676,6 @@ private extension ThorchainService {
     """
     
     // MARK: - Models
-    /// Response model for pool data from the THORChain API
-    struct PoolResponse: Codable {
-        let status: String
-        let asset: String
-        let decimals: Int
-        let balanceAsset: String
-        let balanceRune: String
-        
-        // The TCY price in TOR (8 decimal places)
-        let assetTorPrice: String
-        
-        enum CodingKeys: String, CodingKey {
-            case status
-            case asset
-            case decimals
-            case balanceAsset = "balance_asset"
-            case balanceRune = "balance_rune"
-            case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
-        }
-    }
-    
     enum Errors: Error {
         case tnsEntryNotFound
         case invalidURL
@@ -741,3 +686,23 @@ private extension ThorchainService {
     
 }
 
+/// Response model for pool data from the THORChain API
+struct THORChainPoolResponse: Codable {
+    let status: String
+    let asset: String
+    let decimals: Int?
+    let balanceAsset: String
+    let balanceRune: String
+    
+    // The TCY price in TOR (8 decimal places)
+    let assetTorPrice: String
+    
+    enum CodingKeys: String, CodingKey {
+        case status
+        case asset
+        case decimals
+        case balanceAsset = "balance_asset"
+        case balanceRune = "balance_rune"
+        case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
+    }
+}

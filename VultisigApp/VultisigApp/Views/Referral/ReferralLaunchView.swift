@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ReferralLaunchView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
-    
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
@@ -72,7 +71,9 @@ struct ReferralLaunchView: View {
     
     var saveButton: some View {
         PrimaryButton(title: "saveReferredCode", type: .secondary) {
-            referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            Task { @MainActor in
+                await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            }
         }
     }
     
@@ -102,7 +103,7 @@ struct ReferralLaunchView: View {
     
     var createButton: some View {
         PrimaryNavigationButton(title: "createReferral") {
-            CreateReferralView(referralViewModel: referralViewModel)
+            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
         }
     }
     
