@@ -28,6 +28,8 @@
 		13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */; };
 		13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */; };
 		13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */; };
+		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
+		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		135677A62E391A6E002C10A2 /* SecurityScannerTransactionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */; };
 		135677A82E391AC9002C10A2 /* SecurityScannerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */; };
 		135677AC2E39335F002C10A2 /* EthereumFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AB2E39335C002C10A2 /* EthereumFunction.swift */; };
@@ -68,13 +70,13 @@
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
+		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
 		13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */; };
 		13A899082E44D752006F75F0 /* ReferralExpiryDataCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */; };
 		13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A8990A2E44F544006F75F0 /* RedactedText.swift */; };
-		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		13B26D3F2E32B506000D3B3A /* SendFormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */; };
 		13B676442E37C9B0002F016C /* SendCryptoTransactionHashRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */; };
 		13B676462E37CA5F002F016C /* SendCryptoTransactionDetailsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */; };
@@ -1046,6 +1048,8 @@
 		13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeRuji.swift; sourceTree = "<group>"; };
 		13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeRuji.swift; sourceTree = "<group>"; };
 		13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawRujiRewards.swift; sourceTree = "<group>"; };
+		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
+		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		135677A52E391A68002C10A2 /* SecurityScannerTransactionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerTransactionFactory.swift; sourceTree = "<group>"; };
 		135677A72E391AC3002C10A2 /* SecurityScannerModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerModels.swift; sourceTree = "<group>"; };
 		135677AB2E39335C002C10A2 /* EthereumFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumFunction.swift; sourceTree = "<group>"; };
@@ -1086,13 +1090,13 @@
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
+		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
 		13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralViewModel.swift; sourceTree = "<group>"; };
 		13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralExpiryDataCalculator.swift; sourceTree = "<group>"; };
 		13A8990A2E44F544006F75F0 /* RedactedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedactedText.swift; sourceTree = "<group>"; };
-		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		13B26D3E2E32B501000D3B3A /* SendFormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFormExpandableSection.swift; sourceTree = "<group>"; };
 		13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionHashRowView.swift; sourceTree = "<group>"; };
 		13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoTransactionDetailsRow.swift; sourceTree = "<group>"; };
@@ -2195,6 +2199,7 @@
 		132666C92E429EC6007FDAC5 /* Referral */ = {
 			isa = PBXGroup;
 			children = (
+				134E8D7D2E451F600086EBC4 /* PreferredAsset */,
 				13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */,
 				13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */,
 				13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */,
@@ -2249,6 +2254,15 @@
 				1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */,
 			);
 			path = SendCryptoDone;
+			sourceTree = "<group>";
+		};
+		134E8D7D2E451F600086EBC4 /* PreferredAsset */ = {
+			isa = PBXGroup;
+			children = (
+				134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */,
+				134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */,
+			);
+			path = PreferredAsset;
 			sourceTree = "<group>";
 		};
 		135677AA2E393357002C10A2 /* EVM */ = {
@@ -2337,20 +2351,20 @@
 			path = Blockaid;
 			sourceTree = "<group>";
 		};
-		13A899092E44F540006F75F0 /* Text */ = {
-			isa = PBXGroup;
-			children = (
-				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
-			);
-			path = Text;
-			sourceTree = "<group>";
-		};
 		139B400A2E42466400238C2C /* Covers */ = {
 			isa = PBXGroup;
 			children = (
 				139B400B2E42466800238C2C /* MacOSOverlay.swift */,
 			);
 			path = Covers;
+			sourceTree = "<group>";
+		};
+		13A899092E44F540006F75F0 /* Text */ = {
+			isa = PBXGroup;
+			children = (
+				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
+			);
+			path = Text;
 			sourceTree = "<group>";
 		};
 		13BD8D262E3D49600013B67E /* DesignSystem */ = {
@@ -4548,6 +4562,7 @@
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
+				134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
@@ -5313,6 +5328,7 @@
 				A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */,
 				A622C8462C9BBD2F00908332 /* FunctionCallView+iOS.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
+				134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
 				A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */,
 				A6D739E02E0B993A0005697D /* SendDetailsViewModel.swift in Sources */,
