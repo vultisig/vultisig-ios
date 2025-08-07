@@ -96,6 +96,9 @@ enum TronHelper {
                         )!
                     }
                     $0.expiration = Int64(expiration)
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
                 }
             }
             
