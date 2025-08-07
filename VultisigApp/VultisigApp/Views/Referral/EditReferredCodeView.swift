@@ -9,30 +9,23 @@ import SwiftUI
 
 struct EditReferredCodeView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
-    
     @ObservedObject var referralViewModel: ReferralViewModel
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
-        ZStack {
-            Background()
-            container
-            
-            if referredViewModel.isLoading {
-                loader
+        Screen(title: referredViewModel.title.localized) {
+            VStack {
+                main
+                button
             }
         }
+        .overlay(referredViewModel.isLoading ? loader : nil)
         .onAppear {
             setData()
         }
         .onDisappear {
             resetData()
-        }
-    }
-    
-    var content: some View {
-        VStack {
-            main
-            button
         }
     }
     
@@ -44,7 +37,6 @@ struct EditReferredCodeView: View {
             }
         }
         .foregroundColor(.neutral0)
-        .padding(24)
     }
     
     var title: some View {
@@ -65,10 +57,14 @@ struct EditReferredCodeView: View {
     
     var button: some View {
         PrimaryButton(title: "saveReferredCode") {
-            referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            Task { @MainActor in
+                let codeUpdated = await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+                if codeUpdated {
+                    dismiss()
+                }
+            }
+            
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
     }
     
     var loader: some View {

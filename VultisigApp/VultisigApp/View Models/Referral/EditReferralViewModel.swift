@@ -112,7 +112,6 @@ private extension EditReferralViewModel {
             preferredAssetCoin: preferredAssetCoin
         )
         
-        print("Memo: \(memo)")
         tx.memo = memo
         tx.coin = nativeCoin
         tx.fromAddress = nativeCoin.address
@@ -125,7 +124,7 @@ enum ReferralCodeMemoFactory {
         var preferredAssetPart = ""
         if let preferredAsset, let preferredAssetCoin {
             preferredAssetAddressPart = ":\(preferredAsset.asset.chain.swapAsset):\(preferredAssetCoin.address)"
-            preferredAssetPart = ":\(preferredAsset.thorchainAsset)"
+            preferredAssetPart =  preferredAsset.thorchainAsset.isNotEmpty ? ":\(preferredAsset.thorchainAsset)" : .empty
         }
         
         return "~:\(referralCode.uppercased())\(preferredAssetAddressPart):\(nativeCoin.address)\(preferredAssetPart)"

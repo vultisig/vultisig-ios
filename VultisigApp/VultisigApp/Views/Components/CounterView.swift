@@ -25,7 +25,6 @@ struct CounterView: View {
             }
             .disabled(disabled)
             .opacity(disabled ? 0.2 : 1)
-            .animation(.easeInOut, value: disabled)
             
             counterContainer {
                 Text("\(count)")

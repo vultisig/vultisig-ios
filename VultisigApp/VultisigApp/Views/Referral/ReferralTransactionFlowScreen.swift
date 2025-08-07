@@ -41,11 +41,15 @@ struct ReferralTransactionFlowScreen: View {
         .frame(maxHeight: .infinity)
         .onLoad {
             Task {
-                if let vault = homeViewModel.selectedVault {
+                if let vault {
                     await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
                 }
             }
         }
+    }
+    
+    var vault: Vault? {
+        isEdit ? referralViewModel.thornameVault : homeViewModel.selectedVault
     }
     
     @ViewBuilder
@@ -53,7 +57,7 @@ struct ReferralTransactionFlowScreen: View {
         if isEdit,
            let details = referralViewModel.thornameDetails,
            let nativeCoin = referralViewModel.nativeCoin,
-           let vault = homeViewModel.selectedVault
+           let vault
         {
             EditReferralDetailsView(
                 viewModel: EditReferralViewModel(
@@ -72,7 +76,7 @@ struct ReferralTransactionFlowScreen: View {
     
     var verifyView: some View {
         ZStack {
-            if let vault = homeViewModel.selectedVault {
+            if let vault {
                 FunctionCallVerifyView(
                     keysignPayload: $keysignPayload,
                     depositViewModel: functionCallViewModel,
@@ -92,7 +96,7 @@ struct ReferralTransactionFlowScreen: View {
             pairViewHeader
             
             ZStack {
-                if let keysignPayload = keysignPayload, let vault = homeViewModel.selectedVault {
+                if let keysignPayload = keysignPayload, let vault {
                     KeysignDiscoveryView(
                         vault: vault,
                         keysignPayload: keysignPayload,

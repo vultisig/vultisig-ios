@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ReferralMainScreen: View {
+    @Query var vaults: [Vault]
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
     
@@ -18,20 +20,16 @@ struct ReferralMainScreen: View {
                     referralCodeSection
                     collectedRewardsSection
                     expiresOnSection
-                    PrimaryNavigationButton(title: "editReferral") {
-                        ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
-                    }
-                    .disabled(!referralViewModel.canEditCode)
                     GradientListSeparator()
+                    editReferralButtonSection
                     yourFriendsReferralCodeSection
-                    GradientListSeparator()
                     changeFriendsReferralCodeSection
                 }
             }
         }
         .onLoad {
             Task {
-                await referralViewModel.fetchReferralCodeDetails()
+                await referralViewModel.fetchReferralCodeDetails(vaults: vaults)
             }
         }
     }
@@ -59,10 +57,13 @@ struct ReferralMainScreen: View {
                 Text("collectedRewards".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)
-                Text(referralViewModel.collectedRewards)
-                    .foregroundStyle(Color.neutral50)
-                    .font(.body18BrockmannMedium)
-                    .redacted(reason: referralViewModel.isLoading ? .placeholder : [])
+                RedactedText(
+                    referralViewModel.collectedRewards,
+                    redactedText: "10 RUNE",
+                    isLoading: $referralViewModel.isLoading
+                )
+                .foregroundStyle(Color.neutral50)
+                .font(.body18BrockmannMedium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -74,37 +75,53 @@ struct ReferralMainScreen: View {
                 Text("expiresOn".localized)
                     .foregroundStyle(Color.extraLightGray)
                     .font(.body14BrockmannMedium)
-                Text(referralViewModel.expiresOn)
-                    .foregroundStyle(Color.neutral50)
-                    .font(.body18BrockmannMedium)
-                    .redacted(reason: referralViewModel.isLoading ? .placeholder : [])
+                RedactedText(
+                    referralViewModel.expiresOn,
+                    redactedText: "01 Jan 2000",
+                    isLoading: $referralViewModel.isLoading
+                )
+                .foregroundStyle(Color.neutral50)
+                .font(.body18BrockmannMedium)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     
-    var yourFriendsReferralCodeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("yourFriendsReferralCode".localized)
-                .foregroundColor(.neutral0)
-                .font(.body14MontserratMedium)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            ReferralTextField(
-                text: $referredViewModel.savedReferredCode,
-                placeholderText: .empty,
-                action: .None,
-                isDisabled: true
-            )
+    var editReferralButtonSection: some View {
+        PrimaryNavigationButton(title: "editReferral") {
+            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
         }
+        .disabled(!referralViewModel.canEditCode)
+    }
+    
+    var yourFriendsReferralCodeSection: some View {
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                Text( "yourFriendsReferralCode".localized)
+                    .foregroundColor(.neutral0)
+                    .font(.body14MontserratMedium)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ReferralTextField(
+                    text: $referredViewModel.savedReferredCode,
+                    placeholderText: .empty,
+                    action: .None,
+                    isDisabled: true
+                )
+            }
+            GradientListSeparator()
+        }
+        .showIf(referredViewModel.savedReferredCode.isNotEmpty)
     }
     
     var changeFriendsReferralCodeSection: some View {
-        Button(action: onChangeFriendsReferralCode) {
+        NavigationLink {
+            EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        } label: {
             BoxView {
                 HStack {
                     VStack(alignment: .leading, spacing: 12) {
                         Icon(named: "undo-dot")
-                        Text("changeFriendsReferralCode".localized)
+                        Text(referredViewModel.referredTitleText.localized)
                             .foregroundStyle(Color.neutral50)
                             .font(.body14BrockmannMedium)
                             .frame(maxWidth: 245)
@@ -117,8 +134,6 @@ struct ReferralMainScreen: View {
             }
         }
     }
-    
-    func onChangeFriendsReferralCode() {}
 }
 
 

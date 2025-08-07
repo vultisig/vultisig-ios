@@ -706,6 +706,7 @@
 "referralCodeMatch" = "Used referral code can not be the same as your referral code";
 "editReferred" = "Edit referred";
 "editReferredCode" = "Edit referred code";
+"addReferredCode" = "Add referred code";
 "saveReferredCode" = "Save referred code";
 "alreadyTaken" = "Already taken";
 "available" = "Available";

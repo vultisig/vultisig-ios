@@ -26,6 +26,9 @@ struct ReferralTextField: View {
                 errorText
             }
         }
+        .onChange(of: text) { _, newValue in
+            sanitizeText(newValue)
+        }
     }
     
     var textField: some View {
@@ -114,6 +117,13 @@ struct ReferralTextField: View {
         } else {
             Color.blue200
         }
+    }
+    
+    // Based on thorname docs
+    // https://docs.thorchain.org/how-it-works/thorchain-name-service#overview
+    private func sanitizeText(_ text: String) {
+        let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_+"))
+        self.text = String(text.unicodeScalars.filter { allowedCharacterSet.contains($0) })
     }
 }
 

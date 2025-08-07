@@ -718,8 +718,6 @@
 		A6E0C9382DF0A1B800A01543 /* ReferralTextFieldAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */; };
 		A6E0C93A2DF0AC8700A01543 /* ReferralTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */; };
 		A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */; };
-		A6E0C9472DF3EE7400A01543 /* EditReferralCodeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */; };
-		A6E0C9492DF3EE8500A01543 /* EditReferralCodeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */; };
 		A6E0C94B2DF4992B00A01543 /* ReferralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94A2DF4992B00A01543 /* ReferralView.swift */; };
 		A6E0C94D2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */; };
 		A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */; };
@@ -1727,8 +1725,6 @@
 		A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextFieldAction.swift; sourceTree = "<group>"; };
 		A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+macOS.swift"; sourceTree = "<group>"; };
-		A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditReferralCodeView+iOS.swift"; sourceTree = "<group>"; };
-		A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditReferralCodeView+macOS.swift"; sourceTree = "<group>"; };
 		A6E0C94A2DF4992B00A01543 /* ReferralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralView.swift; sourceTree = "<group>"; };
 		A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateReferralDetailsView+macOS.swift"; sourceTree = "<group>"; };
@@ -3416,7 +3412,6 @@
 				A6E0C92B2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift */,
 				A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */,
 				A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */,
-				A6E0C9462DF3EE7400A01543 /* EditReferralCodeView+iOS.swift */,
 				A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
@@ -3490,7 +3485,6 @@
 				A62269012DC000E400F378E0 /* SwapCoinPickerView+macOS.swift */,
 				A6E0C92D2DF004BD00A01543 /* ReferralOnboardingView+macOS.swift */,
 				A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */,
-				A6E0C9482DF3EE8500A01543 /* EditReferralCodeView+macOS.swift */,
 				A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */,
 				A64A81B02E1E2D02002D0CDD /* SendCryptoSecondaryDoneView+macOS.swift */,
 			);
@@ -4592,7 +4586,6 @@
 				A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */,
 				A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */,
 				13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */,
-				A6E0C9472DF3EE7400A01543 /* EditReferralCodeView+iOS.swift in Sources */,
 				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
 				46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */,
@@ -4714,7 +4707,6 @@
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
 				DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */,
 				A6182F492C9292F70059BFDD /* NavigationButton+macOS.swift in Sources */,
-				A6E0C9492DF3EE8500A01543 /* EditReferralCodeView+macOS.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
 				A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,

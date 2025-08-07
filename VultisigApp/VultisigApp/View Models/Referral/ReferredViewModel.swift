@@ -26,6 +26,14 @@ class ReferredViewModel: ObservableObject {
     
     @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     
+    var title: String {
+        savedReferredCode.isEmpty ? "addReferredCode" : "editReferredCode"
+    }
+    
+    var referredTitleText: String {
+        savedReferredCode.isEmpty ? "addYourFriendsCode" : "changeFriendsReferralCode"
+    }
+    
     func closeBannerSheet() {
         showReferralBannerSheet = false
         navigationToReferralOverview = true
@@ -37,7 +45,7 @@ class ReferredViewModel: ObservableObject {
         showReferralCodeOnboarding = false
     }
     
-    func verifyReferredCode(savedGeneratedReferralCode: String) {
+    func verifyReferredCode(savedGeneratedReferralCode: String) async -> Bool {
         resetReferredData()
         
         isLoading = true
@@ -45,12 +53,10 @@ class ReferredViewModel: ObservableObject {
         nameErrorCheck(code: referredCode, savedGeneratedReferralCode: savedGeneratedReferralCode)
         
         guard !showReferredLaunchViewError else {
-            return
+            return false
         }
         
-        Task {
-            await checkNameAvailability(code: referredCode)
-        }
+        return await checkNameAvailability(code: referredCode)
     }
     
     func resetReferredData() {
@@ -67,11 +73,11 @@ class ReferredViewModel: ObservableObject {
         isLoading = false
     }
     
-    private func checkNameAvailability(code: String) async {
+    private func checkNameAvailability(code: String) async -> Bool {
         let urlString = Endpoint.nameLookup(for: code)
         guard let url = URL(string: urlString) else {
             showNameError(with: "systemErrorMessage")
-            return
+            return false
         }
         
         do {
@@ -81,13 +87,18 @@ class ReferredViewModel: ObservableObject {
                     saveReferredCode()
                 } else if httpResponse.statusCode == 404 {
                     showNameError(with: "referralCodeNotFound")
+                    return false
                 } else {
                     showNameError(with: "systemErrorMessage")
+                    return false
                 }
             }
         } catch {
             showNameError(with: "systemErrorMessage")
+            return false
         }
+        
+        return true
     }
     
     private func showNameError(with message: String) {

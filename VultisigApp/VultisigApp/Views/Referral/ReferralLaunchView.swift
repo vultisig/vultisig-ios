@@ -71,7 +71,9 @@ struct ReferralLaunchView: View {
     
     var saveButton: some View {
         PrimaryButton(title: "saveReferredCode", type: .secondary) {
-            referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            Task { @MainActor in
+                await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            }
         }
     }
     

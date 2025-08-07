@@ -7,6 +7,7 @@
 
 import BigInt
 import SwiftUI
+import SwiftData
 
 @MainActor
 class ReferralViewModel: ObservableObject {
@@ -40,6 +41,7 @@ class ReferralViewModel: ObservableObject {
     private let thorchainReferralService = THORChainAPIService()
     
     private(set) var thornameDetails: THORName?
+    private(set) var thornameVault: Vault?
     private(set) var currentBlockheight: UInt64 = 0
     
     var hasReferralCode: Bool {
@@ -47,7 +49,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     var canEditCode: Bool {
-        !isLoading && thornameDetails != nil
+        !isLoading && thornameDetails != nil && thornameVault != nil
     }
     
     var registrationFeeFiat: String {
@@ -264,21 +266,12 @@ class ReferralViewModel: ObservableObject {
     func calculateFees() async {
         isFeesLoading = true
         
-        guard let url = URL(string: Endpoint.ReferralFees) else {
-            print("Invalid URL")
-            isFeesLoading = false
-            return
-        }
-        
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            let info = try decoder.decode(ThorchainNetworkAllFees.self, from: data)
+            let info = try await thorchainReferralService.getNetworkInfo()
             registrationFee = Decimal(string: info.tns_register_fee_rune) ?? 0
             feePerBlock = Decimal(string: info.tns_fee_per_block_rune) ?? 0
             isFeesLoading = false
         } catch {
-            print("Network or decoding error: \(error)")
             isFeesLoading = false
         }
     }
@@ -300,19 +293,22 @@ class ReferralViewModel: ObservableObject {
         }
     }
     
-    func fetchReferralCodeDetails() async {
+    func fetchReferralCodeDetails(vaults: [Vault]) async {
         await MainActor.run { isLoading = true }
         do {
             let details = try await thorchainReferralService.getThornameDetails(name: savedGeneratedReferralCode)
             let lastBlock = try await thorchainReferralService.getLastBlock()
             let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
             let collectedRunes = await calculateCollectedRewards(details: details)
+            // Saved referral code and vault association
+            let thornameVault = vaults.first { $0.nativeCoin(for: .thorChain)?.address == details.owner }
             
             await MainActor.run {
                 self.currentBlockheight = lastBlock
                 self.expiresOn = expiresOn
                 self.collectedRewards = collectedRunes
                 self.thornameDetails = details
+                self.thornameVault = thornameVault
             }
         } catch {
             await MainActor.run {

@@ -30,13 +30,7 @@ class PreferredAssetSelectionViewModel: ObservableObject {
                 PreferredAssetFactory.createCoin(from: pool.asset, decimals: pool.decimals)
             }
             
-            let runeAsset = [TokensStore.TokenSelectionAssets
-                .first { $0.chain == .thorChain && $0.isNativeToken }]
-                .compactMap { $0 }
-                .map { PreferredAsset(thorchainAsset: ".", asset: $0) }
-            let allAssets: [PreferredAsset] = runeAsset + assets
-            
-            await MainActor.run { self.assets = allAssets }
+            await MainActor.run { self.assets = assets }
         } catch {
             // Will show empty state
             print("No pools found: \(error)")
