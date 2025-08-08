@@ -1,4 +1,5 @@
 "back" = "Indietro";
+"sent" = "Inviato";
 "backupNow" = "Effettua il backup ora";
 "backupSetupTitle" = "Effettua il backup del tuo vault\ncondividi online";
 "backupSetupSubtitle" = "L'archiviazione online è consigliata ed è sicura –\nle condivisioni del vault sono state create per questo.";
