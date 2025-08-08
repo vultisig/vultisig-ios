@@ -348,4 +348,10 @@ class ReferralViewModel: ObservableObject {
         
         return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
     }
+    
+    func setup(tx: SendTransaction) {
+        let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
+        let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
+        tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
+    }
 }
