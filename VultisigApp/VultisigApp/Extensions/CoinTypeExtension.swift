@@ -18,5 +18,18 @@ extension CoinType {
 		}
 		return nil
 	}
+    
+    func getFixedDustThreshold() -> Int64 {
+        switch self {
+        case .bitcoin:
+            return 546
+        case .dogecoin:
+            return 1000000
+        case .litecoin,.dash,.zcash,.bitcoinCash:
+            return 1000
+        default:
+            return 0
+        }
+    }
 }
 

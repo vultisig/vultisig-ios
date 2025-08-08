@@ -1,0 +1,44 @@
+//
+//  THORChainAPIService.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 05/08/2025.
+//
+
+struct THORChainAPIService {
+    private let httpClient: HTTPClientProtocol
+    
+    init(httpClient: HTTPClientProtocol = HTTPClient()) {
+        self.httpClient = httpClient
+    }
+    
+    func getThornameDetails(name: String) async throws -> THORName {
+        let response = try await httpClient.request(THORChainAPI.getThornameDetails(name: name), responseType: THORName.self)
+        return response.data
+    }
+    
+    func getLastBlock() async throws -> UInt64 {
+        let response = try await httpClient.request(THORChainAPI.getLastBlock, responseType: [LastBlockResponse].self)
+        guard let blockheight = response.data.first?.thorchain else {
+            throw THORChainAPIError.invalidResponse
+        }
+        return blockheight
+    }
+    
+    func getPools() async throws -> [THORChainPoolResponse] {
+        let response = try await httpClient.request(THORChainAPI.getPools, responseType: [THORChainPoolResponse].self)
+        return response.data
+    }
+    
+    func getPoolAsset(asset: String) async throws -> THORChainPoolResponse {
+        let response = try await httpClient.request(THORChainAPI.getPoolAsset(asset: asset), responseType: THORChainPoolResponse.self)
+        return response.data
+    }
+    
+    func getNetworkInfo() async throws -> ThorchainNetworkAllFees {
+        let response = try await httpClient.request(THORChainAPI.getNetworkInfo, responseType: ThorchainNetworkAllFees.self)
+        return response.data
+    }
+}
+
+

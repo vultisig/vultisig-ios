@@ -50,7 +50,14 @@ struct OneInchService {
             "accept": "application/json",
         ]
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, resp) = try await URLSession.shared.data(for: request)
+        
+        print("1inch response: \(String(data: data, encoding: .utf8) ?? "")")
+        guard let httpResponse = resp as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let result = try JSONDecoder().decode(OneInchQuoteError.self, from: data)
+            throw HelperError.runtimeError(result.description)
+        }
+        
         let response = try JSONDecoder().decode(OneInchQuote.self, from: data)
         
         let gasPrice = BigInt(response.tx.gasPrice) ?? 0

@@ -9,11 +9,6 @@
 import SwiftUI
 
 extension ReferredOnboardingView {
-    var container: some View {
-        content
-            .navigationTitle(NSLocalizedString("referral", comment: ""))
-    }
-    
     var content: some View {
         ZStack {
             Background()

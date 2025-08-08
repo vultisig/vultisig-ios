@@ -1,5 +1,5 @@
 //
-//  CreateReferralView.swift
+//  ReferralTransactionFlowScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-30.
@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-struct CreateReferralView: View {
+struct ReferralTransactionFlowScreen: View {
     @ObservedObject var referralViewModel: ReferralViewModel
+    let isEdit: Bool
     
     @StateObject var sendTx = SendTransaction()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
@@ -38,15 +39,44 @@ struct CreateReferralView: View {
             }
         }
         .frame(maxHeight: .infinity)
+        .onLoad {
+            Task {
+                if let vault {
+                    await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
+                }
+            }
+        }
     }
     
+    var vault: Vault? {
+        isEdit ? referralViewModel.thornameVault : homeViewModel.selectedVault
+    }
+    
+    @ViewBuilder
     var detailsView: some View {
-        CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        if isEdit,
+           let details = referralViewModel.thornameDetails,
+           let nativeCoin = referralViewModel.nativeCoin,
+           let vault
+        {
+            EditReferralDetailsView(
+                viewModel: EditReferralViewModel(
+                    nativeCoin: nativeCoin,
+                    vault: vault,
+                    thornameDetails: details,
+                    currentBlockHeight: referralViewModel.currentBlockheight
+                ),
+                sendTx: sendTx,
+                functionCallViewModel: functionCallViewModel
+            )
+        } else {
+            CreateReferralDetailsView(sendTx: sendTx, referralViewModel: referralViewModel, functionCallViewModel: functionCallViewModel)
+        }
     }
     
     var verifyView: some View {
         ZStack {
-            if let vault = homeViewModel.selectedVault {
+            if let vault {
                 FunctionCallVerifyView(
                     keysignPayload: $keysignPayload,
                     depositViewModel: functionCallViewModel,
@@ -66,7 +96,7 @@ struct CreateReferralView: View {
             pairViewHeader
             
             ZStack {
-                if let keysignPayload = keysignPayload, let vault = homeViewModel.selectedVault {
+                if let keysignPayload = keysignPayload, let vault {
                     KeysignDiscoveryView(
                         vault: vault,
                         keysignPayload: keysignPayload,
@@ -130,7 +160,12 @@ struct CreateReferralView: View {
     var doneView: some View {
         ZStack {
             if let hash = functionCallViewModel.hash  {
-                ReferralTransactionOverviewView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
+                ReferralTransactionOverviewView(
+                    hash: hash,
+                    sendTx: sendTx,
+                    isEdit: isEdit,
+                    referralViewModel: referralViewModel
+                )
             } else {
                 errorView
             }
@@ -161,6 +196,6 @@ struct CreateReferralView: View {
 }
 
 #Preview {
-    CreateReferralView(referralViewModel: ReferralViewModel())
+    ReferralTransactionFlowScreen(referralViewModel: ReferralViewModel(), isEdit: false)
         .environmentObject(HomeViewModel())
 }
