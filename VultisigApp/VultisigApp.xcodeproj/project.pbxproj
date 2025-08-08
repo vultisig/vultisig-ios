@@ -977,6 +977,7 @@
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
+		DEDB62D72E45B61E00722F74 /* OneInchQuoteError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEE4AD0C2DBCFC08003A2FC0 /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DEE4AD0B2DBCFC08003A2FC0 /* walletcore */; };
 		DEE4AD0E2DC1A86D003A2FC0 /* KeysignWrongVaultTypeErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */; };
@@ -1999,6 +2000,7 @@
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
+		DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchQuoteError.swift; sourceTree = "<group>"; };
 		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEE4AD0D2DC1A860003A2FC0 /* KeysignWrongVaultTypeErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignWrongVaultTypeErrorView.swift; sourceTree = "<group>"; };
 		DEE8B2AB2E40842B0020DA63 /* upgrade_success.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = upgrade_success.riv; sourceTree = "<group>"; };
@@ -2701,6 +2703,7 @@
 		A543B3992BEA6E3E003FB989 /* 1inch */ = {
 			isa = PBXGroup;
 			children = (
+				DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */,
 				A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */,
 				A5125F062BEBBFAB008A79AA /* OneInchService.swift */,
 				A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */,
@@ -4806,6 +4809,7 @@
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
 				DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */,
 				A6182F492C9292F70059BFDD /* NavigationButton+macOS.swift in Sources */,
+				DEDB62D72E45B61E00722F74 /* OneInchQuoteError.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
 				A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
