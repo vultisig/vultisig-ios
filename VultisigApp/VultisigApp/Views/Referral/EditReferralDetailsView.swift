@@ -150,6 +150,7 @@ struct EditReferralDetailsView: View {
                 functionCallViewModel.currentIndex = 2
             }
         }
+        .disabled(!viewModel.isValidForm)
     }
     
     var alert: Alert {

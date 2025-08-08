@@ -14,6 +14,7 @@ class EditReferralViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var hasError = false
     @Published var preferredAsset: PreferredAsset?
+    var initialPreferredAsset: PreferredAsset?
 
     @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     let thornameDetails: THORName
@@ -41,6 +42,10 @@ class EditReferralViewModel: ObservableObject {
         )
     }
     
+    var isValidForm: Bool {
+        extendedCount > 0 || preferredAsset != initialPreferredAsset
+    }
+    
     private let nativeCoin: Coin
     private let vault: Vault
     private let thorchainService = THORChainAPIService()
@@ -64,6 +69,7 @@ class EditReferralViewModel: ObservableObject {
             await MainActor.run {
                 self.feePerBlock = feePerBlock
                 self.preferredAsset = PreferredAssetFactory.createCoin(from: thornameDetails.preferredAsset)
+                self.initialPreferredAsset = preferredAsset
             }
         } catch {
             await showError(message: "referralNetworkError")
@@ -122,18 +128,5 @@ private extension EditReferralViewModel {
         tx.memo = memo
         tx.coin = nativeCoin
         tx.fromAddress = nativeCoin.address
-    }
-}
-
-enum ReferralCodeMemoFactory {
-    static func createEdit(referralCode: String, nativeCoin: Coin, preferredAsset: PreferredAsset?, preferredAssetCoin: Coin?) -> String {
-        var preferredAssetAddressPart = ":THOR"
-        var preferredAssetPart = ""
-        if let preferredAsset, let preferredAssetCoin {
-            preferredAssetAddressPart = ":\(preferredAsset.asset.chain.swapAsset):\(preferredAssetCoin.address)"
-            preferredAssetPart =  preferredAsset.thorchainAsset.isNotEmpty ? ":\(preferredAsset.thorchainAsset)" : .empty
-        }
-        
-        return "~:\(referralCode.uppercased())\(preferredAssetAddressPart):\(nativeCoin.address)\(preferredAssetPart)"
     }
 }
