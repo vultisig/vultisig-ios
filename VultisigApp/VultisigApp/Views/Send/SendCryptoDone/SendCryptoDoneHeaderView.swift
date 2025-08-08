@@ -36,7 +36,7 @@ struct SendCryptoDoneHeaderView: View {
                     .foregroundColor(Theme.colors.textExtraLight)
             }
         }
-        .frame(height: 130)
+        .padding(16)
         .frame(maxWidth: .infinity)
         .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
