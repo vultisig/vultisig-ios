@@ -23,7 +23,7 @@ struct ReferralTransactionOverviewView: View {
                     amountCrypto: "\(sendTx.amount) \(sendTx.coin.ticker)",
                     amountFiat: sendTx.amountInFiat,
                     hash: hash,
-                    explorerLink: "https://thorchain.net/tx/\(hash)",
+                    explorerLink: Endpoint.getExplorerURL(chain: sendTx.coin.chain, txid: hash),
                     memo: sendTx.memo,
                     fromAddress: sendTx.fromAddress,
                     toAddress: sendTx.toAddress,
