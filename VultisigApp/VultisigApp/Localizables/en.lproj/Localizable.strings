@@ -766,3 +766,4 @@
 "pendingRewards" = "Pending Rewards";
 "loadingWithEllipsis" = "Loading...";
 "referralNetworkError" = "Error while fetching referral data.";
+"sent" = "Sent";
