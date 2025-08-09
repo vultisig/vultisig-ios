@@ -36,7 +36,11 @@ class RpcEvmService: RpcService {
         let priorityFeeMapValue = try await priorityFeeMap
         let nonceValue = try await nonce
 
-        let priorityFee = priorityFeeMapValue[mode] ?? .zero
+        var priorityFee = priorityFeeMapValue[mode] ?? .zero
+        // Ensure priority fee does not exceed the gas price when only legacy gasPrice is available on chain
+        if priorityFee > gasPriceValue {
+            priorityFee = gasPriceValue
+        }
 
         return (gasPriceValue, priorityFee, Int64(nonceValue))
     }

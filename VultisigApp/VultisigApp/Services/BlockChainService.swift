@@ -335,13 +335,14 @@ private extension BlockChainService {
             let normalizedPriorityFee = max(priorityFee, defaultPriorityFee)
             let normalizedBaseFee = Self.normalizeEVMFee(baseFee)
             let maxFeePerGasWei = normalizedBaseFee + normalizedPriorityFee
-            return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
+            return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: normalizedPriorityFee, nonce: nonce, gasLimit: gasLimit)
             
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: .zeroAddress)
-            
-            return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
+            // Ensure priority fee does not exceed max fee
+            let adjustedPriority = maxPriorityFeePerGas > maxFeePerGas ? maxFeePerGas : maxPriorityFeePerGas
+            return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: adjustedPriority, nonce: nonce, gasLimit: gasLimit)
             
         case .gaiaChain, .kujira, .osmosis, .terra, .terraClassic, .dydx, .noble, .akash:
             let service = try CosmosServiceFactory.getService(forChain: coin.chain)
