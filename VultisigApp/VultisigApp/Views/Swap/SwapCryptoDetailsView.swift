@@ -120,9 +120,8 @@ struct SwapCryptoDetailsView: View {
         Group {
             if swapViewModel.isLoadingQuotes {
                 // Show loader instead of swap icon when loading
-                SpinningLineLoader()
-                    .scaleEffect(0.8)
-                    .frame(width: 38, height: 38)
+            CircularProgressIndicator(size: 24)
+                    .padding(8)
             } else {
                 // Show swap icon when not loading
                 Image(systemName: "arrow.up.arrow.down")
