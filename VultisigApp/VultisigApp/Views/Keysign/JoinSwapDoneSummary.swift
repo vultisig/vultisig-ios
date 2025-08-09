@@ -87,13 +87,15 @@ struct JoinSwapDoneSummary: View {
                 getFromToCard(
                     coin: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getFromAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.fromAmountFiatString
+                    description: keysignViewModel.keysignPayload?.fromAmountFiatString,
+                    isFrom: true
                 )
                 
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString
+                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString,
+                    isFrom: false
                 )
             }
             
@@ -185,8 +187,12 @@ struct JoinSwapDoneSummary: View {
             .opacity(0.2)
     }
     
-    private func getFromToCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
+    private func getFromToCard(coin: Coin?, title: String, description: String?, isFrom: Bool) -> some View {
+        VStack(spacing: 8) {
+            Text(isFrom ? "from".localized : "to".localized)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .font(Theme.fonts.caption10)
+            
             if let coin {
                 AsyncImageView(
                     logo: coin.logo,
@@ -197,13 +203,15 @@ struct JoinSwapDoneSummary: View {
                 .padding(.bottom, 8)
             }
             
-            Text(title)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textExtraLight)
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+                
+                Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
+                    .font(Theme.fonts.caption10)
+                    .foregroundColor(Theme.colors.textExtraLight)
+            }
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)

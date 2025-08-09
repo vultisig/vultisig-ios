@@ -19,6 +19,7 @@
 		132666CE2E429FFE007FDAC5 /* THORChainAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666CD2E429FF2007FDAC5 /* THORChainAPIService.swift */; };
 		132666D12E42A054007FDAC5 /* THORName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D02E42A051007FDAC5 /* THORName.swift */; };
 		132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D22E42A506007FDAC5 /* LastBlockResponse.swift */; };
+		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -1042,6 +1043,7 @@
 		132666CD2E429FF2007FDAC5 /* THORChainAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIService.swift; sourceTree = "<group>"; };
 		132666D02E42A051007FDAC5 /* THORName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORName.swift; sourceTree = "<group>"; };
 		132666D22E42A506007FDAC5 /* LastBlockResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastBlockResponse.swift; sourceTree = "<group>"; };
+		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -2255,6 +2257,7 @@
 		1334C7422E301E3000CBAA3E /* SendCryptoDone */ = {
 			isa = PBXGroup;
 			children = (
+				1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */,
 				13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */,
 				13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */,
 				1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */,
@@ -4938,6 +4941,7 @@
 				DE5F7E1F2C8155C50022030F /* VaultCreateRequest.swift in Sources */,
 				A6C671172CA3B9A300F59B6A /* AddressBookTextField+iOS.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
+				1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */,
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				A6C670AC2C9D117800F59B6A /* TokenSelectionView+iOS.swift in Sources */,
