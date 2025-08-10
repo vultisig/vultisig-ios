@@ -13,119 +13,37 @@ struct ReferralTransactionOverviewView: View {
     let sendTx: SendTransaction
     let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
-    
-    @State var animationVM: RiveViewModel? = nil
-    
+    @State var navigateToHome: Bool = false
+        
     var body: some View {
-        ZStack {
-            Background()
-            content
+        Screen {
+            SendCryptoDoneContentView(
+                input: SendCryptoContent(
+                    coin: sendTx.coin,
+                    amountCrypto: "\(sendTx.amount) \(sendTx.coin.ticker)",
+                    amountFiat: sendTx.amountInFiat,
+                    hash: hash,
+                    explorerLink: Endpoint.getExplorerURL(chain: sendTx.coin.chain, txid: hash),
+                    memo: sendTx.memo,
+                    fromAddress: sendTx.fromAddress,
+                    toAddress: sendTx.toAddress,
+                    fee: (sendTx.gasInReadable, referralViewModel.totalFeeFiat)
+                ),
+                showAlert: .constant(false)
+            ) {
+                navigateToHome = true
+            }
         }
-        .navigationBarBackButtonHidden(true)
-        .onAppear {
+        .onLoad {
             setData()
         }
-    }
-    
-    var content: some View {
-        VStack(spacing: 0) {
-            headerTitle
-            animation
-            payoutAsset
-            
-            NavigationLink {
-                detailView
-            } label: {
-                transactionDetails
-            }
-
-            Spacer()
-            button
-        }
-        .padding(.horizontal, 24)
-    }
-    
-    var payoutAsset: some View {
-        VStack(spacing: 2) {
-            Image("rune")
-                .resizable()
-                .frame(width: 36, height: 36)
-                .cornerRadius(32)
-            
-            Text("\(sendTx.amount) RUNE")
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-                .padding(.top, 12)
-            
-            Text("\(referralViewModel.totalFeeFiat)")
-                .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textExtraLight)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(16)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-        )
-    }
-    
-    var transactionDetails: some View {
-        HStack {
-            Text(NSLocalizedString("transactionDetails", comment: ""))
-            Spacer()
-            Image(systemName: "chevron.right")
-        }
-        .font(Theme.fonts.bodySMedium)
-        .foregroundColor(Theme.colors.textLight)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-        )
-        .padding(.top, 8)
-    }
-    
-    var button: some View {
-        PrimaryNavigationButton(title: "done") {
+        .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $navigateToHome) {
             HomeView()
         }
     }
     
-    var animation: some View {
-        ZStack {
-            animationVM?.view()
-                .frame(width: 280, height: 280)
-            
-            animationText
-                .offset(y: 50)
-        }
-    }
-    
-    var animationText: some View {
-        Text(NSLocalizedString("transactionSuccessful", comment: ""))
-            .foregroundStyle(LinearGradient.primaryGradient)
-            .font(Theme.fonts.bodyLMedium)
-    }
-    
-    var detailView: some View {
-        ReferralTransactionDetailsView(hash: hash, sendTx: sendTx, referralViewModel: referralViewModel)
-    }
-    
-    var headerTitle: some View {
-        Text(NSLocalizedString("overview", comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodyLMedium)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-    }
-    
     private func setData() {
-        animationVM = RiveViewModel(fileName: "vaultCreatedAnimation", autoPlay: true)
         if !isEdit {
             referralViewModel.savedGeneratedReferralCode = referralViewModel.referralCode
         }

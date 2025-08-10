@@ -19,12 +19,11 @@ struct SendCryptoDoneContentView: View {
         ScrollView {
             VStack(spacing: 8) {
                 animation
-                getAssetCard(
+                SendCryptoDoneHeaderView(
                     coin: input.coin,
-                    title: input.amountCrypto,
-                    description: input.amountFiat
+                    cryptoAmount: input.amountCrypto,
+                    fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
                 )
-                
                 VStack(spacing: 16) {
                     Group {
                         SendCryptoTransactionHashRowView(
@@ -85,36 +84,6 @@ struct SendCryptoDoneContentView: View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
             .font(Theme.fonts.bodyLMedium)
-    }
-    
-    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
-            if let coin {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 32, height: 32),
-                    ticker: coin.ticker,
-                    tokenChainLogo: coin.tokenChainLogo
-                )
-                .padding(.bottom, 8)
-            }
-            
-            Text(title)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textExtraLight)
-        }
-        .frame(height: 130)
-        .frame(maxWidth: .infinity)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-        )
     }
 }
 

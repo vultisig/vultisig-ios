@@ -20,6 +20,7 @@
 		132666D12E42A054007FDAC5 /* THORName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D02E42A051007FDAC5 /* THORName.swift */; };
 		132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666D22E42A506007FDAC5 /* LastBlockResponse.swift */; };
 		1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */; };
+		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -44,6 +45,7 @@
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
 		136A12DE2E395F4F0001B1CA /* SecurityScannerHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */; };
+		1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */; };
 		137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */; };
 		137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */; };
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
@@ -1043,6 +1045,7 @@
 		132666D02E42A051007FDAC5 /* THORName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORName.swift; sourceTree = "<group>"; };
 		132666D22E42A506007FDAC5 /* LastBlockResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastBlockResponse.swift; sourceTree = "<group>"; };
 		1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeMemoFactory.swift; sourceTree = "<group>"; };
+		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -1067,6 +1070,7 @@
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
 		136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerHeaderView.swift; sourceTree = "<group>"; };
+		1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressIndicator.swift; sourceTree = "<group>"; };
 		137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetModifier.swift; sourceTree = "<group>"; };
 		137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerHeightPreferenceKey.swift; sourceTree = "<group>"; };
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
@@ -2115,6 +2119,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				1378B0492E462AD2005CC32D /* Loaders */,
 				13A899092E44F540006F75F0 /* Text */,
 				132666C52E42954F007FDAC5 /* Icon.swift */,
 				132666C32E42920A007FDAC5 /* BoxView.swift */,
@@ -2148,7 +2153,6 @@
 				A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */,
 				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
 				A65BA9832BAA07B500B2D8AA /* Background.swift */,
-				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
 				A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */,
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 				A69069B42BCF538000F28A8B /* NetworkPrompts.swift */,
@@ -2256,6 +2260,7 @@
 		1334C7422E301E3000CBAA3E /* SendCryptoDone */ = {
 			isa = PBXGroup;
 			children = (
+				1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */,
 				13B676432E37C99B002F016C /* SendCryptoTransactionHashRowView.swift */,
 				13B676452E37CA56002F016C /* SendCryptoTransactionDetailsRow.swift */,
 				1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */,
@@ -2292,6 +2297,15 @@
 				135677B22E39369A002C10A2 /* TargetType.swift */,
 			);
 			path = Network;
+			sourceTree = "<group>";
+		};
+		1378B0492E462AD2005CC32D /* Loaders */ = {
+			isa = PBXGroup;
+			children = (
+				1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */,
+				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
+			);
+			path = Loaders;
 			sourceTree = "<group>";
 		};
 		137B2C762E3A4A3F0074F648 /* BottomSheet */ = {
@@ -4930,6 +4944,7 @@
 				DE5F7E1F2C8155C50022030F /* VaultCreateRequest.swift in Sources */,
 				A6C671172CA3B9A300F59B6A /* AddressBookTextField+iOS.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
+				1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */,
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				A6C670AC2C9D117800F59B6A /* TokenSelectionView+iOS.swift in Sources */,
@@ -5179,6 +5194,7 @@
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
+				1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */,
 				1390D8BA2E393902003F3E20 /* BlockaidModels.swift in Sources */,
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,

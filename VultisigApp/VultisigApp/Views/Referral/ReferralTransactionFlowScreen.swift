@@ -43,6 +43,7 @@ struct ReferralTransactionFlowScreen: View {
             Task {
                 if let vault {
                     await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
+                    referralViewModel.setup(tx: sendTx)
                 }
             }
         }

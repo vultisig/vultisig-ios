@@ -87,7 +87,8 @@ struct SwapCryptoDoneView: View {
                         tx,
                         selectedCurrency: settingsViewModel.selectedCurrency
                     ),
-                    description: swapSummaryViewModel.fromFiatAmount(tx: tx)
+                    description: swapSummaryViewModel.fromFiatAmount(tx: tx),
+                    isFrom: true
                 )
                 
                 getFromToCard(
@@ -96,7 +97,8 @@ struct SwapCryptoDoneView: View {
                         tx,
                         selectedCurrency: settingsViewModel.selectedCurrency
                     ),
-                    description: swapSummaryViewModel.toFiatAmount(tx: tx)
+                    description: swapSummaryViewModel.toFiatAmount(tx: tx),
+                    isFrom: false
                 )
             }
             
@@ -259,8 +261,12 @@ struct SwapCryptoDoneView: View {
         )
     }
     
-    private func getFromToCard(coin: Coin, title: String, description: String) -> some View {
-        VStack(spacing: 4) {
+    private func getFromToCard(coin: Coin, title: String, description: String, isFrom: Bool) -> some View {
+        VStack(spacing: 8) {
+            Text(isFrom ? "from".localized : "to".localized)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .font(Theme.fonts.caption10)
+            
             AsyncImageView(
                 logo: coin.logo,
                 size: CGSize(width: 32, height: 32),
@@ -269,13 +275,15 @@ struct SwapCryptoDoneView: View {
             )
             .padding(.bottom, 8)
             
-            Text(title)
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-            
-            Text(description.formatToFiat(includeCurrencySymbol: true))
-                .font(Theme.fonts.caption10)
-                .foregroundColor(Theme.colors.textExtraLight)
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+                
+                Text(description.formatToFiat(includeCurrencySymbol: true))
+                    .font(Theme.fonts.caption10)
+                    .foregroundColor(Theme.colors.textExtraLight)
+            }
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
