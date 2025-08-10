@@ -11,13 +11,16 @@ import RiveRuntime
 struct SetupVaultSwithControl: View {
     let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
-    
-    @State var width: CGFloat = .zero
-    
+        
     var body: some View {
         ZStack {
-            capsule
-            content
+            GeometryReader { proxy in
+                capsule(width: proxy.size.width)
+                HStack {
+                    getButton(for: .fast)
+                    getButton(for: .secure)
+                }
+            }
         }
         .padding(6)
         .background(Theme.colors.bgTertiary)
@@ -25,27 +28,11 @@ struct SetupVaultSwithControl: View {
         .frame(height: 56)
     }
     
-    var capsule: some View {
-        HStack {
-            RoundedRectangle(cornerRadius: 100)
-                .foregroundColor(Theme.colors.bgSecondary)
-                .frame(width: (width/2))
-                .offset(x: selectedTab == .fast ? 0 : (width/2))
-            
-            Spacer()
-        }
-    }
-    
-    var content: some View {
-        GeometryReader { size in
-            HStack {
-                getButton(for: .fast)
-                getButton(for: .secure)
-            }
-            .onAppear {
-                width = size.size.width
-            }
-        }
+    func capsule(width: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 100)
+            .foregroundColor(Theme.colors.bgSecondary)
+            .frame(width: width / 2)
+            .offset(x: selectedTab == .fast ? 0 : width / 2)
     }
     
     private func getButton(for option: SetupVaultState) -> some View {
