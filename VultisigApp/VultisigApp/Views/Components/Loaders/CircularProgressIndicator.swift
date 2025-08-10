@@ -21,42 +21,42 @@ struct CircularProgressIndicator: View {
     private let rotationsPerCycle = 5
     private var rotationAngleOffset: Double { (baseRotationAngle + jumpRotationAngle).truncatingRemainder(dividingBy: 360) }
 
-    @State private var t0 = Date()
-    @State private var now = Date()
-    private let tick = Timer.publish(every: 1.0/60.0, on: .main, in: .common).autoconnect()
+    @State private var startTime = Date()
 
     var body: some View {
-        let elapsed = max(0, now.timeIntervalSince(t0)) / max(speed, 0.0001)
+        TimelineView(.animation(minimumInterval: 1.0/60.0, paused: false)) { context in
+            let now = context.date
+            let elapsed = max(0, now.timeIntervalSince(startTime)) / max(speed, 0.0001)
 
-        // Per-rotation timing
-        let rDur = rotationDuration
-        let rIndex = floor(elapsed / rDur)                   // 0,1,2...
-        let localT = elapsed - rIndex * rDur                 // 0..rDur
-        let f = localT / rDur                                // 0..1
+            // Per-rotation timing
+            let rDur = rotationDuration
+            let rIndex = floor(elapsed / rDur)                   // 0,1,2...
+            let localT = elapsed - rIndex * rDur                 // 0..rDur
+            let f = localT / rDur                                // 0..1
 
-        // Base rotation within this rotation (always forward)
-        let base = f * baseRotationAngle
+            // Base rotation within this rotation (always forward)
+            let base = f * baseRotationAngle
 
-        // Head moves in first half, tail in second half (both strictly forward)
-        let headPhase = min(f * 2, 1)                        // 0→1 over first half
-        let tailPhase = max((f - 0.5) * 2, 0)                // 0→1 over second half
+            // Head moves in first half, tail in second half (both strictly forward)
+            let headPhase = min(f * 2, 1)                        // 0→1 over first half
+            let tailPhase = max((f - 0.5) * 2, 0)                // 0→1 over second half
 
-        let head = smooth(headPhase) * jumpRotationAngle     // degrees forward
-        let tail = smooth(tailPhase) * jumpRotationAngle     // degrees forward
+            let head = smooth(headPhase) * jumpRotationAngle     // degrees forward
+            let tail = smooth(tailPhase) * jumpRotationAngle     // degrees forward
 
-        // Arc
-        let sweep = max(0.1, head - tail)                    // length; stays > 0
-        let rotationOffset = (rIndex.truncatingRemainder(dividingBy: Double(rotationsPerCycle)) * rotationAngleOffset)
-            .truncatingRemainder(dividingBy: 360)
+            // Arc
+            let sweep = max(0.1, head - tail)                    // length; stays > 0
+            let rotationOffset = (rIndex.truncatingRemainder(dividingBy: Double(rotationsPerCycle)) * rotationAngleOffset)
+                .truncatingRemainder(dividingBy: 360)
 
-        let startDeg = startAngleOffset + rotationOffset + base + tail
+            let startDeg = startAngleOffset + rotationOffset + base + tail
 
-        Arc(startAngle: startDeg, sweep: sweep)
-            .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-            .frame(width: size, height: size)
-            .onAppear { t0 = Date() }
-            .onReceive(tick) { now = $0 }
-            .accessibilityLabel("Loading")
+            Arc(startAngle: startDeg, sweep: sweep)
+                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .frame(width: size, height: size)
+                .accessibilityLabel("Loading")
+        }
+        .onAppear { startTime = Date() }
     }
     
     // Smooth easing (close to cubic-bezier(0.4,0,0.2,1), but simpler)
