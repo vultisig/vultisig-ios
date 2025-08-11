@@ -57,7 +57,10 @@ struct FastVaultSetHintView: View {
                     .autocorrectionDisabled()
                     .focused($isFocused)
                     .onSubmit {
-                        isLinkActive = true
+                        let hasInput = !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        if hasInput {
+                            isLinkActive = true
+                        }
                     }
                 
                 if !hint.isEmpty {
@@ -67,7 +70,7 @@ struct FastVaultSetHintView: View {
                     }
                 }
             }
-            if hint.isEmpty && !isFocused {
+            if hint.isEmpty {
                 VStack {
                     HStack {
                         Text(NSLocalizedString("enterHint", comment: ""))
@@ -114,6 +117,8 @@ struct FastVaultSetHintView: View {
             PrimaryButton(title: "next") {
                 isLinkActive = true
             }
+            .disabled(hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .opacity(hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
