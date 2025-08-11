@@ -11,7 +11,6 @@ import SwiftUI
 extension SwapCryptoDetailsView {
     var container: some View {
         ZStack(alignment: .bottom) {
-            Background()
             view
             percentageButtons
         }
@@ -86,7 +85,6 @@ extension SwapCryptoDetailsView {
                 swapContent
                 summary
             }
-            .padding(.horizontal, 16)
         }
         .refreshable {
             swapViewModel.refreshData(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
