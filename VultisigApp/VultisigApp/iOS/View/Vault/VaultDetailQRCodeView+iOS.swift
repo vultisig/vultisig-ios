@@ -25,11 +25,10 @@ extension VaultDetailQRCodeView {
     }
     
     var buttons: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 22) {
             shareButton
             saveButton
         }
-        .padding(.horizontal, 25)
     }
     
     var shareButton: some View {
@@ -41,7 +40,6 @@ extension VaultDetailQRCodeView {
                 ) {
                     viewModel.shareImage(imageName)
                 }
-                .padding(.bottom, 22)
             } else {
                 shareLinkButton
             }
