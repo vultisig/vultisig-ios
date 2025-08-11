@@ -49,7 +49,7 @@ struct SwapCryptoHeader: View {
             NavigationQRShareButton(
                 vault: vault, 
                 type: .Keysign,
-                renderedImage: shareSheetViewModel.renderedImage
+                viewModel: shareSheetViewModel
             )
             .disabled(swapViewModel.currentIndex != 3)
         }
