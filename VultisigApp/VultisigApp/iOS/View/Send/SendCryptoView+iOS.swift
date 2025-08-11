@@ -24,7 +24,7 @@ extension SendCryptoView {
                         NavigationQRShareButton(
                             vault: vault,
                             type: .Keysign,
-                            renderedImage: shareSheetViewModel.renderedImage
+                            viewModel: shareSheetViewModel
                         )
                     }
                 }

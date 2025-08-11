@@ -48,7 +48,7 @@ struct SendCryptoHeader: View {
             NavigationQRShareButton(
                 vault: vault, 
                 type: .Keysign,
-                renderedImage: shareSheetViewModel.renderedImage
+                viewModel: shareSheetViewModel
             )
             .opacity(sendCryptoViewModel.currentIndex == 3 ? 1 : 0)
             .disabled(sendCryptoViewModel.currentIndex != 3)
