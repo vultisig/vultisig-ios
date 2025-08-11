@@ -45,7 +45,7 @@ struct PeerDiscoveryHeader: View {
                 NavigationQRShareButton(
                     vault: vault, 
                     type: .Keygen,
-                    renderedImage: shareSheetViewModel.renderedImage
+                    viewModel: shareSheetViewModel
                 )
             }
         }

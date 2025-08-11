@@ -31,7 +31,7 @@ extension PeerDiscoveryView {
                     NavigationQRShareButton(
                         vault: vault,
                         type: .Keygen,
-                        renderedImage: shareSheetViewModel.renderedImage
+                        viewModel: shareSheetViewModel
                     )
                 }
             }
@@ -150,16 +150,16 @@ extension PeerDiscoveryView {
     }
 
     func setData() {
-        qrCodeImage = viewModel.getQrImage(size: 100)
-        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
-        
-        guard let qrCodeImage else {
+        guard let (qrCodeString, qrCodeImage) = viewModel.getQRCodeData(size: 100) else {
             return
         }
         
+        self.qrCodeImage = qrCodeImage
+        animationVM = RiveViewModel(fileName: "QRCodeScanned", autoPlay: true)
         shareSheetViewModel.render(
             qrCodeImage: qrCodeImage,
-            displayScale: displayScale, 
+            qrCodeData: qrCodeString,
+            displayScale: displayScale,
             type: .Keygen
         )
     }
