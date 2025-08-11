@@ -8,26 +8,19 @@
 import SwiftUI
 
 struct KeysignSameDeviceShareErrorView: View {
-    @Environment(\.dismiss) var dismiss
-    
+    @State private var navigateToHome: Bool = false
+
     var body: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            tryAgainButton
-        }
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "sameDeviceShareError")
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "goToHomeView") {
+        ErrorView(
+            type: .warning,
+            title: "sameDeviceShareError".localized,
+            description: "",
+            buttonTitle: "goToHomeView".localized
+        ) {
+            navigateToHome = true
+        }.navigationDestination(isPresented: $navigateToHome) {
             HomeView(showVaultsList: true)
         }
-        .padding(40)
     }
 }
 

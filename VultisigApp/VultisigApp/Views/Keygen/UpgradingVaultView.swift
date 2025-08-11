@@ -11,9 +11,6 @@ import RiveRuntime
 struct UpgradingVaultView: View {
     @State var loadingAnimationVM: RiveViewModel? = nil
     
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-    
     var body: some View {
         ZStack {
             shadow
@@ -54,7 +51,7 @@ struct UpgradingVaultView: View {
     }
     
     var appVersion: some View {
-        Text("Version \(version ?? "1").\(build ?? "1")")
+        Text(Bundle.main.appVersionString)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textExtraLight)
             .padding(.bottom, 30)

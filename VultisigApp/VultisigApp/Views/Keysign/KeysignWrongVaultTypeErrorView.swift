@@ -9,26 +9,19 @@
 import SwiftUI
 
 struct KeysignWrongVaultTypeErrorView: View {
-    @Environment(\.dismiss) var dismiss
-    
+    @State private var navigateToHome: Bool = false
+
     var body: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            tryAgainButton
-        }
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "vaultTypeDoesnotMatch")
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "tryAgain") {
+        ErrorView(
+            type: .warning,
+            title: "vaultTypeDoesnotMatch".localized,
+            description: "",
+            buttonTitle: "tryAgain".localized
+        ) {
+            navigateToHome = true
+        }.navigationDestination(isPresented: $navigateToHome) {
             HomeView(showVaultsList: true)
         }
-        .padding(40)
     }
 }
 

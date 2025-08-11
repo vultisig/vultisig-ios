@@ -106,7 +106,7 @@
 "mainDevice" = "Dispositivo Principale";
 "pleaseWait" = "Per favore, aspetta...";
 "joinKeygen" = "UNISCITI ALLA GENERAZIONE/CONDIVISIONE CHIAVE";
-"failToStartKesign" = "Errore di firma. Per favore riprova.";
+"failToStartKesign" = "Errore di firma";
 "failToStartKeygen" = "Impossibile avviare la generazione della chiave a causa della mancanza di informazioni";
 "scanQRCodeJoinKeygen" = "Scansiona il Codice QR su un'altra app Vultisig per iniziare.";
 "discoveringMediator" = "Ricerca del servizio mediatore, per favore aspetta...";
@@ -154,7 +154,7 @@
 "correctAmountCheck" = "La quantità è corretta";
 "notHackedCheck" = "Non sto inviando i miei soldi a una truffa o a un hacker";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
-"signInErrorTryAgain" = "Errore di Firma. Per favore, riprova.";
+"signInErrorTryAgain" = "Errore di Firma";
 "sameWifiEntendedInstruction" = "Tieni i dispositivi sulla stessa rete WiFi, assicurati di avere una connessione stabile ed essere nella cassaforte corretta per accoppiare i dispositivi";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";

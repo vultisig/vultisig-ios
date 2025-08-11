@@ -96,7 +96,7 @@ private extension PrimaryButtonStyle {
             } else if shouldHighlight {
                 return Theme.colors.bgButtonSecondaryPressed
             } else {
-                return .clear
+                return Theme.colors.bgButtonSecondary
             }
         }
     }
