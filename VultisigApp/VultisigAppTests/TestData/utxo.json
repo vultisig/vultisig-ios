@@ -152,7 +152,7 @@
             "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["30f5de6cdd2f25a6d1e680081e8c09979cfc466075fd36c3c849788c8e7163fb", "3655993a9cb0c2708ceb9217ddf7d7a30ec8327a01ece6e62b11582559f60a0e", "a665fe6f92ddd21a523f957f3dd9f50303ab957327c9cb2eee46a099344c0cff", "a8a2f40cfc734c1fccd711b335f584a6bff2f2925382d97cc313a79f3fa8cd67"]
+        "expected_image_hash": ["30d774e3b2b926fa0ab6d70cfc8c43cd6084e0cd45e70dc56d4d2e42c6917e13", "63823ed234a7c794bd935e24809eb2d1320ae32f5a50f8fd0211898e08c5edf1", "793ebe1c739696a368418c5c3d4fba65986843cbf8fb441d1df3221af248aebc", "bf12f59991eb69b4414af0018ed40f68a62b30e7271ebcd1c11bcb18dc495823"]
     },
     {
         "name": "Send litecoin",
