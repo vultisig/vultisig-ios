@@ -21,25 +21,27 @@ struct SwapCryptoDetailsView: View {
     let vault: Vault
 
     var body: some View {
-        container
-            .onAppear {
-                setData()
-            }
-            .onReceive(timer) { input in
-                swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-            }
-            .onChange(of: tx.fromCoin, { _, _ in
-                handleFromCoinUpdate()
-            })
-            .onChange(of: tx.toCoin, { _, _ in
-                handleToCoinUpdate()
-            })
-            .onChange(of: swapViewModel.fromChain) { _, _ in
-                swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
-            }
-            .onChange(of: swapViewModel.toChain) { _, _ in
-                swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
-            }
+        Screen(showNavigationBar: false) {
+            container
+        }
+        .onAppear {
+            setData()
+        }
+        .onReceive(timer) { input in
+            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        }
+        .onChange(of: tx.fromCoin, { _, _ in
+            handleFromCoinUpdate()
+        })
+        .onChange(of: tx.toCoin, { _, _ in
+            handleToCoinUpdate()
+        })
+        .onChange(of: swapViewModel.fromChain) { _, _ in
+            swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
+        }
+        .onChange(of: swapViewModel.toChain) { _, _ in
+            swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
+        }
     }
     
     var content: some View {
@@ -158,7 +160,6 @@ struct SwapCryptoDetailsView: View {
             ButtonLoader()
                 .disabled(true)
                 .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-                .padding(40)
         } else {
             PrimaryButton(title: "continue") {
                 Task {
@@ -167,7 +168,6 @@ struct SwapCryptoDetailsView: View {
             }
             .disabled(isDisabled)
             .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-            .padding(40)
         }
     }
     
