@@ -31,10 +31,10 @@ extension EditVaultView {
                     migrateVault
                 }
                 
-                reshareVault
-                
                 if vault.isFastVault {
                     biometrySelectionCell
+                } else {
+                    reshareVault
                 }
                 
                 customMessage
