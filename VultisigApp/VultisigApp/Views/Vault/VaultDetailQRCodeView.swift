@@ -43,7 +43,6 @@ struct VaultDetailQRCodeView: View {
                 PrimaryButton(title: "save", type: .secondary) {
                     isExporting = true
                 }
-                .padding(.bottom, 22)
                 .fileExporter(
                     isPresented: $isExporting,
                     document: ImageFileDocument(image: renderedImage),
@@ -69,7 +68,6 @@ struct VaultDetailQRCodeView: View {
                     preview: SharePreview(imageName, image: renderedImage)
                 ) {
                     PrimaryButtonView(title: "share", leadingIcon: "square.and.arrow.up")
-                    .padding(.bottom, 22)
                 }
                 .buttonStyle(PrimaryButtonStyle())
             } else {
