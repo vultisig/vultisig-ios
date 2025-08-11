@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - CrossPlatformShareButton
 public struct CrossPlatformShareButton<Label: View>: View {
     private let image: Image
     private let caption: String
@@ -35,7 +34,6 @@ public struct CrossPlatformShareButton<Label: View>: View {
     }
 }
 
-// MARK: - Rendering helpers (Image -> platform image data)
 @MainActor
 private func renderPNGData(from image: Image, scale: CGFloat) -> Data? {
     let renderer = ImageRenderer(content: image) // no resizing
@@ -52,7 +50,6 @@ private func renderPNGData(from image: Image, scale: CGFloat) -> Data? {
     #endif
 }
 
-// MARK: - iOS
 #if os(iOS)
 import UIKit
 
@@ -118,7 +115,6 @@ private struct ActivityViewController: UIViewControllerRepresentable {
 #endif
 
 
-// MARK: - macOS
 #if os(macOS)
 import AppKit
 
