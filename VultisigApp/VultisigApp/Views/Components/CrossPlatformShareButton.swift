@@ -93,7 +93,6 @@ private struct IOSShareButton<Label: View>: View {
             cachedImage = ui // cache for next time
         }
 
-        UIPasteboard.general.string = caption
         payload = SharePayload(items: items)
     }
 }
