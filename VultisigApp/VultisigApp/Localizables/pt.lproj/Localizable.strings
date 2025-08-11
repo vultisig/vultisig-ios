@@ -154,7 +154,7 @@
 "correctAmountCheck" = "A quantidade está correta";
 "notHackedCheck" = "Não estou enviando meu dinheiro para uma fraude ou hacker";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
-"signInErrorTryAgain" = "Erro ao Assinar";
+"signingErrorTryAgain" = "Erro ao Assinar";
 "sameWifiEntendedInstruction" = "Mantenha os dispositivos na mesma rede WiFi, tenha uma conexão estável e esteja no cofre correto para emparelhar os dispositivos.";
 "validAddressError" = "Por favor, insira um endereço válido.";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";

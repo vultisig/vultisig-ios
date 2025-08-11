@@ -152,7 +152,7 @@
 "correctAmountCheck" = "The amount is correct";
 "notHackedCheck" = "I’m not sending my money to a scam or hacker";
 "wrongVaultTryAgain" = "Wrong Vault or Pair";
-"signInErrorTryAgain" = "Signing Error";
+"signingErrorTryAgain" = "Signing Error";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, have a stable connection and be on the correct vault and pair devices.";
 "validAddressError" = "Please enter a valid address.";
 "positiveAmountError" = "Amount must be a positive number. Try again.";

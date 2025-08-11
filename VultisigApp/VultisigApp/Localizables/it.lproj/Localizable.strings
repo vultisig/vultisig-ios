@@ -154,7 +154,7 @@
 "correctAmountCheck" = "La quantità è corretta";
 "notHackedCheck" = "Non sto inviando i miei soldi a una truffa o a un hacker";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
-"signInErrorTryAgain" = "Errore di Firma";
+"signingErrorTryAgain" = "Errore di Firma";
 "sameWifiEntendedInstruction" = "Tieni i dispositivi sulla stessa rete WiFi, assicurati di avere una connessione stabile ed essere nella cassaforte corretta per accoppiare i dispositivi";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";

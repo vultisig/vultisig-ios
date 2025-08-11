@@ -42,7 +42,7 @@ struct SendCryptoKeysignView: View {
     var errorView: some View {
         ErrorView(
             type: .warning,
-            title: "signInErrorTryAgain".localized,
+            title: "signingErrorTryAgain".localized,
             description: title?.localized ?? .empty,
             buttonTitle: "tryAgain".localized
         ) {
