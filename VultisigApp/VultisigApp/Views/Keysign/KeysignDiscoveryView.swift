@@ -167,11 +167,15 @@ struct KeysignDiscoveryView: View {
             onFastKeysign: { startKeysign() }
         )
         
-        qrCodeImage = await viewModel.getQrImage(size: 100)
+        guard let (qrCodeData, qrCodeImage) = await viewModel.getQrImage(size: 100) else {
+            return
+        }
         
-        if let qrCodeImage, let keysignPayload {
+        self.qrCodeImage = qrCodeImage
+        if let keysignPayload {
             shareSheetViewModel.render(
                 qrCodeImage: qrCodeImage,
+                qrCodeData: qrCodeData,
                 displayScale: displayScale,
                 type: previewType,
                 vaultName: vault.name,
