@@ -250,25 +250,18 @@ class ReferralViewModel: ObservableObject {
     }
     
     private func checkNameAvailability(code: String) async {
-        let urlString = Endpoint.getUserDetails(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(with: "systemErrorMessage")
-            return
-        }
-        
+        defer { isLoading = false }
         do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    showNameError(with: "alreadyTaken")
-                } else {
-                    saveReferralCode()
-                }
-            }
+            _ = try await thorchainReferralService.getThornameLookup(name: code)
+            showNameError(with: "alreadyTaken")
         } catch {
-            showNameError(with: "systemErrorMessage")
+            guard error as? THORChainAPIError == .thornameNotFound else {
+                showNameError(with: "systemErrorMessage")
+                return
+            }
+            
+            saveReferralCode()
         }
-        isLoading = false
     }
     
     func calculateFees() async {

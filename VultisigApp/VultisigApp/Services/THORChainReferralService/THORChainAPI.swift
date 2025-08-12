@@ -9,13 +9,23 @@ import Foundation
 
 enum THORChainAPI: TargetType {
     case getThornameDetails(name: String)
+    case getThornameLookup(name: String)
     case getPools
     case getPoolAsset(asset: String)
     case getLastBlock
     case getNetworkInfo
     
     var baseURL: URL {
-        URL(string: "https://thornode.ninerealms.com/thorchain")!
+        switch self {
+        case .getThornameDetails,
+                .getPools,
+                .getPoolAsset,
+                .getLastBlock,
+                .getNetworkInfo:
+            return URL(string: "https://thornode.ninerealms.com/thorchain")!
+        case .getThornameLookup:
+            return URL(string: "https://midgard.ninerealms.com")!
+        }
     }
     
     var path: String {
@@ -30,6 +40,8 @@ enum THORChainAPI: TargetType {
             return "/pool/\(asset)"
         case .getNetworkInfo:
             return "/network"
+        case .getThornameLookup(let name):
+            return "/v2/thorname/lookup/\(name)"
         }
     }
     
@@ -39,7 +51,8 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getPools,
                 .getPoolAsset,
-                .getNetworkInfo:
+                .getNetworkInfo,
+                .getThornameLookup:
             return .get
         }
     }
@@ -50,8 +63,18 @@ enum THORChainAPI: TargetType {
                 .getLastBlock,
                 .getPools,
                 .getPoolAsset,
-                .getNetworkInfo:
+                .getNetworkInfo,
+                .getThornameLookup:
             return .requestPlain
+        }
+    }
+    
+    var headers: [String : String]? {
+        switch self {
+        case .getThornameLookup:
+            return ["X-Client-ID": "vultisig"]
+        default:
+            return nil
         }
     }
 }

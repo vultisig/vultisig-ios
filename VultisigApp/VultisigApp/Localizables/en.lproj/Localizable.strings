@@ -701,6 +701,7 @@
 "referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "Referral code not found";
+"referralCodeWithoutAlias" = "Referral code doesn't have an alias set";
 "referralCodeAdded" = "Referred code successfully linked";
 "editReferral" = "Edit referral";
 "referralCodeMatch" = "Used referral code can not be the same as your referral code";
