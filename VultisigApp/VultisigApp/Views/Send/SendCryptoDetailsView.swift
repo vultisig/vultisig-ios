@@ -118,6 +118,9 @@ struct SendCryptoDetailsView: View {
                 }
                 .padding(16)
             }
+            .refreshable {
+                await onRefresh()
+            }
             .onLoad {
                 scrollProxy = proxy
             }
@@ -225,7 +228,20 @@ struct SendCryptoDetailsView: View {
     
     func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
-        coinBalance = tx.coin.balanceString
+        if Task.isCancelled { return }
+        await MainActor.run {
+            coinBalance = tx.coin.balanceString
+        }
+    }
+
+    private func onRefresh() async {
+        async let gas: Void = sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
+        _ = await (gas, bal)
+        if Task.isCancelled { return }
+        await MainActor.run {
+            coinBalance = tx.coin.balanceString
+        }
     }
 }
 

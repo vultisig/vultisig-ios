@@ -766,7 +766,7 @@
 		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
 		A6F7B6772D42F64D00AC8104 /* OnboardingTextCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */; };
 		A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */; };
-		A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */; };
+		A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwitchControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwitchControl.swift */; };
 		A6F7B6BE2D4975E900AC8104 /* QRCodeScanned.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */; };
 		A6F7B6C02D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */; };
 		A6F7B6C22D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */; };
@@ -1792,7 +1792,7 @@
 		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
 		A6F7B6762D42F64D00AC8104 /* OnboardingTextCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTextCard.swift; sourceTree = "<group>"; };
 		A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSecureText.swift; sourceTree = "<group>"; };
-		A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSwithControl.swift; sourceTree = "<group>"; };
+		A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwitchControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultSwitchControl.swift; sourceTree = "<group>"; };
 		A6F7B6BD2D4975E900AC8104 /* QRCodeScanned.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRCodeScanned.riv; sourceTree = "<group>"; };
 		A6F7B6BF2D4977F500AC8104 /* PeerDiscoveryInfoBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryInfoBanner.swift; sourceTree = "<group>"; };
 		A6F7B6C12D4982E000AC8104 /* PeerDiscoveryInfoBanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = PeerDiscoveryInfoBanner.riv; sourceTree = "<group>"; };
@@ -2185,7 +2185,7 @@
 				A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */,
 				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 				A6F7B6782D481D5F00AC8104 /* SetupVaultSecureText.swift */,
-				A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwithControl.swift */,
+				A6F7B6BB2D4880FF00AC8104 /* SetupVaultSwitchControl.swift */,
 				A6DFC0582D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift */,
 				A6A6EFBE2D7036F70062F6EA /* PeerDiscoveryScanDeviceDisclaimer.swift */,
 				A6A6EFC02D703AF60062F6EA /* SwitchToLocalLink.swift */,
@@ -4883,7 +4883,7 @@
 				DEA630882DD6AC9F00F8C062 /* MoonPaySignature.swift in Sources */,
 				B5E762652DF925F0006DF95D /* String+ExtensionMemo.swift in Sources */,
 				A672643B2D02993A0002E97E /* JoinKeysignDoneSummary.swift in Sources */,
-				A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwithControl.swift in Sources */,
+				A6F7B6BC2D4880FF00AC8104 /* SetupVaultSwitchControl.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
