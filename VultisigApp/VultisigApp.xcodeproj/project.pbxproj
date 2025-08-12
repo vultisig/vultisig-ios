@@ -5953,8 +5953,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/vultisig/commondata";
 			requirement = {
-				kind = revision;
-				revision = 648c39e6c2d2a01627c5887a9551e0686e8f18f2;
+				branch = main;
+				kind = branch;
 			};
 		};
 		A6D44A592D51950600C66726 /* XCRemoteSwiftPackageReference "rive-ios" */ = {
