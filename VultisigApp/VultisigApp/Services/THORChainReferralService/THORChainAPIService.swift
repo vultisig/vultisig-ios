@@ -34,6 +34,20 @@ struct THORChainAPIService {
         }
     }
     
+    func getThornameLookup(name: String) async throws -> THORNameLookup {
+        do {
+            let response = try await httpClient.request(THORChainAPI.getThornameLookup(name: name), responseType: THORNameLookup.self)
+            return response.data
+        } catch {
+            switch error {
+            case HTTPError.statusCode(404, _):
+                throw THORChainAPIError.thornameNotFound
+            default:
+                throw error
+            }
+        }
+    }
+    
     func getLastBlock() async throws -> UInt64 {
         let response = try await httpClient.request(THORChainAPI.getLastBlock, responseType: [LastBlockResponse].self)
         guard let blockheight = response.data.first?.thorchain else {

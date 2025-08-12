@@ -77,9 +77,9 @@ class ReferredViewModel: ObservableObject {
     
     private func checkNameAvailability(code: String) async -> Bool {
         do {
-            let thorname = try await thorchainReferralService.getThornameDetails(name: code)
+            let thorname = try await thorchainReferralService.getThornameLookup(name: code)
             
-            let hasThorAlias = thorname.aliases.contains {
+            let hasThorAlias = thorname.entries.contains {
                 $0.chain == "THOR" &&  $0.address == thorname.owner
             }
             
@@ -87,6 +87,7 @@ class ReferredViewModel: ObservableObject {
                 showNameError(with: "referralCodeWithoutAlias")
                 return false
             }
+            
             saveReferredCode()
             return true
         } catch {

@@ -41,5 +41,5 @@ struct THORName: Decodable {
 
 struct THORNameAlias: Decodable {
     let chain: String
-    let address: String
+    let address: String?
 }
