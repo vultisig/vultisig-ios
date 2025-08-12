@@ -26,6 +26,8 @@ class ReferredViewModel: ObservableObject {
     
     @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     
+    private let thorchainReferralService = THORChainAPIService()
+    
     var title: String {
         savedReferredCode.isEmpty ? "addReferredCode" : "editReferredCode"
     }
@@ -74,31 +76,24 @@ class ReferredViewModel: ObservableObject {
     }
     
     private func checkNameAvailability(code: String) async -> Bool {
-        let urlString = Endpoint.nameLookup(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(with: "systemErrorMessage")
-            return false
-        }
-        
         do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    saveReferredCode()
-                } else if httpResponse.statusCode == 404 {
-                    showNameError(with: "referralCodeNotFound")
-                    return false
-                } else {
-                    showNameError(with: "systemErrorMessage")
-                    return false
-                }
+            let thorname = try await thorchainReferralService.getThornameDetails(name: code)
+            
+            let hasThorAlias = thorname.aliases.contains {
+                $0.chain == "THOR" &&  $0.address == thorname.owner
             }
+            
+            guard hasThorAlias else {
+                showNameError(with: "referralCodeWithoutAlias")
+                return false
+            }
+            saveReferredCode()
+            return true
         } catch {
-            showNameError(with: "systemErrorMessage")
+            let errorMessage = (error as? THORChainAPIError) == THORChainAPIError.thornameNotFound ? "referralCodeNotFound" : "systemErrorMessage"
+            showNameError(with: errorMessage)
             return false
         }
-        
-        return true
     }
     
     private func showNameError(with message: String) {

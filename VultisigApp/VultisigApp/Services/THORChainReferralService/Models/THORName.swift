@@ -5,7 +5,7 @@
 //  Created by Gaston Mazzeo on 05/08/2025.
 //
 
-struct THORName: Codable {
+struct THORName: Decodable {
     private enum CodingKeys: String, CodingKey {
         case name
         case expireBlockHeight = "expire_block_height"
@@ -13,6 +13,7 @@ struct THORName: Codable {
         case preferredAsset = "preferred_asset"
         case preferredAssetSwapThresholdRune = "preferred_asset_swap_threshold_rune"
         case affiliateCollectorRune = "affiliate_collector_rune"
+        case aliases
     }
     
     let name: String
@@ -21,10 +22,24 @@ struct THORName: Codable {
     let preferredAsset: String
     let preferredAssetSwapThresholdRune: String
     let affiliateCollectorRune: String
+    let aliases: [THORNameAlias]
     
     var isDefaultPreferredAsset: Bool {
         preferredAsset == "."
     }
     
-    static let example = THORName(name: "", expireBlockHeight: 0, owner: "", preferredAsset: "", preferredAssetSwapThresholdRune: "", affiliateCollectorRune: "")
+    static let example = THORName(
+        name: "",
+        expireBlockHeight: 0,
+        owner: "",
+        preferredAsset: "",
+        preferredAssetSwapThresholdRune: "",
+        affiliateCollectorRune: "",
+        aliases: []
+    )
+}
+
+struct THORNameAlias: Decodable {
+    let chain: String
+    let address: String
 }
