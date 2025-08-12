@@ -31,7 +31,17 @@ class GroupedChain: ObservableObject {
 
     var nativeCoin: Coin {
         // Try to find the actual native token first
-        return coins.first(where: { $0.isNativeToken }) ?? coins[0]
+        if let nativeToken = coins.first(where: { $0.isNativeToken }) {
+            return nativeToken
+        }
+        
+        // Fallback to first coin, with safety check
+        guard let firstCoin = coins.first else {
+            assertionFailure("GroupedChain.nativeCoin accessed with empty coins array")
+            return Coin.example // Safe fallback to prevent crash
+        }
+        
+        return firstCoin
     }
 
     init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {
