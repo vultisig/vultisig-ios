@@ -1,5 +1,5 @@
 //
-//  SetupVaultSwithControl.swift
+//  SetupVaultSwitchControl.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-01-27.
@@ -8,9 +8,12 @@
 import SwiftUI
 import RiveRuntime
 
-struct SetupVaultSwithControl: View {
+struct SetupVaultSwitchControl: View {
     let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
+    
+    @State private var isSwitchingDisabled = false
+    private let switchDebounceDelay: TimeInterval = 1
         
     var body: some View {
         ZStack {
@@ -37,9 +40,7 @@ struct SetupVaultSwithControl: View {
     
     private func getButton(for option: SetupVaultState) -> some View {
         Button {
-            withAnimation {
-                handleSwitch(option)
-            }
+            handleSwitch(option)
         } label: {
             if option == .secure {
                 secureButtonLabel
@@ -47,6 +48,7 @@ struct SetupVaultSwithControl: View {
                 fastButtonLabel
             }
         }
+        .disabled(isSwitchingDisabled)
     }
     
     var secureButtonLabel: some View {
@@ -89,22 +91,26 @@ struct SetupVaultSwithControl: View {
     }
     
     private func handleSwitch(_ option: SetupVaultState) {
-        let oldTab = selectedTab
-        selectedTab = option
+        guard !isSwitchingDisabled, selectedTab != option else { return }
+                
+        withAnimation(.easeInOut) {
+            selectedTab = option
+        }
+                
+        // Disable switching temporarily to prevent animation issues
+        isSwitchingDisabled = true
         
-        guard oldTab != selectedTab else { return }
+        animationVM?.triggerInput("Switch")
         
-        if option == .fast {
-            animationVM?.triggerInput("Switch")
-            animationVM?.triggerInput("Switch")
-        } else {
-            animationVM?.triggerInput("Switch")
+        // Re-enable switching after debounce delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + switchDebounceDelay) {
+            isSwitchingDisabled = false
         }
     }
 }
 
 #Preview {
-    SetupVaultSwithControl(
+    SetupVaultSwitchControl(
         animationVM: RiveViewModel(fileName: "ChooseVault"),
         selectedTab: .constant(.secure)
     )
