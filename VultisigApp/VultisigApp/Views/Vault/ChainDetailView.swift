@@ -59,6 +59,17 @@ struct ChainDetailView: View {
                     coin: group.nativeCoin
                 )
             }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    // Ensure sendTx.coin is set to the native coin when navigating to functions
+                    // Use tokens (from vault.coins) instead of group.coins to avoid timing issues
+                    if let nativeCoin = tokens.first(where: { $0.isNativeToken }) {
+                        sendTx.coin = nativeCoin
+                    } else if let firstCoin = tokens.first {
+                        sendTx.coin = firstCoin
+                    }
+                }
+            }
             .refreshable {
                 refreshAction()
             }
