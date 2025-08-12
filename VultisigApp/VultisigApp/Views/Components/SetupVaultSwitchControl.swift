@@ -91,13 +91,12 @@ struct SetupVaultSwitchControl: View {
     }
     
     private func handleSwitch(_ option: SetupVaultState) {
-        let oldTab = selectedTab
+        guard !isSwitchingDisabled, selectedTab != option else { return }
+                
         withAnimation(.easeInOut) {
             selectedTab = option
         }
-        
-        guard !isSwitchingDisabled, oldTab != selectedTab else { return }
-        
+                
         // Disable switching temporarily to prevent animation issues
         isSwitchingDisabled = true
         
