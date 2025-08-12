@@ -1,5 +1,5 @@
 //
-//  SetupVaultSwithControl.swift
+//  SetupVaultSwitchControl.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-01-27.
@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct SetupVaultSwithControl: View {
+struct SetupVaultSwitchControl: View {
     let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
     
@@ -111,7 +111,7 @@ struct SetupVaultSwithControl: View {
 }
 
 #Preview {
-    SetupVaultSwithControl(
+    SetupVaultSwitchControl(
         animationVM: RiveViewModel(fileName: "ChooseVault"),
         selectedTab: .constant(.secure)
     )
