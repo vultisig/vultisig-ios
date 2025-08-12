@@ -31,8 +31,6 @@ struct FunctionCallView: View {
                 functionCallViewModel.stopMediator()
             }
             .onAppear {
-                // Set the coin immediately when the view appears if it's different
-                // This fixes timing issues while preserving existing correct behavior
                 Task {
                     await setData()
                 }
@@ -90,7 +88,7 @@ struct FunctionCallView: View {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(
                     vault: vault,
-                    keysignPayload: keysignPayload, 
+                    keysignPayload: keysignPayload,
                     customMessagePayload: nil,
                     transferViewModel: functionCallViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
@@ -137,20 +135,10 @@ struct FunctionCallView: View {
     }
     
     private func setData() async {
-        if let coin = coin {
-            // Only update if the passed coin is different from current tx.coin
-            // This preserves existing behavior while fixing the BTC default issue
-            if tx.coin.id != coin.id {
-                tx.coin = coin
-            }
-        } else {
-            // FALLBACK: If no coin provided and current coin is BTC default,
-            // try to find a native token from the vault
-            if tx.coin.id == Coin.example.id {
-                if let firstNativeCoin = vault.coins.first(where: { $0.isNativeToken }) {
-                    tx.coin = firstNativeCoin
-                }
-            }
+        if let coin = coin, tx.coin.id != coin.id {
+            tx.coin = coin
+        } else if let chainNative = vault.coins.first(where: { $0.isNativeToken && $0.chain == tx.coin.chain }) {
+            tx.coin = chainNative
         }
     }
     
