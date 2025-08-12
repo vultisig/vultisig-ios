@@ -15,7 +15,7 @@ struct OneInchSwaps {
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
 
-    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
+    func getPreSignedImageHash(payload: GenericSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
@@ -29,7 +29,7 @@ struct OneInchSwaps {
         return [preSigningOutput.dataHash.hexString]
     }
 
-    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
+    func getSignedTransaction(payload: GenericSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
         let inputData = try getPreSignedInputData(
             quote: payload.quote,
             keysignPayload: keysignPayload,
@@ -48,7 +48,7 @@ struct OneInchSwaps {
 
 private extension OneInchSwaps {
 
-    func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
+    func getPreSignedInputData(quote: EVMQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> Data {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -59,6 +59,7 @@ private extension OneInchSwaps {
             }
         }
 
+        // TODO: - Check by provider?? Kyber swaps defaults to nil
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         // sometimes the `gas` field in oneinch tx is 0
         // when it is 0, we need to override it with defaultETHSwapGasUnit(600000)

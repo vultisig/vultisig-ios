@@ -19,7 +19,7 @@ struct KyberSwapService {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
     
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: EVMQuote, fee: BigInt?) {
         
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
@@ -68,7 +68,7 @@ struct KyberSwapService {
         routeResponse: KyberSwapRouteResponse,
         from: String,
         isAffiliate: Bool
-    ) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
+    ) async throws -> (quote: EVMQuote, fee: BigInt?) {
         
         // First attempt with gas estimation enabled
         do {
@@ -98,7 +98,7 @@ struct KyberSwapService {
         from: String,
         enableGasEstimation: Bool,
         isAffiliate: Bool
-    ) async throws -> (quote: KyberSwapQuote, fee: BigInt?) {
+    ) async throws -> (quote: EVMQuote, fee: BigInt?) {
         
         let buildUrl = Endpoint.buildKyberSwapTransaction(chain: chain)
         
@@ -174,7 +174,19 @@ struct KyberSwapService {
         
         let fee = finalGas * finalGasPrice
         
-        return (buildResponse, fee)
+        let evmQuote = EVMQuote(
+            dstAmount: buildResponse.dstAmount,
+            tx: EVMQuote.Transaction(
+                from: buildResponse.tx.from,
+                to: buildResponse.tx.to,
+                data: buildResponse.data.data,
+                value: buildResponse.tx.value,
+                gasPrice: buildResponse.tx.gasPrice,
+                gas: buildResponse.tx.gas
+            )
+        )
+        
+        return (evmQuote, fee)
     }
     
     func fetchTokens(chain: Chain) async throws -> [KyberSwapToken] {

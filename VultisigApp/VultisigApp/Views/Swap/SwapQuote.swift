@@ -11,17 +11,30 @@ import BigInt
 enum SwapQuote {
     case thorchain(ThorchainSwapQuote)
     case mayachain(ThorchainSwapQuote)
-    case oneinch(OneInchQuote, fee: BigInt?)
-    case kyberswap(KyberSwapQuote, fee: BigInt?)
-    case lifi(OneInchQuote, fee: BigInt?)
+    case oneinch(EVMQuote, fee: BigInt?)
+    case kyberswap(EVMQuote, fee: BigInt?)
+    case lifi(EVMQuote, fee: BigInt?)
+    
+    var swapProviderId: SwapProviderId? {
+        switch self {
+        case .thorchain, .mayachain:
+            return nil
+        case .oneinch:
+            return .oneInch
+        case .kyberswap:
+            return .kyberSwap
+        case .lifi:
+            return .lifi
+        }
+    }
 
     var router: String? {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.router
-        case .oneinch(let quote, _), .lifi(let quote, _):
-            return quote.tx.to
-        case .kyberswap(let quote, _):
+        case .oneinch(let quote, _), 
+                .lifi(let quote, _), 
+                .kyberswap(let quote, _):
             return quote.tx.to
         }
     }
@@ -39,9 +52,9 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.inboundAddress
-        case .oneinch(let quote, _), .lifi(let quote, _):
-            return quote.tx.to
-        case .kyberswap(let quote, _):
+        case .oneinch(let quote, _), 
+                .lifi(let quote, _), 
+                .kyberswap(let quote, _):
             return quote.tx.to
         }
     }

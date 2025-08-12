@@ -18,7 +18,7 @@ class SolanaSwaps {
     }
     
     func getPreSignedImageHash(
-        swapPayload: OneInchSwapPayload,
+        swapPayload: GenericSwapPayload,
         keysignPayload: KeysignPayload
     ) throws -> [String] {
         let inputData = try getPreSignedInputData(quote: swapPayload.quote, keysignPayload: keysignPayload)
@@ -27,7 +27,7 @@ class SolanaSwaps {
     }
     
     func getSignedTransaction(
-        swapPayload: OneInchSwapPayload,
+        swapPayload: GenericSwapPayload,
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse]
     ) throws -> SignedTransactionResult {
@@ -41,7 +41,7 @@ class SolanaSwaps {
     }
     
     private func getPreSignedInputData(
-        quote: OneInchQuote,
+        quote: EVMQuote,
         keysignPayload: KeysignPayload
     ) throws -> Data {
         

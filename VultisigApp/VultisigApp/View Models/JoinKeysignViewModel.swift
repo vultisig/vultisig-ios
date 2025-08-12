@@ -376,19 +376,8 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func getProvider() -> String {
-        switch keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .kyberSwap:
-            return "KyberSwap"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .none:
-            return .empty
-        }
+    var providerName: String {
+        keysignPayload?.swapPayload?.providerName ?? .empty
     }
     
     func getFromAmount() -> String {

@@ -11,16 +11,13 @@ import BigInt
 enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchain(THORChainSwapPayload)
     case mayachain(THORChainSwapPayload)
-    case oneInch(OneInchSwapPayload)
-    case kyberSwap(KyberSwapPayload)
+    case generic(GenericSwapPayload)
 
     var fromCoin: Coin {
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.fromCoin
-        case .oneInch(let payload):
-            return payload.fromCoin
-        case .kyberSwap(let payload):
+        case .generic(let payload):
             return payload.fromCoin
         }
     }
@@ -29,9 +26,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.toCoin
-        case .oneInch(let payload):
-            return payload.toCoin
-        case .kyberSwap(let payload):
+        case .generic(let payload):
             return payload.toCoin
         }
     }
@@ -40,9 +35,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.fromAmount
-        case .oneInch(let payload):
-            return payload.fromAmount
-        case .kyberSwap(let payload):
+        case .generic(let payload):
             return payload.fromAmount
         }
     }
@@ -51,9 +44,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.toAmountDecimal
-        case .oneInch(let payload):
-            return payload.toAmountDecimal
-        case .kyberSwap(let payload):
+        case .generic(let payload):
             return payload.toAmountDecimal
         }
     }
@@ -62,9 +53,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
             return payload.routerAddress
-        case .oneInch(let payload):
-            return payload.quote.tx.to
-        case .kyberSwap(let payload):
+        case .generic(let payload):
             return payload.quote.tx.to
         }
     }
@@ -73,8 +62,26 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
         switch self {
         case .mayachain(let payload):
             return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
-        case .oneInch, .kyberSwap, .thorchain:
+        case .generic, .thorchain:
             return false
+        }
+    }
+    
+    var providerName: String {
+        switch self {
+        case .thorchain:
+            return "THORChain"
+        case .mayachain:
+            return "Maya Protocol"
+        case .generic(let payload):
+            switch payload.provider {
+            case .oneInch:
+                return "1Inch"
+            case .lifi:
+                return "LI.FI"
+            case .kyberSwap:
+                return "KyberSwap"
+            }
         }
     }
 }

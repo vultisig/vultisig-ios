@@ -20,7 +20,7 @@ struct LiFiService {
         fromCoin: Coin,
         toCoin: Coin,
         fromAmount: BigInt
-    ) async throws -> (quote: OneInchQuote, fee: BigInt?) {
+    ) async throws -> (quote: EVMQuote, fee: BigInt?) {
 
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
@@ -63,9 +63,9 @@ struct LiFiService {
 
             let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
 
-            let quote = OneInchQuote(
+            let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
-                tx: OneInchQuote.Transaction(
+                tx: EVMQuote.Transaction(
                     from: quote.transactionRequest.from,
                     to: quote.transactionRequest.to,
                     data: quote.transactionRequest.data,
@@ -82,9 +82,9 @@ struct LiFiService {
                 gas = Int64(quote.estimate.gasCosts[0].estimate) ?? 0
             }
                 
-            let quote = OneInchQuote(
+            let quote = EVMQuote(
                 dstAmount: quote.estimate.toAmount,
-                tx: OneInchQuote.Transaction(
+                tx: EVMQuote.Transaction(
                     from: .empty,
                     to: .empty,
                     data: quote.transactionRequest.data,

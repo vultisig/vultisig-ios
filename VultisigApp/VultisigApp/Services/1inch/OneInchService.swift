@@ -28,7 +28,7 @@ struct OneInchService {
     func isChainSupported(chain: Chain) -> Bool {
         return supportedChain.contains(chain)
     }
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: OneInchQuote, fee: BigInt?) {
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> (quote: EVMQuote, fee: BigInt?) {
         
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
@@ -58,7 +58,7 @@ struct OneInchService {
             throw HelperError.runtimeError(result.description)
         }
         
-        let response = try JSONDecoder().decode(OneInchQuote.self, from: data)
+        let response = try JSONDecoder().decode(EVMQuote.self, from: data)
         
         let gasPrice = BigInt(response.tx.gasPrice) ?? 0
         let gas = BigInt(response.tx.gas)

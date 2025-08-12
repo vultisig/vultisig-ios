@@ -67,16 +67,10 @@ final class ChainHelperTests: XCTestCase {
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
             result += imageHash
-        case .kyberSwap(let kyberSwapPayload):
-            let swaps = KyberSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
-            let imageHash = try swaps.getPreSignedImageHash(payload: kyberSwapPayload,
-                                                            keysignPayload: keysignPayload,
-                                                            incrementNonce: incrementNonce)
-            result += imageHash
         case .mayachain(_):
             // mayachain swap is a regular transaction with memo
             return
-        case .oneInch(let oneInchSwapPayload):
+        case .generic(let oneInchSwapPayload):
             switch keysignPayload.coin.chain {
             case .solana:
                 let swaps = SolanaSwaps(vaultHexPubKey: hexPublicKey)
