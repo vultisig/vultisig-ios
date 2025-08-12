@@ -30,7 +30,8 @@ class GroupedChain: ObservableObject {
     }
 
     var nativeCoin: Coin {
-        return coins[0]
+        // Try to find the actual native token first
+        return coins.first(where: { $0.isNativeToken }) ?? coins[0]
     }
 
     init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {
