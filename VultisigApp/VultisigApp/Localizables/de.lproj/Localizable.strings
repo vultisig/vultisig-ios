@@ -106,7 +106,7 @@
 "mainDevice" = "Hauptgerät";
 "pleaseWait" = "Bitte warten...";
 "joinKeygen" = "BEITRITT ZUR SCHLÜSSELGENERIERUNG/-TEILUNG";
-"failToStartKesign" = "Fehler bei der Signatur. Bitte versuchen Sie es erneut.";
+"failToStartKesign" = "Fehler bei der Signatur";
 "failToStartKeygen" = "Schlüsselgenerierung kann wegen fehlender Informationen nicht gestartet werden";
 "scanQRCodeJoinKeygen" = "Scanne den QR-Code in einer anderen Vultisig App, um zu beginnen.";
 "discoveringMediator" = "Vermittlungsdienst wird gestartet, bitte warten...";
@@ -154,7 +154,7 @@
 "correctAmountCheck" = "Die Menge ist korrekt";
 "notHackedCheck" = "Ich sende mein Geld nicht an einen Betrug oder Hacker";
 "wrongVaultTryAgain" = "Falscher Tresor oder gekoppeltes Gerät.";
-"signInErrorTryAgain" = "Fehler beim Unterschreiben. Bitte versuche es erneut.";
+"signingErrorTryAgain" = "Fehler beim Unterschreiben";
 "sameWifiEntendedInstruction" = "Halte die Geräte im selben WLAN-Netzwerk, sorge für eine stabile Verbindung und sei im richtigen Tresor, um die Geräte zu koppeln";
 "validAddressError" = "Bitte gebe eine gültige Adresse ein.";
 "positiveAmountError" = "Die Menge muss eine positive Zahl sein. Versuche es erneut.";
@@ -236,7 +236,7 @@
 "uploadFromGallery" = "Aus der Galerie hochladen";
 "uploadFromFiles" = "Dateien auswählen";
 "goToHomeView" = "Gehe zum Startbildschirm";
-"sameDeviceShareError" = "Gleicher Tresor Teil, anderes Gerät verwenden.";
+"sameDeviceShareError" = "Gleicher Tresor Teil";
 "errorFetchingVault" = "Fehler beim Abrufen des Tresors.";
 "vaultSettings" = "Tresor Einstellungen";
 "mainVault" = "Haupttresor";

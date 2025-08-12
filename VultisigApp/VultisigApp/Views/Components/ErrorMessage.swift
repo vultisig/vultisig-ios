@@ -36,6 +36,6 @@ struct ErrorMessage: View {
 #Preview {
     ZStack {
         Background()
-        ErrorMessage(text: "signInErrorTryAgain")
+        ErrorMessage(text: "signingErrorTryAgain")
     }
 }

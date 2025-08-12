@@ -106,7 +106,7 @@
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor espera...";
 "joinKeygen" = "UNIRSE A LA GENERACIÓN/RECOMPARTICIÓN DE CLAVE";
-"failToStartKesign" = "Error de firma. Por favor, inténtalo de nuevo.";
+"failToStartKesign" = "Error de firma";
 "failToStartKeygen" = "No se pudo iniciar la generación de clave debido a información faltante";
 "scanQRCodeJoinKeygen" = "Escanea el Código QR en otra aplicación Vultisig para comenzar.";
 "discoveringMediator" = "Descubriendo el servicio mediador, por favor espera...";
@@ -154,7 +154,7 @@
 "correctAmountCheck" = "La cantidad es correcta";
 "notHackedCheck" = "No estoy enviando mi dinero a una estafa o hacker";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
-"signInErrorTryAgain" = "Error al Firmar. Por favor intenta de nuevo.";
+"signingErrorTryAgain" = "Error al Firmar";
 "sameWifiEntendedInstruction" = "Mantén los dispositivos en la misma red WiFi, asegúrate de tener una conexión estable y estar en la bóveda correcta para emparejar los dispositivos.";
 "validAddressError" = "Por favor ingresa una dirección válida.";
 "positiveAmountError" = "La cantidad debe ser un número positivo. Intenta de nuevo.";

@@ -12,12 +12,8 @@ struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
     
-    @Environment(\.dismiss) var dismiss
-    
+    @State private var navigateToHome = false
     @State var loadingAnimationVM: RiveViewModel? = nil
-    
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     var body: some View {
         ZStack {
@@ -44,11 +40,16 @@ struct SendCryptoKeysignView: View {
     }
     
     var errorView: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            bottomBar
+        ErrorView(
+            type: .warning,
+            title: "signingErrorTryAgain".localized,
+            description: title?.localized ?? .empty,
+            buttonTitle: "tryAgain".localized
+        ) {
+            navigateToHome = true
+        }
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomeView()
         }
     }
     
@@ -73,17 +74,6 @@ struct SendCryptoKeysignView: View {
             .frame(width: 28, height: 28)
     }
     
-    var errorMessage: some View {
-        VStack(spacing: 32) {
-            ErrorMessage(text: "signInErrorTryAgain")
-            if let title {
-                Text(NSLocalizedString(title, comment: ""))
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-            }
-        }
-    }
-    
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
@@ -92,24 +82,8 @@ struct SendCryptoKeysignView: View {
             .blur(radius: 20)
     }
     
-    var bottomBar: some View {
-        VStack {
-            InformationNote()
-                .padding(.horizontal, 16)
-            tryAgainButton
-        }
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "tryAgain") {
-            HomeView()
-        }
-        .padding(.vertical, 40)
-        .padding(.horizontal, 15)
-    }
-    
     var appVersion: some View {
-        Text("Version \(version ?? "1").\(build ?? "1")")
+        Text(Bundle.main.appVersionString)
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.textExtraLight)
             .padding(.bottom, 30)

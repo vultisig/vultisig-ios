@@ -90,7 +90,7 @@ struct KeysignView: View {
     }
     
     var sendCryptoKeysignView: some View {
-        SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+        SendCryptoKeysignView(title: viewModel.keysignError, showError: true)
             .onAppear {
                 showError = true
             }

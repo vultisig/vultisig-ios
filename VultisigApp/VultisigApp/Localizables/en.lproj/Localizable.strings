@@ -103,7 +103,7 @@
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
 "joinKeygen" = "JOIN KEYGEN";
-"failToStartKesign" = "Signing Error. Please try again.";
+"failToStartKesign" = "Signing Error";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "scanQRCodeJoinKeygen" = "Scan the QR Code on another Vultisig app to start.";
 "discoveringMediator" = "Discovering mediator service, please wait...";
@@ -151,8 +151,8 @@
 "sendingRightAddressCheck" = "I’m sending to the correct address";
 "correctAmountCheck" = "The amount is correct";
 "notHackedCheck" = "I’m not sending my money to a scam or hacker";
-"wrongVaultTryAgain" = "Wrong Vault or Pair Device.";
-"signInErrorTryAgain" = "Signing Error. Please try again.";
+"wrongVaultTryAgain" = "Wrong Vault or Pair";
+"signingErrorTryAgain" = "Signing Error";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, have a stable connection and be on the correct vault and pair devices.";
 "validAddressError" = "Please enter a valid address.";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
@@ -239,7 +239,7 @@
 "uploadFromGallery" = "Upload from\nGallery";
 "uploadFromFiles" = "Upload from\nFiles";
 "goToHomeView" = "Go to Home View";
-"sameDeviceShareError" = "Same vault share, use a different device.";
+"sameDeviceShareError" = "Same vault share";
 "errorFetchingVault" = "Error with fetching the vault.";
 "vaultSettings" = "Vault Settings";
 "mainVault" = "Main Vault";
