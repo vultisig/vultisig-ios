@@ -68,4 +68,13 @@ enum THORChainAPI: TargetType {
             return .requestPlain
         }
     }
+    
+    var headers: [String : String]? {
+        switch self {
+        case .getThornameLookup:
+            return ["X-Client-ID": "vultisig"]
+        default:
+            return nil
+        }
+    }
 }
