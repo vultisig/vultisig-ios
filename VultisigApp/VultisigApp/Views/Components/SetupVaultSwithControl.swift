@@ -11,6 +11,9 @@ import RiveRuntime
 struct SetupVaultSwithControl: View {
     let animationVM: RiveViewModel?
     @Binding var selectedTab: SetupVaultState
+    
+    @State private var isSwitchingDisabled = false
+    private let switchDebounceDelay: TimeInterval = 1
         
     var body: some View {
         ZStack {
@@ -37,9 +40,7 @@ struct SetupVaultSwithControl: View {
     
     private func getButton(for option: SetupVaultState) -> some View {
         Button {
-            withAnimation {
-                handleSwitch(option)
-            }
+            handleSwitch(option)
         } label: {
             if option == .secure {
                 secureButtonLabel
@@ -47,6 +48,7 @@ struct SetupVaultSwithControl: View {
                 fastButtonLabel
             }
         }
+        .disabled(isSwitchingDisabled)
     }
     
     var secureButtonLabel: some View {
@@ -90,15 +92,20 @@ struct SetupVaultSwithControl: View {
     
     private func handleSwitch(_ option: SetupVaultState) {
         let oldTab = selectedTab
-        selectedTab = option
+        withAnimation(.easeInOut) {
+            selectedTab = option
+        }
         
-        guard oldTab != selectedTab else { return }
+        guard !isSwitchingDisabled, oldTab != selectedTab else { return }
         
-        if option == .fast {
-            animationVM?.triggerInput("Switch")
-            animationVM?.triggerInput("Switch")
-        } else {
-            animationVM?.triggerInput("Switch")
+        // Disable switching temporarily to prevent animation issues
+        isSwitchingDisabled = true
+        
+        animationVM?.triggerInput("Switch")
+        
+        // Re-enable switching after debounce delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + switchDebounceDelay) {
+            isSwitchingDisabled = false
         }
     }
 }
