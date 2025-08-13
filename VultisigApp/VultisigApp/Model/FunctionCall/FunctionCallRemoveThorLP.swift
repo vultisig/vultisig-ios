@@ -34,6 +34,10 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         self.tx.amount = "0.02"
+        
+    }
+    
+    func initialize() {
         setupValidation()
         
         if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
@@ -116,7 +120,9 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallRemoveThorLPView(model: self))
+        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear{
+            self.initialize()
+        })
     }
 }
 
@@ -262,7 +268,7 @@ private struct PositionRowView: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-
+    
     
     private func getAssetTicker(from poolName: String) -> String {
         let cleanName = ThorchainService.cleanPoolName(poolName)
