@@ -11,15 +11,23 @@ import SwiftData
 struct ContentView: View {
     @Query var vaults: [Vault]
     
+    @ObservedObject var navigationRouter: NavigationRouter
+    @StateObject var router: VultisigRouter
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
+    
+    init(navigationRouter: NavigationRouter) {
+        self.navigationRouter = navigationRouter
+        self._router = StateObject(wrappedValue: VultisigRouter(navigationRouter: navigationRouter))
+    }
 
     var body: some View {
         ZStack {
-            NavigationStack {
+            NavigationStack(path: $navigationRouter.navPath) {
                 container
             }
+            .environment(\.router, router.navigationRouter)
             .accentColor(.white)
             .onOpenURL { incomingURL in
                 handleDeeplink(incomingURL)
@@ -118,7 +126,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(navigationRouter: .init())
         .environmentObject(AccountViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(ApplicationState())

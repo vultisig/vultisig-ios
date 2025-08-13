@@ -8,7 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
-extension SendCryptoDetailsView {
+extension SendDetailsScreen {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {

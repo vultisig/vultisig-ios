@@ -1,8 +1,8 @@
 //
-//  SendCryptoDetailsView.swift
+//  SendDetailsScreen.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-13.
+//  Created by Gaston Mazzeo on 13/08/2025.
 //
 
 import OSLog
@@ -15,12 +15,12 @@ enum Field: Int, Hashable {
     case memo
 }
 
-struct SendCryptoDetailsView: View {
+struct SendDetailsScreen: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
-    @Binding var settingsPresented: Bool
+    @State var settingsPresented: Bool = false
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -35,14 +35,13 @@ struct SendCryptoDetailsView: View {
     @State var scrollProxy: ScrollViewProxy?
     
     var body: some View {
-        container
+        Screen {
+            container
+        }
     }
     
     var content: some View {
-        ZStack {
-            Background()
-            view
-        }
+        view
         .onFirstAppear {
             sendDetailsViewModel.onLoad()
             setData()
@@ -246,11 +245,10 @@ struct SendCryptoDetailsView: View {
 }
 
 #Preview {
-    SendCryptoDetailsView(
+    SendDetailsScreen(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example,
-        settingsPresented: .constant(false)
+        vault: Vault.example
     )
 }

@@ -107,12 +107,13 @@ struct SendCryptoView: View {
     }
     
     var detailsView: some View {
-        SendCryptoDetailsView(
+        SendDetailsScreen(
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
             sendDetailsViewModel: sendDetailsViewModel,
-            vault: vault,
-            settingsPresented: $settingsPresented
+            vault: vault
+//            ,
+//            settingsPresented: $settingsPresented
         )
     }
     
