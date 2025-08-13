@@ -92,8 +92,6 @@ struct FunctionCallDetailsView: View {
             }
             .onChange(of: selectedFunctionMemoType) {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
-                // Reset to default coin
-                tx.coin = defaultCoin
                 switch selectedFunctionMemoType {
                 case .bond:
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
