@@ -40,8 +40,8 @@ struct SendDetailsAdditionalSection: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.down")
-            .foregroundColor(.neutral0)
-            .font(.body14BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .rotationEffect(.degrees(isMemoExpanded ? 180 : 0))
             .animation(.easeInOut, value: isMemoExpanded)
     }
@@ -81,16 +81,16 @@ struct SendDetailsAdditionalSection: View {
             
             if let selectedVault = homeViewModel.selectedVault {
                 Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
-                    .foregroundStyle(Color.extraLightGray)
+                    .foregroundStyle(Theme.colors.textExtraLight)
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getFieldTitle(_ title: String) -> some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 }
 

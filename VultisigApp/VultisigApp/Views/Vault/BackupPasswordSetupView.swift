@@ -57,8 +57,8 @@ struct BackupPasswordSetupView: View {
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             textfield
             verifyTextfield

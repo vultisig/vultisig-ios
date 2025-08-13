@@ -35,7 +35,7 @@ struct PeerDiscoveryHeader: View {
     
     var text: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     
@@ -45,7 +45,7 @@ struct PeerDiscoveryHeader: View {
                 NavigationQRShareButton(
                     vault: vault, 
                     type: .Keygen,
-                    renderedImage: shareSheetViewModel.renderedImage
+                    viewModel: shareSheetViewModel
                 )
             }
         }

@@ -27,7 +27,7 @@ extension AddressQRCodeView {
                 NavigationQRShareButton(
                     vault: vault,
                     type: .Address,
-                    renderedImage: shareSheetViewModel.renderedImage,
+                    viewModel: shareSheetViewModel,
                     title: groupedChain.name
                 )
             }

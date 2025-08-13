@@ -36,12 +36,12 @@ extension AddressBookTextField {
                 fileButton
             }
         }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.caption12)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .colorScheme(.dark)
     }
@@ -49,7 +49,7 @@ extension AddressBookTextField {
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $text)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .borderlessTextFieldStyle()

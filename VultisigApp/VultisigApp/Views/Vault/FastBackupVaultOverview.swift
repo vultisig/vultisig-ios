@@ -86,18 +86,18 @@ struct FastBackupVaultOverview: View {
     
     var headerTitle: some View {
         Text(NSLocalizedString(getTitle(), comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var migrateText: some View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("FastMigrateOverviewText1", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
             Text(NSLocalizedString("FastMigrateOverviewText2", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient)
         }
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 36)
         .padding(.bottom, 24)
@@ -109,7 +109,7 @@ struct FastBackupVaultOverview: View {
                 Rectangle()
                     .frame(height: 2)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(index <= tabIndex ? .turquoise400 : .blue400)
+                    .foregroundColor(index <= tabIndex ? Theme.colors.bgButtonPrimary : Theme.colors.bgTertiary)
                     .animation(.easeInOut, value: tabIndex)
             }
         }

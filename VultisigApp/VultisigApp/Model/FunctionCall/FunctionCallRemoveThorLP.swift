@@ -34,6 +34,10 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
         self.tx.amount = "0.02"
+        
+    }
+    
+    func initialize() {
         setupValidation()
         
         if let thorCoin = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) {
@@ -116,7 +120,9 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallRemoveThorLPView(model: self))
+        AnyView(FunctionCallRemoveThorLPView(model: self).onAppear{
+            self.initialize()
+        })
     }
 }
 
@@ -204,10 +210,10 @@ struct FunctionCallRemoveThorLPView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Chain: THORChain")
                                 .font(.caption)
-                                .foregroundColor(.neutral0)
+                                .foregroundColor(Theme.colors.textPrimary)
                             Text(model.transactionAmountInfo)
                                 .font(.caption)
-                                .foregroundColor(.turquoise600)
+                                .foregroundColor(Theme.colors.primaryAccent1)
                                 .fontWeight(.semibold)
                             Text("Withdrawal initiated on THORChain")
                                 .font(.caption2)
@@ -218,7 +224,7 @@ struct FunctionCallRemoveThorLPView: View {
                             .foregroundColor(.green)
                     }
                     .padding()
-                    .background(Color.blue600.opacity(0.1))
+                    .background(Theme.colors.bgSecondary.opacity(0.1))
                     .cornerRadius(8)
                     
                     Text("LP withdrawals are always initiated on THORChain using RUNE. Ensure your LP position value exceeds the outbound fees for successful withdrawal.")
@@ -262,7 +268,7 @@ private struct PositionRowView: View {
     let isSelected: Bool
     let onTap: () -> Void
     
-
+    
     
     private func getAssetTicker(from poolName: String) -> String {
         let cleanName = ThorchainService.cleanPoolName(poolName)
@@ -275,8 +281,8 @@ private struct PositionRowView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(ThorchainService.cleanPoolName(position.asset))
-                        .font(.body16MenloBold)
-                        .foregroundColor(.primary)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                     
                     HStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 2) {
@@ -285,7 +291,7 @@ private struct PositionRowView: View {
                                 .foregroundColor(.secondary)
                             Text(position.poolUnits)
                                 .font(.caption)
-                                .foregroundColor(.neutral0)
+                                .foregroundColor(Theme.colors.textPrimary)
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -294,7 +300,7 @@ private struct PositionRowView: View {
                                 .foregroundColor(.secondary)
                             Text((position.runeDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
                                 .font(.caption)
-                                .foregroundColor(.neutral0)
+                                .foregroundColor(Theme.colors.textPrimary)
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {
@@ -303,7 +309,7 @@ private struct PositionRowView: View {
                                 .foregroundColor(.secondary)
                             Text((position.assetDepositValue.toDecimal() / 100_000_000).formatToDecimal(digits: 8))
                                 .font(.caption)
-                                .foregroundColor(.neutral0)
+                                .foregroundColor(Theme.colors.textPrimary)
                         }
                     }
                 }
@@ -312,11 +318,11 @@ private struct PositionRowView: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.turquoise600)
+                        .foregroundColor(Theme.colors.primaryAccent1)
                 }
             }
             .padding()
-            .background(isSelected ? Color.blue600.opacity(0.3) : Color.blue600.opacity(0.1))
+            .background(Theme.colors.bgSecondary.opacity( isSelected ? 0.3 : 0.1))
             .cornerRadius(10)
         }
         .buttonStyle(PlainButtonStyle())

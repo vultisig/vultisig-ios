@@ -9,42 +9,19 @@ import SwiftUI
 
 struct SendCryptoStartErrorView: View {
     let errorText: String
-    
-    @Environment(\.dismiss) var dismiss
-    
+    @State private var navigateToHome: Bool = false
+
     var body: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            bottomBar
-        }
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "failToStartKesign")
-    }
-    
-    var bottomBar: some View {
-        VStack {
-            sameWifiInstruction
-            tryAgainButton
-        }
-    }
-    
-    var sameWifiInstruction: some View {
-        Text(errorText)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.horizontal, 50)
-            .multilineTextAlignment(.center)
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "tryAgain") {
+        ErrorView(
+            type: .warning,
+            title: "failToStartKesign".localized,
+            description: errorText,
+            buttonTitle: "tryAgain".localized
+        ) {
+            navigateToHome = true
+        }.navigationDestination(isPresented: $navigateToHome) {
             HomeView()
         }
-        .padding(40)
     }
 }
 

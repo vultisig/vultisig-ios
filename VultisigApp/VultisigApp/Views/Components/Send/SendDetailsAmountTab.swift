@@ -47,8 +47,8 @@ struct SendDetailsAmountTab: View {
     var titleSection: some View {
         HStack {
             Text(NSLocalizedString("amount", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Spacer()
             
@@ -80,8 +80,8 @@ struct SendDetailsAmountTab: View {
     
     var editLabel: some View {
         Image(systemName: "fuelpump")
-            .foregroundColor(.neutral0)
-            .font(.body16BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyMMedium)
     }
     
     var amountFieldSection: some View {
@@ -129,11 +129,11 @@ struct SendDetailsAmountTab: View {
             Spacer()
             Text(tx.coin.balanceString + " " + tx.coin.ticker)
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .padding(12)
         .padding(.vertical, 8)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
     
@@ -143,19 +143,19 @@ struct SendDetailsAmountTab: View {
     
     var errorText: some View {
         Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: ""))
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.alertYellow)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.alertWarning)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func getPercentageButtons(for value: String) -> some View {
         Text(value)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(4)
             .frame(maxWidth: .infinity)
             .overlay(
                 RoundedRectangle(cornerRadius: 32)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
     }
     

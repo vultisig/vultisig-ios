@@ -10,7 +10,7 @@ import SwiftUI
 struct Checkbox: View {
     @Binding var isChecked: Bool
     let text: String
-    var font: Font = .body14MontserratMedium
+    var font: Font = Theme.fonts.bodySMedium
     var alignment: TextAlignment = .leading
     var isExtended: Bool = true
     
@@ -31,21 +31,21 @@ struct Checkbox: View {
     
     var check: some View {
         Image(systemName: isChecked ? "checkmark" : "")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.alertTurquoise)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.alertInfo)
             .frame(width: 24, height: 24)
-            .background(Color.checkboxBlue)
+            .background(Theme.colors.bgSuccess)
             .cornerRadius(20)
             .overlay(
                 Circle()
-                    .stroke(isChecked ? Color.alertTurquoise : Color.borderBlue, lineWidth: 1)
+                    .stroke(isChecked ? Theme.colors.alertInfo : Theme.colors.border, lineWidth: 1)
             )
     }
     
     var description: some View {
         Text(NSLocalizedString(text, comment: "Checkbox description"))
             .font(font)
-            .foregroundColor(.neutral200)
+            .foregroundColor(Theme.colors.textLight)
             .multilineTextAlignment(alignment)
     }
 }

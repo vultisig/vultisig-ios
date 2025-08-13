@@ -65,8 +65,8 @@ private extension PrimaryButtonStyle {
     
     func font(for size: ButtonSize) -> Font {
         switch size {
-        case .medium, .small: return .body16BrockmannSemiBold
-        case .mini: return .body16BrockmannMedium
+        case .medium, .small: return Theme.fonts.buttonRegularSemibold
+        case .mini: return Theme.fonts.bodyMMedium
         }
     }
     
@@ -83,29 +83,29 @@ private extension PrimaryButtonStyle {
         switch type {
         case .primary:
             if !isEnabled {
-                return .disabledButtonBackground
+                return Theme.colors.bgButtonDisabled
             } else if shouldHighlight {
-                return .blue100
+                return Theme.colors.bgButtonTertiaryPressed
             } else {
-                return .persianBlue400
+                return Theme.colors.bgButtonTertiary
             }
             
         case .secondary:
             if !isEnabled {
                 return .clear
             } else if shouldHighlight {
-                return .blue500
+                return Theme.colors.bgButtonSecondaryPressed
             } else {
-                return .clear
+                return Theme.colors.bgButtonSecondary
             }
         }
     }
     
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         if !isEnabled {
-            return .disabledText
+            return Theme.colors.textButtonDisabled
         } else {
-            return .neutral50
+            return Theme.colors.textPrimary
         }
     }
     
@@ -115,9 +115,9 @@ private extension PrimaryButtonStyle {
             return .clear
         case .secondary:
             if !isEnabled {
-                return .persianBlue400.opacity(0.6)
+                return Theme.colors.bgButtonTertiary.opacity(0.6)
             } else {
-                return .persianBlue400
+                return Theme.colors.bgButtonTertiary
             }
         }
     }

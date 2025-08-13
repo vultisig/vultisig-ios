@@ -12,7 +12,7 @@ class ReferredViewModel: ObservableObject {
     @AppStorage("showReferralCodeOnboarding") var showReferralCodeOnboarding: Bool = true
     @Published var showReferralBannerSheet: Bool = false
     @Published var navigationToReferralOverview: Bool = false
-    @Published var navigationToCreateReferralView: Bool = false
+    @Published var navigationToReferralsView: Bool = false
     
     @Published var isLoading: Bool = false
     
@@ -24,6 +24,18 @@ class ReferredViewModel: ObservableObject {
     @Published var referredLaunchViewErrorMessage: String = ""
     @Published var referredLaunchViewSuccessMessage: String = ""
     
+    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
+    
+    private let thorchainReferralService = THORChainAPIService()
+    
+    var title: String {
+        savedReferredCode.isEmpty ? "addReferredCode" : "editReferredCode"
+    }
+    
+    var referredTitleText: String {
+        savedReferredCode.isEmpty ? "addYourFriendsCode" : "changeFriendsReferralCode"
+    }
+    
     func closeBannerSheet() {
         showReferralBannerSheet = false
         navigationToReferralOverview = true
@@ -31,11 +43,11 @@ class ReferredViewModel: ObservableObject {
     
     func showReferralDashboard() {
         navigationToReferralOverview = false
-        navigationToCreateReferralView = true
+        navigationToReferralsView = true
         showReferralCodeOnboarding = false
     }
     
-    func verifyReferredCode(savedGeneratedReferralCode: String) {
+    func verifyReferredCode(savedGeneratedReferralCode: String) async -> Bool {
         resetReferredData()
         
         isLoading = true
@@ -43,12 +55,10 @@ class ReferredViewModel: ObservableObject {
         nameErrorCheck(code: referredCode, savedGeneratedReferralCode: savedGeneratedReferralCode)
         
         guard !showReferredLaunchViewError else {
-            return
+            return false
         }
         
-        Task {
-            await checkNameAvailability(code: referredCode)
-        }
+        return await checkNameAvailability(code: referredCode)
     }
     
     func resetReferredData() {
@@ -65,26 +75,25 @@ class ReferredViewModel: ObservableObject {
         isLoading = false
     }
     
-    private func checkNameAvailability(code: String) async {
-        let urlString = Endpoint.nameLookup(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(with: "systemErrorMessage")
-            return
-        }
-        
+    private func checkNameAvailability(code: String) async -> Bool {
         do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    saveReferredCode()
-                } else if httpResponse.statusCode == 404 {
-                    showNameError(with: "referralCodeNotFound")
-                } else {
-                    showNameError(with: "systemErrorMessage")
-                }
+            let thorname = try await thorchainReferralService.getThornameLookup(name: code)
+            
+            let hasThorAlias = thorname.entries.contains {
+                $0.chain == "THOR" &&  $0.address == thorname.owner
             }
+            
+            guard hasThorAlias else {
+                showNameError(with: "referralCodeWithoutAlias")
+                return false
+            }
+            
+            saveReferredCode()
+            return true
         } catch {
-            showNameError(with: "systemErrorMessage")
+            let errorMessage = (error as? THORChainAPIError) == THORChainAPIError.thornameNotFound ? "referralCodeNotFound" : "systemErrorMessage"
+            showNameError(with: errorMessage)
+            return false
         }
     }
     

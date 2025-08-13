@@ -41,7 +41,11 @@ struct SendCryptoSecondaryDoneView: View {
     }
     
     var header: some View {
-        getAssetCard(coin: input.coin, title: input.amountCrypto, description: input.amountFiat)
+        SendCryptoDoneHeaderView(
+            coin: input.coin,
+            cryptoAmount: input.amountCrypto,
+            fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
+        )
     }
     
     var summary: some View {
@@ -99,11 +103,11 @@ struct SendCryptoSecondaryDoneView: View {
             )
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -124,36 +128,6 @@ struct SendCryptoSecondaryDoneView: View {
         if let url = URL(string: input.explorerLink) {
             openURL(url)
         }
-    }
-    
-    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
-            if let coin {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 32, height: 32),
-                    ticker: coin.ticker,
-                    tokenChainLogo: coin.tokenChainLogo
-                )
-                .padding(.bottom, 8)
-            }
-            
-            Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-        }
-        .frame(height: 130)
-        .frame(maxWidth: .infinity)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue600, lineWidth: 1)
-        )
     }
 }
 

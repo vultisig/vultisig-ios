@@ -30,7 +30,7 @@ struct TransactionsView: View {
                 errorText
             }
         }
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var errorText: some View {
@@ -40,8 +40,8 @@ struct TransactionsView: View {
             if let coin = group.coins.first , let explorerUrl = Endpoint.getExplorerByAddressURL(chain:coin.chain,address:coin.address) {
                 if let url = URL(string: explorerUrl) {
                     Link("checkExplorer",destination: url)
-                        .font(.body16MenloBold)
-                        .foregroundColor(.neutral0)
+                        .font(Theme.fonts.bodyMMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                         .underline()
                 }
                 Spacer()

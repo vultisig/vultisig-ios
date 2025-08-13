@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingToggleCell: View {
+    
+    
     let title: String
     let icon: String
     @Binding var isEnabled: Bool
@@ -20,7 +22,7 @@ struct SettingToggleCell: View {
             toggle
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .onTapGesture {
             isEnabled.toggle()
@@ -29,14 +31,14 @@ struct SettingToggleCell: View {
     
     var iconBlock: some View {
         Image(systemName: icon)
-            .font(.body20Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var titleBlock: some View {
         Text(NSLocalizedString(title, comment: ""))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var toggle: some View {

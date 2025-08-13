@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreTransferable
 
 enum NavigationQRType {
     case Keygen
@@ -16,8 +17,8 @@ enum NavigationQRType {
 struct NavigationQRShareButton: View {
     let vault: Vault
     let type: NavigationQRType
-    let renderedImage: Image?
-    var tint: Color = Color.neutral0
+    let viewModel: ShareSheetViewModel
+    var tint: Color = Theme.colors.textPrimary
     
     var title: String = ""
     
@@ -30,7 +31,7 @@ struct NavigationQRShareButton: View {
     
     var shareLink: some View {
         ZStack {
-            if let image = renderedImage {
+            if let image = viewModel.renderedImage {
                 getLink(image: image)
             } else {
                 ProgressView()
@@ -38,22 +39,20 @@ struct NavigationQRShareButton: View {
         }
     }
     
+    @ViewBuilder
     private func getLink(image: Image) -> some View {
-        ShareLink(
-            item: image,
-            preview: SharePreview(imageName, image: image)
-        ) {
+        CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
             content
+        }
+        .onLoad {
+            setData()
         }
     }
     
     var content: some View {
         Image(systemName: "arrow.up.doc")
-            .font(.body18MenloBold)
+            .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)
-            .onAppear {
-                setData()
-            }
     }
     
     func setData() {
@@ -84,7 +83,8 @@ struct NavigationQRShareButton: View {
         NavigationQRShareButton(
             vault: Vault.example, 
             type: .Keygen,
-            renderedImage: nil
+            viewModel: ShareSheetViewModel()
         )
     }
 }
+

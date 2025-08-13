@@ -19,12 +19,11 @@ struct SendCryptoDoneContentView: View {
         ScrollView {
             VStack(spacing: 8) {
                 animation
-                getAssetCard(
+                SendCryptoDoneHeaderView(
                     coin: input.coin,
-                    title: input.amountCrypto,
-                    description: input.amountFiat
+                    cryptoAmount: input.amountCrypto,
+                    fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
                 )
-                
                 VStack(spacing: 16) {
                     Group {
                         SendCryptoTransactionHashRowView(
@@ -40,15 +39,15 @@ struct SendCryptoDoneContentView: View {
                     
                     transactionDetailsButton
                 }
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 16)
-                .foregroundColor(.lightText)
-                .background(Color.blue600)
+                .foregroundColor(Theme.colors.textLight)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue400, lineWidth: 1)
+                        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
                 )
             }
         }
@@ -84,37 +83,7 @@ struct SendCryptoDoneContentView: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
-    }
-    
-    private func getAssetCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
-            if let coin {
-                AsyncImageView(
-                    logo: coin.logo,
-                    size: CGSize(width: 32, height: 32),
-                    ticker: coin.ticker,
-                    tokenChainLogo: coin.tokenChainLogo
-                )
-                .padding(.bottom, 8)
-            }
-            
-            Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
-        }
-        .frame(height: 130)
-        .frame(maxWidth: .infinity)
-        .background(Color.blue600)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue400, lineWidth: 1)
-        )
+            .font(Theme.fonts.bodyLMedium)
     }
 }
 

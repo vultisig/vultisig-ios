@@ -26,10 +26,9 @@ struct SwapCoinCell: View {
     var label: some View {
         VStack(spacing: 0) {
             content
-            Separator()
-                .opacity(0.2)
+            GradientListSeparator()
         }
-        .background(isSelected ? Color.blue400 : Color.blue600)
+        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
     
     var content: some View {
@@ -60,28 +59,28 @@ struct SwapCoinCell: View {
     
     var title: some View {
         Text(coin.ticker)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var chain: some View {
         Text(coin.chain.name)
-            .foregroundColor(.lightText)
-            .font(.body10BrockmannMedium)
+            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.caption10)
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.blue400, lineWidth: 1)
+                    .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
     }
     
     var check: some View {
         Image(systemName: "checkmark")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.alertTurquoise)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.alertInfo)
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(32)
             .bold()
     }
@@ -91,12 +90,12 @@ struct SwapCoinCell: View {
         if let balance, let balanceFiat {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(balance)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                 
                 Text(balanceFiat)
-                    .foregroundColor(.extraLightGray)
+                    .foregroundColor(Theme.colors.textExtraLight)
             }
-            .font(.body12BrockmannMedium)
+            .font(Theme.fonts.caption12)
         }
     }
 }

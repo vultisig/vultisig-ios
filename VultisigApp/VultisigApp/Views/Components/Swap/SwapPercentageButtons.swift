@@ -31,7 +31,7 @@ struct SwapPercentageButtons: View {
     var separator: some View {
         Rectangle()
             .frame(height: 1)
-            .foregroundColor(.blue400)
+            .foregroundColor(Theme.colors.bgTertiary)
     }
     
     var buttons: some View {
@@ -54,11 +54,11 @@ struct SwapPercentageButtons: View {
     
     private func getPercentageCell(for text: String, isSelected: Bool) -> some View {
         Text(text + "%")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(isSelected ? Color.white : .neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(isSelected ? Color.white : Theme.colors.textPrimary)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
-            .background(isSelected ? Color.blue800 : Color.blue600)
+            .background(isSelected ? Theme.colors.bgPrimary : Theme.colors.bgSecondary)
             .cornerRadius(32)
     }
 }

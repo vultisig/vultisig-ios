@@ -8,30 +8,22 @@
 import SwiftUI
 
 struct SendCryptoVaultErrorView: View {
+    @State private var navigateToHome: Bool = false
+
     var body: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            tryAgainButton
-        }
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "wrongVaultTryAgain")
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "changeVault") {
+        ErrorView(
+            type: .warning,
+            title: "wrongVaultTryAgain".localized,
+            description: "",
+            buttonTitle: "changeVault".localized
+        ) {
+            navigateToHome = true
+        }.navigationDestination(isPresented: $navigateToHome) {
             HomeView(showVaultsList: true)
         }
-        .padding(40)
     }
 }
 
 #Preview {
-    ZStack {
-        Background()
-        SendCryptoVaultErrorView()
-    }
+    SendCryptoVaultErrorView()
 }

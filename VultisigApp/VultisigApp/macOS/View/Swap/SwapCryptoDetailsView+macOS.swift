@@ -11,7 +11,6 @@ import SwiftUI
 extension SwapCryptoDetailsView {
     var container: some View {
         ZStack(alignment: .top) {
-            Background()
             view
             
             if showSheet() {

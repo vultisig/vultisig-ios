@@ -68,7 +68,7 @@ extension Coin {
             }
             return [.oneinch(chain), .lifi] // KyberSwap not supported
         case .optimism, .polygon, .polygonV2:
-            return [.kyberswap(chain), .oneinch(chain), .lifi] // KyberSwap supported
+            return [.lifi, .oneinch(chain), .kyberswap(chain)] // KyberSwap supported
         case .zksync:
             return [.oneinch(chain), .lifi] // KyberSwap not supported on zkSync
         case .blast:

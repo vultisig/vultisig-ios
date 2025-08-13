@@ -6,15 +6,16 @@
 import SwiftUI
 
 struct WifiInstruction: View {
+    
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "wifi")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
             
             Text(NSLocalizedString("devicesOnSameWifi", comment: ""))
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.caption12)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: 250)
                 .multilineTextAlignment(.center)
         }

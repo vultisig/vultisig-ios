@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Background: View {
-    var color = Color.backgroundBlue
+    var color = Theme.colors.bgPrimary
     
     var body: some View {
         color

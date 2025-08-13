@@ -72,14 +72,14 @@ struct FastVaultSetPasswordView: View {
     
     var title: some View {
         Text(NSLocalizedString("vultiserverPassword", comment: ""))
-            .font(.body34BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.largeTitle)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var migrateDescription: some View {
         Text(NSLocalizedString("migratePasswordDescription", comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
     
     var disclaimer: some View {

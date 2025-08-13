@@ -10,9 +10,11 @@ import SwiftUI
 @MainActor
 class ShareSheetViewModel: ObservableObject {
     @Published var renderedImage: Image? = nil
+    @Published var qrCodeData: String?
     
     func render(
         qrCodeImage: Image,
+        qrCodeData: String?,
         displayScale: CGFloat,
         type: QRShareSheetType,
         addressData: String = "",
@@ -38,5 +40,6 @@ class ShareSheetViewModel: ObservableObject {
 
         renderer.scale = displayScale
         setImage(renderer)
+        self.qrCodeData = qrCodeData
     }
 }

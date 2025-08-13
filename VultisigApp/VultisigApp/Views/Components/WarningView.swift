@@ -14,11 +14,11 @@ struct WarningView: View {
         components
             .padding(.horizontal, 12)
             .padding(.vertical, 16)
-            .background(Color.alertRed.opacity(0.3))
+            .background(Theme.colors.alertError.opacity(0.3))
             .cornerRadius(12)
             .overlay (
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.alertRed, lineWidth: 1)
+                    .stroke(Theme.colors.alertError, lineWidth: 1)
             )
     }
 
@@ -32,14 +32,14 @@ struct WarningView: View {
 
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
-            .font(.body24MontserratMedium)
-            .foregroundColor(.alertRed)
+            .font(Theme.fonts.title2)
+            .foregroundColor(Theme.colors.alertError)
     }
 
     var title: some View {
         Text(text)
-            .font(.body16MontserratMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
     }

@@ -23,7 +23,7 @@ struct KeysignStartView: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
             .padding(-15)
@@ -48,8 +48,8 @@ struct KeysignStartView: View {
     var title: some View {
         Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
             .preferredColorScheme(.dark)
-            .font(.body22BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.title2)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var loader: some View {
@@ -64,8 +64,8 @@ struct KeysignStartView: View {
             Text(viewModel.localPartyID)
                 .padding(.leading)
         }
-        .font(.body14BrockmannMedium)
-        .foregroundColor(.extraLightGray)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textExtraLight)
     }
 }
 

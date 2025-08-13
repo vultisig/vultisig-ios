@@ -29,7 +29,7 @@ struct VaultCell: View {
         }
         .frame(height: 48)
         .padding(.horizontal, 16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditing)
@@ -40,8 +40,8 @@ struct VaultCell: View {
     
     var rearrange: some View {
         Image(systemName: "line.3.horizontal")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? nil : 0)
             .clipped()
     }
@@ -49,8 +49,8 @@ struct VaultCell: View {
     
     var title: some View {
         Text(vault.name.capitalized)
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)
             .lineLimit(1)
@@ -67,25 +67,25 @@ struct VaultCell: View {
             Text(NSLocalizedString("of", comment: "")) +
             Text("\(viewModel.totalSigners)")
         }
-        .font(.body14Menlo)
-        .foregroundColor(.body)
+        .font(Theme.fonts.bodySRegular)
+        .foregroundColor(Theme.colors.textLight)
     }
     
     var fastVaultLabel: some View {
         Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
-            .font(.body14Menlo)
-            .foregroundColor(.body)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textLight)
             .padding(4)
             .padding(.horizontal, 2)
-            .background(Color.blue200)
+            .background(Theme.colors.border)
             .cornerRadius(5)
             .lineLimit(1)
     }
     
     var selectOption: some View {
         Image(systemName: "chevron.right")
-            .font(.body16MontserratBold)
-            .foregroundColor(.neutral100)
+            .font(Theme.fonts.bodyMMedium)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: isEditing ? 0 : nil)
             .clipped()
     }

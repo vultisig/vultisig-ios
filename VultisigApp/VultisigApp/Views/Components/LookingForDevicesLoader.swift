@@ -39,7 +39,7 @@ struct LookingForDevicesLoader: View {
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.02)
             .blur(radius: 20)
             .clipped()
@@ -62,8 +62,8 @@ struct LookingForDevicesLoader: View {
     
     var title: some View {
         Text(getTitle())
-            .font(.body14Montserrat)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodySRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .bold()
             .multilineTextAlignment(.center)
     }
@@ -71,12 +71,12 @@ struct LookingForDevicesLoader: View {
     var fastContent: some View {
         VStack {
             Text(NSLocalizedString("connectingWithServer...", comment: ""))
-                .font(.body22BrockmannMedium)
+                .font(Theme.fonts.title2)
             
             Text(NSLocalizedString("shouldOnlyTakeAMinute...", comment: ""))
-                .font(.body14BrockmannMedium)
+                .font(Theme.fonts.bodySMedium)
         }
-        .foregroundColor(.lightText)
+        .foregroundColor(Theme.colors.textLight)
     }
     
     var loader: some View {

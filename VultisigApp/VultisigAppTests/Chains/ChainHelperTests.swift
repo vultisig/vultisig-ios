@@ -38,7 +38,7 @@ final class ChainHelperTests: XCTestCase {
         }
         let resourceURL = URL(fileURLWithPath: resourcePath)
         let jsonFiles = try fileManager.contentsOfDirectory(at: resourceURL, includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json"}
+            .filter { $0.pathExtension == "json" }
         
         // Iterate through each JSON file
         for jsonFile in jsonFiles {
@@ -141,6 +141,8 @@ final class ChainHelperTests: XCTestCase {
             result += try KujiraHelper().getPreSignedImageHash(keysignPayload: keysignPayload)
         case .ton:
             result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .tron:
+            result += try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }

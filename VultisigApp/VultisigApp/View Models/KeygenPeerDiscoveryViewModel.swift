@@ -235,10 +235,16 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func getQrImage(size: CGFloat) -> Image {
-        guard let encryptionKeyHex else {return Image(systemName: "xmark")}
-        let jsonData: String
+    func getQRCodeData(size: CGFloat) -> (String, Image)? {
+        guard let qrCodeData = generateQRdata() else {
+            return nil
+        }
+        return (qrCodeData, Utils.generateQRCodeImage(from: qrCodeData))
+    }
+    
+    private func generateQRdata() -> String? {
         do {
+            guard let encryptionKeyHex else { return nil }
             switch tssType {
             case .Keygen:
                 let keygenMsg = KeygenMessage(
@@ -251,7 +257,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(keygenMsg)
-                jsonData = "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
+                return "https://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
             case .Reshare, .Migrate:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
@@ -266,12 +272,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     libType: vault.libType ?? .GG20
                 )
                 let data = try ProtoSerializer.serialize(reshareMsg)
-                jsonData = "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
+                return "https://vultisig.com?type=NewVault&tssType=\(tssType.rawValue)&jsonData=\(data)"
             }
-            return Utils.generateQRCodeImage(from: jsonData)
         } catch {
             logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
-            return Image(systemName: "xmark")
+            return nil
         }
     }
 }

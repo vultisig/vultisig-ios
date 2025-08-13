@@ -80,7 +80,7 @@ class TokensStore {
             ticker: "LINK",
             logo: "link",
             decimals: 18,
-            priceProviderId: "LINK",
+            priceProviderId: "chainlink",
             contractAddress: "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4",
             isNativeToken: false
         ),
@@ -1151,7 +1151,7 @@ class TokensStore {
             ticker: "LINK",
             logo: "link",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "chainlink",
             contractAddress: "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6",
             isNativeToken: false
         ),
@@ -1322,7 +1322,7 @@ class TokensStore {
             ticker: "LINK",
             logo: "link",
             decimals: 18,
-            priceProviderId: "",
+            priceProviderId: "chainlink",
             contractAddress: "0xb0897686c545045aFc77CF20eC7A532E3120E0F1",
             isNativeToken: false
         ),
@@ -1664,7 +1664,7 @@ class TokensStore {
             ticker: "RUJI",
             logo: "xruji",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "rujira",
             contractAddress: "x/ruji",
             isNativeToken: false
         ),

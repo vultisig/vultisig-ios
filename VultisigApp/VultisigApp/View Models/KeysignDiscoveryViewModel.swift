@@ -88,7 +88,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
         // mediator server need to be
         self.mediator.start(name: self.serviceName)
-
+        
         if let keysignPayload {
             do {
                 let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
@@ -100,25 +100,25 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 self.status = .FailToStart
             }
         }
-
+        
         if let customMessagePayload {
             self.keysignMessages = customMessagePayload.keysignMessages
         }
-
+        
         if keysignMessages.isEmpty {
             logger.error("no meessage need to be signed")
             status = .FailToStart
         }
-
+        
         if let fastVaultPassword, let keysignPayload {
             // when fast sign , always using relay server
             serverAddr = Endpoint.vultisigRelay
-
+            
             if vault.signers.count <= 3 {
                 // skip device lookup if possible
                 status = .WaitingForFast
             }
-
+            
             fastVaultService.sign(
                 publicKeyEcdsa: vault.pubKeyECDSA,
                 keysignMessages: self.keysignMessages,
@@ -132,9 +132,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     self.status = .FailToStart
                 }
             }
-
+            
             cancellables.forEach { $0.cancel() }
-
+            
             participantDiscovery.$peersFound.sink { [weak self] in
                 $0.forEach { peer in
                     self?.handleSelection(peer)
@@ -150,7 +150,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.logger.info("mediator server started")
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(
-            serverAddr: self.serverAddr,          
+            serverAddr: self.serverAddr,
             sessionID: self.sessionID,
             localParty: self.localPartyID,
             pubKeyECDSA: vault.pubKeyECDSA
@@ -189,7 +189,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             sessionID: sessionID,
             keysignType: keysignType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
-            keysignPayload: keysignPayload, 
+            keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
             transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? "",
@@ -240,21 +240,28 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func getQrImage(size: CGFloat) async -> Image {
-        guard let encryptionKeyHex = self.encryptionKeyHex else {
-            logger.error("encryption key is nil")
-            return Image(systemName: "xmark")
+    func getQrImage(size: CGFloat) async -> (String, Image)? {
+        guard let qrCodeData = await generateQRdata() else {
+            return nil
         }
-        let message = KeysignMessage(
-            sessionID: sessionID,
-            serviceName: serviceName,
-            payload: keysignPayload,
-            customMessagePayload: customMessagePayload,
-            encryptionKeyHex: encryptionKeyHex,
-            useVultisigRelay: VultisigRelay.IsRelayEnabled,
-            payloadID: ""
-        )
+        return (qrCodeData, Utils.generateQRCodeImage(from: qrCodeData))
+    }
+    
+    private func generateQRdata() async -> String? {
         do {
+            guard let encryptionKeyHex = self.encryptionKeyHex else {
+                logger.error("encryption key is nil")
+                return nil
+            }
+            let message = KeysignMessage(
+                sessionID: sessionID,
+                serviceName: serviceName,
+                payload: keysignPayload,
+                customMessagePayload: customMessagePayload,
+                encryptionKeyHex: encryptionKeyHex,
+                useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                payloadID: ""
+            )
             let protoKeysignMsg = try ProtoSerializer.serialize(message)
             let payloadService = PayloadService(serverURL: serverAddr)
             var jsonData = ""
@@ -264,7 +271,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 let hash = try await payloadService.uploadPayload(payload: keysignPayload)
                 let messageWithoutPayload = KeysignMessage(sessionID: sessionID,
                                                            serviceName: serviceName,
-                                                           payload: nil, 
+                                                           payload: nil,
                                                            customMessagePayload: nil,
                                                            encryptionKeyHex: encryptionKeyHex,
                                                            useVultisigRelay: VultisigRelay.IsRelayEnabled,
@@ -274,11 +281,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
             } else {
                 jsonData = protoKeysignMsg
             }
-            let data = "https://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
-            return Utils.generateQRCodeImage(from: data)
+            return "https://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
-            return Image(systemName: "xmark")
+            return nil
         }
     }
     

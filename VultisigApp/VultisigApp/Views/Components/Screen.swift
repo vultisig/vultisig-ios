@@ -9,17 +9,19 @@ import SwiftUI
 
 struct Screen<Content: View>: View {
     let title: String
+    let showNavigationBar: Bool
     let content: () -> Content
     
-    init(title: String = "", @ViewBuilder content: @escaping () -> Content) {
+    init(title: String = "", showNavigationBar: Bool = true, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
+        self.showNavigationBar = showNavigationBar
         self.content = content
     }
     
     var body: some View {
         container
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.backgroundBlue, ignoresSafeAreaEdges: .all)
+            .background(Theme.colors.bgPrimary, ignoresSafeAreaEdges: .all)
     }
     
     @ViewBuilder
@@ -27,11 +29,14 @@ struct Screen<Content: View>: View {
 #if os(macOS)
         VStack {
             GeneralMacHeader(title: title)
+                .showIf(showNavigationBar)
             contentContainer
         }
 #else
         contentContainer
-            .navigationTitle(title)
+            .if(showNavigationBar) {
+                $0.navigationTitle(title)
+            }
 #endif
     }
     

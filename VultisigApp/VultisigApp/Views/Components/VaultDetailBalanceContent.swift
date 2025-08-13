@@ -29,15 +29,15 @@ struct VaultDetailBalanceContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
     
     var balanceContent: some View {
         Text(homeViewModel.hideVaultBalance ? redactedText : (homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? ""))
-            .font(.title32MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.title1)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.top, 10)
             .multilineTextAlignment(.center)
             .frame(width: width)

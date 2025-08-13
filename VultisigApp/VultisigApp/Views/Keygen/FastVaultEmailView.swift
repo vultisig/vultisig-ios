@@ -39,13 +39,13 @@ struct FastVaultEmailView: View {
     var emailField: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(NSLocalizedString("enterYourEmail", comment: ""))
-                .font(.body34BrockmannMedium)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.largeTitle)
+                .foregroundColor(Theme.colors.textPrimary)
                 .padding(.top, 16)
             
             Text(NSLocalizedString("enterYourEmailDescription", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             textfield(title: NSLocalizedString("email", comment: ""),text: $email)
         }
@@ -58,8 +58,8 @@ struct FastVaultEmailView: View {
     var emptyEmailLabel: some View {
         HStack {
             Text(NSLocalizedString("emptyEmailPleaseCheck", comment: ""))
-                .foregroundColor(.alertRed)
-                .font(.body14Montserrat)
+                .foregroundColor(Theme.colors.alertError)
+                .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
         }
@@ -69,8 +69,8 @@ struct FastVaultEmailView: View {
     var validEmailLabel: some View {
         HStack {
             Text(NSLocalizedString("invalidEmailPleaseCheck", comment: ""))
-                .foregroundColor(.alertRed)
-                .font(.body14Montserrat)
+                .foregroundColor(Theme.colors.alertError)
+                .font(Theme.fonts.bodySRegular)
                 .frame(height: 40)
             Spacer()
         }
@@ -97,7 +97,7 @@ struct FastVaultEmailView: View {
             isEmptyEmail = true
         } label: {
             Image(systemName: "xmark.circle.fill")
-                .foregroundColor(.neutral500)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     
@@ -129,9 +129,9 @@ struct FastVaultEmailView: View {
     
     func getBorderColor() -> Color {
         if isEmptyEmail || isInvalidEmail {
-            return .alertRed
+            return Theme.colors.alertError
         } else {
-            return .blue200
+            return Theme.colors.border
         }
     }
 }

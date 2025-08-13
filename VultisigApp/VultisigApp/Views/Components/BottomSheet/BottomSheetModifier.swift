@@ -58,7 +58,7 @@ private extension BottomSheetModifier {
                 Spacer()
             }
             .presentationDetents(presentationDetents())
-            .presentationBackground(Color.blue600)
+            .presentationBackground(Theme.colors.bgSecondary)
             .if(!dismissable) {
                 $0.interactiveDismissDisabled()
             }

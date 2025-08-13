@@ -57,7 +57,7 @@ struct ChainSelectionView: View {
                     isSearching = false
                 }
                 .foregroundColor(.blue)
-                .font(.body12Menlo)
+                .font(Theme.fonts.caption12)
             }
         }
         .frame(maxWidth: .infinity)
@@ -68,14 +68,14 @@ struct ChainSelectionView: View {
         .onChange(of: viewModel.searchText) { oldValue, newValue in
             isSearching = !newValue.isEmpty
         }
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
     }
 
     var searchField: some View {
         TextField(NSLocalizedString("Search", comment: "Search"), text: $viewModel.searchText)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .disableAutocorrection(true)
             .padding(.horizontal, 8)
             .borderlessTextFieldStyle()

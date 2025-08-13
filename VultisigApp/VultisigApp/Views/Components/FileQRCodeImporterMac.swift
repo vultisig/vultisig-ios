@@ -51,7 +51,7 @@ struct FileQRCodeImporterMac: View {
         }
         .frame(height: 250)
         .frame(maxWidth: .infinity)
-        .background(Color.turquoise600.opacity(0.15))
+        .background(Theme.colors.bgButtonPrimary.opacity(0.15))
         .cornerRadius(10)
         .overlay (
             ZStack {
@@ -72,14 +72,14 @@ struct FileQRCodeImporterMac: View {
     
     var icon: some View {
         Image(systemName: "desktopcomputer.and.arrow.down")
-            .font(.title60MontserratLight)
-            .foregroundColor(.turquoise600)
+            .font(Theme.fonts.display)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
     }
     
     var title: some View {
         Text(NSLocalizedString(isUploading ? "dropFileHere" : "uploadQRCodeImage", comment: "Upload backup file"))
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .animation(.none, value: isUploading)
     }
     
@@ -93,7 +93,7 @@ struct FileQRCodeImporterMac: View {
     
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
         RoundedRectangle(cornerRadius: 10)
-            .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: lineWidth, dash: [10]))
+            .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: lineWidth, dash: [10]))
     }
 }
 

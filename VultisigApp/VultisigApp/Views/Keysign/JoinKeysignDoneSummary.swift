@@ -50,7 +50,7 @@ struct JoinKeysignDoneSummary: View {
             content
         }
         .padding(.vertical, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
@@ -142,11 +142,11 @@ struct JoinKeysignDoneSummary: View {
             if isVerticalStacked {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString(title, comment: ""))
-                        .font(.body20MontserratSemiBold)
+                        .font(Theme.fonts.bodyLMedium)
                     
                     Text(description)
-                        .foregroundColor(.turquoise400)
-                        .font(.body13MenloBold)
+                        .foregroundColor(Theme.colors.bgButtonPrimary)
+                        .font(Theme.fonts.footnote)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -157,10 +157,10 @@ struct JoinKeysignDoneSummary: View {
                     
                     Text(description)
                 }
-                .font(.body16MontserratBold)
+                .font(Theme.fonts.bodyMMedium)
             }
         }
-        .foregroundColor(.neutral100)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     private func card(title: String, txid: String) -> some View {
@@ -168,12 +168,12 @@ struct JoinKeysignDoneSummary: View {
             titleSection(title: title, txid: txid)
             
             Text(txid)
-                .font(.body13Menlo)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.footnote)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
         .padding(.horizontal, 16)
     }
@@ -181,8 +181,8 @@ struct JoinKeysignDoneSummary: View {
     private func titleSection(title: String, txid: String) -> some View {
         HStack(spacing: 12) {
             Text(title)
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
             
             copyButton(txid: txid)
             linkButton(txid: txid)
@@ -194,8 +194,8 @@ struct JoinKeysignDoneSummary: View {
             copyHash(txid: txid)
         } label: {
             Image(systemName: "square.on.square")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLRegular)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         
     }
@@ -205,8 +205,8 @@ struct JoinKeysignDoneSummary: View {
             shareLink(txid: txid)
         } label: {
             Image(systemName: "link")
-                .font(.body18Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLRegular)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         
     }
@@ -220,8 +220,8 @@ struct JoinKeysignDoneSummary: View {
             }
         } label: {
             Text(NSLocalizedString(viewModel.keysignPayload?.swapPayload != nil ? "swapTrackingLink" : "transactionTrackingLink", comment: ""))
-                .font(.body14MontserratBold)
-                .foregroundColor(.turquoise600)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.bgButtonPrimary)
                 .underline()
                 .padding(.vertical, 8)
         }

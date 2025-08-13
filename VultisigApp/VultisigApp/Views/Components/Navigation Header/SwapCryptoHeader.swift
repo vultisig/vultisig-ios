@@ -40,7 +40,7 @@ struct SwapCryptoHeader: View {
     
     var text: some View {
         Text(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     
@@ -49,7 +49,7 @@ struct SwapCryptoHeader: View {
             NavigationQRShareButton(
                 vault: vault, 
                 type: .Keysign,
-                renderedImage: shareSheetViewModel.renderedImage
+                viewModel: shareSheetViewModel
             )
             .disabled(swapViewModel.currentIndex != 3)
         }

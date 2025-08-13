@@ -81,7 +81,7 @@ extension ChainDetailActionButtons{
                 await showMoonPayBuy()
             }
         } label: {
-            ActionButton(title: "buy", fontColor: .turquoise600)
+            ActionButton(title: "buy", fontColor: Theme.colors.bgButtonPrimary)
         }
     }
     
@@ -89,7 +89,7 @@ extension ChainDetailActionButtons{
         Button {
             showMoonpaySell()
         } label: {
-            ActionButton(title: "sell", fontColor: .turquoise600)
+            ActionButton(title: "sell", fontColor: Theme.colors.bgButtonPrimary)
         }
     }
 }

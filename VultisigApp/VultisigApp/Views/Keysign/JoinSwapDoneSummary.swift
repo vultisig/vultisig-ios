@@ -78,7 +78,7 @@ struct JoinSwapDoneSummary: View {
     var animationText: some View {
         Text(NSLocalizedString("transactionSuccessful", comment: ""))
             .foregroundStyle(LinearGradient.primaryGradient)
-            .font(.body18BrockmannMedium)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var fromToCards: some View {
@@ -87,13 +87,15 @@ struct JoinSwapDoneSummary: View {
                 getFromToCard(
                     coin: summaryViewModel.getFromCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getFromAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.fromAmountFiatString
+                    description: keysignViewModel.keysignPayload?.fromAmountFiatString,
+                    isFrom: true
                 )
                 
                 getFromToCard(
                     coin: summaryViewModel.getToCoin(keysignViewModel.keysignPayload),
                     title: summaryViewModel.getToAmount(keysignViewModel.keysignPayload),
-                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString
+                    description: keysignViewModel.keysignPayload?.toSwapAmountFiatString,
+                    isFrom: false
                 )
             }
             
@@ -116,25 +118,25 @@ struct JoinSwapDoneSummary: View {
     
     var chevronIcon: some View {
         Image(systemName: "chevron.right")
-            .foregroundColor(.disabledText)
-            .font(.body12Menlo)
+            .foregroundColor(Theme.colors.textButtonDisabled)
+            .font(Theme.fonts.caption12)
             .bold()
             .frame(width: 24, height: 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(60)
             .padding(8)
-            .background(Color.backgroundBlue)
+            .background(Theme.colors.bgPrimary)
             .cornerRadius(60)
             .overlay(
                 Circle()
-                    .stroke(Color.blue200, lineWidth: 1)
+                    .stroke(Theme.colors.border, lineWidth: 1)
             )
     }
     
     var filler: some View {
         Rectangle()
             .frame(width: 6, height: 18)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {
@@ -172,11 +174,11 @@ struct JoinSwapDoneSummary: View {
             )
         }
         .padding(24)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -185,8 +187,12 @@ struct JoinSwapDoneSummary: View {
             .opacity(0.2)
     }
     
-    private func getFromToCard(coin: Coin?, title: String, description: String?) -> some View {
-        VStack(spacing: 4) {
+    private func getFromToCard(coin: Coin?, title: String, description: String?, isFrom: Bool) -> some View {
+        VStack(spacing: 8) {
+            Text(isFrom ? "from".localized : "to".localized)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .font(Theme.fonts.caption10)
+            
             if let coin {
                 AsyncImageView(
                     logo: coin.logo,
@@ -197,21 +203,23 @@ struct JoinSwapDoneSummary: View {
                 .padding(.bottom, 8)
             }
             
-            Text(title)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
-                .font(.body10BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+                
+                Text(description?.formatToFiat(includeCurrencySymbol: true) ?? "")
+                    .font(Theme.fonts.caption10)
+                    .foregroundColor(Theme.colors.textExtraLight)
+            }
         }
         .frame(height: 130)
         .frame(maxWidth: .infinity)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue200, lineWidth: 1)
+                .stroke(Theme.colors.border, lineWidth: 1)
         )
     }
     
@@ -225,14 +233,14 @@ struct JoinSwapDoneSummary: View {
     ) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
             
             Spacer()
             
             Text(value ?? "")
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(maxWidth: valueMaxWidth, alignment: .trailing)
             
             if let bracketValue {
@@ -241,7 +249,7 @@ struct JoinSwapDoneSummary: View {
                     Text(bracketValue) +
                     Text(")")
                 }
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .frame(maxWidth: bracketMaxWidth)
                 .truncationMode(.middle)
                 .lineLimit(1)
@@ -252,7 +260,7 @@ struct JoinSwapDoneSummary: View {
             }
         }
         .padding(.vertical)
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     private func getCopyButton(for value: String?) -> some View {
@@ -260,8 +268,8 @@ struct JoinSwapDoneSummary: View {
             copyHash(value)
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
         }
     }
     

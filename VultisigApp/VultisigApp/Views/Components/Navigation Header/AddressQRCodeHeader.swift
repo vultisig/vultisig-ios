@@ -31,7 +31,7 @@ struct AddressQRCodeHeader: View {
     
     var text: some View {
         Text(NSLocalizedString("address", comment: "AddressQRCodeView title"))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
     
@@ -39,7 +39,7 @@ struct AddressQRCodeHeader: View {
         NavigationQRShareButton(
             vault: vault,
             type: .Address,
-            renderedImage: shareSheetViewModel.renderedImage,
+            viewModel: shareSheetViewModel,
             title: groupedChain.name
         )
     }

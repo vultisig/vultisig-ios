@@ -12,12 +12,8 @@ struct SendCryptoKeysignView: View {
     var title: String? = nil
     var showError = false
     
-    @Environment(\.dismiss) var dismiss
-    
+    @State private var navigateToHome = false
     @State var loadingAnimationVM: RiveViewModel? = nil
-    
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     var body: some View {
         ZStack {
@@ -44,11 +40,16 @@ struct SendCryptoKeysignView: View {
     }
     
     var errorView: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            errorMessage
-            Spacer()
-            bottomBar
+        ErrorView(
+            type: .warning,
+            title: "signingErrorTryAgain".localized,
+            description: title?.localized ?? .empty,
+            buttonTitle: "tryAgain".localized
+        ) {
+            navigateToHome = true
+        }
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomeView()
         }
     }
     
@@ -58,12 +59,12 @@ struct SendCryptoKeysignView: View {
             
             if let title {
                 Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
             } else {
                 Text(NSLocalizedString("signingTransaction", comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }
@@ -73,45 +74,18 @@ struct SendCryptoKeysignView: View {
             .frame(width: 28, height: 28)
     }
     
-    var errorMessage: some View {
-        VStack(spacing: 32) {
-            ErrorMessage(text: "signInErrorTryAgain")
-            if let title {
-                Text(NSLocalizedString(title, comment: ""))
-                    .font(.body16MenloBold)
-                    .foregroundColor(.neutral0)
-            }
-        }
-    }
-    
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
     
-    var bottomBar: some View {
-        VStack {
-            InformationNote()
-                .padding(.horizontal, 16)
-            tryAgainButton
-        }
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "tryAgain") {
-            HomeView()
-        }
-        .padding(.vertical, 40)
-        .padding(.horizontal, 15)
-    }
-    
     var appVersion: some View {
-        Text("Version \(version ?? "1").\(build ?? "1")")
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+        Text(Bundle.main.appVersionString)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .padding(.bottom, 30)
     }
     
@@ -122,7 +96,7 @@ struct SendCryptoKeysignView: View {
 
 #Preview {
     ZStack {
-        Color.blue800
+        Theme.colors.bgPrimary
             .ignoresSafeArea()
         
         SendCryptoKeysignView()

@@ -71,7 +71,7 @@ struct SettingsCustomMessageView: View {
     func title(text: String) -> some View {
         HStack {
             Text(text)
-                .font(.body14Montserrat)
+                .font(Theme.fonts.bodySRegular)
                 .foregroundColor(.white)
 
             Spacer()
@@ -81,11 +81,11 @@ struct SettingsCustomMessageView: View {
     func textField(title: String, text: Binding<String>) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
+                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textLight))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(.neutral0)
-                    .tint(.neutral0)
-                    .font(.body16Menlo)
+                    .foregroundColor(Theme.colors.textPrimary)
+                    .tint(Theme.colors.textPrimary)
+                    .font(Theme.fonts.bodyMRegular)
                     .submitLabel(.done)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())
@@ -95,7 +95,7 @@ struct SettingsCustomMessageView: View {
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
+                .foregroundColor(Theme.colors.bgSecondary)
         )
     }
 

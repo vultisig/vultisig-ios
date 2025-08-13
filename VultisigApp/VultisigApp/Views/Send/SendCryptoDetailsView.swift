@@ -118,6 +118,9 @@ struct SendCryptoDetailsView: View {
                 }
                 .padding(16)
             }
+            .refreshable {
+                await onRefresh()
+            }
             .onLoad {
                 scrollProxy = proxy
             }
@@ -172,8 +175,8 @@ struct SendCryptoDetailsView: View {
             Spacer()
             Text(trailingText)
         }
-        .font(.body14MenloBold)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
     }
 
     private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
@@ -181,18 +184,18 @@ struct SendCryptoDetailsView: View {
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
-        .font(.body14MontserratMedium)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodySMedium)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
     
     private func getPercentageCell(for text: String) -> some View {
         Text(text + "%")
-            .font(.body12MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(.vertical, 6)
             .padding(.horizontal, 20)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(6)
     }
     
@@ -225,7 +228,20 @@ struct SendCryptoDetailsView: View {
     
     func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
-        coinBalance = tx.coin.balanceString
+        if Task.isCancelled { return }
+        await MainActor.run {
+            coinBalance = tx.coin.balanceString
+        }
+    }
+
+    private func onRefresh() async {
+        async let gas: Void = sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        async let bal: Void = BalanceService.shared.updateBalance(for: tx.coin)
+        _ = await (gas, bal)
+        if Task.isCancelled { return }
+        await MainActor.run {
+            coinBalance = tx.coin.balanceString
+        }
     }
 }
 

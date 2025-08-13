@@ -1,4 +1,5 @@
 "back" = "Voltar";
+"sent" = "Enviado";
 "backupNow" = "Faça backup agora";
 "backupSetupTitle" = "Faça backup do seu cofre\ncompartilhe online";
 "backupSetupSubtitle" = "O armazenamento online é recomendado e seguro –\nas partilhas do cofre foram concebidas para isso.";
@@ -105,7 +106,7 @@
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor, espere...";
 "joinKeygen" = "JUNTAR-SE À GERAÇÃO/RECOMPARTILHAÇÃO DE CHAVE";
-"failToStartKesign" = "Erro de assinatura. Por favor, tente novamente.";
+"failToStartKesign" = "Erro de assinatura";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
 "scanQRCodeJoinKeygen" = "Escanear o Código QR em outro aplicativo Vultisig para começar.";
 "discoveringMediator" = "Descobrindo serviço mediador, por favor, espere...";
@@ -153,7 +154,7 @@
 "correctAmountCheck" = "A quantidade está correta";
 "notHackedCheck" = "Não estou enviando meu dinheiro para uma fraude ou hacker";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
-"signInErrorTryAgain" = "Erro ao Assinar. Por favor, tente novamente.";
+"signingErrorTryAgain" = "Erro ao Assinar";
 "sameWifiEntendedInstruction" = "Mantenha os dispositivos na mesma rede WiFi, tenha uma conexão estável e esteja no cofre correto para emparelhar os dispositivos.";
 "validAddressError" = "Por favor, insira um endereço válido.";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";

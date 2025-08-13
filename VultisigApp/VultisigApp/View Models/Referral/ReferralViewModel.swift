@@ -5,7 +5,9 @@
 //  Created by Amol Kumar on 2025-06-13.
 //
 
+import BigInt
 import SwiftUI
+import SwiftData
 
 @MainActor
 class ReferralViewModel: ObservableObject {
@@ -18,7 +20,7 @@ class ReferralViewModel: ObservableObject {
     @Published var referralAvailabilityErrorMessage: String = ""
     @Published var showReferralAvailabilitySuccess: Bool = false
     @Published var isReferralCodeVerified: Bool = false
-    @Published var expireInCount: Int = 0
+    @Published var expireInCount: Int = 1
     
     @Published var showReferralAlert = false
     @Published var referralAlertMessage = ""
@@ -29,7 +31,26 @@ class ReferralViewModel: ObservableObject {
     @Published var feePerBlock: Decimal = 0
     @Published var isFeesLoading: Bool = false
     
+    // Expires On
+    @Published var expiresOn: String = ""
+    
+    // Collected Rewards
+    @Published var collectedRewards: String = ""
+    
     let blockchainService = BlockChainService.shared
+    private let thorchainReferralService = THORChainAPIService()
+    
+    private(set) var thornameDetails: THORName?
+    private(set) var thornameVault: Vault?
+    private(set) var currentBlockheight: UInt64 = 0
+    
+    var hasReferralCode: Bool {
+        savedGeneratedReferralCode.isNotEmpty
+    }
+    
+    var canEditCode: Bool {
+        !isLoading && thornameDetails != nil && thornameVault != nil
+    }
     
     var registrationFeeFiat: String {
         getFiatAmount(for: getRegistrationFee())
@@ -83,11 +104,6 @@ class ReferralViewModel: ObservableObject {
             return
         }
         
-        guard expireInCount>0 else {
-            showAlert(with: "pickValidExpiration")
-            return
-        }
-        
         guard enoughGas(tx: tx) else {
             showAlert(with: "insufficientBalance")
             return
@@ -101,8 +117,16 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getTotalFee() -> Decimal {
-        let amount = registrationFee + (feePerBlock * Decimal(expireInCount) * 5256000)
-        return amount / 100_000_000
+        let amount: Decimal
+        if expireInCount > 1 {
+            amount = (feePerBlock * Decimal(ReferralExpiryDataCalculator.blockPerYear * UInt64(expireInCount - 1)))
+        } else {
+            // Registration comes with 1 free year, but sending exactly 10 RUNE fails
+            // So we need to send a little bit more
+            amount = feePerBlock
+        }
+        
+        return (registrationFee + amount) / 100_000_000
     }
     
     func getFiatAmount(for amount: Decimal) -> String {
@@ -142,7 +166,7 @@ class ReferralViewModel: ObservableObject {
         referralAvailabilityErrorMessage = ""
         showReferralAvailabilitySuccess = false
         isReferralCodeVerified = false
-        expireInCount = 0
+        expireInCount = 1
         
         showReferralAlert = false
         referralAlertMessage = ""
@@ -226,45 +250,29 @@ class ReferralViewModel: ObservableObject {
     }
     
     private func checkNameAvailability(code: String) async {
-        let urlString = Endpoint.getUserDetails(for: code)
-        guard let url = URL(string: urlString) else {
-            showNameError(with: "systemErrorMessage")
-            return
-        }
-        
+        defer { isLoading = false }
         do {
-            let (_, response) = try await URLSession.shared.data(from: url)
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    showNameError(with: "alreadyTaken")
-                } else {
-                    saveReferralCode()
-                }
-            }
+            _ = try await thorchainReferralService.getThornameLookup(name: code)
+            showNameError(with: "alreadyTaken")
         } catch {
-            showNameError(with: "systemErrorMessage")
+            guard error as? THORChainAPIError == .thornameNotFound else {
+                showNameError(with: "systemErrorMessage")
+                return
+            }
+            
+            saveReferralCode()
         }
-        isLoading = false
     }
     
     func calculateFees() async {
         isFeesLoading = true
         
-        guard let url = URL(string: Endpoint.ReferralFees) else {
-            print("Invalid URL")
-            isFeesLoading = false
-            return
-        }
-        
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            let info = try decoder.decode(ThorchainNetworkAllFees.self, from: data)
-            registrationFee = Decimal(string: info.tns_register_fee_rune) ?? 0
-            feePerBlock = Decimal(string: info.tns_fee_per_block_rune) ?? 0
+            let info = try await thorchainReferralService.getNetworkInfo()
+            registrationFee = info.tns_register_fee_rune.toDecimal()
+            feePerBlock = info.tns_fee_per_block_rune.toDecimal()
             isFeesLoading = false
         } catch {
-            print("Network or decoding error: \(error)")
             isFeesLoading = false
         }
     }
@@ -279,10 +287,64 @@ class ReferralViewModel: ObservableObject {
         let amount = totalFee + gas
         let vaultAmount = nativeCoin?.balanceDecimal ?? 0
         
-        if vaultAmount >= amount {
-            return true
-        } else {
-            return false
+        return vaultAmount >= amount
+    }
+    
+    func fetchReferralCodeDetails(vaults: [Vault]) async {
+        await MainActor.run { isLoading = true }
+        do {
+            let details = try await thorchainReferralService.getThornameDetails(name: savedGeneratedReferralCode)
+            let lastBlock = try await thorchainReferralService.getLastBlock()
+            let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
+            let collectedRunes = await calculateCollectedRewards(details: details)
+            // Saved referral code and vault association
+            let thornameVault = vaults.first { $0.nativeCoin(for: .thorChain)?.address == details.owner }
+            
+            await MainActor.run {
+                self.currentBlockheight = lastBlock
+                self.expiresOn = expiresOn
+                self.collectedRewards = collectedRunes
+                self.thornameDetails = details
+                self.thornameVault = thornameVault
+            }
+        } catch {
+            await MainActor.run {
+                self.expiresOn = "-"
+                self.collectedRewards = "-"
+            }
         }
+        
+        await MainActor.run { isLoading = false }
+    }
+    
+    func calculateCollectedRewards(details: THORName) async -> String {
+        let assetDecimals: Int
+        let assetMultiplier: Decimal
+        let assetTicker: String
+        
+        if details.isDefaultPreferredAsset {
+            let runeCoin = TokensStore.TokenSelectionAssets.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+            guard let runeCoin else { return "" }
+            assetDecimals = runeCoin.decimals
+            assetMultiplier = 1
+            assetTicker = runeCoin.ticker
+        } else {
+            let preferredAsset = try? await thorchainReferralService.getPoolAsset(asset: details.preferredAsset)
+            guard let preferredAsset else { return "" }
+            assetDecimals = preferredAsset.decimals ?? 6
+            assetMultiplier = (preferredAsset.assetTorPrice.toDecimal() / 100_000_000)
+            assetTicker = String(preferredAsset.asset.split(separator: ".")[1].split(separator: "-").first ?? "")
+        }
+
+        let collectedRunesAmount = details.affiliateCollectorRune.toDecimal()
+        let collectedAssetAmount = collectedRunesAmount * assetMultiplier / pow(10, assetDecimals)
+        
+        return "\(collectedAssetAmount.formatForDisplay()) \(assetTicker)"
+    }
+    
+    func setup(tx: SendTransaction) {
+        let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
+        let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
+        tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
     }
 }

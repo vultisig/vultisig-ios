@@ -56,8 +56,8 @@ struct ImportWalletView: View {
     
     var instruction: some View {
         Text(NSLocalizedString("supportedFileTypesUpload", comment: ""))
-            .font(.body12Menlo)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     

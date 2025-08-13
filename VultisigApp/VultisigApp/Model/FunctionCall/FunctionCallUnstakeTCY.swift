@@ -107,11 +107,11 @@ class FunctionCallUnstakeTCY: ObservableObject {
                         action(option)
                     }) {
                         Text("\(option)%")
-                            .font(.body12BrockmannMedium)
-                            .foregroundColor(.neutral0)
+                            .font(Theme.fonts.caption12)
+                            .foregroundColor(Theme.colors.textPrimary)
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue600)
+                            .background(Theme.colors.bgSecondary)
                             .cornerRadius(32)
                     }
                 }
@@ -126,10 +126,10 @@ struct UnstakeView: View {
     var textField: some View {
         TextField("Enter percentage", text: $viewModel.amount)
             .id(viewModel.lastUpdateTime)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyMRegular)
+            .foregroundColor(Theme.colors.textPrimary)
             .padding(12)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
     }
@@ -141,18 +141,18 @@ struct UnstakeView: View {
                 
                 Rectangle()
                     .frame(height: 1)
-                    .foregroundColor(.blue400)
+                    .foregroundColor(Theme.colors.bgTertiary)
             }
             .frame(maxWidth: .infinity)
             
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("Percentage to Unstake \(viewModel.balance)")
-                        .font(.body14MontserratMedium)
-                        .foregroundColor(.neutral0)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
                     if !viewModel.amountValid {
                         Text("*")
-                            .font(.body14MontserratMedium)
+                            .font(Theme.fonts.bodySMedium)
                             .foregroundColor(.red)
                     }
                 }

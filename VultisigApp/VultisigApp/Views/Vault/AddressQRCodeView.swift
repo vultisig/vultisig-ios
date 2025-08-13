@@ -39,8 +39,8 @@ struct AddressQRCodeView: View {
     
     var address: some View {
         Text(addressData)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.center)
             .padding(.horizontal, padding)
     }
@@ -51,11 +51,11 @@ struct AddressQRCodeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .padding(24)
             .aspectRatio(contentMode: .fit)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(20)
             .overlay (
                 RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [100]))
+                    .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [100]))
             )
             .padding(.horizontal, padding)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -71,8 +71,9 @@ struct AddressQRCodeView: View {
         }
         
         shareSheetViewModel.render(
-            qrCodeImage: qrCodeImage, 
-            displayScale: displayScale, 
+            qrCodeImage: qrCodeImage,
+            qrCodeData: nil,
+            displayScale: displayScale,
             type: .Address,
             addressData: addressData
         )

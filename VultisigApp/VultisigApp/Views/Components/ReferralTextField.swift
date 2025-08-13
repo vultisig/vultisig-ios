@@ -11,8 +11,8 @@ struct ReferralTextField: View {
     @Binding var text: String
     let placeholderText: String
     let action: ReferralTextFieldAction
-    let showError: Bool
-    let errorMessage: String
+    var showError: Bool = false
+    var errorMessage: String = .empty
     
     var showSuccess: Bool = false
     var isErrorLabelVisible: Bool = true
@@ -26,13 +26,16 @@ struct ReferralTextField: View {
                 errorText
             }
         }
+        .onChange(of: text) { _, newValue in
+            sanitizeText(newValue)
+        }
     }
     
     var textField: some View {
-        HStack {
+        HStack(spacing: 0) {
             TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .submitLabel(.done)
                 .colorScheme(.dark)
                 .disabled(isDisabled)
@@ -40,9 +43,9 @@ struct ReferralTextField: View {
             actionButton
         }
         .frame(height: 56)
-        .font(.body16BrockmannMedium)
+        .font(Theme.fonts.bodyMMedium)
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -66,8 +69,8 @@ struct ReferralTextField: View {
                 EmptyView()
             }
         }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
     }
     
     var copyButton: some View {
@@ -98,8 +101,8 @@ struct ReferralTextField: View {
     var errorText: some View {
         Text(NSLocalizedString(errorMessage, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.invalidRed)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.alertError)
     }
     
     private func clearCode() {
@@ -108,12 +111,19 @@ struct ReferralTextField: View {
     
     private func getOutlineColor() -> Color {
         if showSuccess {
-            Color.alertTurquoise
+            Theme.colors.alertInfo
         } else if showError {
-            Color.invalidRed
+            Theme.colors.alertError
         } else {
-            Color.blue200
+            Theme.colors.border
         }
+    }
+    
+    // Based on thorname docs
+    // https://docs.thorchain.org/how-it-works/thorchain-name-service#overview
+    private func sanitizeText(_ text: String) {
+        let allowedCharacterSet = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_+"))
+        self.text = String(text.unicodeScalars.filter { allowedCharacterSet.contains($0) })
     }
 }
 

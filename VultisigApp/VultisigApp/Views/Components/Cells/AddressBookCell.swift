@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct AddressBookCell: View {
+    
     let address: AddressBookItem
     let shouldReturnAddress: Bool
     let isEditing: Bool
@@ -54,7 +55,7 @@ struct AddressBookCell: View {
             text
         }
         .padding(12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -83,33 +84,33 @@ struct AddressBookCell: View {
     
     var titleContent: some View {
         Text(address.title)
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
             .lineLimit(1)
             .truncationMode(.tail)
     }
     
     var networkContent: some View {
         Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
-            .foregroundColor(.neutral300)
-            .font(.body12Menlo)
+            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.tail)
     }
     
     var addressContent: some View {
         Text(address.address)
-            .foregroundColor(.neutral0)
-            .font(.body12Menlo)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.middle)
     }
     
     var rearrangeIcon: some View {
         Image(systemName: "square.grid.4x3.fill")
-            .font(.body24MontserratMedium)
+            .font(Theme.fonts.title2)
             .rotationEffect(.degrees(90))
-            .foregroundColor(.neutral300)
+            .foregroundColor(Theme.colors.textLight)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -124,8 +125,8 @@ struct AddressBookCell: View {
     
     var deleteIconLabel: some View {
         Image(systemName: "trash")
-            .font(.body24MontserratMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.title2)
+            .foregroundColor(Theme.colors.textPrimary)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

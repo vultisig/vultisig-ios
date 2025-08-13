@@ -1,4 +1,5 @@
 "back" = "Natrag";
+"sent" = "Poslano";
 "backupNow" = "Napravite sigurnosnu kopiju sada";
 "backupSetupTitle" = "Napravite sigurnosnu kopiju svog trezora\npodijelite ga online";
 "backupSetupSubtitle" = "Online pohrana je preporučena i sigurna –\ndijelovi trezora su dizajnirani za to.";
@@ -105,7 +106,7 @@
 "mainDevice" = "Glavni uređaj";
 "pleaseWait" = "Molimo pričekajte...";
 "joinKeygen" = "PRIDRUŽI SE GENERIRANJU KLJUČA/PONOVLJENOM DIJELJENJU";
-"failToStartKesign" = "Greška u potpisivanju. Pokušajte ponovno.";
+"failToStartKesign" = "Greška u potpisivanju";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";
 "scanQRCodeJoinKeygen" = "Skenirajte QR kod na drugoj Vultisig aplikaciji za početak.";
 "discoveringMediator" = "Otkrivanje posredničke usluge, molimo pričekajte...";
@@ -153,7 +154,7 @@
 "correctAmountCheck" = "Iznos je točan";
 "notHackedCheck" = "Ne šaljem svoj novac prevarantu ili hakeru";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
-"signInErrorTryAgain" = "Greška pri prijavi. Molimo pokušajte ponovno.";
+"signingErrorTryAgain" = "Greška pri prijavi";
 "sameWifiEntendedInstruction" = "Držite uređaje na istoj WiFi mreži, osigurajte stabilnu vezu i budite na ispravnom trezoru te uparite uređaje.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";

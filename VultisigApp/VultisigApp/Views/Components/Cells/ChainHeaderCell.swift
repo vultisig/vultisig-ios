@@ -37,7 +37,7 @@ struct ChainHeaderCell: View {
         content
             .padding(.horizontal, 16)
             .padding(.vertical, 24)
-            .background(Color.blue600)
+            .background(Theme.colors.bgSecondary)
     }
     
     var logo: some View {
@@ -63,8 +63,8 @@ struct ChainHeaderCell: View {
     
     var title: some View {
         Text(group.name.capitalized)
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var actions: some View {
@@ -77,8 +77,8 @@ struct ChainHeaderCell: View {
     
     var fiatBalance: some View {
         Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
-            .font(.body20MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var copyButton: some View {
@@ -86,15 +86,15 @@ struct ChainHeaderCell: View {
             copyAddress()
         } label: {
             Image(systemName: "square.on.square")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodyLMedium)
         }
     }
     
     var qrCodeLabel: some View {
         Image(systemName: "qrcode")
-            .foregroundColor(.neutral0)
-            .font(.body18MenloMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var showTransactionsButton: some View {
@@ -107,8 +107,8 @@ struct ChainHeaderCell: View {
                let linkURL = URL(string: url) {
                 Link(destination: linkURL) {
                     Image(systemName: "cube")
-                        .foregroundColor(.neutral0)
-                        .font(.body18MenloMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
+                        .font(Theme.fonts.bodyLMedium)
                 }
             } else {
                 EmptyView()
@@ -118,8 +118,8 @@ struct ChainHeaderCell: View {
     
     var address: some View {
         Text(homeViewModel.hideVaultBalance ? "********************" : group.address)
-            .font(.body12Menlo)
-            .foregroundColor(.turquoise600)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.bgButtonPrimary)
             .lineLimit(1)
     }
 }

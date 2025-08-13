@@ -31,10 +31,10 @@ struct VaultShareBackupsView: View {
             Text(NSLocalizedString("vaultShareBackupsViewTitle1", comment: ""))
                 .foregroundStyle(LinearGradient.primaryGradient) +
             Text(NSLocalizedString("vaultShareBackupsViewTitle2", comment: ""))
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
         .multilineTextAlignment(.center)
-        .font(.body28BrockmannMedium)
+        .font(Theme.fonts.title1)
     }
     
     var button: some View {

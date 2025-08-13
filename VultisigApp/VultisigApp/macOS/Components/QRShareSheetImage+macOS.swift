@@ -22,11 +22,11 @@ extension QRShareSheetImage {
             .resizable()
             .frame(width: 700, height: 700)
             .frame(width: 800, height: 800)
-            .background(Color.turquoise600.opacity(0.15))
+            .background(Theme.colors.bgButtonPrimary.opacity(0.15))
             .cornerRadius(cornerRadius)
             .overlay (
                 RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [24]))
+                .strokeBorder(Theme.colors.bgButtonPrimary, style: StrokeStyle(lineWidth: 2, dash: [24]))
             )
             .padding(.horizontal, padding)
             .offset(x: 20, y: 20)

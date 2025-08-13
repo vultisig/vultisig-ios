@@ -9,13 +9,6 @@
 import SwiftUI
 
 extension ReferredOnboardingView {
-    var container: some View {
-        VStack(spacing: 0) {
-            header
-            content
-        }
-    }
-    
     var content: some View {
         ZStack {
             Background()
@@ -23,10 +16,6 @@ extension ReferredOnboardingView {
             main
                 .padding(40)
         }
-    }
-    
-    var header: some View {
-        GeneralMacHeader(title: "referral")
     }
 }
 #endif

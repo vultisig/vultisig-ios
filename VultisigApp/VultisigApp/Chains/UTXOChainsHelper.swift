@@ -73,6 +73,7 @@ class UTXOChainsHelper {
             $0.toAddress = thorChainSwapPayload.vaultAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.outputOpReturn = memoData
+            $0.fixedDustThreshold = coin.getFixedDustThreshold()
         }
         
         return input
@@ -136,19 +137,10 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
         
-        // Prevent from accedentally sending all balance
-        var safeGuardMaxAmount = false
-        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
-           sendMaxAmount,
-           rawBalance > 0,
-           rawBalance == Int64(keysignPayload.toAmount) {
-            safeGuardMaxAmount = true
-        }
-        
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
             $0.amount = Int64(keysignPayload.toAmount)
-            $0.useMaxAmount = safeGuardMaxAmount
+            $0.useMaxAmount = sendMaxAmount
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)
@@ -156,6 +148,7 @@ class UTXOChainsHelper {
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData
             }
+            $0.fixedDustThreshold = coin.getFixedDustThreshold()
         }
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)

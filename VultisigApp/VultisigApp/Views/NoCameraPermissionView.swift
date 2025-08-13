@@ -9,41 +9,13 @@ import SwiftUI
 
 struct NoCameraPermissionView: View {
     var body: some View {
-        ZStack {
-            Background()
-            content
-        }
-    }
-    
-    var content: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            logo
-            title
-            Spacer()
-            button
-        }
-    }
-    
-    var logo: some View {
-        Image(systemName: "exclamationmark.triangle.fill")
-            .font(.title80Menlo)
-            .symbolRenderingMode(.multicolor)
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("noCameraPermissionError", comment: ""))
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: 300)
-            .multilineTextAlignment(.center)
-    }
-    
-    var button: some View {
-        PrimaryButton(title: "openSettings") {
-            openSettings()
-        }
-        .padding(40)
+        ErrorView(
+            type: .warning,
+            title: "noCameraPermissionError".localized,
+            description: "",
+            buttonTitle: "openSettings".localized,
+            action: openSettings
+        )
     }
 }
 

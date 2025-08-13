@@ -60,16 +60,16 @@ struct ServerBackupVerificationView: View {
     
     var title: some View {
         Text(NSLocalizedString("enter5DigitVerificationCode", comment: ""))
-            .font(.body34BrockmannMedium)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.largeTitle)
+            .foregroundColor(Theme.colors.textPrimary)
             .multilineTextAlignment(.leading)
             .padding(.top, 50)
     }
     
     var description: some View {
         Text(NSLocalizedString("enter5DigitVerificationCodeDescription", comment: ""))
-            .font(.body14BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 
     private var cancelButton: some View {
@@ -78,12 +78,12 @@ struct ServerBackupVerificationView: View {
         } label: {
             VStack(spacing: 12) {
                 Text(String(format: NSLocalizedString("emailSentTo", comment: ""), email))
-                    .font(.body14BrockmannMedium)
-                    .foregroundColor(.extraLightGray)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textExtraLight)
 
                 Text(NSLocalizedString("changeEmailAndRestart", comment: ""))
-                    .font(.body14BrockmannMedium)
-                    .foregroundColor(.lightText)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundColor(Theme.colors.textLight)
                     .underline()
             }
         }
@@ -109,9 +109,9 @@ struct ServerBackupVerificationView: View {
 
     func getBorderColor(_ index: Int) -> Color {
         if showAlert {
-            return .alertRed
+            return Theme.colors.alertError
         } else {
-            return focusedField == index ? .blue200 : .blue400
+            return focusedField == index ? Theme.colors.border : Theme.colors.bgTertiary
         }
     }
 
@@ -122,13 +122,13 @@ struct ServerBackupVerificationView: View {
             Text(NSLocalizedString("paste", comment: ""))
                 .padding(12)
                 .frame(height: 46)
-                .font(.body16BrockmannMedium)
-                .foregroundColor(.neutral0)
-                .background(Color.blue600)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .background(Theme.colors.bgSecondary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue200, lineWidth: 1)
+                        .stroke(Theme.colors.border, lineWidth: 1)
                 )
         }
         .listStyle(PlainListStyle())
@@ -141,8 +141,8 @@ struct ServerBackupVerificationView: View {
                 .frame(width: 24, height: 24)
             
             Text(NSLocalizedString("verifyingCodePleaseWait", comment: ""))
-                .foregroundColor(.neutral0)
-                .font(.body14BrockmannMedium)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
             
             Spacer()
         }
@@ -151,8 +151,8 @@ struct ServerBackupVerificationView: View {
     var alertText: some View {
         Text(NSLocalizedString(alertDescription, comment: ""))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .foregroundColor(.alertRed)
-            .font(.body14BrockmannMedium)
+            .foregroundColor(Theme.colors.alertError)
+            .font(Theme.fonts.bodySMedium)
     }
     
     private func verifyCode() {

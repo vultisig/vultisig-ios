@@ -66,7 +66,7 @@ struct ChainDetailActionButtons: View {
         Button {
             isMemoLinkActive = true
         } label: {
-            ActionButton(title: "function", fontColor: .turquoise600)
+            ActionButton(title: "function", fontColor: Theme.colors.bgButtonPrimary)
         }
     }
     
@@ -74,7 +74,7 @@ struct ChainDetailActionButtons: View {
         Button {
             isSendLinkActive = true
         } label: {
-            ActionButton(title: "send", fontColor: .turquoise600)
+            ActionButton(title: "send", fontColor: Theme.colors.bgButtonPrimary)
         }
     }
     
@@ -83,7 +83,7 @@ struct ChainDetailActionButtons: View {
         Button {
             isSwapLinkActive = true
         } label: {
-            ActionButton(title: "swap", fontColor: .persianBlue200)
+            ActionButton(title: "swap", fontColor: Theme.colors.primaryAccent4)
         }
     }
     

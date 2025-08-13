@@ -23,7 +23,7 @@ extension SwapCryptoDoneView {
         }
         .padding(.top)
         .padding(.horizontal, 18)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
 }
 #endif

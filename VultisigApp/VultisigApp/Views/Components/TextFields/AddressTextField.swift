@@ -3,6 +3,8 @@ import OSLog
 import UniformTypeIdentifiers
 
 struct AddressTextField: View {
+    
+    
     @Binding var contractAddress: String
     var validateAddress: (String) -> Void
     
@@ -24,7 +26,7 @@ struct AddressTextField: View {
     
     var placeholder: some View {
         Text(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase())
-            .foregroundColor(Color.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -33,8 +35,8 @@ struct AddressTextField: View {
             pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -44,8 +46,8 @@ struct AddressTextField: View {
             showScanner.toggle()
         } label: {
             Image(systemName: "camera")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -55,8 +57,8 @@ struct AddressTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }
@@ -66,8 +68,8 @@ struct AddressTextField: View {
             AddressBookView(returnAddress: $contractAddress)
         } label: {
             Image(systemName: "text.book.closed")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
                 .frame(width: 40, height: 40)
         }
     }

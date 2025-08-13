@@ -72,7 +72,7 @@ extension HomeView {
                 editButton
             }
         }
-        .toolbarBackground(Color.backgroundBlue, for: .navigationBar)
+        .toolbarBackground(Theme.colors.bgPrimary, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             setData()
@@ -108,8 +108,8 @@ extension HomeView {
             showFolderDetails = false
         } label: {
             Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

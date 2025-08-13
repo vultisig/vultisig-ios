@@ -19,7 +19,7 @@ struct SendCryptoTransactionHashRowView: View {
     var body: some View {
         HStack(spacing: 32) {
             Text(NSLocalizedString("transactionHash", comment: ""))
-                .foregroundColor(.extraLightGray)
+                .foregroundColor(Theme.colors.textExtraLight)
                 .lineLimit(1)
                 .truncationMode(.tail)
             
@@ -35,7 +35,7 @@ struct SendCryptoTransactionHashRowView: View {
                 explorerLinkView
             }
         }
-        .font(.body14BrockmannMedium)
+        .font(Theme.fonts.bodySMedium)
     }
     
     var explorerLinkView: some View {
@@ -48,7 +48,7 @@ struct SendCryptoTransactionHashRowView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 16, height: 16)
-                .foregroundColor(.neutral0)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
@@ -62,14 +62,14 @@ struct SendCryptoTransactionHashRowView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 16, height: 16)
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
     }
     
     var hashView: some View {
         Text(hash)
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .lineLimit(1)
             .truncationMode(.middle)
     }

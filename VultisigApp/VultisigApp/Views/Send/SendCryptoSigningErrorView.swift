@@ -10,59 +10,19 @@ import SwiftUI
 struct SendCryptoSigningErrorView: View {
     let errorString: String
     
-    @Environment(\.dismiss) var dismiss
+    @State private var navigateToHome: Bool = false
     
     var body: some View {
-        ZStack {
-            backgroundImage
-            container
-        }
-    }
-    
-    var content: some View {
-        VStack(spacing: 32) {
-            main.opacity(0)
-            errorIcon
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 22) {
-            errorMessage
-            tryAgainButton
-        }
-    }
-    
-    var errorIcon: some View {
-        Image(systemName: "xmark.circle.fill")
-            .font(.body24MontserratBold)
-            .foregroundColor(.alertRed)
-    }
-    
-    var backgroundImage: some View {
-        Image("CirclesBackground")
-    }
-    
-    var errorMessage: some View {
-        VStack(spacing: 18) {
-            Text(NSLocalizedString("transactionFailed", comment: ""))
-                .font(.body22BrockmannMedium)
-                .foregroundColor(.alertRed)
-            
-            Text(errorString)
-                .font(.body14MenloBold)
-                .foregroundColor(.extraLightGray)
-        }
-    }
-    
-    var tryAgainButton: some View {
-        PrimaryNavigationButton(title: "tryAgain", type: .secondary) {
+        ErrorView(
+            type: .alert,
+            title: "transactionFailed".localized,
+            description: errorString,
+            buttonTitle: "tryAgain".localized
+        ) {
+            navigateToHome = true
+        }.navigationDestination(isPresented: $navigateToHome) {
             HomeView()
         }
-        .padding(.vertical, 24)
-        .padding(.horizontal, 15)
-        .id(UUID())
     }
 }
 

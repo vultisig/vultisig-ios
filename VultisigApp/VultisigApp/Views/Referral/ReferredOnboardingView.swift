@@ -11,13 +11,15 @@ struct ReferredOnboardingView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     
     var body: some View {
-        container
+        Screen(title: "referral".localized) {
+            content
+        }
     }
     
     var shadow: some View {
         Circle()
             .frame(width: 360, height: 360)
-            .foregroundColor(.alertTurquoise)
+            .foregroundColor(Theme.colors.alertInfo)
             .opacity(0.05)
             .blur(radius: 20)
     }
@@ -26,20 +28,16 @@ struct ReferredOnboardingView: View {
         PrimaryButton(title: "getStarted") {
             referredViewModel.showReferralDashboard()
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
     }
     
     var main: some View {
         VStack {
             ScrollView {
                 ReferredOnboardingGuideAnimation()
-                    .padding(.horizontal, 24)
             }
             
             button
         }
-        .padding(.horizontal, -24)
     }
 }
 

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Separator: View {
-    var color: Color = .neutral0
+    var color: Color = Theme.colors.textPrimary
     var opacity: CGFloat = 0.2
     
     var body: some View {

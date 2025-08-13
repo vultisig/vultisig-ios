@@ -44,9 +44,9 @@ struct HomeView: View {
             
             if viewModel.selectedVault != nil {
                 Image(systemName: "chevron.up")
-                    .font(.body8Menlo)
+                    .font(Theme.fonts.caption10)
                     .bold()
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .rotationEffect(.degrees(showVaultsList ? 0 : 180))
             }
         }
@@ -64,7 +64,7 @@ struct HomeView: View {
         .frame(height: 20)
         .clipped()
         .bold()
-        .foregroundColor(.neutral0)
+        .foregroundColor(Theme.colors.textPrimary)
         .font(.body)
     }
     

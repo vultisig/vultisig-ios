@@ -21,25 +21,27 @@ struct SwapCryptoDetailsView: View {
     let vault: Vault
 
     var body: some View {
-        container
-            .onAppear {
-                setData()
-            }
-            .onReceive(timer) { input in
-                swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-            }
-            .onChange(of: tx.fromCoin, { _, _ in
-                handleFromCoinUpdate()
-            })
-            .onChange(of: tx.toCoin, { _, _ in
-                handleToCoinUpdate()
-            })
-            .onChange(of: swapViewModel.fromChain) { _, _ in
-                swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
-            }
-            .onChange(of: swapViewModel.toChain) { _, _ in
-                swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
-            }
+        Screen(showNavigationBar: false) {
+            container
+        }
+        .onAppear {
+            setData()
+        }
+        .onReceive(timer) { input in
+            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+        }
+        .onChange(of: tx.fromCoin, { _, _ in
+            handleFromCoinUpdate()
+        })
+        .onChange(of: tx.toCoin, { _, _ in
+            handleToCoinUpdate()
+        })
+        .onChange(of: swapViewModel.fromChain) { _, _ in
+            swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
+        }
+        .onChange(of: swapViewModel.toChain) { _, _ in
+            swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
+        }
     }
     
     var content: some View {
@@ -108,11 +110,11 @@ struct SwapCryptoDetailsView: View {
             swapLabel
         }
         .padding(8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
         .cornerRadius(60)
         .overlay(
             Circle()
-                .stroke(Color.blue400, lineWidth: 1)
+                .stroke(Theme.colors.bgTertiary, lineWidth: 1)
         )
     }
     
@@ -120,18 +122,17 @@ struct SwapCryptoDetailsView: View {
         Group {
             if swapViewModel.isLoadingQuotes {
                 // Show loader instead of swap icon when loading
-                SpinningLineLoader()
-                    .scaleEffect(0.8)
-                    .frame(width: 38, height: 38)
+            CircularProgressIndicator(size: 24)
+                    .padding(8)
             } else {
                 // Show swap icon when not loading
                 Image(systemName: "arrow.up.arrow.down")
-                    .font(.body16MontserratMedium)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
                     .frame(width: 38, height: 38)
             }
         }
-        .background(Color.persianBlue400)
+        .background(Theme.colors.bgButtonTertiary)
         .cornerRadius(50)
         .padding(2)
         .background(Color.black.opacity(0.2))
@@ -143,7 +144,7 @@ struct SwapCryptoDetailsView: View {
     var filler: some View {
         Rectangle()
             .frame(width: 12, height: 10)
-            .foregroundColor(Color.backgroundBlue)
+            .foregroundColor(Theme.colors.bgPrimary)
     }
     
     var summary: some View {
@@ -159,7 +160,6 @@ struct SwapCryptoDetailsView: View {
             ButtonLoader()
                 .disabled(true)
                 .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-                .padding(40)
         } else {
             PrimaryButton(title: "continue") {
                 Task {
@@ -168,7 +168,6 @@ struct SwapCryptoDetailsView: View {
             }
             .disabled(isDisabled)
             .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
-            .padding(40)
         }
     }
     

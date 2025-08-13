@@ -53,14 +53,14 @@ struct QRCodeScannerView: View {
         }
         .frame(height: 60)
         .padding(.horizontal, 16)
-        .background(Color.blue800)
+        .background(Theme.colors.bgPrimary)
     }
     
     var title: some View {
         Text(NSLocalizedString("scan", comment: "Scan QR Code"))
             .font(.body)
             .bold()
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var view: some View {

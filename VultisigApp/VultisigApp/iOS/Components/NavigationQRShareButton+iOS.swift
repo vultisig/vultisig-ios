@@ -28,7 +28,7 @@ extension NavigationQRShareButton {
     }
     
     func shareImage() {
-        guard let image = renderedImage else {
+        guard let image = viewModel.renderedImage else {
             return
         }
         

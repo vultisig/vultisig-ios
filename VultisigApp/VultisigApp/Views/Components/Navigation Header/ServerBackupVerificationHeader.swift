@@ -20,18 +20,18 @@ struct ServerBackupVerificationHeader: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
         .padding(.top, 8)
-        .background(Color.backgroundBlue)
+        .background(Theme.colors.bgPrimary)
     }
     
     var leadingAction: some View {
         Image(systemName: "chevron.backward")
-            .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+            .font(Theme.fonts.bodyLMedium)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var text: some View {
         Text(NSLocalizedString("", comment: ""))
-            .foregroundColor(.neutral0)
+            .foregroundColor(Theme.colors.textPrimary)
             .font(.title3)
     }
 }

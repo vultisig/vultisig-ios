@@ -39,12 +39,12 @@ struct ReshareView: View {
     var title: some View {
         VStack(spacing: 16) {
             Text(NSLocalizedString("reshareLabelTitle", comment: ""))
-                .font(.body24MontserratBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.title2)
+                .foregroundColor(Theme.colors.textPrimary)
 
             Text(NSLocalizedString("reshareLabelSubtitle", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral300)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textLight)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 36)

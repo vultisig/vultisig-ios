@@ -29,7 +29,7 @@ struct RuneBondCell: View {
             contentView
         }
         .padding(16)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
     }
     
     var logoView: some View {
@@ -46,32 +46,32 @@ struct RuneBondCell: View {
     var headerView: some View {
         HStack {
             Text(nodeIdentifier)
-                .font(.body20Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyLRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             
             Button(action: openExplorer) {
                 Image(systemName: "link")
-                    .font(.body18Menlo) 
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyLRegular) 
+                    .foregroundColor(Theme.colors.textPrimary)
             }
             .padding(.leading, 4) 
             
             Spacer()
             
             Text(bondValueInFiat)
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
 
     var detailsView: some View {
         HStack {
             Text(bondValueInRune)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
             Spacer()
             Text(nodeStatus)
-                .font(.body16Menlo)
+                .font(Theme.fonts.bodyMRegular)
                 .foregroundColor(statusColor) 
         }
     }
@@ -80,13 +80,13 @@ struct RuneBondCell: View {
     private var statusColor: Color {
         switch bondNode.status.lowercased() {
         case "active":
-            return .reshareCellGreen
+            return Theme.colors.alertSuccess
         case "standby":
-            return .alertYellow
+            return Theme.colors.alertWarning
         case "disabled":
-            return .alertRed
+            return Theme.colors.alertError
         default:
-            return .neutral400
+            return Theme.colors.textLight
         }
     }
     

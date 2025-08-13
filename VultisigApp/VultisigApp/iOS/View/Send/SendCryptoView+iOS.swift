@@ -24,12 +24,12 @@ extension SendCryptoView {
                         NavigationQRShareButton(
                             vault: vault,
                             type: .Keysign,
-                            renderedImage: shareSheetViewModel.renderedImage
+                            viewModel: shareSheetViewModel
                         )
                     }
                 }
             }
-            .toolbarBackground(Color.backgroundBlue)
+            .toolbarBackground(Theme.colors.bgPrimary)
     }
     
     var main: some View {

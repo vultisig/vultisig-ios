@@ -51,8 +51,8 @@ struct SwapCoinPickerView: View {
     
     var title: some View {
         Text(NSLocalizedString("selectAsset", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body18BrockmannMedium)
+            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodyLMedium)
     }
     
     var content: some View {
@@ -79,8 +79,8 @@ struct SwapCoinPickerView: View {
                 chainCarousel
             }
             .padding(.top, 4)
-            .background(Color.backgroundBlue)
-            .shadow(color: Color.backgroundBlue, radius: 15)
+            .background(Theme.colors.bgPrimary)
+            .shadow(color: Theme.colors.bgPrimary, radius: 15)
         }
         .onLoad {
             viewModel.setup()
@@ -97,8 +97,8 @@ struct SwapCoinPickerView: View {
                 .scaleEffect(1.2)
             
             Text(NSLocalizedString("loading", comment: ""))
-                .font(.body14BrockmannMedium)
-                .foregroundColor(.extraLightGray)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundColor(Theme.colors.textExtraLight)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
@@ -106,8 +106,8 @@ struct SwapCoinPickerView: View {
     
     var networkTitle: some View {
         Text(NSLocalizedString("network", comment: ""))
-            .font(.body12BrockmannMedium)
-            .foregroundColor(.extraLightGray)
+            .font(Theme.fonts.caption12)
+            .foregroundColor(Theme.colors.textExtraLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
@@ -145,10 +145,10 @@ struct SwapCoinPickerView: View {
     var chainCarousel: some View {
         ZStack {
             Capsule()
-                .fill(Color.blue600)
+                .fill(Theme.colors.bgPrimary)
                 .allowsHitTesting(false)
                 .frame(width: itemSize)
-                .shadow(color: .blue200, radius: 6)
+                .shadow(color: Theme.colors.border, radius: 6)
             
             FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
                 let isSelected = selectedChain == chain
@@ -161,15 +161,15 @@ struct SwapCoinPickerView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 28)
                         Text(chain.name)
-                            .font(.body12BrockmannMedium)
-                            .foregroundColor(isSelected ? .neutral0 : .extraLightGray)
+                            .font(Theme.fonts.caption12)
+                            .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textExtraLight)
                     }
                     .padding(8)
                     .frame(width: itemSize)
                     .background(
                         Capsule()
-                            .strokeBorder(Color.blue400, lineWidth: 1)
-                            .fill(Color.blue600)
+                            .strokeBorder(Theme.colors.bgTertiary, lineWidth: 1)
+                            .fill(Theme.colors.bgPrimary)
                     )
                     .padding(.horizontal, 4)
                     .contentShape(Rectangle())
@@ -178,7 +178,7 @@ struct SwapCoinPickerView: View {
             }
             
             Capsule()
-                .strokeBorder(Color.persianBlue400, lineWidth: 2)
+                .strokeBorder(Theme.colors.primaryAccent3, lineWidth: 2)
                 .allowsHitTesting(false)
                 .frame(width: itemSize)
         }

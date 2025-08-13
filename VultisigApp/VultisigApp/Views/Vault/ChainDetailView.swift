@@ -59,6 +59,15 @@ struct ChainDetailView: View {
                     coin: group.nativeCoin
                 )
             }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    if let nativeCoin = tokens.first(where: { $0.isNativeToken }) {
+                        sendTx.reset(coin: nativeCoin)
+                    } else if let firstCoin = tokens.first {
+                        sendTx.reset(coin: firstCoin)
+                    }
+                }
+            }
             .refreshable {
                 refreshAction()
             }
@@ -160,8 +169,8 @@ struct ChainDetailView: View {
             Text(text)
             Spacer()
         }
-        .font(.body16MenloBold)
-        .foregroundColor(.turquoise600)
+        .font(Theme.fonts.bodyMMedium)
+        .foregroundColor(Theme.colors.bgButtonPrimary)
         .padding(.bottom, 32)
     }
 

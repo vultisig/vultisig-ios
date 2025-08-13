@@ -23,7 +23,7 @@ struct AddressBookChainSelector: View {
             }
         }
         .padding(.horizontal, 12)
-        .background(Color.blue600)
+        .background(Theme.colors.bgSecondary)
         .cornerRadius(10)
     }
     
@@ -44,8 +44,8 @@ struct AddressBookChainSelector: View {
             Spacer()
             Image(systemName: "chevron.down")
         }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
+        .font(Theme.fonts.bodyMRegular)
+        .foregroundColor(Theme.colors.textPrimary)
         .frame(height: 48)
     }
     
@@ -78,15 +78,15 @@ struct AddressBookChainSelector: View {
                 .cornerRadius(30)
             
             Text(coin?.chain.name ?? "")
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .font(Theme.fonts.bodyMRegular)
+                .foregroundColor(Theme.colors.textPrimary)
 
             Spacer()
             
             if selected == coin {
                 Image(systemName: "checkmark")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
+                    .font(Theme.fonts.bodyMRegular)
+                    .foregroundColor(Theme.colors.textPrimary)
             }
         }
         .frame(height: 48)

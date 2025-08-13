@@ -103,6 +103,10 @@ final class Vault: ObservableObject, Codable {
     func nativeCoin(for coin: Coin) -> Coin? {
         return coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
     }
+    
+    func nativeCoin(for chain: Chain) -> Coin? {
+        return coins.first(where: { $0.chain == chain && $0.isNativeToken })
+    }
 
     var isFastVault: Bool {
         if localPartyID.lowercased().starts(with: "server-") {
