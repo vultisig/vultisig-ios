@@ -12,13 +12,7 @@ extension SendCryptoView {
     var container: some View {
         content
             .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
             .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-                
                 if sendCryptoViewModel.currentIndex == 3 {
                     ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         NavigationQRShareButton(
@@ -40,20 +34,6 @@ extension SendCryptoView {
             .onDisappear(){
                 UIApplication.shared.isIdleTimerDisabled = false
             }
-    }
-    
-    var backButton: some View {
-        let isDone = sendCryptoViewModel.currentIndex==5
-        
-        return Button {
-            sendCryptoViewModel.handleBackTap(dismiss)
-        } label: {
-            NavigationBlankBackButton()
-        }
-        .padding(.horizontal, 24)
-        .opacity(isDone ? 0 : 1)
-        .disabled(isDone)
-        .offset(x: -24)
     }
 }
 #endif

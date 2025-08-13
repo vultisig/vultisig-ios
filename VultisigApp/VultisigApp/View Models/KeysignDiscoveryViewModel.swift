@@ -177,12 +177,11 @@ class KeysignDiscoveryViewModel: ObservableObject {
         return selections.count >= (vault.getThreshold() + 1)
     }
     
-    @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
+    @MainActor func startKeysign(vault: Vault) -> KeysignInput {
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
-        viewModel.moveToNextView()
-        
-        return KeysignView(
+
+        return KeysignInput(
             vault: vault,
             keysignCommittee: selections.map { $0 },
             mediatorURL: serverAddr,
@@ -191,7 +190,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload,
             customMessagePayload: customMessagePayload,
-            transferViewModel: viewModel,
+//            transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? "",
             isInitiateDevice: true
         )

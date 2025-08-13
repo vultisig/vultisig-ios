@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-typealias NavPath = Codable & Hashable
+typealias NavPath = Hashable
 
 final class NavigationRouter: ObservableObject {
     @Published var navPath: NavigationPath

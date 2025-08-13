@@ -25,12 +25,24 @@ struct SendRouter {
                 sendDetailsViewModel: input.sendDetailsViewModel,
                 vault: input.vault
             )
-        case .verify:
-            EmptyView()
-        case .pairing:
-            EmptyView()
-        case .done:
-            EmptyView()
+        case .verify(let tx, let vault):
+            viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
+        case .pairing(let vault, let tx, let keysignPayload, let fastVaultPassword):
+            viewBuilder.buildPairScreen(
+                vault: vault,
+                tx: tx,
+                keysignPayload: keysignPayload,
+                fastVaultPassword: fastVaultPassword
+            )
+        case .keysign(let input, let tx):
+            viewBuilder.buildKeysignScreen(input: input, tx: tx)
+        case .done(let vault, let hash, let chain, let tx):
+            viewBuilder.buildDoneScreen(
+                vault: vault,
+                hash: hash,
+                chain: chain,
+                tx: tx
+            )
         }
     }
 }

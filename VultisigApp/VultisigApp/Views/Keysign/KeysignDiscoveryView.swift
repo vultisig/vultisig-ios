@@ -5,14 +5,28 @@
 import SwiftUI
 import RiveRuntime
 
+struct KeysignInput: Hashable {
+    let vault: Vault
+    let keysignCommittee: [String]
+    let mediatorURL: String
+    let sessionID: String
+    let keysignType: KeyType
+    let messsageToSign: [String]
+    let keysignPayload: KeysignPayload? // need to pass it along to the next view
+    let customMessagePayload: CustomMessagePayload?
+    let encryptionKeyHex: String
+    let isInitiateDevice: Bool
+}
+
 struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload?
     let customMessagePayload: CustomMessagePayload? // TODO: Switch to enum
-    let transferViewModel: TransferViewModel
     let fastVaultPassword: String?
-    @Binding var keysignView: KeysignView?
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
+    @State var previewType: QRShareSheetType = .Send
+    var swapTransaction: SwapTransaction = SwapTransaction()
+    var onKeysignInput: (KeysignInput) -> Void
     
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
     @StateObject var viewModel = KeysignDiscoveryViewModel()
@@ -24,13 +38,11 @@ struct KeysignDiscoveryView: View {
     @State var screenHeight: CGFloat = 0
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = VultisigRelay.IsRelayEnabled ? NetworkPromptType.Internet : NetworkPromptType.Local
-    @State var previewType: QRShareSheetType = .Send
+    
     
     @State var qrSize: CGFloat = .zero
     @State var qrOutlineSize: CGFloat = .zero
     @State var showDisclaimer: Bool = true
-    
-    var swapTransaction: SwapTransaction = SwapTransaction()
     
     @State var qrScannedAnimation: RiveViewModel? = nil
     
@@ -209,7 +221,8 @@ struct KeysignDiscoveryView: View {
     
     func startKeysign() {
         if viewModel.isValidPeers(vault: vault) {
-            keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
+            let keysignInput = viewModel.startKeysign(vault: vault)
+            onKeysignInput(keysignInput)
         }
     }
     
@@ -234,6 +247,12 @@ struct KeysignDiscoveryView: View {
 }
 
 #Preview {
-    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, customMessagePayload: nil, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+    KeysignDiscoveryView(
+        vault: Vault.example,
+        keysignPayload: KeysignPayload.example,
+        customMessagePayload: nil,
+        fastVaultPassword: nil,
+        shareSheetViewModel: ShareSheetViewModel()
+    ) { _ in }
         .environmentObject(SettingsViewModel())
 }

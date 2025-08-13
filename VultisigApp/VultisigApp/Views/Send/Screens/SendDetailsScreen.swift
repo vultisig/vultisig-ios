@@ -42,25 +42,25 @@ struct SendDetailsScreen: View {
     
     var content: some View {
         view
-        .onFirstAppear {
-            sendDetailsViewModel.onLoad()
-            setData()
-        }
-        .onChange(of: tx.coin) { oldValue, newValue in
-            setData()
-        }
-        .onChange(of: focusedField) { _, focusedField in
-            onChange(focusedField: focusedField)
-        }
-        .alert(isPresented: $sendCryptoViewModel.showAlert) {
-            alert
-        }
-        .navigationDestination(isPresented: $isCoinPickerActive) {
-            CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
-                tx.coin = coin
-                tx.fromAddress = coin.address
+            .onFirstAppear {
+                sendDetailsViewModel.onLoad()
+                setData()
             }
-        }
+            .onChange(of: tx.coin) { oldValue, newValue in
+                setData()
+            }
+            .onChange(of: focusedField) { _, focusedField in
+                onChange(focusedField: focusedField)
+            }
+            .alert(isPresented: $sendCryptoViewModel.showAlert) {
+                alert
+            }
+            .navigationDestination(isPresented: $isCoinPickerActive) {
+                CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
+                    tx.coin = coin
+                    tx.fromAddress = coin.address
+                }
+            }
     }
     
     var alert: Alert {

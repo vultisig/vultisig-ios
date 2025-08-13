@@ -15,7 +15,6 @@ struct SendCryptoView: View {
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var sendDetailsViewModel: SendDetailsViewModel
-    @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
     @State var coin: Coin? = nil
     @State var keysignPayload: KeysignPayload? = nil
@@ -90,15 +89,20 @@ struct SendCryptoView: View {
         ZStack {
             switch sendCryptoViewModel.currentIndex {
             case 1:
-                detailsView
+//                detailsView
+                EmptyView()
             case 2:
-                verifyView
+//                verifyView
+                EmptyView()
             case 3:
-                pairView
+//                pairView
+                EmptyView()
             case 4:
-                keysign
+//                keysign
+                EmptyView()
             case 5:
-                doneView
+//                doneView
+                EmptyView()
             default:
                 errorView
             }
@@ -106,77 +110,77 @@ struct SendCryptoView: View {
         .frame(maxHeight: .infinity)
     }
     
-    var detailsView: some View {
-        SendDetailsScreen(
-            tx: tx,
-            sendCryptoViewModel: sendCryptoViewModel,
-            sendDetailsViewModel: sendDetailsViewModel,
-            vault: vault
-//            ,
-//            settingsPresented: $settingsPresented
-        )
-    }
+//    var detailsView: some View {
+//        SendDetailsScreen(
+//            tx: tx,
+//            sendCryptoViewModel: sendCryptoViewModel,
+//            sendDetailsViewModel: sendDetailsViewModel,
+//            vault: vault
+////            ,
+////            settingsPresented: $settingsPresented
+//        )
+//    }
     
-    var verifyView: some View {
-        SendCryptoVerifyView(
-            keysignPayload: $keysignPayload,
-            sendCryptoViewModel: sendCryptoViewModel,
-            sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
-            tx: tx, 
-            vault: vault
-        )
-    }
+//    var verifyView: some View {
+//        SendVerifyScreen(
+//            keysignPayload: $keysignPayload,
+//            sendCryptoViewModel: sendCryptoViewModel,
+//            sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
+//            tx: tx, 
+//            vault: vault
+//        )
+//    }
     
-    var pairView: some View {
-        ZStack {
-            if let keysignPayload = keysignPayload {
-                KeysignDiscoveryView(
-                    vault: vault,
-                    keysignPayload: keysignPayload, 
-                    customMessagePayload: nil,
-                    transferViewModel: sendCryptoViewModel,
-                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
-                    keysignView: $keysignView,
-                    shareSheetViewModel: shareSheetViewModel,
-                    previewType: .Send
-                )
-            } else {
-                SendCryptoVaultErrorView()
-            }
-        }
-    }
+//    var pairView: some View {
+//        ZStack {
+//            if let keysignPayload = keysignPayload {
+//                KeysignDiscoveryView(
+//                    vault: vault,
+//                    keysignPayload: keysignPayload, 
+//                    customMessagePayload: nil,
+//                    transferViewModel: sendCryptoViewModel,
+//                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
+//                    keysignView: $keysignView,
+//                    shareSheetViewModel: shareSheetViewModel,
+//                    previewType: .Send
+//                )
+//            } else {
+//                SendCryptoVaultErrorView()
+//            }
+//        }
+//    }
     
-    var keysign: some View {
-        ZStack {
-            if let keysignView = keysignView {
-                keysignView
-            } else {
-                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
-            }
-        }
-    }
+//    var keysign: some View {
+//        ZStack {
+//            if let keysignView = keysignView {
+//                keysignView
+//            } else {
+//                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
+//            }
+//        }
+//    }
     
-    var doneView: some View {
-        ZStack {
-            if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
-                SendCryptoDoneView(
-                    vault: vault,
-                    hash: hash,
-                    approveHash: nil,
-                    chain: chain,
-                    sendTransaction: tx,
-                    swapTransaction: nil
-                )
-            } else {
-                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
-            }
-        }.onAppear() {
-            Task{
-                try await Task.sleep(for: .seconds(5)) // Back off 5s
-                self.sendCryptoViewModel.stopMediator()
-            }
-        }
-    }
+//    var doneView: some View {
+//        ZStack {
+//            if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
+//                SendCryptoDoneView(
+//                    vault: vault,
+//                    hash: hash,
+//                    approveHash: nil,
+//                    chain: chain,
+//                    sendTransaction: tx,
+//                    swapTransaction: nil
+//                )
+//            } else {
+//                SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
+//            }
+//        }.onAppear() {
+//            Task{
+//                try await Task.sleep(for: .seconds(5)) // Back off 5s
+//                self.sendCryptoViewModel.stopMediator()
+//            }
+//        }
+//    }
 
     var errorView: some View {
         SendCryptoSigningErrorView(errorString: sendCryptoViewModel.errorMessage)
@@ -244,7 +248,8 @@ struct SendCryptoView: View {
             return false
         }
         
-        return sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading
+        return sendCryptoViewModel.isLoading
+//        || sendCryptoVerifyViewModel.isLoading
     }
 }
 

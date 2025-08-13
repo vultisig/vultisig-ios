@@ -7,24 +7,24 @@
 
 import SwiftUI
 
-struct SendCryptoVerifyView: View {
-    @Binding var keysignPayload: KeysignPayload?
-    
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+struct SendVerifyScreen: View {
+    @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @ObservedObject var tx: SendTransaction
-    
     let vault: Vault
     
     @State var isButtonDisabled = false
     @State var fastPasswordPresented = false
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @Environment(\.router) var router
     
     var body: some View {
-        ZStack {
-            Background()
-            view
+        Screen(title: "verify") {
+            VStack(spacing: 16) {
+                fields
+                pairedSignButton
+            }
+            .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
         .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
@@ -42,18 +42,6 @@ struct SendCryptoVerifyView: View {
         .onAppear {
             setData()
         }
-    }
-    
-    var view: some View {
-        container
-    }
-    
-    var content: some View {
-        VStack(spacing: 16) {
-            fields
-            pairedSignButton
-        }
-        .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
     }
     
     var alert: Alert {
@@ -74,7 +62,7 @@ struct SendCryptoVerifyView: View {
                 networkImage: tx.coin.chain.logo,
                 memo: tx.memo,
                 feeCrypto: tx.gasInReadable,
-                feeFiat: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault),
+                feeFiat: CryptoAmountFormatter.feesInReadable(tx: tx, vault: vault),
                 coinImage: tx.coin.logo,
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
@@ -121,23 +109,57 @@ struct SendCryptoVerifyView: View {
         
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             Task {
-                keysignPayload = await sendCryptoVerifyViewModel.validateForm(
+                let keysignPayload = await sendCryptoVerifyViewModel.validateForm(
                     tx: tx,
                     vault: vault
                 )
                 
-                if keysignPayload != nil {
-                    sendCryptoViewModel.moveToNextView()
+                guard let keysignPayload else { return }
+                router.navigate(
+                    to: SendRoute.pairing(
+                        vault: vault,
+                        tx: tx,
+                        keysignPayload: keysignPayload,
+                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+                    )
+                )
+            }
+        }
+    }
+    
+    var pairedSignButton: some View {
+        VStack {
+            if tx.isFastVault {
+                Text(NSLocalizedString("holdForPairedSign", comment: ""))
+                    .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodySMedium)
+                
+                LongPressPrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    fastPasswordPresented = true
+                } longPressAction: {
+                    onSignPress()
+                }
+                .sheet(isPresented: $fastPasswordPresented) {
+                    FastVaultEnterPasswordView(
+                        password: $tx.fastVaultPassword,
+                        vault: vault,
+                        onSubmit: { onSignPress() }
+                    )
+                }
+            } else {
+                PrimaryButton(title: NSLocalizedString("signTransaction", comment: "")) {
+                    onSignPress()
                 }
             }
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .padding(.horizontal, 16)
+//        .padding(.bottom, idiom == .pad ? 30 : 0)
     }
 }
 
 #Preview {
-    SendCryptoVerifyView(
-        keysignPayload: .constant(nil),
-        sendCryptoViewModel: SendCryptoViewModel(),
+    SendVerifyScreen(
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
         tx: SendTransaction(),
         vault: Vault.example
