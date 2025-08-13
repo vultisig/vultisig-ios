@@ -12,11 +12,17 @@ struct YVaultConstants {
     /// Mainnet contracts
     static let contracts: [String: String] = [
         "rune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
-        "tcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
+        "tcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px",  // yTCY
+        
+        "yrune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
+        "ytcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
     ]
     static let receiptDenominations: [String: String] = [
         "rune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE Receipt
-        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY Receipt
+        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",   // yTCY Receipt
+        
+        "yrune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE Receipt
+        "ytcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY Receipt
     ]
     static let depositMsgJSON = "{ \"deposit\": {} }"
     // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
