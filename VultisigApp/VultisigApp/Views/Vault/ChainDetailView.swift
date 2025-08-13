@@ -59,6 +59,15 @@ struct ChainDetailView: View {
                     coin: group.nativeCoin
                 )
             }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    if let nativeCoin = tokens.first(where: { $0.isNativeToken }) {
+                        sendTx.reset(coin: nativeCoin)
+                    } else if let firstCoin = tokens.first {
+                        sendTx.reset(coin: firstCoin)
+                    }
+                }
+            }
             .refreshable {
                 refreshAction()
             }
