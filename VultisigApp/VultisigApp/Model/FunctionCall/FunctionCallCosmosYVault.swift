@@ -14,6 +14,10 @@ struct YVaultConstants {
         "rune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
         "tcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
     ]
+    static let receiptDenominations: [String: String] = [
+        "rune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE Receipt
+        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY Receipt
+    ]
     static let depositMsgJSON = "{ \"deposit\": {} }"
     // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
     static let slippageOptions: [Decimal] = [0.01, 0.02, 0.05, 0.075]
@@ -85,7 +89,16 @@ class FunctionCallCosmosYVault: ObservableObject {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("destinationAddress", destinationAddress)
         dict.set("executeMsg", buildExecuteMsg())
-        dict.set("denom", tx.coin.ticker.lowercased())
+        
+        let denomKey = tx.coin.ticker.lowercased()
+        switch action {
+        case .deposit:
+            dict.set("denom", denomKey)
+        case .withdraw:
+            let receiptDenom = YVaultConstants.receiptDenominations[denomKey] ?? ""
+            dict.set("denom", receiptDenom)
+        }
+        
         dict.set("amount", String(amountMicro))
         return dict
     }
