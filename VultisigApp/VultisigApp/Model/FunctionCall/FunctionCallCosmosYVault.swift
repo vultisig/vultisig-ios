@@ -9,10 +9,10 @@ import Combine
 
 // MARK: - Constants
 struct YVaultConstants {
-    /// Stagenet contracts – swap to mainnet after release
+    /// Mainnet contracts
     static let contracts: [String: String] = [
-        "rune": "sthor1552fjtt2u6evfxwmnx0w68kh7u4fqt7e6vv0du3vj5rwggumy5jsmwzjsr", // yRUNE
-        "tcy" : "sthor14t7ns0zs8tfnxe8e0zke96y54g07tlwywgpms4h3aaftvdtlparskcaflv"  // yTCY
+        "rune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
+        "tcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
     ]
     static let depositMsgJSON = "{ \"deposit\": {} }"
     // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
