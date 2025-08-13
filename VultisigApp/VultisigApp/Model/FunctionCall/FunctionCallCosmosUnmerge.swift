@@ -51,9 +51,15 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     ) {
         self.tx = tx
         self.vault = vault
-        
+    }
+    
+    func initialize() {
         setupValidation()
-        
+        loadAvailableTokens()
+        preSelectToken()
+    }
+    
+    private func loadAvailableTokens() {
         // Find available merge tokens that have balances
         let availableTokens = ThorchainMergeTokens.tokensToMerge.filter { tokenInfo in
             vault.coins.contains { coin in
@@ -66,7 +72,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         for token in availableTokens {
             tokens.append(.init(value: token.denom.uppercased()))
         }
-        
+    }
+    
+    private func preSelectToken() {
         // Pre-select if we're already on a merged token
         if !tx.coin.isNativeToken,
            let match = ThorchainMergeTokens.tokensToMerge.first(where: {
@@ -187,7 +195,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
     
     func getView() -> AnyView {
-        return AnyView(UnmergeView(viewModel: self))
+        return AnyView(UnmergeView(viewModel: self).onAppear {
+            self.initialize()
+        })
     }
     
     var formattedBalanceText: String {

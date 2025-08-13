@@ -46,12 +46,15 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
     private var cancellables = Set<AnyCancellable>()
 
     required init(assets: [IdentifiableString]?) {
-        setupValidation()
-
         if assets != nil {
             self.assets = assets ?? []
-        } else {
-
+        }
+    }
+    
+    func initialize() {
+        setupValidation()
+        
+        if assets.isEmpty {
             DispatchQueue.main.async {
                 MayachainService.shared.getDepositAssets {
                     [weak self] assetsResponse in
@@ -128,6 +131,8 @@ class FunctionCallBondMayaChain: FunctionCallAddressable, ObservableObject
                         set: { self.nodeAddressValid = $0 }
                     )
                 )
+            }.onAppear {
+                self.initialize()
             })
     }
 }

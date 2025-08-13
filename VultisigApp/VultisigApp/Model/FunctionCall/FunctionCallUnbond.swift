@@ -42,13 +42,15 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     }
     
     required init() {
-        setupValidation()
     }
     
     init(nodeAddress: String, amount: Decimal = 0.0, provider: String = "") {
         self.nodeAddress = nodeAddress
         self.amount = amount
         self.provider = provider
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -119,6 +121,8 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
+        }.onAppear {
+            self.initialize()
         })
     }
 }

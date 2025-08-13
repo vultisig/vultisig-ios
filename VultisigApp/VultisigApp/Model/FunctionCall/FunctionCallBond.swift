@@ -49,6 +49,9 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
         tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
     ) {
         self.tx = tx
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -139,6 +142,8 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
                 )
             )
             
+        }.onAppear {
+            self.initialize()
         })
     }
 }

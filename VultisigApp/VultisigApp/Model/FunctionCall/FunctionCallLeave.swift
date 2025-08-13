@@ -30,11 +30,13 @@ class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init() {
-        setupValidation()
     }
     
     init(nodeAddress: String) {
         self.nodeAddress = nodeAddress
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -74,6 +76,8 @@ class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
+        }.onAppear {
+            self.initialize()
         })
     }
 }
