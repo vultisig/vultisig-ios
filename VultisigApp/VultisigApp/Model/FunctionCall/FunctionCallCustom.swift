@@ -27,11 +27,13 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     }
     
     required init() {
-        setupValidation()
     }
     
     init(custom: String) {
         self.custom = custom
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -83,6 +85,8 @@ class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
                     set: { self.customValid = $0 }
                 )
             )
+        }.onAppear {
+            self.initialize()
         })
     }
 }

@@ -6,7 +6,7 @@ struct FunctionCallDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var vault: Vault
-
+    
     @State private var selectedFunctionMemoType: FunctionCallType
     @State private var selectedContractMemoType: FunctionCallContractType
     @State private var showInvalidFormAlert = false
@@ -15,7 +15,7 @@ struct FunctionCallDetailsView: View {
     let defaultCoin: Coin
     
     @StateObject var keyboardObserver = KeyboardObserver()
-
+    
     init(
         tx: SendTransaction,
         functionCallViewModel: FunctionCallViewModel,
@@ -111,7 +111,7 @@ struct FunctionCallDetailsView: View {
                     
                     fnCallInstance = .unbond(unbondInstance)
                 case .bondMaya:
-
+                    
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -125,9 +125,9 @@ struct FunctionCallDetailsView: View {
                             }
                         }
                     }
-
+                    
                 case .unbondMaya:
-
+                    
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -141,7 +141,7 @@ struct FunctionCallDetailsView: View {
                             }
                         }
                     }
-
+                    
                 case .leave:
                     let leaveInstance = FunctionCallLeave()
                     
@@ -210,7 +210,7 @@ struct FunctionCallDetailsView: View {
                 }
             }
     }
-
+    
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -220,7 +220,7 @@ struct FunctionCallDetailsView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-
+    
     var invalidFormAlert: Alert {
         Alert(
             title: Text("Form Invalid"),
@@ -249,14 +249,14 @@ struct FunctionCallDetailsView: View {
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
             selected: $selectedFunctionMemoType, coin: $tx.coin)
     }
-
+    
     var contractSelector: some View {
         FunctionCallContractSelectorDropDown(
             items: .constant(
                 FunctionCallContractType.getCases(for: tx.coin)),
             selected: $selectedContractMemoType, coin: tx.coin)
     }
-
+    
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {

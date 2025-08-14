@@ -25,10 +25,10 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
     @Published var errorMessage = ""
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
-
+    
     let blockchainService = BlockChainService.shared
     private let fastVaultService = FastVaultService.shared
-        
+    
     private let mediator = Mediator.shared
     
     let totalViews = 5

@@ -12,45 +12,45 @@ import SwiftUI
 class FunctionCallRemoveLiquidityMaya: ObservableObject
 {
     @Published var fee: Int64 = .zero
-
+    
     // Internal
     @Published var feeValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
-
+    
     private var cancellables = Set<AnyCancellable>()
-
+    
     required init() {
         setupValidation()
     }
-
+    
     private func setupValidation() {
         $feeValid
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-
+    
     var description: String {
         return toString()
     }
-
+    
     func toString() -> String {
         let memo =
         "POOL-:\(self.fee)"
         return memo
     }
-
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("BPS", "\(self.fee)")
         dict.set("memo", self.toString())
         return dict
     }
-
+    
     func getView() -> AnyView {
         AnyView(
             VStack {
-
+                
                 StyledIntegerField(
                     placeholder: "BPS",
                     value: Binding(

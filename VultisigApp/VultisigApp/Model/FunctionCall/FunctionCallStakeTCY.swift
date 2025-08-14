@@ -24,6 +24,9 @@ class FunctionCallStakeTCY: ObservableObject {
     ) {
         self.tx = tx
         self.amount = tx.coin.balanceDecimal
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -66,6 +69,8 @@ class FunctionCallStakeTCY: ObservableObject {
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
                 ))
+        }.onAppear {
+            self.initialize()
         })
     }
 }

@@ -16,7 +16,7 @@ class FunctionCallUnstakeRuji: ObservableObject {
     @Published var isTheFormValid: Bool = false
     @Published private var stakedAmount: Decimal = .zero
     @Published private var fetchingBalance = false
-
+    
     let destinationAddress = RUJIStakingConstants.contract
     
     private var cancellables = Set<AnyCancellable>()
