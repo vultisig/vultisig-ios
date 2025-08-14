@@ -53,11 +53,7 @@ class FunctionCallCosmosYVault: ObservableObject {
     private var amountMicro: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
     
-    // Check if deposit is allowed for this coin
-    var isDepositAllowed: Bool {
-        let ticker = tx.coin.ticker.lowercased()
-        return ticker == "rune" || ticker == "tcy"
-    }
+
     
     // MARK: Init
     init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction) {
@@ -67,11 +63,20 @@ class FunctionCallCosmosYVault: ObservableObject {
         self.contractAddress = YVaultConstants.contracts[denom] ?? ""
         self.destinationAddress = self.contractAddress
         
-        // If deposit is not allowed for this coin and action is deposit, default to withdraw
-        if case .deposit = action, !(denom == "rune" || denom == "tcy") {
-            self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
+        // Set appropriate action based on coin type
+        if denom == "rune" || denom == "tcy" {
+            // RUNE/TCY only allows deposit
+            self.action = .deposit
+        } else if denom == "yrune" || denom == "ytcy" {
+            // yRUNE/yTCY only allows withdraw
+            if case .withdraw(let slip) = action {
+                self.action = .withdraw(slippage: slip)
+            } else {
+                self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
+            }
         } else {
-            self.action = action
+            // Unsupported coin, default to withdraw but will be handled in validation
+            self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
         }
     }
     
@@ -79,11 +84,17 @@ class FunctionCallCosmosYVault: ObservableObject {
         balanceLabel = "Amount ( Balance: \(tx.coin.balanceDecimal.formatForDisplay()) \(tx.coin.ticker.uppercased()) )"
         setupValidation()
         if case .withdraw(let slip) = self.action { selectedSlippage = slip }
+        validateAmount() // Initial amount validation
     }
     
     // MARK: Validation
     private func setupValidation() {
         $amountValid.assign(to: \Self.isTheFormValid, on: self).store(in: &cancellables)
+    }
+    
+    private func validateAmount() {
+        let balance = tx.coin.balanceDecimal
+        amountValid = amount > 0 && amount <= balance
     }
     
     // MARK: Helpers
@@ -92,6 +103,7 @@ class FunctionCallCosmosYVault: ObservableObject {
         let multiplier = pow(10.0, Double(decimals))
         let micro = (amount * Decimal(multiplier)) as NSDecimalNumber
         amountMicro = micro.uint64Value
+        validateAmount() // Validate whenever amount changes
     }
     
     private func buildExecuteMsg() -> String {
@@ -149,12 +161,15 @@ struct FunctionCallCosmosYVaultView: View {
         VStack {
             GenericSelectorDropDown(
                 items: Binding(
-                    get: {
-                        var options = ["Withdraw"]
-                        if viewModel.isDepositAllowed {
-                            options.insert("Deposit", at: 0)
+                    get: { 
+                        let ticker = viewModel.tx.coin.ticker.lowercased()
+                        if ticker == "rune" || ticker == "tcy" {
+                            return ["Deposit"].map { IdentifiableString(value: $0) }
+                        } else if ticker == "yrune" || ticker == "ytcy" {
+                            return ["Withdraw"].map { IdentifiableString(value: $0) }
+                        } else {
+                            return ["Unsupported"].map { IdentifiableString(value: $0) }
                         }
-                        return options.map { IdentifiableString(value: $0) }
                     },
                     set: { _ in }
                 ),
@@ -166,9 +181,9 @@ struct FunctionCallCosmosYVaultView: View {
                         }
                     },
                     set: { sel in
-                        if sel.value.lowercased() == "deposit" && viewModel.isDepositAllowed {
+                        if sel.value.lowercased() == "deposit" {
                             viewModel.action = .deposit
-                        } else {
+                        } else if sel.value.lowercased() == "withdraw" {
                             viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
                         }
                     }
@@ -182,8 +197,14 @@ struct FunctionCallCosmosYVaultView: View {
             StyledFloatingPointField(
                 label: "Amount",
                 placeholder: viewModel.balanceLabel,
-                value: $viewModel.amount,
-                isValid: $viewModel.amountValid
+                value: Binding(
+                    get: { viewModel.amount },
+                    set: { viewModel.amount = $0 }
+                ),
+                isValid: Binding(
+                    get: { viewModel.amountValid },
+                    set: { viewModel.amountValid = $0 }
+                )
             )
             
             if case .withdraw = viewModel.action {
