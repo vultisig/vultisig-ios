@@ -77,7 +77,7 @@ extension HomeView {
         .onAppear {
             setData()
         }
-        .onFirstAppear {
+        .onLoad {
             checkUpdate()
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {

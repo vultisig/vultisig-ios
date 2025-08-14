@@ -26,7 +26,7 @@ struct CreateVaultView: View {
             main
         }
         .navigationBarBackButtonHidden(showBackButton ? false : true)
-        .onFirstAppear {
+        .onLoad {
             setData()
         }
     }

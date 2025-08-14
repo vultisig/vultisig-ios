@@ -12,7 +12,7 @@ import WalletCore
 import Mediator
 
 @MainActor
-class SendCryptoViewModel: ObservableObject, TransferViewModel {
+class SendCryptoViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
@@ -41,9 +41,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-    
-    let totalViews = 5
-    let titles = ["send", "verify", "pair", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
@@ -521,11 +518,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         self.hash = hash
     }
     
-    func moveToNextView() {
-        currentIndex += 1
-        currentTitle = titles[currentIndex-1]
-    }
-    
     func stopMediator() {
         self.mediator.stop()
         logger.info("mediator server stopped.")
@@ -595,15 +587,5 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-    }
-    
-    func handleBackTap(_ dismiss: DismissAction) {
-        guard currentIndex>1 else {
-            dismiss()
-            return
-        }
-        
-        currentIndex-=1
-        currentTitle = titles[currentIndex-1]
     }
 }
