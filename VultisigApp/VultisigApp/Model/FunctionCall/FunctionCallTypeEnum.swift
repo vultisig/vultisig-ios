@@ -27,6 +27,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          merge,
          unmerge,
          theSwitch,
+         yRuneTcy,
          addThorLP,
          removeThorLP,
          stakeRuji,
@@ -77,6 +78,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Withdraw RUJI"
         case .theSwitch:
             return "Switch"
+        case .yRuneTcy:
+            if coin.ticker == "RUNE" {
+                return "Mint and Redeem yRUNE"
+            }
+            return "Mint and Redeem yTCY"
         case .addThorLP:
             return "Add THORChain LP"
         case .removeThorLP:
@@ -100,6 +106,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
+                .yRuneTcy,
                 .addThorLP,
                 .removeThorLP,
                 .stakeRuji,
