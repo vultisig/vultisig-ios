@@ -335,7 +335,9 @@ extension VSSuiCoin: Codable {
         version = try container.decode(String.self, forKey: .version)
         digest = try container.decode(String.self, forKey: .digest)
         balance = try container.decode(String.self, forKey: .balance)
-        previousTransaction = try container.decode(String.self, forKey: .previousTransaction)
+        if container.contains(.previousTransaction) {
+            previousTransaction = try container.decode(String.self, forKey: .previousTransaction)
+        }
     }
 }
 
