@@ -89,7 +89,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-
+            
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -98,7 +98,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-
+            
             StyledFloatingPointField(
                 label: NSLocalizedString("amount", comment: ""),
                 placeholder: NSLocalizedString("enterAmount", comment: ""),
@@ -111,7 +111,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { _ in }
                 )
             )
-
+            
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "provider",

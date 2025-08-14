@@ -173,7 +173,7 @@ private struct FunctionCallCosmosMergeView: View {
                         withAnimation {
                             viewModel.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatForDisplay()) \(coin.ticker.uppercased()) )"
                             viewModel.amount = coin.balanceDecimal
-                        
+                            
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 viewModel.tx.coin = coin
                                 viewModel.objectWillChange.send()

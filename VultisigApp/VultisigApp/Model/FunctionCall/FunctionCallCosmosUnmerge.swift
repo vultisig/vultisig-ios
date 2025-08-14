@@ -11,12 +11,12 @@ import Combine
 
 /**
  * THORCHAIN - FUNCTION: "EXECUTE CONTRACT - UNMERGE"
- * 
+ *
  * UI Elements:
  * • Dropdown: Select token to unmerge
  * • Amount Field: Enter amount of shares to withdraw (displayed as RUJI amount)
  * • Display: Current balance info
- * 
+ *
  * Action:
  * → Call the RUJI Merge smart contract to withdraw the specified amount
  */
@@ -110,7 +110,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             .replacingOccurrences(of: "thor.", with: "")
         
         return vault.coins.first { coin in
-            coin.chain == .thorChain && 
+            coin.chain == .thorChain &&
             !coin.isNativeToken &&
             coin.ticker.lowercased() == ticker
         }
@@ -120,7 +120,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     func fetchMergedBalance() async {
         isLoading = true
         objectWillChange.send() // Force UI update
-        defer { 
+        defer {
             isLoading = false
             objectWillChange.send() // Force UI update
         }
@@ -245,7 +245,7 @@ struct UnmergeView: View {
                 onSelect: { asset in
                     // Reset balance before fetching new one
                     viewModel.amount = 0
-                    viewModel.totalShares = "0" 
+                    viewModel.totalShares = "0"
                     viewModel.sharePrice = 0
                     viewModel.balanceLabel = "Loading..."
                     
@@ -262,7 +262,7 @@ struct UnmergeView: View {
                     placeholder: viewModel.balanceLabel,
                     value: Binding(
                         get: { viewModel.amount },
-                        set: { 
+                        set: {
                             viewModel.amount = $0
                             viewModel.objectWillChange.send()
                         }
@@ -275,4 +275,4 @@ struct UnmergeView: View {
             }
         }
     }
-} 
+}
