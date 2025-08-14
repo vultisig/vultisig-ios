@@ -60,7 +60,7 @@ struct CoinDetailView: View {
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
-            isMemoLinkActive: $isMemoLinkActive,
+            isMemoLinkActive: $isMemoLinkActive
         )
     }
     

@@ -37,7 +37,7 @@ struct SendCryptoDoneView: View {
         progressLink: String? = nil,
         sendTransaction: SendTransaction?,
         swapTransaction: SwapTransaction?,
-        contentPadding: CGFloat = 16,
+        contentPadding: CGFloat = 16
     ) {
         self.vault = vault
         self.hash = hash

@@ -1,5 +1,5 @@
 //
-//  SendCryptoDetailsView+iOS.swift
+//  SendDetailsScreen+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-21.
@@ -41,7 +41,7 @@ extension SendDetailsScreen {
     
     var buttonContainer: some View {
         button
-            .padding(.vertical, idiom == .pad ? 30 : 8)
+            .padding(.vertical, 8)
             .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
             .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }

@@ -28,7 +28,7 @@ struct SendKeysignScreen: View {
                 customMessagePayload: input.customMessagePayload,
                 transferViewModel: viewModel,
                 encryptionKeyHex: input.encryptionKeyHex,
-                isInitiateDevice: input.isInitiateDevice,
+                isInitiateDevice: input.isInitiateDevice
             )
         }
         .navigationBarBackButtonHidden(true)
