@@ -122,7 +122,7 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
         else {
             return nil
         }
-
+        
         let coin = CosmosCoin(amount: amountStr, denom: denom.lowercased())
         return WasmExecuteContractPayload(
             senderAddress: sender,
