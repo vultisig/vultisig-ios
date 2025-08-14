@@ -57,9 +57,9 @@ struct SendDetailsScreen: View {
                 await loadGasInfo()
             }
         }
-//        .onDisappear {
-//            sendCryptoViewModel.stopMediator()
-//        }
+        .onDisappear {
+            sendCryptoViewModel.stopMediator()
+        }
         .sheet(isPresented: $settingsPresented) {
             SendGasSettingsView(
                 viewModel: SendGasSettingsViewModel(
