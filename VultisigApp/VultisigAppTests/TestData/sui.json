@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Send SUI",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Sui",
+                "ticker": "SUI",
+                "address": "0xf854a76bec8e9b38f38f6d4fca46a9c0000be99dad60fddf40cbd78fa9fec99b",
+                "decimals": 9,
+                "price_provider_id": "sui",
+                "is_native_token": true,
+                "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+                "logo": "sui"
+            },
+            "to_address": "0x1f64a869b1d07a8799d38e8aa4a1a98d9fd1697c678295de45ab1823defa632d",
+            "to_amount": "1000000000",
+            "BlockchainSpecific": {
+                "SuicheSpecific": {
+                   "reference_gas_price": "500",
+                   "coins": [
+                       {
+                           "version":"607586916",
+                           "coin_object_id":"0xe1bbdbcf1ff73c4b0727b557cfd79d2665ad7fb2296b69e631bd939b24cb430a",
+                           "coin_type":"0x2::sui::SUI",
+                           "digest": "BRVJPPhgjYrTjYpr4zGSdb11cvtchzEy2qaPqsSmXiFh",
+                           "balance": "10000000000"
+                       }
+                   ]
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["45cc5c8488e9b3ede3d2e2ac2b72a16b34341ef72be47c72bf491b42acaaaa08"]
+    }
+]

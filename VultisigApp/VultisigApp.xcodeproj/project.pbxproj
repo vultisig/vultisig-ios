@@ -488,7 +488,7 @@
 		A6833D7E2C659283002029E1 /* TokenSelectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */; };
 		A6833D802C65980D002029E1 /* GeneralMacHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */; };
 		A6833D822C65B199002029E1 /* AddressBookHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D812C65B199002029E1 /* AddressBookHeader.swift */; };
-		A6833D842C65BC59002029E1 /* TransactionMemoHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D832C65BC59002029E1 /* TransactionMemoHeader.swift */; };
+		A6833D842C65BC59002029E1 /* FunctionCallHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */; };
 		A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */; };
 		A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */; };
 		A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D892C65CF07002029E1 /* HomeHeader.swift */; };
@@ -686,8 +686,8 @@
 		A6C6711D2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6711C2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift */; };
 		A6C671232CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671222CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift */; };
 		A6C671252CA3BF4700F59B6A /* SendCryptoAddressTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671242CA3BF4700F59B6A /* SendCryptoAddressTextField+macOS.swift */; };
-		A6C671272CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671262CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift */; };
-		A6C671292CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671282CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift */; };
+		A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671262CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift */; };
+		A6C671292CA3C10900F59B6A /* FunctionCallAddressTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671282CA3C10900F59B6A /* FunctionCallAddressTextField+macOS.swift */; };
 		A6C6712B2CA3C24600F59B6A /* AddressTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6712A2CA3C24600F59B6A /* AddressTextField+iOS.swift */; };
 		A6C6712D2CA3C24F00F59B6A /* AddressTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6712C2CA3C24F00F59B6A /* AddressTextField+macOS.swift */; };
 		A6C6712F2CA3C40800F59B6A /* VaultDetailBalanceContent+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6712E2CA3C40800F59B6A /* VaultDetailBalanceContent+iOS.swift */; };
@@ -1517,7 +1517,7 @@
 		A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionHeader.swift; sourceTree = "<group>"; };
 		A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralMacHeader.swift; sourceTree = "<group>"; };
 		A6833D812C65B199002029E1 /* AddressBookHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookHeader.swift; sourceTree = "<group>"; };
-		A6833D832C65BC59002029E1 /* TransactionMemoHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoHeader.swift; sourceTree = "<group>"; };
+		A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallHeader.swift; sourceTree = "<group>"; };
 		A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenHeader.swift; sourceTree = "<group>"; };
 		A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryHeader.swift; sourceTree = "<group>"; };
 		A6833D892C65CF07002029E1 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeader.swift; sourceTree = "<group>"; };
@@ -1715,8 +1715,8 @@
 		A6C6711C2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CachedAsyncImage+macOS.swift"; sourceTree = "<group>"; };
 		A6C671222CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6C671242CA3BF4700F59B6A /* SendCryptoAddressTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAddressTextField+macOS.swift"; sourceTree = "<group>"; };
-		A6C671262CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoAddressTextField+iOS.swift"; sourceTree = "<group>"; };
-		A6C671282CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoAddressTextField+macOS.swift"; sourceTree = "<group>"; };
+		A6C671262CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallAddressTextField+iOS.swift"; sourceTree = "<group>"; };
+		A6C671282CA3C10900F59B6A /* FunctionCallAddressTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallAddressTextField+macOS.swift"; sourceTree = "<group>"; };
 		A6C6712A2CA3C24600F59B6A /* AddressTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6C6712C2CA3C24F00F59B6A /* AddressTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressTextField+macOS.swift"; sourceTree = "<group>"; };
 		A6C6712E2CA3C40800F59B6A /* VaultDetailBalanceContent+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailBalanceContent+iOS.swift"; sourceTree = "<group>"; };
@@ -2050,12 +2050,15 @@
 			membershipExceptions = (
 				bsc.json,
 				cosmos.json,
+				dot.json,
 				evm.json,
 				kujira.json,
 				lifiswap.json,
 				maya.json,
 				mayaswap.json,
+				pol.json,
 				solana.json,
+				sui.json,
 				terra.json,
 				thorchain.json,
 				thorchainswap.json,
@@ -3003,7 +3006,7 @@
 				A6C671162CA3B9A300F59B6A /* AddressBookTextField+iOS.swift */,
 				A6C6711A2CA3BAD100F59B6A /* CachedAsyncImage+iOS.swift */,
 				A6C671222CA3BF3E00F59B6A /* SendCryptoAddressTextField+iOS.swift */,
-				A6C671262CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift */,
+				A6C671262CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift */,
 				A6C6712A2CA3C24600F59B6A /* AddressTextField+iOS.swift */,
 				A6C6712E2CA3C40800F59B6A /* VaultDetailBalanceContent+iOS.swift */,
 				A6C671322CA3C52E00F59B6A /* QRShareSheetImage+iOS.swift */,
@@ -3044,7 +3047,7 @@
 				A6C671182CA3B9B400F59B6A /* AddressBookTextField+macOS.swift */,
 				A6C6711C2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift */,
 				A6C671242CA3BF4700F59B6A /* SendCryptoAddressTextField+macOS.swift */,
-				A6C671282CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift */,
+				A6C671282CA3C10900F59B6A /* FunctionCallAddressTextField+macOS.swift */,
 				A6C6712C2CA3C24F00F59B6A /* AddressTextField+macOS.swift */,
 				A6C671302CA3C41000F59B6A /* VaultDetailBalanceContent+macOS.swift */,
 				A6C671342CA3C53800F59B6A /* QRShareSheetImage+macOS.swift */,
@@ -3424,7 +3427,7 @@
 				A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */,
 				A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */,
 				A6833D812C65B199002029E1 /* AddressBookHeader.swift */,
-				A6833D832C65BC59002029E1 /* TransactionMemoHeader.swift */,
+				A6833D832C65BC59002029E1 /* FunctionCallHeader.swift */,
 				A6833D852C65BF6D002029E1 /* JoinKeygenHeader.swift */,
 				A6833D872C65C129002029E1 /* PeerDiscoveryHeader.swift */,
 				A6833D892C65CF07002029E1 /* HomeHeader.swift */,
@@ -5069,7 +5072,7 @@
 				A6C671332CA3C52E00F59B6A /* QRShareSheetImage+iOS.swift in Sources */,
 				B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */,
 				B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */,
-				A6C671292CA3C10900F59B6A /* TransactionMemoAddressTextField+macOS.swift in Sources */,
+				A6C671292CA3C10900F59B6A /* FunctionCallAddressTextField+macOS.swift in Sources */,
 				A6BB9BBC2DA9780E0085E117 /* UpgradeFromGG20HomeBanner.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				B58BE8E62CD1BD5D00FFD98F /* OsmosisService.swift in Sources */,
@@ -5374,7 +5377,7 @@
 				B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */,
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
-				A6833D842C65BC59002029E1 /* TransactionMemoHeader.swift in Sources */,
+				A6833D842C65BC59002029E1 /* FunctionCallHeader.swift in Sources */,
 				13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */,
@@ -5488,7 +5491,7 @@
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6C670BD2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift in Sources */,
-				A6C671272CA3C0FF00F59B6A /* TransactionMemoAddressTextField+iOS.swift in Sources */,
+				A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */,
 				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 				A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */,
@@ -5694,7 +5697,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -5752,7 +5755,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -5806,7 +5809,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -5832,7 +5835,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -5858,7 +5861,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -5879,7 +5882,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
