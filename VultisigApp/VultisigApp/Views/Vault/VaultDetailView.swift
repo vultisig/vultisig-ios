@@ -17,6 +17,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @Environment(\.router) var router
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
     @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
@@ -64,13 +65,6 @@ struct VaultDetailView: View {
         .onChange(of: homeViewModel.selectedVault?.coins) {
             setData()
         }
-        .navigationDestination(isPresented: $isSendLinkActive) {
-            SendCryptoView(
-                tx: sendTx,
-                vault: vault,
-                coin: viewModel.selectedGroup?.nativeCoin
-            )
-        }
         .navigationDestination(isPresented: $isSwapLinkActive) {
             if let fromCoin = viewModel.selectedGroup?.nativeCoin {
                 SwapCryptoView(fromCoin: fromCoin, vault: vault)
@@ -111,6 +105,13 @@ struct VaultDetailView: View {
         .sheet(isPresented: $isBiweeklyPasswordVerifyLinkActive) {
             PasswordVerifyReminderView(vault: vault, isSheetPresented: $isBiweeklyPasswordVerifyLinkActive)
                 .presentationDetents([.height(260)])
+        }
+        .navigationDestination(isPresented: $shouldSendCrypto) {
+            let coin = vault.coins.first(where: { $0.chain == selectedChain })
+            SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+        }
+        .navigationDestination(isPresented: $isSendLinkActive) {
+            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
         }
     }
 

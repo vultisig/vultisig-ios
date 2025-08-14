@@ -14,15 +14,17 @@ struct SendDoneScreen: View {
     let tx: SendTransaction
     
     var body: some View {
-        Screen(title: "done") {
+        Screen(title: "done".localized) {
             SendCryptoDoneView(
                 vault: vault,
                 hash: hash,
                 approveHash: nil,
                 chain: chain,
                 sendTransaction: tx,
-                swapTransaction: nil
+                swapTransaction: nil,
+                contentPadding: 0
             )
         }
+        .navigationBarBackButtonHidden(true)
     }
 }

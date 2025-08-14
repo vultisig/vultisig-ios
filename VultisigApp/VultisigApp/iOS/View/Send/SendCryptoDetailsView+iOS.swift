@@ -41,7 +41,6 @@ extension SendDetailsScreen {
     
     var buttonContainer: some View {
         button
-            .padding(.horizontal, 16)
             .padding(.vertical, idiom == .pad ? 30 : 8)
             .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
             .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)

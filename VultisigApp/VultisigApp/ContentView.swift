@@ -26,6 +26,7 @@ struct ContentView: View {
         ZStack {
             NavigationStack(path: $navigationRouter.navPath) {
                 container
+                    .navigationDestination(for: SendRoute.self) { router.sendRouter.build($0) }
             }
             .environment(\.router, router.navigationRouter)
             .accentColor(.white)

@@ -20,9 +20,9 @@ struct SendRouter {
         switch route {
         case .details(let input):
             viewBuilder.buildDetailsScreen(
+                coin: input.coin,
+                hasPreselectedCoin: input.hasPreselectedCoin,
                 tx: input.tx,
-                sendCryptoViewModel: input.sendCryptoViewModel,
-                sendDetailsViewModel: input.sendDetailsViewModel,
                 vault: input.vault
             )
         case .verify(let tx, let vault):
@@ -48,23 +48,8 @@ struct SendRouter {
 }
 
 struct SendRouteInput: Hashable {
-    static func == (lhs: SendRouteInput, rhs: SendRouteInput) -> Bool {
-        lhs.tx == rhs.tx
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(tx)
-    }
-    
+    let coin: Coin?
+    let hasPreselectedCoin: Bool
     let tx: SendTransaction
     let vault: Vault
-    let sendCryptoViewModel: SendCryptoViewModel
-    let sendDetailsViewModel: SendDetailsViewModel
-    
-    init(tx: SendTransaction, vault: Vault, sendCryptoViewModel: SendCryptoViewModel, sendDetailsViewModel: SendDetailsViewModel) {
-        self.tx = tx
-        self.vault = vault
-        self.sendCryptoViewModel = sendCryptoViewModel
-        self.sendDetailsViewModel = sendDetailsViewModel
-    }
 }

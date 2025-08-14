@@ -13,9 +13,10 @@ struct SendKeysignScreen: View {
     let input: KeysignInput
     let tx: SendTransaction
     @StateObject var viewModel = SendKeysignViewModel()
+    @State var navigateToDone: Bool = false
     
     var body: some View {
-        Screen(title: "keysign") {
+        Screen(title: "keysign".localized) {
             KeysignView(
                 vault: input.vault,
                 keysignCommittee: input.keysignCommittee,
@@ -30,19 +31,27 @@ struct SendKeysignScreen: View {
                 isInitiateDevice: input.isInitiateDevice,
             )
         }
+        .navigationBarBackButtonHidden(true)
         .onChange(of: viewModel.keysignFinished) { _, finished in
             guard finished else { return }
             
-            guard
-                let hash = viewModel.hash,
-                let chain = input.keysignPayload?.coin.chain
-            else {
-                // TODO: - Show error
+            guard viewModel.hash != nil, input.keysignPayload?.coin.chain != nil else {
                 return
             }
             
-            let route = SendRoute.done(vault: input.vault, hash: hash, chain: chain, tx: tx)
-            router.navigate(to: route)
+            navigateToDone = true
+        }
+        .navigationDestination(isPresented: $navigateToDone) {
+            if let hash = viewModel.hash,
+               let chain = input.keysignPayload?.coin.chain
+            {
+                SendRouteBuilder().buildDoneScreen(
+                    vault: input.vault,
+                    hash: hash,
+                    chain: chain,
+                    tx: tx
+                )
+            }
         }
     }
 }

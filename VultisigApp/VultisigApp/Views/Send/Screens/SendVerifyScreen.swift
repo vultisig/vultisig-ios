@@ -18,8 +18,10 @@ struct SendVerifyScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
     
+    @State private var keysignPayload: KeysignPayload?
+    
     var body: some View {
-        Screen(title: "verify") {
+        Screen(title: "verify".localized) {
             VStack(spacing: 16) {
                 fields
                 pairedSignButton
@@ -41,6 +43,14 @@ struct SendVerifyScreen: View {
         }
         .onAppear {
             setData()
+        }
+        .navigationDestination(item: $keysignPayload) { payload in
+            SendRouteBuilder().buildPairScreen(
+                vault: vault,
+                tx: tx,
+                keysignPayload: payload,
+                fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
+            )
         }
     }
     
@@ -67,8 +77,7 @@ struct SendVerifyScreen: View {
                 amount: tx.amount,
                 coinTicker: tx.coin.ticker
             ),
-            securityScannerState: $sendCryptoVerifyViewModel.securityScannerState,
-            contentPadding: 16
+            securityScannerState: $sendCryptoVerifyViewModel.securityScannerState
         ) {
             checkboxes
         }
@@ -115,14 +124,7 @@ struct SendVerifyScreen: View {
                 )
                 
                 guard let keysignPayload else { return }
-                router.navigate(
-                    to: SendRoute.pairing(
-                        vault: vault,
-                        tx: tx,
-                        keysignPayload: keysignPayload,
-                        fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
-                    )
-                )
+                self.keysignPayload = keysignPayload
             }
         }
     }
@@ -153,8 +155,6 @@ struct SendVerifyScreen: View {
             }
         }
         .disabled(!sendCryptoVerifyViewModel.isValidForm)
-        .padding(.horizontal, 16)
-//        .padding(.bottom, idiom == .pad ? 30 : 0)
     }
 }
 

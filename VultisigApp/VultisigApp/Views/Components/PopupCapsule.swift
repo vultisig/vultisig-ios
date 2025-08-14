@@ -11,7 +11,7 @@ struct PopupCapsule: View {
     let text: String
     @Binding var showPopup: Bool
     
-    @State var offset: CGFloat = 100
+    @State var offset: CGFloat = 200
     @State var showText: Bool = false
     
     var body: some View {
@@ -68,8 +68,7 @@ struct PopupCapsule: View {
 }
 
 #Preview {
-    @State var show = true
-    
+    @Previewable @State var show = true
     return ZStack {
         Background()
         

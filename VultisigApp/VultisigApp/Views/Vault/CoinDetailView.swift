@@ -15,16 +15,10 @@ struct CoinDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     
+    @Environment(\.router) var router
+    
     var body: some View {
         content
-            .navigationDestination(isPresented: $isSendLinkActive) {
-                SendCryptoView(
-                    tx: sendTx,
-                    vault: vault,
-                    coin: coin,
-                    hasPreselectedCoin: true
-                )
-            }
             .navigationDestination(isPresented: $isSwapLinkActive) {
                 SwapCryptoView(fromCoin: coin, vault: vault)
             }
@@ -36,6 +30,9 @@ struct CoinDetailView: View {
                 )
 
             }
+            .navigationDestination(isPresented: $isSendLinkActive) {
+                SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: true, tx: sendTx, vault: vault)
+            }
             .onAppear {
                 sendTx.reset(coin: coin)
             }
@@ -44,14 +41,14 @@ struct CoinDetailView: View {
                     await fetchBondData()
                 }
             }
-            .onChange(of: isSendLinkActive) { oldValue, newValue in
-                if newValue {
-                    sendTx.reset(coin: coin)
-                }
-            }
             .onChange(of: isMemoLinkActive) { oldValue, newValue in
                 if newValue {
                     sendTx.coin = coin
+                }
+            }
+            .onChange(of: isSendLinkActive) { oldValue, newValue in
+                if newValue {
+                    sendTx.reset(coin: coin)
                 }
             }
     }
@@ -63,7 +60,7 @@ struct CoinDetailView: View {
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
-            isMemoLinkActive: $isMemoLinkActive
+            isMemoLinkActive: $isMemoLinkActive,
         )
     }
     

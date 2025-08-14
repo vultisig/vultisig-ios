@@ -15,9 +15,10 @@ struct SendPairScreen: View {
     let tx: SendTransaction
     let keysignPayload: KeysignPayload
     let fastVaultPassword: String?
+    @State var keysignInput: KeysignInput?
     
     var body: some View {
-        Screen(title: "pair") {
+        Screen(title: "pair".localized) {
             KeysignDiscoveryView(
                 vault: vault,
                 keysignPayload: keysignPayload,
@@ -26,9 +27,21 @@ struct SendPairScreen: View {
                 shareSheetViewModel: shareSheetViewModel,
                 previewType: .Send
             ) { input in
-                router.navigate(to: SendRoute.keysign(input: input, tx: tx))
+                self.keysignInput = input
             }
         }
-
+        .navigationBarBackButtonHidden(true)
+        .navigationDestination(item: $keysignInput) { input in
+            SendRouteBuilder().buildKeysignScreen(input: input, tx: tx)
+        }
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationQRShareButton(
+                    vault: vault,
+                    type: .Keysign,
+                    viewModel: shareSheetViewModel
+                )
+            }
+        }
     }
 }

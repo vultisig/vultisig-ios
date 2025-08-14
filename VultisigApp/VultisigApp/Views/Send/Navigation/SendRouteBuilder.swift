@@ -11,15 +11,15 @@ struct SendRouteBuilder {
     
     @ViewBuilder
     func buildDetailsScreen(
+        coin: Coin?,
+        hasPreselectedCoin: Bool,
         tx: SendTransaction,
-        sendCryptoViewModel: SendCryptoViewModel,
-        sendDetailsViewModel: SendDetailsViewModel,
         vault: Vault
     ) -> some View {
         SendDetailsScreen(
+            coin: coin,
             tx: tx,
-            sendCryptoViewModel: sendCryptoViewModel,
-            sendDetailsViewModel: sendDetailsViewModel,
+            sendDetailsViewModel: SendDetailsViewModel(hasPreselectedCoin: hasPreselectedCoin),
             vault: vault
         )
     }

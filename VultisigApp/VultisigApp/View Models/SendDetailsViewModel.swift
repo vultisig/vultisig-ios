@@ -17,7 +17,11 @@ class SendDetailsViewModel: ObservableObject {
     let hasPreselectedCoin: Bool
     
     @Published var selectedChain: Chain? = nil
-    @Published private(set) var selectedTab: SendDetailsFocusedTab?
+    @Published private(set) var selectedTab: SendDetailsFocusedTab? {
+        didSet {
+            print("Selected tab", selectedTab)
+        }
+    }
     
     @Published var assetSetupDone: Bool = false
     @Published var addressSetupDone: Bool = false
