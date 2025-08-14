@@ -9,24 +9,36 @@ import Combine
 
 // MARK: - Constants
 struct YVaultConstants {
+    // Base contract addresses
+    private static let yRuneContract = "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt"
+    private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
+    
     /// Mainnet contracts
     static let contracts: [String: String] = [
-        "rune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
-        "tcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px",  // yTCY
-        
-        "yrune": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt", // yRUNE
-        "ytcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
+        "rune": yRuneContract,   // Deposit RUNE to get yRUNE
+        "tcy": yTcyContract,     // Deposit TCY to get yTCY
+        "yrune": yRuneContract,  // Withdraw RUNE from yRUNE
+        "ytcy": yTcyContract     // Withdraw TCY from yTCY
     ]
+    
     static let receiptDenominations: [String: String] = [
-        "rune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE token
-        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",   // yTCY token
-        
-        "yrune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE token
-        "ytcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY token
+        "rune": "x/nami-index-nav-\(yRuneContract)-rcpt",   // yRUNE receipt
+        "tcy": "x/nami-index-nav-\(yTcyContract)-rcpt",     // yTCY receipt
+        "yrune": "x/nami-index-nav-\(yRuneContract)-rcpt",  // yRUNE receipt
+        "ytcy": "x/nami-index-nav-\(yTcyContract)-rcpt"     // yTCY receipt
     ]
+    
     static let depositMsgJSON = "{ \"deposit\": {} }"
     // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
     static let slippageOptions: [Decimal] = [0.01, 0.02, 0.05, 0.075]
+    
+    // Action labels
+    static let actionLabels: [String: String] = [
+        "rune": "Receive yRUNE",
+        "tcy": "Receive yTCY",
+        "yrune": "Sell yRUNE",
+        "ytcy": "Sell yTCY"
+    ]
 }
 
 // MARK: - Action Type
@@ -52,8 +64,6 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     private var amountMicro: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
-    
-
     
     // MARK: Init
     init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction) {
@@ -161,29 +171,23 @@ struct FunctionCallCosmosYVaultView: View {
         VStack {
             GenericSelectorDropDown(
                 items: Binding(
-                    get: { 
+                    get: {
                         let ticker = viewModel.tx.coin.ticker.lowercased()
-                        if ticker == "rune" || ticker == "tcy" {
-                            return ["Deposit"].map { IdentifiableString(value: $0) }
-                        } else if ticker == "yrune" || ticker == "ytcy" {
-                            return ["Withdraw"].map { IdentifiableString(value: $0) }
-                        } else {
-                            return ["Unsupported"].map { IdentifiableString(value: $0) }
-                        }
+                        let label = YVaultConstants.actionLabels[ticker] ?? "Unsupported"
+                        return [IdentifiableString(value: label)]
                     },
                     set: { _ in }
                 ),
                 selected: Binding(
                     get: {
-                        switch viewModel.action {
-                        case .deposit:   return IdentifiableString(value: "Deposit")
-                        case .withdraw:  return IdentifiableString(value: "Withdraw")
-                        }
+                        let ticker = viewModel.tx.coin.ticker.lowercased()
+                        let label = YVaultConstants.actionLabels[ticker] ?? "Unsupported"
+                        return IdentifiableString(value: label)
                     },
                     set: { sel in
-                        if sel.value.lowercased() == "deposit" {
+                        if sel.value.contains("Receive") {
                             viewModel.action = .deposit
-                        } else if sel.value.lowercased() == "withdraw" {
+                        } else if sel.value.contains("Sell") {
                             viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
                         }
                     }
