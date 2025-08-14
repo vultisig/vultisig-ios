@@ -21,7 +21,20 @@ enum THORChainTokenMetadataFactory {
                 symbol = parts[1].uppercased()
                 ticker = parts[1].lowercased()
             }
-        } else if asset.contains("-") {
+        }  else if asset.starts(with: "x/")  {
+            chain = "THOR"
+            
+            if asset == "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt" {
+                symbol = "yRUNE"
+                ticker = "yRUNE"
+            } else if asset == "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt" {
+                symbol = "yTCY"
+                ticker = "yTCY"
+            } else {
+                symbol = asset.uppercased()
+                ticker = asset.lowercased()
+            }
+        }  else if asset.contains("-") {
             let parts = asset.split(separator: "-")
             if parts.count >= 2 {
                 chain = parts[0].uppercased()

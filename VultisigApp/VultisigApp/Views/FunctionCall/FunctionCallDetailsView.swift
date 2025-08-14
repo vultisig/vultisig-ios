@@ -192,6 +192,8 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .yRuneTcy:
+                    fnCallInstance = .yRuneTcy(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit))
                 case .addThorLP:
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:

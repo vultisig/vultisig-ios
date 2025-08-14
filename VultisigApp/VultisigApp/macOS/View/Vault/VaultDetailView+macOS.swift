@@ -21,14 +21,6 @@ extension VaultDetailView {
                     JoinKeysignView(vault: vault)
                 }
             }
-            .navigationDestination(isPresented: $shouldSendCrypto) {
-                SendCryptoView(
-                    tx: sendTx,
-                    vault: vault,
-                    coin: nil,
-                    selectedChain: selectedChain
-                )
-            }
     }
     
     var cells: some View {

@@ -61,7 +61,7 @@ struct PeerDiscoveryView: View {
                 viewModel.stopMediator()
                 animationVM?.stop()
             }
-            .onFirstAppear {
+            .onLoad {
                 showInfo()
             }
             .sheet(isPresented: $showInfoSheet) {

@@ -22,6 +22,8 @@ struct MacScannerView: View {
     @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
+    @Environment(\.router) var router
+    
     @StateObject var cameraViewModel = MacCameraServiceViewModel()
     
     var body: some View {
@@ -38,18 +40,14 @@ struct MacScannerView: View {
                 JoinKeysignView(vault: vault)
             }
         }
-        .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
-            if let vault = homeViewModel.selectedVault {
-                SendCryptoView(
-                    tx: sendTx,
-                    vault: vault,
-                    coin: nil,
-                    selectedChain: cameraViewModel.selectedChain
-                )
-            }
-        }
         .alert(isPresented: $cameraViewModel.showAlert) {
             alert
+        }
+        .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
+            if let vault = homeViewModel.selectedVault {
+                let coin = vault.coins.first(where: { $0.isNativeToken && $0.chain == cameraViewModel.selectedChain })
+                SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+            }
         }
     }
     
