@@ -1,12 +1,13 @@
 //
-//  SendCryptoDetailsView.swift
+//  SendDetailsScreen.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-13.
+//  Created by Gaston Mazzeo on 13/08/2025.
 //
 
 import OSLog
 import SwiftUI
+import BigInt
 
 enum Field: Int, Hashable {
     case toAddress
@@ -15,12 +16,14 @@ enum Field: Int, Hashable {
     case memo
 }
 
-struct SendCryptoDetailsView: View {
+struct SendDetailsScreen: View {
+    @State var coin: Coin?
+    @State var selectedChain: Chain? = nil
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    @ObservedObject var sendDetailsViewModel: SendDetailsViewModel
+    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject var sendDetailsViewModel: SendDetailsViewModel
     let vault: Vault
-    @Binding var settingsPresented: Bool
+    @State var settingsPresented: Bool = false
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -34,34 +37,64 @@ struct SendCryptoDetailsView: View {
     @FocusState var focusedField: Field?
     @State var scrollProxy: ScrollViewProxy?
     
-    var body: some View {
-        container
-    }
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @State var navigateToVerify: Bool = false
     
-    var content: some View {
-        ZStack {
-            Background()
-            view
+    var body: some View {
+        Screen(title: "send".localized) {
+            container
         }
-        .onFirstAppear {
+        .onLoad {
+            Task {
+                await setMainData()
+                await loadGasInfo()
+            }
             sendDetailsViewModel.onLoad()
             setData()
         }
-        .onChange(of: tx.coin) { oldValue, newValue in
-            setData()
-        }
-        .onChange(of: focusedField) { _, focusedField in
-            onChange(focusedField: focusedField)
-        }
-        .alert(isPresented: $sendCryptoViewModel.showAlert) {
-            alert
-        }
-        .navigationDestination(isPresented: $isCoinPickerActive) {
-            CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
-                tx.coin = coin
-                tx.fromAddress = coin.address
+        .onChange(of: tx.coin) {
+            Task {
+                await loadGasInfo()
             }
         }
+        .onDisappear {
+            sendCryptoViewModel.stopMediator()
+        }
+        .sheet(isPresented: $settingsPresented) {
+            SendGasSettingsView(
+                viewModel: SendGasSettingsViewModel(
+                    coin: tx.coin,
+                    vault: vault,
+                    gasLimit: tx.gasLimit,
+                    customByteFee: tx.customByteFee,
+                    selectedMode: tx.feeMode
+                ),
+                output: self
+            )
+        }
+        .navigationDestination(isPresented: $navigateToVerify) {
+            SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
+        }
+    }
+    
+    var content: some View {
+        view
+            .onChange(of: tx.coin) { oldValue, newValue in
+                print("Coin changed", newValue)
+                setData()
+            }
+            .onChange(of: focusedField) { _, focusedField in
+                onChange(focusedField: focusedField)
+            }
+            .alert(isPresented: $sendCryptoViewModel.showAlert) {
+                alert
+            }
+            .navigationDestination(isPresented: $isCoinPickerActive) {
+                CoinPickerView(coins: sendCryptoViewModel.pickerCoins(vault: vault, tx: tx)) { coin in
+                    tx.coin = coin
+                    tx.fromAddress = coin.address
+                }
+            }
     }
     
     var alert: Alert {
@@ -116,7 +149,6 @@ struct SendCryptoDetailsView: View {
                     )
                     .id(SendDetailsFocusedTab.amount.rawValue)
                 }
-                .padding(16)
             }
             .refreshable {
                 await onRefresh()
@@ -217,7 +249,9 @@ struct SendCryptoDetailsView: View {
             sendCryptoViewModel.validateAmount(amount: tx.amount.description)
             
             if await sendCryptoViewModel.validateForm(tx: tx) {
-                sendCryptoViewModel.moveToNextView()
+                await MainActor.run {
+                    navigateToVerify = true
+                }
             }
         }
         
@@ -245,12 +279,61 @@ struct SendCryptoDetailsView: View {
     }
 }
 
+extension SendDetailsScreen: SendGasSettingsOutput {
+
+    func didSetFeeSettings(chain: Chain, mode: FeeMode, gasLimit: BigInt?, byteFee: BigInt?) {
+        switch chain.chainType {
+        case .EVM:
+            tx.customGasLimit = gasLimit
+        case .UTXO:
+            tx.customByteFee = byteFee
+        default:
+            return
+        }
+
+        tx.feeMode = mode
+
+        Task {
+            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        }
+    }
+}
+
+extension SendDetailsScreen {
+    private func setMainData() async {
+        guard !sendCryptoViewModel.isLoading else { return }
+        
+        if let coin = coin {
+            print("Setting coin", coin)
+            tx.coin = coin
+            tx.fromAddress = coin.address
+            tx.toAddress = deeplinkViewModel.address ?? ""
+            self.coin = nil
+            selectedChain = coin.chain
+        }
+        
+        DebounceHelper.shared.debounce {
+            validateAddress(deeplinkViewModel.address ?? "")
+        }
+        
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
+    }
+    
+    private func loadGasInfo() async {
+        guard !sendCryptoViewModel.isLoading else { return }
+        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+    }
+    
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+}
+
 #Preview {
-    SendCryptoDetailsView(
+    SendDetailsScreen(
+        coin: .example,
         tx: SendTransaction(),
-        sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
-        vault: Vault.example,
-        settingsPresented: .constant(false)
+        vault: Vault.example
     )
 }

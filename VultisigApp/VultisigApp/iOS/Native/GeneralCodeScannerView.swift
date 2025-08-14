@@ -87,7 +87,6 @@ struct GeneralCodeScannerView: View {
         }
         .foregroundColor(Theme.colors.textPrimary)
         .font(Theme.fonts.bodyLMedium)
-        .padding(16)
         .offset(y: 8)
     }
     
@@ -181,6 +180,8 @@ struct GeneralCodeScannerView: View {
     
     private func getIcon(for icon: String) -> some View {
         Image(systemName: icon)
+            .padding(16)
+            .contentShape(Rectangle())
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {

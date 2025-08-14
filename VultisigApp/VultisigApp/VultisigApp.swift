@@ -24,6 +24,7 @@ struct VultisigApp: App {
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
+    @StateObject var navigationRouter = NavigationRouter()
     
     var body: some Scene {
         WindowGroup {

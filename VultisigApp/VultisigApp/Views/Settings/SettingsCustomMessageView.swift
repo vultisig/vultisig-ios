@@ -104,11 +104,24 @@ struct SettingsCustomMessageView: View {
             vault: vault,
             keysignPayload: nil,
             customMessagePayload: customMessagePayload,
-            transferViewModel: viewModel,
             fastVaultPassword: nil,
-            keysignView: $keysignView,
             shareSheetViewModel: shareSheetViewModel
-        )
+        ) { input in
+            self.keysignView = KeysignView(
+                vault: input.vault,
+                keysignCommittee: input.keysignCommittee,
+                mediatorURL: input.mediatorURL,
+                sessionID: input.sessionID,
+                keysignType: input.keysignType,
+                messsageToSign: input.messsageToSign,
+                keysignPayload: input.keysignPayload,
+                customMessagePayload: input.customMessagePayload,
+                transferViewModel: viewModel,
+                encryptionKeyHex: input.encryptionKeyHex,
+                isInitiateDevice: input.isInitiateDevice
+            )
+            viewModel.moveToNextView()
+        }
     }
 
     var buttonLabel: some View {
