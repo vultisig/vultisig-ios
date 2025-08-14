@@ -17,7 +17,7 @@ class FunctionCallWithdrawRujiRewards: ObservableObject {
     @Published private var rewardsAmount: Decimal = .zero
     @Published private var rewardsTicker: String = "USDC"
     @Published private var fetchingBalance = false
-
+    
     let destinationAddress = RUJIStakingConstants.contract
     
     private var cancellables = Set<AnyCancellable>()

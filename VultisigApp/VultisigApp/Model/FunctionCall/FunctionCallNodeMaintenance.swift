@@ -48,9 +48,9 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
         self.amount = amount
         self.action = action
         self.isNodeAddressValid = !nodeAddress.isEmpty
-        self.isProviderValid = true 
-        self.isFeeValid = true      
-        self.isAmountValid = true   
+        self.isProviderValid = true
+        self.isFeeValid = true
+        self.isAmountValid = true
         self.isTheFormValid = self.isNodeAddressValid
     }
     
@@ -98,17 +98,17 @@ class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack {
             FunctionCallAddressTextField(
-                memo: self, 
-                addressKey: "nodeAddress", 
+                memo: self,
+                addressKey: "nodeAddress",
                 isAddressValid: Binding<Bool>(
                     get: { self.isNodeAddressValid },
                     set: { self.isNodeAddressValid = $0 }
                 )
             )
             FunctionCallAddressTextField(
-                memo: self, 
-                addressKey: "provider", 
-                isOptional: true, 
+                memo: self,
+                addressKey: "provider",
+                isOptional: true,
                 isAddressValid: Binding<Bool>(
                     get: { self.isProviderValid },
                     set: { self.isProviderValid = $0 }

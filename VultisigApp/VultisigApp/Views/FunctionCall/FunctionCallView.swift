@@ -83,7 +83,7 @@ struct FunctionCallView: View {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(
                     vault: vault,
-                    keysignPayload: keysignPayload, 
+                    keysignPayload: keysignPayload,
                     customMessagePayload: nil,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     shareSheetViewModel: shareSheetViewModel

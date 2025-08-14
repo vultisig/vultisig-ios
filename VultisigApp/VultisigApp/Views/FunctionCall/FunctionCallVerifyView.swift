@@ -126,7 +126,7 @@ struct FunctionCallVerifyView: View {
         }
     }
     
-        private func getAmount() -> String {
+    private func getAmount() -> String {
         // Check if this is a THORChain LP operation
         if let pool = tx.memoFunctionDictionary.get("pool"), !pool.isEmpty {
             // For LP operations, show context about which pool

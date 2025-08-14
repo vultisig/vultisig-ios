@@ -50,8 +50,20 @@ class FunctionCallCosmosMerge: ObservableObject {
         self.tx = tx
         self.vault = vault
         
+        if tx.coin.isNativeToken {
+            self.amount = 0.0
+        } else  {
+            self.amount = tx.coin.balanceDecimal
+        }
+    }
+    
+    func initialize() {
         setupValidation()
-        
+        loadTokens()
+        preSelectToken()
+    }
+    
+    private func loadTokens() {
         let coinsInVault: Set<String> = Set(vault.coins.filter { $0.chain == tx.coin.chain }.map {
             let normalized = $0.ticker.lowercased()
             return normalized
@@ -63,7 +75,9 @@ class FunctionCallCosmosMerge: ObservableObject {
                 tokens.append(.init(value: token.denom.uppercased()))
             }
         }
-        
+    }
+    
+    private func preSelectToken() {
         if let match = ThorchainMergeTokens.tokensToMerge.first(where: {
             $0.denom.lowercased() == "thor.\(tx.coin.ticker.lowercased())"
         }) {
@@ -71,17 +85,10 @@ class FunctionCallCosmosMerge: ObservableObject {
             tokenValid = true
             destinationAddress = match.wasmContractAddress
             if let coin = selectedVaultCoin {
-                            amount = coin.balanceDecimal
-            balanceLabel = "Amount ( Balance: \(amount.formatForDisplay()) \(coin.ticker.uppercased()) )"
+                amount = coin.balanceDecimal
+                balanceLabel = "Amount ( Balance: \(amount.formatForDisplay()) \(coin.ticker.uppercased()) )"
             }
         }
-        
-        if tx.coin.isNativeToken {
-            self.amount = 0.0
-        } else  {
-            self.amount = tx.coin.balanceDecimal
-        }
-        
     }
     
     var selectedVaultCoin: Coin? {
@@ -131,7 +138,9 @@ class FunctionCallCosmosMerge: ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallCosmosMergeView(viewModel: self))
+        AnyView(FunctionCallCosmosMergeView(viewModel: self).onAppear {
+            self.initialize()
+        })
     }
 }
 
@@ -164,7 +173,7 @@ private struct FunctionCallCosmosMergeView: View {
                         withAnimation {
                             viewModel.balanceLabel = "Amount ( Balance: \(coin.balanceDecimal.formatForDisplay()) \(coin.ticker.uppercased()) )"
                             viewModel.amount = coin.balanceDecimal
-                        
+                            
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 viewModel.tx.coin = coin
                                 viewModel.objectWillChange.send()
