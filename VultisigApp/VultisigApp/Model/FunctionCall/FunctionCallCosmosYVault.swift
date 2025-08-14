@@ -99,12 +99,20 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     // MARK: Validation
     private func setupValidation() {
+        // Observe amount changes and validate balance
+        $amount
+            .sink { [weak self] newAmount in
+                self?.validateAmount()
+            }
+            .store(in: &cancellables)
+        
         $amountValid.assign(to: \Self.isTheFormValid, on: self).store(in: &cancellables)
     }
     
     private func validateAmount() {
         let balance = tx.coin.balanceDecimal
-        amountValid = amount > 0 && amount <= balance
+        let isValidAmount = amount > 0 && amount <= balance
+        amountValid = isValidAmount
     }
     
     // MARK: Helpers
@@ -113,7 +121,6 @@ class FunctionCallCosmosYVault: ObservableObject {
         let multiplier = pow(10.0, Double(decimals))
         let micro = (amount * Decimal(multiplier)) as NSDecimalNumber
         amountMicro = micro.uint64Value
-        validateAmount() // Validate whenever amount changes
     }
     
     private func buildExecuteMsg() -> String {
@@ -207,7 +214,7 @@ struct FunctionCallCosmosYVaultView: View {
                 ),
                 isValid: Binding(
                     get: { viewModel.amountValid },
-                    set: { viewModel.amountValid = $0 }
+                    set: { _ in } // Don't let StyledFloatingPointField override our validation
                 )
             )
             
