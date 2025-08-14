@@ -28,7 +28,6 @@ struct SendVerifyScreen: View {
             }
             .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
-        .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
@@ -116,15 +115,20 @@ struct SendVerifyScreen: View {
         isButtonDisabled = true
         sendCryptoVerifyViewModel.isLoading = true
         
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            Task {
-                let keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-                    tx: tx,
-                    vault: vault
-                )
-                
-                guard let keysignPayload else { return }
-                self.keysignPayload = keysignPayload
+        Task {
+            let result = await sendCryptoVerifyViewModel.validateForm(
+                tx: tx,
+                vault: vault
+            )
+            await MainActor.run {
+                if let payload = result {
+                    // Navigate; onDisappear will clear loading.
+                    self.keysignPayload = payload
+                } else {
+                    // Validation failed — re-enable UI and stop loading.
+                    self.isButtonDisabled = false
+                    self.sendCryptoVerifyViewModel.isLoading = false
+                }
             }
         }
     }
@@ -154,13 +158,12 @@ struct SendVerifyScreen: View {
                 }
             }
         }
-        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .disabled(!sendCryptoVerifyViewModel.isValidForm || isButtonDisabled)
     }
 }
 
 #Preview {
     SendVerifyScreen(
-        sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
         tx: SendTransaction(),
         vault: Vault.example
     )

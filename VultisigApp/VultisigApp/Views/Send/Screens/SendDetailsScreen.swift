@@ -249,7 +249,9 @@ struct SendDetailsScreen: View {
             sendCryptoViewModel.validateAmount(amount: tx.amount.description)
             
             if await sendCryptoViewModel.validateForm(tx: tx) {
-                navigateToVerify = true
+                await MainActor.run {
+                    navigateToVerify = true
+                }
             }
         }
         
@@ -331,7 +333,6 @@ extension SendDetailsScreen {
     SendDetailsScreen(
         coin: .example,
         tx: SendTransaction(),
-        sendCryptoViewModel: SendCryptoViewModel(),
         sendDetailsViewModel: SendDetailsViewModel(),
         vault: Vault.example
     )
