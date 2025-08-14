@@ -85,11 +85,24 @@ struct FunctionCallView: View {
                     vault: vault,
                     keysignPayload: keysignPayload, 
                     customMessagePayload: nil,
-                    transferViewModel: functionCallViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
-                    keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel
-                )
+                ) { input in
+                    self.keysignView = KeysignView(
+                        vault: input.vault,
+                        keysignCommittee: input.keysignCommittee,
+                        mediatorURL: input.mediatorURL,
+                        sessionID: input.sessionID,
+                        keysignType: input.keysignType,
+                        messsageToSign: input.messsageToSign,
+                        keysignPayload: input.keysignPayload,
+                        customMessagePayload: input.customMessagePayload,
+                        transferViewModel: functionCallViewModel,
+                        encryptionKeyHex: input.encryptionKeyHex,
+                        isInitiateDevice: input.isInitiateDevice
+                    )
+                    functionCallViewModel.moveToNextView()
+                }
             } else {
                 SendCryptoVaultErrorView()
             }
