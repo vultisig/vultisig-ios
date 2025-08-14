@@ -35,12 +35,14 @@ struct SendPairScreen: View {
             SendRouteBuilder().buildKeysignScreen(input: input, tx: tx)
         }
         .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Keysign,
-                    viewModel: shareSheetViewModel
-                )
+            if fastVaultPassword == nil {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(
+                        vault: vault,
+                        type: .Keysign,
+                        viewModel: shareSheetViewModel
+                    )
+                }
             }
         }
     }
