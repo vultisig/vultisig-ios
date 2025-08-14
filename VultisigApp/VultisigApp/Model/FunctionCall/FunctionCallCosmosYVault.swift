@@ -18,11 +18,11 @@ struct YVaultConstants {
         "ytcy" : "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"  // yTCY
     ]
     static let receiptDenominations: [String: String] = [
-        "rune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE Receipt
-        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",   // yTCY Receipt
+        "rune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE token
+        "tcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",   // yTCY token
         
-        "yrune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE Receipt
-        "ytcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY Receipt
+        "yrune": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt", // yRUNE token
+        "ytcy": "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt"   // yTCY token
     ]
     static let depositMsgJSON = "{ \"deposit\": {} }"
     // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
@@ -53,18 +53,32 @@ class FunctionCallCosmosYVault: ObservableObject {
     private var amountMicro: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
     
+    // Check if deposit is allowed for this coin
+    var isDepositAllowed: Bool {
+        let ticker = tx.coin.ticker.lowercased()
+        return ticker == "rune" || ticker == "tcy"
+    }
+    
     // MARK: Init
     init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction) {
         self.tx = tx
         self.vault = vault
-        self.action = action
         let denom = tx.coin.ticker.lowercased()
         self.contractAddress = YVaultConstants.contracts[denom] ?? ""
         self.destinationAddress = self.contractAddress
         
+        // If deposit is not allowed for this coin and action is deposit, default to withdraw
+        if case .deposit = action, !(denom == "rune" || denom == "tcy") {
+            self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
+        } else {
+            self.action = action
+        }
+    }
+    
+    func initiate() {
         balanceLabel = "Amount ( Balance: \(tx.coin.balanceDecimal.formatForDisplay()) \(tx.coin.ticker.uppercased()) )"
         setupValidation()
-        if case .withdraw(let slip) = action { selectedSlippage = slip }
+        if case .withdraw(let slip) = self.action { selectedSlippage = slip }
     }
     
     // MARK: Validation
@@ -114,7 +128,9 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     // MARK: UI
     func getView() -> AnyView {
-        AnyView(FunctionCallCosmosYVaultView(viewModel: self))
+        AnyView(FunctionCallCosmosYVaultView(viewModel: self).onAppear{
+            self.initiate()
+        })
     }
 }
 
@@ -133,7 +149,13 @@ struct FunctionCallCosmosYVaultView: View {
         VStack {
             GenericSelectorDropDown(
                 items: Binding(
-                    get: { ["Deposit", "Withdraw"].map { IdentifiableString(value: $0) } },
+                    get: {
+                        var options = ["Withdraw"]
+                        if viewModel.isDepositAllowed {
+                            options.insert("Deposit", at: 0)
+                        }
+                        return options.map { IdentifiableString(value: $0) }
+                    },
                     set: { _ in }
                 ),
                 selected: Binding(
@@ -144,7 +166,7 @@ struct FunctionCallCosmosYVaultView: View {
                         }
                     },
                     set: { sel in
-                        if sel.value.lowercased() == "deposit" {
+                        if sel.value.lowercased() == "deposit" && viewModel.isDepositAllowed {
                             viewModel.action = .deposit
                         } else {
                             viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
