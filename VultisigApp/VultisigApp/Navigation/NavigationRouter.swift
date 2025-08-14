@@ -26,6 +26,7 @@ final class NavigationRouter: ObservableObject {
     }
 
     func navigateBack() {
+        guard !navPath.isEmpty else { return }
         navPath.removeLast()
     }
 
