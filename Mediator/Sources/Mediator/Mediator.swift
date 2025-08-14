@@ -365,7 +365,7 @@ public final class Mediator {
         }
         var key = "setup-\(sessionID)"
         let messageID = req.headers["message_id"]
-        if let messageID {
+        if let messageID, !messageID.isEmpty {
             key += "-\(messageID)"
         }
         do{

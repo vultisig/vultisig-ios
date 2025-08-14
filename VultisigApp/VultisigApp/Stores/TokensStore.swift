@@ -1265,11 +1265,11 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .osmosis,
-            ticker: "LVN",
-            logo: "levana",
+            ticker: "KUJI",
+            logo: "kuji",
             decimals: 6,
-            priceProviderId: "levana-protocol",
-            contractAddress: "factory/osmo1mlng7pz4pnyxtpq0akfwall37czyk9lukaucsrn30ameplhhshtqdvfm5c/ulvn",
+            priceProviderId: "kujira",
+            contractAddress: "ibc/93B87B73E634D3BD3CD782F52C99883F340CE6027F37718E0E04D552272DA8A9",
             isNativeToken: false
         ),
         CoinMeta(
