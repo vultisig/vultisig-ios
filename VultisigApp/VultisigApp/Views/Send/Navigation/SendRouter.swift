@@ -18,12 +18,12 @@ struct SendRouter {
     @ViewBuilder
     func build(_ route: SendRoute) -> some View {
         switch route {
-        case .details(let input):
+        case .details(let coin, let hasPreselectedCoin, let tx, let vault):
             viewBuilder.buildDetailsScreen(
-                coin: input.coin,
-                hasPreselectedCoin: input.hasPreselectedCoin,
-                tx: input.tx,
-                vault: input.vault
+                coin: coin,
+                hasPreselectedCoin: hasPreselectedCoin,
+                tx: tx,
+                vault: vault
             )
         case .verify(let tx, let vault):
             viewBuilder.buildVerifyScreen(tx: tx, vault: vault)
@@ -45,11 +45,4 @@ struct SendRouter {
             )
         }
     }
-}
-
-struct SendRouteInput: Hashable {
-    let coin: Coin?
-    let hasPreselectedCoin: Bool
-    let tx: SendTransaction
-    let vault: Vault
 }
