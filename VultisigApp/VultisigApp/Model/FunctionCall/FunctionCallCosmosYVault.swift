@@ -7,32 +7,27 @@ import SwiftUI
 import Foundation
 import Combine
 
-// MARK: - Constants
 struct YVaultConstants {
-    // Base contract addresses
     private static let yRuneContract = "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt"
     private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
     
-    /// Mainnet contracts
     static let contracts: [String: String] = [
-        "rune": yRuneContract,   // Deposit RUNE to get yRUNE
-        "tcy": yTcyContract,     // Deposit TCY to get yTCY
-        "yrune": yRuneContract,  // Withdraw RUNE from yRUNE
-        "ytcy": yTcyContract     // Withdraw TCY from yTCY
+        "rune": yRuneContract,
+        "tcy": yTcyContract,
+        "yrune": yRuneContract,
+        "ytcy": yTcyContract
     ]
     
     static let receiptDenominations: [String: String] = [
-        "rune": "x/nami-index-nav-\(yRuneContract)-rcpt",   // yRUNE receipt
-        "tcy": "x/nami-index-nav-\(yTcyContract)-rcpt",     // yTCY receipt
-        "yrune": "x/nami-index-nav-\(yRuneContract)-rcpt",  // yRUNE receipt
-        "ytcy": "x/nami-index-nav-\(yTcyContract)-rcpt"     // yTCY receipt
+        "rune": "x/nami-index-nav-\(yRuneContract)-rcpt",
+        "tcy": "x/nami-index-nav-\(yTcyContract)-rcpt",
+        "yrune": "x/nami-index-nav-\(yRuneContract)-rcpt",
+        "ytcy": "x/nami-index-nav-\(yTcyContract)-rcpt"
     ]
     
     static let depositMsgJSON = "{ \"deposit\": {} }"
-    // Slippage presets used on withdraw (1 %, 2 %, 5 %, 7.5 %)
     static let slippageOptions: [Decimal] = [0.01, 0.02, 0.05, 0.075]
     
-    // Action labels
     static let actionLabels: [String: String] = [
         "rune": "Receive yRUNE",
         "tcy": "Receive yTCY",
@@ -41,15 +36,12 @@ struct YVaultConstants {
     ]
 }
 
-// MARK: - Action Type
 enum YVaultAction {
     case deposit
     case withdraw(slippage: Decimal)
 }
 
-// MARK: - View-Model
 class FunctionCallCosmosYVault: ObservableObject {
-    // UI-bound fields
     @Published var amount: Decimal = 0.0 { didSet { recalcMicroAmount() } }
     @Published var amountValid = false
     @Published var isTheFormValid = false
@@ -64,8 +56,6 @@ class FunctionCallCosmosYVault: ObservableObject {
     
     private var amountMicro: UInt64 = 0
     private var cancellables = Set<AnyCancellable>()
-    
-    // MARK: Init
     init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault, action: YVaultAction) {
         self.tx = tx
         self.vault = vault
@@ -73,34 +63,31 @@ class FunctionCallCosmosYVault: ObservableObject {
         self.contractAddress = YVaultConstants.contracts[denom] ?? ""
         self.destinationAddress = self.contractAddress
         
-        // Set appropriate action based on coin type
         if denom == "rune" || denom == "tcy" {
-            // RUNE/TCY only allows deposit
             self.action = .deposit
         } else if denom == "yrune" || denom == "ytcy" {
-            // yRUNE/yTCY only allows withdraw
             if case .withdraw(let slip) = action {
                 self.action = .withdraw(slippage: slip)
             } else {
                 self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
             }
         } else {
-            // Unsupported coin, default to withdraw but will be handled in validation
             self.action = .withdraw(slippage: YVaultConstants.slippageOptions.first!)
         }
+        
+        setupValidation()
     }
     
     func initiate() {
         balanceLabel = "Amount ( Balance: \(tx.coin.balanceDecimal.formatForDisplay()) \(tx.coin.ticker.uppercased()) )"
-        setupValidation()
         if case .withdraw(let slip) = self.action { selectedSlippage = slip }
-        validateAmount() // Initial amount validation
+        validateAmount()
     }
     
-    // MARK: Validation
     private func setupValidation() {
-        // Observe amount changes and validate balance
         $amount
+            .removeDuplicates()
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] newAmount in
                 self?.validateAmount()
             }
@@ -115,7 +102,6 @@ class FunctionCallCosmosYVault: ObservableObject {
         amountValid = isValidAmount
     }
     
-    // MARK: Helpers
     private func recalcMicroAmount() {
         let decimals = tx.coin.decimals
         let multiplier = pow(10.0, Double(decimals))
@@ -132,8 +118,6 @@ class FunctionCallCosmosYVault: ObservableObject {
             return "{ \"withdraw\": { \"slippage\": \"\(slipStr)\" } }"
         }
     }
-    
-    // MARK: Dictionary for Msg builder
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("destinationAddress", destinationAddress)
@@ -155,7 +139,6 @@ class FunctionCallCosmosYVault: ObservableObject {
     var description: String { "yVault-\(tx.coin.ticker.uppercased())-\(actionStr)" }
     private var actionStr: String { action.isDeposit ? "deposit" : "withdraw" }
     
-    // MARK: UI
     func getView() -> AnyView {
         AnyView(FunctionCallCosmosYVaultView(viewModel: self).onAppear{
             self.initiate()
@@ -163,14 +146,12 @@ class FunctionCallCosmosYVault: ObservableObject {
     }
 }
 
-// MARK: - Helpers
 private extension YVaultAction {
     var isDeposit: Bool {
         if case .deposit = self { return true } else { return false }
     }
 }
 
-// MARK: - View
 struct FunctionCallCosmosYVaultView: View {
     @ObservedObject var viewModel: FunctionCallCosmosYVault
     
@@ -214,8 +195,9 @@ struct FunctionCallCosmosYVaultView: View {
                 ),
                 isValid: Binding(
                     get: { viewModel.amountValid },
-                    set: { _ in } // Don't let StyledFloatingPointField override our validation
-                )
+                    set: { _ in }
+                ),
+                isOptional: false
             )
             
             if case .withdraw = viewModel.action {
