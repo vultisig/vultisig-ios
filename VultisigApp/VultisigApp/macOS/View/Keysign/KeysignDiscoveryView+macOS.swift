@@ -69,7 +69,6 @@ extension KeysignDiscoveryView {
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
-            .padding(.horizontal, 18)
             .padding(.bottom, 120)
         }
     }

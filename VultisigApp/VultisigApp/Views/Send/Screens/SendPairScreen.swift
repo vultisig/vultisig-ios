@@ -25,12 +25,12 @@ struct SendPairScreen: View {
                 customMessagePayload: nil,
                 fastVaultPassword: fastVaultPassword,
                 shareSheetViewModel: shareSheetViewModel,
-                previewType: .Send
+                previewType: .Send,
+                contentPadding: 0
             ) { input in
                 self.keysignInput = input
             }
         }
-        .navigationBarBackButtonHidden(true)
         .navigationDestination(item: $keysignInput) { input in
             SendRouteBuilder().buildKeysignScreen(input: input, tx: tx)
         }

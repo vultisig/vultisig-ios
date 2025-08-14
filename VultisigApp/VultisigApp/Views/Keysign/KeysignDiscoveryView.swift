@@ -26,6 +26,7 @@ struct KeysignDiscoveryView: View {
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     @State var previewType: QRShareSheetType = .Send
     var swapTransaction: SwapTransaction = SwapTransaction()
+    var contentPadding: CGFloat?
     var onKeysignInput: (KeysignInput) -> Void
     
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
@@ -121,6 +122,7 @@ struct KeysignDiscoveryView: View {
             disclaimer
             list
         }
+        .padding(.horizontal, contentPadding ?? 16)
     }
     
     @ViewBuilder
@@ -129,7 +131,7 @@ struct KeysignDiscoveryView: View {
             qrScannedAnimation?.view()
             qrCode
         }
-        .padding()
+        .padding(.bottom)
     }
     
     var disclaimer: some View {
@@ -138,7 +140,6 @@ struct KeysignDiscoveryView: View {
                 LocalModeDisclaimer()
             } 
         }
-        .padding(.horizontal)
     }
     
     var listTitle: some View {
@@ -150,7 +151,7 @@ struct KeysignDiscoveryView: View {
         .font(Theme.fonts.title2)
         .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 8)
     }
     
     var lookingForDevices: some View {
