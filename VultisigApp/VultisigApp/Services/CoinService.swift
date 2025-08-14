@@ -132,6 +132,14 @@ struct CoinService {
         return newCoin
     }
     
+    static func addIfNeeded(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
+        if let coin = vault.coin(for: asset) {
+            return coin
+        }
+        
+        return try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+    }
+    
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
             var tokens: [CoinMeta] = []
