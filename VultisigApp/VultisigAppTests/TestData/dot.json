@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Send DOT",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Polkadot",
+                "ticker": "DOT",
+                "address": "13fPCXZUJLXLpr57w2YChrCfaAe5E5nV23fYUqPYPC1C7CEA",
+                "decimals": 9,
+                "price_provider_id": "polkadot",
+                "is_native_token": true,
+                "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+                "logo": "dot"
+            },
+            "to_address": "13TD3YWsUZhRueVJbZpTgGGS7F34WpzjBdgk7wyf5mbLwo4z",
+            "to_amount": "10000000000",
+            "BlockchainSpecific": {
+                "PolkadotSpecific": {
+                    "recent_block_hash": "0x3839b966b7f3e90ff9566e53f1fef13fa64b91b8db2d5c31fd1e3824a7936988",
+                    "nonce": 0,
+                    "current_block_number": "27313159",
+                    "spec_version": 1006001,
+                    "transaction_version": 26,
+                    "genesis_hash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["0500006c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e75710700e40b54027500000000b1590f001a00000091b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c33839b966b7f3e90ff9566e53f1fef13fa64b91b8db2d5c31fd1e3824a793698800"]
+    }
+]

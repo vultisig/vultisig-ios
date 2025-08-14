@@ -143,6 +143,10 @@ final class ChainHelperTests: XCTestCase {
             result += try TonHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         case .tron:
             result += try TronHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .polkadot:
+            result += try PolkadotHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
+        case .sui:
+            result += try SuiHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
         default:
             XCTFail("Unsupported chain: \(String(describing: chain.name))")
         }

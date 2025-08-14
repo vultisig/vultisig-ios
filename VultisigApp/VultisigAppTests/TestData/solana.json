@@ -57,5 +57,38 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["0100030575be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d56c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e75710306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000054a535a992921064d24e87160da387c7c35b5ddbc92bb81e41fa8404105448d00000000000000000000000000000000000000000000000000000000000000003c7e3fcc1f1b0444363b52e6ae7efc8d5232dff4885b5d260940a30325d0e7bd040200090340420f000000000002000502a086010003000a68656c6c6f776f726c64040200010c0200000000e1f50500000000"]
+    },
+    {
+        "name": "Send Ray token",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Solana",
+                "ticker": "RAY",
+                "address": "8vdCT37Lc6MLXfep8K5XFyYU6HTPpaqjJ7hyXJjUCc12",
+                "decimals": 6,
+                "price_provider_id": "raydium",
+                "is_native_token": false,
+                "hex_public_key": "75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5",
+                "contract_address": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+                "logo": "raydium"
+            },
+            "to_address": "8JNrRufy7zmH3S92JXnrc3rJDb6rupq3Fyyv7tsRSFmS",
+            "to_amount": "100000",
+            "BlockchainSpecific": {
+                "SolanaSpecific": {
+                    "recent_block_hash": "FpDgmLkZkVi3k3oMEKbP6TgwjhfZqiLXB7dpLFQUQfvk",
+                    "from_address_pub_key": "FpDgmLkZkVi3k3oMEKbP6TgwjhfZqiLXB7dpLFQUQfvk",
+                    "priority_fee": "0",
+                    "from_token_associated_address": "D8QPZUruhENG1fwrH42DXyDSjc4ZAEJtqGZhp1XcYq42",
+                    "has_program_id": false
+                }
+            },
+            "memo": "helloworld",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["0100070a75be85178816db3bc71a4f3e64e5c89866d8b7daae827ba9cf4ecd1ed9e645d5f1d0054e3a536dd733b0921338e3923317ef3cae48aa0ff352d8c2cf7d6b5e7eb431c13871472b7be2967f9e72c2b944f6c2e849c51a605c0c40681503c215b76c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e757137998ccbf2d0458b615cbcc6b1a367c4749e9fef7306622e1b1b58910120bc9a000000000000000000000000000000000000000000000000000000000000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a906a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a000000000306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a400000008c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f859dc1c42366f3a04be2c0aa69f1880b54e985411bfe4c3975b4ee15ce55366692d040800090340420f000000000008000502a0860100090700010304050607000604020401000a0ca08601000000000006"]
     }
 ]
