@@ -53,7 +53,10 @@ class FunctionCallStakeTCY: ObservableObject {
     
     func toString() -> String {
         if isAutoCompound {
-            return "bond:\(self.tx.coin.contractAddress):\(self.tx.amountInRaw.description)"
+            // For auto-compound, the official documentation doesn't specify a memo format
+            // This should be handled as a pure smart contract execution
+            // Based on the CLI example: thornode tx wasm execute [contract] [msg] --amount [amount]tcy
+            return "tcy+"  // Use regular TCY staking memo as fallback until we get official guidance
         } else {
             return "tcy+"
         }
@@ -72,7 +75,7 @@ class FunctionCallStakeTCY: ObservableObject {
             senderAddress: tx.coin.address,
             contractAddress: destinationAddress,
             executeMsg: """
-            { "deposit": {} }
+            { "liquid": { "bond": {} } }
             """,
             coins: [CosmosCoin(
                 amount: self.tx.amountInRaw.description,

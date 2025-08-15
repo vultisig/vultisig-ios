@@ -31,6 +31,5 @@ enum RUJIStakingConstants {
 }
 
 enum TCYAutoCompoundConstants {
-    // TODO: Replace with actual TCY auto-compound contract address from the autorujira-contracts repo
-    static let contract = "thor1w8m5hrr9e9w2wxj8g3gp4g6jqy0z8lm0x5j9n9k9y9e9e9e9e9e9e9e9"
+    static let contract = "thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0"
 }

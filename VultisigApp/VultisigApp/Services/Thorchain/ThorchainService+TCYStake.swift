@@ -118,10 +118,54 @@ extension ThorchainService {
     }
     
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
-        // TODO: Implement fetching auto-compound TCY balance from the smart contract
-        // This should query the auto-compound contract to get the user's deposited amount
-        // For now, return zero as placeholder
-        return .zero
+        let urlString = Endpoint.fetchTcyAutoCompoundBalance(address: address)
+        guard let url = URL(string: urlString) else {
+            return .zero
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let balance = json["balance"] as? [String: Any],
+               let amountString = balance["amount"] as? String,
+               let amount = UInt64(amountString) {
+                return Decimal(amount)
+            } else {
+                return .zero
+            }
+        } catch {
+            print("Error fetching or decoding auto-compound balance: \(error.localizedDescription)")
+            return .zero
+        }
+    }
+    
+    func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
+        let urlString = Endpoint.fetchTcyAutoCompoundStatus()
+        guard let url = URL(string: urlString) else {
+            return (.zero, .zero)
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let dataObj = json["data"] as? [String: Any],
+               let liquidBondSizeStr = dataObj["liquid_bond_size"] as? String,
+               let liquidBondSharesStr = dataObj["liquid_bond_shares"] as? String,
+               let liquidBondSize = UInt64(liquidBondSizeStr),
+               let liquidBondShares = UInt64(liquidBondSharesStr) {
+                
+                let sizeDecimal = Decimal(liquidBondSize)
+                let sharesDecimal = Decimal(liquidBondShares)
+                let sharePrice = sharesDecimal > 0 ? sizeDecimal / sharesDecimal : .zero
+                
+                return (sharePrice, sharesDecimal)
+            } else {
+                return (.zero, .zero)
+            }
+        } catch {
+            print("Error fetching auto-compound status: \(error.localizedDescription)")
+            return (.zero, .zero)
+        }
     }
     
 }

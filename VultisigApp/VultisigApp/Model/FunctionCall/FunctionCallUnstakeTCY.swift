@@ -61,13 +61,8 @@ class FunctionCallUnstakeTCY: ObservableObject {
     
     func toString() -> String {
         if isAutoCompound {
-            if let intAmount = Int64(self.amount) {
-                let basisPoints = intAmount * 100
-                let withdrawAmount = (autoCompoundAmount * Decimal(intAmount)) / 100
-                return "bond:\(self.tx.coin.contractAddress):\(withdrawAmount.toInt())"
-            } else {
-                return "bond:\(self.tx.coin.contractAddress):0"
-            }
+            // For auto-compound smart contract execution, THORChain expects specific memo format
+            return "=:\(destinationAddress)"
         } else {
             if let intAmount = Int64(self.amount) {
                 let basisPoints = intAmount * 100
@@ -88,16 +83,18 @@ class FunctionCallUnstakeTCY: ObservableObject {
         guard isAutoCompound else { return nil }
         
         if let intAmount = Int64(self.amount) {
-            let basisPoints = intAmount * 100
             let withdrawAmount = (autoCompoundAmount * Decimal(intAmount)) / 100
             
             return WasmExecuteContractPayload(
                 senderAddress: tx.coin.address,
                 contractAddress: destinationAddress,
                 executeMsg: """
-                { "withdraw": { "amount": "\(withdrawAmount.toInt())" } }
+                { "liquid": { "unbond": {} } }
                 """,
-                coins: []
+                coins: [CosmosCoin(
+                    amount: withdrawAmount.toInt().description,
+                    denom: "x/staking-tcy"
+                )]
             )
         }
         return nil
