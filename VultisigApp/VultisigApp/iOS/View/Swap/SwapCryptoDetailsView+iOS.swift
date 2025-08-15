@@ -11,7 +11,9 @@ import SwiftUI
 extension SwapCryptoDetailsView {
     var container: some View {
         ZStack(alignment: .bottom) {
-            view
+            Screen(showNavigationBar: false) {
+                view
+            }
             percentageButtons
         }
         .sheet(isPresented: $swapViewModel.showFromChainSelector, content: {

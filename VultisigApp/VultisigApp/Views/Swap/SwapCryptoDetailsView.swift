@@ -17,31 +17,29 @@ struct SwapCryptoDetailsView: View {
     @StateObject var keyboardObserver = KeyboardObserver()
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    
     let vault: Vault
-
+    
     var body: some View {
-        Screen(showNavigationBar: false) {
-            container
-        }
-        .onAppear {
-            setData()
-        }
-        .onReceive(timer) { input in
-            swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
-        }
-        .onChange(of: tx.fromCoin, { _, _ in
-            handleFromCoinUpdate()
-        })
-        .onChange(of: tx.toCoin, { _, _ in
-            handleToCoinUpdate()
-        })
-        .onChange(of: swapViewModel.fromChain) { _, _ in
-            swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
-        }
-        .onChange(of: swapViewModel.toChain) { _, _ in
-            swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
-        }
+        container
+            .onAppear {
+                setData()
+            }
+            .onReceive(timer) { input in
+                swapViewModel.updateTimer(tx: tx, vault: vault, referredCode: referredViewModel.savedReferredCode)
+            }
+            .onChange(of: tx.fromCoin, { _, _ in
+                handleFromCoinUpdate()
+            })
+            .onChange(of: tx.toCoin, { _, _ in
+                handleToCoinUpdate()
+            })
+            .onChange(of: swapViewModel.fromChain) { _, _ in
+                swapViewModel.handleFromChainUpdate(tx: tx, vault: vault)
+            }
+            .onChange(of: swapViewModel.toChain) { _, _ in
+                swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
+            }
     }
     
     var content: some View {
@@ -122,7 +120,7 @@ struct SwapCryptoDetailsView: View {
         Group {
             if swapViewModel.isLoadingQuotes {
                 // Show loader instead of swap icon when loading
-            CircularProgressIndicator(size: 24)
+                CircularProgressIndicator(size: 24)
                     .padding(8)
             } else {
                 // Show swap icon when not loading

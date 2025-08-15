@@ -32,15 +32,15 @@ struct SwapCoinPickerView: View {
     var header: some View {
         HStack {
             backButton
-                .frame(maxWidth: .infinity, alignment: .leading)
-            title
-                .frame(maxWidth: .infinity, alignment: .center)
             Spacer()
-                .frame(maxWidth: .infinity, alignment: .center)
+            title
+            Spacer()
+            backButton
+                .opacity(0)
         }
-        .padding(.horizontal, 16)
     }
     
+    @ViewBuilder
     var backButton: some View {
         #if os(macOS)
             Button {
@@ -48,8 +48,6 @@ struct SwapCoinPickerView: View {
             } label: {
                 NavigationBlankBackButton()
             }
-        #else
-            Spacer()
         #endif
     }
     
