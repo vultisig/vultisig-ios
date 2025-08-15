@@ -24,8 +24,13 @@ enum ThorchainMergeTokens {
         TokenMergeInfo(denom: "thor.wink", wasmContractAddress: "thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y"),
         TokenMergeInfo(denom: "thor.lvn", wasmContractAddress: "thor1ltd0maxmte3xf4zshta9j5djrq9cl692ctsp9u5q0p9wss0f5lms7us4yf")
     ]
-} 
+}
 
 enum RUJIStakingConstants {
     static let contract = "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+}
+
+enum TCYAutoCompoundConstants {
+    // TODO: Replace with actual TCY auto-compound contract address from the autorujira-contracts repo
+    static let contract = "thor1w8m5hrr9e9w2wxj8g3gp4g6jqy0z8lm0x5j9n9k9y9e9e9e9e9e9e9e9"
 }

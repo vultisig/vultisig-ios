@@ -369,6 +369,10 @@ enum FunctionCallInstance {
             return call.wasmContractPayload
         case .withdrawRujiRewards(let call):
             return call.wasmContractPayload
+        case .stakeTcy(let call):
+            return call.wasmContractPayload
+        case .unstakeTcy(let call):
+            return call.wasmContractPayload
         default:
             return nil
         }

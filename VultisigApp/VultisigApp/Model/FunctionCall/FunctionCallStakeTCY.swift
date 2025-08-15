@@ -10,6 +10,7 @@ import Combine
 
 class FunctionCallStakeTCY: ObservableObject {
     @Published var amount: Decimal = 0
+    @Published var isAutoCompound: Bool = false
     
     // Internal
     @Published var amountValid: Bool = false
@@ -18,11 +19,15 @@ class FunctionCallStakeTCY: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     private var tx: SendTransaction
+    private let vault: Vault
+    
+    let destinationAddress = TCYAutoCompoundConstants.contract
     
     required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
+        tx: SendTransaction, vault: Vault, functionCallViewModel: FunctionCallViewModel
     ) {
         self.tx = tx
+        self.vault = vault
         self.amount = tx.coin.balanceDecimal
     }
     
@@ -47,7 +52,11 @@ class FunctionCallStakeTCY: ObservableObject {
     }
     
     func toString() -> String {
-        return "tcy+"
+        if isAutoCompound {
+            return "bond:\(self.tx.coin.contractAddress):\(self.tx.amountInRaw.description)"
+        } else {
+            return "tcy+"
+        }
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -56,21 +65,58 @@ class FunctionCallStakeTCY: ObservableObject {
         return dict
     }
     
+    var wasmContractPayload: WasmExecuteContractPayload? {
+        guard isAutoCompound else { return nil }
+        
+        return WasmExecuteContractPayload(
+            senderAddress: tx.coin.address,
+            contractAddress: destinationAddress,
+            executeMsg: """
+            { "deposit": {} }
+            """,
+            coins: [CosmosCoin(
+                amount: self.tx.amountInRaw.description,
+                denom: tx.coin.contractAddress
+            )]
+        )
+    }
+    
     func getView() -> AnyView {
-        AnyView(VStack {
+        AnyView(FunctionCallStakeTCYView(viewModel: self))
+    }
+}
+
+private struct FunctionCallStakeTCYView: View {
+    @ObservedObject var viewModel: FunctionCallStakeTCY
+    
+    var body: some View {
+        VStack(spacing: 16) {
             StyledFloatingPointField(
-                label: "\(NSLocalizedString("amount", comment: "")) \(self.balance)",
+                label: "\(NSLocalizedString("amount", comment: "")) \(viewModel.balance)",
                 placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
+                    get: { viewModel.amount },
+                    set: { viewModel.amount = $0 }
                 ),
                 isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
+                    get: { viewModel.amountValid },
+                    set: { viewModel.amountValid = $0 }
                 ))
-        }.onAppear {
-            self.initialize()
-        })
+            
+            Toggle(isOn: $viewModel.isAutoCompound) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Enable Auto-Compounding")
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
+                    Text("Automatically compound your TCY rewards")
+                        .font(Theme.fonts.caption12)
+                        .foregroundColor(Theme.colors.textPrimary)
+                }
+            }
+            .toggleStyle(SwitchToggleStyle())
+        }
+        .onAppear {
+            viewModel.initialize()
+        }
     }
 }

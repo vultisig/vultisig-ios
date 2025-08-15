@@ -117,4 +117,11 @@ extension ThorchainService {
         }
     }
     
+    func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
+        // TODO: Implement fetching auto-compound TCY balance from the smart contract
+        // This should query the auto-compound contract to get the user's deposited amount
+        // For now, return zero as placeholder
+        return .zero
+    }
+    
 }
