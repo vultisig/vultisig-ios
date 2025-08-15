@@ -690,6 +690,51 @@ extension VSKyberSwapPayload: Codable {
         quote = try container.decode(VSKyberSwapQuote.self, forKey: .quote)
     }
 }
+
+extension VSCosmosCoin: Codable {
+    enum CodingKeys: String, CodingKey {
+        case denom
+        case amount
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(denom, forKey: .denom)
+        try container.encode(amount, forKey: .amount)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        denom = try container.decode(String.self, forKey: .denom)
+        amount = try container.decode(String.self, forKey: .amount)
+    }
+   
+}
+extension VSWasmExecuteContractPayload: Codable {
+    enum CodingKeys: String, CodingKey {
+        case senderAddress = "sender_address"
+        case contractAddress = "contract_address"
+        case executeMsg = "execute_msg"
+        case coins = "coins"
+    }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(senderAddress, forKey: .senderAddress)
+        try container.encode(contractAddress, forKey: .contractAddress)
+        try container.encode(executeMsg, forKey: .executeMsg)
+        try container.encode(coins, forKey: .coins)
+    }
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init()
+        senderAddress = try container.decode(String.self, forKey: .senderAddress)
+        contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        executeMsg = try container.decode(String.self, forKey: .executeMsg)
+        if container.contains(.coins) {
+            coins = try container.decode([VSCosmosCoin].self, forKey: .coins)
+        }
+    }
+}
 struct DynamicCodingKey: CodingKey {
     var stringValue: String
     var intValue: Int? { nil }
@@ -720,6 +765,7 @@ extension VSKeysignPayload: Codable {
         case vaultPubKeyECDSA = "vault_public_key_ecdsa"
         case vaultLocalPartyID = "vault_local_party_id"
         case libType = "lib_type"
+        case wasmExecuteContractPayload = "wasm_execute_contract_payload"
     }
     
     public func encode(to encoder: any Encoder) throws {
@@ -842,5 +888,8 @@ extension VSKeysignPayload: Codable {
         vaultPublicKeyEcdsa = try container.decode(String.self, forKey: .vaultPubKeyECDSA)
         vaultLocalPartyID = try container.decodeIfPresent(String.self, forKey: .vaultLocalPartyID) ?? String()
         libType = try container.decodeIfPresent(String.self, forKey: .libType) ?? "DKLS"
+        if container.contains(.wasmExecuteContractPayload) {
+            wasmExecuteContractPayload = try container.decode(VSWasmExecuteContractPayload.self, forKey: .wasmExecuteContractPayload)
+        }
     }
 }
