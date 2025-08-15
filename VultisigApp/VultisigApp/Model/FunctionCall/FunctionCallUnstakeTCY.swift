@@ -61,8 +61,9 @@ class FunctionCallUnstakeTCY: ObservableObject {
     
     func toString() -> String {
         if isAutoCompound {
-            // For auto-compound smart contract execution, THORChain expects specific memo format
-            return "=:\(destinationAddress)"
+            // For auto-compound smart contract execution, memo should be empty
+            // The transaction will use MsgExecuteContract instead of MsgDeposit
+            return ""
         } else {
             if let intAmount = Int64(self.amount) {
                 let basisPoints = intAmount * 100

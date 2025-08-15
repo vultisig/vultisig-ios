@@ -154,8 +154,8 @@ class Endpoint {
     }
     
     static func fetchTcyAutoCompoundBalance(address: String) -> String {
-        // Query user's sTCY balance using cosmos bank API
-        "https://rpc.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x/staking-tcy"
+        // Query user's sTCY balance using cosmos bank API - URL encode the denom
+        "https://rpc.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
     }
     
     static func fetchRuneBondedAmount(address: String) -> String {

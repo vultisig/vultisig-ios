@@ -118,25 +118,32 @@ extension ThorchainService {
     }
     
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
-        let urlString = Endpoint.fetchTcyAutoCompoundBalance(address: address)
-        guard let url = URL(string: urlString) else {
+        // Use THORNode endpoint to get all balances and find x/staking-tcy
+        let allBalancesUrl = "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        
+        guard let url = URL(string: allBalancesUrl) else {
             return .zero
         }
-
+        
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let balance = json["balance"] as? [String: Any],
-               let amountString = balance["amount"] as? String,
-               let amount = UInt64(amountString) {
-                return Decimal(amount)
-            } else {
-                return .zero
+               let balances = json["balances"] as? [[String: Any]] {
+                
+                for balance in balances {
+                    if let denom = balance["denom"] as? String,
+                       denom == "x/staking-tcy",
+                       let amountString = balance["amount"] as? String,
+                       let amount = UInt64(amountString) {
+                        return Decimal(amount)
+                    }
+                }
             }
         } catch {
-            print("Error fetching or decoding auto-compound balance: \(error.localizedDescription)")
-            return .zero
+            print("Error fetching auto-compound balance: \(error.localizedDescription)")
         }
+        
+        return .zero
     }
     
     func fetchTcyAutoCompoundStatus() async -> (sharePrice: Decimal, totalShares: Decimal) {
