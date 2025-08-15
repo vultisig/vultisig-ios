@@ -21,6 +21,7 @@ extension SwapCryptoDetailsView {
                 showSheet: $swapViewModel.showFromChainSelector,
                 selectedChain: $swapViewModel.fromChain
             )
+            .sheetStyle()
         })
         .sheet(isPresented: $swapViewModel.showToChainSelector, content: {
             SwapChainPickerView(
@@ -29,6 +30,7 @@ extension SwapCryptoDetailsView {
                 showSheet: $swapViewModel.showToChainSelector,
                 selectedChain: $swapViewModel.toChain
             )
+            .sheetStyle()
         })
         .sheet(isPresented: $swapViewModel.showFromCoinSelector, content: {
             SwapCoinPickerView(
@@ -37,6 +39,7 @@ extension SwapCryptoDetailsView {
                 selectedCoin: $tx.fromCoin,
                 selectedChain: swapViewModel.fromChain
             )
+            .sheetStyle()
         })
         .sheet(isPresented: $swapViewModel.showToCoinSelector, content: {
             SwapCoinPickerView(
@@ -45,6 +48,7 @@ extension SwapCryptoDetailsView {
                 selectedCoin: $tx.toCoin,
                 selectedChain: swapViewModel.toChain
             )
+            .sheetStyle()
         })
     }
     

@@ -59,16 +59,19 @@ struct SwapChainPickerView: View {
         .padding(16)
     }
     
+    @ViewBuilder
     var backButton: some View {
-        Button {
-            showSheet = false
-        } label: {
-            NavigationBlankBackButton()
-        }
+        #if os(macOS)
+            Button {
+                showSheet = false
+            } label: {
+                NavigationBlankBackButton()
+            }
+        #endif
     }
     
     var title: some View {
-        Text(NSLocalizedString("selectNetwork", comment: ""))
+        Text(NSLocalizedString("selectChain", comment: ""))
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodyLMedium)
     }

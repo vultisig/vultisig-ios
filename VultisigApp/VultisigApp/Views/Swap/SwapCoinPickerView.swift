@@ -42,11 +42,15 @@ struct SwapCoinPickerView: View {
     }
     
     var backButton: some View {
-        Button {
-            showSheet = false
-        } label: {
-            NavigationBlankBackButton()
-        }
+        #if os(macOS)
+            Button {
+                showSheet = false
+            } label: {
+                NavigationBlankBackButton()
+            }
+        #else
+            Spacer()
+        #endif
     }
     
     var title: some View {
