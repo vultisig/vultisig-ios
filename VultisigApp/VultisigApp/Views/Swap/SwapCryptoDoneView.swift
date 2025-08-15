@@ -337,12 +337,20 @@ struct SwapCryptoDoneView: View {
     
     private func getCopyButton(for value: String) -> some View {
         Button {
-            copyValue(value)
+            copy(hash: value)
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(Theme.colors.textPrimary)
                 .font(Theme.fonts.bodySMedium)
         }
+    }
+    
+    private func copy(hash: String) {
+        alertTitle = "hashCopied"
+        showAlert = true
+        
+        let explorerLink = Endpoint.getExplorerURL(chain: tx.fromCoin.chain, txid: hash)
+        ClipboardManager.copyToClipboard(explorerLink)
     }
 }
 
