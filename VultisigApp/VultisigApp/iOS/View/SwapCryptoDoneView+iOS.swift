@@ -9,13 +9,6 @@
 import SwiftUI
 
 extension SwapCryptoDoneView {
-    func copyValue(_ value: String) {
-        alertTitle = "hashCopied"
-        showAlert = true
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = value
-    }
-    
     var buttons: some View {
         HStack(spacing: 8) {
             trackButton
