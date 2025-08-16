@@ -11,8 +11,7 @@ import Combine
 class FunctionCallStakeTCY: ObservableObject {
     @Published var amount: Decimal = 0
     @Published var isAutoCompound: Bool = false
-    
-    // Internal
+
     @Published var amountValid: Bool = false
     @Published var isTheFormValid: Bool = false
     
@@ -52,14 +51,7 @@ class FunctionCallStakeTCY: ObservableObject {
     }
     
     func toString() -> String {
-        if isAutoCompound {
-            // For auto-compound, the official documentation doesn't specify a memo format
-            // This should be handled as a pure smart contract execution
-            // Based on the CLI example: thornode tx wasm execute [contract] [msg] --amount [amount]tcy
-            return "tcy+"  // Use regular TCY staking memo as fallback until we get official guidance
-        } else {
-            return "tcy+"
-        }
+        return "tcy+"
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
