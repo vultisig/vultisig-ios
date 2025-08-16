@@ -10,7 +10,12 @@ import SwiftUI
 
 extension SwapChainPickerView {
     var body: some View {
-        content
+        Screen {
+            VStack {
+                header
+                content
+            }
+        }
     }
 }
 #endif

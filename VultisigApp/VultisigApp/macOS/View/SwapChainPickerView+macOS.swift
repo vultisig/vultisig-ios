@@ -10,8 +10,12 @@ import SwiftUI
 
 extension SwapChainPickerView {
     var body: some View {
-        content
-            .frame(width: 700, height: 450)
+        Screen(title: "", showNavigationBar: false) {
+            VStack {
+                header
+                content
+            }
+        }.frame(width: 700, height: 450)
     }
 }
 #endif
