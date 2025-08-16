@@ -30,8 +30,6 @@ class FunctionCallUnstakeTCY: ObservableObject {
         self.stakedAmount = stakedAmount
         self.tx = tx
         self.vault = vault
-        setupValidation()
-        validateAmount()
     }
     
     var balance: String {
@@ -116,7 +114,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
         return AnyView(UnstakeView(viewModel: self))
     }
     
-    private func setupValidation() {
+    func setupValidation() {
         $amount
             .sink { [weak self] _ in
                 self?.validateAmount()
@@ -131,7 +129,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
             .store(in: &cancellables)
     }
     
-    private func validateAmount() {
+    func validateAmount() {
         guard !amount.isEmpty else {
             amountValid = false
             return
@@ -242,6 +240,10 @@ struct UnstakeView: View {
                 textField
 #endif
             }
+        }
+        .onAppear {
+            viewModel.setupValidation()
+            viewModel.validateAmount()
         }
     }
 }
