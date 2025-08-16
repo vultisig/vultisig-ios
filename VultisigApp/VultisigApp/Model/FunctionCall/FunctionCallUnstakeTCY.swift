@@ -11,20 +11,18 @@ import Combine
 class FunctionCallUnstakeTCY: ObservableObject {
     @Published var amount: String = ""
     @Published var isAutoCompound: Bool = false
-    public var lastUpdateTime: Date = Date()
-    
     @Published var amountValid: Bool = false
     @Published var isTheFormValid: Bool = false
     
-    private var cancellables = Set<AnyCancellable>()
-    
-    private var tx: SendTransaction
-    private let vault: Vault
-    
-    private var stakedAmount: Decimal = .zero
-    private var autoCompoundAmount: Decimal = .zero
+    public var lastUpdateTime: Date = Date()
     
     let destinationAddress = TCYAutoCompoundConstants.contract
+    
+    private var cancellables = Set<AnyCancellable>()
+    private var tx: SendTransaction
+    private let vault: Vault
+    private var stakedAmount: Decimal = .zero
+    private var autoCompoundAmount: Decimal = .zero
     
     required init(
         tx: SendTransaction, vault: Vault, functionCallViewModel: FunctionCallViewModel, stakedAmount: Decimal
@@ -33,6 +31,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
         self.tx = tx
         self.vault = vault
         setupValidation()
+        validateAmount()
     }
     
     var balance: String {
@@ -43,41 +42,8 @@ class FunctionCallUnstakeTCY: ObservableObject {
         }
     }
     
-    private func setupValidation() {
-        $amount
-            .sink { [weak self] _ in
-                self?.validateAmount()
-            }
-            .store(in: &cancellables)
-        
-        $amountValid
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
-    }
-    
     var description: String {
         return toString()
-    }
-    
-    func toString() -> String {
-        if isAutoCompound {
-            // For auto-compound smart contract execution, memo should be empty
-            // The transaction will use MsgExecuteContract instead of MsgDeposit
-            return ""
-        } else {
-            if let intAmount = Int64(self.amount) {
-                let basisPoints = intAmount * 100
-                return "tcy-:\(basisPoints)"
-            } else {
-                return "tcy-:0"
-            }
-        }
-    }
-    
-    func toDictionary() -> ThreadSafeDictionary<String, String> {
-        let dict = ThreadSafeDictionary<String, String>()
-        dict.set("memo", self.toString())
-        return dict
     }
     
     var wasmContractPayload: WasmExecuteContractPayload? {
@@ -101,19 +67,38 @@ class FunctionCallUnstakeTCY: ObservableObject {
         return nil
     }
     
+    var percentageButtons: some View {
+        PercentageButtons { [weak self] percentage in
+            self?.setPercentage(percentage)
+        }
+    }
+    
+    func toString() -> String {
+        if isAutoCompound {
+            return ""
+        } else {
+            if let intAmount = Int64(self.amount) {
+                let basisPoints = intAmount * 100
+                return "tcy-:\(basisPoints)"
+            } else {
+                return "tcy-:0"
+            }
+        }
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("memo", self.toString())
+        return dict
+    }
+    
     func fetchAutoCompoundBalance() {
         Task {
             let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: tx.coin.address)
             await MainActor.run {
                 autoCompoundAmount = amount
-                validateAmount() // Revalidate after fetching balance
+                validateAmount()
             }
-        }
-    }
-    
-    var percentageButtons: some View {
-        PercentageButtons { [weak self] percentage in
-            self?.setPercentage(percentage)
         }
     }
     
@@ -132,23 +117,49 @@ class FunctionCallUnstakeTCY: ObservableObject {
         return AnyView(UnstakeView(viewModel: self))
     }
     
-    func validateAmount() {
-        if let intAmount = Int64(amount), intAmount > 0 {
-            let relevantAmount = isAutoCompound ? autoCompoundAmount : stakedAmount
-            if relevantAmount > 0 {
-                amountValid = true
-            } else {
-                amountValid = false
+    // MARK: - Private Methods
+    private func setupValidation() {
+        $amount
+            .sink { [weak self] _ in
+                self?.validateAmount()
             }
+            .store(in: &cancellables)
+        
+        Publishers.CombineLatest($amountValid, $amount)
+            .map { amountValid, amount in
+                return amountValid && !amount.isEmpty
+            }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    private func validateAmount() {
+        guard !amount.isEmpty else {
+            amountValid = false
+            return
+        }
+        
+        guard let intAmount = Int64(amount), intAmount > 0 else {
+            amountValid = false
+            return
+        }
+        
+        guard intAmount <= 100 else {
+            amountValid = false
+            return
+        }
+        
+        let relevantAmount = isAutoCompound ? autoCompoundAmount : stakedAmount
+        if relevantAmount > 0 {
+            amountValid = true
         } else {
             amountValid = false
         }
-        
-        isTheFormValid = amountValid
     }
     
-    
-    
+}
+
+extension FunctionCallUnstakeTCY {
     struct PercentageButtons: View {
         let action: (Int) -> Void
         
@@ -199,7 +210,7 @@ struct UnstakeView: View {
                 }
             }
             .toggleStyle(SwitchToggleStyle())
-            .onChange(of: viewModel.isAutoCompound) { newValue in
+            .onChange(of: viewModel.isAutoCompound) { newValue, oldValue in
                 if newValue {
                     viewModel.fetchAutoCompoundBalance()
                 }
