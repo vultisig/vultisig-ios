@@ -84,10 +84,12 @@ private extension BalanceService {
     func fetchStakedBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .thorChain:
-            // Handle TCY staked balance
+            // Handle TCY staked balance (includes both regular and auto-compound)
             if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
-                return tcyStakedBalance.description
+                let tcyAutoCompoundBalance = await thor.fetchTcyAutoCompoundAmount(address: coin.address)
+                let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+                return totalStakedBalance.description
             }
             
             // Handle RUNE bonded balance

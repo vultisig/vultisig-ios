@@ -107,5 +107,9 @@ extension Decimal {
     init(_ bigInt: BigInt) {
         self = .init(string: bigInt.description) ?? 0
     }
+    
+    func toInt() -> Int {
+        return NSDecimalNumber(decimal: self).intValue
+    }
 }
 

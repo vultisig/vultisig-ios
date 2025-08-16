@@ -160,7 +160,7 @@ struct FunctionCallDetailsView: View {
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
                 case .stakeTcy:
-                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, functionCallViewModel: functionCallViewModel))
+                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
                 case .unstakeTcy:
                     
                     DispatchQueue.main.async {
@@ -168,7 +168,7 @@ struct FunctionCallDetailsView: View {
                             stakedAmount in
                             
                             DispatchQueue.main.async {
-                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
+                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
                             }
                         }
                     }
