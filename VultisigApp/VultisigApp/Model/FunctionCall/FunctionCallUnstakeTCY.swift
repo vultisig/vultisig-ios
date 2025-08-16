@@ -116,8 +116,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
     func getView() -> AnyView {
         return AnyView(UnstakeView(viewModel: self))
     }
-    
-    // MARK: - Private Methods
+
     private func setupValidation() {
         $amount
             .sink { [weak self] _ in
