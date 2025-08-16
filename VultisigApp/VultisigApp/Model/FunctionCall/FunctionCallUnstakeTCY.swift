@@ -91,10 +91,20 @@ class FunctionCallUnstakeTCY: ObservableObject {
     
     func fetchAutoCompoundBalance() {
         Task {
-            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: tx.coin.address)
-            await MainActor.run {
-                autoCompoundAmount = amount
-                validateAmount()
+            do {
+                let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: tx.coin.address)
+                await MainActor.run {
+                    self.autoCompoundAmount = amount
+                    self.validateAmount()
+                    self.objectWillChange.send()
+                }
+            } catch {
+                print("Error fetching auto compound balance: \(error)")
+                await MainActor.run {
+                    self.autoCompoundAmount = .zero
+                    self.validateAmount()
+                    self.objectWillChange.send()
+                }
             }
         }
     }
@@ -126,6 +136,18 @@ class FunctionCallUnstakeTCY: ObservableObject {
                 return amountValid && !amount.isEmpty
             }
             .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+        
+        // Watch for auto compound toggle changes
+        $isAutoCompound
+            .sink { [weak self] isAutoCompound in
+                if isAutoCompound {
+                    self?.fetchAutoCompoundBalance()
+                } else {
+                    self?.autoCompoundAmount = .zero
+                    self?.validateAmount()
+                }
+            }
             .store(in: &cancellables)
     }
     
@@ -206,11 +228,6 @@ struct UnstakeView: View {
                 }
             }
             .toggleStyle(SwitchToggleStyle())
-            .onChange(of: viewModel.isAutoCompound) { newValue, oldValue in
-                if newValue {
-                    viewModel.fetchAutoCompoundBalance()
-                }
-            }
             
             VStack(spacing: 8) {
                 viewModel.percentageButtons
@@ -244,6 +261,9 @@ struct UnstakeView: View {
         .onAppear {
             viewModel.setupValidation()
             viewModel.validateAmount()
+            if viewModel.isAutoCompound {
+                viewModel.fetchAutoCompoundBalance()
+            }
         }
     }
 }
