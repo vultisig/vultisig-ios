@@ -28,6 +28,7 @@ struct SendVerifyScreen: View {
             }
             .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
+        .overlay(sendCryptoVerifyViewModel.isLoading ? Loader() : nil)
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
