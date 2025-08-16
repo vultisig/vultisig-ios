@@ -74,9 +74,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
     }
     
     func toString() -> String {
-        if isAutoCompound {
-            return ""
-        } else {
+        if !isAutoCompound {
             if let intAmount = Int64(self.amount) {
                 let basisPoints = intAmount * 100
                 return "tcy-:\(basisPoints)"
@@ -84,6 +82,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
                 return "tcy-:0"
             }
         }
+        return ""
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -116,7 +115,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
     func getView() -> AnyView {
         return AnyView(UnstakeView(viewModel: self))
     }
-
+    
     private func setupValidation() {
         $amount
             .sink { [weak self] _ in
