@@ -189,7 +189,7 @@ class Endpoint {
         ? "&referrer=\(referrer)&fee=\(fee)"
         : "&referrer=\(referrer)&fee=0"
         
-        return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true\(isAffiliateParams)".asUrl
+        return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true&disableEstimate=true\(isAffiliateParams)".asUrl
     }
     
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {
