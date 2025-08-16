@@ -14,7 +14,7 @@ extension SwapCryptoView {
             Background()
             main
         }
-        .onAppear {
+        .onLoad {
             swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
         }
         .task {
