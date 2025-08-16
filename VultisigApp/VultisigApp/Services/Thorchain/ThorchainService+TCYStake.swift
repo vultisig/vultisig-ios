@@ -155,9 +155,11 @@ extension ThorchainService {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let dataObj = json["data"] as? [String: Any],
-               let liquidBondSizeStr = dataObj["liquid_bond_size"] as? String,
-               let liquidBondSharesStr = dataObj["liquid_bond_shares"] as? String,
+               let dataBase64 = json["data"] as? String,
+               let decoded = Data(base64Encoded: dataBase64),
+               let status = try JSONSerialization.jsonObject(with: decoded) as? [String: Any],
+               let liquidBondSizeStr = status["liquid_bond_size"] as? String,
+               let liquidBondSharesStr = status["liquid_bond_shares"] as? String,
                let liquidBondSize = UInt64(liquidBondSizeStr),
                let liquidBondShares = UInt64(liquidBondSharesStr) {
                 

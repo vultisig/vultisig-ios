@@ -49,6 +49,8 @@ class FunctionCallUnstakeTCY: ObservableObject {
         
         if let intAmount = Int64(self.amount) {
             let withdrawAmount = (autoCompoundAmount * Decimal(intAmount)) / 100
+            let units = withdrawAmount.toInt()
+            guard units >= 1 else { return nil }
             
             return WasmExecuteContractPayload(
                 senderAddress: tx.coin.address,
@@ -57,7 +59,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
                 { "liquid": { "unbond": {} } }
                 """,
                 coins: [CosmosCoin(
-                    amount: withdrawAmount.toInt().description,
+                    amount: String(units),
                     denom: "x/staking-tcy"
                 )]
             )
@@ -167,11 +169,11 @@ class FunctionCallUnstakeTCY: ObservableObject {
             return
         }
         
-        let relevantAmount = isAutoCompound ? autoCompoundAmount : stakedAmount
-        if relevantAmount > 0 {
-            amountValid = true
+        if isAutoCompound {
+            let withdrawUnits = (autoCompoundAmount * Decimal(intAmount)) / 100
+            amountValid = withdrawUnits >= 1
         } else {
-            amountValid = false
+            amountValid = stakedAmount > 0
         }
     }
     
