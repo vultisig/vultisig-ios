@@ -563,12 +563,19 @@ private extension SwapCryptoViewModel {
 
 extension SwapCryptoViewModel {
     func handleFromChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard let fromChain, let coin = getDefaultCoin(for: fromChain, vault: vault) else { return }
+        guard
+            let fromChain,
+            fromChain != tx.fromCoin.chain,
+            let coin = getDefaultCoin(for: fromChain, vault: vault)
+        else { return }
         tx.fromCoin = coin
     }
     
     func handleToChainUpdate(tx: SwapTransaction, vault: Vault) {
-        guard let toChain, let coin = getDefaultCoin(for: toChain, vault: vault) else { return }
+        guard
+            let toChain,
+            toChain != tx.toCoin.chain,
+            let coin = getDefaultCoin(for: toChain, vault: vault) else { return }
         tx.toCoin = coin
     }
     
