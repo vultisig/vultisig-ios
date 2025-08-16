@@ -76,7 +76,7 @@ struct SendCryptoTransactionHashRowView: View {
     
     func copyHash() {
         showAlert = true
-        ClipboardManager.copyToClipboard(hash)
+        ClipboardManager.copyToClipboard(explorerLink)
     }
 }
 

@@ -147,7 +147,7 @@ struct JoinSwapDoneSummary: View {
                 valueMaxWidth: 120,
                 showCopyButton: true
             )
-
+            
             if let fromAddress = summaryViewModel.getFromCoin(keysignViewModel.keysignPayload)?.address, !fromAddress.isEmpty {
                 separator
                 getCell(
@@ -157,7 +157,7 @@ struct JoinSwapDoneSummary: View {
                     bracketMaxWidth: 120
                 )
             }
-
+            
             if let toAddress = summaryViewModel.getToCoin(keysignViewModel.keysignPayload)?.address, !toAddress.isEmpty {
                 separator
                 getCell(
@@ -166,7 +166,7 @@ struct JoinSwapDoneSummary: View {
                     valueMaxWidth: 120
                 )
             }
-
+            
             separator
             getCell(
                 title: "networkFee",
@@ -263,9 +263,10 @@ struct JoinSwapDoneSummary: View {
         .font(Theme.fonts.bodySMedium)
     }
     
+    @ViewBuilder
     private func getCopyButton(for value: String?) -> some View {
         Button {
-            copyHash(value)
+            copy(hash: value)
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .foregroundColor(Theme.colors.textPrimary)
@@ -273,40 +274,48 @@ struct JoinSwapDoneSummary: View {
         }
     }
     
+    func copy(hash: String?) {
+        guard let hash else { return }
+        
+        let explorerLink = keysignViewModel.getTransactionExplorerURL(txid: hash)
+        showAlert = true
+        ClipboardManager.copyToClipboard(explorerLink)
+    }
+    
     func getCalculatedNetworkFee() -> String {
         guard let payload = keysignViewModel.keysignPayload else {
             return .zero
         }
-
+        
         guard let nativeToken = TokensStore.TokenSelectionAssets.first(where: {
             $0.isNativeToken && $0.chain == payload.coin.chain
         }) else {
             return .zero
         }
-
+        
         if payload.coin.chainType == .EVM {
             let gas = payload.chainSpecific.gas
-
+            
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description),
                   let gasDecimal = Decimal(string: gas.description) else {
                 return .empty
             }
-
+            
             let gasGwei = gasDecimal / weiPerGWeiDecimal
             let gasInReadable = gasGwei.formatToDecimal(digits: nativeToken.decimals)
-
+            
             var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.fee)
             feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-
+            
             return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
         }
-
+        
         let gasAmount = Decimal(payload.chainSpecific.gas) / pow(10, nativeToken.decimals)
         let gasInReadable = gasAmount.formatToDecimal(digits: nativeToken.decimals)
-
+        
         var feeInReadable = feesInReadable(coin: payload.coin, fee: payload.chainSpecific.gas)
         feeInReadable = feeInReadable.nilIfEmpty.map { " (~\($0))" } ?? ""
-
+        
         return "\(gasInReadable) \(payload.coin.chain.feeUnit)\(feeInReadable)"
     }
     
@@ -333,7 +342,7 @@ struct JoinSwapDoneSummary: View {
             openURL(url)
         }
     }
-
+    
     private func progressLink(link: String) {
         if !link.isEmpty, let url = URL(string: link) {
             openURL(url)
