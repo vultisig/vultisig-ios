@@ -119,7 +119,7 @@ extension ThorchainService {
     
     func fetchTcyAutoCompoundAmount(address: String) async -> Decimal {
         // Use THORNode endpoint to get all balances and find x/staking-tcy
-        let allBalancesUrl = "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+        let allBalancesUrl = Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)
         
         guard let url = URL(string: allBalancesUrl) else {
             return .zero
