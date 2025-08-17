@@ -44,6 +44,8 @@ struct SendDetailsScreen: View {
         Screen(title: "send".localized) {
             container
         }
+        .disabled(sendCryptoViewModel.showLoader)
+        .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
         .onLoad {
             Task {
                 await setMainData()
@@ -114,7 +116,7 @@ struct SendDetailsScreen: View {
                 await validateForm()
             }
         }
-        .disabled(sendCryptoViewModel.isLoading)
+        .disabled(sendCryptoViewModel.continueButtonDisabled)
     }
     
     var tabs: some View {
@@ -244,7 +246,7 @@ struct SendDetailsScreen: View {
             return
         case .amount:
             await MainActor.run {
-                sendCryptoViewModel.isLoading = true
+                sendCryptoViewModel.isValidatingForm = true
             }
             sendCryptoViewModel.validateAmount(amount: tx.amount.description)
             
@@ -256,7 +258,7 @@ struct SendDetailsScreen: View {
         }
         
         await MainActor.run {
-            sendCryptoViewModel.isLoading = false
+            sendCryptoViewModel.isValidatingForm = false
         }
     }
     
@@ -304,7 +306,6 @@ extension SendDetailsScreen {
         guard !sendCryptoViewModel.isLoading else { return }
         
         if let coin = coin {
-            print("Setting coin", coin)
             tx.coin = coin
             tx.fromAddress = coin.address
             tx.toAddress = deeplinkViewModel.address ?? ""
