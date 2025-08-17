@@ -26,6 +26,11 @@ struct SwapCryptoView: View {
     
     var body: some View {
         content
+            .onLoad {
+                if let fromCoin {
+                    tx.fromCoin = fromCoin
+                }
+            }
             .onAppear {
                 swapViewModel.fetchFees(tx: tx, vault: vault)
             }
