@@ -11,44 +11,57 @@ import RiveRuntime
 struct SendCryptoDoneContentView: View {
     let input: SendCryptoContent
     @Binding var showAlert: Bool
-    let onDone: () -> Void
+    var onDone: () -> Void = {}
     
+    @State var navigateToHome = false
     @State var animationVM: RiveViewModel? = nil
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                animation
-                SendCryptoDoneHeaderView(
-                    coin: input.coin,
-                    cryptoAmount: input.amountCrypto,
-                    fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
-                )
-                VStack(spacing: 16) {
-                    Group {
-                        SendCryptoTransactionHashRowView(
-                            hash: input.hash,
-                            explorerLink: input.explorerLink,
-                            showCopy: true,
-                            showAlert: $showAlert
-                        )
-                        Separator()
-                            .opacity(0.8)
+        VStack {
+            ScrollView {
+                VStack(spacing: 8) {
+                    animation
+                    SendCryptoDoneHeaderView(
+                        coin: input.coin,
+                        cryptoAmount: input.amountCrypto,
+                        fiatAmount: input.amountFiat.formatToFiat(includeCurrencySymbol: true)
+                    )
+                    VStack(spacing: 16) {
+                        Group {
+                            SendCryptoTransactionHashRowView(
+                                hash: input.hash,
+                                explorerLink: input.explorerLink,
+                                showCopy: true,
+                                showAlert: $showAlert
+                            )
+                            Separator()
+                                .opacity(0.8)
+                        }
+                        .showIf(input.hash.isNotEmpty)
+                        
+                        transactionDetailsButton
                     }
-                    .showIf(input.hash.isNotEmpty)
-                    
-                    transactionDetailsButton
+                    .font(Theme.fonts.bodySMedium)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 16)
+                    .foregroundColor(Theme.colors.textLight)
+                    .background(Theme.colors.bgSecondary)
+                    .cornerRadius(16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Theme.colors.bgTertiary, lineWidth: 1)
+                    )
                 }
-                .font(Theme.fonts.bodySMedium)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-                .foregroundColor(Theme.colors.textLight)
-                .background(Theme.colors.bgSecondary)
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Theme.colors.bgTertiary, lineWidth: 1)
-                )
+            }
+            
+            PrimaryButton(title: "done") {
+                onDoneButtonPressed()
+            }
+        }
+        .navigationDestination(isPresented: $navigateToHome) {
+            if let vault = homeViewModel.selectedVault {
+                HomeView(selectedVault: vault)
             }
         }
         .onLoad {
@@ -56,10 +69,15 @@ struct SendCryptoDoneContentView: View {
         }
     }
     
+    private func onDoneButtonPressed() {
+        onDone()
+        navigateToHome = true
+    }
+    
     var transactionDetailsButton: some View {
         NavigationLink {
             SendCryptoSecondaryDoneView(input: input) {
-                onDone()
+                onDoneButtonPressed()
             }
         } label: {
             HStack {

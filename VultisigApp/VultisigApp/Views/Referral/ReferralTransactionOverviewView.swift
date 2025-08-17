@@ -13,7 +13,6 @@ struct ReferralTransactionOverviewView: View {
     let sendTx: SendTransaction
     let isEdit: Bool
     @ObservedObject var referralViewModel: ReferralViewModel
-    @State var navigateToHome: Bool = false
         
     var body: some View {
         Screen {
@@ -30,17 +29,12 @@ struct ReferralTransactionOverviewView: View {
                     fee: (sendTx.gasInReadable, referralViewModel.totalFeeFiat)
                 ),
                 showAlert: .constant(false)
-            ) {
-                navigateToHome = true
-            }
+            )
         }
         .onLoad {
             setData()
         }
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $navigateToHome) {
-            HomeView()
-        }
     }
     
     private func setData() {
