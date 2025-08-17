@@ -90,7 +90,7 @@ struct JoinKeysignDoneSummary: View {
                     fee: (fees.feeCrypto, fees.feeFiat)
                 ),
                 showAlert: $showAlert
-            ) {}
+            )
         }
     }
     
