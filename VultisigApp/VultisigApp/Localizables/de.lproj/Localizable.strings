@@ -707,3 +707,7 @@
 "confirm" = "Bestätigen";
 "transactionFailed" = "Transaktion fehlgeschlagen";
 "biweeklyPasswordVerifyDescription" = "Wir werden Sie regelmäßig bitten, Ihr Fast-Sign-Passwort zu bestätigen, damit Sie es sich immer merken";
+"enableAutoCompounding" = "Auto-Compounding aktivieren";
+"automaticallyCompoundTCYRewards" = "TCY-Belohnungen automatisch kapitalisieren";
+"unstakeAutoCompoundTCY" = "Auto-Compound TCY entstaken";
+"unstakeFromAutoCompoundingTCYDeposits" = "Aus auto-compounding TCY-Einlagen entstaken";

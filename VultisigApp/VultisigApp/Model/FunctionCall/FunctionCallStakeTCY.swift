@@ -100,15 +100,15 @@ private struct FunctionCallStakeTCYView: View {
             
             Toggle(isOn: $viewModel.isAutoCompound) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Enable Auto-Compounding")
+                    Text(NSLocalizedString("enableAutoCompounding", comment: ""))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textPrimary)
-                    Text("Automatically compound your TCY rewards")
+                    Text(NSLocalizedString("automaticallyCompoundTCYRewards", comment: ""))
                         .font(Theme.fonts.caption12)
                         .foregroundColor(Theme.colors.textPrimary)
                 }
             }
-            .toggleStyle(SwitchToggleStyle())
+            .toggleStyle(.switch)
         }
         .onAppear {
             viewModel.initialize()

@@ -221,15 +221,15 @@ struct UnstakeView: View {
         VStack(spacing: 16) {
             Toggle(isOn: $viewModel.isAutoCompound) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Unstake Auto-Compound TCY")
+                    Text(NSLocalizedString("unstakeAutoCompoundTCY", comment: ""))
                         .font(Theme.fonts.bodySMedium)
                         .foregroundColor(Theme.colors.textPrimary)
-                    Text("Unstake from auto-compounding TCY deposits")
+                    Text(NSLocalizedString("unstakeFromAutoCompoundingTCYDeposits", comment: ""))
                         .font(Theme.fonts.caption12)
                         .foregroundColor(Theme.colors.textPrimary)
                 }
             }
-            .toggleStyle(SwitchToggleStyle())
+            .toggleStyle(.switch)
             
             VStack(spacing: 8) {
                 viewModel.percentageButtons
@@ -260,7 +260,7 @@ struct UnstakeView: View {
 #endif
             }
         }
-        .onAppear {
+        .onLoad {
             viewModel.setupValidation()
             viewModel.validateAmount()
             if viewModel.isAutoCompound {
