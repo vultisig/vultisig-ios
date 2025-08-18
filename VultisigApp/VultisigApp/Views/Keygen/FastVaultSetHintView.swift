@@ -46,7 +46,7 @@ struct FastVaultSetHintView: View {
     }
     
     var hintTextfield: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             HStack {
                 TextEditor(text: $hint)
                     .textEditorStyle(.plain)
@@ -71,18 +71,11 @@ struct FastVaultSetHintView: View {
                 }
             }
             if hint.isEmpty {
-                VStack {
-                    HStack {
-                        Text(NSLocalizedString("enterHint", comment: ""))
-                            .foregroundColor(Theme.colors.textExtraLight)
-                            .font(Theme.fonts.bodyMMedium)
-                            .padding(.top, 8)
-                            .padding(.leading, 5)
-                        Spacer()
-                    }
-                    
-                    Spacer()
-                }
+                Text(NSLocalizedString("enterHint", comment: ""))
+                    .foregroundColor(Theme.colors.textExtraLight)
+                    .font(Theme.fonts.bodyMMedium)
+                    .padding(.leading, 6)
+                    .padding(.top, isMacOS ? 0 : 8)
             }
         }
         .frame(height: 120)
