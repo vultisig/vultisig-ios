@@ -284,6 +284,10 @@ enum FunctionCallInstance {
             return VSTransactionType.genericContract
         case .stakeRuji, .unstakeRuji, .withdrawRujiRewards:
             return VSTransactionType.genericContract
+        case .stakeTcy(let call):
+            return call.isAutoCompound ? VSTransactionType.genericContract : .unspecified
+        case .unstakeTcy(let call):
+            return call.isAutoCompound ? VSTransactionType.genericContract : .unspecified
         default:
             return .unspecified
         }
@@ -368,6 +372,10 @@ enum FunctionCallInstance {
         case .unstakeRuji(let call):
             return call.wasmContractPayload
         case .withdrawRujiRewards(let call):
+            return call.wasmContractPayload
+        case .stakeTcy(let call):
+            return call.wasmContractPayload
+        case .unstakeTcy(let call):
             return call.wasmContractPayload
         default:
             return nil
