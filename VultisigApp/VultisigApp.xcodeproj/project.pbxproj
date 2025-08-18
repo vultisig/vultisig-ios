@@ -50,6 +50,7 @@
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
 		136A12DE2E395F4F0001B1CA /* SecurityScannerHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */; };
 		1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */; };
+		13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13792A882E53B2A80063CE99 /* isMacOS.swift */; };
 		137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */; };
 		137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */; };
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
@@ -1076,6 +1077,7 @@
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
 		136A12DD2E395F3F0001B1CA /* SecurityScannerHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerHeaderView.swift; sourceTree = "<group>"; };
 		1378B04A2E462AD6005CC32D /* CircularProgressIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressIndicator.swift; sourceTree = "<group>"; };
+		13792A882E53B2A80063CE99 /* isMacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isMacOS.swift; sourceTree = "<group>"; };
 		137B2C772E3A4A450074F648 /* BottomSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetModifier.swift; sourceTree = "<group>"; };
 		137B2C7A2E3A4AA00074F648 /* InnerHeightPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerHeightPreferenceKey.swift; sourceTree = "<group>"; };
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
@@ -4188,6 +4190,7 @@
 		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				13792A882E53B2A80063CE99 /* isMacOS.swift */,
 				13AF0D532E4CF5AE004D4FD2 /* Formatters */,
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
 				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
@@ -4918,6 +4921,7 @@
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
+				13792A892E53B2AB0063CE99 /* isMacOS.swift in Sources */,
 				A6ACAD632D110A1E00432CC4 /* SettingsAdvancedView+iOS.swift in Sources */,
 				A6E0C92C2DF004AC00A01543 /* ReferralOnboardingView+iOS.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
