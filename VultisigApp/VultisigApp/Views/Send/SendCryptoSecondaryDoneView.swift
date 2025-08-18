@@ -11,32 +11,22 @@ struct SendCryptoSecondaryDoneView: View {
     let input: SendCryptoContent
     let onDone: () -> Void
     
-    @State var navigateToHome = false
-    
     @Environment(\.openURL) var openURL
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        container
-            .navigationDestination(isPresented: $navigateToHome) {
-                if let vault = homeViewModel.selectedVault {
-                    HomeView(selectedVault: vault)
+        Screen(title: "transactionDetails".localized) {
+            VStack {
+                ScrollView {
+                    VStack {
+                        header
+                        summary
+                    }
+                    .padding(.vertical, 24)
                 }
+                
+                continueButton
             }
-    }
-    
-    var content: some View {
-        VStack {
-            ScrollView {
-                VStack {
-                    header
-                    summary
-                }
-                .padding(.vertical, 24)
-                .padding(.horizontal, 16)
-            }
-            
-            continueButton
         }
     }
     
@@ -119,9 +109,7 @@ struct SendCryptoSecondaryDoneView: View {
     var continueButton: some View {
         PrimaryButton(title: "done") {
             onDone()
-            navigateToHome = true
         }
-        .padding(24)
     }
     
     func openLink() {

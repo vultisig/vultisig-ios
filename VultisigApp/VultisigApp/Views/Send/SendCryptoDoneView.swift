@@ -61,11 +61,8 @@ struct SendCryptoDoneView: View {
     }
     
     func sendView(tx: SendTransaction) -> some View {
-        VStack {
-            sendContent(tx: tx)
-            continueButton
-        }
-        .padding(contentPadding)
+        sendContent(tx: tx)
+            .padding(contentPadding)
     }
     
     func sendContent(tx: SendTransaction) -> some View {
@@ -83,16 +80,9 @@ struct SendCryptoDoneView: View {
             ),
             showAlert: $showAlert
         ) {
-            tx.reset(coin: tx.coin)
-        }
-    }
-
-    var continueButton: some View {
-        PrimaryButton(title: "done") {
             if let send = sendTransaction {
                 send.reset(coin: send.coin)
             }
-            navigateToHome = true
         }
     }
 

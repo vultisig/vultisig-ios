@@ -14,6 +14,7 @@ import Mediator
 @MainActor
 class SendCryptoViewModel: ObservableObject {
     @Published var isLoading = false
+    @Published var isValidatingForm = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
     @Published var isNamespaceResolved = false
@@ -43,6 +44,14 @@ class SendCryptoViewModel: ObservableObject {
     private let fastVaultService = FastVaultService.shared
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
+    
+    var continueButtonDisabled: Bool {
+        isLoading || isValidatingForm
+    }
+    
+    var showLoader: Bool {
+        isValidatingForm
+    }
     
     func loadGasInfoForSending(tx: SendTransaction) async {
         guard !isLoading else {
