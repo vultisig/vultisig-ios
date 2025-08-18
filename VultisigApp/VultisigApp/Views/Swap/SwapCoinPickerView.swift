@@ -65,7 +65,7 @@ struct SwapCoinPickerView: View {
                     
                     if viewModel.isLoading {
                         loadingView
-                    } else if !viewModel.tokens.isEmpty {
+                    } else if !viewModel.filteredTokens.isEmpty {
                         networkTitle
                         list
                     } else {

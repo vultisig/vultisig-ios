@@ -34,6 +34,7 @@ struct SwapChainPickerView: View {
     
     var content: some View {
         views
+            .onDisappear { viewModel.searchText = "" }
     }
     
     var header: some View {
