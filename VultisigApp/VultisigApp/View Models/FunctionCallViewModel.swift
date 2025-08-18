@@ -89,8 +89,14 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
             return [String: String]()
         }
         
+        // Hide some fields from the transaction summary only for yVault (deposit/withdraw) functions
+        let fieldsToHide = ["destinationAddress", "amount", "denom"]
+        let executeMsg = txDict.get("executeMsg")?.lowercased() ?? ""
+        let shouldHideFields = executeMsg.contains("\"deposit\"") || executeMsg.contains("\"withdraw\"")
+        
         let validKeys = txDict.allKeysInOrder().filter { key in
             guard let value = txDict.get(key) else { return false }
+            if shouldHideFields && fieldsToHide.contains(key) { return false }
             return !value.isEmpty && value != "0" && value != "0.0"
         }
         
