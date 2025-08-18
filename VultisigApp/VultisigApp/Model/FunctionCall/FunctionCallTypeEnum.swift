@@ -120,13 +120,13 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             ]
             switch coin.ticker.uppercased() {
             case "RUNE":
-                return defaultFunctions + [.mintYRune, .redeemRune, mintYTCY, redeemTCY]
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
             case "TCY":
-                return defaultFunctions + [.mintYRune, .redeemRune, mintYTCY, redeemTCY, .stakeTcy, .unstakeTcy]
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy]
             case "YRUNE":
-                return defaultFunctions + [.mintYRune, .redeemRune, mintYTCY, redeemTCY]
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
             case "YTCY":
-                return defaultFunctions + [.mintYRune, .redeemRune, mintYTCY, redeemTCY]
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
             default:
                 return defaultFunctions
             }
