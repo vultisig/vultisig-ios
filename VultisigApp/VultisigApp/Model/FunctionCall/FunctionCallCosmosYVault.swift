@@ -148,21 +148,31 @@ class FunctionCallCosmosYVault: ObservableObject {
             return "{ \"withdraw\": { \"slippage\": \"\(slipStr)\" } }"
         }
     }
-    func toDictionary() -> ThreadSafeDictionary<String, String> {
-        let dict = ThreadSafeDictionary<String, String>()
-        dict.set("destinationAddress", destinationAddress)
-        dict.set("executeMsg", buildExecuteMsg())
-        
-        let denomKey = tx.coin.ticker.lowercased()
+    
+    var wasmContractPayload: WasmExecuteContractPayload {
+        let cosmosCoin: CosmosCoin
+
         switch action {
         case .deposit:
-            dict.set("denom", denomKey)
+            let denomKey = tx.coin.ticker.lowercased()
+            cosmosCoin = CosmosCoin(amount: String(amountMicro), denom: denomKey)
         case .withdraw:
+            let denomKey = tx.coin.ticker.lowercased()
             let receiptDenom = YVaultConstants.receiptDenominations[denomKey] ?? ""
-            dict.set("denom", receiptDenom)
+            cosmosCoin = CosmosCoin(amount: String(amountMicro), denom: receiptDenom)
         }
-        
-        dict.set("amount", String(amountMicro))
+
+        return WasmExecuteContractPayload(
+            senderAddress: tx.coin.address,
+            contractAddress: destinationAddress,
+            executeMsg: buildExecuteMsg(),
+            coins: [cosmosCoin]
+        )
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("executeMsg", buildExecuteMsg())
         return dict
     }
     

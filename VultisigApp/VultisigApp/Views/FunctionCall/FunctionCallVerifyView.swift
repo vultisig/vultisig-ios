@@ -82,7 +82,7 @@ struct FunctionCallVerifyView: View {
             input: SendCryptoVerifySummary(
                 fromName: vault.name,
                 fromAddress: tx.fromAddress,
-                toAddress: isYVaultFunction() ? "" : tx.toAddress, // Hide TO address for yTCY/yRUNE functions
+                toAddress: tx.toAddress,
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: "",
@@ -144,14 +144,6 @@ struct FunctionCallVerifyView: View {
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
     }
     
-    private func isYVaultFunction() -> Bool {
-        // Check if this is a yTCY or yRUNE function by looking for executeMsg with deposit or withdraw
-        if let executeMsg = tx.memoFunctionDictionary.get("executeMsg") {
-            return executeMsg.contains("deposit") || executeMsg.contains("withdraw")
-        }
-        return false
-    }
-    
     private func onSignPress() {
         let canSign = depositVerifyViewModel.validateSecurityScanner()
         if canSign {
@@ -162,8 +154,7 @@ struct FunctionCallVerifyView: View {
     func signAndMoveToNextView() {
         Task {
             
-            let wasmExecuteContractPayload = depositViewModel.buildWasmPayload(from: tx.memoFunctionDictionary, sender: tx.coin.address)
-            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault, wasmExecuteContractPayload: wasmExecuteContractPayload)
+            keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
             
             if keysignPayload != nil {
                 depositViewModel.moveToNextView()
