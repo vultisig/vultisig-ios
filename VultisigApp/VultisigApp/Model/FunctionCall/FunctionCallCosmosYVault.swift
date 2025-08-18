@@ -79,7 +79,7 @@ class FunctionCallCosmosYVault: ObservableObject {
     }
     
     func initiate() {
-        balanceLabel = "Amount ( Balance: \(tx.coin.balanceDecimal.formatForDisplay()) \(tx.coin.ticker.uppercased()) )"
+        balanceLabel = "( Balance: \(tx.coin.balanceDecimal.formatForDisplay()) \(tx.coin.ticker.uppercased()) )"
         if case .withdraw(let slip) = self.action { selectedSlippage = slip }
         validateAmount()
     }
@@ -139,6 +139,10 @@ class FunctionCallCosmosYVault: ObservableObject {
     var description: String { "yVault-\(tx.coin.ticker.uppercased())-\(actionStr)" }
     private var actionStr: String { action.isDeposit ? "deposit" : "withdraw" }
     
+    var toAddress: String? {
+        return destinationAddress
+    }
+    
     func getView() -> AnyView {
         AnyView(FunctionCallCosmosYVaultView(viewModel: self).onAppear{
             self.initiate()
@@ -187,8 +191,8 @@ struct FunctionCallCosmosYVaultView: View {
             .padding(.bottom, 8)
             
             StyledFloatingPointField(
-                label: "Amount",
-                placeholder: viewModel.balanceLabel,
+                label: "Amount \(viewModel.balanceLabel)",
+                placeholder: NSLocalizedString("enterAmount", comment: ""),
                 value: Binding(
                     get: { viewModel.amount },
                     set: { viewModel.amount = $0 }
@@ -201,24 +205,30 @@ struct FunctionCallCosmosYVaultView: View {
             )
             
             if case .withdraw = viewModel.action {
-                GenericSelectorDropDown(
-                    items: Binding(
-                        get: { YVaultConstants.slippageOptions.map { IdentifiableString(value: "\($0 * 100)%") } },
-                        set: { _ in }
-                    ),
-                    selected: Binding(
-                        get: { IdentifiableString(value: "\(viewModel.selectedSlippage * 100)%") },
-                        set: { sel in
-                            if let val = Decimal(string: sel.value.replacingOccurrences(of: "%", with: "")) {
-                                viewModel.selectedSlippage = val / 100
-                                viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Slippage")
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundColor(Theme.colors.textPrimary)
+                    
+                    GenericSelectorDropDown(
+                        items: Binding(
+                            get: { YVaultConstants.slippageOptions.map { IdentifiableString(value: "\($0 * 100)%") } },
+                            set: { _ in }
+                        ),
+                        selected: Binding(
+                            get: { IdentifiableString(value: "\(viewModel.selectedSlippage * 100)%") },
+                            set: { sel in
+                                if let val = Decimal(string: sel.value.replacingOccurrences(of: "%", with: "")) {
+                                    viewModel.selectedSlippage = val / 100
+                                    viewModel.action = .withdraw(slippage: viewModel.selectedSlippage)
+                                }
                             }
-                        }
-                    ),
-                    mandatoryMessage: "*",
-                    descriptionProvider: { $0.value },
-                    onSelect: { _ in }
-                )
+                        ),
+                        mandatoryMessage: "*",
+                        descriptionProvider: { $0.value },
+                        onSelect: { _ in }
+                    )
+                }
             }
         }
     }

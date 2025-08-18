@@ -82,7 +82,7 @@ struct FunctionCallVerifyView: View {
             input: SendCryptoVerifySummary(
                 fromName: vault.name,
                 fromAddress: tx.fromAddress,
-                toAddress: tx.toAddress,
+                toAddress: isYVaultFunction() ? "" : tx.toAddress, // Hide TO address for yTCY/yRUNE functions
                 network: tx.coin.chain.name,
                 networkImage: tx.coin.chain.logo,
                 memo: "",
@@ -142,6 +142,14 @@ struct FunctionCallVerifyView: View {
         
         // Default display for non-LP operations
         return tx.amountDecimal.formatForDisplay() + " " + tx.coin.ticker
+    }
+    
+    private func isYVaultFunction() -> Bool {
+        // Check if this is a yTCY or yRUNE function by looking for executeMsg with deposit or withdraw
+        if let executeMsg = tx.memoFunctionDictionary.get("executeMsg") {
+            return executeMsg.contains("deposit") || executeMsg.contains("withdraw")
+        }
+        return false
     }
     
     private func onSignPress() {

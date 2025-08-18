@@ -89,8 +89,12 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
             return [String: String]()
         }
         
+        // Filter out fields that shouldn't be displayed in the transaction summary for yTCY/yRUNE functions
+        let fieldsToHide = ["destinationAddress", "amount", "denom"]
+        
         let validKeys = txDict.allKeysInOrder().filter { key in
             guard let value = txDict.get(key) else { return false }
+            guard !fieldsToHide.contains(key) else { return false }
             return !value.isEmpty && value != "0" && value != "0.0"
         }
         
