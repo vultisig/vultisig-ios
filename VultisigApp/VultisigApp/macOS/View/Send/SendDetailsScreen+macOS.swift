@@ -10,8 +10,11 @@ import SwiftUI
 
 extension SendDetailsScreen {
     var container: some View {
-        ZStack(alignment: .top) {
-            content
+        ZStack(alignment: .center) {
+            Screen(title: "send".localized) {
+                content
+            }
+            
             overlay
                 .showIf(sendDetailsViewModel.showCoinPickerSheet || sendDetailsViewModel.showChainPickerSheet)
             chainPicker
