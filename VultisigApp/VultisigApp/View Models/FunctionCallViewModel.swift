@@ -89,14 +89,8 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
             return [String: String]()
         }
         
-        // Hide some fields from the transaction summary only for yVault (deposit/withdraw) functions
-        let fieldsToHide = ["destinationAddress", "amount", "denom"]
-        let executeMsg = txDict.get("executeMsg")?.lowercased() ?? ""
-        let shouldHideFields = executeMsg.contains("\"deposit\"") || executeMsg.contains("\"withdraw\"")
-        
         let validKeys = txDict.allKeysInOrder().filter { key in
             guard let value = txDict.get(key) else { return false }
-            if shouldHideFields && fieldsToHide.contains(key) { return false }
             return !value.isEmpty && value != "0" && value != "0.0"
         }
         
@@ -109,33 +103,6 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
         }
         
         return dict
-    }
-    
-    // MARK: - Wasm Payload Builder
-    /// Converts a dictionary produced by `toDictionary()` back into a `WasmExecuteContractPayload`.
-    /// - Parameters:
-    ///   - dict: The `ThreadSafeDictionary` containing the required keys.
-    ///   - sender: The wallet address that will sign the transaction.
-    /// - Returns: A ready‑to‑use `WasmExecuteContractPayload` or `nil` if mandatory data is missing or invalid.
-    func buildWasmPayload(from dict: ThreadSafeDictionary<String, String>, sender: String) -> WasmExecuteContractPayload? {
-        guard
-            !sender.isEmpty,
-            let destination = dict.get("destinationAddress"), !destination.isEmpty,
-            let execMsg = dict.get("executeMsg"), !execMsg.isEmpty,
-            let denom = dict.get("denom"), !denom.isEmpty,
-            let amountStr = dict.get("amount"), !amountStr.isEmpty,
-            UInt64(amountStr) != nil
-        else {
-            return nil
-        }
-        
-        let coin = CosmosCoin(amount: amountStr, denom: denom.lowercased())
-        return WasmExecuteContractPayload(
-            senderAddress: sender,
-            contractAddress: destination,
-            executeMsg: execMsg,
-            coins: [coin]
-        )
     }
     
     func setRujiToken(to tx: SendTransaction, vault: Vault) {
