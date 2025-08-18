@@ -27,7 +27,10 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          merge,
          unmerge,
          theSwitch,
-         yRuneTcy,
+         mintYRune,
+         mintYTCY,
+         redeemRune,
+         redeemTCY,
          addThorLP,
          removeThorLP,
          stakeRuji,
@@ -78,11 +81,14 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Withdraw RUJI"
         case .theSwitch:
             return "Switch"
-        case .yRuneTcy:
-            if coin.ticker == "RUNE" {
-                return "Mint and Redeem yRUNE"
-            }
-            return "Mint and Redeem yTCY"
+        case .mintYRune:
+            return "Mint yRUNE"
+        case .mintYTCY:
+            return "Mint yTCY"
+        case .redeemRune:
+            return "Redeem RUNE"
+        case .redeemTCY:
+            return "Redeem TCY"
         case .addThorLP:
             return "Add THORChain LP"
         case .removeThorLP:
@@ -106,7 +112,6 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .merge,
                 .unmerge,
                 .custom,
-                .yRuneTcy,
                 .addThorLP,
                 .removeThorLP,
                 .stakeRuji,
@@ -114,8 +119,14 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .withdrawRujiRewards
             ]
             switch coin.ticker.uppercased() {
+            case "RUNE":
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
             case "TCY":
-                return defaultFunctions + [.stakeTcy, .unstakeTcy]
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy]
+            case "YRUNE":
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
+            case "YTCY":
+                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
             default:
                 return defaultFunctions
             }

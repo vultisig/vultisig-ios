@@ -160,7 +160,7 @@ struct FunctionCallDetailsView: View {
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
                 case .stakeTcy:
-                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, functionCallViewModel: functionCallViewModel))
+                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
                 case .unstakeTcy:
                     
                     DispatchQueue.main.async {
@@ -168,7 +168,7 @@ struct FunctionCallDetailsView: View {
                             stakedAmount in
                             
                             DispatchQueue.main.async {
-                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
+                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
                             }
                         }
                     }
@@ -192,8 +192,14 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
-                case .yRuneTcy:
-                    fnCallInstance = .yRuneTcy(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit))
+                case .mintYRune:
+                    fnCallInstance = .mintYRune(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit, functionType: .mintYRune))
+                case .mintYTCY:
+                    fnCallInstance = .mintYTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit, functionType: .mintYTCY))
+                case .redeemRune:
+                    fnCallInstance = .redeemRune(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemRune))
+                case .redeemTCY:
+                    fnCallInstance = .redeemTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemTCY))
                 case .addThorLP:
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:

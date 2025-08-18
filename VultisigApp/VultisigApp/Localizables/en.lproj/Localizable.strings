@@ -768,3 +768,7 @@
 "loadingWithEllipsis" = "Loading...";
 "referralNetworkError" = "Error while fetching referral data.";
 "sent" = "Sent";
+"enableAutoCompounding" = "Enable Auto-Compounding";
+"automaticallyCompoundTCYRewards" = "Automatically compound your TCY rewards";
+"unstakeAutoCompoundTCY" = "Unstake Auto-Compound TCY";
+"unstakeFromAutoCompoundingTCYDeposits" = "Unstake from auto-compounding TCY deposits";

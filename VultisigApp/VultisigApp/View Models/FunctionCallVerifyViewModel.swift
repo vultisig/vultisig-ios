@@ -33,7 +33,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
             .assign(to: &$securityScannerState)
     }
     
-    func createKeysignPayload(tx: SendTransaction, vault: Vault, wasmExecuteContractPayload: WasmExecuteContractPayload? = nil) async -> KeysignPayload? {
+    func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         var keysignPayload: KeysignPayload?
         
@@ -118,7 +118,7 @@ class FunctionCallVerifyViewModel: ObservableObject {
                 swapPayload: swapPayload,
                 approvePayload: approvePayload,
                 vault: vault,
-                wasmExecuteContractPayload: wasmExecuteContractPayload ?? tx.wasmContractPayload
+                wasmExecuteContractPayload: tx.wasmContractPayload
             )
         } catch {
             switch error {

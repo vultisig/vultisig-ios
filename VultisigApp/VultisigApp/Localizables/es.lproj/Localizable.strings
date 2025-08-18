@@ -689,3 +689,7 @@
 "confirm" = "Confirmar";
 "transactionFailed" = "Transacción fallida";
 "biweeklyPasswordVerifyDescription" = "Periódicamente te pediremos que verifiques tu contraseña de Fast Sign para que siempre la recuerdes";
+"enableAutoCompounding" = "Habilitar Auto-Compounding";
+"automaticallyCompoundTCYRewards" = "Capitalizar automáticamente tus recompensas TCY";
+"unstakeAutoCompoundTCY" = "Retirar Auto-Compound TCY";
+"unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
