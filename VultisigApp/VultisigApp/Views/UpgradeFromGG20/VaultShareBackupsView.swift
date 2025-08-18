@@ -64,7 +64,7 @@ struct VaultShareBackupsView: View {
             FastVaultEmailView(
                 tssType: .Migrate,
                 vault: vault,
-                selectedTab: .fast,
+                selectedTab: vault.signers.count == 2 ? .fast : .active,
                 fastVaultExist: true
             )
         }
