@@ -588,7 +588,10 @@ extension SwapCryptoViewModel {
         if let firstVaultCoin {
             return firstVaultCoin
         } else {
-            let coinMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain })
+            let coinMeta = TokensStore.TokenSelectionAssets
+                .filter { $0.chain == chain }
+                .sorted { $0.isNativeToken && !$1.isNativeToken }
+                .first
             guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta, vault: vault) else {
                 return nil
             }
