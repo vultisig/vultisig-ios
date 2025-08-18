@@ -78,8 +78,7 @@ struct AddAddressBookView: View {
         
         coinSelectionViewModel.setData(for: vault)
         
-        if coin == nil {
-            let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
+        if coin == nil, let key = coinSelectionViewModel.chains.first {
             coin = coinSelectionViewModel.groupedAssets[key]?.first
         }
     }

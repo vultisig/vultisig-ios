@@ -65,7 +65,7 @@ struct SwapCoinPickerView: View {
                     
                     if viewModel.isLoading {
                         loadingView
-                    } else if !viewModel.tokens.isEmpty {
+                    } else if !viewModel.filteredTokens.isEmpty {
                         networkTitle
                         list
                     } else {
@@ -188,9 +188,7 @@ struct SwapCoinPickerView: View {
     }
     
     private var availableChains: [Chain] {
-        return coinSelectionViewModel.groupedAssets.keys.compactMap { chainName in
-            coinSelectionViewModel.groupedAssets[chainName]?.first?.chain
-        }.filter(\.isSwapAvailable)
+        return coinSelectionViewModel.chains.filter(\.isSwapAvailable)
     }
     
     private func reloadCoins() {

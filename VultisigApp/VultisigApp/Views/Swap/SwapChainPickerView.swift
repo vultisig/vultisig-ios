@@ -7,22 +7,21 @@
 
 import SwiftUI
 
+enum ChainFilterType {
+    case swap
+    case send
+}
+
 struct SwapChainPickerView: View {
-    enum FilterType {
-        case swap
-        case send
-    }
-    
-    let filterType: FilterType
+    let filterType: ChainFilterType
     let vault: Vault
     @Binding var showSheet: Bool
     @Binding var selectedChain: Chain?
     
-    @State var searchText = ""
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     init(
-        filterType: FilterType = .send,
+        filterType: ChainFilterType = .send,
         vault: Vault,
         showSheet: Binding<Bool>,
         selectedChain: Binding<Chain?>
@@ -35,6 +34,7 @@ struct SwapChainPickerView: View {
     
     var content: some View {
         views
+            .onDisappear { viewModel.searchText = "" }
     }
     
     var header: some View {
@@ -125,7 +125,7 @@ struct SwapChainPickerView: View {
     }
     
     var searchBar: some View {
-        SearchTextField(value: $searchText)
+        SearchTextField(value: $viewModel.searchText)
             .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
@@ -145,14 +145,7 @@ struct SwapChainPickerView: View {
     }
     
     var filteredChains: [Chain] {
-        switch filterType {
-        case .swap:
-            return viewModel.groupedAssets.keys.compactMap { chainName in
-                viewModel.groupedAssets[chainName]?.first?.chain
-            }.filter(\.isSwapAvailable)
-        case .send:
-            return vault.coins.filter {$0.isNativeToken}.map{$0.chain}
-        }
+        viewModel.filterChains(type: filterType, vault: vault)
     }
 }
 
