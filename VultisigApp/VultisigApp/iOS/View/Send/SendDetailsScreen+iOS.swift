@@ -12,24 +12,28 @@ extension SendDetailsScreen {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {
-        content
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    
-                    Button {
-                        hideKeyboard()
-                    } label: {
-                        Text(NSLocalizedString("done", comment: "Done"))
-                    }
+        Screen(title: "send".localized) {
+            content
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text(NSLocalizedString("done", comment: "Done"))
                 }
             }
-            .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
-                chainPicker
-            }
-            .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
-                coinPicker
-            }
+        }
+        .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+            chainPicker
+                .sheetStyle()
+        }
+        .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+            coinPicker
+                .sheetStyle()
+        }
     }
     
     var view: some View {

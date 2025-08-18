@@ -57,7 +57,7 @@ struct AddressBookChainSelector: View {
     }
     
     var cells: some View {
-        ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
+        ForEach(viewModel.chains, id: \.self) { key in
             let chain = viewModel.groupedAssets[key]?.first
             Button {
                 handleSelection(for: chain)
