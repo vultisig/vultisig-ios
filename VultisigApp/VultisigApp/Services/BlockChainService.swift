@@ -124,6 +124,9 @@ private extension BlockChainService {
         switch chain {
         case .solana:
             return 10
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
+            // EVM chains - gas changes frequently, shorter cache for fresher data
+            return 30
         default:
             return 60
         }

@@ -36,9 +36,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         if !isValidForm {
-            self.errorMessage = "mustAgreeTermsError"
-            showAlert = true
-            isLoading = false
+            await MainActor.run {
+                self.errorMessage = "mustAgreeTermsError"
+                showAlert = true
+                isLoading = false
+            }
             return nil
         }
         
@@ -65,9 +67,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             )
             
         } catch {
-            self.errorMessage = error.localizedDescription
-            showAlert = true
-            isLoading = false
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+                showAlert = true
+                isLoading = false
+            }
             return nil
         }
         return keysignPayload

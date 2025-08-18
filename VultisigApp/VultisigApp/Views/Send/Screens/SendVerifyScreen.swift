@@ -14,6 +14,7 @@ struct SendVerifyScreen: View {
     
     @State var isButtonDisabled = false
     @State var fastPasswordPresented = false
+    @State var lastTapTime: Date = Date.distantPast
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
@@ -25,6 +26,18 @@ struct SendVerifyScreen: View {
             VStack(spacing: 16) {
                 fields
                 pairedSignButton
+                
+                // Loading indicator for validation
+                if sendCryptoVerifyViewModel.isLoading {
+                    VStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Validating transaction...")
+                            .font(Theme.fonts.bodySRegular)
+                            .foregroundColor(Theme.colors.textPrimary)
+                    }
+                    .padding(.top, 8)
+                }
             }
             .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
@@ -108,13 +121,22 @@ struct SendVerifyScreen: View {
     }
     
     func signAndMoveToNextView() {
+        // Debounce rapid taps (prevent multiple taps within 1 second)
+        let now = Date()
+        guard now.timeIntervalSince(lastTapTime) > 1.0 else {
+            return
+        }
+        lastTapTime = now
+        
         guard !isButtonDisabled else {
             return
         }
         
+        // Immediately disable button and show loading
         isButtonDisabled = true
         sendCryptoVerifyViewModel.isLoading = true
         
+        // Run validation but with proper UI feedback
         Task {
             let result = await sendCryptoVerifyViewModel.validateForm(
                 tx: tx,
@@ -122,12 +144,13 @@ struct SendVerifyScreen: View {
             )
             await MainActor.run {
                 if let payload = result {
-                    // Navigate; onDisappear will clear loading.
+                    // Validation successful - navigate
                     self.keysignPayload = payload
                 } else {
-                    // Validation failed — re-enable UI and stop loading.
+                    // Validation failed - show error and re-enable button
                     self.isButtonDisabled = false
                     self.sendCryptoVerifyViewModel.isLoading = false
+                    // Error is already shown by the viewModel
                 }
             }
         }

@@ -7,6 +7,7 @@
 
 import OSLog
 import SwiftUI
+import Foundation
 import BigInt
 
 enum Field: Int, Hashable {
@@ -55,6 +56,18 @@ struct SendDetailsScreen: View {
         .onChange(of: tx.coin) {
             Task {
                 await loadGasInfo()
+            }
+        }
+        .onChange(of: tx.amount) { oldValue, newValue in
+            // Preload gas estimation when amount changes (debounced)
+            DebounceHelper.shared.debounce(delay: 0.5) {
+                preloadGasOnAmountChange()
+            }
+        }
+        .onChange(of: sendDetailsViewModel.selectedTab) { oldValue, newValue in
+            // Ensure gas is loaded when user reaches amount tab
+            if newValue == .amount {
+                ensureGasIsLoaded()
             }
         }
         .onDisappear {
@@ -114,7 +127,12 @@ struct SendDetailsScreen: View {
                 await validateForm()
             }
         }
-        .disabled(sendCryptoViewModel.isLoading)
+        .disabled(sendCryptoViewModel.isLoading || !isGasLoaded)
+    }
+    
+    // Check if gas is properly loaded
+    private var isGasLoaded: Bool {
+        return tx.gas > 0 && tx.fee > 0
     }
     
     var tabs: some View {
@@ -248,6 +266,11 @@ struct SendDetailsScreen: View {
             }
             sendCryptoViewModel.validateAmount(amount: tx.amount.description)
             
+            // Ensure gas is loaded before validating
+            if tx.gas <= 0 || tx.fee <= 0 {
+                await loadGasInfo()
+            }
+            
             if await sendCryptoViewModel.validateForm(tx: tx) {
                 await MainActor.run {
                     navigateToVerify = true
@@ -322,6 +345,31 @@ extension SendDetailsScreen {
     private func loadGasInfo() async {
         guard !sendCryptoViewModel.isLoading else { return }
         await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+    }
+    
+    // Preload gas when user starts typing amount (optimistic loading)
+    private func preloadGasOnAmountChange() {
+        // Only preload if amount is valid and > 0
+        guard !tx.amount.isEmpty, 
+              let amountDecimal = Decimal(string: tx.amount),
+              amountDecimal > 0 else { return }
+        
+        // Force refresh gas estimation for the new amount
+        Task {
+            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        }
+    }
+    
+    // Ensure gas is loaded when user reaches amount tab
+    private func ensureGasIsLoaded() {
+        guard sendDetailsViewModel.selectedTab == .amount else { return }
+        
+        // If gas is not loaded or stale, reload it
+        if tx.gas <= 0 || tx.fee <= 0 {
+            Task {
+                await loadGasInfo()
+            }
+        }
     }
     
     private func validateAddress(_ newValue: String) {
