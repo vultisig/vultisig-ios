@@ -104,9 +104,9 @@ struct NavigationHomeEditButton: View {
         Button {
             deleteFolder()
         } label: {
-            Image(systemName: "trash")
+            Image(.trash)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.bgAlert)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     
