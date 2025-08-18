@@ -416,6 +416,14 @@ enum FunctionCallInstance {
             return call.wasmContractPayload
         case .unstakeTcy(let call):
             return call.wasmContractPayload
+        case .mintYRune(let call):
+            return call.wasmContractPayload
+        case .mintYTCY(let call):
+            return call.wasmContractPayload
+        case .redeemRune(let call):
+            return call.wasmContractPayload
+        case .redeemTCY(let call):
+            return call.wasmContractPayload
         default:
             return nil
         }
