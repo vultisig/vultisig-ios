@@ -17,9 +17,9 @@ class FunctionCallAddLiquidityMaya: ObservableObject
     @Published var amountValid: Bool = false
     
     @Published var isTheFormValid: Bool = false
-
+    
     private var cancellables = Set<AnyCancellable>()
-
+    
     required init() {
         setupValidation()
     }
@@ -29,23 +29,23 @@ class FunctionCallAddLiquidityMaya: ObservableObject
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
-
+    
     var description: String {
         return toString()
     }
-
+    
     func toString() -> String {
         let memo =
-            "pool+"
+        "pool+"
         return memo
     }
-
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("memo", self.toString())
         return dict
     }
-
+    
     func getView() -> AnyView {
         AnyView(
             VStack {

@@ -28,6 +28,10 @@ enum FunctionCallInstance {
     case merge(FunctionCallCosmosMerge)
     case unmerge(FunctionCallCosmosUnmerge)
     case theSwitch(FunctionCallCosmosSwitch)
+    case mintYRune(FunctionCallCosmosYVault)
+    case mintYTCY(FunctionCallCosmosYVault)
+    case redeemRune(FunctionCallCosmosYVault)
+    case redeemTCY(FunctionCallCosmosYVault)
     case addThorLP(FunctionCallAddThorLP)
     case removeThorLP(FunctionCallRemoveThorLP)
     case stakeRuji(FunctionCallStakeRuji)
@@ -69,6 +73,14 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.getView()
         case .theSwitch(let memo):
+            return memo.getView()
+        case .mintYRune(let memo):
+            return memo.getView()
+        case .mintYTCY(let memo):
+            return memo.getView()
+        case .redeemRune(let memo):
+            return memo.getView()
+        case .redeemTCY(let memo):
             return memo.getView()
         case .addThorLP(let memo):
             return memo.getView()
@@ -119,6 +131,14 @@ enum FunctionCallInstance {
             return memo.description
         case .theSwitch(let memo):
             return memo.description
+        case .mintYRune(let memo):
+            return memo.description
+        case .mintYTCY(let memo):
+            return memo.description
+        case .redeemRune(let memo):
+            return memo.description
+        case .redeemTCY(let memo):
+            return memo.description
         case .addThorLP(let memo):
             return memo.description
         case .removeThorLP(let memo):
@@ -168,6 +188,14 @@ enum FunctionCallInstance {
             return memo.amount  // Now amount contains the shares as Decimal
         case .theSwitch(let memo):
             return memo.amount
+        case .mintYRune(let memo):
+            return memo.amount
+        case .mintYTCY(let memo):
+            return memo.amount
+        case .redeemRune(let memo):
+            return memo.amount
+        case .redeemTCY(let memo):
+            return memo.amount
         case .addThorLP(let memo):
             return memo.amount
         case .removeThorLP(let removeLP):
@@ -194,6 +222,14 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.destinationAddress
         case .theSwitch(let memo):
+            return memo.destinationAddress
+        case .mintYRune(let memo):
+            return memo.destinationAddress
+        case .mintYTCY(let memo):
+            return memo.destinationAddress
+        case .redeemRune(let memo):
+            return memo.destinationAddress
+        case .redeemTCY(let memo):
             return memo.destinationAddress
         case .addThorLP(let memo):
             // For addThorLP, return the inbound address that was set by fetchInboundAddress()
@@ -246,6 +282,14 @@ enum FunctionCallInstance {
             return memo.toDictionary()
         case .theSwitch(let memo):
             return memo.toDictionary()
+        case .mintYRune(let memo):
+            return memo.toDictionary()
+        case .mintYTCY(let memo):
+            return memo.toDictionary()
+        case .redeemRune(let memo):
+            return memo.toDictionary()
+        case .redeemTCY(let memo):
+            return memo.toDictionary()
         case .addThorLP(let memo):
             return memo.toDictionary()
         case .removeThorLP(let memo):
@@ -269,8 +313,14 @@ enum FunctionCallInstance {
             return VSTransactionType.thorMerge
         case .unmerge(_):
             return VSTransactionType.thorUnmerge
+        case .mintYRune(_), .mintYTCY(_), .redeemRune(_), .redeemTCY(_):
+            return VSTransactionType.genericContract
         case .stakeRuji, .unstakeRuji, .withdrawRujiRewards:
             return VSTransactionType.genericContract
+        case .stakeTcy(let call):
+            return call.isAutoCompound ? VSTransactionType.genericContract : .unspecified
+        case .unstakeTcy(let call):
+            return call.isAutoCompound ? VSTransactionType.genericContract : .unspecified
         default:
             return .unspecified
         }
@@ -311,6 +361,14 @@ enum FunctionCallInstance {
         case .unmerge(let memo):
             return memo.isTheFormValid
         case .theSwitch(let memo):
+            return memo.isTheFormValid
+        case .mintYRune(let memo):
+            return memo.isTheFormValid
+        case .mintYTCY(let memo):
+            return memo.isTheFormValid
+        case .redeemRune(let memo):
+            return memo.isTheFormValid
+        case .redeemTCY(let memo):
             return memo.isTheFormValid
         case .addThorLP(let memo):
             return memo.isTheFormValid
@@ -353,6 +411,18 @@ enum FunctionCallInstance {
         case .unstakeRuji(let call):
             return call.wasmContractPayload
         case .withdrawRujiRewards(let call):
+            return call.wasmContractPayload
+        case .stakeTcy(let call):
+            return call.wasmContractPayload
+        case .unstakeTcy(let call):
+            return call.wasmContractPayload
+        case .mintYRune(let call):
+            return call.wasmContractPayload
+        case .mintYTCY(let call):
+            return call.wasmContractPayload
+        case .redeemRune(let call):
+            return call.wasmContractPayload
+        case .redeemTCY(let call):
             return call.wasmContractPayload
         default:
             return nil

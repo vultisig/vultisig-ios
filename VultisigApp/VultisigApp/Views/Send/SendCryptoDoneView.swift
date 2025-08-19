@@ -17,6 +17,7 @@ struct SendCryptoDoneView: View {
     
     let sendTransaction: SendTransaction?
     let swapTransaction: SwapTransaction?
+    let contentPadding: CGFloat
     
     @StateObject private var sendSummaryViewModel = SendSummaryViewModel()
     @StateObject private var swapSummaryViewModel = SwapCryptoViewModel()
@@ -25,9 +26,28 @@ struct SendCryptoDoneView: View {
     @State var alertTitle = "hashCopied"
     @State var navigateToHome = false
     
-    
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
+    
+    init(
+        vault: Vault,
+        hash: String,
+        approveHash: String?,
+        chain: Chain,
+        progressLink: String? = nil,
+        sendTransaction: SendTransaction?,
+        swapTransaction: SwapTransaction?,
+        contentPadding: CGFloat = 16
+    ) {
+        self.vault = vault
+        self.hash = hash
+        self.approveHash = approveHash
+        self.chain = chain
+        self.progressLink = progressLink
+        self.sendTransaction = sendTransaction
+        self.swapTransaction = swapTransaction
+        self.contentPadding = contentPadding
+    }
     
     var body: some View {
         ZStack {
@@ -41,10 +61,8 @@ struct SendCryptoDoneView: View {
     }
     
     func sendView(tx: SendTransaction) -> some View {
-        VStack {
-            sendContent(tx: tx)
-            continueButton
-        }
+        sendContent(tx: tx)
+            .padding(contentPadding)
     }
     
     func sendContent(tx: SendTransaction) -> some View {
@@ -62,19 +80,10 @@ struct SendCryptoDoneView: View {
             ),
             showAlert: $showAlert
         ) {
-            tx.reset(coin: tx.coin)
-        }
-        .padding(.horizontal, 16)
-    }
-
-    var continueButton: some View {
-        PrimaryButton(title: "done") {
             if let send = sendTransaction {
                 send.reset(coin: send.coin)
             }
-            navigateToHome = true
         }
-        .padding(16)
     }
 
     var summaryCard: some View {

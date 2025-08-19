@@ -14,7 +14,7 @@ struct SendCryptoDoneSummary: View {
     let hash: String
     let approveHash: String?
     let sendSummaryViewModel: SendSummaryViewModel
-        let swapSummaryViewModel: SwapCryptoViewModel
+    let swapSummaryViewModel: SwapCryptoViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     

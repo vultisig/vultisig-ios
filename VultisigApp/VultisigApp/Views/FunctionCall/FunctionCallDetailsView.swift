@@ -6,7 +6,7 @@ struct FunctionCallDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var vault: Vault
-
+    
     @State private var selectedFunctionMemoType: FunctionCallType
     @State private var selectedContractMemoType: FunctionCallContractType
     @State private var showInvalidFormAlert = false
@@ -15,7 +15,7 @@ struct FunctionCallDetailsView: View {
     let defaultCoin: Coin
     
     @StateObject var keyboardObserver = KeyboardObserver()
-
+    
     init(
         tx: SendTransaction,
         functionCallViewModel: FunctionCallViewModel,
@@ -92,8 +92,6 @@ struct FunctionCallDetailsView: View {
             }
             .onChange(of: selectedFunctionMemoType) {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
-                // Reset to default coin
-                tx.coin = defaultCoin
                 switch selectedFunctionMemoType {
                 case .bond:
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
@@ -113,7 +111,7 @@ struct FunctionCallDetailsView: View {
                     
                     fnCallInstance = .unbond(unbondInstance)
                 case .bondMaya:
-
+                    
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -127,9 +125,9 @@ struct FunctionCallDetailsView: View {
                             }
                         }
                     }
-
+                    
                 case .unbondMaya:
-
+                    
                     DispatchQueue.main.async {
                         MayachainService.shared.getDepositAssets {
                             assetsResponse in
@@ -143,7 +141,7 @@ struct FunctionCallDetailsView: View {
                             }
                         }
                     }
-
+                    
                 case .leave:
                     let leaveInstance = FunctionCallLeave()
                     
@@ -162,7 +160,7 @@ struct FunctionCallDetailsView: View {
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
                 case .stakeTcy:
-                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, functionCallViewModel: functionCallViewModel))
+                    fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
                 case .unstakeTcy:
                     
                     DispatchQueue.main.async {
@@ -170,7 +168,7 @@ struct FunctionCallDetailsView: View {
                             stakedAmount in
                             
                             DispatchQueue.main.async {
-                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
+                                fnCallInstance = .unstakeTcy(FunctionCallUnstakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel, stakedAmount: stakedAmount))
                             }
                         }
                     }
@@ -194,6 +192,14 @@ struct FunctionCallDetailsView: View {
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .theSwitch:
                     fnCallInstance = .theSwitch(FunctionCallCosmosSwitch(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
+                case .mintYRune:
+                    fnCallInstance = .mintYRune(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit, functionType: .mintYRune))
+                case .mintYTCY:
+                    fnCallInstance = .mintYTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .deposit, functionType: .mintYTCY))
+                case .redeemRune:
+                    fnCallInstance = .redeemRune(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemRune))
+                case .redeemTCY:
+                    fnCallInstance = .redeemTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemTCY))
                 case .addThorLP:
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:
@@ -210,7 +216,7 @@ struct FunctionCallDetailsView: View {
                 }
             }
     }
-
+    
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
@@ -220,7 +226,7 @@ struct FunctionCallDetailsView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-
+    
     var invalidFormAlert: Alert {
         Alert(
             title: Text("Form Invalid"),
@@ -249,14 +255,14 @@ struct FunctionCallDetailsView: View {
             items: .constant(FunctionCallType.getCases(for: tx.coin)),
             selected: $selectedFunctionMemoType, coin: $tx.coin)
     }
-
+    
     var contractSelector: some View {
         FunctionCallContractSelectorDropDown(
             items: .constant(
                 FunctionCallContractType.getCases(for: tx.coin)),
             selected: $selectedContractMemoType, coin: tx.coin)
     }
-
+    
     var button: some View {
         PrimaryButton(title: "continue") {
             Task {

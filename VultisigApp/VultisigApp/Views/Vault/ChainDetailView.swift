@@ -27,6 +27,7 @@ struct ChainDetailView: View {
     @State var resetActive = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
+    @Environment(\.router) var router
     
     enum SheetType: Int, Identifiable {
         case tokenSelection = 1
@@ -40,13 +41,6 @@ struct ChainDetailView: View {
     var body: some View {
         content
             .sensoryFeedback(showAlert ? .stop : .impact, trigger: showAlert)
-            .navigationDestination(isPresented: $isSendLinkActive) {
-                SendCryptoView(
-                    tx: sendTx,
-                    vault: vault,
-                    coin: group.nativeCoin
-                )
-            }
             .navigationDestination(isPresented: $isSwapLinkActive) {
                 if let fromCoin = tokens.first {
                     SwapCryptoView(fromCoin: fromCoin, vault: vault)
@@ -58,6 +52,18 @@ struct ChainDetailView: View {
                     vault: vault,
                     coin: group.nativeCoin
                 )
+            }
+            .navigationDestination(isPresented: $isSendLinkActive) {
+                SendRouteBuilder().buildDetailsScreen(coin: group.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+            }
+            .onChange(of: isMemoLinkActive) { oldValue, newValue in
+                if newValue {
+                    if let nativeCoin = tokens.first(where: { $0.isNativeToken }) {
+                        sendTx.reset(coin: nativeCoin)
+                    } else if let firstCoin = tokens.first {
+                        sendTx.reset(coin: firstCoin)
+                    }
+                }
             }
             .refreshable {
                 refreshAction()

@@ -31,7 +31,6 @@ struct SendDetailsAssetTab: View {
             }
             .onChange(of: viewModel.selectedChain) { oldValue, newValue in
                 guard let vault = homeViewModel.selectedVault else { return }
-                print("Selected chain changed: \(String(describing: newValue)) , update from address")
                 let coin = vault.coins.first(where: { $0.chain == newValue })
                 tx.fromAddress = coin?.address ?? ""
                 // Update coin when chain changes

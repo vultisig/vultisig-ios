@@ -1,5 +1,5 @@
 //
-//  SendCryptoDetailsView+iOS.swift
+//  SendDetailsScreen+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-21.
@@ -8,28 +8,32 @@
 #if os(iOS)
 import SwiftUI
 
-extension SendCryptoDetailsView {
+extension SendDetailsScreen {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var container: some View {
-        content
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    
-                    Button {
-                        hideKeyboard()
-                    } label: {
-                        Text(NSLocalizedString("done", comment: "Done"))
-                    }
+        Screen(title: "send".localized) {
+            content
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text(NSLocalizedString("done", comment: "Done"))
                 }
             }
-            .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
-                chainPicker
-            }
-            .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
-                coinPicker
-            }
+        }
+        .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+            chainPicker
+                .sheetStyle()
+        }
+        .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+            coinPicker
+                .sheetStyle()
+        }
     }
     
     var view: some View {
@@ -41,8 +45,7 @@ extension SendCryptoDetailsView {
     
     var buttonContainer: some View {
         button
-            .padding(.horizontal, 16)
-            .padding(.vertical, idiom == .pad ? 30 : 8)
+            .padding(.vertical, 8)
             .background(keyboardObserver.keyboardHeight == 0 ? .clear : Theme.colors.bgPrimary)
             .shadow(color: Theme.colors.bgPrimary, radius: keyboardObserver.keyboardHeight == 0 ? 0 : 15)
     }

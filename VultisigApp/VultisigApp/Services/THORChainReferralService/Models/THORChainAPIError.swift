@@ -5,6 +5,24 @@
 //  Created by Gaston Mazzeo on 07/08/2025.
 //
 
-enum THORChainAPIError: Error {
+import Foundation
+
+enum THORChainAPIError: Error, LocalizedError {
     case invalidResponse
+    case thornameNotFound
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse:
+            return "Invalid response from THORChain API"
+        case .thornameNotFound:
+            return "THORName doesn't exist"
+        }
+    }
+}
+
+struct THORChainErrorResponse: Codable {
+    let code: Int
+    let message: String
+    let details: [String]
 }

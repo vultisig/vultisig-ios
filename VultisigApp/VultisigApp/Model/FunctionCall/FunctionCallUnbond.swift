@@ -42,13 +42,15 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     }
     
     required init() {
-        setupValidation()
     }
     
     init(nodeAddress: String, amount: Decimal = 0.0, provider: String = "") {
         self.nodeAddress = nodeAddress
         self.amount = amount
         self.provider = provider
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -87,7 +89,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-
+            
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -96,7 +98,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-
+            
             StyledFloatingPointField(
                 label: NSLocalizedString("amount", comment: ""),
                 placeholder: NSLocalizedString("enterAmount", comment: ""),
@@ -109,7 +111,7 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { _ in }
                 )
             )
-
+            
             FunctionCallAddressTextField(
                 memo: self,
                 addressKey: "provider",
@@ -119,6 +121,8 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
+        }.onAppear {
+            self.initialize()
         })
     }
 }

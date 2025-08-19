@@ -11,21 +11,29 @@ import WalletCore
 @MainActor
 class CoinSelectionViewModel: ObservableObject {
     
-    @Published var groupedAssets: [String: [CoinMeta]] = [:]
+    @Published var groupedAssets: [Chain: [CoinMeta]] = [:]
     @Published var searchText: String = .empty
     @Published var selection = Set<CoinMeta>()
 
-    var filteredChains: [String] {
+    var chains: [Chain] {
+        groupedAssets
+            .map { $0.key }
+            .sorted(by: { $0.name < $1.name })
+    }
+    
+    var filteredChains: [Chain] {
         if searchText.isEmpty {
-            return groupedAssets.keys.sorted()
+            return groupedAssets.keys.sorted(by: { $0.name < $1.name })
         } else {
-            return groupedAssets
+            let assets = groupedAssets
                 .filter { (chain, tokens) in
-                    chain.lowercased().contains(searchText.lowercased()) ||
+                    chain.name.lowercased().contains(searchText.lowercased()) ||
                     tokens.contains { $0.ticker.lowercased().contains(searchText.lowercased()) }
                 }
                 .map { $0.key }
-                .sorted()
+                .sorted(by: { $0.name < $1.name })
+            
+            return assets
         }
     }
 
@@ -42,7 +50,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     func hasTokens(chain: Chain) -> Bool {
-        guard let coins = groupedAssets[chain.name] else { return false }
+        guard let coins = groupedAssets[chain] else { return false }
         return coins.count > 1
     }
     
@@ -57,11 +65,11 @@ class CoinSelectionViewModel: ObservableObject {
                 return true
             }
             return false
-        })) { $0.chain.name }
+        })) { $0.chain }
         
         let enableETHSepolia = UserDefaults.standard.bool(forKey: "sepolia")
         if enableETHSepolia {
-            groupedAssets[TokensStore.Token.ethSepolia.chain.name] = [TokensStore.Token.ethSepolia]
+            groupedAssets[TokensStore.Token.ethSepolia.chain] = [TokensStore.Token.ethSepolia]
         }
         
     }
@@ -77,5 +85,15 @@ class CoinSelectionViewModel: ObservableObject {
             selection.remove(asset)
         }
     }
-
+    
+    func filterChains(type: ChainFilterType, vault: Vault) -> [Chain] {
+        switch type {
+        case .swap:
+            return filteredChains
+                .filter(\.isSwapAvailable)
+        case .send:
+            return filteredChains
+                .filter { vault.chains.contains($0) }
+        }
+    }
 }

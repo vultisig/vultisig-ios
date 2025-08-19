@@ -149,6 +149,15 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/tcy_staker/\(address)"
     }
     
+    static func fetchTcyAutoCompoundStatus() -> String {
+        "https://rpc.ninerealms.com/cosmwasm/wasm/v1/contract/thor1z7ejlk5wk2pxh9nfwjzkkdnrq4p2f5rjcpudltv0gh282dwfz6nq9g2cr0/smart/eyJzdGF0dXMiOnt9fQ=="
+    }
+    
+    static func fetchTcyAutoCompoundBalance(address: String) -> String {
+        // Query user's sTCY balance using cosmos bank API - URL encode the denom
+        "https://rpc.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
+    }
+    
     static func fetchRuneBondedAmount(address: String) -> String {
         return "https://midgard.ninerealms.com/v2/bonds/\(address)"
     }
@@ -189,7 +198,7 @@ class Endpoint {
         ? "&referrer=\(referrer)&fee=\(fee)"
         : "&referrer=\(referrer)&fee=0"
         
-        return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true\(isAffiliateParams)".asUrl
+        return "\(vultisigApiProxy)/1inch/swap/v6.1/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&includeGas=true&disableEstimate=true\(isAffiliateParams)".asUrl
     }
     
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toAddress: String, toToken: String, fromAmount: String, fromAddress: String, integrator: String?, fee: String?) -> URL {

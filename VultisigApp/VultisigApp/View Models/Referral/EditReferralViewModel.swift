@@ -108,7 +108,7 @@ private extension EditReferralViewModel {
     func createTransaction(tx: SendTransaction, preferredAsset: PreferredAsset?) async {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
-            preferredAssetCoin = try? await CoinService.addToChain(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
+            preferredAssetCoin = try? await CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
         }
         
         tx.amount = totalFeeAmount.formatDecimalToLocale()
@@ -116,7 +116,6 @@ private extension EditReferralViewModel {
         let fnCallInstance = FunctionCallInstance.custom(FunctionCallCustom())
         tx.memoFunctionDictionary = fnCallInstance.toDictionary()
         tx.transactionType = fnCallInstance.getTransactionType()
-        
         
         let memo = ReferralCodeMemoFactory.createEdit(
             referralCode: savedGeneratedReferralCode,

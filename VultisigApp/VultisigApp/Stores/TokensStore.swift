@@ -1265,11 +1265,11 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .osmosis,
-            ticker: "LVN",
-            logo: "levana",
+            ticker: "KUJI",
+            logo: "kuji",
             decimals: 6,
-            priceProviderId: "levana-protocol",
-            contractAddress: "factory/osmo1mlng7pz4pnyxtpq0akfwall37czyk9lukaucsrn30ameplhhshtqdvfm5c/ulvn",
+            priceProviderId: "kujira",
+            contractAddress: "ibc/93B87B73E634D3BD3CD782F52C99883F340CE6027F37718E0E04D552272DA8A9",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1655,8 +1655,17 @@ class TokensStore {
             ticker: "TCY",
             logo: "tcy",
             decimals: 8,
-            priceProviderId: "",
+            priceProviderId: "tcy",
             contractAddress: "tcy",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "sTCY",
+            logo: "tcy", // Use same logo as TCY
+            decimals: 8,
+            priceProviderId: "tcy",
+            contractAddress: "x/staking-tcy",
             isNativeToken: false
         ),
         CoinMeta(
@@ -1720,6 +1729,24 @@ class TokensStore {
             decimals: 8,
             priceProviderId: "kujira",
             contractAddress: "thor.rkuji",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "YRUNE",
+            logo: "yRUNE",
+            decimals: 8,
+            priceProviderId: "thorchain",
+            contractAddress: "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
+            isNativeToken: false
+        ),
+        CoinMeta(
+            chain: .thorChain,
+            ticker: "YTCY",
+            logo: "yTCY",
+            decimals: 8,
+            priceProviderId: "tcy",
+            contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
             isNativeToken: false
         ),
         CoinMeta(

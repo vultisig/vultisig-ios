@@ -26,6 +26,11 @@ struct SwapCryptoView: View {
     
     var body: some View {
         content
+            .onLoad {
+                if let fromCoin {
+                    tx.fromCoin = fromCoin
+                }
+            }
             .onAppear {
                 swapViewModel.fetchFees(tx: tx, vault: vault)
             }
@@ -72,13 +77,26 @@ struct SwapCryptoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     customMessagePayload: nil,
-                    transferViewModel: swapViewModel,
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
-                    keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
                     previewType: .Swap,
                     swapTransaction: tx
-                )
+                ) { input in
+                    self.keysignView = KeysignView(
+                        vault: input.vault,
+                        keysignCommittee: input.keysignCommittee,
+                        mediatorURL: input.mediatorURL,
+                        sessionID: input.sessionID,
+                        keysignType: input.keysignType,
+                        messsageToSign: input.messsageToSign,
+                        keysignPayload: input.keysignPayload,
+                        customMessagePayload: input.customMessagePayload,
+                        transferViewModel: swapViewModel,
+                        encryptionKeyHex: input.encryptionKeyHex,
+                        isInitiateDevice: input.isInitiateDevice
+                    )
+                    swapViewModel.moveToNextView()
+                }
             } else {
                 SendCryptoVaultErrorView()
             }

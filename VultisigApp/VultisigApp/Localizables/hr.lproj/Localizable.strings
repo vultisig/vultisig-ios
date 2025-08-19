@@ -688,3 +688,7 @@
 "transactionFailed" = "Transakcija nije uspjela";
 "biweeklyPasswordVerifyDescription" = "Povremeno ćemo vas tražiti da potvrdite svoju Fast Sign lozinku kako biste je uvijek zapamtili";
 "referralProgramTooltipDescription" = "Program preporuka odnosi se na THORChain zamjene i djeluje na principu najboljeg truda. Za korištenje Vultisig preporuke, morate registrirati THORName. Naknada za registraciju iznosi 10 RUNE plus 1 RUNE godišnje, plaća se THORChain mreži.";
+"enableAutoCompounding" = "Omogući Auto-Compounding";
+"automaticallyCompoundTCYRewards" = "Automatski kapitaliziraj TCY nagrade";
+"unstakeAutoCompoundTCY" = "Povuci Auto-Compound TCY";
+"unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";

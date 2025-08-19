@@ -33,6 +33,9 @@ class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init() {
+    }
+    
+    func initialize() {
         setupValidation()
     }
     
@@ -80,6 +83,8 @@ class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
                     get: { self.amountValid },
                     set: { self.amountValid = $0 }
                 ))
+        }.onAppear {
+            self.initialize()
         })
     }
 }

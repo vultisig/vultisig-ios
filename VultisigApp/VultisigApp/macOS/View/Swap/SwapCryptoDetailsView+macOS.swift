@@ -11,12 +11,9 @@ import SwiftUI
 extension SwapCryptoDetailsView {
     var container: some View {
         ZStack(alignment: .top) {
-            view
-            
-            if showSheet() {
-                MacOSOverlay()
-                    .onTapGesture(perform: closeSheets)
-            }
+            Screen(showNavigationBar: false) {
+                view
+            }.overlay(showSheet() ? overlay : nil)
             
             VStack {
                 if swapViewModel.showFromChainSelector {
@@ -56,6 +53,11 @@ extension SwapCryptoDetailsView {
                 }
             }
         }
+    }
+    
+    var overlay: some View {
+        MacOSOverlay()
+            .onTapGesture(perform: closeSheets)
     }
     
     var view: some View {

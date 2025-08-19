@@ -122,6 +122,13 @@ final class Vault: ObservableObject, Codable {
         return false
     }
     
+    var chains: [Chain] {
+        coins
+            .filter { $0.isNativeToken }
+            .map { $0.chain }
+            .uniqueBy { $0 }
+    }
+    
     func getKeyshare(pubKey: String) -> String? {
         return self.keyshares.first(where: {$0.pubkey == pubKey})?.keyshare
     }

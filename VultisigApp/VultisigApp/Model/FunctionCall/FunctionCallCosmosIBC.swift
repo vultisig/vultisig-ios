@@ -64,8 +64,16 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     ) {
         self.tx = tx
         self.vault = vault
+        self.amount = tx.coin.balanceDecimal
+    }
+    
+    func initialize() {
         setupValidation()
-        
+        loadChains()
+        getChainAddress()
+    }
+    
+    private func loadChains() {
         let cosmosChains: [Chain] = tx.coin.chain.ibcTo.map { $0.destinationChain }
         
         for chain in cosmosChains {
@@ -73,11 +81,6 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
             if tx.coin.ticker == TokensStore.Token.kujiraLVN.ticker, tx.coin.chain == .kujira { continue }
             chains.append(.init(value: "\(chain.name) \(chain.ticker)"))
         }
-                
-        getChainAddress()
-        
-        self.amount = tx.coin.balanceDecimal
-        
     }
     
     private func getChainAddress() -> Void {
@@ -184,6 +187,8 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
                 isOptional: true
             )
             
+        }.onAppear {
+            self.initialize()
         })
     }
 }

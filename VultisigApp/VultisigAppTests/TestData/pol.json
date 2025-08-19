@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Send POL",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Polygon",
+                "ticker": "POL",
+                "address": "0xe5F238C95142be312852e864B830daADB9B7D290",
+                "decimals": 18,
+                "price_provider_id": "matic-network",
+                "is_native_token": true,
+                "hex_public_key": "03bb1adf8c0098258e4632af6c055c37135477e269b7e7eb4f600fe66d9ca9fd78",
+                "logo": "pol.png"
+            },
+            "to_address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+            "to_amount": "500000000000000000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "26488657356",
+                    "priority_fee": "26488657179",
+                    "nonce": 0,
+                    "gas_limit": "120000"
+                }
+            },
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["3f61a3ffacbe323f16af61269ec82e53e013e46b25cd274958c190fb6bd43187"]
+    }
+]

@@ -11,12 +11,12 @@ import Combine
 
 /**
  * THORCHAIN - FUNCTION: "EXECUTE CONTRACT - UNMERGE"
- * 
+ *
  * UI Elements:
  * • Dropdown: Select token to unmerge
  * • Amount Field: Enter amount of shares to withdraw (displayed as RUJI amount)
  * • Display: Current balance info
- * 
+ *
  * Action:
  * → Call the RUJI Merge smart contract to withdraw the specified amount
  */
@@ -51,9 +51,15 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     ) {
         self.tx = tx
         self.vault = vault
-        
+    }
+    
+    func initialize() {
         setupValidation()
-        
+        loadAvailableTokens()
+        preSelectToken()
+    }
+    
+    private func loadAvailableTokens() {
         // Find available merge tokens that have balances
         let availableTokens = ThorchainMergeTokens.tokensToMerge.filter { tokenInfo in
             vault.coins.contains { coin in
@@ -66,7 +72,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
         for token in availableTokens {
             tokens.append(.init(value: token.denom.uppercased()))
         }
-        
+    }
+    
+    private func preSelectToken() {
         // Pre-select if we're already on a merged token
         if !tx.coin.isNativeToken,
            let match = ThorchainMergeTokens.tokensToMerge.first(where: {
@@ -102,7 +110,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
             .replacingOccurrences(of: "thor.", with: "")
         
         return vault.coins.first { coin in
-            coin.chain == .thorChain && 
+            coin.chain == .thorChain &&
             !coin.isNativeToken &&
             coin.ticker.lowercased() == ticker
         }
@@ -112,7 +120,7 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     func fetchMergedBalance() async {
         isLoading = true
         objectWillChange.send() // Force UI update
-        defer { 
+        defer {
             isLoading = false
             objectWillChange.send() // Force UI update
         }
@@ -187,7 +195,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     }
     
     func getView() -> AnyView {
-        return AnyView(UnmergeView(viewModel: self))
+        return AnyView(UnmergeView(viewModel: self).onAppear {
+            self.initialize()
+        })
     }
     
     var formattedBalanceText: String {
@@ -235,7 +245,7 @@ struct UnmergeView: View {
                 onSelect: { asset in
                     // Reset balance before fetching new one
                     viewModel.amount = 0
-                    viewModel.totalShares = "0" 
+                    viewModel.totalShares = "0"
                     viewModel.sharePrice = 0
                     viewModel.balanceLabel = "Loading..."
                     
@@ -252,7 +262,7 @@ struct UnmergeView: View {
                     placeholder: viewModel.balanceLabel,
                     value: Binding(
                         get: { viewModel.amount },
-                        set: { 
+                        set: {
                             viewModel.amount = $0
                             viewModel.objectWillChange.send()
                         }
@@ -265,4 +275,4 @@ struct UnmergeView: View {
             }
         }
     }
-} 
+}

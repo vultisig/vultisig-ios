@@ -58,7 +58,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         self.tx = tx
         self.functionCallViewModel = functionCallViewModel
         self.vault = vault
-        
+    }
+    
+    func initialize() {
         prefillPairedAddress()
         setupValidation()
         loadInitialState()
@@ -334,7 +336,9 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     }
     
     func getView() -> AnyView {
-        AnyView(FunctionCallAddThorLPView(model: self))
+        AnyView(FunctionCallAddThorLPView(model: self).onAppear{
+            self.initialize()
+        })
     }
     
 }
@@ -459,6 +463,7 @@ struct PoolSelectorSection: View {
                     }
                 }
             }
+            
         )
     }
 }

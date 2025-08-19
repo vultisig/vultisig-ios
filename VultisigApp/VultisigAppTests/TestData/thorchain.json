@@ -96,5 +96,93 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["ea76ee8ac3f601a34d2b65d6c228484362ab075290cdb62a75c84678f90e93bc"]
+    },
+    {
+        "name": "Mint YRUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"",
+                "logo": "rune.png"
+            },
+            "to_address": "",
+            "to_amount": "100000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 8
+                }
+            },
+            "memo": "receive:rune:10000000",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS",
+            "wasm_execute_contract_payload": {
+                "sender_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "contract_address": "thor1v3f7h384r8hw6r3dtcgfq6d5fq842u6cjzeuu8nr0cp93j7zfxyquyrfl8",
+                "execute_msg": "{\"execute\":{\"contract_addr\":\"thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt\",\"msg\":\"eyJkZXBvc2l0Ijp7fX0=\",\"affiliate\":[\"thor1svfwxevnxtm4ltnw92hrqpqk4vzuzw9a4jzy04\",10]}}",
+                "coins": [
+                    {
+                        "denom": "rune",
+                        "amount": "100000000"
+                    }
+                ]
+            }
+        },
+        "expected_image_hash": ["2b7ee69b59f230163c8e4620d46289ec418f20847d336d538cd24292fe5ad86c"]
+    },
+    {
+        "name": "Redeem RUNE",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "YRUNE",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": true,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
+                "logo": "YRUNE"
+            },
+            "to_address": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 8
+                }
+            },
+            "memo": "sell:x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt:1000000",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS",
+            "wasm_execute_contract_payload": {
+                "sender_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "contract_address": "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt",
+                "execute_msg": "{\"withdraw\":{\"slippage\":\"0.01\"}}",
+                "coins": [
+                    {
+                        "denom": "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
+                        "amount": "1000000"
+                    }
+                ]
+            }
+        },
+        "expected_image_hash": ["20f6fb36702198ecf2b5757f391b90ccb8747a6b7e24aa306b40dc6c00ddfdf8"]
     }
 ]

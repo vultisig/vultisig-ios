@@ -62,17 +62,21 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     ) {
         self.tx = tx
         self.vault = vault
+        self.amount = tx.coin.balanceDecimal
         
         let thorchainCoin = self.vault.coins.first { $0.chain == .thorChain && $0.isNativeToken }
         if let thorchainCoin = thorchainCoin {
             self.thorAddress = thorchainCoin.address
             self.thorchainAddressValid = true
         }
-        
+    }
+    
+    func initialize() {
         setupValidation()
-        
-        self.amount = tx.coin.balanceDecimal
-        
+        fetchInboundAddress()
+    }
+    
+    private func fetchInboundAddress() {
         Task { @MainActor in
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
             if let match = addresses.first(where: { $0.chain.uppercased() == "GAIA" }) {
@@ -155,6 +159,8 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
                 )
             )
             
+        }.onAppear {
+            self.initialize()
         })
     }
 }
