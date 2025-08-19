@@ -12,7 +12,7 @@ struct YVaultConstants {
     private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
     
     // Affiliate contract configuration for 10 basis points (0.1%) fees
-    static let affiliateAddress = "thor1lsnaluvdx0jjw9q7w4p6q9v2jzk2g0z2z8z8z8" // Replace with actual affiliate address
+    static let affiliateAddress = "thor1svfwxevnxtm4ltnw92hrqpqk4vzuzw9a4jzy04"
     static let affiliateFeeBasisPoints = 10 // 10 basis points = 0.1%
     
     static let contracts: [String: String] = [
