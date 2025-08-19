@@ -130,18 +130,15 @@ struct SettingsMainScreen: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
             
-            VStack(spacing: .zero) {
-                ForEach(group.options, id: \.self) { option in
-                    optionView(for: option, shouldHighlight: option == .registerVaults)
-                    GradientListSeparator()
-                        .showIf(option != group.options.last)
+            SettingsSectionContainerView {
+                VStack(spacing: .zero) {
+                    ForEach(group.options, id: \.self) { option in
+                        optionView(for: option, shouldHighlight: option == .registerVaults)
+                        GradientListSeparator()
+                            .showIf(option != group.options.last)
+                    }
                 }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Theme.colors.bgSecondary)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
     
