@@ -84,7 +84,7 @@ struct SettingsMainScreen: View {
             }
         }
         .navigationDestination(item: $selectedOption) { option in
-            switch selectedOption {
+            switch option {
             case .vaultSettings:
                 if let vault = homeViewModel.selectedVault {
                     EditVaultView(vault: vault)
@@ -132,7 +132,7 @@ struct SettingsMainScreen: View {
             
             VStack(spacing: .zero) {
                 ForEach(group.options, id: \.self) { option in
-                    optionView(for: option)
+                    optionView(for: option, shouldHighlight: option == .registerVaults)
                     GradientListSeparator()
                         .showIf(option != group.options.last)
                 }
@@ -145,11 +145,15 @@ struct SettingsMainScreen: View {
         }
     }
     
-    func optionView(for option: SettingsOption) -> some View {
+    @ViewBuilder
+    func optionView(for option: SettingsOption, shouldHighlight: Bool) -> some View {
+        let bgColor: Color? = shouldHighlight ? Theme.colors.primaryAccent3 : nil
+        let iconColor: Color = shouldHighlight ? Theme.colors.textPrimary : Theme.colors.primaryAccent4
+        
         optionContainerView(for: option) {
             HStack(spacing: 12) {
                 if let icon = option.icon {
-                    Icon(named: icon, color: Theme.colors.primaryAccent4, size: 20)
+                    Icon(named: icon, color: iconColor, size: 20)
                 }
                 
                 Text(option.title.localized)
@@ -172,6 +176,7 @@ struct SettingsMainScreen: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 16)
+            .background(bgColor)
         }
     }
     

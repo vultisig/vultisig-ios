@@ -192,7 +192,7 @@
 "thisDevice" = "This Device";
 "pairDevice" = "Pair Device";
 "backupDevice" = "Backup Device";
-"shareTheApp" = "Share The App";
+"shareTheApp" = "Share the App";
 "noChainSelected" = "No Chain Selected";
 "setupVaultFAQQuestion" = "How do I set up my crypto vault?";
 "setupVaultFAQAnswer" = "Get 2 or more of your devices together and connected to your local WiFi, Hotspot or internet. Then simply pair them via QR code and create a new vault. You can then send funds in.";
@@ -777,3 +777,6 @@
 "vultisigCommunity" = "Vultisig Community";
 "general" = "General";
 "support" = "Support";
+"x" = "X";
+"discord" = "Discord";
+"github" = "Github";

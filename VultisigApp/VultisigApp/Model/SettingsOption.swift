@@ -19,7 +19,9 @@ enum SettingsOptionType {
     case shareLink(url: URL)
 }
 
-enum SettingsOption: Hashable {
+enum SettingsOption: String, Identifiable {
+    var id: String { rawValue }
+    
     case vaultSettings
     case registerVaults
     case language
@@ -60,7 +62,7 @@ enum SettingsOption: Hashable {
         case .shareApp:
             return "shareTheApp"
         case .twitter:
-            return "twitter"
+            return "x"
         case .discord:
             return "discord"
         case .github:
