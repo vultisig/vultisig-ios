@@ -18,10 +18,8 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @Environment(\.router) var router
-
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
     @AppStorage("biweeklyPasswordVerifyDate") private var biweeklyPasswordVerifyDate: Double?
-
     @State var showSheet = false
     @State var isLoading = true
     @State var showScanner = false
