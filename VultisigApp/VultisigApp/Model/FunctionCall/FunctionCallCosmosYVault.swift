@@ -153,30 +153,11 @@ class FunctionCallCosmosYVault: ObservableObject {
     }
     
     private func buildDepositMsgWithAffiliate() -> String {
-        return """
-        {
-            "deposit": {
-                "affiliate": {
-                    "address": "\(YVaultConstants.affiliateAddress)",
-                    "basis_points": \(YVaultConstants.affiliateFeeBasisPoints)
-                }
-            }
-        }
-        """
+        return "{\"deposit\":{\"affiliate\":{\"address\":\"\(YVaultConstants.affiliateAddress)\",\"basis_points\":\(YVaultConstants.affiliateFeeBasisPoints)}}}"
     }
     
     private func buildWithdrawMsgWithAffiliate(slippage: String) -> String {
-        return """
-        {
-            "withdraw": {
-                "slippage": "\(slippage)",
-                "affiliate": {
-                    "address": "\(YVaultConstants.affiliateAddress)",
-                    "basis_points": \(YVaultConstants.affiliateFeeBasisPoints)
-                }
-            }
-        }
-        """
+        return "{\"withdraw\":{\"slippage\":\"\(slippage)\",\"affiliate\":{\"address\":\"\(YVaultConstants.affiliateAddress)\",\"basis_points\":\(YVaultConstants.affiliateFeeBasisPoints)}}}"
     }
     
     var wasmContractPayload: WasmExecuteContractPayload {
