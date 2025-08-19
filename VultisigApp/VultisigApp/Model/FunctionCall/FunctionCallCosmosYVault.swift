@@ -11,6 +11,10 @@ struct YVaultConstants {
     private static let yRuneContract = "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt"
     private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
     
+    // Affiliate contract configuration for 10 basis points (0.1%) fees
+    static let affiliateAddress = "thor1lsnaluvdx0jjw9q7w4p6q9v2jzk2g0z2z8z8z8" // Replace with actual affiliate address
+    static let affiliateFeeBasisPoints = 10 // 10 basis points = 0.1%
+    
     static let contracts: [String: String] = [
         "rune": yRuneContract,
         "tcy": yTcyContract,
@@ -25,7 +29,6 @@ struct YVaultConstants {
         "ytcy": "x/nami-index-nav-\(yTcyContract)-rcpt"
     ]
     
-    static let depositMsgJSON = "{ \"deposit\": {} }"
     static let slippageOptions: [Decimal] = [0.01, 0.02, 0.05, 0.075]
     
     static let actionLabels: [String: String] = [
@@ -142,11 +145,38 @@ class FunctionCallCosmosYVault: ObservableObject {
     private func buildExecuteMsg() -> String {
         switch action {
         case .deposit:
-            return YVaultConstants.depositMsgJSON
+            return buildDepositMsgWithAffiliate()
         case .withdraw(let slippage):
             let slipStr = String(describing: slippage)
-            return "{ \"withdraw\": { \"slippage\": \"\(slipStr)\" } }"
+            return buildWithdrawMsgWithAffiliate(slippage: slipStr)
         }
+    }
+    
+    private func buildDepositMsgWithAffiliate() -> String {
+        return """
+        {
+            "deposit": {
+                "affiliate": {
+                    "address": "\(YVaultConstants.affiliateAddress)",
+                    "basis_points": \(YVaultConstants.affiliateFeeBasisPoints)
+                }
+            }
+        }
+        """
+    }
+    
+    private func buildWithdrawMsgWithAffiliate(slippage: String) -> String {
+        return """
+        {
+            "withdraw": {
+                "slippage": "\(slippage)",
+                "affiliate": {
+                    "address": "\(YVaultConstants.affiliateAddress)",
+                    "basis_points": \(YVaultConstants.affiliateFeeBasisPoints)
+                }
+            }
+        }
+        """
     }
     
     var wasmContractPayload: WasmExecuteContractPayload {
