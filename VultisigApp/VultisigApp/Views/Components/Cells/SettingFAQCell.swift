@@ -15,10 +15,14 @@ struct SettingFAQCell: View {
     @State var isExpanded = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            questionBlock
-            description
-                .showIf(isExpanded)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                title
+                description
+                    .showIf(isExpanded)
+            }
+            Spacer()
+            chevron
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
@@ -27,14 +31,6 @@ struct SettingFAQCell: View {
             withAnimation {
                 isExpanded.toggle()
             }
-        }
-    }
-    
-    var questionBlock: some View {
-        HStack(spacing: .zero) {
-            title
-            Spacer()
-            chevron
         }
     }
     
