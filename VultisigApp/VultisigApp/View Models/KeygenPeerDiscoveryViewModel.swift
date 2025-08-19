@@ -92,7 +92,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             self.vault.localPartyID = self.localPartyID
         }
-        self.selections.insert(self.localPartyID)
+        self.restartSelections()
         // ensure when active / fast vault , user is always using internet option
         switch state {
         case .active , .fast:
@@ -137,6 +137,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self?.startFastVaultKeygenIfNeeded(state: state)
         }
         .store(in: &cancellables)
+    }
+    
+    func restartSelections() {
+        self.selections.removeAll()
+        self.selections.insert(self.localPartyID)
     }
     
     func autoSelectPeer(_ peer: String){
@@ -191,6 +196,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         } else {
             serverAddr = "http://127.0.0.1:18080"
         }
+        self.restartSelections()
         self.participantDiscovery?.peersFound = [String]()
         self.startSession()
         self.participantDiscovery?.getParticipants(
