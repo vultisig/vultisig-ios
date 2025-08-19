@@ -16,10 +16,23 @@ struct SettingsView: View {
     @State var showAdvancedSettings: Bool = false
     
     var body: some View {
-        content
-            .navigationDestination(isPresented: $showAdvancedSettings) {
-                SettingsAdvancedView()
+        Screen(title: "settings".localized) {
+            view
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    if let vault = homeViewModel.selectedVault {
+                        VaultDetailQRCodeView(vault: vault)
+                    }
+                } label: {
+                    NavigationQRCodeButton()
+                }
             }
+        }
+        .navigationDestination(isPresented: $showAdvancedSettings) {
+            SettingsAdvancedView()
+        }
     }
     
     var mainSection: some View {

@@ -8,27 +8,7 @@
 #if os(macOS)
 import SwiftUI
 
-extension SettingsView {
-    var content: some View {
-        ZStack {
-            Background()
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-            headerMac
-            Separator()
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "settings")
-            .padding(.bottom, 8)
-    }
-    
+extension SettingsView {    
     var view: some View {
         ScrollView {
             VStack(spacing: 24) {

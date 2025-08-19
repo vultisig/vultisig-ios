@@ -33,23 +33,13 @@ struct NavigationHomeEditButton: View {
     }
     
     var folderHomeEditButton: some View {
-        ZStack {
-            if showVaultsList {
-                foldersListEditButton
-            } else {
-                vaultDetailQRCodeButton
-            }
-        }
+        foldersListEditButton
+            .showIf(showVaultsList)
     }
     
     var vaultHomeEditButton: some View {
-        ZStack {
-            if showVaultsList {
-                vaultsListEditButton
-            } else {
-                vaultDetailQRCodeButton
-            }
-        }
+        vaultsListEditButton
+            .showIf(showVaultsList)
     }
     
     var vaultsListEditButton: some View {
@@ -73,16 +63,6 @@ struct NavigationHomeEditButton: View {
             } else {
                 editFolderButton
             }
-        }
-    }
-    
-    var vaultDetailQRCodeButton: some View {
-        NavigationLink {
-            if let vault {
-                VaultDetailQRCodeView(vault: vault)
-            }
-        } label: {
-            NavigationQRCodeButton()
         }
     }
     
