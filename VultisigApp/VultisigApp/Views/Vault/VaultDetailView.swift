@@ -28,7 +28,6 @@ struct VaultDetailView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
-
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
@@ -38,6 +37,7 @@ struct VaultDetailView: View {
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
     @State var selectedChain: Chain? = nil
+    
     @StateObject var sendTx = SendTransaction()
     
     var body: some View {
