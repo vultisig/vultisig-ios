@@ -11,11 +11,13 @@ struct UpdateCheckUpToDateView: View {
     let currentVersion: String
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 34) {
             Spacer()
             vultisigLogo
-            upToDateTitle
-            upToDateDescription
+            VStack(spacing: 12) {
+                upToDateTitle
+                upToDateDescription
+            }
             Spacer()
         }
     }
@@ -23,7 +25,8 @@ struct UpdateCheckUpToDateView: View {
     var vultisigLogo: some View {
         Image("VultisigLogo")
             .resizable()
-            .frame(width: 60, height: 60)
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 72)
     }
     
     var upToDateTitle: some View {
@@ -35,8 +38,8 @@ struct UpdateCheckUpToDateView: View {
     
     var upToDateDescription: some View {
         Text(currentVersion)
-            .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textExtraLight)
     }
 }
 

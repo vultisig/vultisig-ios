@@ -373,8 +373,8 @@
 "updateNow" = "Update Now";
 "checkingForUpdate" = "Checking for update...";
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
-"newUpdateAvailable" = "New Update Available";
-"appUpToDate" = "Application is up to date";
+"newUpdateAvailable" = "Update is available.";
+"appUpToDate" = "Application is up to date.";
 "fastSign" = "Fast Sign";
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";

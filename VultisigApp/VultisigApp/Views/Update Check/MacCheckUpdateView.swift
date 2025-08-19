@@ -11,25 +11,17 @@ struct MacCheckUpdateView: View {
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
+        Screen(title: "checkUpdate".localized) {
+            view
+                .background(
+                    LinearGradient.primaryGradient
+                        .opacity(0.15)
+                        .blur(radius: 150)
+                )
         }
         .onAppear {
             setData()
         }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-            headerMac
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "checkUpdate")
-            .padding(.bottom, 8)
     }
     
     var view: some View {
