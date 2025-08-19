@@ -38,7 +38,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
-    private var cancellables = Set<AnyCancellable>()
+    private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
     
@@ -130,13 +130,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
         
-        participantDiscovery.$peersFound.sink { [weak self] in
-            $0.forEach { peer in
-                self?.autoSelectPeer(peer)
+        peersFoundCancellable = participantDiscovery.$peersFound
+            .sink { [weak self] in
+                $0.forEach { peer in
+                    self?.autoSelectPeer(peer)
+                }
+                self?.startFastVaultKeygenIfNeeded(state: state)
             }
-            self?.startFastVaultKeygenIfNeeded(state: state)
-        }
-        .store(in: &cancellables)
     }
     
     func restartSelections() {
