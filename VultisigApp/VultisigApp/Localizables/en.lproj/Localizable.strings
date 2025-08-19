@@ -379,7 +379,7 @@
 "share" = "Share";
 "dropFileHere" = "Drop the file here...";
 "deviceID" = "Device ID";
-"checkForUpdate" = "Check For Update";
+"checkForUpdates" = "Check for Updates";
 "checkUpdate" = "Check Update";
 "updateNow" = "Update Now";
 "checkingForUpdate" = "Checking for update...";
@@ -772,3 +772,8 @@
 "automaticallyCompoundTCYRewards" = "Automatically compound your TCY rewards";
 "unstakeAutoCompoundTCY" = "Unstake Auto-Compound TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "Unstake from auto-compounding TCY deposits";
+"vultisigEducation" = "Vultisig Education";
+"vultisigWebsite" = "Vultisig Website";
+"vultisigCommunity" = "Vultisig Community";
+"general" = "General";
+"support" = "Support";
