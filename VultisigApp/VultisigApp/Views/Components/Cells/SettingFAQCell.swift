@@ -15,31 +15,23 @@ struct SettingFAQCell: View {
     @State var isExpanded = false
     
     var body: some View {
-        container
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(10)
-            .onTapGesture {
-                withAnimation {
-                    isExpanded.toggle()
-                }
-            }
-    }
-    
-    var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             questionBlock
-            
-            if isExpanded {
-                Separator()
-                description
+            description
+                .showIf(isExpanded)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation {
+                isExpanded.toggle()
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
     }
     
     var questionBlock: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: .zero) {
             title
             Spacer()
             chevron
@@ -48,21 +40,23 @@ struct SettingFAQCell: View {
     
     var title: some View {
         Text(NSLocalizedString(question, comment: "Question"))
-            .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textPrimary)
+            .font(Theme.fonts.bodySMedium)
+            .foregroundColor(Theme.colors.textLight)
     }
     
     var description: some View {
         Text(NSLocalizedString(answer, comment: "Answer"))
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textLight)
+            .font(Theme.fonts.footnote)
+            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var chevron: some View {
-        Image(systemName: "chevron.down")
-            .font(Theme.fonts.bodySRegular)
-            .foregroundColor(Theme.colors.textPrimary)
-            .rotationEffect(.degrees(isExpanded ? 180 : 0))
+        Icon(
+            named: "chevron-down",
+            color: Theme.colors.textExtraLight,
+            size: 16
+        )
+        .rotationEffect(.degrees(isExpanded ? 180 : 0))
     }
 }
 
