@@ -31,7 +31,7 @@ struct KeysignMessageFactory {
                 
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-            case .oneInch(let swapPayload):
+            case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
                     let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
@@ -40,9 +40,6 @@ struct KeysignMessageFactory {
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
-            case .kyberSwap(let swapPayload):
-                let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
