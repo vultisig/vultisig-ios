@@ -111,6 +111,7 @@
 		13BD8D512E3D49AD0013B67E /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D292E3D49AD0013B67E /* Color.swift */; };
 		13CCEC072E54D3B400F28937 /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC062E54D3B100F28937 /* SettingsOption.swift */; };
 		13CCEC0C2E54EE3000F28937 /* SettingsSectionContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */; };
+		13CCEC0F2E55010D00F28937 /* BannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0E2E55010C00F28937 /* BannerView.swift */; };
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
@@ -1130,6 +1131,7 @@
 		13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeProtocol.swift; sourceTree = "<group>"; };
 		13CCEC062E54D3B100F28937 /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
 		13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionContainerView.swift; sourceTree = "<group>"; };
+		13CCEC0E2E55010C00F28937 /* BannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerView.swift; sourceTree = "<group>"; };
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
@@ -2110,6 +2112,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13CCEC0D2E55010900F28937 /* Banner */,
 				1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */,
 				1378B0492E462AD2005CC32D /* Loaders */,
 				13A899092E44F540006F75F0 /* Text */,
@@ -2475,6 +2478,14 @@
 				A6980C232BC0836300F452AB /* SettingsMainScreen.swift */,
 			);
 			path = SettingsMainScreen;
+			sourceTree = "<group>";
+		};
+		13CCEC0D2E55010900F28937 /* Banner */ = {
+			isa = PBXGroup;
+			children = (
+				13CCEC0E2E55010C00F28937 /* BannerView.swift */,
+			);
+			path = Banner;
 			sourceTree = "<group>";
 		};
 		13D764362E4102F100F048DE /* Swap */ = {
@@ -5228,6 +5239,7 @@
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
+				13CCEC0F2E55010D00F28937 /* BannerView.swift in Sources */,
 				A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */,
 				13AF0D232E4CE7A9004D4FD2 /* VultisigRouter.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,

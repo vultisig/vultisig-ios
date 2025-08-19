@@ -787,3 +787,4 @@
 "faqAnswer8" = "Vultisig does not store any user information from its mobile apps.";
 "faqQuestion9" = "How does Vultisig compare to other multisig wallets?";
 "faqAnswer9" = "It is built on MPC technology, which eliminates the need for seed phrases and supports multiple blockchains, making Vultisig flexible and chain-agnostic.";
+"shareVaultQRInformation" = "This QR Code lets you share a view-only version of your Vault";

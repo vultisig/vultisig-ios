@@ -38,7 +38,8 @@ struct SettingsMainScreen: View {
             title: "support",
             options: [
                 .faq,
-                .education,
+                // TODO: - Unused for now
+                // .education,
                 .checkForUpdates,
                 .shareApp
             ]
@@ -73,7 +74,7 @@ struct SettingsMainScreen: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .automatic) {
                 NavigationLink {
                     if let vault = homeViewModel.selectedVault {
                         VaultDetailQRCodeView(vault: vault)
@@ -111,7 +112,7 @@ struct SettingsMainScreen: View {
             case .faq:
                 SettingsFAQView()
             case .education:
-                // TODO: - Check
+                // TODO: - Unused for now
                 EmptyView()
             case .checkForUpdates:
                 checkUpdateView
