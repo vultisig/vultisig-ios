@@ -11,7 +11,6 @@ import SwiftUI
 struct VaultDetailView: View {
     @Binding var showVaultsList: Bool
     @ObservedObject var vault: Vault
-    
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
@@ -35,7 +34,6 @@ struct VaultDetailView: View {
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
     @State var selectedChain: Chain? = nil
-    
     @StateObject var sendTx = SendTransaction()
     
     var body: some View {
