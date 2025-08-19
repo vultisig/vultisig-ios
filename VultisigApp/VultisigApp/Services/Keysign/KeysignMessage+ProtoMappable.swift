@@ -177,8 +177,25 @@ extension SwapPayload {
                 ),
                 provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
             ))
-        case .kyberswapSwapPayload:
-            throw KeysignPayloadFactoryError.invalidSwapProvider
+        case .kyberswapSwapPayload(let value):
+            self = .generic(GenericSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                quote: EVMQuote(
+                    dstAmount: value.quote.dstAmount,
+                    tx: EVMQuote.Transaction(
+                        from: value.quote.tx.from,
+                        to: value.quote.tx.to,
+                        data: value.quote.tx.data,
+                        value: value.quote.tx.value,
+                        gasPrice: value.quote.tx.gasPrice,
+                        gas: value.quote.tx.gas
+                    )
+                ),
+                provider: .kyberSwap
+            ))
         }
     }
     
