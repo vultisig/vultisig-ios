@@ -98,7 +98,7 @@ class TokensStore {
             ticker: "PYTH",
             logo: "pyth",
             decimals: 6,
-            priceProviderId: "PYTH",
+            priceProviderId: "pyth-network",
             contractAddress: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724",
             isNativeToken: false
         ),
@@ -304,8 +304,8 @@ class TokensStore {
             chain: .base,
             ticker: "PYTH",
             logo: "pyth",
-            decimals: 18,
-            priceProviderId: "pyth",
+            decimals: 6,
+            priceProviderId: "pyth-network",
             contractAddress: "0x4c5d8A75F3762c1561D96f177694f67378705E98",
             isNativeToken: false
         ),
@@ -1169,7 +1169,7 @@ class TokensStore {
             ticker: "PYTH",
             logo: "pyth",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "pyth-network",
             contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f",
             isNativeToken: false
         ),
