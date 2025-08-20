@@ -18,18 +18,7 @@ class JoinKeysignSummaryViewModel {
     }
 
     func getProvider(_ keysignPayload: KeysignPayload?) -> String {
-        switch keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .kyberSwap:
-            return "KyberSwap"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya protocol"
-        case .none:
-            return .empty
-        }
+        return keysignPayload?.swapPayload?.providerName ?? .empty
     }
 
     func getSpender(_ keysignPayload: KeysignPayload?) -> String {
