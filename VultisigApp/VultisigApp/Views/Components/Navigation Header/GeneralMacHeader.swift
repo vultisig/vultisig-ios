@@ -28,7 +28,6 @@ struct GeneralMacHeader: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
-        .padding(.top, 8)
         .background(Theme.colors.bgPrimary)
     }
     

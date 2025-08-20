@@ -10,6 +10,7 @@ import SwiftUI
 struct Screen<Content: View>: View {
     let title: String
     let showNavigationBar: Bool
+    
     let content: () -> Content
     
     init(title: String = "", showNavigationBar: Bool = true, @ViewBuilder content: @escaping () -> Content) {
@@ -42,7 +43,7 @@ struct Screen<Content: View>: View {
     
     var contentContainer: some View {
         content()
-            .padding(.vertical, 24)
+            .padding(.vertical, 12)
             .padding(.horizontal, horizontalPadding)
     }
     

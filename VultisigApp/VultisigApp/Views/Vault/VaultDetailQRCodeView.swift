@@ -18,30 +18,27 @@ struct VaultDetailQRCodeView: View {
     
     var body: some View {
         Screen(title: "shareVaultQR") {
-            view
-        }
-    }
-    
-    var view: some View {
-        VStack(spacing: 15) {
-            Spacer()
-            qrCode
-            BannerView(
-                description: "shareVaultQRInformation".localized,
-                type: .info,
-                leadingIcon: "circle-info"
-            )
-            Spacer()
-            buttons
-        }
-        .onAppear {
-            setData()
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 15) {
+                    Spacer()
+                    qrCode
+                    BannerView(
+                        description: "shareVaultQRInformation".localized,
+                        type: .info,
+                        leadingIcon: "circle-info"
+                    )
+                    Spacer()
+                    buttons
+                }
+                .onLoad {
+                    setData()
+                }
+            }
         }
     }
     
     var qrCode: some View {
         VaultDetailQRCode(vault: vault, viewModel: viewModel)
-        
     }
     
     var saveButton: some View {

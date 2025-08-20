@@ -14,9 +14,11 @@ struct PhoneCheckUpdateView: View {
         Screen(title: "checkUpdate".localized) {
             view
                 .background(
-                    LinearGradient.primaryGradient
-                        .opacity(0.15)
-                        .blur(radius: 150)
+                    Ellipse()
+                        .fill(Color(red: 0.2, green: 0.9, blue: 0.75))
+                        .aspectRatio(contentMode: .fit)
+                        .opacity(0.2)
+                        .blur(radius: 120)
                 )
         }
         .onAppear {
