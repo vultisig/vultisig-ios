@@ -768,7 +768,7 @@
 "support" = "Support";
 "x" = "X";
 "discord" = "Discord";
-"github" = "Github";
+"github" = "GitHub";
 "faqQuestion1" = "What is Vultisig?";
 "faqAnswer1" = "It is a secure, multi-authentication wallet based on MPC technology that is used to manage digital assets. Transactions require approval from multiple devices.";
 "faqQuestion2" = "What are the benefits of using Vultisig?";
