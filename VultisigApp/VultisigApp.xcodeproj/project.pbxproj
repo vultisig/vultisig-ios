@@ -320,8 +320,6 @@
 		A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */; };
 		A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */; };
 		A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */; };
-		A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */; };
-		A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */; };
 		A622C8422C9BBC0100908332 /* EditAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */; };
 		A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */; };
 		A622C8462C9BBD2F00908332 /* FunctionCallView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8452C9BBD2F00908332 /* FunctionCallView+iOS.swift */; };
@@ -1331,8 +1329,6 @@
 		A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+macOS.swift"; sourceTree = "<group>"; };
 		A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+macOS.swift"; sourceTree = "<group>"; };
-		A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+iOS.swift"; sourceTree = "<group>"; };
-		A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8452C9BBD2F00908332 /* FunctionCallView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FunctionCallView+iOS.swift"; sourceTree = "<group>"; };
@@ -3224,7 +3220,6 @@
 			isa = PBXGroup;
 			children = (
 				A6C670972C9D09EF00F59B6A /* AddressQRCodeView+iOS.swift */,
-				A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */,
 				A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */,
 			);
 			path = Address;
@@ -3290,7 +3285,6 @@
 		A6505B052CA67BF90002FBF4 /* Address */ = {
 			isa = PBXGroup;
 			children = (
-				A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */,
 				A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */,
 				A6C670992C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift */,
 			);
@@ -5008,7 +5002,6 @@
 				A6C671312CA3C41000F59B6A /* VaultDetailBalanceContent+macOS.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
-				A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */,
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
@@ -5499,7 +5492,6 @@
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6C670BD2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift in Sources */,
 				A6C671272CA3C0FF00F59B6A /* FunctionCallAddressTextField+iOS.swift in Sources */,
-				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 				A6BB9BC92DA9D7F70085E117 /* VaultShareBackupsView.swift in Sources */,
 				A670CEC32DD7E09000E33B09 /* BackspaceDetectingTextField.swift in Sources */,

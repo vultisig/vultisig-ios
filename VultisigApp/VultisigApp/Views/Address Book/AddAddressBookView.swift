@@ -27,10 +27,18 @@ struct AddAddressBookView: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        content
-            .onAppear {
-                setData()
-            }
+        Screen(title: "addAddress".localized) {
+            VStack(spacing: 22) {
+                fields
+                button
+            }            
+        }
+        .onAppear {
+            setData()
+        }
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var fields: some View {
@@ -49,7 +57,7 @@ struct AddAddressBookView: View {
     }
     
     var titleField: some View {
-        AddressBookTextField(title: "title", text: $title)
+        AddressBookTextField(title: "label", text: $title)
     }
     
     var addressField: some View {
@@ -57,10 +65,9 @@ struct AddAddressBookView: View {
     }
     
     var button: some View {
-        PrimaryButton(title: "saveAddress") {
+        PrimaryButton(title: "save") {
             addAddress()
         }
-        .padding(.bottom, 40)
     }
     
     var alert: Alert {

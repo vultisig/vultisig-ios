@@ -56,14 +56,7 @@ struct AddressBookTextField: View {
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
-    var titleContent: some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
-    }
-    
-   
+
     var pasteButton: some View {
         Button {
             pasteAddress()

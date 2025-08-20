@@ -15,16 +15,20 @@ struct AddressBookChainSelector: View {
     @EnvironmentObject var viewModel: CoinSelectionViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            selectedCell
-            
-            if isExpanded {
-                cells
+        VStack(alignment: .leading, spacing: 8) {
+            Text("chain".localized)
+                .foregroundColor(Theme.colors.textPrimary)
+                .font(Theme.fonts.bodySMedium)
+            BoxView {
+                VStack(alignment: .leading, spacing: 0) {
+                    selectedCell
+                    
+                    if isExpanded {
+                        cells
+                    }
+                }
             }
         }
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(10)
     }
     
     var selectedCell: some View {
@@ -46,7 +50,6 @@ struct AddressBookChainSelector: View {
         }
         .font(Theme.fonts.bodyMRegular)
         .foregroundColor(Theme.colors.textPrimary)
-        .frame(height: 48)
     }
     
     var image: some View {
@@ -63,8 +66,9 @@ struct AddressBookChainSelector: View {
                 handleSelection(for: chain)
             } label: {
                 VStack(spacing: 0) {
-                    Separator()
+                    GradientListSeparator()
                     getCell(for: chain)
+                        .padding(.top, 8)
                 }
             }
         }
