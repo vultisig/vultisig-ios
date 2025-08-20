@@ -88,7 +88,7 @@ struct SettingsMainScreen: View {
             switch option {
             case .vaultSettings:
                 if let vault = homeViewModel.selectedVault {
-                    EditVaultView(vault: vault)
+                    VaultSettingsScreen(vault: vault)
                 } else {
                     ErrorMessage(text: "errorFetchingVault")
                 }
@@ -126,55 +126,27 @@ struct SettingsMainScreen: View {
     }
     
     func groupView(for group: SettingsOptionGroup) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(group.title.localized)
-                .font(Theme.fonts.caption12)
-                .foregroundStyle(Theme.colors.textExtraLight)
-            
-            SettingsSectionContainerView {
-                VStack(spacing: .zero) {
-                    ForEach(group.options, id: \.self) { option in
-                        optionView(for: option, shouldHighlight: option == .registerVaults)
-                        GradientListSeparator()
-                            .showIf(option != group.options.last)
-                    }
-                }
+        SettingsSectionView(title: group.title.localized) {
+            ForEach(group.options, id: \.self) { option in
+                optionView(
+                    for: option,
+                    shouldHighlight: option == .registerVaults,
+                    showSeparator: option != group.options.last
+                )
             }
         }
     }
     
     @ViewBuilder
-    func optionView(for option: SettingsOption, shouldHighlight: Bool) -> some View {
-        let bgColor: Color? = shouldHighlight ? Theme.colors.primaryAccent3 : nil
-        let iconColor: Color = shouldHighlight ? Theme.colors.textPrimary : Theme.colors.primaryAccent4
-        
+    func optionView(for option: SettingsOption, shouldHighlight: Bool, showSeparator: Bool) -> some View {
         optionContainerView(for: option) {
-            HStack(spacing: 12) {
-                if let icon = option.icon {
-                    Icon(named: icon, color: iconColor, size: 20)
-                }
-                
-                Text(option.title.localized)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                
-                Spacer()
-                
-                if let description = description(for: option) {
-                    Text(description)
-                        .font(Theme.fonts.footnote)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                }
-                
-                Icon(
-                    named: "chevron-right",
-                    color: Theme.colors.textExtraLight,
-                    size: 16
-                )
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
-            .background(bgColor)
+            SettingsOptionView(
+                icon: option.icon,
+                title: option.title.localized,
+                description: description(for: option),
+                type: shouldHighlight ? .highlighted : .normal,
+                showSeparator: showSeparator
+            )
         }
     }
     
