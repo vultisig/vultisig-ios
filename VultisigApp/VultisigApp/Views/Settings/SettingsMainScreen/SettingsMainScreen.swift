@@ -76,15 +76,13 @@ struct SettingsMainScreen: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                NavigationLink {
-                    if let vault = homeViewModel.selectedVault {
-                        VaultDetailQRCodeView(vault: vault)
-                    }
-                } label: {
-                    NavigationQRCodeButton()
+        .screenToolbar {
+            NavigationLink {
+                if let vault = homeViewModel.selectedVault {
+                    VaultDetailQRCodeView(vault: vault)
                 }
+            } label: {
+                NavigationQRCodeButton()
             }
         }
         .navigationDestination(item: $selectedOption) { option in

@@ -17,7 +17,7 @@ struct VaultDetailQRCodeView: View {
     @Environment(\.displayScale) var displayScale
     
     var body: some View {
-        Screen(title: "shareVaultQR") {
+        Screen(title: "shareVaultQR".localized) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 15) {
                     Spacer()

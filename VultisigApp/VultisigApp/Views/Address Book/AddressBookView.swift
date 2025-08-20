@@ -22,7 +22,9 @@ struct AddressBookView: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        content
+        Screen(title: "addressBook".localized) {
+            content
+        }
     }
     
     var view: some View {

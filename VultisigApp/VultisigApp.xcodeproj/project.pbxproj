@@ -121,6 +121,8 @@
 		13DD547F2E56161F007335DA /* VaultAdvancedSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547E2E561619007335DA /* VaultAdvancedSettingsScreen.swift */; };
 		13DD54812E561A53007335DA /* SettingsSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD54802E561A4E007335DA /* SettingsSectionView.swift */; };
 		13DD54832E562952007335DA /* CommonTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD54822E562946007335DA /* CommonTextField.swift */; };
+		13DD549B2E565582007335DA /* ScreenToolbar+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD549A2E56557C007335DA /* ScreenToolbar+EnvironmentKey.swift */; };
+		13DD549D2E5655A2007335DA /* ScreenToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD549C2E56559D007335DA /* ScreenToolbarModifier.swift */; };
 		13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DF05742E3CEF710000188C /* SearchTextField.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
@@ -1131,6 +1133,8 @@
 		13DD547E2E561619007335DA /* VaultAdvancedSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultAdvancedSettingsScreen.swift; sourceTree = "<group>"; };
 		13DD54802E561A4E007335DA /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		13DD54822E562946007335DA /* CommonTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTextField.swift; sourceTree = "<group>"; };
+		13DD549A2E56557C007335DA /* ScreenToolbar+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenToolbar+EnvironmentKey.swift"; sourceTree = "<group>"; };
+		13DD549C2E56559D007335DA /* ScreenToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenToolbarModifier.swift; sourceTree = "<group>"; };
 		13DF05742E3CEF710000188C /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
@@ -2091,6 +2095,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				13DD54992E56556D007335DA /* Screen */,
 				13CCEC0D2E55010900F28937 /* Banner */,
 				1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */,
 				1378B0492E462AD2005CC32D /* Loaders */,
@@ -2103,7 +2108,6 @@
 				13DD3B152E3CFE4800D46FA0 /* ScrollView */,
 				13DF05732E3CEF580000188C /* TextField */,
 				135C88182E3AADB000FD097D /* GradientListSeparator.swift */,
-				137B2C882E3A84440074F648 /* Screen.swift */,
 				137B2C762E3A4A3F0074F648 /* BottomSheet */,
 				A6725D3F2C40C36700D47716 /* AddressBook */,
 				A5BA150D2C085ED300AA6C07 /* ImageView */,
@@ -2506,6 +2510,16 @@
 				13DD547B2E561598007335DA /* SettingsOption.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		13DD54992E56556D007335DA /* Screen */ = {
+			isa = PBXGroup;
+			children = (
+				13DD549C2E56559D007335DA /* ScreenToolbarModifier.swift */,
+				13DD549A2E56557C007335DA /* ScreenToolbar+EnvironmentKey.swift */,
+				137B2C882E3A84440074F648 /* Screen.swift */,
+			);
+			path = Screen;
 			sourceTree = "<group>";
 		};
 		13DF05732E3CEF580000188C /* TextField */ = {
@@ -4576,6 +4590,7 @@
 				138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */,
 				132666D32E42A50B007FDAC5 /* LastBlockResponse.swift in Sources */,
 				138574272E2DB9C6002532BF /* IconButton.swift in Sources */,
+				13DD549D2E5655A2007335DA /* ScreenToolbarModifier.swift in Sources */,
 				A6ACAD5F2D1109EF00432CC4 /* SettingsAdvancedView.swift in Sources */,
 				A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
@@ -5370,6 +5385,7 @@
 				A6C670902C9CFE0B00F59B6A /* HomeView+iOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,
 				B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */,
+				13DD549B2E565582007335DA /* ScreenToolbar+EnvironmentKey.swift in Sources */,
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				A6833D842C65BC59002029E1 /* FunctionCallHeader.swift in Sources */,
