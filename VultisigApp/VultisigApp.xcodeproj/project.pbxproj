@@ -67,6 +67,7 @@
 		138574232E2DB765002532BF /* IconButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574222E2DB765002532BF /* IconButtonStyle.swift */; };
 		138574262E2DB9C6002532BF /* NavigationIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574242E2DB9C6002532BF /* NavigationIconButton.swift */; };
 		138574272E2DB9C6002532BF /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574252E2DB9C6002532BF /* IconButton.swift */; };
+		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
 		1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */; };
 		138E370C2E439A7D0032C31C /* EditReferralDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E370B2E439A780032C31C /* EditReferralDetailsView.swift */; };
 		1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */; };
@@ -319,8 +320,6 @@
 		A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */; };
 		A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */; };
 		A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */; };
-		A622C83A2C9BB9B400908332 /* AddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */; };
-		A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */; };
 		A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */; };
 		A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */; };
 		A622C8422C9BBC0100908332 /* EditAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */; };
@@ -1078,6 +1077,7 @@
 		138574222E2DB765002532BF /* IconButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButtonStyle.swift; sourceTree = "<group>"; };
 		138574242E2DB9C6002532BF /* NavigationIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationIconButton.swift; sourceTree = "<group>"; };
 		138574252E2DB9C6002532BF /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
+		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
 		1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRScanner.riv; sourceTree = "<group>"; };
 		138E370B2E439A780032C31C /* EditReferralDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralDetailsView.swift; sourceTree = "<group>"; };
 		1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidRpcClientProtocol.swift; sourceTree = "<group>"; };
@@ -1331,8 +1331,6 @@
 		A622C8332C9BB28000908332 /* VultisigApp+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigApp+macOS.swift"; sourceTree = "<group>"; };
 		A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+macOS.swift"; sourceTree = "<group>"; };
-		A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookView+iOS.swift"; sourceTree = "<group>"; };
-		A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+iOS.swift"; sourceTree = "<group>"; };
@@ -2095,6 +2093,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				1387E24A2E565A4F0033F92C /* BlurredBackground.swift */,
 				13DD54992E56556D007335DA /* Screen */,
 				13CCEC0D2E55010900F28937 /* Banner */,
 				1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */,
@@ -3225,7 +3224,6 @@
 			isa = PBXGroup;
 			children = (
 				A6C670972C9D09EF00F59B6A /* AddressQRCodeView+iOS.swift */,
-				A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */,
 				A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */,
 				A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */,
 			);
@@ -3292,7 +3290,6 @@
 		A6505B052CA67BF90002FBF4 /* Address */ = {
 			isa = PBXGroup;
 			children = (
-				A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */,
 				A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */,
 				A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */,
 				A6C670992C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift */,
@@ -4599,6 +4596,7 @@
 				132666C62E429550007FDAC5 /* Icon.swift in Sources */,
 				1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */,
 				A58760512CBD2D670070956A /* BiometryService.swift in Sources */,
+				1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */,
 				A6BB9BD52DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				A6182F332C922CCC0059BFDD /* ChainHeaderCell+iOS.swift in Sources */,
@@ -5159,7 +5157,6 @@
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
-				A622C83A2C9BB9B400908332 /* AddressBookView+iOS.swift in Sources */,
 				A6CEFE7A2D8E6A03005AB80C /* PasswordBackupOptionsView+macOS.swift in Sources */,
 				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
@@ -5379,7 +5376,6 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
-				A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */,
 				A6D739E02E0B993A0005697D /* SendDetailsViewModel.swift in Sources */,
 				A6C670862C9CF67E00F59B6A /* JoinKeysignView+macOS.swift in Sources */,
 				A6C670902C9CFE0B00F59B6A /* HomeView+iOS.swift in Sources */,

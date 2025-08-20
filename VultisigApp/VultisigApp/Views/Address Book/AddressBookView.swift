@@ -22,24 +22,84 @@ struct AddressBookView: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        content
-    }
-    
-    var view: some View {
-        ZStack {
-            if savedAddresses.count == 0 {
-                emptyView
-            } else {
-                list
+        Screen(title: "addressBook".localized) {
+            VStack {
+                Group {
+                    if savedAddresses.isEmpty {
+                       emptyView
+                    } else {
+                        list
+                        addAddressButton
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(BlurredBackground())
+        }
+        .screenToolbar {
+            if savedAddresses.count != 0 {
+                navigationButton
+            }
+        }
+        .onDisappear {
+            withAnimation {
+                isEditing = false
             }
         }
     }
     
     var emptyView: some View {
-        VStack {
-            Spacer()
-            ErrorMessage(text: "noSavedAddresses")
-            Spacer()
+        VStack(spacing: 12) {
+            Text("addressBookEmptyTitle".localized)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+            Text("addressBookEmptySubtitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textExtraLight)
+            
+            addAddressButton
+                .frame(maxWidth: 200)
+                .padding(.top, 18)
+        }
+    }
+    
+    var list: some View {
+        let filteredAddress = savedAddresses.filter {
+            coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
+        }
+        
+        return ZStack {
+            if filteredAddress.count > 0 {
+                List {
+                    ForEach(filteredAddress.sorted(by: {
+                        $0.order < $1.order
+                    }), id: \.id) { address in
+                        AddressBookCell(
+                            address: address,
+                            shouldReturnAddress: shouldReturnAddress,
+                            isEditing: isEditing,
+                            returnAddress: $returnAddress
+                        )
+                    }
+                    .onMove(perform: isEditing ? move: nil)
+                    .padding(.horizontal, 15)
+                    .background(Theme.colors.bgPrimary)
+                }
+                .listStyle(PlainListStyle())
+                .buttonStyle(BorderlessButtonStyle())
+                .colorScheme(.dark)
+                .scrollContentBackground(.hidden)
+                .padding(.top, 30)
+                .background(Theme.colors.bgPrimary.opacity(0.9))
+            } else {
+                emptyViewChain
+            }
+        }
+    }
+    
+    var addAddressButton: some View {
+        PrimaryNavigationButton(title: "addAddress") {
+            AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         }
     }
     
