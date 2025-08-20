@@ -34,7 +34,7 @@ struct KeysignSwapConfirmView: View {
             separator
             getValueCell(
                 for: "provider",
-                with: viewModel.getProvider(),
+                with: viewModel.providerName,
                 showIcon: true
             )
             

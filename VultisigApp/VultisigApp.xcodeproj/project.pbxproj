@@ -31,6 +31,7 @@
 		13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */; };
 		13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */; };
 		13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */; };
+		1344BD1C2E4B9D8C00CBD493 /* SwapProviderId.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344BD1B2E4B9D8A00CBD493 /* SwapProviderId.swift */; };
 		1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */; };
 		13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453AC92E4A1D4500D76629 /* ErrorView.swift */; };
 		13453ACC2E4A433100D76629 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453ACB2E4A433000D76629 /* Bundle.swift */; };
@@ -165,13 +166,12 @@
 		8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */; };
 		8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F55CD3A2DC382E400B53E85 /* TokensStore+Token.swift */; };
 		927BE27A46C4476AA7DA2901 /* Services/SuiTokenPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927BE27A46C4476AA7DA2902 /* Services/SuiTokenPriceTests.swift */; };
-		A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 094C350D73AC732DEC57FD6B /* KyberSwaps.swift */; };
 		A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A500603E2C10E3EA008237D9 /* ThorchainSwapProvider.swift */; };
 		A506B59D2D3AB77A00490BEB /* LifiQuoteResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59C2D3AB77A00490BEB /* LifiQuoteResponse.swift */; };
 		A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */; };
 		A50E793A2BFE30210031DB47 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50E79392BFE30210031DB47 /* Storage.swift */; };
 		A5125F042BEBBE43008A79AA /* SwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F032BEBBE43008A79AA /* SwapService.swift */; };
-		A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */; };
+		A5125F072BEBBFAB008A79AA /* EVMQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F052BEBBFAB008A79AA /* EVMQuote.swift */; };
 		A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F062BEBBFAB008A79AA /* OneInchService.swift */; };
 		A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */; };
 		A51AE8BC2C931C2500EF9A7A /* FastVaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51AE8BA2C931C2000EF9A7A /* FastVaultService.swift */; };
@@ -228,7 +228,7 @@
 		A58760542CBD3CE00070956A /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760532CBD3CE00070956A /* Keychain.swift */; };
 		A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */; };
 		A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760572CBD3F1A0070956A /* KeychainService.swift */; };
-		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
+		A588F2DB2BEE8090002EEC60 /* GenericSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* GenericSwapPayload.swift */; };
 		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
 		A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */; };
 		A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34A2C32FA760086D16B /* ProtoMappable.swift */; };
@@ -1021,7 +1021,6 @@
 /* Begin PBXFileReference section */
 		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
-		094C350D73AC732DEC57FD6B /* KyberSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwaps.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORNameLookup.swift; sourceTree = "<group>"; };
@@ -1044,6 +1043,7 @@
 		13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeRuji.swift; sourceTree = "<group>"; };
 		13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeRuji.swift; sourceTree = "<group>"; };
 		13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawRujiRewards.swift; sourceTree = "<group>"; };
+		1344BD1B2E4B9D8A00CBD493 /* SwapProviderId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProviderId.swift; sourceTree = "<group>"; };
 		1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformShareButton.swift; sourceTree = "<group>"; };
 		13453AC92E4A1D4500D76629 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		13453ACB2E4A433000D76629 /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
@@ -1186,7 +1186,7 @@
 		A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaSwaps.swift; sourceTree = "<group>"; };
 		A50E79392BFE30210031DB47 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		A5125F032BEBBE43008A79AA /* SwapService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapService.swift; sourceTree = "<group>"; };
-		A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchQuote.swift; sourceTree = "<group>"; };
+		A5125F052BEBBFAB008A79AA /* EVMQuote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EVMQuote.swift; sourceTree = "<group>"; };
 		A5125F062BEBBFAB008A79AA /* OneInchService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchService.swift; sourceTree = "<group>"; };
 		A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapQuote.swift; sourceTree = "<group>"; };
 		A51AE8BA2C931C2000EF9A7A /* FastVaultService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FastVaultService.swift; sourceTree = "<group>"; };
@@ -1243,7 +1243,7 @@
 		A58760532CBD3CE00070956A /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainIdentifier.swift; sourceTree = "<group>"; };
 		A58760572CBD3F1A0070956A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
-		A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchSwapPayload.swift; sourceTree = "<group>"; };
+		A588F2DA2BEE8090002EEC60 /* GenericSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSwapPayload.swift; sourceTree = "<group>"; };
 		A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageFactory.swift; sourceTree = "<group>"; };
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
 		A58CC34C2C32FB800086D16B /* KeysignMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessage.swift; sourceTree = "<group>"; };
@@ -2252,6 +2252,18 @@
 			path = SendCryptoDone;
 			sourceTree = "<group>";
 		};
+		1344BD1A2E4B9D7900CBD493 /* Swap */ = {
+			isa = PBXGroup;
+			children = (
+				1344BD1B2E4B9D8A00CBD493 /* SwapProviderId.swift */,
+				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
+				A588F2DA2BEE8090002EEC60 /* GenericSwapPayload.swift */,
+				ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */,
+				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
+			);
+			path = Swap;
+			sourceTree = "<group>";
+		};
 		134E8D7D2E451F600086EBC4 /* PreferredAsset */ = {
 			isa = PBXGroup;
 			children = (
@@ -2788,7 +2800,7 @@
 			isa = PBXGroup;
 			children = (
 				DEDB62D62E45B61500722F74 /* OneInchQuoteError.swift */,
-				A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */,
+				A5125F052BEBBFAB008A79AA /* EVMQuote.swift */,
 				A5125F062BEBBFAB008A79AA /* OneInchService.swift */,
 				A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */,
 			);
@@ -2839,19 +2851,16 @@
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
+				1344BD1A2E4B9D7900CBD493 /* Swap */,
 				1398804F2E39007900EC5D3F /* CosmosCoin.swift */,
 				1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */,
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
-				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 				A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */,
 				A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */,
 				A58CC34C2C32FB800086D16B /* KeysignMessage.swift */,
 				A5D8A3432CF8D5B0005A20A8 /* CustomMessagePayload.swift */,
 				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
-				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
-				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
-				ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 			);
 			path = Keysign;
@@ -4227,7 +4236,6 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				A506B59E2D3AD1DB00490BEB /* SolanaSwaps.swift */,
 				A5D0C9362BEE778F0022D421 /* OneInchSwaps.swift */,
-				094C350D73AC732DEC57FD6B /* KyberSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
@@ -4947,6 +4955,7 @@
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */,
 				A6C556F42CE59A5500E5E44E /* BackupNowDisclaimer+iOS.swift in Sources */,
+				1344BD1C2E4B9D8C00CBD493 /* SwapProviderId.swift in Sources */,
 				DE6EF0532D068BE700A36D6A /* DKLSKeygen.swift in Sources */,
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
@@ -5482,7 +5491,7 @@
 				A6ACAD5B2D0A613A00432CC4 /* CoinPickerCell.swift in Sources */,
 				DE5F7E212C816AC70022030F /* KeysignRequest.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
-				A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */,
+				A5125F072BEBBFAB008A79AA /* EVMQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				B55246C92CF5639A00E3532C /* NobleService.swift in Sources */,
 				A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */,
@@ -5501,8 +5510,7 @@
 				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
-				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
-				A095FF4F938F09D93621D16E /* KyberSwaps.swift in Sources */,
+				A588F2DB2BEE8090002EEC60 /* GenericSwapPayload.swift in Sources */,
 				CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */,
 				3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */,
 				6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */,

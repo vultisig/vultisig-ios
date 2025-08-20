@@ -20,6 +20,7 @@ class ParticipantDiscovery: ObservableObject {
     
     func stop() {
         self.task?.cancel()
+        self.task = nil
     }
 
     func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
@@ -47,6 +48,7 @@ class ParticipantDiscovery: ObservableObject {
                                         continue
                                     }
                                     if !self.peersFound.contains(peer) {
+                                        guard !Task.isCancelled else { return }
                                         self.peersFound.append(peer)
                                     }
                                 }

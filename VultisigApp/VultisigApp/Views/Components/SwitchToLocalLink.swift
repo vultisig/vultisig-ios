@@ -51,12 +51,10 @@ struct SwitchToLocalLink: View {
     }
     
     private func toggleNetwork() {
-        withAnimation {
-            if selectedNetwork == .Internet {
-                selectedNetwork = .Local
-            } else {
-                selectedNetwork = .Internet
-            }
+        if selectedNetwork == .Internet {
+            selectedNetwork = .Local
+        } else {
+            selectedNetwork = .Internet
         }
     }
 }

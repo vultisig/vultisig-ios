@@ -84,6 +84,7 @@ extension PeerDiscoveryView {
                 devices
                 EmptyPeerCell(counter: participantDiscovery.peersFound.count)
             }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.selections)
         }
         .frame(maxWidth: .infinity)
     }
@@ -119,6 +120,7 @@ extension PeerDiscoveryView {
         .padding(.bottom, 10)
         .disabled(isButtonDisabled)
         .padding(.bottom, 10)
+        .animation(.easeInOut(duration: 0.2), value: isButtonDisabled)
     }
     
     var disclaimer: some View {
