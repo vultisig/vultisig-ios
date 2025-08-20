@@ -114,14 +114,6 @@ struct StepsAnimationView<Header: View, CellContent: View>: View {
                     )
             }
         }
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .onAppear {
-                        cellHeight = geometry.size.height
-                    }
-            }
-        )
     }
 
     @ViewBuilder
