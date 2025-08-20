@@ -86,9 +86,11 @@ struct VaultPairDetailView: View {
         }
     }
     
+    @ViewBuilder
     var vaultSetupSection: some View {
+        let title = "\(vault.getThreshold())-\("of".localized)-\(devicesInfo.count) " + "vaultSetup".localized
         VStack(alignment: .leading, spacing: 12) {
-            Text("vaultSetup".localized)
+            Text(title)
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
             
@@ -114,21 +116,29 @@ struct VaultPairDetailView: View {
         let signerTitle = "\("signer".localized) \(device.Index + 1)"
         
         BoxView {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(signerTitle)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textLight)
-                
-                Text(signer)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                
-                Text("thisDevice".localized)
-                    .font(Theme.fonts.footnote)
-                    .foregroundStyle(Theme.colors.textLight)
-                    .showIf(isLocalPary)
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(signerTitle)
+                        .font(Theme.fonts.footnote)
+                        .foregroundStyle(Theme.colors.textLight)
+                    
+                    Text(signer)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                    
+                    Text("thisDevice".localized)
+                        .font(Theme.fonts.footnote)
+                        .foregroundStyle(Theme.colors.textLight)
+                        .showIf(isLocalPary)
+                }
+                Spacer()
+                Icon(
+                    named: iconName(for: signer),
+                    color: Theme.colors.textExtraLight,
+                    size: 24
+                )
             }
-            .frame(maxWidth: .infinity, maxHeight: 75, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: 75, alignment: .center)
             .onLoad {
                 if isLocalPary {
                     deviceIndex = device.Index + 1
@@ -157,6 +167,15 @@ struct VaultPairDetailView: View {
         let totalCount = "\(vault.signers.count)"
         
         return part + space + vaultIndex + space + of + space + totalCount
+    }
+    
+    func iconName(for signer: String) -> String {
+        let laptopSigners = ["windows", "extension", "mac"]
+        let isLaptoSigner = laptopSigners.contains {
+            signer.lowercased().contains($0)
+        }
+         
+        return isLaptoSigner ? "laptop" : "smartphone"
     }
 }
 
