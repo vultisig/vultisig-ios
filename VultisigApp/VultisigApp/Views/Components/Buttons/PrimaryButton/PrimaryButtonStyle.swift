@@ -81,6 +81,14 @@ private extension PrimaryButtonStyle {
     func backgroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         let shouldHighlight = isPressed && !supportsLongPress
         switch type {
+        case .alert:
+            if !isEnabled {
+                return Theme.colors.bgButtonDisabled
+            } else if isPressed {
+                return Theme.colors.alertError.opacity(0.7)
+            } else {
+                return Theme.colors.alertError
+            }
         case .primary:
             if !isEnabled {
                 return Theme.colors.bgButtonDisabled
@@ -111,7 +119,7 @@ private extension PrimaryButtonStyle {
     
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary:
+        case .primary, .alert:
             return .clear
         case .secondary:
             if !isEnabled {
@@ -124,7 +132,7 @@ private extension PrimaryButtonStyle {
     
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
-        case .primary: return 0
+        case .primary, .alert: return 0
         case .secondary: return 1
         }
     }
