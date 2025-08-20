@@ -397,10 +397,10 @@
 "sameNameFolderDescription" = "Please choose a unique name for the folder and try again.";
 "registerYourVaults" = "Register your Vaults!";
 "registerVault" = "Register Vault";
-"registerVaultText1" = "1. Save your Vault QR Code";
-"registerVaultText2" = "2. Go to ";
-"registerVaultText3" = "3. Upload your Vault QR Code";
-"registerVaultText4" = "4. Track your VULTIES (Vault Points)!";
+"registerVaultText1" = "Save your Vault QR Code";
+"registerVaultText2" = "Go to ";
+"registerVaultText3" = "Upload your Vault QR Code";
+"registerVaultText4" = "Track your VULTIES (Vault Points)!";
 "saveQRCode" = "Save QR Code";
 "saveVaultQR" = "Save Vault QR";
 "joinSend" = "Join Send";
@@ -797,3 +797,4 @@
 "vaultSetup" = "Vault Setup";
 "signer" = "Signer";
 "renameVaultTitle" = "Rename Vault";
+"registerGuide" = "Register Guide";
