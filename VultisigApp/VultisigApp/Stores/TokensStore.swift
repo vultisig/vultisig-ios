@@ -269,7 +269,7 @@ class TokensStore {
             ticker: "AERO",
             logo: "aero",
             decimals: 18,
-            priceProviderId: "AERO",
+            priceProviderId: "aerodrome-finance",
             contractAddress: "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
             isNativeToken: false
         ),
@@ -296,7 +296,7 @@ class TokensStore {
             ticker: "OM",
             logo: "om",
             decimals: 18,
-            priceProviderId: "om",
+            priceProviderId: "mantra-dao",
             contractAddress: "0x3992B27dA26848C2b19CeA6Fd25ad5568B68AB98",
             isNativeToken: false
         ),
