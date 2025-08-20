@@ -15,6 +15,7 @@ struct SettingsOptionGroup: Identifiable {
 
 enum SettingsOptionType {
     case navigation
+    case button
     case link(url: URL)
     case shareLink(url: URL)
 }
@@ -129,6 +130,8 @@ enum SettingsOption: String, Identifiable {
             return .link(url: StaticURL.PrivacyPolicyURL)
         case .termsOfService:
             return .link(url: StaticURL.TermsOfServiceURL)
+        case .referralCode:
+            return .button
         default:
             return .navigation
         }

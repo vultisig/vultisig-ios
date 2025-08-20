@@ -11,6 +11,9 @@ struct SettingsMainScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    @StateObject var referredViewModel = ReferredViewModel()
+    @StateObject var referralViewModel = ReferralViewModel()
+    
     @State var tapCount = 0
     @State var scale: CGFloat = 1
     @State var showAdvancedSettings: Bool = false
@@ -107,13 +110,8 @@ struct SettingsMainScreen: View {
                     shouldReturnAddress: false,
                     returnAddress: .constant("")
                 )
-            case .referralCode:
-                ReferralView()
             case .faq:
                 SettingsFAQView()
-            case .education:
-                // TODO: - Unused for now
-                EmptyView()
             case .checkForUpdates:
                 checkUpdateView
             default:
@@ -122,6 +120,15 @@ struct SettingsMainScreen: View {
         }
         .navigationDestination(isPresented: $showAdvancedSettings) {
             SettingsAdvancedView()
+        }
+        .navigationDestination(isPresented: $referredViewModel.navigationToReferralOverview) {
+            ReferredOnboardingView(referredViewModel: referredViewModel)
+        }
+        .navigationDestination(isPresented: $referredViewModel.navigationToReferralsView) {
+            referralView
+        }
+        .sheet(isPresented: $referredViewModel.showReferralBannerSheet) {
+            referralOverviewSheet
         }
     }
     
@@ -156,6 +163,12 @@ struct SettingsMainScreen: View {
         case .navigation:
             Button {
                 selectedOption = option
+            } label: {
+                content()
+            }
+        case .button:
+            Button {
+                onOption(option)
             } label: {
                 content()
             }
@@ -212,6 +225,33 @@ struct SettingsMainScreen: View {
         #else
             PhoneCheckUpdateView()
         #endif
+    }
+    
+    func onOption(_ option: SettingsOption) {
+        switch option {
+        case .referralCode:
+            if referredViewModel.showReferralCodeOnboarding {
+                referredViewModel.showReferralBannerSheet = true
+            } else {
+                referredViewModel.navigationToReferralsView = true
+            }
+        default:
+            return
+        }
+    }
+    
+    var referralOverviewSheet: some View {
+        ReferralOnboardingBanner(referredViewModel: referredViewModel)
+            .presentationDetents([.height(400)])
+    }
+    
+    @ViewBuilder
+    var referralView: some View {
+        if referralViewModel.hasReferralCode {
+            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        } else {
+            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        }
     }
 }
 
