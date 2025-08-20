@@ -8,18 +8,17 @@
 import SwiftUI
 
 struct BoxView<Content: View>: View {
-    let padding: CGFloat
     let content: () -> Content
     
-    init(padding: CGFloat = 14, @ViewBuilder content: @escaping () -> Content) {
-        self.padding = padding
+    init(@ViewBuilder content: @escaping () -> Content) {
         self.content = content
     }
     
     var body: some View {
         content()
             .font(Theme.fonts.bodyMMedium)
-            .padding(padding)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
             .background(Theme.colors.bgButtonDisabled.opacity(0.5))
             .cornerRadius(12)
             .overlay(

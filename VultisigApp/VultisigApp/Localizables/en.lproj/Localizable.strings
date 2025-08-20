@@ -791,3 +791,8 @@
 "advancedDescription" = "Reshare, change TSS, or sign messages.";
 "vaultManagement" = "Vault Management";
 "security" = "Security";
+"vaultInfo" = "Vault Info";
+"keys" = "Keys";
+"keyCopied" = "Key copied";
+"vaultSetup" = "Vault Setup";
+"signer" = "Signer";

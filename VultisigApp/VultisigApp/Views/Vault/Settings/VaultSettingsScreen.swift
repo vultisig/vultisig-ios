@@ -71,12 +71,6 @@ struct VaultSettingsScreen: View {
         }
     }
     
-    func sectionContainer<Content: View>(title: String, content: @escaping () -> Content) -> some View {
-        SettingsSectionView(title: title) {
-            content()
-        }
-    }
-    
     var vaultDetails: some View {
         NavigationLink {
             VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
