@@ -187,6 +187,7 @@ struct PeerDiscoveryView: View {
         .foregroundColor(Theme.colors.textPrimary)
         .padding(.bottom, 8)
         .padding(.horizontal, 8)
+        .animation(.easeInOut, value: viewModel.selections)
     }
     
     private func showInfo() {
