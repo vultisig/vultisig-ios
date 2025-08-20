@@ -12,7 +12,8 @@ struct YVaultConstants {
     private static let yTcyContract = "thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px"
     
     // Affiliate contract configuration for 10 basis points (0.1%) fees
-    static let affiliateAddress = "thor1v3f7h384r8hw6r3dtcgfq6d5fq842u6cjzeuu8nr0cp93j7zfxyquyrfl8"
+    static let affiliateContractAddress = "thor1v3f7h384r8hw6r3dtcgfq6d5fq842u6cjzeuu8nr0cp93j7zfxyquyrfl8"
+    static let affiliateAddress = "thor1svfwxevnxtm4ltnw92hrqpqk4vzuzw9a4jzy04" // Your affiliate address
     static let affiliateFeeBasisPoints = 10 // 10 basis points = 0.1%
     
     static let contracts: [String: String] = [
@@ -75,7 +76,7 @@ class FunctionCallCosmosYVault: ObservableObject {
         self.tx = finalTx
         let denom = finalTx.coin.ticker.lowercased()
         self.contractAddress = YVaultConstants.contracts[denom] ?? ""
-        self.destinationAddress = self.contractAddress
+        self.destinationAddress = YVaultConstants.affiliateContractAddress // Use affiliate contract as destination
         
         if denom == "rune" || denom == "tcy" {
             self.action = .deposit
@@ -143,21 +144,21 @@ class FunctionCallCosmosYVault: ObservableObject {
     }
     
     private func buildExecuteMsg() -> String {
+        let denom = tx.coin.ticker.lowercased()
+        let targetContract = YVaultConstants.contracts[denom] ?? ""
+        
         switch action {
         case .deposit:
-            return buildDepositMsgWithAffiliate()
+            let depositMsg = "{\"deposit\":{}}"
+            let base64Msg = Data(depositMsg.utf8).base64EncodedString()
+            return "{\"execute\":{\"contract_addr\":\"\(targetContract)\",\"msg\": \"\(base64Msg)\",\"affiliate\":[\"\(YVaultConstants.affiliateAddress)\",\(YVaultConstants.affiliateFeeBasisPoints)]}}"
+            
         case .withdraw(let slippage):
             let slipStr = String(describing: slippage)
-            return buildWithdrawMsgWithAffiliate(slippage: slipStr)
+            let withdrawMsg = "{\"withdraw\":{\"slippage\":\"\(slipStr)\"}}"
+            let base64Msg = Data(withdrawMsg.utf8).base64EncodedString()
+            return "{\"execute\":{\"contract_addr\":\"\(targetContract)\",\"msg\": \"\(base64Msg)\",\"affiliate\":[\"\(YVaultConstants.affiliateAddress)\",\(YVaultConstants.affiliateFeeBasisPoints)]}}"
         }
-    }
-    
-    private func buildDepositMsgWithAffiliate() -> String {
-        return "{\"deposit\":{\"affiliate\":{\"address\":\"\(YVaultConstants.affiliateAddress)\",\"basis_points\":\(YVaultConstants.affiliateFeeBasisPoints)}}}"
-    }
-    
-    private func buildWithdrawMsgWithAffiliate(slippage: String) -> String {
-        return "{\"withdraw\":{\"slippage\":\"\(slippage)\",\"affiliate\":{\"address\":\"\(YVaultConstants.affiliateAddress)\",\"basis_points\":\(YVaultConstants.affiliateFeeBasisPoints)}}}"
     }
     
     var wasmContractPayload: WasmExecuteContractPayload {
