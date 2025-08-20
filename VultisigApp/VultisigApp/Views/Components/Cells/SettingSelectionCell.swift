@@ -54,7 +54,7 @@ struct SettingSelectionCell: View {
         Image(systemName: "checkmark")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 6)
+            .frame(width: 6, height: 6)
             .padding(5)
             .background(Circle().fill(Theme.colors.alertSuccess))
             .showIf(isSelected)
