@@ -801,3 +801,4 @@
 "addressBookEmptyTitle" = "Your Address Book is empty";
 "addressBookEmptySubtitle" = "Keep all your important addresses organized in one place.";
 "label" = "Label";
+"evmChains" = "EVM Chains";

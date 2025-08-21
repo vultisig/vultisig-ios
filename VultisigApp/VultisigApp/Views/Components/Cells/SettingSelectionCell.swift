@@ -56,7 +56,8 @@ struct SettingSelectionCell: View {
             .aspectRatio(contentMode: .fit)
             .frame(width: 6, height: 6)
             .padding(5)
-            .background(Circle().fill(Theme.colors.alertSuccess))
+            .foregroundColor(Theme.colors.textPrimary)
+            .background(Circle().fill(Theme.colors.primaryAccent3))
             .showIf(isSelected)
     }
     

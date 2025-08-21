@@ -25,7 +25,7 @@ enum AddressBookChainType: Identifiable, Equatable {
     var name: String {
         switch self {
         case .evm:
-            "All EVM"
+            "evmChains".localized
         case .chain(let coin):
             coin.chain.name
         }

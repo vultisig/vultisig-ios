@@ -40,13 +40,15 @@ struct AddressBookChainSelectionScreen: View {
             ForEach(viewModel.filteredChains) { chain in
                 AddressBookChainCell(
                     chain: chain,
-                    isSelected: selectedChain == chain
+                    isSelected: selectedChain == chain,
                 ) {
                     selectedChain = chain
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         dismiss()
                     }
                 }
+                GradientListSeparator()
+                    .showIf(chain != viewModel.filteredChains.last)
             }
         }
     }
@@ -77,11 +79,8 @@ struct AddressBookChainCell: View {
     }
     
     var label: some View {
-        VStack(spacing: 0) {
-            content
-            GradientListSeparator()
-        }
-        .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
+        content
+            .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
     }
     
     var content: some View {
