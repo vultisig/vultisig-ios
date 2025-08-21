@@ -103,7 +103,7 @@ final class ChainHelperTests: XCTestCase {
             let utxoHelper = UTXOChainsHelper(coin: chain.coinType, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
-        case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche:
+        case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche,.mantle:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)

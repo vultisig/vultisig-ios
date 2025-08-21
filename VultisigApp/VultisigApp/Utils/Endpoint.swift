@@ -272,6 +272,8 @@ class Endpoint {
     
     static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
     
+    static let mantleServiceRpcService = "https://rpc.mantle.xyz"
+    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"

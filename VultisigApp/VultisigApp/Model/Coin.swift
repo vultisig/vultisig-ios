@@ -116,7 +116,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia, .mantle:
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
@@ -162,7 +162,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .arbitrum:
             return "120000"
-        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2:
+        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2, .mantle:
             if self.isNativeToken {
                 return "40000"
             } else {
