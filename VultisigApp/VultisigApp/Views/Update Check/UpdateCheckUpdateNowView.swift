@@ -12,20 +12,24 @@ struct UpdateCheckUpdateNowView: View {
     let link: URL
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 30) {
             Spacer()
             updateLogo
-            updateTitle
-            updateDescription
-            Spacer()
+            VStack(spacing: 12) {
+                updateTitle
+                updateDescription
+            }
             updateButton
+            Spacer()
         }
     }
     
     var updateLogo: some View {
-        Image(systemName: "arrow.down.circle.dotted")
-            .font(Theme.fonts.display)
-            .foregroundColor(Theme.colors.textPrimary)
+        Image("VultisigLogo")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 72)
+            .padding(.bottom, 4)
     }
     
     var updateTitle: some View {
@@ -46,7 +50,7 @@ struct UpdateCheckUpdateNowView: View {
             PrimaryButtonView(title: "updateNow")
         }
         .buttonStyle(PrimaryButtonStyle())
-        .padding(40)
+        .frame(maxWidth: 160)
     }
 }
 

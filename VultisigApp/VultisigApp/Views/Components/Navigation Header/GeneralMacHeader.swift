@@ -8,27 +8,30 @@
 import SwiftUI
 
 struct GeneralMacHeader: View {
+    @Environment(\.screenToolbarTrailing) private var trailing
+    
     let title: String
     
     var showActions: Bool = true
     
     var body: some View {
         HStack {
-            if showActions {
-                leadingAction
+            HStack {
+                if showActions {
+                    leadingAction
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer()
             text
-            Spacer()
             
-            if showActions {
-                leadingAction.opacity(0)
+            HStack {
+                trailing
             }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
-        .padding(.top, 8)
         .background(Theme.colors.bgPrimary)
     }
     

@@ -9,12 +9,18 @@ import SwiftUI
 
 struct SettingsFAQView: View {
     var body: some View {
-        content
-    }
-    
-    var view: some View {
-        ScrollView {
-            cells
+        Screen(title: "faq".localized) {
+            ScrollView(showsIndicators: false) {
+                SettingsSectionContainerView {
+                    VStack(spacing: .zero) {
+                        ForEach(SettingsOptionsStore.FAQData, id: \.question) { faq in
+                            SettingFAQCell(question: faq.question, answer: faq.answer)
+                            GradientListSeparator()
+                                .showIf(faq.question != SettingsOptionsStore.FAQData.last?.question)
+                        }
+                    }
+                }
+            }
         }
     }
 }

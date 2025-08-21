@@ -56,7 +56,7 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     
     func updateTextValues(_ currentVersion: String, _ latestVersion: String) {
         currentVersionString = "Version " + currentVersion
-        latestVersionString = "v" + latestVersion
+        latestVersionString = "Version " + latestVersion
     }
     
     func currentAppVersion() -> String {

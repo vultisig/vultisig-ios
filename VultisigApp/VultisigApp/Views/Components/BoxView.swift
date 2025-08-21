@@ -17,8 +17,9 @@ struct BoxView<Content: View>: View {
     var body: some View {
         content()
             .font(Theme.fonts.bodyMMedium)
-            .padding(14)
-            .background(Theme.colors.bgSecondary)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .background(Theme.colors.bgButtonDisabled.opacity(0.5))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

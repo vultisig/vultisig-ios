@@ -8,21 +8,30 @@
 import SwiftUI
 
 struct SettingSelectionCell: View {
-    
     let title: String
     let isSelected: Bool
     var description: String? = nil
+    let showSeparator: Bool
+    
+    init(title: String, isSelected: Bool, description: String? = nil, showSeparator: Bool = true) {
+        self.title = title
+        self.isSelected = isSelected
+        self.description = description
+        self.showSeparator = showSeparator
+    }
     
     var body: some View {
-        HStack {
-            content
-            Spacer()
-            chevron
+        VStack(spacing: .zero) {
+            HStack {
+                content
+                Spacer()
+                chevron
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            GradientListSeparator()
+                .showIf(showSeparator)
         }
-        .padding(12)
-        .frame(height: 64)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(10)
     }
     
     var content: some View {
@@ -43,10 +52,12 @@ struct SettingSelectionCell: View {
     
     var chevron: some View {
         Image(systemName: "checkmark")
-            .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(Theme.colors.textPrimary)
-            .offset(x: -5)
-            .opacity(isSelected ? 1 : 0)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 6, height: 6)
+            .padding(5)
+            .background(Circle().fill(Theme.colors.alertSuccess))
+            .showIf(isSelected)
     }
     
     private func getDescriptionBlock(_ value: String) -> some View {

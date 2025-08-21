@@ -18,52 +18,80 @@ struct RegisterVaultView: View {
     @Environment(\.displayScale) var displayScale
     
     var body: some View {
-        ZStack {
-            Background()
-            view
+        Screen(title: "registerVault".localized) {
+            VStack {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Image("register-vault")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 250)
+                            .background(
+                                EllipticalGradient(
+                                    stops: [
+                                        Gradient.Stop(color: Color(red: 0.2, green: 0.9, blue: 0.75).opacity(0.52), location: 0.00),
+                                        Gradient.Stop(color: Color(red: 0.01, green: 0.07, blue: 0.17).opacity(0), location: 1.00),
+                                    ],
+                                    center: UnitPoint(x: 0.5, y: 0.5)
+                                )
+                                .blur(radius: 50)
+                                .offset(y: 30)
+                            )
+                            .padding(.top, 30)
+                        StepsAnimationView(
+                            title: "registerGuide".localized,
+                            steps: 4
+                        ) { animationCell(for: $0) }
+                    }
+                }
+                saveVaultButton
+            }
         }
-        .onAppear {
-            setData()
+        .onLoad(perform: setData)
+    }
+    
+    @ViewBuilder
+    func animationCell(for index: Int) -> some View {
+        let attrString = text(for: index)
+        switch index {
+        case 0:
+            commonCell(icon: "qr-code", title: attrString)
+        case 1:
+            Link(destination: StaticURL.VultisigWeb) {
+                commonCell(icon: "app-window", title: attrString + websiteText)
+            }
+        case 2:
+            commonCell(icon: "upload", title: attrString)
+        case 3:
+            commonCell(icon: "coins", title: attrString)
+        default:
+            EmptyView()
         }
     }
     
-    var image: some View {
-        VultisigLogo(showTexts: false)
-            .padding(.vertical, 30)
+    func text(for index: Int) -> AttributedString {
+        var attrString = AttributedString("registerVaultText\(index + 1)".localized)
+        attrString.font = Theme.fonts.footnote
+        attrString.foregroundColor = Theme.colors.textPrimary
+        return attrString
     }
     
-    var text1: some View {
-        Text(NSLocalizedString("registerVaultText1", comment: ""))
+    var websiteText: AttributedString {
+        var attrString = AttributedString("Vultisig Web")
+        attrString.font = Theme.fonts.footnote
+        attrString.underlineStyle = Text.LineStyle(pattern: .solid, color: Theme.colors.alertSuccess)
+        attrString.foregroundColor = Theme.colors.alertSuccess
+        return attrString
     }
     
-    var text2: some View {
-        HStack {
-            Text(NSLocalizedString("registerVaultText2", comment: ""))
-            webButton
+    func commonCell(icon: String, title: AttributedString) -> some View {
+        HStack(spacing: 12) {
+            Icon(named: icon, size: 24)
+            Text(title)
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textPrimary)
         }
-    }
-    
-    var text3: some View {
-        Text(NSLocalizedString("registerVaultText3", comment: ""))
-    }
-    
-    var text4: some View {
-        Text(NSLocalizedString("registerVaultText4", comment: ""))
-    }
-    
-    var webButton: some View {
-        Link(destination: StaticURL.VultisigWeb) {
-            webLabel
-        }
-    }
-    
-    var webLabel: some View {
-        Text("Vultisig Web")
-            .foregroundColor(Theme.colors.bgButtonPrimary)
-            .padding(.vertical, 12)
-            .padding(.horizontal, 28)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func setData() {

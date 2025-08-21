@@ -9,24 +9,6 @@
 import SwiftUI
 
 extension VaultDetailQRCodeView {
-    var content: some View {
-        ZStack {
-            Background()
-            main
-        }
-    }
-    
-    var main: some View {
-        VStack {
-            headerMac
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "shareVaultQR")
-    }
-
     var shareButton: some View {
         shareLinkButton
     }

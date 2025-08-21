@@ -107,11 +107,7 @@ enum SettingsCurrency: String, CaseIterable {
 }
 
 class SettingsOptionsStore {
-    static let FAQData : [(question: String, answer: String)] = [
-        (question: "setupVaultFAQQuestion", answer: "setupVaultFAQAnswer"),
-        (question: "supportedCryptoFAQQuestion", answer: "supportedCryptoFAQAnswer"),
-        (question: "vaultSecurityFAQQuestion", answer: "vaultSecurityFAQAnswer"),
-        (question: "assetRecoveryFAQQuestion", answer: "assetRecoveryFAQAnswer"),
-        (question: "registerFAQQuestion", answer: "registerFAQAnswer")
-    ]
+    static let FAQData : [(question: String, answer: String)] = Range(1...9).map {
+        (question: "faqQuestion\($0)", answer: "faqAnswer\($0)")
+    }
 }
