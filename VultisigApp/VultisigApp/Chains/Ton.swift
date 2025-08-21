@@ -104,7 +104,8 @@ enum TonHelper {
                                                                              publicKeys: publicKeys)
         
         let output = try TheOpenNetworkSigningOutput(serializedBytes: compileWithSignature)
-        
+        print("Ton signed transaction output: \(output)")
+        print("Ton signed transaction output encoded: \(output.hash.hexString)")
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: output.hash.hexString)
         

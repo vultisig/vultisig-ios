@@ -549,7 +549,7 @@ class KeysignViewModel: ObservableObject {
                     
                 case .ton:
                     let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
-                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
+                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? .empty
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
                     
