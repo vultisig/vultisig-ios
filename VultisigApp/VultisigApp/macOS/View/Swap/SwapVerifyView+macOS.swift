@@ -12,6 +12,7 @@ extension SwapVerifyView {
     var container: some View {
         content
             .padding(.horizontal, 25)
+            .padding(.vertical, 12)
     }
     
     var fields: some View {
