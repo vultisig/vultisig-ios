@@ -15,7 +15,7 @@ class SendSummaryViewModel: ObservableObject {
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.fromCoin.ticker)"
         } else {
-            return "\(formattedAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+            return "\(formattedAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.name))"
         }
     }
 
@@ -25,7 +25,7 @@ class SendSummaryViewModel: ObservableObject {
         if tx.fromCoin.chain == tx.toCoin.chain {
             return "\(formattedAmount) \(tx.toCoin.ticker)"
         } else {
-            return "\(formattedAmount) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+            return "\(formattedAmount) \(tx.toCoin.ticker) (\(tx.toCoin.chain.name))"
         }
     }
     

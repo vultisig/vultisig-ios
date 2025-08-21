@@ -30,12 +30,13 @@ struct Checkbox: View {
     }
     
     var check: some View {
-        Image(systemName: isChecked ? "checkmark" : "")
+        Image(systemName: "checkmark")
             .font(Theme.fonts.caption12)
             .foregroundColor(Theme.colors.alertSuccess)
             .frame(width: 24, height: 24)
             .background(Theme.colors.bgSuccess)
             .cornerRadius(20)
+            .opacity(isChecked ? 1 : 0)
             .overlay(
                 Circle()
                     .stroke(isChecked ? Theme.colors.alertSuccess : Theme.colors.border, lineWidth: 1)

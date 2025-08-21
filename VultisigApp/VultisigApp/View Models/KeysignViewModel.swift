@@ -136,7 +136,7 @@ class KeysignViewModel: ObservableObject {
             return Endpoint.getSwapProgressURL(txid: txid)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: txid)
-        case .oneInch, .kyberSwap, .none:
+        case .generic, .none:
             return nil
         }
     }
@@ -350,7 +350,7 @@ class KeysignViewModel: ObservableObject {
                 let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
                 
-            case .oneInch(let payload):
+            case .generic(let payload):
                 switch keysignPayload.coin.chain {
                 case .solana:
                     let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
@@ -361,10 +361,6 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
-            case .kyberSwap(let payload):
-                let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
-                signedTransactions.append(transaction)
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -553,7 +549,11 @@ class KeysignViewModel: ObservableObject {
                     
                 case .ton:
                     let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
-                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
+                    if base64Hash.isEmpty {
+                        self.txid = tx.transactionHash
+                    } else {
+                        self.txid = Data(base64Encoded: base64Hash)?.hexString ?? tx.transactionHash
+                    }
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
                     
@@ -604,7 +604,7 @@ class KeysignViewModel: ObservableObject {
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
             print("code:\(code), message:\(message)")
-            if message == "already known" 
+            if message == "already known"
                 || message == "replacement transaction underpriced"
                 || message.contains("This transaction has already been processed")
             {
