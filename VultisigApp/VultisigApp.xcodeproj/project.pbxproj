@@ -120,6 +120,9 @@
 		13D179002E5775AE00007B48 /* NavigationBarButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */; };
 		13D179022E577ED900007B48 /* PlatformSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179012E577ED500007B48 /* PlatformSheet.swift */; };
 		13D179052E57805800007B48 /* SheetHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179042E57805100007B48 /* SheetHeaderView.swift */; };
+		13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179072E5787D100007B48 /* AddressBookChainType.swift */; };
+		13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179092E57889E00007B48 /* AddressBookChainCell.swift */; };
+		13D1790D2E5788BE00007B48 /* AddressBookChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */; };
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
@@ -1131,6 +1134,9 @@
 		13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarButtonView.swift; sourceTree = "<group>"; };
 		13D179012E577ED500007B48 /* PlatformSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSheet.swift; sourceTree = "<group>"; };
 		13D179042E57805100007B48 /* SheetHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetHeaderView.swift; sourceTree = "<group>"; };
+		13D179072E5787D100007B48 /* AddressBookChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainType.swift; sourceTree = "<group>"; };
+		13D179092E57889E00007B48 /* AddressBookChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCell.swift; sourceTree = "<group>"; };
+		13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainCellView.swift; sourceTree = "<group>"; };
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
@@ -2510,6 +2516,14 @@
 			path = Sheets;
 			sourceTree = "<group>";
 		};
+		13D179062E5787CA00007B48 /* AddressBook */ = {
+			isa = PBXGroup;
+			children = (
+				13D179072E5787D100007B48 /* AddressBookChainType.swift */,
+			);
+			path = AddressBook;
+			sourceTree = "<group>";
+		};
 		13D764362E4102F100F048DE /* Swap */ = {
 			isa = PBXGroup;
 			children = (
@@ -3718,6 +3732,8 @@
 		A6C3ABC62C3E594400F13ED0 /* Address Book */ = {
 			isa = PBXGroup;
 			children = (
+				13D1790C2E5788BE00007B48 /* AddressBookChainCellView.swift */,
+				13D179092E57889E00007B48 /* AddressBookChainCell.swift */,
 				13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */,
 				13D178F82E5753DB00007B48 /* AddressBookChainSelectionScreen.swift */,
 				A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */,
@@ -4048,6 +4064,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				13D179062E5787CA00007B48 /* AddressBook */,
 				13DD547D2E5615A2007335DA /* Settings */,
 				B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */,
 				B5CDB87A2DDD86F9007DF355 /* MergeAccountResponse.swift */,
@@ -4632,6 +4649,7 @@
 				A51AE8C42C9589E000EF9A7A /* FastVaultEnterPasswordView+iOS.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */,
+				13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
 				A6833D802C65980D002029E1 /* GeneralMacHeader.swift in Sources */,
 				A6E0C90F2DE4E8CE00A01543 /* EditReferredCodeView.swift in Sources */,
@@ -5285,6 +5303,7 @@
 				A66A0BD52BA124D00021A483 /* VaultSettingsScreen.swift in Sources */,
 				132666CE2E429FFE007FDAC5 /* THORChainAPIService.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
+				13D1790A2E57889F00007B48 /* AddressBookChainCell.swift in Sources */,
 				A60F29E52DA5A51B00C24765 /* SwapCryptoDoneView+macOS.swift in Sources */,
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
@@ -5299,6 +5318,7 @@
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				135677B42E39369A002C10A2 /* TargetType.swift in Sources */,
+				13D1790D2E5788BE00007B48 /* AddressBookChainCellView.swift in Sources */,
 				135677B52E39369A002C10A2 /* HTTPMethod.swift in Sources */,
 				135677B62E39369A002C10A2 /* HTTPClientProtocol.swift in Sources */,
 				135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */,

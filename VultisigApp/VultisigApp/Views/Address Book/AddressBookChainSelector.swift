@@ -21,7 +21,7 @@ struct AddressBookChainSelector: View {
                     .font(Theme.fonts.bodySMedium)
                 BoxView {
                     HStack {
-                        AddressBookChainView(chain: selectedChain)
+                        AddressBookChainCellView(chain: selectedChain)
                         Spacer()
                         Icon(named: "chevron-right", color: Theme.colors.textPrimary, size: 20)
                     }

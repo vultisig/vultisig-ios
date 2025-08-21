@@ -59,58 +59,6 @@ struct AddressBookChainSelectionScreen: View {
     }
 }
 
-struct AddressBookChainCell: View {
-    let chain: AddressBookChainType
-    let isSelected: Bool
-    var onSelect: () -> Void
-    
-    init(chain: AddressBookChainType, isSelected: Bool = false, onSelect: @escaping () -> Void = {}) {
-        self.chain = chain
-        self.isSelected = isSelected
-        self.onSelect = onSelect
-    }
-    
-    var body: some View {
-        Button {
-            onSelect()
-        } label: {
-            HStack {
-                AddressBookChainView(chain: chain)
-                Spacer()
-            }
-            .padding(.horizontal, 22)
-            .padding(.vertical, 12)
-            .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
-        }
-    }
-}
-
-struct AddressBookChainView: View {
-    let chain: AddressBookChainType
-    
-    var body: some View {
-        HStack {
-            iconImage
-            nameText
-        }
-    }
-    
-    var iconImage: some View {
-        AsyncImageView(
-            logo: chain.icon,
-            size: CGSize(width: 32, height: 32),
-            ticker: "",
-            tokenChainLogo: nil
-        )
-    }
-    
-    var nameText: some View {
-        Text(chain.name)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
-    }
-}
-
 #Preview {
     AddressBookChainSelectionScreen(selectedChain: .constant(.evm), isPresented: .constant(true), vaultChains: [])
 }
