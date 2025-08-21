@@ -17,9 +17,9 @@ extension AddressBookTextField {
             placeholder: "typeHere".localized
         ) {
             if showActions {
-                HStack {
-                    pasteButton
+                HStack(spacing: 8) {
                     fileButton
+                    pasteButton
                 }
             }
         }

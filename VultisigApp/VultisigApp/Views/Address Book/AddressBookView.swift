@@ -27,6 +27,7 @@ struct AddressBookView: View {
                 Group {
                     if savedAddresses.isEmpty {
                        emptyView
+                            .background(BlurredBackground())
                     } else {
                         list
                         addAddressButton
@@ -34,7 +35,6 @@ struct AddressBookView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(BlurredBackground())
         }
         .screenToolbar {
             if savedAddresses.count != 0 {
@@ -53,14 +53,17 @@ struct AddressBookView: View {
             Text("addressBookEmptyTitle".localized)
                 .font(Theme.fonts.bodyMMedium)
                 .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
             Text("addressBookEmptySubtitle".localized)
                 .font(Theme.fonts.bodySMedium)
                 .foregroundStyle(Theme.colors.textExtraLight)
+                .multilineTextAlignment(.center)
             
             addAddressButton
                 .frame(maxWidth: 200)
                 .padding(.top, 18)
         }
+        .frame(maxWidth: 265)
     }
     
     var list: some View {
@@ -80,17 +83,15 @@ struct AddressBookView: View {
                             isEditing: isEditing,
                             returnAddress: $returnAddress
                         )
+                        .listRowBackground(Color.clear)
                     }
                     .onMove(perform: isEditing ? move: nil)
-                    .padding(.horizontal, 15)
-                    .background(Theme.colors.bgPrimary)
                 }
-                .listStyle(PlainListStyle())
-                .buttonStyle(BorderlessButtonStyle())
+                .listStyle(.plain)
+                .buttonStyle(.borderless)
                 .colorScheme(.dark)
                 .scrollContentBackground(.hidden)
-                .padding(.top, 30)
-                .background(Theme.colors.bgPrimary.opacity(0.9))
+                .background(Color.clear)
             } else {
                 emptyViewChain
             }
@@ -99,7 +100,7 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         PrimaryNavigationButton(title: "addAddress") {
-            AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
+            AddAddressBookScreen(count: savedAddresses.count)
         }
     }
     
@@ -120,19 +121,16 @@ struct AddressBookView: View {
     }
     
     var navigationEditButton: some View {
-        ZStack {
-            if isEditing {
-                doneButton
-            } else {
-                NavigationEditButton()
+        VStack {
+            Group {
+                if isEditing {
+                    NavigationBarButtonView(title: "done".localized)
+                } else {
+                    NavigationEditButton()
+                }
             }
         }
-    }
-    
-    var doneButton: some View {
-        Text(NSLocalizedString("done", comment: ""))
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+        .frame(width: 60, height: 32, alignment: .trailing)
     }
     
     private func toggleEdit() {
