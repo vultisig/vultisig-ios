@@ -128,6 +128,15 @@ class FunctionCallCosmosYVault: ObservableObject {
             .store(in: &cancellables)
         
         $amountValid.assign(to: \Self.isTheFormValid, on: self).store(in: &cancellables)
+        
+        // Watch for coin changes and re-initiate when it changes
+        tx.objectWillChange
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.initiate()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func validateAmount() {
