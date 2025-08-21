@@ -9,17 +9,19 @@ import SwiftUI
 
 struct AddressBookChainSelectionScreen: View {
     @Binding var selectedChain: AddressBookChainType
+    @Binding var isPresented: Bool
     @StateObject var viewModel: AddressBookChainSelectionViewModel
     
-    @Environment(\.dismiss) var dismiss
-    
-    init(selectedChain: Binding<AddressBookChainType>, vaultChains: [CoinMeta]) {
+    init(selectedChain: Binding<AddressBookChainType>, isPresented: Binding<Bool>, vaultChains: [CoinMeta]) {
         self._selectedChain = selectedChain
+        self._isPresented = isPresented
         self._viewModel = StateObject(wrappedValue: AddressBookChainSelectionViewModel(vaultChains: vaultChains))
     }
     
     var body: some View {
-        Screen(title: "selectChain".localized) {
+        VStack {
+            SheetHeaderView(title: "selectChain".localized, isPresented: $isPresented)
+                .padding(.top, 12)
             VStack(spacing: 12) {
                 SearchTextField(value: $viewModel.searchText, isFocused: .init())
                 ScrollView {
@@ -43,9 +45,7 @@ struct AddressBookChainSelectionScreen: View {
                     isSelected: selectedChain == chain,
                 ) {
                     selectedChain = chain
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        dismiss()
-                    }
+                    isPresented.toggle()
                 }
                 GradientListSeparator()
                     .showIf(chain != viewModel.filteredChains.last)
@@ -74,34 +74,14 @@ struct AddressBookChainCell: View {
         Button {
             onSelect()
         } label: {
-            label
-        }
-    }
-    
-    var label: some View {
-        content
+            HStack {
+                AddressBookChainView(chain: chain)
+                Spacer()
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 12)
             .background(isSelected ? Theme.colors.bgTertiary : Theme.colors.bgSecondary)
-    }
-    
-    var content: some View {
-        HStack {
-            AddressBookChainView(chain: chain)
-            Spacer()
-            check
-                .showIf(isSelected)
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 12)
-    }
-    
-    var check: some View {
-        Image(systemName: "checkmark")
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.alertInfo)
-            .frame(width: 24, height: 24)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(32)
-            .bold()
     }
 }
 
@@ -132,5 +112,5 @@ struct AddressBookChainView: View {
 }
 
 #Preview {
-    AddressBookChainSelectionScreen(selectedChain: .constant(.evm), vaultChains: [])
+    AddressBookChainSelectionScreen(selectedChain: .constant(.evm), isPresented: .constant(true), vaultChains: [])
 }

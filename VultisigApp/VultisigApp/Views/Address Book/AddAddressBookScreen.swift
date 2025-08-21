@@ -22,6 +22,7 @@ struct AddAddressBookScreen: View {
     @State var alertTitle = ""
     @State var alertMessage = ""
     @State var showAlert = false
+    @State var presentSelector = false
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -38,6 +39,15 @@ struct AddAddressBookScreen: View {
         .alert(isPresented: $showAlert) {
             alert
         }
+        .platformSheet(isPresented: $presentSelector) {
+            let coins = coinSelectionViewModel.groupedAssets.keys
+                .compactMap { coinSelectionViewModel.groupedAssets[$0]?.first }
+            AddressBookChainSelectionScreen(
+                selectedChain: $selectedChain,
+                isPresented: $presentSelector,
+                vaultChains: coins
+            )
+        }
     }
     
     var fields: some View {
@@ -52,9 +62,7 @@ struct AddAddressBookScreen: View {
     
     @ViewBuilder
     var tokenSelector: some View {
-        let coins = coinSelectionViewModel.groupedAssets.keys
-            .compactMap { coinSelectionViewModel.groupedAssets[$0]?.first }
-        AddressBookChainSelector(selectedChain: $selectedChain, coins: coins)
+        AddressBookChainSelector(selectedChain: $selectedChain, presentSelector: $presentSelector)
     }
     
     var titleField: some View {

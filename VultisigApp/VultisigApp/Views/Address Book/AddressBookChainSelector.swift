@@ -9,11 +9,11 @@ import SwiftUI
 
 struct AddressBookChainSelector: View {
     @Binding var selectedChain: AddressBookChainType
-    let coins: [CoinMeta]
+    @Binding var presentSelector: Bool
     
     var body: some View {
-        NavigationLink {
-            AddressBookChainSelectionScreen(selectedChain: $selectedChain, vaultChains: coins)
+        Button {
+            presentSelector = true
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 Text("chain".localized)
@@ -28,5 +28,6 @@ struct AddressBookChainSelector: View {
                 }
             }
         }
+
     }
 }

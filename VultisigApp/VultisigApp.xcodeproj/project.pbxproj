@@ -118,6 +118,8 @@
 		13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */; };
 		13D178FE2E57644F00007B48 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */; };
 		13D179002E5775AE00007B48 /* NavigationBarButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */; };
+		13D179022E577ED900007B48 /* PlatformSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179012E577ED500007B48 /* PlatformSheet.swift */; };
+		13D179052E57805800007B48 /* SheetHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D179042E57805100007B48 /* SheetHeaderView.swift */; };
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
@@ -1127,6 +1129,8 @@
 		13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		13D178FF2E5775A800007B48 /* NavigationBarButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarButtonView.swift; sourceTree = "<group>"; };
+		13D179012E577ED500007B48 /* PlatformSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSheet.swift; sourceTree = "<group>"; };
+		13D179042E57805100007B48 /* SheetHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetHeaderView.swift; sourceTree = "<group>"; };
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
@@ -2495,6 +2499,15 @@
 				13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */,
 			);
 			path = AddressBook;
+			sourceTree = "<group>";
+		};
+		13D179032E57804C00007B48 /* Sheets */ = {
+			isa = PBXGroup;
+			children = (
+				13D179042E57805100007B48 /* SheetHeaderView.swift */,
+				13D179012E577ED500007B48 /* PlatformSheet.swift */,
+			);
+			path = Sheets;
 			sourceTree = "<group>";
 		};
 		13D764362E4102F100F048DE /* Swap */ = {
@@ -4003,6 +4016,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				13D179032E57804C00007B48 /* Sheets */,
 				137B2C792E3A4A970074F648 /* PreferenceKeys */,
 				13095A342E3264E1009F8785 /* Utils */,
 				1334C73D2E30079000CBAA3E /* ViewModifiers */,
@@ -5234,6 +5248,7 @@
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				1378B04B2E462ADB005CC32D /* CircularProgressIndicator.swift in Sources */,
+				13D179052E57805800007B48 /* SheetHeaderView.swift in Sources */,
 				1390D8BA2E393902003F3E20 /* BlockaidModels.swift in Sources */,
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
@@ -5465,6 +5480,7 @@
 				A6182F5D2C9299ED0059BFDD /* MemoTextField+imacOS.swift in Sources */,
 				13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */,
 				DEEAE0D72D0A7ED1007FDA14 /* SchnorrKeysign.swift in Sources */,
+				13D179022E577ED900007B48 /* PlatformSheet.swift in Sources */,
 				A64A81AD2E1E2755002D0CDD /* SendCryptoSecondaryDoneView.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */,
