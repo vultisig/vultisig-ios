@@ -21,31 +21,32 @@ struct AddressBookCell: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        label
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .padding(.vertical, 8)
-            .navigationDestination(isPresented: $isNavigationEnabled) {
-                EditAddressBookView(addressBookItem: address)
+        HStack {
+            rearrangeIcon
+                .showIf(isEditing)
+            
+            BoxView {
+                label
             }
+        }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
+        .navigationDestination(isPresented: $isNavigationEnabled) {
+            EditAddressBookScreen(addressBookItem: address)
+        }
     }
     
     var label: some View {
         HStack(spacing: 8) {
-            if isEditing {
-                rearrangeIcon
-            }
-            
             Button {
                 handleSelection()
             } label: {
                 content
             }
             .disabled(isEditing)
-            
-            if isEditing {
-                deleteIcon
-            }
+            deleteIcon
+                .showIf(isEditing)
         }
     }
     
@@ -54,9 +55,6 @@ struct AddressBookCell: View {
             logo
             text
         }
-        .padding(12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(10)
     }
     
     var logo: some View {
@@ -67,33 +65,17 @@ struct AddressBookCell: View {
     }
     
     var text: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            topContent
+        VStack(alignment: .leading, spacing: 4) {
+            titleContent
             addressContent
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var topContent: some View {
-        HStack {
-            titleContent
-            Spacer()
-            networkContent
-        }
     }
     
     var titleContent: some View {
         Text(address.title)
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
-            .lineLimit(1)
-            .truncationMode(.tail)
-    }
-    
-    var networkContent: some View {
-        Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
-            .foregroundColor(Theme.colors.textLight)
-            .font(Theme.fonts.caption12)
             .lineLimit(1)
             .truncationMode(.tail)
     }
@@ -107,10 +89,7 @@ struct AddressBookCell: View {
     }
     
     var rearrangeIcon: some View {
-        Image(systemName: "square.grid.4x3.fill")
-            .font(Theme.fonts.title2)
-            .rotationEffect(.degrees(90))
-            .foregroundColor(Theme.colors.textLight)
+        Icon(named: "grip-vertical", color: Theme.colors.textLight)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }
@@ -124,9 +103,7 @@ struct AddressBookCell: View {
     }
     
     var deleteIconLabel: some View {
-        Image(systemName: "trash")
-            .font(Theme.fonts.title2)
-            .foregroundColor(Theme.colors.textPrimary)
+        Icon(named: "trash", color: Theme.colors.textExtraLight)
             .scaleEffect(isEditing ? 1 : 0)
             .frame(width: isEditing ? nil : 0)
     }

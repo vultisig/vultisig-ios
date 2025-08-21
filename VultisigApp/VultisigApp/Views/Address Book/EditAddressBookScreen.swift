@@ -1,51 +1,65 @@
 //
-//  AddAddressBookView.swift
+//  EditAddressBookScreen.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-07-11.
+//  Created by Amol Kumar on 2024-07-27.
 //
 
 import SwiftUI
-import SwiftData
 import WalletCore
 
-struct AddAddressBookView: View {
-    let count: Int
-    
+struct EditAddressBookScreen: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    
+    let addressBookItem: AddressBookItem
     
     @State var title = ""
     @State var address = ""
-    @State var coin: CoinMeta? = nil
+    @State var selectedChain: AddressBookChainType = .evm
     
     @State var alertTitle = ""
     @State var alertMessage = ""
     @State var showAlert = false
+    @State var presentSelector = false
     
     @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        content
-            .onAppear {
-                setData()
+        Screen(title: "editAddress".localized) {
+            VStack {
+                fields
+                Spacer()
+                button
             }
+        }
+        .onLoad(perform: setData)
+        .alert(isPresented: $showAlert) {
+            alert
+        }
+        .platformSheet(isPresented: $presentSelector) {
+            let coins = coinSelectionViewModel.groupedAssets.keys
+                .compactMap { coinSelectionViewModel.groupedAssets[$0]?.first }
+            AddressBookChainSelectionScreen(
+                selectedChain: $selectedChain,
+                isPresented: $presentSelector,
+                vaultChains: coins
+            )
+        }
     }
     
     var fields: some View {
         ScrollView {
-            VStack(spacing: 22) {
+            VStack(spacing: 12) {
                 tokenSelector
                 titleField
                 addressField
             }
-            .padding(.top, 30)
         }
     }
     
+    @ViewBuilder
     var tokenSelector: some View {
-        AddressBookChainSelector(selected: $coin)
+        AddressBookChainSelector(selectedChain: $selectedChain, presentSelector: $presentSelector)
     }
     
     var titleField: some View {
@@ -58,9 +72,8 @@ struct AddAddressBookView: View {
     
     var button: some View {
         PrimaryButton(title: "saveAddress") {
-            addAddress()
+            saveAddress()
         }
-        .padding(.bottom, 40)
     }
     
     var alert: Alert {
@@ -72,43 +85,30 @@ struct AddAddressBookView: View {
     }
     
     private func setData() {
-        guard let vault = homeViewModel.selectedVault else {
-            return
-        }
-        
-        coinSelectionViewModel.setData(for: vault)
-        
-        if coin == nil, let key = coinSelectionViewModel.chains.first {
-            coin = coinSelectionViewModel.groupedAssets[key]?.first
-        }
+        title = addressBookItem.title
+        address = addressBookItem.address
+        selectedChain = .init(coinMeta: addressBookItem.coinMeta)
     }
     
-    private func addAddress() {
-        guard let coin else {
-            return
-        }
-        
+    private func saveAddress() {
         guard !title.isEmpty && !address.isEmpty else {
             toggleAlert()
             return
         }
         
-        guard AddressService.validateAddress(address: address, chain: coin.chain) else {
+        guard AddressService.validateAddress(address: address, chain: selectedChain.chain) else {
             toggleAlertInvalidAddress()
             return
         }
         
-        let data = AddressBookItem(
-            title: title,
-            address: address,
-            coinMeta: coin, 
-            order: count
-        )
+        let coin = coinSelectionViewModel.groupedAssets[selectedChain.chain]?.first
+        guard let coin else { return }
         
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            modelContext.insert(data)
-            dismiss()
-        }
+        addressBookItem.title = title
+        addressBookItem.address = address
+        addressBookItem.coinMeta = coin
+        
+        dismiss()
     }
     
     private func toggleAlert() {
@@ -125,7 +125,5 @@ struct AddAddressBookView: View {
 }
 
 #Preview {
-    AddAddressBookView(count: 0)
-        .environmentObject(CoinSelectionViewModel())
-        .environmentObject(HomeViewModel())
+    EditAddressBookScreen(addressBookItem: AddressBookItem.example)
 }
