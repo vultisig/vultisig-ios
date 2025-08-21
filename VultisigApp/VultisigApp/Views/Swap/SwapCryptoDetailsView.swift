@@ -107,7 +107,6 @@ struct SwapCryptoDetailsView: View {
         } label: {
             swapLabel
         }
-        .padding(8)
         .background(Theme.colors.bgPrimary)
         .cornerRadius(60)
         .overlay(
