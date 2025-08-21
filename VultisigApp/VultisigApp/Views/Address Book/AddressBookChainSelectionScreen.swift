@@ -42,7 +42,7 @@ struct AddressBookChainSelectionScreen: View {
             ForEach(viewModel.filteredChains) { chain in
                 AddressBookChainCell(
                     chain: chain,
-                    isSelected: selectedChain == chain,
+                    isSelected: selectedChain == chain
                 ) {
                     selectedChain = chain
                     isPresented.toggle()
