@@ -8,13 +8,8 @@
 import SwiftUI
 
 struct NavigationEditButton: View {
-    var tint: Color = Theme.colors.textPrimary
-    
     var body: some View {
-        Image(systemName: "square.and.pencil")
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
-            .offset(x: 8)
+        Icon(named: "pencil", color: Theme.colors.textPrimary, size: 16)
     }
 }
 

@@ -12,14 +12,7 @@ struct PhoneCheckUpdateView: View {
     
     var body: some View {
         Screen(title: "checkUpdate".localized) {
-            view
-                .background(
-                    Ellipse()
-                        .fill(Color(red: 0.2, green: 0.9, blue: 0.75))
-                        .aspectRatio(contentMode: .fit)
-                        .opacity(0.2)
-                        .blur(radius: 120)
-                )
+            view.background(BlurredBackground())
         }
         .onAppear {
             setData()

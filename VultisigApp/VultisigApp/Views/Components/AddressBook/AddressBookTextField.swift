@@ -56,22 +56,12 @@ struct AddressBookTextField: View {
                 .foregroundColor(Theme.colors.textPrimary)
         }
     }
-    
-    var titleContent: some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Theme.colors.textPrimary)
-            .font(Theme.fonts.bodySMedium)
-    }
-    
-   
+
     var pasteButton: some View {
         Button {
             pasteAddress()
         } label: {
-            Image(systemName: "doc.on.clipboard")
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
+            Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -79,10 +69,7 @@ struct AddressBookTextField: View {
         Button {
             showScanner.toggle()
         } label: {
-            Image(systemName: "camera")
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
+            Icon(named: "camera", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -90,10 +77,7 @@ struct AddressBookTextField: View {
         Button {
             showImagePicker.toggle()
         } label: {
-            Image(systemName: "photo.badge.plus")
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .frame(width: 40, height: 40)
+            Icon(named: "image-plus", color: Theme.colors.textPrimary, size: 20)
         }
     }    
     

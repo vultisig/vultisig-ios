@@ -18,6 +18,11 @@ struct SendCryptoAddressBookView: View {
     @Query var vaults: [Vault]
     @Query var savedAddresses: [AddressBookItem]
     
+    var filteredSavedAddresses: [AddressBookItem] {
+        savedAddresses
+            .filter { AddressBookChainType(coinMeta: $0.coinMeta) == AddressBookChainType(coinMeta: tx.coin.toCoinMeta()) }
+    }
+    
     var body: some View {
         ZStack {
             Background()
@@ -26,8 +31,6 @@ struct SendCryptoAddressBookView: View {
         .buttonStyle(BorderlessButtonStyle())
         .presentationDetents([.medium, .large])
     }
-    
-    
     
     var title: some View {
         Text(NSLocalizedString("addressBook", comment: ""))
@@ -84,15 +87,24 @@ struct SendCryptoAddressBookView: View {
     
     var savedAddressesList: some View {
         VStack(spacing: 12) {
-            ForEach(savedAddresses.filter{$0.coinMeta.chain == tx.coin.chain}) { address in
+            ForEach(filteredSavedAddresses) { address in
                 SendCryptoAddressBookCell(
                     title: address.title,
                     description: address.address,
-                    icon: address.coinMeta.logo,
+                    icon: logo(for: address),
                     tx: tx,
                     showSheet: $showSheet
                 )
             }
+        }
+    }
+    
+    func logo(for address: AddressBookItem) -> String {
+        switch address.coinMeta.chain.type {
+        case .EVM:
+            return tx.coin.chain.logo
+        default:
+            return address.coinMeta.logo
         }
     }
     
