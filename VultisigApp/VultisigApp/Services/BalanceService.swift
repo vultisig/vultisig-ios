@@ -81,15 +81,24 @@ class BalanceService {
 
 private extension BalanceService {
     
+    private var enableAutoCompoundStakedBalance: Bool { false }
+    
     func fetchStakedBalance(for coin: Coin) async throws -> String {
         switch coin.chain {
         case .thorChain:
             // Handle TCY staked balance (includes both regular and auto-compound)
             if coin.ticker.caseInsensitiveCompare("TCY") == .orderedSame {
                 let tcyStakedBalance = await thor.fetchTcyStakedAmount(address: coin.address)
-                let tcyAutoCompoundBalance = await thor.fetchTcyAutoCompoundAmount(address: coin.address)
-                let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+                
+                if enableAutoCompoundStakedBalance {
+                    let tcyAutoCompoundBalance = await thor.fetchTcyAutoCompoundAmount(address: coin.address)
+                    let totalStakedBalance = tcyStakedBalance + tcyAutoCompoundBalance
+                    return totalStakedBalance.description
+                }
+                
+                let totalStakedBalance = tcyStakedBalance
                 return totalStakedBalance.description
+                
             }
             
             // Handle RUNE bonded balance
