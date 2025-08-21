@@ -19,7 +19,7 @@ struct BoxView<Content: View>: View {
             .font(Theme.fonts.bodyMMedium)
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
-            .background(Theme.colors.bgButtonDisabled.opacity(0.5))
+            .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

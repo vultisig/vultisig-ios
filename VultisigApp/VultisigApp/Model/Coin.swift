@@ -111,30 +111,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var chainType: ChainType {
-        switch chain {
-        case .thorChain,.mayaChain:
-            return .THORChain
-        case .solana:
-            return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia:
-            return .EVM
-        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
-            return .UTXO
-        case .cardano:
-            return .Cardano
-        case .gaiaChain,.kujira, .dydx, .osmosis, .terra, .terraClassic, .noble, .akash:
-            return .Cosmos
-        case .sui:
-            return .Sui
-        case .polkadot:
-            return .Polkadot
-        case .ton:
-            return .Ton
-        case .ripple:
-            return .Ripple
-        case .tron:
-            return .Tron
-        }
+        chain.type
     }
     
     var supportsFeeSettings: Bool {
