@@ -35,7 +35,7 @@ struct ReferralTextField: View {
         CommonTextField(
             text: $text,
             placeholder: placeholderText,
-            showError: showError,
+            showError: showError
         ) {
             HStack {
                 actionButton
