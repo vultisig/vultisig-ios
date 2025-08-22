@@ -7,14 +7,13 @@
 
 import SwiftUI
 
-struct NavigationQRCodeButton: View {
-    var tint: Color = Theme.colors.textPrimary
-    
+struct NavigationQRCodeButton: View {    
     var body: some View {
-        Image(systemName: "qrcode")
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(tint)
-            .offset(x: 8)
+        Icon(
+            named: "qr-code",
+            color: Theme.colors.textPrimary,
+            size: 16
+        ).padding(8)
     }
 }
 

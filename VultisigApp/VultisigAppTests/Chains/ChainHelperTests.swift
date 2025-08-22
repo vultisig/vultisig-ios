@@ -67,16 +67,10 @@ final class ChainHelperTests: XCTestCase {
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
             result += imageHash
-        case .kyberSwap(let kyberSwapPayload):
-            let swaps = KyberSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
-            let imageHash = try swaps.getPreSignedImageHash(payload: kyberSwapPayload,
-                                                            keysignPayload: keysignPayload,
-                                                            incrementNonce: incrementNonce)
-            result += imageHash
         case .mayachain(_):
             // mayachain swap is a regular transaction with memo
             return
-        case .oneInch(let oneInchSwapPayload):
+        case .generic(let oneInchSwapPayload):
             switch keysignPayload.coin.chain {
             case .solana:
                 let swaps = SolanaSwaps(vaultHexPubKey: hexPublicKey)
@@ -109,7 +103,7 @@ final class ChainHelperTests: XCTestCase {
             let utxoHelper = UTXOChainsHelper(coin: chain.coinType, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
             let imageHash = try utxoHelper.getPreSignedImageHash(keysignPayload: keysignPayload)
             result += imageHash
-        case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche:
+        case .ethereum,.arbitrum,.optimism,.polygon,.base,.bscChain,.avalanche,.mantle:
             let chain = keysignPayload.coin.chain
             if keysignPayload.coin.contractAddress.isEmpty {
                 let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)

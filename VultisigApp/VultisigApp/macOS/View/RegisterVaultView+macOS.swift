@@ -9,35 +9,7 @@
 import SwiftUI
 
 extension RegisterVaultView {
-    var view: some View {
-        VStack {
-            header
-            content
-        }
-    }
-    
-    var header: some View {
-        GeneralMacHeader(title: "registerVault")
-    }
-    
-    var content: some View {
-        VStack(alignment: .center, spacing: 16) {
-            Spacer()
-            image
-            text1
-            text2
-            text3
-            text4
-            Spacer()
-            deleteButton
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .font(Theme.fonts.bodyMMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .padding(.horizontal, 40)
-    }
-    
-    var deleteButton: some View {
+    var saveVaultButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
                 PrimaryButton(title: "saveVaultQR") {

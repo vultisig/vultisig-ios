@@ -13,18 +13,20 @@ struct VaultDetailQRCode: View {
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     
     var body: some View {
-        VStack(spacing: 0) {
-            name
-            uid
-            Spacer()
+        VStack(spacing: 12) {
+            VStack(spacing: 8) {
+                name
+                uid
+            }
             qrCodeContent
-            Spacer()
             webLink
         }
-        .padding(16)
-        .frame(width: 310, height: 400)
-        .background(LinearGradient.primaryGradientLinear)
-        .cornerRadius(25)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Theme.colors.bgSecondary.opacity(0.6))
+                .stroke(Theme.colors.borderLight, lineWidth: 1)
+        )
     }
     
     var qrCodeContent: some View {
@@ -39,8 +41,11 @@ struct VaultDetailQRCode: View {
             .resizable()
             .frame(width: 230, height: 230)
             .scaledToFit()
-            .padding(3)
-            .cornerRadius(10)
+            .padding(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Theme.colors.borderLight, lineWidth: 1)
+            )
     }
     
     var logo: some View {
@@ -55,24 +60,17 @@ struct VaultDetailQRCode: View {
     
     var name: some View {
         Text(vault.name)
-            .font(Theme.fonts.bodyLMedium)
+            .font(Theme.fonts.bodyMMedium)
             .foregroundColor(Theme.colors.textPrimary)
-            .padding(.top, 10)
             .lineLimit(2)
             .multilineTextAlignment(.center)
     }
     
     var uid: some View {
-        Group {
-            Text("UID\n")
-                .font(Theme.fonts.bodyMMedium) +
-            Text(viewModel.getId(for: vault))
-                .font(Theme.fonts.bodySRegular)
-        }
-        .multilineTextAlignment(.center)
-        .foregroundColor(Theme.colors.textPrimary)
-        .padding(.top, 10)
-        .padding(.horizontal, 14)
+        Text("UID: \(viewModel.getId(for: vault))")
+            .font(Theme.fonts.footnote)
+            .foregroundColor(Theme.colors.textLight)
+            .multilineTextAlignment(.center)
     }
     
     var webLink: some View {

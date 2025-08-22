@@ -11,21 +11,8 @@ import SwiftUI
 extension VaultDetailQRCodeView {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
-    var content: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .navigationTitle(NSLocalizedString("shareVaultQR", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    var main: some View {
-        view
-    }
-    
     var buttons: some View {
-        VStack(spacing: 22) {
+        VStack(spacing: 15) {
             shareButton
             saveButton
         }
@@ -34,10 +21,7 @@ extension VaultDetailQRCodeView {
     var shareButton: some View {
         ZStack {
             if idiom == .phone {
-                PrimaryButton(
-                    title: "share",
-                    leadingIcon: "square.and.arrow.up"
-                ) {
+                PrimaryButton(title: "share") {
                     viewModel.shareImage(imageName)
                 }
             } else {

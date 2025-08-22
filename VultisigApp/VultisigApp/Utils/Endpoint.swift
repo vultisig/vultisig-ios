@@ -272,6 +272,8 @@ class Endpoint {
     
     static let ethSepoliaServiceRpcService = "https://ethereum-sepolia-rpc.publicnode.com"
     
+    static let mantleServiceRpcService = "https://api.vultisig.com/mantle/"
+    
     static let solanaServiceRpc = "https://api.vultisig.com/solana/"
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
@@ -662,6 +664,8 @@ class Endpoint {
             return "https://sepolia.etherscan.io/tx/\(txid)"
         case .cardano:
             return "https://cardanoscan.io/transaction/\(txid)"
+        case .mantle:
+            return "https://mantlescan.xyz/tx/\(txid)"
         }
     }
     
@@ -735,7 +739,8 @@ class Endpoint {
             return "https://tronscan.org/#/address/\(address)"
         case .cardano:
             return "https://cardanoscan.io/address/\(address)"
-            
+        case .mantle:
+            return "https://mantlescan.xyz/address/\(address)"
         }
     }
     
@@ -809,6 +814,8 @@ class Endpoint {
             return "https://tronscan.org/#/address/\(address)"
         case .cardano:
             return "https://cardanoscan.io/address/\(address)"
+        case .mantle:
+            return "https://mantlescan.xyz/address/\(address)"
         case .none:
             return nil
         }

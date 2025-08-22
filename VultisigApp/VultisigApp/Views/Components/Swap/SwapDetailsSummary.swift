@@ -106,21 +106,6 @@ struct SwapDetailsSummary: View {
         )
     }
     
-    func getProvider() -> String? {
-        switch swapViewModel.keysignPayload?.swapPayload {
-        case .oneInch:
-            return "1Inch"
-        case .kyberSwap:
-            return "KyberSwap"
-        case .thorchain:
-            return "THORChain"
-        case .mayachain:
-            return "Maya Protocol"
-        case .none:
-            return nil
-        }
-    }
-    
     private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))

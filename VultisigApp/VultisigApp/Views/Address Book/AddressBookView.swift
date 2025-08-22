@@ -22,24 +22,85 @@ struct AddressBookView: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        content
-    }
-    
-    var view: some View {
-        ZStack {
-            if savedAddresses.count == 0 {
-                emptyView
-            } else {
-                list
+        Screen(title: "addressBook".localized) {
+            VStack {
+                Group {
+                    if savedAddresses.isEmpty {
+                       emptyView
+                            .background(BlurredBackground())
+                    } else {
+                        list
+                        addAddressButton
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .screenToolbar {
+            if savedAddresses.count != 0 {
+                navigationButton
+            }
+        }
+        .onDisappear {
+            withAnimation {
+                isEditing = false
             }
         }
     }
     
     var emptyView: some View {
-        VStack {
-            Spacer()
-            ErrorMessage(text: "noSavedAddresses")
-            Spacer()
+        VStack(spacing: 12) {
+            Text("addressBookEmptyTitle".localized)
+                .font(Theme.fonts.bodyMMedium)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
+            Text("addressBookEmptySubtitle".localized)
+                .font(Theme.fonts.bodySMedium)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .multilineTextAlignment(.center)
+            
+            addAddressButton
+                .frame(maxWidth: 200)
+                .padding(.top, 18)
+        }
+        .frame(maxWidth: 265)
+    }
+    
+    var list: some View {
+        let filteredAddress = savedAddresses.filter {
+            coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
+        }
+        
+        return ZStack {
+            if filteredAddress.count > 0 {
+                List {
+                    ForEach(filteredAddress.sorted(by: {
+                        $0.order < $1.order
+                    }), id: \.id) { address in
+                        AddressBookCell(
+                            address: address,
+                            shouldReturnAddress: shouldReturnAddress,
+                            isEditing: isEditing,
+                            returnAddress: $returnAddress
+                        )
+                        .listRowBackground(Color.clear)
+                    }
+                    .onMove(perform: isEditing ? move: nil)
+                }
+                .listStyle(.plain)
+                .buttonStyle(.borderless)
+                .colorScheme(.dark)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+            } else {
+                emptyViewChain
+            }
+        }
+    }
+    
+    var addAddressButton: some View {
+        PrimaryNavigationButton(title: "addAddress") {
+            AddAddressBookScreen(count: savedAddresses.count)
         }
     }
     
@@ -60,19 +121,16 @@ struct AddressBookView: View {
     }
     
     var navigationEditButton: some View {
-        ZStack {
-            if isEditing {
-                doneButton
-            } else {
-                NavigationEditButton()
+        VStack {
+            Group {
+                if isEditing {
+                    NavigationBarButtonView(title: "done".localized)
+                } else {
+                    NavigationEditButton()
+                }
             }
         }
-    }
-    
-    var doneButton: some View {
-        Text(NSLocalizedString("done", comment: ""))
-            .font(Theme.fonts.bodyLMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+        .frame(width: 60, height: 32, alignment: .trailing)
     }
     
     private func toggleEdit() {

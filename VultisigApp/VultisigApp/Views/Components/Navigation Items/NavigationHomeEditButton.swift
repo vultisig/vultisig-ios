@@ -33,23 +33,13 @@ struct NavigationHomeEditButton: View {
     }
     
     var folderHomeEditButton: some View {
-        ZStack {
-            if showVaultsList {
-                foldersListEditButton
-            } else {
-                vaultDetailQRCodeButton
-            }
-        }
+        foldersListEditButton
+            .showIf(showVaultsList)
     }
     
     var vaultHomeEditButton: some View {
-        ZStack {
-            if showVaultsList {
-                vaultsListEditButton
-            } else {
-                vaultDetailQRCodeButton
-            }
-        }
+        vaultsListEditButton
+            .showIf(showVaultsList)
     }
     
     var vaultsListEditButton: some View {
@@ -76,16 +66,6 @@ struct NavigationHomeEditButton: View {
         }
     }
     
-    var vaultDetailQRCodeButton: some View {
-        NavigationLink {
-            if let vault {
-                VaultDetailQRCodeView(vault: vault)
-            }
-        } label: {
-            NavigationQRCodeButton()
-        }
-    }
-    
     var editButton: some View {
         NavigationEditButton()
     }
@@ -104,9 +84,9 @@ struct NavigationHomeEditButton: View {
         Button {
             deleteFolder()
         } label: {
-            Image(systemName: "trash")
+            Image(.trash)
                 .font(Theme.fonts.bodyLMedium)
-                .foregroundColor(Theme.colors.bgAlert)
+                .foregroundColor(Theme.colors.textPrimary)
         }
     }
     

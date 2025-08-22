@@ -42,9 +42,8 @@ struct SendDetailsScreen: View {
     @State var navigateToVerify: Bool = false
     
     var body: some View {
-        Screen(title: "send".localized) {
-            container
-        }
+        
+        container
         .disabled(sendCryptoViewModel.showLoader)
         .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
         .onLoad {

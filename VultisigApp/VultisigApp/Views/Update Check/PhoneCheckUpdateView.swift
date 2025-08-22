@@ -11,18 +11,12 @@ struct PhoneCheckUpdateView: View {
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
+        Screen(title: "checkUpdate".localized) {
+            view.background(BlurredBackground())
         }
-        .navigationTitle(NSLocalizedString("checkUpdate", comment: ""))
         .onAppear {
             setData()
         }
-    }
-    
-    var main: some View {
-        view
     }
     
     var view: some View {

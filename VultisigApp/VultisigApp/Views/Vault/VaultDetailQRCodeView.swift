@@ -17,19 +17,23 @@ struct VaultDetailQRCodeView: View {
     @Environment(\.displayScale) var displayScale
     
     var body: some View {
-        content
-    }
-    
-    var view: some View {
-        VStack {
-            Spacer()
-            qrCode
-            Spacer()
-            buttons
-        }
-        .padding(15)
-        .onAppear {
-            setData()
+        Screen(title: "shareVaultQR".localized) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 15) {
+                    Spacer()
+                    qrCode
+                    BannerView(
+                        description: "shareVaultQRInformation".localized,
+                        type: .info,
+                        leadingIcon: "circle-info"
+                    )
+                    Spacer()
+                    buttons
+                }
+                .onLoad {
+                    setData()
+                }
+            }
         }
     }
     

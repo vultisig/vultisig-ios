@@ -9,31 +9,7 @@
 import SwiftUI
 
 extension RegisterVaultView {
-    var view: some View {
-        VStack {
-            image
-            content
-        }
-        .navigationTitle(NSLocalizedString("registerVault", comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 36) {
-            text1
-            text2
-            text3
-            text4
-            Spacer()
-            deleteButton
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .font(Theme.fonts.bodyLMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .padding(16)
-    }
-    
-    var deleteButton: some View {
+    var saveVaultButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
                 ShareLink(

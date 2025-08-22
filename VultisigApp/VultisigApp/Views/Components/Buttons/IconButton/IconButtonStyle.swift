@@ -55,20 +55,26 @@ private extension IconButtonStyle {
     }
     
     func backgroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+        guard isEnabled else {
+            return Theme.colors.bgButtonDisabled
+        }
+        
         switch type {
+        case .alert:
+            if isPressed {
+                return Theme.colors.alertError.opacity(0.7)
+            } else {
+                return Theme.colors.alertError
+            }
         case .primary:
-            if !isEnabled {
-                return Theme.colors.bgButtonDisabled
-            } else if isPressed {
+            if isPressed {
                 return Theme.colors.bgButtonPrimaryPressed
             } else {
                 return Theme.colors.bgButtonPrimary
             }
             
         case .secondary:
-            if !isEnabled {
-                return Theme.colors.bgButtonDisabled
-            } else if isPressed {
+            if isPressed {
                 return Theme.colors.bgButtonSecondaryPressed
             } else {
                 return Theme.colors.bgButtonDisabled
@@ -78,7 +84,7 @@ private extension IconButtonStyle {
     
     func foregroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary:
+        case .primary, .alert:
             if !isEnabled {
                 return Theme.colors.textButtonDisabled
             } else {
@@ -95,7 +101,7 @@ private extension IconButtonStyle {
     
     func borderColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
         switch type {
-        case .primary:
+        case .primary, .alert:
             return .clear
         case .secondary:
             if !isEnabled {
@@ -108,7 +114,7 @@ private extension IconButtonStyle {
     
     func borderWidth(for type: ButtonType) -> CGFloat {
         switch type {
-        case .primary: return 0
+        case .primary, .alert: return 0
         case .secondary: return 1
         }
     }

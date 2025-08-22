@@ -286,44 +286,23 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
                 
-            case .oneinch(let quote, _), .lifi(let quote, _):
+            case .oneinch(let evmQuote, _), .lifi(let evmQuote, _), .kyberswap(let evmQuote, _):
                 let keysignFactory = KeysignPayloadFactory()
-                let payload = OneInchSwapPayload(
+                let payload = GenericSwapPayload(
                     fromCoin: tx.fromCoin,
                     toCoin: tx.toCoin,
                     fromAmount: tx.amountInCoinDecimal,
                     toAmountDecimal: tx.toAmountDecimal,
-                    quote: quote
+                    quote: evmQuote,
+                    provider: quote.swapProviderId ?? .oneInch
                 )
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
-                    toAddress: quote.tx.to,
+                    toAddress: evmQuote.tx.to,
                     amount: tx.amountInCoinDecimal,
                     memo: nil,
                     chainSpecific: chainSpecific,
-                    swapPayload: .oneInch(payload),
-                    approvePayload: buildApprovePayload(tx: tx),
-                    vault: vault
-                )
-                
-                return true
-                
-            case .kyberswap(let quote, _):
-                let keysignFactory = KeysignPayloadFactory()
-                let payload = KyberSwapPayload(
-                    fromCoin: tx.fromCoin,
-                    toCoin: tx.toCoin,
-                    fromAmount: tx.amountInCoinDecimal,
-                    toAmountDecimal: tx.toAmountDecimal,
-                    quote: quote
-                )
-                keysignPayload = try await keysignFactory.buildTransfer(
-                    coin: tx.fromCoin,
-                    toAddress: quote.tx.to,
-                    amount: tx.amountInCoinDecimal,
-                    memo: nil,
-                    chainSpecific: chainSpecific,
-                    swapPayload: .kyberSwap(payload),
+                    swapPayload: .generic(payload),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
@@ -588,7 +567,10 @@ extension SwapCryptoViewModel {
         if let firstVaultCoin {
             return firstVaultCoin
         } else {
-            let coinMeta = TokensStore.TokenSelectionAssets.first(where: { $0.chain == chain })
+            let coinMeta = TokensStore.TokenSelectionAssets
+                .filter { $0.chain == chain }
+                .sorted { $0.isNativeToken && !$1.isNativeToken }
+                .first
             guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta, vault: vault) else {
                 return nil
             }

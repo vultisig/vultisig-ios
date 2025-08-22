@@ -9,6 +9,10 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
+enum KeysignPayloadFactoryError: Error {
+    case invalidSwapProvider
+}
+
 extension KeysignMessage: ProtoMappable {
     
     init(proto: VSKeysignMessage) throws {
@@ -155,14 +159,14 @@ extension SwapPayload {
                 isAffiliate: value.isAffiliate
             ))
         case .oneinchSwapPayload(let value):
-            self = .oneInch(OneInchSwapPayload(
+            self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 fromAmount: BigInt(stringLiteral: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
-                quote: OneInchQuote(
+                quote: EVMQuote(
                     dstAmount: value.quote.dstAmount,
-                    tx: OneInchQuote.Transaction(
+                    tx: EVMQuote.Transaction(
                         from: value.quote.tx.from,
                         to: value.quote.tx.to,
                         data: value.quote.tx.data,
@@ -170,31 +174,27 @@ extension SwapPayload {
                         gasPrice: value.quote.tx.gasPrice,
                         gas: value.quote.tx.gas
                     )
-                )
+                ),
+                provider: SwapProviderId(rawValue: value.provider) ?? .oneInch
             ))
         case .kyberswapSwapPayload(let value):
-            self = .kyberSwap(KyberSwapPayload(
+            self = .generic(GenericSwapPayload(
                 fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 fromAmount: BigInt(stringLiteral: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
-                quote: KyberSwapQuote(
-                    code: 0,
-                    message: "Success",
-                    data: KyberSwapQuote.Data(
-                        amountIn: value.fromAmount,
-                        amountInUsd: "0",
-                        amountOut: value.quote.dstAmount,
-                        amountOutUsd: "0",
-                        gas: String(value.quote.tx.gas),
-                        gasUsd: "0",
+                quote: EVMQuote(
+                    dstAmount: value.quote.dstAmount,
+                    tx: EVMQuote.Transaction(
+                        from: value.quote.tx.from,
+                        to: value.quote.tx.to,
                         data: value.quote.tx.data,
-                        routerAddress: value.quote.tx.to,
-                        transactionValue: value.quote.tx.value,
-                        gasPrice: value.quote.tx.gasPrice
-                    ),
-                    requestId: ""
-                )
+                        value: value.quote.tx.value,
+                        gasPrice: value.quote.tx.gasPrice,
+                        gas: value.quote.tx.gas
+                    )
+                ),
+                provider: .kyberSwap
             ))
         }
     }
@@ -231,7 +231,7 @@ extension SwapPayload {
                 $0.expirationTime = payload.expirationTime
                 $0.isAffiliate = payload.isAffiliate
             })
-        case .oneInch(let payload):
+        case .generic(let payload):
             return .oneinchSwapPayload(.with {
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
@@ -248,24 +248,7 @@ extension SwapPayload {
                         $0.gas = payload.quote.tx.gas
                     }
                 }
-            })
-        case .kyberSwap(let payload):
-            return .kyberswapSwapPayload(.with {
-                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
-                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
-                $0.fromAmount = String(payload.fromAmount)
-                $0.toAmountDecimal = payload.toAmountDecimal.description
-                $0.quote = .with {
-                    $0.dstAmount = payload.quote.dstAmount
-                    $0.tx = .with {
-                        $0.from = payload.quote.tx.from
-                        $0.to = payload.quote.tx.to
-                        $0.data = payload.quote.tx.data
-                        $0.value = payload.quote.tx.value
-                        $0.gasPrice = payload.quote.tx.gasPrice
-                        $0.gas = payload.quote.tx.gas
-                    }
-                }
+                $0.provider = payload.provider.rawValue
             })
         }
     }

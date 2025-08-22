@@ -31,7 +31,7 @@ struct KeysignMessageFactory {
                 
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
-            case .oneInch(let swapPayload):
+            case .generic(let swapPayload):
                 switch payload.coin.chain {
                 case .solana:
                     let swaps = SolanaSwaps(vaultHexPubKey: vault.pubKeyEdDSA)
@@ -40,9 +40,6 @@ struct KeysignMessageFactory {
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
-            case .kyberSwap(let swapPayload):
-                let swaps = KyberSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
@@ -58,7 +55,7 @@ struct KeysignMessageFactory {
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .cardano:
             return try CardanoHelper.getPreSignedImageHash(keysignPayload: payload)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .polygonV2, .avalanche, .bscChain, .blast, .cronosChain, .zksync, .ethereumSepolia, .mantle:
             if payload.coin.isNativeToken {
                 return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {

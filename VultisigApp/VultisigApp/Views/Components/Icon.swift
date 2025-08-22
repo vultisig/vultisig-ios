@@ -22,7 +22,7 @@ struct Icon: View {
         Image(name)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: size)
+            .frame(width: size, height: size)
             .foregroundColor(color)
     }
 }

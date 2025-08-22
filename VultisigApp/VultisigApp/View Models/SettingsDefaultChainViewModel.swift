@@ -16,7 +16,7 @@ class SettingsDefaultChainViewModel: ObservableObject {
     @Published var defaultChains = [CoinMeta]()
     @AppStorage("savedDefaultChains") var savedDefaultChains: String = ""
 
-    func setData(_ assets: [String: [CoinMeta]]) {
+    func setData(_ assets: [Chain: [CoinMeta]]) {
         baseChains = assets.values.compactMap({ value in
             value.first
         })
