@@ -15,38 +15,37 @@ struct ErrorView: View {
     var action: () -> Void
     
     var body: some View {
-        Screen {
-            VStack {
-                Spacer()
-                VStack(spacing: 12) {
-                    ZStack {
-                        Image("CirclesBackground")
-                        Image(systemName: icon)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .foregroundStyle(color)
-                    }
-                    .padding(.bottom, 12)
-                    Text(title)
+        VStack {
+            Spacer()
+            VStack(spacing: 12) {
+                ZStack {
+                    Image("CirclesBackground")
+                    Image(systemName: icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
                         .foregroundStyle(color)
-                        .font(Theme.fonts.title2)
-                    Text(description)
-                        .foregroundStyle(Theme.colors.textExtraLight)
-                        .font(Theme.fonts.bodySMedium)
-                        .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? 40 : 0, alignment: .top)
-                    PrimaryButton(
-                        title: buttonTitle,
-                        type: .secondary,
-                        action: action
-                    )
                 }
-                Spacer()
-                Text(Bundle.main.appVersionString)
+                .padding(.bottom, 12)
+                Text(title)
+                    .foregroundStyle(color)
+                    .font(Theme.fonts.title2)
+                Text(description)
                     .foregroundStyle(Theme.colors.textExtraLight)
-                    .font(Theme.fonts.caption12)
+                    .font(Theme.fonts.bodySMedium)
+                    .frame(maxWidth: .infinity, maxHeight: description.isNotEmpty ? 40 : 0, alignment: .top)
+                PrimaryButton(
+                    title: buttonTitle,
+                    type: .secondary,
+                    action: action
+                )
             }
+            Spacer()
+            Text(Bundle.main.appVersionString)
+                .foregroundStyle(Theme.colors.textExtraLight)
+                .font(Theme.fonts.caption12)
         }
+        .padding(.vertical, 12)
     }
 }
 private extension ErrorView {

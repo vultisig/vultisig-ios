@@ -98,7 +98,7 @@ class TokensStore {
             ticker: "PYTH",
             logo: "pyth",
             decimals: 6,
-            priceProviderId: "PYTH",
+            priceProviderId: "pyth-network",
             contractAddress: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724",
             isNativeToken: false
         ),
@@ -269,7 +269,7 @@ class TokensStore {
             ticker: "AERO",
             logo: "aero",
             decimals: 18,
-            priceProviderId: "AERO",
+            priceProviderId: "aerodrome-finance",
             contractAddress: "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
             isNativeToken: false
         ),
@@ -296,7 +296,7 @@ class TokensStore {
             ticker: "OM",
             logo: "om",
             decimals: 18,
-            priceProviderId: "om",
+            priceProviderId: "mantra-dao",
             contractAddress: "0x3992B27dA26848C2b19CeA6Fd25ad5568B68AB98",
             isNativeToken: false
         ),
@@ -304,8 +304,8 @@ class TokensStore {
             chain: .base,
             ticker: "PYTH",
             logo: "pyth",
-            decimals: 18,
-            priceProviderId: "pyth",
+            decimals: 6,
+            priceProviderId: "pyth-network",
             contractAddress: "0x4c5d8A75F3762c1561D96f177694f67378705E98",
             isNativeToken: false
         ),
@@ -1178,7 +1178,7 @@ class TokensStore {
             ticker: "PYTH",
             logo: "pyth",
             decimals: 6,
-            priceProviderId: "",
+            priceProviderId: "pyth-network",
             contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f",
             isNativeToken: false
         ),

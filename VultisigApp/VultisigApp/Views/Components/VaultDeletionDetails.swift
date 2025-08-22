@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct VaultDeletionDetails: View {
-    
-    
     let vault: Vault
     let devicesInfo: [DeviceInfo]
     
@@ -21,84 +19,97 @@ struct VaultDeletionDetails: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            title
-            nameCell
-            valueCell
-            typeCell
-            deviceCell
-            ECDSAKeyCell
-            EdDSAKeyCell
+        VStack(spacing: 12) {
+            nameView
+            valueView
+            HStack(spacing: 12) {
+                typeView
+                deviceView
+            }
+            HStack(spacing: 12) {
+                ECDSAKeyView
+                EdDSAKeyView
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(10)
         .onAppear() {
             setData()
         }
     }
     
-    var title: some View {
-        Group {
-            Text(NSLocalizedString("details", comment: "")) +
-            Text(":")
-        }
-        .multilineTextAlignment(.leading)
-        .font(Theme.fonts.bodyLMedium)
-        .foregroundColor(Theme.colors.textPrimary)
-        .padding(.top, 8)
-    }
-    
-    var nameCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("vaultName")
-            getDescriptionText(vault.name)
+    func cellContainer<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
+        BoxView {
+            content()
+                .font(Theme.fonts.footnote)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-    
-    var valueCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("vaultValue")
-            getDescriptionText(totalValue)
+
+    var nameView: some View {
+        cellContainer {
+            HStack {
+                title(for: "vaultName".localized)
+                Spacer()
+                Text(vault.name)
+            }
         }
     }
     
-    var typeCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("vaultType")
-            getDescriptionText(titlePartText())
+    var valueView: some View {
+        cellContainer {
+            HStack {
+                title(for: "vaultValue".localized)
+                Spacer()
+                Text(totalValue)
+            }
         }
     }
     
-    var deviceCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("deviceID")
-            getDescriptionText(vault.localPartyID)
+    var typeView: some View {
+        cellContainer {
+            VStack(alignment: .leading, spacing: 0) {
+                title(for: "vaultType".localized)
+                    .foregroundStyle(Theme.colors.textLight)
+                Text(titlePartText())
+            }
         }
     }
     
-    var ECDSAKeyCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("ECDSAKey")
-            getDescriptionText(vault.pubKeyECDSA, shouldShrink: true)
+    var deviceView: some View {
+        cellContainer {
+            VStack(alignment: .leading, spacing: 0) {
+                title(for: "deviceID".localized)
+                    .foregroundStyle(Theme.colors.textLight)
+                Text(vault.localPartyID)
+            }
         }
     }
     
-    var EdDSAKeyCell: some View {
-        HStack(spacing: 0) {
-            getTitleText("EdDSAKey")
-            getDescriptionText(vault.pubKeyEdDSA, shouldShrink: true)
+    var ECDSAKeyView: some View {
+        cellContainer {
+            VStack(alignment: .leading, spacing: 0) {
+                title(for: "ECDSAKey".localized)
+                    .foregroundStyle(Theme.colors.textLight)
+                Text(vault.pubKeyECDSA)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
     
-    private func getTitleText(_ title: String) -> some View {
-        Group {
-            Text(NSLocalizedString(title, comment: "")) +
-            Text(": ")
+    var EdDSAKeyView: some View {
+        cellContainer {
+            VStack(alignment: .leading, spacing: 0) {
+                title(for: "EdDSAKey".localized)
+                    .foregroundStyle(Theme.colors.textLight)
+                Text(vault.pubKeyEdDSA)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .font(Theme.fonts.bodySRegular)
-        .foregroundColor(Theme.colors.textPrimary)
+    }
+    
+    func title(for text: String) -> some View {
+        Text("\(text):")
     }
     
     private func titlePartText() -> String {

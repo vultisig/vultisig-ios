@@ -70,7 +70,7 @@ struct HomeView: View {
     
     var menuButton: some View {
         NavigationLink {
-            SettingsView()
+            SettingsMainScreen()
         } label: {
             NavigationMenuButton()
         }

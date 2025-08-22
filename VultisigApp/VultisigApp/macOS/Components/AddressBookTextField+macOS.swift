@@ -10,49 +10,28 @@ import SwiftUI
 
 extension AddressBookTextField {
     var content: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            titleContent
-            textField
-                .overlay {
-                    ZStack {
-                        if isUploading {
-                            overlay
-                        }
-                    }
+        CommonTextField(
+            text: $text,
+            label: title.localized,
+            placeholder: "typeHere".localized
+        ) {
+            if showActions {
+                HStack(spacing: 8) {
+                    fileButton
+                    pasteButton
                 }
+            }
+        }
+        .overlay {
+            ZStack {
+                if isUploading {
+                    overlay
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
             OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
-        }
-    }
-    
-    var textField: some View {
-        HStack {
-            field
-            
-            if showActions {
-                pasteButton
-                fileButton
-            }
-        }
-        .font(Theme.fonts.caption12)
-        .foregroundColor(Theme.colors.textPrimary)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(10)
-        .colorScheme(.dark)
-    }
-    
-    var field: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $text)
-                .foregroundColor(Theme.colors.textPrimary)
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .borderlessTextFieldStyle()
         }
     }
     

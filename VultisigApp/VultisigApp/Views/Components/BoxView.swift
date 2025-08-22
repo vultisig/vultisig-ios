@@ -17,7 +17,8 @@ struct BoxView<Content: View>: View {
     var body: some View {
         content()
             .font(Theme.fonts.bodyMMedium)
-            .padding(14)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
             .background(Theme.colors.bgSecondary)
             .cornerRadius(12)
             .overlay(

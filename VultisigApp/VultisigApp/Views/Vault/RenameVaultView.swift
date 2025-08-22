@@ -20,41 +20,33 @@ struct RenameVaultView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        content
-            .onAppear {
-                setData()
+        Screen(title: "renameVaultTitle".localized) {
+            VStack {
+                CommonTextField(
+                    text: $name,
+                    placeholder: "typeHere".localized
+                )
+                .maxLength($name)
+                Spacer()
+                button
             }
-    }
-    
-    var fields: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("vaultName", comment: ""))
-                .font(Theme.fonts.bodySMedium)
-                .foregroundColor(Theme.colors.textPrimary)
-            
-            textfield
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 30)
-    }
-    
-    var textfield: some View {
-        TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $name)
-            .font(Theme.fonts.bodyMRegular)
-            .foregroundColor(Theme.colors.textPrimary)
-            .submitLabel(.done)
-            .padding(12)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(12)
-            .borderlessTextFieldStyle()
-            .maxLength($name)
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("ok"))
+            )
+        }
+        .onLoad {
+            setData()
+        }
     }
     
     var button: some View {
         PrimaryButton(title: "save") {
             rename()
         }
-        .padding(40)
     }
     
     private func setData() {

@@ -46,7 +46,7 @@ struct HomeHeader: View {
     
     var menuButton: some View {
         NavigationLink {
-            SettingsView()
+            SettingsMainScreen()
         } label: {
             NavigationMenuButton()
         }

@@ -79,24 +79,7 @@ struct SettingsCustomMessageView: View {
     }
 
     func textField(title: String, text: Binding<String>) -> some View {
-        VStack {
-            HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(Theme.colors.textLight))
-                    .borderlessTextFieldStyle()
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .tint(Theme.colors.textPrimary)
-                    .font(Theme.fonts.bodyMRegular)
-                    .submitLabel(.done)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(TappableTextFieldStyle())
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
-        }
-        .background(
-            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(Theme.colors.bgSecondary)
-        )
+        CommonTextField(text: text, placeholder: title)
     }
 
     var pair: some View {

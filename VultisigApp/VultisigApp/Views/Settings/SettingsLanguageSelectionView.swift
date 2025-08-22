@@ -13,19 +13,31 @@ struct SettingsLanguageSelectionView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        content
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),
-                    message: Text(NSLocalizedString("restart", comment: "Please restart the app to apply the new language settings.")),
-                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
-                )
+        Screen(title: "language".localized) {
+            ScrollView(showsIndicators: false) {
+                SettingsSectionContainerView {
+                    VStack(spacing: .zero) {
+                        ForEach(SettingsLanguage.allCases, id: \.self) { language in
+                            Button {
+                                handleSelection(language)
+                            } label: {
+                                SettingSelectionCell(
+                                    title: language.rawValue,
+                                    isSelected: language==settingsViewModel.selectedLanguage,
+                                    description: language.description()
+                                )
+                            }
+                        }
+                    }
+                }
             }
-    }
-    
-    var view: some View {
-        ScrollView {
-            cells
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),
+                message: Text(NSLocalizedString("restart", comment: "Please restart the app to apply the new language settings.")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
+            )
         }
     }
     

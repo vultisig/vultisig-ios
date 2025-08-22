@@ -12,8 +12,10 @@ struct TonAddressInformation: Codable {
 }
 
 struct ApiResponse<T: Codable>: Codable {
-    var ok: Bool
-    var result: T?
+    let ok: Bool
+    let result: T?
+    let error: String?
+    let code: Int?
 }
 
 struct ResultData: Codable {
@@ -72,6 +74,10 @@ struct ResultData: Codable {
     let extra: String
 }
 
+struct TonBroadcastSuccessResponse: Codable {
+    let hash: String
+}
+
 class TonService {
     
     static let shared = TonService()
@@ -80,13 +86,34 @@ class TonService {
                 
         let body: [String: Any] = ["boc": obj]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
-        let data = try await Utils.asyncPostRequest(urlString: Endpoint.broadcastTonTransaction(), headers: [:], body: dataPayload)
-        
-        if let hash = Utils.extractResultFromJson(fromData: data, path: "result.hash") as? String {
-            return hash
+        guard let url = URL(string: Endpoint.broadcastTonTransaction()) else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = dataPayload
+        let (data,response) = try await URLSession.shared.data(for: request)
+        print("Ton broadcast response: \(String(data: data, encoding: .utf8) ?? "")")
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
         }
         
-        return ""
+        switch httpResponse.statusCode {
+        case 200..<300:
+            let result = try JSONDecoder().decode(ApiResponse<TonBroadcastSuccessResponse>.self, from: data)
+            return result.result?.hash ?? ""
+        case 500:
+            let result = try JSONDecoder().decode(ApiResponse<String>.self, from: data)
+            let duplicate = result.error?.contains("duplicate message") ?? false
+            if duplicate {
+                return ""
+            } else {
+                throw NSError(domain: "Server Error", code: 500, userInfo: [NSLocalizedDescriptionKey: result.error ?? "Unknown server error"])
+            }
+        default:
+            throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
+        }
     }
 
     func getBalance(_ coin: Coin) async throws -> String {

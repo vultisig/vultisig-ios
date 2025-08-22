@@ -549,7 +549,11 @@ class KeysignViewModel: ObservableObject {
                     
                 case .ton:
                     let base64Hash = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
-                    self.txid = Data(base64Encoded: base64Hash)?.hexString ?? ""
+                    if base64Hash.isEmpty {
+                        self.txid = tx.transactionHash
+                    } else {
+                        self.txid = Data(base64Encoded: base64Hash)?.hexString ?? tx.transactionHash
+                    }
                 case .ripple:
                     self.txid = try await RippleService.shared.broadcastTransaction(tx.rawTransaction)
                     
@@ -600,7 +604,7 @@ class KeysignViewModel: ObservableObject {
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
             print("code:\(code), message:\(message)")
-            if message == "already known" 
+            if message == "already known"
                 || message == "replacement transaction underpriced"
                 || message.contains("This transaction has already been processed")
             {
