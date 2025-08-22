@@ -110,4 +110,10 @@ class FunctionCallViewModel: ObservableObject, TransferViewModel {
         guard let rujiToken else { return }
         tx.coin = rujiToken
     }
+    
+    func setRuneToken(to tx: SendTransaction, vault: Vault) {
+        let runeToken = vault.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+        guard let runeToken else { return }
+        tx.coin = runeToken
+    }
 }

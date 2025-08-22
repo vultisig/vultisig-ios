@@ -94,6 +94,10 @@ struct FunctionCallDetailsView: View {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
                 switch selectedFunctionMemoType {
                 case .bond:
+                    // Ensure RUNE token is selected for BOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
@@ -102,6 +106,10 @@ struct FunctionCallDetailsView: View {
                     }
                     fnCallInstance = .bond(bondInstance)
                 case .unbond:
+                    // Ensure RUNE token is selected for UNBOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     let unbondInstance = FunctionCallUnbond()
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
@@ -143,6 +151,10 @@ struct FunctionCallDetailsView: View {
                     }
                     
                 case .leave:
+                    // Ensure RUNE token is selected for LEAVE operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     let leaveInstance = FunctionCallLeave()
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
@@ -187,6 +199,10 @@ struct FunctionCallDetailsView: View {
                 case .cosmosIBC:
                     fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .merge:
+                    // Ensure RUNE token is selected for MERGE operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .merge(FunctionCallCosmosMerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .unmerge:
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
@@ -201,8 +217,16 @@ struct FunctionCallDetailsView: View {
                 case .redeemTCY:
                     fnCallInstance = .redeemTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemTCY))
                 case .addThorLP:
+                    // Ensure RUNE token is selected for ADD THORCHAIN LP operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:
+                    // Ensure RUNE token is selected for REMOVE THORCHAIN LP operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .stakeRuji:
                     functionCallViewModel.setRujiToken(to: tx, vault: vault)
