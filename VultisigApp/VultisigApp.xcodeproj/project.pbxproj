@@ -126,6 +126,7 @@
 		13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */; };
 		13D7643A2E4127B100F048DE /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D764392E4127AF00F048DE /* Array.swift */; };
 		13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D7643B2E41309D00F048DE /* TokenSearchService.swift */; };
+		13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */; };
 		13DD3B172E3CFE5900D46FA0 /* OffsetObservingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */; };
 		13DD3B1A2E3CFE7D00D46FA0 /* FlatPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */; };
 		13DD547C2E561598007335DA /* SettingsOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD547B2E561598007335DA /* SettingsOption.swift */; };
@@ -715,8 +716,6 @@
 		A6E0C9232DE968AB00A01543 /* ReferralTransactionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */; };
 		A6E0C9252DEA3C4900A01543 /* ReferralTransactionFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9242DEA3C4900A01543 /* ReferralTransactionFlowScreen.swift */; };
 		A6E0C92A2DEF717500A01543 /* ReferredViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */; };
-		A6E0C9342DF00CC600A01543 /* ReferralLaunchView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */; };
-		A6E0C9362DF00CD100A01543 /* ReferralLaunchView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */; };
 		A6E0C9382DF0A1B800A01543 /* ReferralTextFieldAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */; };
 		A6E0C93A2DF0AC8700A01543 /* ReferralTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */; };
 		A6E0C93C2DF0AC9B00A01543 /* ReferralTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */; };
@@ -1140,6 +1139,7 @@
 		13D764372E4102F500F048DE /* SwapCoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D764392E4127AF00F048DE /* Array.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Array.swift; sourceTree = "<group>"; };
 		13D7643B2E41309D00F048DE /* TokenSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSearchService.swift; sourceTree = "<group>"; };
+		13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedText.swift; sourceTree = "<group>"; };
 		13DD3B162E3CFE5800D46FA0 /* OffsetObservingScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffsetObservingScrollView.swift; sourceTree = "<group>"; };
 		13DD3B192E3CFE6E00D46FA0 /* FlatPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlatPicker.swift; sourceTree = "<group>"; };
 		13DD547B2E561598007335DA /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
@@ -1729,8 +1729,6 @@
 		A6E0C9222DE968AB00A01543 /* ReferralTransactionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionDetailsView.swift; sourceTree = "<group>"; };
 		A6E0C9242DEA3C4900A01543 /* ReferralTransactionFlowScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTransactionFlowScreen.swift; sourceTree = "<group>"; };
 		A6E0C9292DEF717500A01543 /* ReferredViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredViewModel.swift; sourceTree = "<group>"; };
-		A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralLaunchView+iOS.swift"; sourceTree = "<group>"; };
-		A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralLaunchView+macOS.swift"; sourceTree = "<group>"; };
 		A6E0C9372DF0A1B800A01543 /* ReferralTextFieldAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralTextFieldAction.swift; sourceTree = "<group>"; };
 		A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+iOS.swift"; sourceTree = "<group>"; };
 		A6E0C93B2DF0AC9B00A01543 /* ReferralTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReferralTextField+macOS.swift"; sourceTree = "<group>"; };
@@ -2382,6 +2380,7 @@
 		13A899092E44F540006F75F0 /* Text */ = {
 			isa = PBXGroup;
 			children = (
+				13D93BCE2E58B2ED001E31E8 /* HighlightedText.swift */,
 				13A8990A2E44F544006F75F0 /* RedactedText.swift */,
 			);
 			path = Text;
@@ -3599,7 +3598,6 @@
 				A62268FD2DC0005800F378E0 /* SwapChainPickerView+iOS.swift */,
 				A62269032DC000F200F378E0 /* SwapCoinPickerView+iOS.swift */,
 				A6E0C9392DF0AC8700A01543 /* ReferralTextField+iOS.swift */,
-				A6E0C9332DF00CC600A01543 /* ReferralLaunchView+iOS.swift */,
 				A6E0C94C2DF49E1900A01543 /* CreateReferralDetailsView+iOS.swift */,
 				A6505B002CA67B560002FBF4 /* Keygen */,
 				A6505AFF2CA67B4F0002FBF4 /* Keysign */,
@@ -3667,7 +3665,6 @@
 				A6BB9BD42DA9EAA20085E117 /* UpgradeYourVaultView+macOS.swift */,
 				A62268FF2DC0007300F378E0 /* SwapChainPickerView+macOS.swift */,
 				A62269012DC000E400F378E0 /* SwapCoinPickerView+macOS.swift */,
-				A6E0C9352DF00CD100A01543 /* ReferralLaunchView+macOS.swift */,
 				A6E0C94E2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift */,
 			);
 			path = View;
@@ -5114,7 +5111,6 @@
 				A6F7B6E52D4B046800AC8104 /* KeygenProgressContainer.swift in Sources */,
 				A6BB9BC72DA9D5B90085E117 /* AllDevicesUpgradeView.swift in Sources */,
 				1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */,
-				A6E0C9362DF00CD100A01543 /* ReferralLaunchView+macOS.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,
 				A622C8322C9BB26F00908332 /* VultisigApp+iOS.swift in Sources */,
 				A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */,
@@ -5338,6 +5334,7 @@
 				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
 				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
+				13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
 				A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
@@ -5510,7 +5507,6 @@
 				B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */,
-				A6E0C9342DF00CC600A01543 /* ReferralLaunchView+iOS.swift in Sources */,
 				1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,
 				A5340A692CECF093002ADD35 /* MonthlyBackupView+iOS.swift in Sources */,

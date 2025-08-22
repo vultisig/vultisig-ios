@@ -32,28 +32,11 @@ struct ReferralTextField: View {
     }
     
     var textField: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .submitLabel(.done)
-                .colorScheme(.dark)
-                .disabled(isDisabled)
-            
-            actionButton
+        CommonTextField(text: $text, placeholder: placeholderText) {
+            HStack {
+                actionButton
+            }
         }
-        .frame(height: 56)
-        .font(Theme.fonts.bodyMMedium)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(getOutlineColor(), lineWidth: 1)
-        )
-        .autocorrectionDisabled()
-        .borderlessTextFieldStyle()
-        .padding(1)
     }
     
     var actionButton: some View {

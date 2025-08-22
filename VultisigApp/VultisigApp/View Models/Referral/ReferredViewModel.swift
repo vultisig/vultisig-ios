@@ -28,13 +28,20 @@ class ReferredViewModel: ObservableObject {
     
     private let thorchainReferralService = THORChainAPIService()
     
+    init() {
+        savedGeneratedReferralCode = ""
+        savedReferredCode = ""
+    }
+    
     var title: String {
-        savedReferredCode.isEmpty ? "addReferredCode" : "editReferredCode"
+        hasReferredCode ? "editReferredCode" : "addReferredCode"
     }
     
     var referredTitleText: String {
-        savedReferredCode.isEmpty ? "addYourFriendsCode" : "changeFriendsReferralCode"
+        hasReferredCode ? "changeFriendsReferralCode" : "addYourFriendsCode"
     }
+    
+    var hasReferredCode: Bool { !savedReferredCode.isEmpty }
     
     func closeBannerSheet() {
         showReferralBannerSheet = false

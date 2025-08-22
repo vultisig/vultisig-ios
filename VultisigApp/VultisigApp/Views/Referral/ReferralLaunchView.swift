@@ -12,13 +12,10 @@ struct ReferralLaunchView: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        ZStack {
-            container
-            
-            if referredViewModel.isLoading {
-                loader
-            }
+        Screen(title: "vultisig-referrals".localized) {
+            main
         }
+        .overlay(referredViewModel.isLoading ? Loader() : nil)
         .onAppear {
             referralViewModel.resetAllData()
         }
@@ -28,37 +25,17 @@ struct ReferralLaunchView: View {
     }
     
     var main: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
             Spacer()
             image
             Spacer()
-            referredContent
             
-            if referralViewModel.savedGeneratedReferralCode.isEmpty {
+            VStack(spacing: 16) {
+                referredContent
                 orSeparator
-                createTitle
-                createButton
-            } else {
-                separator
-                referralTitle
-                referralCopyTextField
+                referralContent
             }
         }
-        .padding(24)
-    }
-    
-    var referralCodeTextField: some View {
-        VStack(spacing: 8) {
-            title
-            textField
-        }
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("addYourFriendsCode", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
     }
     
     var errorText: some View {
@@ -67,14 +44,6 @@ struct ReferralLaunchView: View {
             .font(Theme.fonts.bodySMedium)
             .foregroundColor(Theme.colors.alertError)
             .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
-    }
-    
-    var saveButton: some View {
-        PrimaryButton(title: "saveReferredCode", type: .secondary) {
-            Task { @MainActor in
-                await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
-            }
-        }
     }
     
     var orSeparator: some View {
@@ -89,82 +58,39 @@ struct ReferralLaunchView: View {
         }
     }
     
-    var createTitle: some View {
-        Text(NSLocalizedString("createYourCodeAndEarn", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
-    }
-    
     var separator: some View {
         Separator()
             .opacity(0.2)
     }
     
-    var createButton: some View {
-        PrimaryNavigationButton(title: "createReferral") {
-            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
-        }
-    }
-    
-    var textField: some View {
-        ReferralTextField(
-            text: $referredViewModel.referredCode,
-            placeholderText: "enterUpto4Characters",
-            action: .Paste,
-            showError: referredViewModel.showReferredLaunchViewError,
-            errorMessage: referredViewModel.referredLaunchViewErrorMessage
-        )
-    }
-    
     var image: some View {
         Image("ReferralLaunchOverview")
             .resizable()
-            .frame(maxWidth: 1024)
             .aspectRatio(contentMode: .fit)
     }
     
     var referredContent: some View {
         VStack(spacing: 16) {
-            if referredViewModel.savedReferredCode.isEmpty {
-                referralCodeTextField
-                saveButton
-            } else {
-                referralCodeText
+            VStack(spacing: 8) {
+                HighlightedText(
+                    localisedKey: "referredSaveOnSwaps",
+                    highlightedText: "10%"
+                ) {
+                    $0.font = Theme.fonts.bodySMedium
+                    $0.foregroundColor = Theme.colors.textPrimary
+                } highlightedTextStyle: {
+                    $0.foregroundColor = Theme.colors.primaryAccent4
+                }
+
+                referredTextField
+            }
+
+            if referredViewModel.hasReferredCode {
                 editButton
+            } else {
+                saveButton
             }
         }
-    }
-    
-    var referralCodeText: some View {
-        HStack {
-            Text(referredViewModel.savedReferredCode)
-            Spacer()
-        }
-        .foregroundColor(Theme.colors.textPrimary)
-        .colorScheme(.dark)
-        .frame(height: 56)
-        .font(Theme.fonts.bodyMMedium)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
-        .autocorrectionDisabled()
-        .borderlessTextFieldStyle()
-        .padding(1)
-    }
-    
-    var editButton: some View {
-        PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
-            EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        }
-    }
-    
-    var loader: some View {
-        Loader()
     }
     
     var alert: Alert {
@@ -174,23 +100,74 @@ struct ReferralLaunchView: View {
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
-    
-    var referralTitle: some View {
-        Text(NSLocalizedString("yourReferralCode", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.textPrimary)
+}
+
+// MARK: - Referred
+
+private extension ReferralLaunchView {
+    var saveButton: some View {
+        PrimaryButton(title: "saveReferredCode", type: .secondary) {
+            Task { @MainActor in
+                await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+            }
+        }
     }
     
-    var referralCopyTextField: some View {
+    var editButton: some View {
+        PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
+            EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+        }
+    }
+    
+    var referredTextField: some View {
         ReferralTextField(
-            text: $referralViewModel.savedGeneratedReferralCode,
-            placeholderText: "",
-            action: .Copy,
-            showError: false,
-            errorMessage: "",
-            isDisabled: true
+            text: $referredViewModel.referredCode,
+            placeholderText: "enterUpto4Characters",
+            action: .Paste,
+            showError: referredViewModel.showReferredLaunchViewError,
+            errorMessage: referredViewModel.referredLaunchViewErrorMessage
         )
+    }
+}
+
+// MARK: - Referral
+
+private extension ReferralLaunchView {
+    var referralContent: some View {
+        VStack(spacing: 16) {
+            referralTitle
+            
+            if referralViewModel.hasReferralCode {
+                createReferralButton
+            } else {
+                editReferralButton
+            }
+        }
+    }
+    
+    var referralTitle: some View {
+        HighlightedText(
+            localisedKey: "createYourCodeAndEarn",
+            highlightedText: "20%"
+        ) {
+            $0.font = Theme.fonts.bodySMedium
+            $0.foregroundColor = Theme.colors.textPrimary
+        } highlightedTextStyle: {
+            $0.foregroundColor = Theme.colors.primaryAccent4
+        }
+        .multilineTextAlignment(.center)
+    }
+    
+    var createReferralButton: some View {
+        PrimaryNavigationButton(title: "createReferral") {
+            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: false)
+        }
+    }
+    
+    var editReferralButton: some View {
+        PrimaryNavigationButton(title: "editReferral") {
+            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
+        }
     }
 }
 
