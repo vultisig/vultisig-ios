@@ -9,18 +9,18 @@ import SwiftUI
 
 struct SwapVerifyView: View {
     @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
-
+    
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
     @StateObject var referredViewModel = ReferredViewModel()
-
+    
     let vault: Vault
-
+    
     @State var fastPasswordPresented = false
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    
     var body: some View {
         ZStack {
             Background()
@@ -47,7 +47,7 @@ struct SwapVerifyView: View {
             }
         }
     }
-
+    
     var view: some View {
         container
     }
@@ -60,7 +60,7 @@ struct SwapVerifyView: View {
                 .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         }
     }
-
+    
     var summary: some View {
         VStack(spacing: 16) {
             SecurityScannerHeaderView(state: verifyViewModel.securityScannerState)
@@ -91,8 +91,8 @@ struct SwapVerifyView: View {
                     separator
                     getValueCell(
                         for: "swapFee",
-                        with: swapViewModel.swapGasString(tx: tx),
-                        bracketValue: swapViewModel.swapFeeString(tx: tx)
+                        with: swapViewModel.swapFeeString(tx: tx),
+                        bracketValue:nil,
                     )
                 }
                 
@@ -141,7 +141,7 @@ struct SwapVerifyView: View {
     
     var summaryFromTo: some View {
         VStack(spacing: 16) {
-                        getSwapAssetCell(
+            getSwapAssetCell(
                 for: tx.fromAmountDecimal.formatForDisplay(),
                 with: tx.fromCoin.ticker,
                 on: tx.fromCoin.chain
@@ -150,7 +150,7 @@ struct SwapVerifyView: View {
             separator
                 .padding(.leading, 12)
             
-                        getSwapAssetCell(
+            getSwapAssetCell(
                 for: tx.toAmountDecimal.formatForDisplay(),
                 with: tx.toCoin.ticker,
                 on: tx.toCoin.chain
@@ -174,7 +174,7 @@ struct SwapVerifyView: View {
             .foregroundColor(Theme.colors.textLight)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     var checkboxes: some View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "swapVerifyCheckbox1Description")
@@ -184,7 +184,7 @@ struct SwapVerifyView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     var signButton: some View {
         if tx.isFastVault {
@@ -210,7 +210,7 @@ struct SwapVerifyView: View {
             }
         }
     }
-
+    
     private func onSignPress() {
         let canSign = verifyViewModel.validateSecurityScanner()
         if canSign {
@@ -225,7 +225,7 @@ struct SwapVerifyView: View {
             }
         }
     }
-
+    
     var showApproveCheckmark: Bool {
         return tx.isApproveRequired
     }
@@ -238,7 +238,7 @@ struct SwapVerifyView: View {
     var refreshCounter: some View {
         SwapRefreshQuoteCounter(timer: swapViewModel.timer)
     }
-
+    
     func getValueCell(
         for title: String,
         with value: String,
