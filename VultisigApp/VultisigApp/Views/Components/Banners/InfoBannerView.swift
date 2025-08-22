@@ -7,19 +7,19 @@
 
 import SwiftUI
 
-enum BannerType {
+enum InfoBannerType {
     case info
     case warning
     case error
     case success
 }
 
-struct BannerView: View {
+struct InfoBannerView: View {
     let description: String
-    let type: BannerType
+    let type: InfoBannerType
     let leadingIcon: String?
     
-    init(description: String, type: BannerType, leadingIcon: String?) {
+    init(description: String, type: InfoBannerType, leadingIcon: String?) {
         self.description = description
         self.type = type
         self.leadingIcon = leadingIcon
@@ -85,5 +85,5 @@ struct BannerView: View {
 }
 
 #Preview {
-    BannerView(description: "This is a test", type: .info, leadingIcon: nil)
+    InfoBannerView(description: "This is a test", type: .info, leadingIcon: nil)
 }

@@ -38,7 +38,7 @@ struct VaultDeletionDetails: View {
     }
     
     func cellContainer<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
-        BoxView {
+        ContainerView {
             content()
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(Theme.colors.textPrimary)

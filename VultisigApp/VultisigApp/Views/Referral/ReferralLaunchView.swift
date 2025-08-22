@@ -19,9 +19,6 @@ struct ReferralLaunchView: View {
         .onAppear {
             referralViewModel.resetAllData()
         }
-        .alert(isPresented: $referredViewModel.showReferredLaunchViewSuccess) {
-            alert
-        }
     }
     
     var main: some View {
@@ -72,17 +69,24 @@ struct ReferralLaunchView: View {
     var referredContent: some View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
-                HighlightedText(
-                    localisedKey: "referredSaveOnSwaps",
-                    highlightedText: "10%"
-                ) {
-                    $0.font = Theme.fonts.bodySMedium
-                    $0.foregroundColor = Theme.colors.textPrimary
-                } highlightedTextStyle: {
-                    $0.foregroundColor = Theme.colors.primaryAccent4
+                HStack(spacing: 0) {
+                    HighlightedText(
+                        localisedKey: "referredSaveOnSwaps",
+                        highlightedText: "10%"
+                    ) {
+                        $0.font = Theme.fonts.bodySMedium
+                        $0.foregroundColor = Theme.colors.textPrimary
+                    } highlightedTextStyle: {
+                        $0.foregroundColor = Theme.colors.primaryAccent4
+                    }
                 }
+        
 
-                referredTextField
+                if referredViewModel.hasReferredCode {
+                    referredBox
+                } else {
+                    referredTextField
+                }
             }
 
             if referredViewModel.hasReferredCode {
@@ -91,14 +95,6 @@ struct ReferralLaunchView: View {
                 saveButton
             }
         }
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("success", comment: "")),
-            message: Text(NSLocalizedString(referredViewModel.referredLaunchViewSuccessMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
 }
 
@@ -115,7 +111,8 @@ private extension ReferralLaunchView {
     
     var editButton: some View {
         PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
-            EditReferredCodeView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
+//            EditReferredCodeScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         }
     }
     
@@ -128,6 +125,17 @@ private extension ReferralLaunchView {
             errorMessage: referredViewModel.referredLaunchViewErrorMessage
         )
     }
+    
+    var referredBox: some View {
+        ContainerView {
+            HStack {
+                Text(referredViewModel.savedReferredCode)
+                    .font(Theme.fonts.bodyMMedium)
+                    .foregroundColor(Theme.colors.textPrimary)
+                Spacer()
+            }
+        }
+    }
 }
 
 // MARK: - Referral
@@ -138,9 +146,9 @@ private extension ReferralLaunchView {
             referralTitle
             
             if referralViewModel.hasReferralCode {
-                createReferralButton
-            } else {
                 editReferralButton
+            } else {
+                createReferralButton
             }
         }
     }
@@ -166,7 +174,7 @@ private extension ReferralLaunchView {
     
     var editReferralButton: some View {
         PrimaryNavigationButton(title: "editReferral") {
-            ReferralTransactionFlowScreen(referralViewModel: referralViewModel, isEdit: true)
+            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         }
     }
 }

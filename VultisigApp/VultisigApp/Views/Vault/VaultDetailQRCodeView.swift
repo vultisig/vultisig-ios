@@ -22,7 +22,7 @@ struct VaultDetailQRCodeView: View {
                 VStack(spacing: 15) {
                     Spacer()
                     qrCode
-                    BannerView(
+                    InfoBannerView(
                         description: "shareVaultQRInformation".localized,
                         type: .info,
                         leadingIcon: "circle-info"

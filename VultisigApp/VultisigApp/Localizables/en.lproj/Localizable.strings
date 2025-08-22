@@ -689,7 +689,7 @@
 "vultisig-referrals" = "Vultisig - Referrals";
 "referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
-"referralCodeNotFound" = "Referral code not found";
+"referralCodeNotFound" = "Referral code not found. Check the code and try again";
 "referralCodeWithoutAlias" = "Referral code doesn't have an alias set";
 "referralCodeAdded" = "Referred code successfully linked";
 "editReferral" = "Edit referral";
@@ -712,7 +712,7 @@
 "referralProgramTooltipDescription" = "The referral program applies to THORChain swaps and operates on a best-effort basis. To use the Vultisig referral, you must register a THORName. The registration fee is 10 RUNE plus 1 RUNE per year, paid to the THORChain network.";
 "collectedRewards" = "Collected rewards";
 "expiresOn" = "Expires on";
-"yourFriendsReferralCode" = "Your friends referral code";
+"yourFriendsReferralCode" = "Your Friend Referral Code";
 "changeFriendsReferralCode" = "Change friends Referral Code used for swaps";
 "insufficientBalance" = "Insufficient Balance";
 "verifyBoxCheck" = "Please check all the boxes";
@@ -802,4 +802,9 @@
 "addressBookEmptySubtitle" = "Keep all your important addresses organized in one place.";
 "label" = "Label";
 "evmChains" = "EVM Chains";
+"saveOnSwaps" = "Save %@ on swaps";
 "referredSaveOnSwaps" = "Save %@ on swaps - Add a Referral";
+"addFriendsReferral" = "Add a Friends Referral";
+"referralCodeCopied" = "Referral code copied";
+"editFriendsReferral" = "Edit Friends Referral";
+"vaultSelected" = "Vault selected";

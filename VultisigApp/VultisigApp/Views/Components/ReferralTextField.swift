@@ -32,11 +32,16 @@ struct ReferralTextField: View {
     }
     
     var textField: some View {
-        CommonTextField(text: $text, placeholder: placeholderText) {
+        CommonTextField(
+            text: $text,
+            placeholder: placeholderText,
+            showError: showError,
+        ) {
             HStack {
                 actionButton
             }
         }
+        .disabled(isDisabled)
     }
     
     var actionButton: some View {
@@ -60,7 +65,7 @@ struct ReferralTextField: View {
         Button {
             handleCopyCode()
         } label: {
-            Image(systemName: "square.on.square")
+            Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -68,7 +73,7 @@ struct ReferralTextField: View {
         Button {
             handlePasteCode()
         } label: {
-            Image(systemName: "doc.on.clipboard")
+            Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -76,7 +81,7 @@ struct ReferralTextField: View {
         Button {
             clearCode()
         } label: {
-            Image(systemName: "xmark")
+            Icon(named: "circle-x-fill", color: Theme.colors.textPrimary, size: 20)
         }
         .opacity(text.isEmpty ? 0 : 1)
     }

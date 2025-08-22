@@ -25,7 +25,7 @@ struct AddressBookCell: View {
             rearrangeIcon
                 .showIf(isEditing)
             
-            BoxView {
+            ContainerView {
                 label
             }
         }
