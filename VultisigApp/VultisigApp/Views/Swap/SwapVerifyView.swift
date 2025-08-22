@@ -92,7 +92,7 @@ struct SwapVerifyView: View {
                     getValueCell(
                         for: "swapFee",
                         with: swapViewModel.swapFeeString(tx: tx),
-                        bracketValue:nil,
+                        bracketValue:nil
                     )
                 }
                 
