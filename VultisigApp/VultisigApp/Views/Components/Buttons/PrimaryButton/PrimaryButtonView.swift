@@ -32,6 +32,7 @@ struct PrimaryButtonView: View {
             }
             
             Text(NSLocalizedString(title, comment: "Button Text"))
+                .fixedSize(horizontal: true, vertical: false)
             
             if let trailingIcon {
                 Image(systemName: trailingIcon)

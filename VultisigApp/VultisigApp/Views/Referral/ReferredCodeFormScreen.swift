@@ -1,5 +1,5 @@
 //
-//  EditReferredCodeView.swift
+//  ReferredCodeFormScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2025-05-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EditReferredCodeView: View {
+struct ReferredCodeFormScreen: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
     
@@ -32,17 +32,20 @@ struct EditReferredCodeView: View {
     var main: some View {
         ScrollView {
             VStack(spacing: 8) {
-                title
+                HighlightedText(
+                    localisedKey: "referredSaveOnSwaps",
+                    highlightedText: "10%"
+                ) {
+                    $0.font = Theme.fonts.bodySMedium
+                    $0.foregroundColor = Theme.colors.textPrimary
+                } highlightedTextStyle: {
+                    $0.foregroundColor = Theme.colors.primaryAccent4
+                }
+                .showIf(!referredViewModel.hasReferredCode)
                 textField
             }
         }
         .foregroundColor(Theme.colors.textPrimary)
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("useReferralCode", comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
     }
     
     var textField: some View {
@@ -56,7 +59,7 @@ struct EditReferredCodeView: View {
     }
     
     var button: some View {
-        PrimaryButton(title: "saveReferredCode") {
+        PrimaryButton(title: "saveReferral") {
             Task { @MainActor in
                 let codeUpdated = await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
                 if codeUpdated {
@@ -73,7 +76,9 @@ struct EditReferredCodeView: View {
     
     private func setData() {
         resetData()
-        referredViewModel.referredCode = referredViewModel.savedReferredCode
+        if referredViewModel.hasReferredCode {
+            referredViewModel.referredCode = referredViewModel.savedReferredCode
+        }
     }
     
     private func resetData() {
@@ -82,5 +87,5 @@ struct EditReferredCodeView: View {
 }
 
 #Preview {
-    EditReferredCodeView(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
+    ReferredCodeFormScreen(referredViewModel: ReferredViewModel(), referralViewModel: ReferralViewModel())
 }

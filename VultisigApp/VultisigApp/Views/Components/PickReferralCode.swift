@@ -51,28 +51,13 @@ struct PickReferralCode: View {
     }
     
     var searchButton: some View {
-        Button {
+        PrimaryButton(title: "search".localized, size: .small) {
             Task {
                 await referralViewModel.verifyReferralCode()
             }
-        } label: {
-            searchButtonLabel
         }
-    }
-    
-    var searchButtonLabel: some View {
-        ZStack {
-            if referralViewModel.isLoading {
-                ProgressView()
-            } else {
-                Text(NSLocalizedString("search", comment: ""))
-                    .foregroundColor(Theme.colors.textLight)
-                    .font(Theme.fonts.bodySMedium)
-            }
-        }
-        .frame(width: 100, height: 60)
-        .background(Theme.colors.bgButtonTertiary)
-        .cornerRadius(16)
+        .frame(maxWidth: 100, maxHeight: 46)
+        .disabled(referralViewModel.isLoading)
     }
     
     var status: some View {

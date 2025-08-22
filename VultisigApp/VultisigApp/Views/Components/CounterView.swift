@@ -63,6 +63,7 @@ struct CounterView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Theme.colors.border, lineWidth: 1)
         )
+        .padding(1)
     }
 }
 
