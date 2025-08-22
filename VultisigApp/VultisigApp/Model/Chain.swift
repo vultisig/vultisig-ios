@@ -415,7 +415,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash:
             return CoinType.zcash
         case .mantle:
-            return CoinType.ethereum
+            return CoinType.mantle
         }
     }
    
