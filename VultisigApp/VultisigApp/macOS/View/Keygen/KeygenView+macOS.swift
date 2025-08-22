@@ -20,36 +20,8 @@ extension KeygenView {
             }
     }
     
-    var fields: some View {
-        VStack(spacing: 12) {
-            Spacer()
-            if showProgressRing {
-                if progressCounter<4 {
-                    title
-                }
-                states
-            }
-            
-            if progressCounter < 4 {
-                if viewModel.status == .KeygenFailed {
-                    errorMessage
-                    Spacer()
-                    retryButton
-                        .padding(.bottom)
-                } else {
-                    Spacer()
-                    progressContainer
-                }
-            }
-        }
-    }
-    
     var progressContainer: some View {
         KeygenProgressContainer(progressCounter: progressCounter)
-    }
-    
-    var errorMessage: some View {
-        ErrorMessage(text: "keygenFailedErrorMessage")
     }
 }
 #endif

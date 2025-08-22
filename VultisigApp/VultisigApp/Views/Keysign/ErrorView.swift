@@ -18,18 +18,17 @@ struct ErrorView: View {
         VStack {
             Spacer()
             VStack(spacing: 12) {
-                ZStack {
-                    Image("CirclesBackground")
-                    Image(systemName: icon)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(color)
-                }
-                .padding(.bottom, 12)
+                Image(systemName: icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundStyle(color)
+                    .background(Image("CirclesBackground"))
+                    .padding(.bottom, 12)
                 Text(title)
                     .foregroundStyle(color)
                     .font(Theme.fonts.title2)
+                    .multilineTextAlignment(.center)
                 Text(description)
                     .foregroundStyle(Theme.colors.textExtraLight)
                     .font(Theme.fonts.bodySMedium)

@@ -40,7 +40,7 @@ struct VaultPairDetailView: View {
     }
     
     func vaultInfoRow(title: String, description: String) -> some View {
-        BoxView {
+        ContainerView {
             HStack {
                 Text(title)
                 Spacer()
@@ -68,7 +68,7 @@ struct VaultPairDetailView: View {
             ClipboardManager.copyToClipboard(description)
             showCapsule = true
         } label: {
-            BoxView {
+            ContainerView {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
@@ -115,7 +115,7 @@ struct VaultPairDetailView: View {
         let isLocalPary = device.Signer == vault.localPartyID
         let signerTitle = "\("signer".localized) \(device.Index + 1)"
         
-        BoxView {
+        ContainerView {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(signerTitle)
