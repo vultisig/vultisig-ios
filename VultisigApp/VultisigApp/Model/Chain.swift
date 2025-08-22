@@ -415,7 +415,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .zcash:
             return CoinType.zcash
         case .mantle:
-            return CoinType.mantle
+            return CoinType.ethereum
         }
     }
    
@@ -478,7 +478,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync,.ethereumSepolia:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle:
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO
