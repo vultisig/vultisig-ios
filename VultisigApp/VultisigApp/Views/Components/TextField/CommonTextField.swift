@@ -8,20 +8,24 @@
 import SwiftUI
 
 struct CommonTextField<TrailingView: View>: View {
+    @Environment(\.isEnabled) var isEnabled
     @Binding var text: String
     let label: String?
     let placeholder: String
+    var showError: Bool
     let trailingView: () -> TrailingView
     
     init(
         text: Binding<String>,
         label: String? = nil,
         placeholder: String,
+        showError: Bool = false,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
         self.label = label
         self.placeholder = placeholder
+        self.showError = showError
         self.trailingView = trailingView
     }
     
@@ -47,8 +51,10 @@ struct CommonTextField<TrailingView: View>: View {
                     .foregroundColor(Theme.colors.textPrimary)
                     .submitLabel(.done)
                     .colorScheme(.dark)
+                    .frame(maxWidth: .infinity)
                 
                 clearButton
+                    .showIf(isEnabled)
                 trailingView()
             }
             .frame(height: 56)
@@ -58,7 +64,7 @@ struct CommonTextField<TrailingView: View>: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.colors.border, lineWidth: 1)
+                    .stroke(borderColor, lineWidth: 1)
             )
             .autocorrectionDisabled()
             .borderlessTextFieldStyle()
@@ -77,5 +83,9 @@ struct CommonTextField<TrailingView: View>: View {
             )
         }
         .opacity(text.isEmpty ? 0 : 1)
+    }
+    
+    var borderColor: Color {
+        showError ? Theme.colors.alertError : Theme.colors.border
     }
 }

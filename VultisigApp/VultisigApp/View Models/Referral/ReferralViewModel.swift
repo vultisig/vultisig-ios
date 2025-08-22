@@ -43,6 +43,10 @@ class ReferralViewModel: ObservableObject {
     private(set) var thornameDetails: THORName?
     private(set) var thornameVault: Vault?
     private(set) var currentBlockheight: UInt64 = 0
+
+    var yourVaultName: String? {
+        thornameVault?.name
+    }
     
     var hasReferralCode: Bool {
         savedGeneratedReferralCode.isNotEmpty
