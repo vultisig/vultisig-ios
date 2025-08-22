@@ -38,7 +38,7 @@ struct FunctionCallDetailsView: View {
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
                     
-                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     bondInstance.nodeAddress = nodeAddress
                     bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
@@ -53,7 +53,7 @@ struct FunctionCallDetailsView: View {
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
                     
-                    let unbondInstance = FunctionCallUnbond()
+                    let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     unbondInstance.nodeAddress = nodeAddress
                     unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
@@ -98,7 +98,7 @@ struct FunctionCallDetailsView: View {
                     if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
-                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         bondInstance.nodeAddress = nodeAddress
@@ -110,7 +110,7 @@ struct FunctionCallDetailsView: View {
                     if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
-                    let unbondInstance = FunctionCallUnbond()
+                    let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         unbondInstance.nodeAddress = nodeAddress
@@ -155,7 +155,7 @@ struct FunctionCallDetailsView: View {
                     if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
                         functionCallViewModel.setRuneToken(to: tx, vault: vault)
                     }
-                    let leaveInstance = FunctionCallLeave()
+                    let leaveInstance = FunctionCallLeave(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         leaveInstance.nodeAddress = nodeAddress
@@ -217,10 +217,6 @@ struct FunctionCallDetailsView: View {
                 case .redeemTCY:
                     fnCallInstance = .redeemTCY(FunctionCallCosmosYVault(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault, action: .withdraw(slippage: YVaultConstants.slippageOptions.first!), functionType: .redeemTCY))
                 case .addThorLP:
-                    // Ensure RUNE token is selected for ADD THORCHAIN LP operations on THORChain
-                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
-                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
-                    }
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:
                     // Ensure RUNE token is selected for REMOVE THORCHAIN LP operations on THORChain

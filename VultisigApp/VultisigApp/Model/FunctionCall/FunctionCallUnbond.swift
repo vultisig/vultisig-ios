@@ -22,6 +22,9 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     @Published var providerValid: Bool = true
     
     private var cancellables = Set<AnyCancellable>()
+    private var tx: SendTransaction?
+    private var vault: Vault?
+    private var functionCallViewModel: FunctionCallViewModel?
     
     var addressFields: [String: String] {
         get {
@@ -50,7 +53,20 @@ class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
         self.provider = provider
     }
     
+    init(tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) {
+        self.tx = tx
+        self.vault = vault
+        self.functionCallViewModel = functionCallViewModel
+    }
+    
     func initialize() {
+        // Ensure RUNE token is selected for UNBOND operations on THORChain
+        if let tx = tx, let vault = vault, let functionCallViewModel = functionCallViewModel,
+           tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+            DispatchQueue.main.async {
+                functionCallViewModel.setRuneToken(to: tx, vault: vault)
+            }
+        }
         setupValidation()
     }
     

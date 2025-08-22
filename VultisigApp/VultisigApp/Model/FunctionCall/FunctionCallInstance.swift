@@ -386,7 +386,7 @@ enum FunctionCallInstance {
     static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
-            return .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel))
+            return .bond(FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
         case .mayaChain:
             return .bondMaya(FunctionCallBondMayaChain(assets: nil))
         case .dydx:
