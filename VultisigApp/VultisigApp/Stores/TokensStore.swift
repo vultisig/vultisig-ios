@@ -391,6 +391,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .mantle,
+            ticker: "MNT",
+            logo: "mantle",
+            decimals: 18,
+            priceProviderId: "mantle",
+            contractAddress: "",
+            isNativeToken: true
+        ),
+        CoinMeta(
             chain: .bitcoinCash,
             ticker: "BCH",
             logo: "bch",

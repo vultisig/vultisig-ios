@@ -33,6 +33,8 @@ class EvmServiceFactory {
             return CronosService.shared
         case .zksync:
             return ZksyncService.shared
+        case .mantle:
+            return MantleService.shared
         case .tron:
             return TronEvmService.shared
         default:

@@ -82,7 +82,7 @@ private extension THORChainSwapPayload {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .ethereumSepolia, .zcash, .cardano: break
+            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .polkadot, .zksync, .dydx, .ton, .osmosis, .terra, .terraClassic, .noble, .ripple, .akash, .tron, .ethereumSepolia, .zcash, .cardano, .mantle: break
             }
             
             $0.symbol = coin.ticker
