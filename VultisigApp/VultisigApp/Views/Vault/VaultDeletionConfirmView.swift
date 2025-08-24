@@ -19,11 +19,10 @@ struct VaultDeletionConfirmView: View {
     @State var showAlert = false
     @State var navigateBackToHome = false
     @State var navigateToCreateVault = false
+    @State var nextSelectedVault: Vault? = nil
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
-    let vaults: [Vault]
     
     var body: some View {
         Screen(title: "deleteVaultTitle".localized) {
@@ -43,7 +42,7 @@ struct VaultDeletionConfirmView: View {
             CreateVaultView(selectedVault: nil, showBackButton: false)
         }
         .navigationDestination(isPresented: $navigateBackToHome) {
-            HomeView(selectedVault: vaults.first, showVaultsList: true)
+            HomeView(selectedVault: nextSelectedVault, showVaultsList: true)
         }
         .alert(isPresented: $showAlert) {
             alert
@@ -88,22 +87,35 @@ struct VaultDeletionConfirmView: View {
     }
     
     func delete() {
-        let vaultCount = vaults.count
         
         guard allFieldsChecked() else {
             showAlert = true
             return
         }
         homeViewModel.selectedVault = nil
-        modelContext.delete(vault)
+        ApplicationState.shared.currentVault = nil
+        
         do {
+            // fetch the vault before deleting it , so we can make sure we have all the relationships loaded
+            let publicKeyECDSA = vault.pubKeyECDSA
+            let fetchRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA == publicKeyECDSA })
+            let vaultsToDelete = try modelContext.fetch(fetchRequest)
+            if let targetToBeDeleted = vaultsToDelete.first {
+                // the following few lines are used to ensure that all relationships are loaded before deletion
+                _ = targetToBeDeleted.signers
+                _ = targetToBeDeleted.keyshares
+                _ = targetToBeDeleted.libType
+                modelContext.delete(targetToBeDeleted)
+            }
             try modelContext.save()
+            let fetchNextVaultRequest = FetchDescriptor<Vault>(predicate: #Predicate { $0.pubKeyECDSA != publicKeyECDSA })
+            let vaultsNext = try modelContext.fetch(fetchNextVaultRequest)
+            nextSelectedVault = vaultsNext.first
         } catch {
             print("Error: \(error)")
         }
-        ApplicationState.shared.currentVault = nil
         
-        if vaultCount > 1 {
+        if nextSelectedVault != nil {
             navigateBackToHome = true
         } else {
             navigateToCreateVault = true
@@ -132,6 +144,6 @@ struct VaultDeletionConfirmView: View {
 }
 
 #Preview {
-    VaultDeletionConfirmView(vault: Vault.example, devicesInfo: [], vaults: [])
+    VaultDeletionConfirmView(vault: Vault.example, devicesInfo: [])
         .environmentObject(HomeViewModel())
 }
