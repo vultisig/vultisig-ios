@@ -245,11 +245,10 @@ struct SettingsMainScreen: View {
     
     @ViewBuilder
     var referralView: some View {
-        if referralViewModel.hasReferralCode {
-            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        } else {
-            ReferralLaunchView(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        }
+        ReferralLaunchView(
+            referredViewModel: referredViewModel,
+            referralViewModel: referralViewModel
+        )
     }
 }
 

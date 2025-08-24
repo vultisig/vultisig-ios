@@ -89,6 +89,35 @@ struct KeygenView: View {
         }
     }
     
+    var fields: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            if showProgressRing {
+                if progressCounter<4 {
+                    title
+                }
+                states
+            }
+            Spacer()
+            
+            if progressCounter < 4 {
+                if viewModel.status == .KeygenFailed {
+                    ErrorView(
+                        type: .alert,
+                        title: "keygenFailedErrorMessage".localized,
+                        description: "",
+                        buttonTitle: "tryAgain".localized
+                    ) {
+                        dismiss()
+                    }
+                    .padding(.horizontal, isMacOS ? 40 : 20)
+                } else {
+                    progressContainer
+                }
+            }
+        }
+    }
+    
     var migrateView: some View {
         UpgradingVaultView()
     }

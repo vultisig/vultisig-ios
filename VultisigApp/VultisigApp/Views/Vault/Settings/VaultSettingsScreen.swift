@@ -107,7 +107,7 @@ struct VaultSettingsScreen: View {
     
     var deleteVault: some View {
         NavigationLink {
-            VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo, vaults: vaults)
+            VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo)
         } label: {
             SettingsOptionView(
                 icon: "trash",

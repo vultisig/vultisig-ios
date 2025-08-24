@@ -119,7 +119,7 @@ struct EditReferralDetailsView: View {
         Button {
             showPreferredAssetSelection = true
         } label: {
-            BoxView {
+            ContainerView {
                 HStack {
                     selectedAsset
                     Spacer()
