@@ -21,6 +21,7 @@ class FunctionCallUnstakeTCY: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var tx: SendTransaction
     private let vault: Vault
+    private var functionCallViewModel: FunctionCallViewModel
     private var stakedAmount: Decimal = .zero
     private var autoCompoundAmount: Decimal = .zero
     
@@ -30,13 +31,28 @@ class FunctionCallUnstakeTCY: ObservableObject {
         self.stakedAmount = stakedAmount
         self.tx = tx
         self.vault = vault
+        self.functionCallViewModel = functionCallViewModel
+    }
+    
+    func initialize() {
+        // Ensure TCY token is selected for TCY unstaking operations on THORChain
+        if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
+            DispatchQueue.main.async {
+                self.functionCallViewModel.setTcyToken(to: self.tx, vault: self.vault)
+            }
+        }
+        setupValidation()
     }
     
     var balance: String {
         if isAutoCompound {
-            return "( Auto-Compound Amount: \(self.autoCompoundAmount) \(tx.coin.ticker.uppercased()) )"
+            // Convert raw auto-compound amount to decimal for display (TCY has 8 decimals)
+            let displayAmount = (autoCompoundAmount / pow(10, 8)).formatForDisplay()
+            return "( Auto-Compound Amount: \(displayAmount) \(tx.coin.ticker.uppercased()) )"
         } else {
-            return "( Staked Amount: \(self.stakedAmount) \(tx.coin.ticker.uppercased()) )"
+            // Convert raw staked amount to decimal for display (TCY has 8 decimals)
+            let displayAmount = (stakedAmount / pow(10, 8)).formatForDisplay()
+            return "( Staked Amount: \(displayAmount) \(tx.coin.ticker.uppercased()) )"
         }
     }
     
@@ -261,7 +277,7 @@ struct UnstakeView: View {
             }
         }
         .onLoad {
-            viewModel.setupValidation()
+            viewModel.initialize()
             viewModel.validateAmount()
             if viewModel.isAutoCompound {
                 viewModel.fetchAutoCompoundBalance()
