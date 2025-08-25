@@ -92,6 +92,8 @@
 		13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */; };
 		13A899082E44D752006F75F0 /* ReferralExpiryDataCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */; };
 		13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A8990A2E44F544006F75F0 /* RedactedText.swift */; };
+		13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C052E5CA17100F52F24 /* ReferralCode.swift */; };
+		13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AB0C062E5CA17100F52F24 /* ReferredCode.swift */; };
 		13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */; };
 		13AF0D1A2E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */; };
 		13AF0D1D2E4CE73B004D4FD2 /* SendRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */; };
@@ -1106,6 +1108,8 @@
 		13A899052E44D32C006F75F0 /* EditReferralViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralViewModel.swift; sourceTree = "<group>"; };
 		13A899072E44D745006F75F0 /* ReferralExpiryDataCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralExpiryDataCalculator.swift; sourceTree = "<group>"; };
 		13A8990A2E44F544006F75F0 /* RedactedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedactedText.swift; sourceTree = "<group>"; };
+		13AB0C052E5CA17100F52F24 /* ReferralCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCode.swift; sourceTree = "<group>"; };
+		13AB0C062E5CA17100F52F24 /* ReferredCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferredCode.swift; sourceTree = "<group>"; };
 		13AF0D172E4CE652004D4FD2 /* NavigationRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRouter.swift; sourceTree = "<group>"; };
 		13AF0D192E4CE672004D4FD2 /* NavigationRouter+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationRouter+EnvironmentKey.swift"; sourceTree = "<group>"; };
 		13AF0D1C2E4CE738004D4FD2 /* SendRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRoute.swift; sourceTree = "<group>"; };
@@ -4075,6 +4079,8 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				13AB0C052E5CA17100F52F24 /* ReferralCode.swift */,
+				13AB0C062E5CA17100F52F24 /* ReferredCode.swift */,
 				13D179062E5787CA00007B48 /* AddressBook */,
 				13DD547D2E5615A2007335DA /* Settings */,
 				B5BEB1EC2E137FBA00372170 /* ThorchainMergeTokens.swift */,
@@ -4827,6 +4833,8 @@
 				B5BC37562CECEFFA005A1C76 /* cosmos.swift in Sources */,
 				A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
+				13AB0C072E5CA17100F52F24 /* ReferralCode.swift in Sources */,
+				13AB0C082E5CA17100F52F24 /* ReferredCode.swift in Sources */,
 				46DE088C2BD087D800AE8BDE /* kujira.swift in Sources */,
 				B5A97CF72BF42BE1007574D7 /* FunctionCallVerifyView.swift in Sources */,
 				B537CE092CE7068D002085CB /* CosmosIbcDenomTrace.swift in Sources */,

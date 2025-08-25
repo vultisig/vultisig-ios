@@ -47,7 +47,10 @@ struct VultisigApp: App {
             Coin.self,
             DatabaseRate.self,
             AddressBookItem.self,
-            Folder.self
+            Folder.self,
+            HiddenToken.self,
+            ReferralCode.self,
+            ReferredCode.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

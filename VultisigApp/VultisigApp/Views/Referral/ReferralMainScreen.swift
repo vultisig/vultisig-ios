@@ -103,7 +103,7 @@ struct ReferralMainScreen: View {
     var yourReferralCodeView: some View {
         ReferralCodeBoxView(
             title: "yourReferralCode".localized,
-            value: referralViewModel.savedGeneratedReferralCode,
+            value: referralViewModel.savedReferralCode,
             icon: "copy"
         ) {
             showReferralCodeCopied = true
