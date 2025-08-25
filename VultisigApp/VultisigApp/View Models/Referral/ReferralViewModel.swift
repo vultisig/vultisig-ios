@@ -359,16 +359,14 @@ class ReferralViewModel: ObservableObject {
             showNameError(with: "systemErrorMessage")
             return
         }
-        var referral: ReferralCode
-        
+        let normalisedCode = code.uppercased()        
         if let vaultReferral = currentVault.referralCode {
-            referral = vaultReferral
-            referral.code = code
+            vaultReferral.code = code
         } else {
-            referral = ReferralCode(code: code, vault: currentVault)
+            let referral = ReferralCode(code: code, vault: currentVault)
+            Storage.shared.insert(referral)
         }
         
-        Storage.shared.insert(referral)
         do {
             try Storage.shared.save()
         } catch {
@@ -391,7 +389,8 @@ class ReferralViewModel: ObservableObject {
         let thorname = try? await thorchainReferralService.getAddressLookup(address: thorAddress)
         // If thorname exist, we'll save it dynamically
         if let thorname {
-            let referralCode = ReferralCode(code: thorname, vault: currentVault)
+            let normalisedThorname = thorname.uppercased()
+            let referralCode = ReferralCode(code: normalisedThorname, vault: currentVault)
             Storage.shared.insert(referralCode)
             try? Storage.shared.save()
         }

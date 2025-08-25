@@ -84,11 +84,15 @@ class ReferredViewModel: ObservableObject {
     }
     
     func saveReferredCode(code: String, vault: Vault) {
-        let referredCodeModel = ReferredCode(code: code, vault: vault)
-        Storage.shared.insert(referredCodeModel)
-        
+        let normalized = code.uppercased()
+        if let existing = vault.referredCode {
+            existing.code = normalized
+        } else {
+            let model = ReferredCode(code: normalized, vault: vault)
+            vault.referredCode = model
+            Storage.shared.insert(model)
+        }
         do {
-            vault.referredCode = referredCodeModel
             try Storage.shared.save()
             referredLaunchViewSuccessMessage = "referralCodeAdded"
             showReferredLaunchViewSuccess = true

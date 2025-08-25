@@ -72,7 +72,7 @@ class BalanceService {
             let stakedBalance = try await fetchStakedBalance(for: coin)
             try await updateCoin(coin, stakedBalance: stakedBalance)
             
-            try await Storage.shared.save()
+            try Storage.shared.save()
         } catch {
             print("Fetch Balance error: \(error.localizedDescription)")
         }
