@@ -39,8 +39,12 @@ class VaultDetailViewModel: ObservableObject {
             addCoin(coin, groups: &groups)
         }
 
-        groups.sort { $0.chain.index < $1.chain.index }
-        groups.sort { $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal }
+        groups.sort {
+            if $0.totalBalanceInFiatDecimal == $1.totalBalanceInFiatDecimal {
+                return $0.chain.index < $1.chain.index
+            }
+            return $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
+        }
         self.groups = groups
     }
 }
