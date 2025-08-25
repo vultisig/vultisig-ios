@@ -50,7 +50,7 @@ struct ReferralTransactionFlowScreen: View {
     }
     
     var vault: Vault? {
-        isEdit ? referralViewModel.thornameVault : homeViewModel.selectedVault
+        isEdit ? ApplicationState.shared.currentVault : homeViewModel.selectedVault
     }
     
     @ViewBuilder

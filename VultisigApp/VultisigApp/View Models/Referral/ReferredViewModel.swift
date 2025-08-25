@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @MainActor
 class ReferredViewModel: ObservableObject {
@@ -16,23 +17,28 @@ class ReferredViewModel: ObservableObject {
     
     @Published var isLoading: Bool = false
     
-    // Referred Code
-    @AppStorage("savedReferredCode") var savedReferredCode: String = ""
     @Published var referredCode: String = ""
     @Published var showReferredLaunchViewError: Bool = false
     @Published var showReferredLaunchViewSuccess: Bool = false
     @Published var referredLaunchViewErrorMessage: String = ""
     @Published var referredLaunchViewSuccessMessage: String = ""
     
-    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
-    
     private let thorchainReferralService = THORChainAPIService()
+    var currentVault: Vault? {
+        ApplicationState.shared.currentVault
+    }
     
     var title: String {
         hasReferredCode ? "editFriendsReferral" : "addFriendsReferral"
     }
     
-    var hasReferredCode: Bool { !savedReferredCode.isEmpty }
+    var savedReferredCode: String {
+        currentVault?.referredCode?.code ?? .empty
+    }
+    
+    var hasReferredCode: Bool {
+        savedReferredCode.isNotEmpty
+    }
     
     func closeBannerSheet() {
         showReferralBannerSheet = false
@@ -45,12 +51,12 @@ class ReferredViewModel: ObservableObject {
         showReferralCodeOnboarding = false
     }
     
-    func verifyReferredCode(savedGeneratedReferralCode: String) async -> Bool {
+    func verifyReferredCode() async -> Bool {
         resetReferredData()
         
         isLoading = true
         
-        nameErrorCheck(code: referredCode, savedGeneratedReferralCode: savedGeneratedReferralCode)
+        nameErrorCheck(code: referredCode, referralCode: currentVault?.referralCode?.code)
         
         guard !showReferredLaunchViewError else {
             return false
@@ -67,10 +73,28 @@ class ReferredViewModel: ObservableObject {
     }
     
     private func saveReferredCode() {
-        savedReferredCode = referredCode
-        referredLaunchViewSuccessMessage = "referralCodeAdded"
-        showReferredLaunchViewSuccess = true
+        guard let currentVault = currentVault else {
+            showNameError(with: "systemErrorMessage")
+            return
+        }
+        
+        saveReferredCode(code: referredCode, vault: currentVault)
+        
         isLoading = false
+    }
+    
+    func saveReferredCode(code: String, vault: Vault) {
+        let referredCodeModel = ReferredCode(code: code, vault: vault)
+        Storage.shared.insert(referredCodeModel)
+        
+        do {
+            vault.referredCode = referredCodeModel
+            try Storage.shared.save()
+            referredLaunchViewSuccessMessage = "referralCodeAdded"
+            showReferredLaunchViewSuccess = true
+        } catch {
+            showNameError(with: "systemErrorMessage")
+        }
     }
     
     private func checkNameAvailability(code: String) async -> Bool {
@@ -101,13 +125,13 @@ class ReferredViewModel: ObservableObject {
         isLoading = false
     }
     
-    private func nameErrorCheck(code: String, savedGeneratedReferralCode: String) {
+    private func nameErrorCheck(code: String, referralCode: String?) {
         guard !code.isEmpty else {
             showNameError(with: "emptyField")
             return
         }
         
-        guard code != savedGeneratedReferralCode else {
+        guard code != referralCode else {
             showNameError(with: "referralCodeMatch")
             return
         }
@@ -116,5 +140,17 @@ class ReferredViewModel: ObservableObject {
             showNameError(with: "referralLaunchCodeLengthError")
             return
         }
+    }
+    
+    // TODO: - Remove after release
+    func migrateCodeIfNeeded() {
+        guard
+            let savedReferredCode = UserDefaults.standard.string(forKey: "savedReferredCode"),
+            savedReferredCode.isNotEmpty,
+            let currentVault
+        else { return }
+        
+        saveReferredCode(code: savedReferredCode, vault: currentVault)
+        UserDefaults.standard.setValue(nil, forKey: "savedReferredCode")
     }
 }

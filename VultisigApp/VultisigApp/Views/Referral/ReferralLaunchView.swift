@@ -11,26 +11,31 @@ struct ReferralLaunchView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
     
-    var body: some View {
-        Screen(title: "vultisig-referrals".localized) {
-            main
-        }
-        .overlay(referredViewModel.isLoading ? Loader() : nil)
-        .onAppear {
-            referralViewModel.resetAllData()
-        }
+    var isLoading: Bool {
+        referredViewModel.isLoading || referralViewModel.isLoading
     }
     
-    var main: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            image
-            Spacer()
-            
-            VStack(spacing: 16) {
-                referredContent
-                orSeparator
-                referralContent
+    var body: some View {
+        Screen(title: "vultisig-referrals".localized) {
+            VStack(spacing: 0) {
+                Spacer()
+                image
+                Spacer()
+                
+                VStack(spacing: 16) {
+                    referredContent
+                    orSeparator
+                    referralContent
+                }
+            }
+        }
+        .overlay(referredViewModel.isLoading ? Loader() : nil)
+        .onAppear(perform: referralViewModel.resetAllData)
+        .onLoad {
+            // TODO: - Remove after release
+            referredViewModel.migrateCodeIfNeeded()
+            Task {
+                await referralViewModel.fetchVaultData()
             }
         }
     }
@@ -104,7 +109,7 @@ private extension ReferralLaunchView {
     var saveButton: some View {
         PrimaryButton(title: "saveReferredCode", type: .secondary) {
             Task { @MainActor in
-                await referredViewModel.verifyReferredCode(savedGeneratedReferralCode: referralViewModel.savedGeneratedReferralCode)
+                await referredViewModel.verifyReferredCode()
             }
         }
     }
@@ -112,7 +117,6 @@ private extension ReferralLaunchView {
     var editButton: some View {
         PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
             ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-//            EditReferredCodeScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
         }
     }
     

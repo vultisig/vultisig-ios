@@ -13,8 +13,6 @@ import SwiftData
 class ReferralViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
-    // Generated Referral Code
-    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     @Published var referralCode: String = ""
     @Published var showReferralAvailabilityError: Bool = false
     @Published var referralAvailabilityErrorMessage: String = ""
@@ -41,19 +39,28 @@ class ReferralViewModel: ObservableObject {
     private let thorchainReferralService = THORChainAPIService()
     
     private(set) var thornameDetails: THORName?
-    private(set) var thornameVault: Vault?
     private(set) var currentBlockheight: UInt64 = 0
-
+    
+    var currentVault: Vault? {
+        ApplicationState.shared.currentVault
+    }
+    
     var yourVaultName: String? {
-        thornameVault?.name
+        currentVault?.name
+    }
+    
+    var savedReferralCode: String {
+        currentVault?.referralCode?.code ?? .empty
     }
     
     var hasReferralCode: Bool {
-        savedGeneratedReferralCode.isNotEmpty
+        savedReferralCode.isNotEmpty
     }
     
     var canEditCode: Bool {
-        !isLoading && thornameDetails != nil && thornameVault != nil
+        !isLoading && thornameDetails != nil
+        // TODO: - To remove
+//        && thornameVault != nil
     }
     
     var registrationFeeFiat: String {
@@ -241,7 +248,7 @@ class ReferralViewModel: ObservableObject {
         }
         
         if !forReferralCode {
-            guard code != savedGeneratedReferralCode else {
+            guard code != savedReferralCode else {
                 showNameError(with: "referralCodeMatch")
                 return
             }
@@ -297,19 +304,16 @@ class ReferralViewModel: ObservableObject {
     func fetchReferralCodeDetails(vaults: [Vault]) async {
         await MainActor.run { isLoading = true }
         do {
-            let details = try await thorchainReferralService.getThornameDetails(name: savedGeneratedReferralCode)
+            let details = try await thorchainReferralService.getThornameDetails(name: savedReferralCode)
             let lastBlock = try await thorchainReferralService.getLastBlock()
             let expiresOn = ReferralExpiryDataCalculator.getFormattedExpiryDate(expiryBlock: details.expireBlockHeight, currentBlock: lastBlock)
             let collectedRunes = await calculateCollectedRewards(details: details)
             // Saved referral code and vault association
-            let thornameVault = vaults.first { $0.nativeCoin(for: .thorChain)?.address == details.owner }
-            
             await MainActor.run {
                 self.currentBlockheight = lastBlock
                 self.expiresOn = expiresOn
                 self.collectedRewards = collectedRunes
                 self.thornameDetails = details
-                self.thornameVault = thornameVault
             }
         } catch {
             await MainActor.run {
@@ -350,5 +354,49 @@ class ReferralViewModel: ObservableObject {
         let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
         let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
         tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
+    }
+    
+    func updateReferralCode(code: String) {
+        guard let currentVault else {
+            showNameError(with: "systemErrorMessage")
+            return
+        }
+        var referral: ReferralCode
+        
+        if let vaultReferral = currentVault.referralCode {
+            referral = vaultReferral
+            referral.code = code
+        } else {
+            referral = ReferralCode(code: code, vault: currentVault)
+        }
+        
+        Storage.shared.insert(referral)
+        do {
+            try Storage.shared.save()
+        } catch {
+            showNameError(with: "systemErrorMessage")
+        }
+    }
+    
+    func fetchVaultData() async {
+        await MainActor.run { isLoading = true }
+        guard
+            let currentVault,
+            currentVault.referralCode == nil,
+            let thorAddress = currentVault.nativeCoin(for: .thorChain)?.address
+        else {
+            await MainActor.run { isLoading = false }
+            return
+        }
+        
+        // Fetch thorname by reverse lookup if it hasn't been set yet
+        let thorname = try? await thorchainReferralService.getAddressLookup(address: thorAddress)
+        // If thorname exist, we'll save it dynamically
+        if let thorname {
+            let referralCode = ReferralCode(code: thorname, vault: currentVault)
+            Storage.shared.insert(referralCode)
+            try? Storage.shared.save()
+        }
+        await MainActor.run { isLoading = false }
     }
 }
