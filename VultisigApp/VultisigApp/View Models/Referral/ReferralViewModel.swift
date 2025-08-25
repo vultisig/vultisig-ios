@@ -59,8 +59,6 @@ class ReferralViewModel: ObservableObject {
     
     var canEditCode: Bool {
         !isLoading && thornameDetails != nil
-        // TODO: - To remove
-//        && thornameVault != nil
     }
     
     var registrationFeeFiat: String {
