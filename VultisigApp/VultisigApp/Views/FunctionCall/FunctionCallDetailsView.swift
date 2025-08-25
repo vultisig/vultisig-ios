@@ -172,8 +172,16 @@ struct FunctionCallDetailsView: View {
                 case .stake:
                     fnCallInstance = .stake(FunctionCallStake())
                 case .stakeTcy:
+                    // Ensure TCY token is selected for TCY staking operations on THORChain
+                    if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
+                        functionCallViewModel.setTcyToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .stakeTcy(FunctionCallStakeTCY(tx: tx, vault: vault, functionCallViewModel: functionCallViewModel))
                 case .unstakeTcy:
+                    // Ensure TCY token is selected for TCY unstaking operations on THORChain
+                    if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
+                        functionCallViewModel.setTcyToken(to: tx, vault: vault)
+                    }
                     
                     DispatchQueue.main.async {
                         ThorchainService.shared.fetchTcyStakedAmount(address: tx.coin.address) {

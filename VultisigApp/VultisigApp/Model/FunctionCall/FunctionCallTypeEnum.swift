@@ -105,7 +105,7 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
     static func getCases(for coin: Coin) -> [FunctionCallType] {
         switch coin.chain {
         case .thorChain:
-            let defaultFunctions = [
+            return [
                 FunctionCallType.bond,
                 .unbond,
                 .leave,
@@ -116,20 +116,9 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .removeThorLP,
                 .stakeRuji,
                 .unstakeRuji,
-                .withdrawRujiRewards
-            ]
-            switch coin.ticker.uppercased() {
-            case "RUNE":
-                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
-            case "TCY":
-                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy]
-            case "YRUNE":
-                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
-            case "YTCY":
-                return defaultFunctions + [.mintYRune, .redeemRune, .mintYTCY, .redeemTCY]
-            default:
-                return defaultFunctions
-            }
+                .withdrawRujiRewards,
+                .mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy]
+            
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
             return [.addThorLP]
         case .mayaChain:
