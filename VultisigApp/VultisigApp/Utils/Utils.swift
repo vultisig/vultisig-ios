@@ -455,7 +455,7 @@ enum Utils {
         return data
     }
     
-    public static func generateQRCodeImage(from string: String, tint: Color = Theme.colors.textPrimary, background: Color = .clear) -> Image {
+    public static func generateQRCodeImage(from string: String, tint: Color = .white, background: Color = .clear) -> Image {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
