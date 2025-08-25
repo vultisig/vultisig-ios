@@ -131,6 +131,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 
                 var poolOptions: [IdentifiableString] = []
                 var nameMap: [String: String] = [:]
+                var isInThePool: Bool = false
                 
                 if self.tx.coin.chain == .thorChain {
                     for pool in allPools {
@@ -138,6 +139,15 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                         let cleanName = ThorchainService.cleanPoolName(assetName)
                         poolOptions.append(IdentifiableString(value: cleanName))
                         nameMap[cleanName] = assetName
+                        
+                        if let lastPart = cleanName
+                            .uppercased()
+                            .split(separator: ".")
+                            .last {
+                            if tx.coin.ticker.uppercased() == String(lastPart) {
+                                isInThePool = true
+                            }
+                        }
                     }
                 } else {
                     let currentSwap = self.tx.coin.chain.swapAsset.uppercased()
@@ -152,7 +162,20 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                         let cleanName = ThorchainService.cleanPoolName(assetName)
                         poolOptions.append(IdentifiableString(value: cleanName))
                         nameMap[cleanName] = assetName
+                        
+                        if let lastPart = cleanName
+                            .uppercased()
+                            .split(separator: ".")
+                            .last {
+                            if tx.coin.ticker.uppercased() == String(lastPart) {
+                                isInThePool = true
+                            }
+                        }
                     }
+                }
+                
+                if tx.coin.ticker.uppercased() != "RUNE" && !isInThePool {
+                    await self.functionCallViewModel.setRuneToken(to: tx, vault: vault)
                 }
                 
                 DispatchQueue.main.async {

@@ -14,7 +14,6 @@ struct JoinKeysignDoneSummary: View {
     @Binding var moveToHome: Bool
     
     @Environment(\.openURL) var openURL
-    
     let summaryViewModel = JoinKeysignSummaryViewModel()
     
     var body: some View {
@@ -33,9 +32,7 @@ struct JoinKeysignDoneSummary: View {
                 } else if viewModel.customMessagePayload == nil {
                     sendContent
                 } else {
-                    ScrollView {
-                        summary
-                    }
+                    summary
                 }
             }
         }
@@ -43,17 +40,26 @@ struct JoinKeysignDoneSummary: View {
     
     var summary: some View {
         VStack {
-            if let approveTxid = viewModel.approveTxid {
-                card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
+            ScrollView {
+                VStack {
+                    if let approveTxid = viewModel.approveTxid {
+                        card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
+                    }
+                    content
+                }
+                .padding(.vertical, 12)
+                .background(Theme.colors.bgSecondary)
+                .cornerRadius(12)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 24)
             }
             
-            content
+            PrimaryButton(title: "done") {
+                onDoneButtonPressed()
+            }
         }
-        .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 24)
+        .padding(16)
+        .frame(maxHeight: .infinity, alignment: .bottom)
     }
     
     var content: some View {
@@ -124,6 +130,11 @@ struct JoinKeysignDoneSummary: View {
                 isVerticalStacked: true
             )
         }
+        
+    }
+    
+    private func onDoneButtonPressed() {
+        moveToHome = true
     }
     
     var transactionLink: some View {

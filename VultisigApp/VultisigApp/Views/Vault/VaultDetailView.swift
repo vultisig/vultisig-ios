@@ -107,8 +107,7 @@ struct VaultDetailView: View {
                 .presentationDetents([.height(260)])
         }
         .navigationDestination(isPresented: $shouldSendCrypto) {
-            let coin = vault.coins.first(where: { $0.chain == selectedChain })
-            SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+            SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
         }
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)

@@ -50,8 +50,6 @@ struct CreateReferralDetailsView: View {
                 separator
                 setExpiration
                 separator
-//                choosePayoutAsset
-//                separator
                 summary
             }
             .padding(24)

@@ -38,7 +38,7 @@ struct FunctionCallDetailsView: View {
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
                     
-                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     bondInstance.nodeAddress = nodeAddress
                     bondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let feeStr = dict.get("fee"), let feeInt = Int64(feeStr) {
@@ -53,7 +53,7 @@ struct FunctionCallDetailsView: View {
                     self._selectedFunctionMemoType = State(initialValue: functionType)
                     self._selectedContractMemoType = State(initialValue: FunctionCallContractType.getDefault(for: defaultCoin))
                     
-                    let unbondInstance = FunctionCallUnbond()
+                    let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     unbondInstance.nodeAddress = nodeAddress
                     unbondInstance.nodeAddressValid = Self.validateNodeAddress(nodeAddress)
                     if let amountStr = dict.get("amount"), let amountDecimal = Decimal(string: amountStr) {
@@ -94,7 +94,11 @@ struct FunctionCallDetailsView: View {
                 let currentNodeAddress = extractNodeAddress(from: fnCallInstance)
                 switch selectedFunctionMemoType {
                 case .bond:
-                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel)
+                    // Ensure RUNE token is selected for BOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
+                    let bondInstance = FunctionCallBond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         bondInstance.nodeAddress = nodeAddress
@@ -102,7 +106,11 @@ struct FunctionCallDetailsView: View {
                     }
                     fnCallInstance = .bond(bondInstance)
                 case .unbond:
-                    let unbondInstance = FunctionCallUnbond()
+                    // Ensure RUNE token is selected for UNBOND operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
+                    let unbondInstance = FunctionCallUnbond(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         unbondInstance.nodeAddress = nodeAddress
@@ -143,7 +151,11 @@ struct FunctionCallDetailsView: View {
                     }
                     
                 case .leave:
-                    let leaveInstance = FunctionCallLeave()
+                    // Ensure RUNE token is selected for LEAVE operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
+                    let leaveInstance = FunctionCallLeave(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault)
                     
                     if let nodeAddress = currentNodeAddress, !nodeAddress.isEmpty {
                         leaveInstance.nodeAddress = nodeAddress
@@ -187,6 +199,10 @@ struct FunctionCallDetailsView: View {
                 case .cosmosIBC:
                     fnCallInstance = .cosmosIBC(FunctionCallCosmosIBC(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .merge:
+                    // Ensure RUNE token is selected for MERGE operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .merge(FunctionCallCosmosMerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .unmerge:
                     fnCallInstance = .unmerge(FunctionCallCosmosUnmerge(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
@@ -203,6 +219,10 @@ struct FunctionCallDetailsView: View {
                 case .addThorLP:
                     fnCallInstance = .addThorLP(FunctionCallAddThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .removeThorLP:
+                    // Ensure RUNE token is selected for REMOVE THORCHAIN LP operations on THORChain
+                    if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+                        functionCallViewModel.setRuneToken(to: tx, vault: vault)
+                    }
                     fnCallInstance = .removeThorLP(FunctionCallRemoveThorLP(tx: tx, functionCallViewModel: functionCallViewModel, vault: vault))
                 case .stakeRuji:
                     functionCallViewModel.setRujiToken(to: tx, vault: vault)

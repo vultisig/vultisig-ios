@@ -24,6 +24,8 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     
     private var tx: SendTransaction
+    private var vault: Vault
+    private var functionCallViewModel: FunctionCallViewModel
     
     var addressFields: [String: String] {
         get {
@@ -46,12 +48,20 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     required init(
-        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel
+        tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault
     ) {
         self.tx = tx
+        self.vault = vault
+        self.functionCallViewModel = functionCallViewModel
     }
     
     func initialize() {
+        // Ensure RUNE token is selected for BOND operations on THORChain
+        if tx.coin.chain == .thorChain && !tx.coin.isNativeToken {
+            DispatchQueue.main.async {
+                self.functionCallViewModel.setRuneToken(to: self.tx, vault: self.vault)
+            }
+        }
         setupValidation()
     }
     

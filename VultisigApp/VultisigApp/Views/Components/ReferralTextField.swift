@@ -32,28 +32,16 @@ struct ReferralTextField: View {
     }
     
     var textField: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString(placeholderText, comment: ""), text: $text)
-                .font(Theme.fonts.bodyMRegular)
-                .foregroundColor(Theme.colors.textPrimary)
-                .submitLabel(.done)
-                .colorScheme(.dark)
-                .disabled(isDisabled)
-            
-            actionButton
+        CommonTextField(
+            text: $text,
+            placeholder: placeholderText,
+            showError: showError
+        ) {
+            HStack {
+                actionButton
+            }
         }
-        .frame(height: 56)
-        .font(Theme.fonts.bodyMMedium)
-        .padding(.horizontal, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(getOutlineColor(), lineWidth: 1)
-        )
-        .autocorrectionDisabled()
-        .borderlessTextFieldStyle()
-        .padding(1)
+        .disabled(isDisabled)
     }
     
     var actionButton: some View {
@@ -77,7 +65,7 @@ struct ReferralTextField: View {
         Button {
             handleCopyCode()
         } label: {
-            Image(systemName: "square.on.square")
+            Icon(named: "copy", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -85,7 +73,7 @@ struct ReferralTextField: View {
         Button {
             handlePasteCode()
         } label: {
-            Image(systemName: "doc.on.clipboard")
+            Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
         }
     }
     
@@ -93,7 +81,7 @@ struct ReferralTextField: View {
         Button {
             clearCode()
         } label: {
-            Image(systemName: "xmark")
+            Icon(named: "circle-x-fill", color: Theme.colors.textPrimary, size: 20)
         }
         .opacity(text.isEmpty ? 0 : 1)
     }

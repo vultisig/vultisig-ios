@@ -94,7 +94,6 @@ struct SendDetailsScreen: View {
     var content: some View {
         view
             .onChange(of: tx.coin) { oldValue, newValue in
-                print("Coin changed", newValue)
                 setData()
             }
             .onChange(of: focusedField) { _, focusedField in
