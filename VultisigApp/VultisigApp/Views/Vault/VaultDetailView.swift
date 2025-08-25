@@ -49,6 +49,7 @@ struct VaultDetailView: View {
             popup
             shadowView
         }
+        .overlay(isLoading ? Loader() : nil)
         .sensoryFeedback(homeViewModel.showAlert ? .stop : .impact, trigger: homeViewModel.showAlert)
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -182,10 +183,6 @@ struct VaultDetailView: View {
     }
     
     private func onAppear() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            isLoading = false
-        }
-        
         setData()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -195,18 +192,16 @@ struct VaultDetailView: View {
     }
     
     func setData() {
-        
         if homeViewModel.selectedVault == nil {
             return
         }
-        Task{
-            viewModel.updateBalance(vault: vault)
-            viewModel.getGroupAsync(tokenSelectionViewModel)
-            
-            tokenSelectionViewModel.setData(for: vault)
-            settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
-            viewModel.categorizeCoins(vault: vault)
-        }
+        viewModel.updateBalance(vault: vault)
+        viewModel.getGroupAsync(tokenSelectionViewModel)
+        
+        tokenSelectionViewModel.setData(for: vault)
+        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
+        viewModel.categorizeCoins(vault: vault)
+        isLoading = false
     }
     
     func getActions() -> some View {

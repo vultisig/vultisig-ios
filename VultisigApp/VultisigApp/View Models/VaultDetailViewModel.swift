@@ -32,7 +32,21 @@ class VaultDetailViewModel: ObservableObject {
         }
     }
     
-    private func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
+    func categorizeCoins(vault: Vault) {
+        var groups = [GroupedChain]()
+
+        for coin in vault.coins {
+            addCoin(coin, groups: &groups)
+        }
+
+        groups.sort { $0.chain.index < $1.chain.index }
+        groups.sort { $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal }
+        self.groups = groups
+    }
+}
+
+private extension VaultDetailViewModel {
+    func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
         for group in groups {
             let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
             
@@ -45,37 +59,29 @@ class VaultDetailViewModel: ObservableObject {
         return groups.first
     }
     
-    func categorizeCoins(vault: Vault) {
-        groups = [GroupedChain]()
-
-        for coin in vault.coins {
-            addCoin(coin)
-        }
-
-        groups.sort { $0.chain.index < $1.chain.index    }
-        groups.sort { $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal }
-    }
-    
-    private func addCoin(_ coin: Coin) {
-        for group in groups {
-            if group.address == coin.address && group.chain == coin.chain {
-                group.coins.append(coin)
-                group.count += 1
-                if coin.isNativeToken {
-                    group.logo = coin.logo
-                }
-                return
-            }
+    func addCoin(_ coin: Coin, groups: inout [GroupedChain]) {
+        let group = groups.first {
+            group in group.address == coin.address && group.chain == coin.chain
         }
         
-        let chain = GroupedChain(
-            chain: coin.chain,
-            address: coin.address,
-            logo: coin.logo,
-            count: 1,
-            coins: [coin]
-        )
+        guard let group else {
+            let chain = GroupedChain(
+                chain: coin.chain,
+                address: coin.address,
+                logo: coin.logo,
+                count: 1,
+                coins: [coin]
+            )
+            
+            groups.append(chain)
+            return
+        }
         
-        groups.append(chain)
+        group.coins.append(coin)
+        group.count += 1
+        if coin.isNativeToken {
+            group.logo = coin.logo
+        }
+        return
     }
 }

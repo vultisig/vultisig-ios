@@ -68,7 +68,7 @@ extension VaultDetailView {
                     balanceContent
                     getActions()
                     cells
-                } else {
+                } else if !isLoading {
                     emptyList
                 }
                 
