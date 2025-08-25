@@ -10,6 +10,7 @@ import Foundation
 enum THORChainAPIError: Error, LocalizedError {
     case invalidResponse
     case thornameNotFound
+    case addressNotFound
     
     var errorDescription: String? {
         switch self {
@@ -17,6 +18,8 @@ enum THORChainAPIError: Error, LocalizedError {
             return "Invalid response from THORChain API"
         case .thornameNotFound:
             return "THORName doesn't exist"
+        case .addressNotFound:
+            return "Address doesn't have a thorname"
         }
     }
 }

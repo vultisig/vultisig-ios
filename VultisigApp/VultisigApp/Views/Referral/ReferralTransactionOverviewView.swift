@@ -39,7 +39,7 @@ struct ReferralTransactionOverviewView: View {
     
     private func setData() {
         if !isEdit {
-            referralViewModel.savedGeneratedReferralCode = referralViewModel.referralCode
+            referralViewModel.updateReferralCode(code: referralViewModel.referralCode)
         }
     }
 }

@@ -26,6 +26,8 @@ final class Vault: ObservableObject, Codable {
     
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     @Relationship(deleteRule: .cascade) var hiddenTokens = [HiddenToken]()
+    @Relationship(deleteRule: .cascade) var referralCode: ReferralCode?
+    @Relationship(deleteRule: .cascade) var referredCode: ReferredCode?
     
     enum CodingKeys: CodingKey {
         case name
