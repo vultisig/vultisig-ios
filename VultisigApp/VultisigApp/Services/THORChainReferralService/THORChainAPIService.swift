@@ -48,6 +48,24 @@ struct THORChainAPIService {
         }
     }
     
+    func getAddressLookup(address: String) async throws -> String {
+        do {
+            let response = try await httpClient.request(THORChainAPI.getAddressLookup(thorname: address), responseType: [String].self)
+            guard let thorname = response.data.first else {
+                throw THORChainAPIError.addressNotFound
+            }
+            
+            return thorname
+        } catch {
+            switch error {
+            case HTTPError.statusCode(404, _):
+                throw THORChainAPIError.thornameNotFound
+            default:
+                throw error
+            }
+        }
+    }
+    
     func getLastBlock() async throws -> UInt64 {
         let response = try await httpClient.request(THORChainAPI.getLastBlock, responseType: [LastBlockResponse].self)
         guard let blockheight = response.data.first?.thorchain else {
