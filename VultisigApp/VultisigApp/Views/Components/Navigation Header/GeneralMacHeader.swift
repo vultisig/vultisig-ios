@@ -15,7 +15,7 @@ struct GeneralMacHeader: View {
     var showActions: Bool = true
     
     var body: some View {
-        HStack {
+        HStack(alignment: .center) {
             HStack {
                 if showActions {
                     leadingAction
@@ -30,8 +30,8 @@ struct GeneralMacHeader: View {
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 24)
+        .frame(height: 40)
         .background(Theme.colors.bgPrimary)
     }
     
