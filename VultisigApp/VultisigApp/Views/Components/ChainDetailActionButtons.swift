@@ -14,7 +14,8 @@ struct ChainDetailActionButtons: View {
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
     @Binding var isMemoLinkActive: Bool
-    
+    @State var isBuyLinkActive: Bool = false
+    var coinTicker: String? = nil
     @State var actions: [CoinAction] = []
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
@@ -23,10 +24,8 @@ struct ChainDetailActionButtons: View {
         HStack(spacing: 12) {
             if !isChainDetail {
                 sendButton
-                swapButton
-                #if os(iOS)
                 buyButton
-                #endif
+                swapButton
             } else {
                 ForEach(actions, id: \.rawValue) { action in
                     switch action {
@@ -60,8 +59,28 @@ struct ChainDetailActionButtons: View {
                 await setData()
             }
         }
+        .sheet(isPresented: $isBuyLinkActive, content: {
+            PlatformWebView(url: getBuyURL())
+            #if os(macOS)
+                .frame(minWidth: 600, minHeight: 600)
+            #endif
+        })
     }
-
+    
+    func getBuyURL() -> URL {
+        var baseURL = "https://vultisig.banxa-sandbox.com/"
+        let address = group.address
+        baseURL += "?walletAddress=\(address)"
+        baseURL += "&blockchain=\(group.chain.banxaBlockchainCode)"
+        if coinTicker != nil {
+            baseURL += "&coinType=\(coinTicker!)"
+        }
+        else {
+                baseURL += "&coinType=\(group.nativeCoin.ticker)"
+        }
+        return URL(string: baseURL)!
+    }
+        
     var memoButton: some View {
         Button {
             isMemoLinkActive = true
@@ -92,6 +111,25 @@ struct ChainDetailActionButtons: View {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
     }
 }
+
+extension ChainDetailActionButtons{
+    var buyButton: some View {
+        Button {
+            isBuyLinkActive = true
+        } label: {
+            ActionButton(title: "buy", fontColor: Theme.colors.bgButtonPrimary)
+        }
+    }
+    
+    var sellButton: some View {
+        Button {
+            
+        } label: {
+            ActionButton(title: "sell", fontColor: Theme.colors.bgButtonPrimary)
+        }
+    }
+}
+
 
 #Preview {
     ChainDetailActionButtons(

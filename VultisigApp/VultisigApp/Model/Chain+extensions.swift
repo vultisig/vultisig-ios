@@ -18,3 +18,82 @@ extension Chain{
         return nil
     }
 }
+
+extension Chain {
+    var banxaBlockchainCode: String {
+        switch self {
+        case .bitcoin:
+            return "BTC"
+        case .bitcoinCash:
+            return "BCH"
+        case .litecoin:
+            return "LTC"
+        case .ethereum:
+            return "ETH"
+        case .bscChain:
+            return "BSC"
+        case .polygon:
+            return "MATIC"
+        case .avalanche:
+            return "AVAX-C"
+        case .arbitrum:
+            return "ARB"
+        case .thorChain:
+            return "THORCHAIN"
+        case .solana:
+            return "SOL"
+        case .base:
+            return "BASE"
+        case .blast:
+            return "BLAST"
+        case .polygonV2:
+            return "MATIC"
+        case .optimism:
+            return "OPTIMISM"
+        case .dogecoin:
+            return "DOGE"
+        case .dash:
+            return "DASH"
+        case .cardano:
+            return "ADA"
+        case .gaiaChain:
+            return "ATOM"
+        case .kujira:
+            return "KUJIRA"
+        case .mayaChain:
+            return "MAYACHAIN"
+        case .cronosChain:
+            return "CRO"
+        case .sui:
+            return "SUI"
+        case .polkadot:
+            return "DOT"
+        case .zksync:
+            return "ZKSYNC"
+        case .dydx:
+            return "DYDX"
+        case .ton:
+            return "TON"
+        case .osmosis:
+            return "OSMOSIS"
+        case .terra:
+            return "LUNA"
+        case .terraClassic:
+            return "LUNC"
+        case .noble:
+            return "NOBLE"
+        case .ripple:
+            return "XRP"
+        case .akash:
+            return "AKASH"
+        case .tron:
+            return "TRON"
+        case .ethereumSepolia:
+            return "ETH"
+        case .zcash:
+            return "ZEC"
+        case .mantle:
+            return "MNT"
+        }
+    }
+}

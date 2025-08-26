@@ -6,12 +6,18 @@
 //
 #if os(macOS)
 import SwiftUI
-extension ChainDetailActionButtons{
-    var buyButton: some View {
-        EmptyView()
+import WebKit
+
+struct PlatformWebView: NSViewRepresentable {
+    let url: URL
+
+    func makeNSView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        webView.load(URLRequest(url: url))
+        return webView
     }
-    var sellButton: some View {
-        EmptyView()
-    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {}
 }
-#endif 
+
+#endif
