@@ -18,28 +18,21 @@ struct BackupSetupView: View {
     @State var animation: RiveViewModel?
    
     var body: some View {
-        mainContent
-            .navigationDestination(isPresented: $navigationLinkActive) {
-                PasswordBackupOptionsView(tssType: tssType, vault: vault, isNewVault: isNewVault)
+        Screen(showNavigationBar: false) {
+            VStack {
+                animation?.view()
+                labels
+                Spacer().frame(height: 100)
+                PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
+                    navigationLinkActive = true
+                }
             }
-            .onAppear {
-                animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
-            }
-    }
-    
-    var mainContent: some View {
-        content
-    }
-    
-    var buttons: some View {
-        saveButton
-            .padding(.bottom, 40)
-            .padding(.horizontal, 16)
-    }
-
-    var saveButton: some View {
-        PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
-            navigationLinkActive = true
+        }
+        .navigationDestination(isPresented: $navigationLinkActive) {
+            PasswordBackupOptionsView(tssType: tssType, vault: vault, isNewVault: isNewVault)
+        }
+        .onLoad {
+            animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
         }
     }
 
@@ -48,8 +41,8 @@ struct BackupSetupView: View {
             Text(NSLocalizedString("backupSetupTitle", comment: ""))
                 .font(Theme.fonts.largeTitle)
                 .foregroundColor(Theme.colors.textPrimary)
-                .padding(.bottom, 16)
                 .multilineTextAlignment(.center)
+                .padding(.bottom, 16)
 
             Text(NSLocalizedString("backupSetupSubtitle", comment: ""))
                 .font(Theme.fonts.bodySMedium)
