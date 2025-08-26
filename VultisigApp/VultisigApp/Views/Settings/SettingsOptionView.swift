@@ -82,6 +82,7 @@ struct SettingsOptionView: View {
                         Text(subtitle)
                             .font(Theme.fonts.caption12)
                             .foregroundStyle(fontColor)
+                            .multilineTextAlignment(.leading)
                     }
                 }
                 
