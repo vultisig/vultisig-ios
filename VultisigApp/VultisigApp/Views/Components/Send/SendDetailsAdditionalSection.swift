@@ -77,11 +77,22 @@ struct SendDetailsAdditionalSection: View {
     
     var networkFeeDescription: some View {
         VStack(alignment: .trailing) {
-            Text(tx.gasInReadable)
-            
-            if let selectedVault = homeViewModel.selectedVault {
-                Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
-                    .foregroundStyle(Theme.colors.textExtraLight)
+            if tx.gas > 0 && tx.fee > 0 {
+                // Show actual gas fee
+                Text(tx.gasInReadable)
+                
+                if let selectedVault = homeViewModel.selectedVault {
+                    Text(sendCryptoViewModel.feesInReadable(tx: tx, vault: selectedVault))
+                        .foregroundStyle(Theme.colors.textExtraLight)
+                }
+            } else {
+                // Show loading indicator when gas is not loaded
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                    Text("Loading...")
+                        .foregroundStyle(Theme.colors.textPrimary)
+                }
             }
         }
         .font(Theme.fonts.bodySMedium)
