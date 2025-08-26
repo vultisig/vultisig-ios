@@ -57,6 +57,11 @@ class SendCryptoViewModel: ObservableObject {
         guard !isLoading else {
             return
         }
+        
+        if tx.gas > 0 && tx.fee > 0 {
+            return
+        }
+        
         isLoading = true
         defer {
             isLoading = false

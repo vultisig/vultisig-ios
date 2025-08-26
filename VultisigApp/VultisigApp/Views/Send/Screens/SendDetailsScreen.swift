@@ -60,8 +60,12 @@ struct SendDetailsScreen: View {
             }
         }
         .onChange(of: tx.amount) { oldValue, newValue in
-            // Preload gas estimation when amount changes (debounced)
-            DebounceHelper.shared.debounce(delay: 0.5) {
+            guard !oldValue.isEmpty, !newValue.isEmpty,
+                  let oldDecimal = Decimal(string: oldValue),
+                  let newDecimal = Decimal(string: newValue),
+                  abs((newDecimal - oldDecimal) / max(oldDecimal, 0.01)) > 0.1 else { return }
+            
+            DebounceHelper.shared.debounce(delay: 0.8) {
                 preloadGasOnAmountChange()
             }
         }

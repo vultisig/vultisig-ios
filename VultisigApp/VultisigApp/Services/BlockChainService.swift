@@ -66,7 +66,6 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
-    @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         let cacheKey =  getCacheKey(for: tx.fromCoin,
                                           action: .swap,
@@ -115,7 +114,7 @@ final class BlockChainService {
                      fromAddress: String?,
                      toAddress: String?,
                      feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+        return "\(coin.chain)-\(coin.contractAddress)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(feeMode)"
     }
 }
 
@@ -123,12 +122,11 @@ private extension BlockChainService {
     func getCacheSeconds(chain: Chain) -> TimeInterval {
         switch chain {
         case .solana:
-            return 10
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
-            // EVM chains - gas changes frequently, shorter cache for fresher data
             return 30
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync, .ethereumSepolia:
+            return 90
         default:
-            return 60
+            return 180
         }
     }
     func fetchSpecificForNonEVM(tx: SendTransaction) async throws -> BlockChainSpecific {
