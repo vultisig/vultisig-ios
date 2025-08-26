@@ -31,18 +31,18 @@ struct BanxaDisclaimer: View {
                             .font(.headline)
                             .foregroundStyle(.black)
                         Image(systemName: "arrow.up.forward.square")
+                            .accessibilityHidden(true)
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 32)
-                            .stroke(Color.gray, lineWidth: 2)
+                            .stroke(.secondary, lineWidth: 2)
                     )
                 }
                 .buttonStyle(.plain)
                 
                 Spacer()
-                
             }
         } else {
             PlatformWebView(url: url)
