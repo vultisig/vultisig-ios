@@ -52,10 +52,12 @@
 "main" = "Main";
 "address" = "Address";
 "vaultDetailsTitle" = "Details";
-"vaultDetailsDescription" = "View your vault details";
+"vaultDetailsDescription" = "View vault name, part and type";
 "ECDSA" = "ECDSA";
 "EdDSA" = "EdDSA";
 "backup" = "Backup";
+"backupVaultShareTitle" = "Backup Vault Share";
+"backupVaultShareDescription" = "Back up your Vault Share to device or server.";
 "error" = "Error";
 "backupVault" = "Backup your vault share";
 "rename" = "Rename";
@@ -788,7 +790,7 @@
 "faqQuestion9" = "How does Vultisig compare to other multisig wallets?";
 "faqAnswer9" = "It is built on MPC technology, which eliminates the need for seed phrases and supports multiple blockchains, making Vultisig flexible and chain-agnostic.";
 "shareVaultQRInformation" = "This QR Code lets you share a view-only version of your Vault";
-"advancedDescription" = "Reshare, change TSS, or sign messages.";
+"advancedDescription" = "Reshare, manage security or sign messages.";
 "vaultManagement" = "Vault Management";
 "security" = "Security";
 "vaultInfo" = "Vault Info";
