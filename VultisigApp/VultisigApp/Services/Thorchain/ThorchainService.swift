@@ -836,7 +836,9 @@ extension ThorchainService {
     }
     
     private func attemptDirectFetch(lcdBaseURL: String, denom: String) async throws -> DenomMetadata? {
-        let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        let encodedDenom = denom.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? denom
+        let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata/\(encodedDenom)"
         
         guard let url = URL(string: urlString) else {
             return nil

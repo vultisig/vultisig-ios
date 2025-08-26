@@ -9,6 +9,11 @@ import Foundation
 
 class Endpoint {
     
+    private static func encodePathComponent(_ value: String) -> String {
+        let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        return value.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? value
+    }
+    
     enum SwapChain {
         case thorchain
         case maya
@@ -128,7 +133,7 @@ class Endpoint {
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
     
     static func fetchThorchainDenomMetadata(denom: String) -> String {
-        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchThorchainAllDenomMetadata() -> String {
@@ -480,7 +485,7 @@ class Endpoint {
     }
     
     static func fetchCosmosDenomMetadata(denom: String) -> String {
-        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchCosmosAllDenomMetadata() -> String {
@@ -510,7 +515,7 @@ class Endpoint {
     }
     
     static func fetchTerraDenomMetadata(denom: String) -> String {
-        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchTerraAllDenomMetadata() -> String {
@@ -539,7 +544,7 @@ class Endpoint {
     }
     
     static func fetchTerraClassicDenomMetadata(denom: String) -> String {
-        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchTerraClassicAllDenomMetadata() -> String {
@@ -577,7 +582,7 @@ class Endpoint {
     }
     
     static func fetchKujiraDenomMetadata(denom: String) -> String {
-        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
     }
     
     static func fetchKujiraAllDenomMetadata() -> String {
