@@ -126,6 +126,14 @@ class Endpoint {
     }
     
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
+    
+    static func fetchThorchainDenomMetadata(denom: String) -> String {
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+    }
+    
+    static func fetchThorchainAllDenomMetadata() -> String {
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    }
     static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
     
     static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
@@ -471,6 +479,14 @@ class Endpoint {
         "https://cosmos-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
+    static func fetchCosmosDenomMetadata(denom: String) -> String {
+        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+    }
+    
+    static func fetchCosmosAllDenomMetadata() -> String {
+        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    }
+    
     
     static func fetchTerraAccountBalance(address: String) -> String{
         "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
@@ -493,6 +509,14 @@ class Endpoint {
         "https://terra-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
     }
     
+    static func fetchTerraDenomMetadata(denom: String) -> String {
+        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+    }
+    
+    static func fetchTerraAllDenomMetadata() -> String {
+        "https://terra-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    }
+    
     static func fetchTerraClassicAccountBalance(address: String) -> String{
         "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/spendable_balances/\(address)"
     }
@@ -512,6 +536,14 @@ class Endpoint {
     
     static func fetchTerraClassicLatestBlock() -> String{
         "https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
+    
+    static func fetchTerraClassicDenomMetadata(denom: String) -> String {
+        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+    }
+    
+    static func fetchTerraClassicAllDenomMetadata() -> String {
+        "https://terra-classic-lcd.publicnode.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
     
     static func fetchDydxAccountBalance(address: String) -> String{
@@ -542,6 +574,14 @@ class Endpoint {
     
     static func fetchKujiraLatestBlock() -> String{
         "https://kujira-rest.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest"
+    }
+    
+    static func fetchKujiraDenomMetadata(denom: String) -> String {
+        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
+    }
+    
+    static func fetchKujiraAllDenomMetadata() -> String {
+        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
     }
     
     static func getSwapProgressURL(txid: String) -> String {
