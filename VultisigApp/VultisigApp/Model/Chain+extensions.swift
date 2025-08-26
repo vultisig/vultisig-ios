@@ -20,6 +20,15 @@ extension Chain{
 }
 
 extension Chain {
+    var canBuy: Bool {
+        switch self {
+        case .kujira,.blast,.terra,.terraClassic,.osmosis,.akash,.noble,.mayaChain:
+            return false
+        case .thorChain,.solana,.ethereum, .avalanche, .base , .arbitrum, .polygon, .polygonV2, .optimism,.bscChain,.bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash,.cardano,.gaiaChain,
+                .cronosChain,.sui,.polkadot,.zksync,.dydx,.ton,.ripple,.tron,.ethereumSepolia,.zcash,.mantle:
+            return true
+        }
+    }
     var banxaBlockchainCode: String {
         switch self {
         case .bitcoin:

@@ -24,7 +24,9 @@ struct ChainDetailActionButtons: View {
         HStack(spacing: 12) {
             if !isChainDetail {
                 sendButton
-                buyButton
+                if group.chain.canBuy {
+                    buyButton
+                }
                 swapButton
             } else {
                 ForEach(actions, id: \.rawValue) { action in
@@ -38,7 +40,9 @@ struct ChainDetailActionButtons: View {
                     case .deposit, .bridge:
                         ActionButton(title: "function", fontColor: action.color)
                     case .buy:
-                        buyButton
+                        if group.chain.canBuy {
+                            buyButton
+                        }
                     case .sell:
                         sellButton
                     }
@@ -80,7 +84,7 @@ struct ChainDetailActionButtons: View {
         }
         return URL(string: baseURL)!
     }
-        
+    
     var memoButton: some View {
         Button {
             isMemoLinkActive = true
