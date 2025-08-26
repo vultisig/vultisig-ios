@@ -751,9 +751,7 @@ struct CosmosTokenMetadata {
 extension ThorchainService {
     
     private func getCosmosTokenMetadata(chain: Chain, denom: String) async throws -> CosmosTokenMetadata {
-        let lcdBaseURL = "https://thornode.ninerealms.com"
-        
-        guard let metadata = try await getDenomMetaFromLCD(lcdBaseURL: lcdBaseURL, denom: denom) else {
+        guard let metadata = try await getDenomMetaFromLCD(denom: denom) else {
             throw CosmosTokenMetadataError.noDenomMetaAvailable
         }
         
@@ -766,12 +764,12 @@ extension ThorchainService {
         return CosmosTokenMetadata(ticker: ticker, decimals: decimals)
     }
     
-    private func getDenomMetaFromLCD(lcdBaseURL: String, denom: String) async throws -> DenomMetadata? {
-        if let metadata = try await attemptDirectFetch(lcdBaseURL: lcdBaseURL, denom: denom) {
+    private func getDenomMetaFromLCD(denom: String) async throws -> DenomMetadata? {
+        if let metadata = try await attemptDirectFetch(denom: denom) {
             return metadata
         }
         
-        if let metadata = try await attemptListFetch(lcdBaseURL: lcdBaseURL, denom: denom) {
+        if let metadata = try await attemptListFetch(denom: denom) {
             return metadata
         }
         
@@ -835,10 +833,8 @@ extension ThorchainService {
         return denom
     }
     
-    private func attemptDirectFetch(lcdBaseURL: String, denom: String) async throws -> DenomMetadata? {
-        let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
-        let encodedDenom = denom.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? denom
-        let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata/\(encodedDenom)"
+    private func attemptDirectFetch(denom: String) async throws -> DenomMetadata? {
+        let urlString = Endpoint.fetchThorchainDenomMetadata(denom: denom)
         
         guard let url = URL(string: urlString) else {
             return nil
@@ -859,8 +855,8 @@ extension ThorchainService {
         return nil
     }
     
-    private func attemptListFetch(lcdBaseURL: String, denom: String) async throws -> DenomMetadata? {
-        let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    private func attemptListFetch(denom: String) async throws -> DenomMetadata? {
+        let urlString = Endpoint.fetchThorchainAllDenomMetadata()
         
         guard let url = URL(string: urlString) else {
             return nil
