@@ -8,7 +8,7 @@
 import SwiftUI
 import RiveRuntime
 
-struct BackupSetupView: View {
+struct BackupSetupScreen: View {
     let tssType: TssType
     let vault: Vault
     var isNewVault = false

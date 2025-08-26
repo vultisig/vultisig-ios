@@ -79,7 +79,7 @@ struct VaultDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupView(tssType: .Keygen, vault: vault)
+            BackupSetupScreen(tssType: .Keygen, vault: vault)
         }
         .navigationDestination(isPresented: $upgradeYourVaultLinkActive, destination: {
             if vault.isFastVault {
