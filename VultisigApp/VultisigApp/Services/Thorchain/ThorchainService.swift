@@ -38,23 +38,19 @@ class ThorchainService: ThorchainSwapProvider {
                 var decimals: Int
                 var logo: String
                 
-                // Try to get metadata from LCD first, fall back to old method if it fails
                 do {
                     let metadata = try await getCosmosTokenMetadata(chain: .thorChain, denom: balance.denom)
                     ticker = metadata.ticker
                     decimals = metadata.decimals
                     logo = ticker.replacingOccurrences(of: "/", with: "")
-                    print("✅ LCD SUCCESS: \(balance.denom) → ticker: '\(ticker)', decimals: \(decimals), logo: '\(logo)'")
                 } catch {
-                    // Fallback to old method if metadata service fails
                     let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
                     ticker = info.ticker
                     decimals = info.decimals
-                    logo = info.logo.replacingOccurrences(of: "/", with: "")
-                    print("🔄 FALLBACK: \(balance.denom) → ticker: '\(ticker)', decimals: \(decimals), logo: '\(logo)' (reason: \(error))")
+                    logo = info.logo
                 }
                 
-                // We don't care about the chain in that case, since we only want the Price Provider ID and it is the same in all networks.
+                
                 let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
                 
                 let coinMeta = CoinMeta(
@@ -704,15 +700,12 @@ private extension ThorchainService {
     
 }
 
-/// Response model for pool data from the THORChain API
 struct THORChainPoolResponse: Codable {
     let status: String
     let asset: String
     let decimals: Int?
     let balanceAsset: String
     let balanceRune: String
-    
-    // The TCY price in TOR (8 decimal places)
     let assetTorPrice: String
     
     enum CodingKeys: String, CodingKey {
@@ -721,19 +714,15 @@ struct THORChainPoolResponse: Codable {
         case decimals
         case balanceAsset = "balance_asset"
         case balanceRune = "balance_rune"
-        case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
+        case assetTorPrice = "asset_tor_price"
     }
 }
 
-// MARK: - Cosmos Token Metadata Support
-
-// Represents the "denom_units" array in the response
 struct DenomUnit: Decodable {
     let denom: String
     let exponent: Int
 }
 
-// Represents the main "metadata" object in the response
 struct DenomMetadata: Decodable {
     let base: String?
     let symbol: String?
@@ -746,17 +735,14 @@ struct DenomMetadata: Decodable {
     }
 }
 
-// Wrapper for the direct query response
 struct MetadataResponse: Decodable {
     let metadata: DenomMetadata?
 }
 
-// Wrapper for the list query response
 struct MetadatasResponse: Decodable {
     let metadatas: [DenomMetadata]?
 }
 
-// Result structure for the getCosmosTokenMetadata function
 struct CosmosTokenMetadata {
     let ticker: String
     let decimals: Int
@@ -764,64 +750,46 @@ struct CosmosTokenMetadata {
 
 extension ThorchainService {
     
-    /// Get token metadata for THORChain denom
     private func getCosmosTokenMetadata(chain: Chain, denom: String) async throws -> CosmosTokenMetadata {
-        // Get the correct LCD URL for THORChain
         let lcdBaseURL = "https://thornode.ninerealms.com"
         
-        // Call getDenomMetaFromLCD to fetch metadata
         guard let metadata = try await getDenomMetaFromLCD(lcdBaseURL: lcdBaseURL, denom: denom) else {
             throw CosmosTokenMetadataError.noDenomMetaAvailable
         }
         
-        // Extract decimals from metadata
         guard let decimals = decimalsFromMeta(metadata: metadata) else {
             throw CosmosTokenMetadataError.couldNotFetchDecimals
         }
         
-        // Derive ticker from denom and metadata
         let ticker = deriveTicker(denom: denom, metadata: metadata)
         
         return CosmosTokenMetadata(ticker: ticker, decimals: decimals)
     }
     
-    /// Fetch metadata using robust two-step fetching logic
     private func getDenomMetaFromLCD(lcdBaseURL: String, denom: String) async throws -> DenomMetadata? {
-        print("🔍 LCD SEARCH: Searching metadata for '\(denom)'...")
-        
-        // Step 1: Attempt Direct Fetch (Primary Method)
-        print("  📡 Trying direct fetch...")
         if let metadata = try await attemptDirectFetch(lcdBaseURL: lcdBaseURL, denom: denom) {
-            print("  ✅ Direct fetch SUCCESS for '\(denom)'")
             return metadata
         }
         
-        // Step 2: Attempt List Fetch (Fallback Method)
-        print("  📋 Direct fetch failed, trying list fetch...")
         if let metadata = try await attemptListFetch(lcdBaseURL: lcdBaseURL, denom: denom) {
-            print("  ✅ List fetch SUCCESS for '\(denom)'")
             return metadata
         }
         
-        print("  ❌ Both LCD methods failed for '\(denom)'")
         return nil
     }
     
-    /// Extract decimals from metadata
     private func decimalsFromMeta(metadata: DenomMetadata) -> Int? {
         guard let denomUnits = metadata.denom_units,
               let display = metadata.display else {
             return nil
         }
         
-        // First try to find the display unit (most reliable)
         for unit in denomUnits {
             if unit.denom == display {
                 return unit.exponent
             }
         }
         
-        // Fallback: try to find symbol if available
         if let symbol = metadata.symbol {
             for unit in denomUnits {
                 if unit.denom == symbol {
@@ -833,25 +801,20 @@ extension ThorchainService {
         return nil
     }
     
-    /// Derive ticker symbol from denom and metadata
     private func deriveTicker(denom: String, metadata: DenomMetadata) -> String {
-        // Priority 1: metadata.symbol
         if let symbol = metadata.symbol, !symbol.isEmpty {
             return symbol
         }
         
-        // Priority 2: metadata.display
         if let display = metadata.display, !display.isEmpty {
             return display
         }
         
-        // Priority 3: Handle "x/staking-" prefix
         if denom.hasPrefix("x/staking-") {
             let withoutPrefix = String(denom.dropFirst("x/staking-".count))
             return "S" + withoutPrefix.uppercased()
         }
         
-        // Priority 4: Handle "x/" prefix
         if denom.hasPrefix("x/") {
             let components = denom.components(separatedBy: "/")
             if let lastComponent = components.last {
@@ -859,11 +822,9 @@ extension ThorchainService {
             }
         }
         
-        // Priority 5: Handle "factory/" prefix
         if denom.hasPrefix("factory/") {
             let components = denom.components(separatedBy: "/")
             if let lastComponent = components.last {
-                // Remove leading "u" if present
                 if lastComponent.hasPrefix("u") && lastComponent.count > 1 {
                     return String(lastComponent.dropFirst())
                 }
@@ -871,7 +832,6 @@ extension ThorchainService {
             }
         }
         
-        // Priority 6: Return original denom as fallback
         return denom
     }
     
@@ -879,33 +839,19 @@ extension ThorchainService {
         let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata/\(denom.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? denom)"
         
         guard let url = URL(string: urlString) else {
-            print("    ❌ Invalid URL: \(urlString)")
             return nil
         }
-        
-        print("    🌐 Direct fetch URL: \(urlString)")
         
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             
-            // Print response details
-            if let httpResponse = response as? HTTPURLResponse {
-                print("    📊 HTTP Status: \(httpResponse.statusCode)")
-                
-                if let responseString = String(data: data, encoding: .utf8) {
-                    print("    📄 Response body: \(responseString)")
-                }
-                
-                if httpResponse.statusCode == 200 {
-                    let metadataResponse = try JSONDecoder().decode(MetadataResponse.self, from: data)
-                    print("    ✅ JSON parsing successful")
-                    return metadataResponse.metadata
-                } else {
-                    print("    ❌ Non-200 status code")
-                }
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                let metadataResponse = try JSONDecoder().decode(MetadataResponse.self, from: data)
+                return metadataResponse.metadata
             }
         } catch {
-            print("    ❌ Direct fetch error for denom \(denom): \(error)")
+            return nil
         }
         
         return nil
@@ -915,53 +861,31 @@ extension ThorchainService {
         let urlString = "\(lcdBaseURL)/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
         
         guard let url = URL(string: urlString) else {
-            print("    ❌ Invalid list URL: \(urlString)")
             return nil
         }
-        
-        print("    🌐 List fetch URL: \(urlString)")
         
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             
-            if let httpResponse = response as? HTTPURLResponse {
-                print("    📊 List HTTP Status: \(httpResponse.statusCode)")
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                let metadatasResponse = try JSONDecoder().decode(MetadatasResponse.self, from: data)
                 
-                if httpResponse.statusCode == 200 {
-                    let metadatasResponse = try JSONDecoder().decode(MetadatasResponse.self, from: data)
-                    print("    ✅ List JSON parsing successful")
-                    
-                    if let metadatas = metadatasResponse.metadatas {
-                        print("    📋 Found \(metadatas.count) total metadata entries")
-                        print("    🔍 Searching for denom '\(denom)' in list...")
-                        
-                        for (index, metadata) in metadatas.enumerated() {
-                            print("    📝 Entry \(index + 1): base='\(metadata.base ?? "nil")', symbol='\(metadata.symbol ?? "nil")'")
-                            if metadata.base == denom {
-                                print("    ✅ Found matching metadata at entry \(index + 1)!")
-                                return metadata
-                            }
+                if let metadatas = metadatasResponse.metadatas {
+                    for metadata in metadatas {
+                        if metadata.base == denom {
+                            return metadata
                         }
-                        print("    ❌ No matching metadata found in \(metadatas.count) entries")
-                    } else {
-                        print("    ❌ No metadatas array in response")
-                    }
-                } else {
-                    print("    ❌ List fetch non-200 status")
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        print("    📄 List error response: \(responseString)")
                     }
                 }
             }
         } catch {
-            print("    ❌ List fetch error: \(error)")
+            return nil
         }
         
         return nil
     }
 }
-
-// MARK: - Error Types
 
 enum CosmosTokenMetadataError: Error, LocalizedError {
     case noDenomMetaAvailable
