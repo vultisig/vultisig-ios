@@ -16,13 +16,16 @@ struct VaultDeletionConfirmView: View {
     @State var canLoseFundCheck = false
     @State var vaultBackupCheck = false
     
-    @State var showAlert = false
     @State var navigateBackToHome = false
     @State var navigateToCreateVault = false
     @State var nextSelectedVault: Vault? = nil
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
+    
+    var buttonEnabled: Bool {
+        permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
+    }
     
     var body: some View {
         Screen(title: "deleteVaultTitle".localized) {
@@ -43,9 +46,6 @@ struct VaultDeletionConfirmView: View {
         }
         .navigationDestination(isPresented: $navigateBackToHome) {
             HomeView(selectedVault: nextSelectedVault, showVaultsList: true)
-        }
-        .alert(isPresented: $showAlert) {
-            alert
         }
     }
     
@@ -80,6 +80,7 @@ struct VaultDeletionConfirmView: View {
         PrimaryButton(title: "deleteVaultTitle", type: .alert) {
             delete()
         }
+        .disabled(!buttonEnabled)
     }
     
     var details: some View {
@@ -87,11 +88,6 @@ struct VaultDeletionConfirmView: View {
     }
     
     func delete() {
-        
-        guard allFieldsChecked() else {
-            showAlert = true
-            return
-        }
         homeViewModel.selectedVault = nil
         ApplicationState.shared.currentVault = nil
         
@@ -120,18 +116,6 @@ struct VaultDeletionConfirmView: View {
         } else {
             navigateToCreateVault = true
         }
-    }
-    
-    func allFieldsChecked() -> Bool {
-        permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("reviewConditions", comment: "")),
-            message: Text(NSLocalizedString("reviewConditionsMessage", comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
     
     var backgroundView: some View {
