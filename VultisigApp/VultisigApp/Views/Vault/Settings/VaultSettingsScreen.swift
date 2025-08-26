@@ -85,8 +85,8 @@ struct VaultSettingsScreen: View {
         } label: {
             SettingsOptionView(
                 icon: "hard-drive-upload",
-                title: "backup".localized,
-                subtitle: "vaultDetailsDescription".localized,
+                title: "backupVaultShare".localized,
+                subtitle: "backupVaultShareDescription".localized,
                 showSeparator: false
             )
         }
