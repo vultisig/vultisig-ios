@@ -14,6 +14,7 @@ struct ChainDetailActionButtons: View {
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
     @Binding var isMemoLinkActive: Bool
+    @State var isBanxaLinkActive: Bool = false
     @State var isBuyLinkActive: Bool = false
     var coinTicker: String? = nil
     @State var actions: [CoinAction] = []
@@ -63,12 +64,16 @@ struct ChainDetailActionButtons: View {
                 await setData()
             }
         }
-        .sheet(isPresented: $isBuyLinkActive, content: {
+        .sheet(isPresented: $isBuyLinkActive) {
+            BanxaDisclaimer(continueToBanxa:$isBanxaLinkActive)
+        }
+        .sheet(isPresented: $isBanxaLinkActive) {
             PlatformWebView(url: getBuyURL())
             #if os(macOS)
-                .frame(minWidth: 600, minHeight: 600)
+                .frame(minWidth: 600, minHeight: 800)
             #endif
-        })
+        }
+            
     }
     
     func getBuyURL() -> URL {
