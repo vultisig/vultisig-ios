@@ -63,26 +63,23 @@ struct ChainDetailActionButtons: View {
                 await setData()
             }
         }
-        .sheet(isPresented: $isBuyLinkActive, content: {
-            PlatformWebView(url: getBuyURL())
+        .sheet(isPresented: $isBuyLinkActive) {
+            BanxaDisclaimer(url: getBuyURL())
             #if os(macOS)
-                .frame(minWidth: 600, minHeight: 600)
+                .frame(minWidth: 600, minHeight: 400)
             #endif
-        })
+        }
+            
     }
     
     func getBuyURL() -> URL {
-        var baseURL = "https://vultisig.banxa-sandbox.com/"
-        let address = group.address
-        baseURL += "?walletAddress=\(address)"
-        baseURL += "&blockchain=\(group.chain.banxaBlockchainCode)"
-        if coinTicker != nil {
-            baseURL += "&coinType=\(coinTicker!)"
-        }
-        else {
-                baseURL += "&coinType=\(group.nativeCoin.ticker)"
-        }
-        return URL(string: baseURL)!
+        var components = URLComponents(string: "https://vultisig.banxa.com/")!
+        components.queryItems = [
+            URLQueryItem(name: "walletAddress", value: group.address),
+            URLQueryItem(name: "blockchain", value: group.chain.banxaBlockchainCode),
+            URLQueryItem(name: "coinType", value: coinTicker ?? group.nativeCoin.ticker)
+        ]
+        return components.url!
     }
     
     var memoButton: some View {
