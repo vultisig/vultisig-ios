@@ -46,6 +46,14 @@ struct VaultBackupSelectionScreen: View {
     }
     
     func backupTypeContainer(type: VaultBackupType) -> some View {
+        NavigationLink {
+            PasswordBackupOptionsScreen(tssType: .Keygen, vault: selectedVault)
+        } label: {
+            backupTypeRow(type: type)
+        }
+    }
+    
+    func backupTypeRow(type: VaultBackupType) -> some View {
         VStack(spacing: 12) {
             HStack {
                 Text(title(for: type))
