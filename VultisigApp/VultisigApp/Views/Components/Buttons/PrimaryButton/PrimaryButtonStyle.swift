@@ -79,29 +79,27 @@ private extension PrimaryButtonStyle {
     
     // MARK: - Type Configuration with State-Based Colors
     func backgroundColor(for type: ButtonType, isPressed: Bool, isEnabled: Bool) -> Color {
+        guard isEnabled else {
+            return Theme.colors.bgButtonDisabled
+        }
+        
         let shouldHighlight = isPressed && !supportsLongPress
         switch type {
         case .alert:
-            if !isEnabled {
-                return Theme.colors.bgButtonDisabled
-            } else if isPressed {
+            if isPressed {
                 return Theme.colors.alertError.opacity(0.7)
             } else {
                 return Theme.colors.alertError
             }
         case .primary:
-            if !isEnabled {
-                return Theme.colors.bgButtonDisabled
-            } else if shouldHighlight {
+            if shouldHighlight {
                 return Theme.colors.bgButtonTertiaryPressed
             } else {
                 return Theme.colors.bgButtonTertiary
             }
             
         case .secondary:
-            if !isEnabled {
-                return .clear
-            } else if shouldHighlight {
+            if shouldHighlight {
                 return Theme.colors.bgButtonSecondaryPressed
             } else {
                 return Theme.colors.bgButtonSecondary
