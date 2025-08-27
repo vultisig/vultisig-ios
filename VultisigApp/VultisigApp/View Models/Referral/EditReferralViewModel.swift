@@ -16,9 +16,12 @@ class EditReferralViewModel: ObservableObject {
     @Published var preferredAsset: PreferredAsset?
     var initialPreferredAsset: PreferredAsset?
 
-    @AppStorage("savedGeneratedReferralCode") var savedGeneratedReferralCode: String = ""
     let thornameDetails: THORName
     let currentBlockHeight: UInt64
+    
+    var referralCode: String {
+        thornameDetails.name.uppercased()
+    }
     
     var totalFeeAmountText: String {
         "\(totalFeeAmount) RUNE"
@@ -118,7 +121,7 @@ private extension EditReferralViewModel {
         tx.transactionType = fnCallInstance.getTransactionType()
         
         let memo = ReferralCodeMemoFactory.createEdit(
-            referralCode: savedGeneratedReferralCode,
+            referralCode: referralCode,
             nativeCoin: nativeCoin,
             preferredAsset: preferredAsset,
             preferredAssetCoin: preferredAssetCoin
