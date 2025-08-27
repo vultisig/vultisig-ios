@@ -9,6 +9,11 @@ import Foundation
 
 class Endpoint {
     
+    private static func encodePathComponent(_ value: String) -> String {
+        let disallowSlash = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        return value.addingPercentEncoding(withAllowedCharacters: disallowSlash) ?? value
+    }
+    
     enum SwapChain {
         case thorchain
         case maya
@@ -126,6 +131,14 @@ class Endpoint {
     }
     
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
+    
+    static func fetchThorchainDenomMetadata(denom: String) -> String {
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata/\(encodePathComponent(denom))"
+    }
+    
+    static func fetchThorchainAllDenomMetadata() -> String {
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/denoms_metadata?pagination.limit=1000"
+    }
     static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
     
     static let fetchThorchainInboundAddressesNineRealms = "https://thornode.ninerealms.com/thorchain/inbound_addresses"
