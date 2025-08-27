@@ -809,3 +809,9 @@
 "editFriendsReferral" = "Edit Friends Referral";
 "vaultSelected" = "Vault selected";
 "useMyVaultPassword" = "Use My Vault Password";
+"selectVaultsToBackUpTitle" = "Select Vaults to Back Up";
+"selectVaultsToBackUpSubtitle" = "Choose whether to back up just this vault or all vaults in your app.";
+"allVaults" = "All Vaults";
+"thisVaultOnly" = "This Vault Only";
+"partOf" = "part %d of %d";
+"plusMore" = "+%d more";
