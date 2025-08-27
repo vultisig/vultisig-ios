@@ -12,6 +12,7 @@ struct PasswordBackupOptionsScreen: View {
     let vault: Vault
     var isNewVault = false
     
+    @State var isLoading = false
     @State var showSkipShareSheet = false
     @State var homeLinkActive = false
     @State var navigationLinkActive = false
@@ -68,6 +69,7 @@ struct PasswordBackupOptionsScreen: View {
             withoutPasswordButton
             withPasswordButton
         }
+        .disabled(isLoading)
     }
     
     var withoutPasswordButton: some View {
@@ -85,9 +87,11 @@ struct PasswordBackupOptionsScreen: View {
     }
     
     private func onLoad() {
+        isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
         backupViewModel.exportFile(vault)
+        isLoading = false
     }
     
     func fileSaved() {

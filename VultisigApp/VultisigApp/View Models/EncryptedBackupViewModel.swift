@@ -54,6 +54,7 @@ class EncryptedBackupViewModel: ObservableObject {
     func exportFile(_ vault: Vault) {
         do {
             guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+                debugPrint("Couldn't fetch password for vault")
                 return
             }
             
@@ -67,7 +68,7 @@ class EncryptedBackupViewModel: ObservableObject {
             encryptedFileURLWithoutPassword = backupURL
             encryptedFileURLWithPassword = encryptedBackupURL
         } catch {
-            print(error)
+            print("Error creating backup files: \(error.localizedDescription)")
         }
     }
     
