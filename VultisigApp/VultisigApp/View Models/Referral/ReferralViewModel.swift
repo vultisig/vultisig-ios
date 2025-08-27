@@ -358,8 +358,7 @@ class ReferralViewModel: ObservableObject {
         guard let currentVault else {
             showNameError(with: "systemErrorMessage")
             return
-        }
-        let normalisedCode = code.uppercased()        
+        }        
         if let vaultReferral = currentVault.referralCode {
             vaultReferral.code = code
         } else {

@@ -80,11 +80,11 @@ final class RateProvider {
         return rates.first(where: { $0.id == identifier })
     }
 
-    @MainActor func save(rates newRates: [Rate]) async throws {
+    @MainActor func save(rates newRates: [Rate]) throws {
         // if a rate is newer , we use the newer one
         let newRateIds = Set(newRates.map { $0.id })
         rates = rates.filter { !newRateIds.contains($0.id) }.union(newRates)
-        await Storage.shared.insert(newRates.map { $0.mapToObject() })
+        Storage.shared.insert(newRates.map { $0.mapToObject() })
         try Storage.shared.modelContext.save()
     }
 }

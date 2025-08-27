@@ -34,16 +34,30 @@ class ThorchainService: ThorchainSwapProvider {
             let balances: [CosmosBalance] =  try await fetchBalances(address)
             var coinMetaList = [CoinMeta]()
             for balance in balances {
-                let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
+                var ticker: String
+                var decimals: Int
+                var logo: String
                 
-                // We don't care about the chain in that case, since we only want the Price Provider ID and it is the same in all networks.
-                let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == info.symbol.uppercased() })
+                do {
+                    let metadata = try await getCosmosTokenMetadata(chain: .thorChain, denom: balance.denom)
+                    ticker = metadata.ticker
+                    decimals = metadata.decimals
+                    logo = ticker.replacingOccurrences(of: "/", with: "")
+                } catch {
+                    let info = THORChainTokenMetadataFactory.create(asset: balance.denom)
+                    ticker = info.ticker
+                    decimals = info.decimals
+                    logo = info.logo
+                }
+                
+                
+                let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
                 
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
-                    ticker: info.symbol.uppercased().replacingOccurrences(of: "X/", with: ""),
-                    logo: info.logo, // We will have to move this logo to another storage
-                    decimals: 8,
+                    ticker: ticker.uppercased().replacingOccurrences(of: "X/", with: ""),
+                    logo: logo,
+                    decimals: decimals,
                     priceProviderId: localAsset?.priceProviderId ?? "",
                     contractAddress: balance.denom,
                     isNativeToken: false
@@ -686,15 +700,12 @@ private extension ThorchainService {
     
 }
 
-/// Response model for pool data from the THORChain API
 struct THORChainPoolResponse: Codable {
     let status: String
     let asset: String
     let decimals: Int?
     let balanceAsset: String
     let balanceRune: String
-    
-    // The TCY price in TOR (8 decimal places)
     let assetTorPrice: String
     
     enum CodingKeys: String, CodingKey {
@@ -703,6 +714,187 @@ struct THORChainPoolResponse: Codable {
         case decimals
         case balanceAsset = "balance_asset"
         case balanceRune = "balance_rune"
-        case assetTorPrice = "asset_tor_price"  // This is the actual price field in the API
+        case assetTorPrice = "asset_tor_price"
+    }
+}
+
+struct DenomUnit: Decodable {
+    let denom: String
+    let exponent: Int
+}
+
+struct DenomMetadata: Decodable {
+    let base: String?
+    let symbol: String?
+    let display: String?
+    let denom_units: [DenomUnit]?
+    
+    enum CodingKeys: String, CodingKey {
+        case base, symbol, display
+        case denom_units = "denom_units"
+    }
+}
+
+struct MetadataResponse: Decodable {
+    let metadata: DenomMetadata?
+}
+
+struct MetadatasResponse: Decodable {
+    let metadatas: [DenomMetadata]?
+}
+
+struct CosmosTokenMetadata {
+    let ticker: String
+    let decimals: Int
+}
+
+extension ThorchainService {
+    
+    private func getCosmosTokenMetadata(chain: Chain, denom: String) async throws -> CosmosTokenMetadata {
+        guard let metadata = try await getDenomMetaFromLCD(denom: denom) else {
+            throw CosmosTokenMetadataError.noDenomMetaAvailable
+        }
+        
+        guard let decimals = decimalsFromMeta(metadata: metadata) else {
+            throw CosmosTokenMetadataError.couldNotFetchDecimals
+        }
+        
+        let ticker = deriveTicker(denom: denom, metadata: metadata)
+        
+        return CosmosTokenMetadata(ticker: ticker, decimals: decimals)
+    }
+    
+    private func getDenomMetaFromLCD(denom: String) async throws -> DenomMetadata? {
+        if let metadata = try await attemptDirectFetch(denom: denom) {
+            return metadata
+        }
+        
+        if let metadata = try await attemptListFetch(denom: denom) {
+            return metadata
+        }
+        
+        return nil
+    }
+    
+    private func decimalsFromMeta(metadata: DenomMetadata) -> Int? {
+        guard let denomUnits = metadata.denom_units,
+              let display = metadata.display else {
+            return nil
+        }
+        
+        for unit in denomUnits {
+            if unit.denom == display {
+                return unit.exponent
+            }
+        }
+        
+        if let symbol = metadata.symbol {
+            for unit in denomUnits {
+                if unit.denom == symbol {
+                    return unit.exponent
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    private func deriveTicker(denom: String, metadata: DenomMetadata) -> String {
+        if let symbol = metadata.symbol, !symbol.isEmpty {
+            return symbol
+        }
+        
+        if let display = metadata.display, !display.isEmpty {
+            return display
+        }
+        
+        if denom.hasPrefix("x/staking-") {
+            let withoutPrefix = String(denom.dropFirst("x/staking-".count))
+            return "S" + withoutPrefix.uppercased()
+        }
+        
+        if denom.hasPrefix("x/") {
+            let components = denom.components(separatedBy: "/")
+            if let lastComponent = components.last {
+                return lastComponent
+            }
+        }
+        
+        if denom.hasPrefix("factory/") {
+            let components = denom.components(separatedBy: "/")
+            if let lastComponent = components.last {
+                if lastComponent.hasPrefix("u") && lastComponent.count > 1 {
+                    return String(lastComponent.dropFirst())
+                }
+                return lastComponent
+            }
+        }
+        
+        return denom
+    }
+    
+    private func attemptDirectFetch(denom: String) async throws -> DenomMetadata? {
+        let urlString = Endpoint.fetchThorchainDenomMetadata(denom: denom)
+        
+        guard let url = URL(string: urlString) else {
+            return nil
+        }
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                let metadataResponse = try JSONDecoder().decode(MetadataResponse.self, from: data)
+                return metadataResponse.metadata
+            }
+        } catch {
+            return nil
+        }
+        
+        return nil
+    }
+    
+    private func attemptListFetch(denom: String) async throws -> DenomMetadata? {
+        let urlString = Endpoint.fetchThorchainAllDenomMetadata()
+        
+        guard let url = URL(string: urlString) else {
+            return nil
+        }
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200 {
+                let metadatasResponse = try JSONDecoder().decode(MetadatasResponse.self, from: data)
+                
+                if let metadatas = metadatasResponse.metadatas {
+                    for metadata in metadatas {
+                        if metadata.base == denom {
+                            return metadata
+                        }
+                    }
+                }
+            }
+        } catch {
+            return nil
+        }
+        
+        return nil
+    }
+}
+
+enum CosmosTokenMetadataError: Error, LocalizedError {
+    case noDenomMetaAvailable
+    case couldNotFetchDecimals
+    
+    var errorDescription: String? {
+        switch self {
+        case .noDenomMetaAvailable:
+            return "No denom meta information available"
+        case .couldNotFetchDecimals:
+            return "Could not fetch decimal for token"
+        }
     }
 }
