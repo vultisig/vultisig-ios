@@ -81,7 +81,7 @@ struct VaultSettingsScreen: View {
     
     var backupVault: some View {
         NavigationLink {
-            PasswordBackupOptionsView(tssType: .Keygen, vault: vault)
+            PasswordBackupOptionsScreen(tssType: .Keygen, vault: vault)
         } label: {
             SettingsOptionView(
                 icon: "hard-drive-upload",

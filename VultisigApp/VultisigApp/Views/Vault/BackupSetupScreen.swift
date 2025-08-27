@@ -18,7 +18,7 @@ struct BackupSetupScreen: View {
     @State var animation: RiveViewModel?
    
     var body: some View {
-        Screen(showNavigationBar: false) {
+        Screen {
             VStack {
                 animation?.view()
                 labels
@@ -29,7 +29,7 @@ struct BackupSetupScreen: View {
             }
         }
         .navigationDestination(isPresented: $navigationLinkActive) {
-            PasswordBackupOptionsView(tssType: tssType, vault: vault, isNewVault: isNewVault)
+            PasswordBackupOptionsScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
         }
         .onLoad {
             animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
@@ -60,5 +60,5 @@ struct BackupSetupScreen: View {
 }
 
 #Preview {
-    BackupPasswordSetupView(tssType: .Keygen, vault: Vault.example)
+    BackupSetupScreen(tssType: .Keygen, vault: Vault.example)
 }

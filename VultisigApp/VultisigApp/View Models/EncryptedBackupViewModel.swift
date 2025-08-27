@@ -16,7 +16,7 @@ import UniformTypeIdentifiers
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURLWithPassowrd: URL?
+    @Published var encryptedFileURLWithPassword: URL?
     @Published var encryptedFileURLWithoutPassword: URL?
     @Published var decryptedContent: String?
     @Published var encryptionPassword: String = ""
@@ -31,6 +31,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var selectedVault: Vault?
     
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
+    private let keychain = DefaultKeychainService.shared
     
     enum VultisigDocumentError : Error{
         case customError(String)
@@ -41,7 +42,7 @@ class EncryptedBackupViewModel: ObservableObject {
         showVaultImporter = false
         isFileUploaded = false
         importedFileName = nil
-        encryptedFileURLWithPassowrd = nil
+        encryptedFileURLWithPassword = nil
         encryptedFileURLWithoutPassword = nil
         decryptedContent = ""
         encryptionPassword = ""
@@ -52,36 +53,47 @@ class EncryptedBackupViewModel: ObservableObject {
     // Export
     func exportFile(_ vault: Vault) {
         do {
-            var vaultContainer = VSVaultContainer()
-            vaultContainer.version = 1 // current version 1
-            let vsVault = vault.mapToProtobuff()
-            let data = try vsVault.serializedData()
-            
-            if encryptionPassword.isEmpty {
-                vaultContainer.isEncrypted = false
-                vaultContainer.vault = data.base64EncodedString()
-            } else if let encryptedData = encrypt(data: data, password: encryptionPassword) {
-                vaultContainer.isEncrypted = true
-                vaultContainer.vault = encryptedData.base64EncodedString()
-            } else {
-                print("Error encrypting data")
+            guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
                 return
             }
-            let dataToSave = try vaultContainer.serializedData().base64EncodedData()
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName())
             
-            do {
-                try dataToSave.write(to: tempURL)
-                encryptedFileURLWithPassowrd = tempURL
-                encryptedFileURLWithoutPassword = tempURL
-                print(tempURL.absoluteString)
-            } catch {
-                print("Error writing file: \(error.localizedDescription)")
+            let backupURL = try createBackupFile(vault: vault, encryptionPassword: nil)
+            let encryptedBackupURL = try createBackupFile(vault: vault, encryptionPassword: vaultPassword)
+            
+            guard let backupURL, let encryptedBackupURL else {
+                return
             }
             
+            encryptedFileURLWithoutPassword = backupURL
+            encryptedFileURLWithPassword = encryptedBackupURL
         } catch {
             print(error)
         }
+    }
+    
+    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> URL? {
+        var vaultContainer = VSVaultContainer()
+        vaultContainer.version = 1 // current version 1
+        let vsVault = vault.mapToProtobuff()
+        let data = try vsVault.serializedData()
+        
+        if let encryptionPassword {
+            guard let encryptedData = encrypt(data: data, password: encryptionPassword) else {
+                return nil
+            }
+            vaultContainer.isEncrypted = true
+            vaultContainer.vault = encryptedData.base64EncodedString()
+        } else {
+            vaultContainer.isEncrypted = false
+            vaultContainer.vault = data.base64EncodedString()
+        }
+        
+        var fileName = vault.getExportName()
+        fileName += vaultContainer.isEncrypted ? "-encrypted" : ""
+        let dataToSave = try vaultContainer.serializedData().base64EncodedData()
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+        try dataToSave.write(to: tempURL)
+        return tempURL
     }
     
     private func encrypt(data: Data, password: String) -> Data? {

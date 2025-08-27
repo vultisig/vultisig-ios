@@ -35,6 +35,15 @@ extension View {
         }
     }
     
+    @ViewBuilder
+    func unwrap<T, Content: View>(_ value: T?, transform: (Self, T) -> Content) -> some View {
+        if let value {
+            transform(self, value)
+        } else {
+            self
+        }
+    }
+    
     /// Applies the given transform if the given condition evaluates to `true`.
     /// - Parameters:
     ///   - condition: The condition to evaluate.
