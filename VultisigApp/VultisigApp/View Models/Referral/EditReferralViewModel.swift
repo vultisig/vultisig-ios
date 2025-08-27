@@ -111,7 +111,7 @@ private extension EditReferralViewModel {
     func createTransaction(tx: SendTransaction, preferredAsset: PreferredAsset?) async {
         var preferredAssetCoin: Coin?
         if let preferredAsset {
-            preferredAssetCoin = try? await CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
+            preferredAssetCoin = try? CoinService.addIfNeeded(asset: preferredAsset.asset, to: vault, priceProviderId: preferredAsset.asset.priceProviderId)
         }
         
         tx.amount = totalFeeAmount.formatDecimalToLocale()

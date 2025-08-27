@@ -209,7 +209,7 @@ struct SwapCustomTokenView: View {
             
             do {
                 // Create and add the coin to the vault
-                if let coin = try await CoinService.addToChain(
+                if let coin = try CoinService.addToChain(
                     asset: token,
                     to: vault,
                     priceProviderId: token.priceProviderId
