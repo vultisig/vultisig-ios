@@ -316,6 +316,7 @@ final class SchnorrKeygen {
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
+            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")

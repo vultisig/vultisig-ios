@@ -361,6 +361,7 @@ final class DKLSKeygen {
         }
         catch {
             print("Failed to generate key, error: \(error.localizedDescription)")
+            self.setKeygenDone(status: true)
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
@@ -545,6 +546,8 @@ final class DKLSKeygen {
         }
         catch {
             print("Failed to reshare key, error: \(error.localizedDescription)")
+            self.setKeygenDone(status: true)
+
             task?.cancel()
             if attempt < 3 { // let's retry
                 print("keygen/reshare retry, attemp: \(attempt)")
