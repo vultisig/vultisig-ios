@@ -1,9 +1,20 @@
 #!/bin/bash
 
-# Define the path to the plist file
-SRC_LAUNCHD_PLIST="/Library/Application Support/Vultisig/com.vultisig.setenv.plist"
-# Check if the plist file exists
-if [ -f "$SRC_LAUNCHD_PLIST" ]; then
-    launchctl unload "$SRC_LAUNCHD_PLIST" || true
-    launchctl load -w "$SRC_LAUNCHD_PLIST"
-fi
+# System-wide LaunchAgent
+SYS_PLIST="/Library/LaunchAgents/com.vultisig.setenv.plist"
+# User-specific LaunchAgent
+USER_PLIST="$HOME/Library/LaunchAgents/com.vultisig.setenv.plist"
+
+# Function to load a LaunchAgent plist
+load_plist() {
+    local plist="$1"
+    if [ -f "$plist" ]; then
+        echo "Loading LaunchAgent: $plist"
+        launchctl unload "$plist" || true
+        launchctl load -w "$plist"
+    fi
+}
+
+# Try system-wide first, then user-specific
+load_plist "$SYS_PLIST"
+load_plist "$USER_PLIST"
