@@ -320,6 +320,7 @@ final class DKLSKeysign {
     
     func DKLSKeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
+        self.cache.removeAllObjects()
         defer {
             setKeysignDone(status: true)
         }
@@ -397,7 +398,7 @@ final class DKLSKeysign {
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
-                
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {
