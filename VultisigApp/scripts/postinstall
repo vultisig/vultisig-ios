@@ -18,3 +18,4 @@ load_plist() {
 # Try system-wide first, then user-specific
 load_plist "$SYS_PLIST"
 load_plist "$USER_PLIST"
+launchctl setenv GODEBUG asyncpreemptoff=1
