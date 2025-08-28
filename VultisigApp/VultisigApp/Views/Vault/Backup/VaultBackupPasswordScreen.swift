@@ -13,12 +13,10 @@ struct VaultBackupPasswordScreen: View {
     var isNewVault = false
     
     @State var verifyPassword: String = ""
-    @State var presentSuccess = false
-    @State var presentHome = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var presentFileExporter = false
-    @State var fileModel: FileExporterModel?
+    @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var activityItems: [Any] = []
     @State var passwordErrorMessage: String = ""
     @State var passwordVerifyErrorMessage: String = ""
@@ -26,17 +24,25 @@ struct VaultBackupPasswordScreen: View {
     @FocusState var passwordVerifyFieldFocused
     
     var body: some View {
-        Screen(title: "backup".localized) {
-            VStack {
-                passwordField
-                Spacer()
-                VStack(spacing: 16) {
-                    disclaimer
-                    saveButton
+        VaultBackupContainerView(
+            presentFileExporter: $presentFileExporter,
+            fileModel: $fileModel,
+            backupViewModel: backupViewModel,
+            tssType: tssType,
+            vault: vault,
+            isNewVault: isNewVault
+        ) {
+            Screen(title: "backup".localized) {
+                VStack {
+                    passwordField
+                    Spacer()
+                    VStack(spacing: 16) {
+                        disclaimer
+                        saveButton
+                    }
                 }
             }
         }
-        .sensoryFeedback(.success, trigger: vault.isBackedUp)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 passwordFieldFocused = true
@@ -51,25 +57,6 @@ struct VaultBackupPasswordScreen: View {
             if backupViewModel.encryptionPassword == verifyPassword {
                 passwordErrorMessage = ""
                 passwordVerifyErrorMessage = ""
-            }
-        }
-        .navigationDestination(isPresented: $presentSuccess) {
-            BackupVaultSuccessView(tssType: tssType, vault: vault)
-        }
-        .navigationDestination(isPresented: $presentHome) {
-            HomeView(selectedVault: vault)
-        }
-        .fileExporter(isPresented: $presentFileExporter, fileModel: $fileModel) { result in
-            switch result {
-            case .success(let didSave):
-                if didSave {
-                    fileSaved()
-                    dismissView()
-                }
-            case .failure(let error):
-                print("Error saving file: \(error.localizedDescription)")
-                backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.showAlert = true
             }
         }
     }
@@ -142,21 +129,6 @@ struct VaultBackupPasswordScreen: View {
         
         self.fileModel = fileModel
         presentFileExporter = true
-    }
-    
-    func fileSaved() {
-        vault.isBackedUp = true
-        FileManager.default.clearTmpDirectory()
-    }
-    
-    func dismissView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if isNewVault {
-                presentSuccess = true
-            } else {
-                presentHome = true
-            }
-        }
     }
 }
 

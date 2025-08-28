@@ -13,6 +13,7 @@
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
+		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
 		13175C6F2E4BC01700646CE2 /* THORNameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */; };
 		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
 		132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* ContainerView.swift */; };
@@ -1022,6 +1023,7 @@
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
+		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
 		13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORNameLookup.swift; sourceTree = "<group>"; };
 		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
 		132666C32E42920A007FDAC5 /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
@@ -2180,6 +2182,17 @@
 				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		1316034F2E60C438001ED972 /* Backup */ = {
+			isa = PBXGroup;
+			children = (
+				131603502E60C453001ED972 /* VaultBackupContainerView.swift */,
+				A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */,
+				131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */,
+				A5AB69C02D63E07D00E54DEB /* VaultBackupNowScreen.swift */,
+			);
+			path = Backup;
 			sourceTree = "<group>";
 		};
 		132666C92E429EC6007FDAC5 /* Referral */ = {
@@ -4162,7 +4175,7 @@
 		D9AD8F042B675E230009F8D5 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
-				131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */,
+				1316034F2E60C438001ED972 /* Backup */,
 				13CC617F2E5614B2003307F9 /* Settings */,
 				A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */,
 				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
@@ -4184,8 +4197,6 @@
 				A6F7B6F92D4D515100AC8104 /* SecureBackupVaultOverview.swift */,
 				A6F7B6FB2D4D5BE600AC8104 /* BackupVaultSuccessView.swift */,
 				A6F7B7382D4EF7BB00AC8104 /* FastBackupVaultOverview.swift */,
-				A5AB69C02D63E07D00E54DEB /* VaultBackupNowScreen.swift */,
-				A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */,
 				A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */,
 			);
 			path = Vault;
@@ -5266,6 +5277,7 @@
 				A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */,
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
+				131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,

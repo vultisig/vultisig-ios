@@ -45,11 +45,11 @@ class EncryptedBackupViewModel: ObservableObject {
         showAlert = false
     }
     
-    func exportFileWithoutPassword(_ vault: Vault) -> FileExporterModel? {
+    func exportFileWithoutPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
         return try? createBackupFile(vault: vault, encryptionPassword: nil)
     }
     
-    func exportFileWithVaultPassword(_ vault: Vault) -> FileExporterModel? {
+    func exportFileWithVaultPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
         guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
             debugPrint("Couldn't fetch password for vault")
             return nil
@@ -58,33 +58,11 @@ class EncryptedBackupViewModel: ObservableObject {
         return try? createBackupFile(vault: vault, encryptionPassword: vaultPassword)
     }
     
-    func exportFileWithCustomPassword(_ vault: Vault) -> FileExporterModel? {
+    func exportFileWithCustomPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
         return try? createBackupFile(vault: vault, encryptionPassword: encryptionPassword)
     }
-    
-    // Export
-//    func exportFile(_ vault: Vault) {
-//        do {
-//            guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
-//                debugPrint("Couldn't fetch password for vault")
-//                return
-//            }
-//            
-//            let backupURL = try createBackupFile(vault: vault, encryptionPassword: nil)
-//            let encryptedBackupURL = try createBackupFile(vault: vault, encryptionPassword: vaultPassword)
-//            
-//            guard let backupURL, let encryptedBackupURL else {
-//                return
-//            }
-//            
-//            encryptedFileURLWithoutPassword = backupURL
-//            encryptedFileURLWithPassword = encryptedBackupURL
-//        } catch {
-//            print("Error creating backup files: \(error.localizedDescription)")
-//        }
-//    }
-    
-    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel? {
+
+    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
         let vsVault = vault.mapToProtobuff()
@@ -107,9 +85,15 @@ class EncryptedBackupViewModel: ObservableObject {
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         try dataToSave.write(to: tempURL)
         
-        return FileExporterModel(url: tempURL, name: vault.getExportName()) {
-            EncryptedDataFile(url: $0)
+        guard let file = EncryptedDataFile(url: tempURL) else {
+            return nil
         }
+        
+        return FileExporterModel(
+            url: tempURL,
+            name: vault.getExportName(),
+            file: file
+        )
     }
     
     private func encrypt(data: Data, password: String) -> Data? {

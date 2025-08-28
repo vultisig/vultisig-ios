@@ -8,21 +8,21 @@
 import Foundation
 import SwiftUI
 
-struct FileExporterModel {
+struct FileExporterModel<D: FileDocument> {
     let url: URL
     let name: String
-    let fileTransform: (URL) -> FileDocument?
+    let file: D
 }
 
 extension View {
-    func fileExporter(isPresented: Binding<Bool>, fileModel: Binding<FileExporterModel?>, completion: @escaping (Result<Bool, Error>) -> Void) -> some View {
+    func fileExporter<D: FileDocument>(isPresented: Binding<Bool>, fileModel: Binding<FileExporterModel<D>?>, completion: @escaping (Result<Bool, Error>) -> Void) -> some View {
         modifier(FileExporterSheet(isPresented: isPresented, fileModel: fileModel, completion: completion))
     }
 }
 
-struct FileExporterSheet: ViewModifier {
+struct FileExporterSheet<D: FileDocument>: ViewModifier {
     @Binding var isPresented: Bool
-    @Binding var fileModel: FileExporterModel?
+    @Binding var fileModel: FileExporterModel<D>?
     var completion: (Result<Bool, Error>) -> Void
     
     func body(content: Content) -> some View {
@@ -48,7 +48,7 @@ extension FileExporterSheet {
             .unwrap(fileModel) { view, fileModel in
                 view.fileExporter(
                     isPresented: $isPresented,
-                    document: fileModel.fileTransform(fileModel.url),
+                    document: fileModel.file,
                     contentType: .data,
                     defaultFilename: fileModel.name
                 ) { result in

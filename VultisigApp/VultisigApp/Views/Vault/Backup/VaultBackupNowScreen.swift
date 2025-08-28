@@ -15,44 +15,34 @@ struct VaultBackupNowScreen: View {
 
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var presentBackupOptions = false
-    @State var presentHome = false
-    @State var presentBackupSuccess = false
     @State var animation: RiveViewModel?
-    @State var fileModel: FileExporterModel?
+    @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var presentFileExporter = false
    
     var body: some View {
-        Screen {
-            VStack {
-                animation?.view()
-                labels
-                Spacer().frame(height: 100)
-                PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
-                    onBackupNow()
+        VaultBackupContainerView(
+            presentFileExporter: $presentFileExporter,
+            fileModel: $fileModel,
+            backupViewModel: backupViewModel,
+            tssType: tssType,
+            vault: vault,
+            isNewVault: isNewVault
+        ) {
+            Screen {
+                VStack {
+                    animation?.view()
+                    labels
+                    Spacer().frame(height: 100)
+                    PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
+                        onBackupNow()
+                    }
                 }
             }
         }
         .navigationDestination(isPresented: $presentBackupOptions) {
             VaultBackupPasswordOptionsScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
         }
-        .navigationDestination(isPresented: $presentBackupSuccess) {
-            BackupVaultSuccessView(tssType: tssType, vault: vault)
-        }
-        .navigationDestination(isPresented: $presentHome) {
-            HomeView(selectedVault: vault)
-        }
         .onLoad(perform: onLoad)
-        .fileExporter(isPresented: $presentFileExporter, fileModel: $fileModel) { result in
-            switch result {
-            case .success(let didSave):
-                if didSave {
-                    fileSaved()
-                    dismissView()
-                }
-            case .failure(let error):
-                print("Error saving file: \(error.localizedDescription)")
-            }
-        }
     }
 
     var labels: some View {
@@ -93,21 +83,6 @@ struct VaultBackupNowScreen: View {
         }
         
         presentFileExporter = true
-    }
-    
-    func fileSaved() {
-        vault.isBackedUp = true
-        FileManager.default.clearTmpDirectory()
-    }
-    
-    func dismissView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if isNewVault {
-                presentBackupSuccess = true
-            } else {
-                presentHome = true
-            }
-        }
     }
 }
 
