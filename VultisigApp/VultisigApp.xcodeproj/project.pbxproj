@@ -11,6 +11,9 @@
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
+		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
+		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
+		131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603502E60C453001ED972 /* VaultBackupContainerView.swift */; };
 		13175C6F2E4BC01700646CE2 /* THORNameLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */; };
 		132666C02E428B76007FDAC5 /* CounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666BF2E428B72007FDAC5 /* CounterView.swift */; };
 		132666C42E42920C007FDAC5 /* ContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132666C32E42920A007FDAC5 /* ContainerView.swift */; };
@@ -258,7 +261,7 @@
 		A594EC2D2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */; };
 		A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */; };
 		A598FD7A2CE2098800F26516 /* MemoDecodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A598FD792CE2098800F26516 /* MemoDecodingService.swift */; };
-		A5AB69C42D63E07D00E54DEB /* BackupSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C02D63E07D00E54DEB /* BackupSetupScreen.swift */; };
+		A5AB69C42D63E07D00E54DEB /* VaultBackupNowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AB69C02D63E07D00E54DEB /* VaultBackupNowScreen.swift */; };
 		A5AB69C72D63E26500E54DEB /* backupvault_splash.riv in Resources */ = {isa = PBXBuildFile; fileRef = A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
@@ -693,7 +696,7 @@
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
 		A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
 		A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
-		A6CEFE762D8E32B9005AB80C /* PasswordBackupOptionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CEFE752D8E32B9005AB80C /* PasswordBackupOptionsScreen.swift */; };
+		A6CEFE762D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */; };
 		A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E402C366F7300594687 /* MemoTextField.swift */; };
 		A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */; };
 		A6D44A5B2D51950600C66726 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = A6D44A5A2D51950600C66726 /* RiveRuntime */; };
@@ -1019,6 +1022,9 @@
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
+		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
+		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
+		131603502E60C453001ED972 /* VaultBackupContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupContainerView.swift; sourceTree = "<group>"; };
 		13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORNameLookup.swift; sourceTree = "<group>"; };
 		132666BF2E428B72007FDAC5 /* CounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterView.swift; sourceTree = "<group>"; };
 		132666C32E42920A007FDAC5 /* ContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerView.swift; sourceTree = "<group>"; };
@@ -1268,7 +1274,7 @@
 		A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+iOS.swift"; sourceTree = "<group>"; };
 		A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCustomMessageView+MacOS.swift"; sourceTree = "<group>"; };
 		A598FD792CE2098800F26516 /* MemoDecodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoDecodingService.swift; sourceTree = "<group>"; };
-		A5AB69C02D63E07D00E54DEB /* BackupSetupScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSetupScreen.swift; sourceTree = "<group>"; };
+		A5AB69C02D63E07D00E54DEB /* VaultBackupNowScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupNowScreen.swift; sourceTree = "<group>"; };
 		A5AB69C62D63E26500E54DEB /* backupvault_splash.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = backupvault_splash.riv; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
@@ -1703,7 +1709,7 @@
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
-		A6CEFE752D8E32B9005AB80C /* PasswordBackupOptionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordBackupOptionsScreen.swift; sourceTree = "<group>"; };
+		A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordOptionsScreen.swift; sourceTree = "<group>"; };
 		A6D07E402C366F7300594687 /* MemoTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoTextField.swift; sourceTree = "<group>"; };
 		A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCameraPermissionView.swift; sourceTree = "<group>"; };
 		A6D739DB2E0AFF2E0005697D /* LinearSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinearSeparator.swift; sourceTree = "<group>"; };
@@ -2178,6 +2184,18 @@
 				13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		1316034F2E60C438001ED972 /* Backup */ = {
+			isa = PBXGroup;
+			children = (
+				131603502E60C453001ED972 /* VaultBackupContainerView.swift */,
+				A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */,
+				131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */,
+				A5AB69C02D63E07D00E54DEB /* VaultBackupNowScreen.swift */,
+				1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */,
+			);
+			path = Backup;
 			sourceTree = "<group>";
 		};
 		132666C92E429EC6007FDAC5 /* Referral */ = {
@@ -4034,6 +4052,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				131603442E609D6B001ED972 /* FileExporterSheet.swift */,
 				13D179032E57804C00007B48 /* Sheets */,
 				137B2C792E3A4A970074F648 /* PreferenceKeys */,
 				13095A342E3264E1009F8785 /* Utils */,
@@ -4159,7 +4178,7 @@
 		D9AD8F042B675E230009F8D5 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
-				1377C8DD2E5F984C006DC969 /* VaultBackupSelectionScreen.swift */,
+				1316034F2E60C438001ED972 /* Backup */,
 				13CC617F2E5614B2003307F9 /* Settings */,
 				A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */,
 				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
@@ -4181,8 +4200,6 @@
 				A6F7B6F92D4D515100AC8104 /* SecureBackupVaultOverview.swift */,
 				A6F7B6FB2D4D5BE600AC8104 /* BackupVaultSuccessView.swift */,
 				A6F7B7382D4EF7BB00AC8104 /* FastBackupVaultOverview.swift */,
-				A5AB69C02D63E07D00E54DEB /* BackupSetupScreen.swift */,
-				A6CEFE752D8E32B9005AB80C /* PasswordBackupOptionsScreen.swift */,
 				A601D3AA2DBB687E004B6A0A /* PasswordVerifyReminderView.swift */,
 			);
 			path = Vault;
@@ -4892,6 +4909,7 @@
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				137B2C892E3A84460074F648 /* Screen.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
+				131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */,
 				B57138502CC5713E000E925B /* TonService.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
 				A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */,
@@ -5263,6 +5281,7 @@
 				A646DFB12E16270F006E8ECC /* SendDetailsAmountTab.swift in Sources */,
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
 				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
+				131603512E60C45D001ED972 /* VaultBackupContainerView.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				A524F5712D4AD63500F294B2 /* LiFiSwapError.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
@@ -5328,7 +5347,7 @@
 				1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */,
 				A6BB9BD32DA9E5750085E117 /* VaultShareBackupsView+macOS.swift in Sources */,
 				A6D739DE2E0B30440005697D /* SendDetailsAssetTab.swift in Sources */,
-				A5AB69C42D63E07D00E54DEB /* BackupSetupScreen.swift in Sources */,
+				A5AB69C42D63E07D00E54DEB /* VaultBackupNowScreen.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
@@ -5461,7 +5480,7 @@
 				B5A97CF32BF426D4007574D7 /* FunctionCallDetailsView.swift in Sources */,
 				A6ECA1942C93F98D00456110 /* InstructionPrompt+iOS.swift in Sources */,
 				A6BB9BD72DA9EAB10085E117 /* UpgradeYourVaultView+iOS.swift in Sources */,
-				A6CEFE762D8E32B9005AB80C /* PasswordBackupOptionsScreen.swift in Sources */,
+				A6CEFE762D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift in Sources */,
 				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* FunctionCallContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
@@ -5491,6 +5510,7 @@
 				B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */,
 				B5BEB1ED2E137FBA00372170 /* ThorchainMergeTokens.swift in Sources */,
 				A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */,
+				131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */,
 				1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */,

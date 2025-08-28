@@ -68,7 +68,7 @@ struct EditReferralDetailsView: View {
                 .font(Theme.fonts.bodySMedium)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ReferralTextField(
-                text: $viewModel.savedGeneratedReferralCode,
+                text: .constant(viewModel.referralCode),
                 placeholderText: .empty,
                 action: .Copy,
                 isDisabled: true

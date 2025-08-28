@@ -18,7 +18,7 @@ extension AddressBookTextField {
         ) {
             if showActions {
                 HStack(spacing: 8) {
-                    fileButton
+                    scanButton
                     pasteButton
                 }
             }

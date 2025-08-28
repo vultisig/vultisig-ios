@@ -19,7 +19,7 @@ struct BackupNowDisclaimer: View {
     
     var navigationCell: some View {
         NavigationLink {
-            BackupSetupScreen(tssType: .Keygen, vault: vault)
+            VaultBackupNowScreen(tssType: .Keygen, vault: vault)
         } label: {
             content
         }

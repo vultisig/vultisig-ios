@@ -47,7 +47,7 @@ struct VaultBackupSelectionScreen: View {
     
     func backupTypeContainer(type: VaultBackupType) -> some View {
         NavigationLink {
-            PasswordBackupOptionsScreen(tssType: .Keygen, vault: selectedVault)
+            VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: selectedVault)
         } label: {
             backupTypeRow(type: type)
         }

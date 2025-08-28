@@ -84,13 +84,13 @@ struct VaultSettingsScreen: View {
             if vaults.count > 1 {
                 VaultBackupSelectionScreen(selectedVault: vault)
             } else {
-                PasswordBackupOptionsScreen(tssType: .Keygen, vault: vault)
+                VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: vault)
             }
         } label: {
             SettingsOptionView(
                 icon: "hard-drive-upload",
-                title: "backup".localized,
-                subtitle: "vaultDetailsDescription".localized,
+                title: "backupVaultShareTitle".localized,
+                subtitle: "backupVaultShareDescription".localized,
                 showSeparator: false
             )
         }

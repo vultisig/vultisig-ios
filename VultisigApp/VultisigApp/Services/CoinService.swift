@@ -11,13 +11,12 @@ import SwiftData
 @MainActor
 struct CoinService {
     
-    static func removeCoins(coins: [Coin], vault: Vault) async throws {
+    static func removeCoins(coins: [Coin], vault: Vault)  throws {
         for coin in coins {
             if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                 vault.coins.remove(at: idx)
             }
-            
-            await Storage.shared.delete(coin)
+            Storage.shared.delete(coin)
         }
     }
     
@@ -45,19 +44,19 @@ struct CoinService {
         
         // Clear hidden tokens for chains being removed entirely
         for chain in chainsBeingRemoved {
-            await clearHiddenTokensForChain(chain, vault: vault)
+            clearHiddenTokensForChain(chain, vault: vault)
         }
         
         // Check which remaining coins should be hidden (auto-discovered tokens being removed individually)
         for coin in coinsToRemove {
             // Only hide if the chain is NOT being removed entirely
             if !chainsBeingRemoved.contains(coin.chain) && shouldHideToken(coin, vault: vault) {
-                await addToHiddenTokens(coin, vault: vault)
+                addToHiddenTokens(coin, vault: vault)
             }
         }
         
         // Remove them
-        try await removeCoins(coins: coinsToRemove, vault: vault)
+        try removeCoins(coins: coinsToRemove, vault: vault)
     }
     
     private static func addNewlySelectedCoins(vault: Vault, selection: Set<CoinMeta>) async throws {
@@ -79,7 +78,7 @@ struct CoinService {
         // Check if any selected coins are currently hidden and unhide them
         for asset in filteredSelection {
             if isTokenHidden(asset, vault: vault) {
-                await unhideToken(asset, vault: vault)
+                unhideToken(asset, vault: vault)
             }
         }
         
@@ -106,11 +105,11 @@ struct CoinService {
     
     static func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         for asset in assets {
-            if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
+            if let newCoin = try addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
                 // Only do auto-discovery for native tokens
                 if newCoin.isNativeToken {
                     // Clear hidden tokens for this chain when adding native token back
-                    await clearHiddenTokensForChain(asset.chain, vault: vault)
+                    clearHiddenTokensForChain(asset.chain, vault: vault)
                     
                     await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
@@ -118,7 +117,7 @@ struct CoinService {
         }
     }
     
-    static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
+    static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
         let newCoin = try CoinFactory.create(asset: asset, vault: vault)
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
@@ -126,18 +125,18 @@ struct CoinService {
         // Save the new coin first
         // On IOS / IpadOS 18 , we have to user insert to insert the newCoin into modelcontext
         // otherwise it report an error "Illegal attempt to map a relationship containing temporary objects to its identifiers."
-        await Storage.shared.insert([newCoin])
-        try await Storage.shared.save()
+        Storage.shared.insert([newCoin])
+        try Storage.shared.save()
         vault.coins.append(newCoin)
         return newCoin
     }
     
-    static func addIfNeeded(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
+    static func addIfNeeded(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
         if let coin = vault.coin(for: asset) {
             return coin
         }
         
-        return try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+        return try  addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
     }
     
     static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
@@ -194,7 +193,7 @@ struct CoinService {
                         continue
                     }
                     
-                    _ = try await addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
+                    _ = try addToChain(asset: enrichedToken, to: vault, priceProviderId: enrichedToken.priceProviderId)
                 } catch {
                     print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
                 }
@@ -299,7 +298,7 @@ struct CoinService {
     }
     
     /// Add a coin to the hidden tokens list
-    private static func addToHiddenTokens(_ coin: Coin, vault: Vault) async {
+    private static func addToHiddenTokens(_ coin: Coin, vault: Vault) {
         // Check if already hidden
         let alreadyHidden = vault.hiddenTokens.contains { hidden in
             hidden.chain == coin.chain.rawValue &&
@@ -310,7 +309,7 @@ struct CoinService {
         if !alreadyHidden {
             let hiddenToken = HiddenToken(coin: coin)
             vault.hiddenTokens.append(hiddenToken)
-            await Storage.shared.insert([hiddenToken])
+            Storage.shared.insert([hiddenToken])
         }
     }
     
@@ -322,13 +321,13 @@ struct CoinService {
     }
     
     /// Remove a token from the hidden list (when user re-selects it)
-    static func unhideToken(_ token: CoinMeta, vault: Vault) async {
+    static func unhideToken(_ token: CoinMeta, vault: Vault) {
         if let index = vault.hiddenTokens.firstIndex(where: { hidden in
             hidden.matches(token)
         }) {
             let hiddenToken = vault.hiddenTokens[index]
             vault.hiddenTokens.remove(at: index)
-            await Storage.shared.delete(hiddenToken)
+            Storage.shared.delete(hiddenToken)
         }
     }
     
@@ -353,7 +352,7 @@ struct CoinService {
     }
     
     /// Clear all hidden tokens for a specific chain
-    static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) async {
+    static func clearHiddenTokensForChain(_ chain: Chain, vault: Vault) {
         // Find all hidden tokens for this chain
         let hiddenTokensToRemove = vault.hiddenTokens.filter { hidden in
             hidden.chain == chain.rawValue
@@ -363,7 +362,7 @@ struct CoinService {
         for hiddenToken in hiddenTokensToRemove {
             if let index = vault.hiddenTokens.firstIndex(of: hiddenToken) {
                 vault.hiddenTokens.remove(at: index)
-                await Storage.shared.delete(hiddenToken)
+                Storage.shared.delete(hiddenToken)
             }
         }
     }

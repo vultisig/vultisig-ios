@@ -41,7 +41,7 @@ struct FastBackupVaultOverview: View {
             )
         }
         .navigationDestination(isPresented: $isBackupLinkActive) {
-            BackupSetupScreen(tssType: tssType, vault: vault, isNewVault: true)
+            VaultBackupNowScreen(tssType: tssType, vault: vault, isNewVault: true)
         }
         .navigationDestination(isPresented: $goBackToEmailSetup, destination: { 
             FastVaultEmailView(

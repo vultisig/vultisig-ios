@@ -109,20 +109,11 @@ class FunctionCallUnstakeTCY: ObservableObject {
     
     func fetchAutoCompoundBalance() {
         Task {
-            do {
-                let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: tx.coin.address)
-                await MainActor.run {
-                    self.autoCompoundAmount = amount
-                    self.validateAmount()
-                    self.objectWillChange.send()
-                }
-            } catch {
-                print("Error fetching auto compound balance: \(error)")
-                await MainActor.run {
-                    self.autoCompoundAmount = .zero
-                    self.validateAmount()
-                    self.objectWillChange.send()
-                }
+            let amount = await ThorchainService.shared.fetchTcyAutoCompoundAmount(address: tx.coin.address)
+            await MainActor.run {
+                self.autoCompoundAmount = amount
+                self.validateAmount()
+                self.objectWillChange.send()
             }
         }
     }
