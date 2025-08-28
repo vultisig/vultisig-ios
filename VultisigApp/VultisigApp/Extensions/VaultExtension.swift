@@ -27,7 +27,7 @@ extension Vault {
         return container
     }
     
-    func getExportName() -> String{
+    func getExportName() -> String {
         let vaultName = self.name
         let lastFourOfPubKey = String(self.pubKeyECDSA.suffix(4))
         

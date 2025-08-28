@@ -79,8 +79,7 @@ class EncryptedBackupViewModel: ObservableObject {
             vaultContainer.vault = data.base64EncodedString()
         }
         
-        var fileName = vault.getExportName()
-        fileName += vaultContainer.isEncrypted ? "-encrypted" : ""
+        let fileName = vault.getExportName()
         let dataToSave = try vaultContainer.serializedData().base64EncodedData()
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         try dataToSave.write(to: tempURL)
@@ -91,7 +90,7 @@ class EncryptedBackupViewModel: ObservableObject {
         
         return FileExporterModel(
             url: tempURL,
-            name: vault.getExportName(),
+            name: fileName,
             file: file
         )
     }
