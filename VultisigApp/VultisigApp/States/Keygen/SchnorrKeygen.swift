@@ -254,9 +254,7 @@ final class SchnorrKeygen {
     
     func SchnorrKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        defer {
-            self.setKeygenDone(status: true)
-        }
+        self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
         do {
             var decodedSetupMsg = self.setupMessage.to_dkls_goslice()
@@ -312,7 +310,8 @@ final class SchnorrKeygen {
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
-                try await Task.sleep(for: .milliseconds(500))
+                try await Task.sleep(for: .milliseconds(1000))
+                self.setKeygenDone(status: true)
             }
         }
         catch {
@@ -414,9 +413,7 @@ final class SchnorrKeygen {
     
     func SchnorrReshareWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        defer {
-            self.setKeygenDone(status: true)
-        }
+        self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = goschnorr.Handle()
@@ -482,8 +479,10 @@ final class SchnorrKeygen {
                 self.keyshare = DKLSKeyshare(PubKey: publicKeyEdDSA.toHexString(),
                                              Keyshare: keyshareBytes.toBase64(),
                                              chaincode: "")
+                print("reshare EdDSA successfully")
                 print("publicKeyEdDSA:\(publicKeyEdDSA.toHexString())")
-                try await Task.sleep(for: .milliseconds(500))
+                try await Task.sleep(for: .milliseconds(1000))
+                self.setKeygenDone(status: true)
             }
         }
         catch {

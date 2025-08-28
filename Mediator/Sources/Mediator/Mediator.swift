@@ -156,7 +156,8 @@ public final class Mediator {
             let encoder = JSONEncoder()
             
             // get all the messages
-            let messages = try self.cache.allKeys.filter{
+            let allKeys = self.getAllKeys()
+            let messages = try allKeys.filter{
                 $0.hasPrefix(keyPrefix)
             }.compactMap { cacheKey in
                 try self.cache.object(forKey: cacheKey) as? Message
@@ -364,7 +365,7 @@ public final class Mediator {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
         var key = "setup-\(sessionID)"
-        let messageID = req.headers["message_id"]
+        let messageID = req.headers["message_id"] ?? req.headers["message-id"]
         if let messageID, !messageID.isEmpty {
             key += "-\(messageID)"
         }
@@ -392,6 +393,13 @@ public final class Mediator {
         }
     }
     
+    func getAllKeys() -> [String] {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.cache.allKeys
+    }
     func setObject(_ obj: Any, forKey key: String){
         self.lock.lock()
         defer {

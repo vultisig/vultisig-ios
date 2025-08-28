@@ -278,9 +278,7 @@ final class DKLSKeygen {
     
     func DKLSKeygenWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        defer {
-            self.setKeygenDone(status: true)
-        }
+        self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
@@ -357,7 +355,8 @@ final class DKLSKeygen {
                                              chaincode: chainCodeBytes.toHexString())
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .milliseconds(500))
+                try await Task.sleep(for: .milliseconds(1000))
+                self.setKeygenDone(status: true)
             }
         }
         catch {
@@ -471,9 +470,7 @@ final class DKLSKeygen {
     
     func DKLSReshareWithRetry(attempt: UInt8) async throws {
         self.setKeygenDone(status: false)
-        defer {
-            self.setKeygenDone(status: true)
-        }
+        self.cache.removeAllObjects()
         var task: Task<(), any Error>? = nil
         do {
             var keyshareHandle = godkls.Handle()
@@ -542,7 +539,8 @@ final class DKLSKeygen {
                 print("reshare ECDSA key successfully")
                 print("publicKeyECDSA:\(publicKeyECDSA.toHexString())")
                 print("chaincode: \(chainCodeBytes.toHexString())")
-                try await Task.sleep(for: .microseconds(500))
+                try await Task.sleep(for: .milliseconds(1000))
+                self.setKeygenDone(status: true)
             }
         }
         catch {
