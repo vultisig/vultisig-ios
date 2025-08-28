@@ -42,6 +42,13 @@ struct VaultBackupContainerView<Content: View>: View {
                     backupViewModel.showAlert = true
                 }
             }
+            .alert(isPresented: $backupViewModel.showAlert) {
+                Alert(
+                    title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
+                    message: Text(""),
+                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+                )
+            }
     }
     
     func fileSaved() {
