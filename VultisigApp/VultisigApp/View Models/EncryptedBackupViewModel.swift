@@ -16,8 +16,6 @@ import UniformTypeIdentifiers
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURLWithPassword: URL?
-    @Published var encryptedFileURLWithoutPassword: URL?
     @Published var decryptedContent: String?
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
@@ -42,37 +40,51 @@ class EncryptedBackupViewModel: ObservableObject {
         showVaultImporter = false
         isFileUploaded = false
         importedFileName = nil
-        encryptedFileURLWithPassword = nil
-        encryptedFileURLWithoutPassword = nil
         decryptedContent = ""
-        encryptionPassword = ""
         decryptionPassword = ""
         showAlert = false
     }
     
-    // Export
-    func exportFile(_ vault: Vault) {
-        do {
-            guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
-                debugPrint("Couldn't fetch password for vault")
-                return
-            }
-            
-            let backupURL = try createBackupFile(vault: vault, encryptionPassword: nil)
-            let encryptedBackupURL = try createBackupFile(vault: vault, encryptionPassword: vaultPassword)
-            
-            guard let backupURL, let encryptedBackupURL else {
-                return
-            }
-            
-            encryptedFileURLWithoutPassword = backupURL
-            encryptedFileURLWithPassword = encryptedBackupURL
-        } catch {
-            print("Error creating backup files: \(error.localizedDescription)")
-        }
+    func exportFileWithoutPassword(_ vault: Vault) -> FileExporterModel? {
+        return try? createBackupFile(vault: vault, encryptionPassword: nil)
     }
     
-    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> URL? {
+    func exportFileWithVaultPassword(_ vault: Vault) -> FileExporterModel? {
+        guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+            debugPrint("Couldn't fetch password for vault")
+            return nil
+        }
+        
+        return try? createBackupFile(vault: vault, encryptionPassword: vaultPassword)
+    }
+    
+    func exportFileWithCustomPassword(_ vault: Vault) -> FileExporterModel? {
+        return try? createBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+    }
+    
+    // Export
+//    func exportFile(_ vault: Vault) {
+//        do {
+//            guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+//                debugPrint("Couldn't fetch password for vault")
+//                return
+//            }
+//            
+//            let backupURL = try createBackupFile(vault: vault, encryptionPassword: nil)
+//            let encryptedBackupURL = try createBackupFile(vault: vault, encryptionPassword: vaultPassword)
+//            
+//            guard let backupURL, let encryptedBackupURL else {
+//                return
+//            }
+//            
+//            encryptedFileURLWithoutPassword = backupURL
+//            encryptedFileURLWithPassword = encryptedBackupURL
+//        } catch {
+//            print("Error creating backup files: \(error.localizedDescription)")
+//        }
+//    }
+    
+    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
         let vsVault = vault.mapToProtobuff()
@@ -94,7 +106,10 @@ class EncryptedBackupViewModel: ObservableObject {
         let dataToSave = try vaultContainer.serializedData().base64EncodedData()
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
         try dataToSave.write(to: tempURL)
-        return tempURL
+        
+        return FileExporterModel(url: tempURL, name: vault.getExportName()) {
+            EncryptedDataFile(url: $0)
+        }
     }
     
     private func encrypt(data: Data, password: String) -> Data? {

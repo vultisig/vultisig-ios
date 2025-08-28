@@ -75,7 +75,7 @@ struct BackupVaultNowView: View {
     
     var backupButton: some View {
         PrimaryNavigationButton(title: "Backup") {
-            BackupSetupScreen(tssType: .Keygen, vault: vault, isNewVault: true)
+            VaultBackupNowScreen(tssType: .Keygen, vault: vault, isNewVault: true)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 40)
