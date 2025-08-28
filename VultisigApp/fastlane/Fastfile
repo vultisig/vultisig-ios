@@ -26,6 +26,18 @@ end
 
 platform :mac do
   desc "Build the macOS app and package it into a .dmg file"
+  lane :build do
+    build_app(scheme: "VultisigApp",
+              export_team_id: ENV['APPLE_TEAM_ID'],
+              configuration: "Release",
+              export_method: "app-store")
+    
+  end
+  lane :upload do
+    upload_to_testflight(
+      pkg: "./VultisigApp.pkg"
+    )
+  end
   lane :release_mac do
     # Specify the path to your Xcode project and the scheme for your macOS app
     build_app(scheme: "VultisigApp",

@@ -28,13 +28,29 @@ Push a new beta build to TestFlight
 
 ## Mac
 
+### mac build
+
+```sh
+[bundle exec] fastlane mac build
+```
+
+Build the macOS app and package it into a .dmg file
+
+### mac upload
+
+```sh
+[bundle exec] fastlane mac upload
+```
+
+
+
 ### mac release_mac
 
 ```sh
 [bundle exec] fastlane mac release_mac
 ```
 
-Build the macOS app and package it into a .dmg file
+
 
 ### mac notarize_mac
 
