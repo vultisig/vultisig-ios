@@ -1,5 +1,5 @@
 //
-//  BackupPasswordSetupView.swift
+//  VaultBackupPasswordScreen.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-06-13.
@@ -7,18 +7,16 @@
 
 import SwiftUI
 
-struct BackupPasswordSetupView: View {
+struct VaultBackupPasswordScreen: View {
     let tssType: TssType
     let vault: Vault
     var isNewVault = false
     
     @State var verifyPassword: String = ""
-    @State var navigationLinkActive = false
-    @State var homeLinkActive = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var showSkipShareSheet = false
-    @State var showSaveShareSheet = false
+    @State var presentFileExporter = false
+    @State var fileModel: FileExporterModel<EncryptedDataFile>?
     @State var activityItems: [Any] = []
     @State var passwordErrorMessage: String = ""
     @State var passwordVerifyErrorMessage: String = ""
@@ -26,32 +24,48 @@ struct BackupPasswordSetupView: View {
     @FocusState var passwordVerifyFieldFocused
     
     var body: some View {
-        ZStack {
-            mainContent
+        VaultBackupContainerView(
+            presentFileExporter: $presentFileExporter,
+            fileModel: $fileModel,
+            backupViewModel: backupViewModel,
+            tssType: tssType,
+            vault: vault,
+            isNewVault: isNewVault
+        ) {
+            Screen(title: "backup".localized) {
+                VStack {
+                    passwordField
+                    Spacer()
+                    VStack(spacing: 16) {
+                        disclaimer
+                        saveButton
+                    }
+                }
+            }
         }
-        .sensoryFeedback(.success, trigger: vault.isBackedUp)
-        .onAppear(){
+        .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 passwordFieldFocused = true
+            }
+            
+            backupViewModel.resetData()
+        }
+        .onDisappear {
+            backupViewModel.resetData()
+        }
+        .onChange(of: verifyPassword) { oldValue, newValue in
+            if backupViewModel.encryptionPassword == verifyPassword {
+                passwordErrorMessage = ""
+                passwordVerifyErrorMessage = ""
             }
         }
     }
     
-    var mainContent: some View {
-        content
-            .onAppear {
-                backupViewModel.resetData()
-            }
-            .onDisappear {
-                backupViewModel.resetData()
-            }
-            .onChange(of: verifyPassword) { oldValue, newValue in
-                if backupViewModel.encryptionPassword == verifyPassword {
-                    passwordErrorMessage = ""
-                    passwordVerifyErrorMessage = ""
-                    handleSaveTap()
-                }
-            }
+    @ViewBuilder
+    var saveButton: some View {
+        PrimaryButton(title: "save") {
+            onSave()
+        }
     }
     
     var passwordField: some View {
@@ -63,8 +77,6 @@ struct BackupPasswordSetupView: View {
             textfield
             verifyTextfield
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 30)
     }
     
     var textfield: some View {
@@ -84,30 +96,15 @@ struct BackupPasswordSetupView: View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword, errorMessage: passwordVerifyErrorMessage)
             .focused($passwordVerifyFieldFocused)
             .onSubmit {
-                handleProxyTap()
+                onSave()
             }
-            
     }
     
     var disclaimer: some View {
         OutlinedDisclaimer(text: NSLocalizedString("backupPasswordDisclaimer", comment: ""))
-            .padding(.horizontal, 16)
     }
-    
-    var buttons: some View {
-        VStack(spacing: 20) {
-            saveButton
-        }
-        .padding(.top, 16)
-        .padding(.bottom, 40)
-        .padding(.horizontal, 16)
-    }
-    
-    private func handleSaveTap() {
-        export()
-    }
-    
-    func handleProxyTap() {
+
+    func onSave() {
         guard !backupViewModel.encryptionPassword.isEmpty else {
             passwordErrorMessage = NSLocalizedString("emptyField", comment: "")
             return
@@ -125,29 +122,16 @@ struct BackupPasswordSetupView: View {
         }
         passwordErrorMessage = ""
         passwordVerifyErrorMessage = ""
-        showSaveShareSheet = true
-    }
-    
-    func export() {
-        backupViewModel.exportFile(vault)
-    }
-    
-    func fileSaved() {
-        vault.isBackedUp = true
-        FileManager.default.clearTmpDirectory()
-    }
-    
-    func dismissView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if isNewVault {
-                navigationLinkActive = true
-            } else {
-                homeLinkActive = true
-            }
+        
+        guard let fileModel = backupViewModel.exportFileWithCustomPassword(vault) else {
+            return
         }
+        
+        self.fileModel = fileModel
+        presentFileExporter = true
     }
 }
 
 #Preview {
-    BackupPasswordSetupView(tssType: .Keygen, vault: Vault.example)
+    VaultBackupPasswordScreen(tssType: .Keygen, vault: Vault.example)
 }
