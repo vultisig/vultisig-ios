@@ -16,12 +16,12 @@ struct VaultBackupPasswordOptionsScreen: View {
     @State var presentFileExporter = false
     @State var presentPasswordScreen = false
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var fileModelWithoutPassword: FileExporterModel<EncryptedDataFile>?
+    @State var fileModel: FileExporterModel<EncryptedDataFile>?
     
     var body: some View {
         VaultBackupContainerView(
             presentFileExporter: $presentFileExporter,
-            fileModel: $fileModelWithoutPassword,
+            fileModel: $fileModel,
             backupViewModel: backupViewModel,
             tssType: tssType,
             vault: vault,
@@ -90,7 +90,7 @@ struct VaultBackupPasswordOptionsScreen: View {
         isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
-        fileModelWithoutPassword = backupViewModel.exportFileWithoutPassword(vault)
+        fileModel = backupViewModel.exportFileWithoutPassword(vault)
         isLoading = false
     }
 }
