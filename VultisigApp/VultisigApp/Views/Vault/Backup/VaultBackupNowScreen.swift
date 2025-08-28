@@ -10,7 +10,7 @@ import RiveRuntime
 
 struct VaultBackupNowScreen: View {
     let tssType: TssType
-    let vault: Vault
+    let backupType: VaultBackupType
     var isNewVault = false
 
     @StateObject var backupViewModel = EncryptedBackupViewModel()
@@ -25,7 +25,7 @@ struct VaultBackupNowScreen: View {
             fileModel: $fileModel,
             backupViewModel: backupViewModel,
             tssType: tssType,
-            vault: vault,
+            backupType: backupType,
             isNewVault: isNewVault
         ) {
             Screen {
@@ -40,7 +40,7 @@ struct VaultBackupNowScreen: View {
             }
         }
         .navigationDestination(isPresented: $presentBackupOptions) {
-            VaultBackupPasswordOptionsScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
+            VaultBackupPasswordOptionsScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
         }
         .onLoad(perform: onLoad)
     }
@@ -71,14 +71,15 @@ struct VaultBackupNowScreen: View {
         FileManager.default.clearTmpDirectory()
         animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
         
-        if vault.isFastVault, isNewVault {
-            fileModel = backupViewModel.exportFileWithVaultPassword(vault)
+        if backupType.vault.isFastVault, isNewVault {
+            // TODO: - Generate File
+//            fileModel = backupViewModel.exportFileWithVaultPassword(vault)
         }
     }
     
     func onBackupNow() {
         // Only export backup directly if it's fast vault during creation
-        guard vault.isFastVault, isNewVault, fileModel != nil else {
+        guard backupType.vault.isFastVault, isNewVault, fileModel != nil else {
             presentBackupOptions = true
             return
         }
@@ -88,5 +89,5 @@ struct VaultBackupNowScreen: View {
 }
 
 #Preview {
-    VaultBackupNowScreen(tssType: .Keygen, vault: Vault.example)
+    VaultBackupNowScreen(tssType: .Keygen, backupType: .single(vault: .example))
 }

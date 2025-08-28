@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VaultBackupPasswordOptionsScreen: View {
     let tssType: TssType
-    let vault: Vault
+    let backupType: VaultBackupType
     var isNewVault = false
     
     @State var isLoading = false
@@ -24,7 +24,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             fileModel: $fileModel,
             backupViewModel: backupViewModel,
             tssType: tssType,
-            vault: vault,
+            backupType: backupType,
             isNewVault: isNewVault
         ) {
             Screen {
@@ -38,7 +38,7 @@ struct VaultBackupPasswordOptionsScreen: View {
             }
         }
         .navigationDestination(isPresented: $presentPasswordScreen) {
-            VaultBackupPasswordScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
+            VaultBackupPasswordScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: backupViewModel.resetData)
@@ -90,11 +90,12 @@ struct VaultBackupPasswordOptionsScreen: View {
         isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
-        fileModel = backupViewModel.exportFileWithoutPassword(vault)
+        // TODO: - Generate file
+//        fileModel = backupViewModel.exportFileWithoutPassword(vault)
         isLoading = false
     }
 }
 
 #Preview {
-    VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: Vault.example)
+    VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: Vault.example))
 }

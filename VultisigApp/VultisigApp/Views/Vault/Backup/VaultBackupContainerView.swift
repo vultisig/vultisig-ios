@@ -13,7 +13,7 @@ struct VaultBackupContainerView<Content: View>: View {
     @ObservedObject var backupViewModel: EncryptedBackupViewModel
 
     let tssType: TssType
-    let vault: Vault
+    let backupType: VaultBackupType
     let isNewVault: Bool
     var content: () -> Content
     
@@ -22,12 +22,12 @@ struct VaultBackupContainerView<Content: View>: View {
     
     var body: some View {
         content()
-            .sensoryFeedback(.success, trigger: vault.isBackedUp)
+            .sensoryFeedback(.success, trigger: backupType.vault.isBackedUp)
             .navigationDestination(isPresented: $presentHome) {
-                HomeView(selectedVault: vault)
+                HomeView(selectedVault: backupType.vault)
             }
             .navigationDestination(isPresented: $presentSuccess) {
-                BackupVaultSuccessView(tssType: tssType, vault: vault)
+                BackupVaultSuccessView(tssType: tssType, vault: backupType.vault)
             }
             .fileExporter(isPresented: $presentFileExporter, fileModel: $fileModel) { result in
                 switch result {
@@ -52,7 +52,8 @@ struct VaultBackupContainerView<Content: View>: View {
     }
     
     func fileSaved() {
-        vault.isBackedUp = true
+        // TODO: - Check
+        backupType.markBackedUp()
         FileManager.default.clearTmpDirectory()
     }
     

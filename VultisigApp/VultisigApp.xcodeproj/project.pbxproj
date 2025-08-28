@@ -375,8 +375,6 @@
 		A6381D822CB71B5D003F628B /* RegisterVaultView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */; };
 		A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */; };
 		A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */; };
-		A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */; };
-		A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */; };
 		A6386D902C8C290F00DDD58E /* SwapVerifyView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8F2C8C290F00DDD58E /* SwapVerifyView+iOS.swift */; };
 		A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D912C8C291B00DDD58E /* SwapVerifyView+macOS.swift */; };
 		A6386D942C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D932C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift */; };
@@ -389,7 +387,6 @@
 		A6386DB02C9025BC00DDD58E /* ChainNavigationCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DAF2C9025BC00DDD58E /* ChainNavigationCell+macOS.swift */; };
 		A6386DB22C90263400DDD58E /* ToggleSelectionCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */; };
 		A6386DB42C90263E00DDD58E /* ToggleSelectionCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DB32C90263E00DDD58E /* ToggleSelectionCell+macOS.swift */; };
-		A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A638752E2C38570F000CF242 /* BackupVaultNowView.swift */; };
 		A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63875602C386647000CF242 /* BackupNowDisclaimer.swift */; };
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
 		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
@@ -1390,8 +1387,6 @@
 		A6381D812CB71B5D003F628B /* RegisterVaultView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RegisterVaultView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+iOS.swift"; sourceTree = "<group>"; };
 		A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+macOS.swift"; sourceTree = "<group>"; };
-		A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultNowView+iOS.swift"; sourceTree = "<group>"; };
-		A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultNowView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D8F2C8C290F00DDD58E /* SwapVerifyView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapVerifyView+iOS.swift"; sourceTree = "<group>"; };
 		A6386D912C8C291B00DDD58E /* SwapVerifyView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapVerifyView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D932C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCryptoDetailsView+iOS.swift"; sourceTree = "<group>"; };
@@ -1404,7 +1399,6 @@
 		A6386DAF2C9025BC00DDD58E /* ChainNavigationCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainNavigationCell+macOS.swift"; sourceTree = "<group>"; };
 		A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToggleSelectionCell+iOS.swift"; sourceTree = "<group>"; };
 		A6386DB32C90263E00DDD58E /* ToggleSelectionCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToggleSelectionCell+macOS.swift"; sourceTree = "<group>"; };
-		A638752E2C38570F000CF242 /* BackupVaultNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultNowView.swift; sourceTree = "<group>"; };
 		A63875602C386647000CF242 /* BackupNowDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupNowDisclaimer.swift; sourceTree = "<group>"; };
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
@@ -3591,7 +3585,6 @@
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
 				A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */,
 				A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */,
-				A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */,
 				A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */,
 				A622C85D2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift */,
 				A6C6708F2C9CFE0B00F59B6A /* HomeView+iOS.swift */,
@@ -3640,7 +3633,6 @@
 				A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */,
 				A69FBBC72C8BB76000A4B78B /* CoverView+macOS.swift */,
 				A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */,
-				A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */,
 				A6386DAF2C9025BC00DDD58E /* ChainNavigationCell+macOS.swift */,
 				A6386DB32C90263E00DDD58E /* ToggleSelectionCell+macOS.swift */,
 				A51AE8C52C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift */,
@@ -4192,7 +4184,6 @@
 				A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */,
 				A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */,
 				B52196432C12C3540021D27A /* CustomTokenView.swift */,
-				A638752E2C38570F000CF242 /* BackupVaultNowView.swift */,
 				A533E63F2CEC814F00FCBAEB /* MonthlyBackupView.swift */,
 				A5340A6A2CECF099002ADD35 /* MonthlyBackupView+macOS.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
@@ -4749,7 +4740,6 @@
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				B5E654EB2D277CE2003A037C /* TronService.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
-				A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
@@ -4774,7 +4764,6 @@
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
-				A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */,
 				A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */,
@@ -4955,7 +4944,6 @@
 				DE6EF04F2D06610D00A36D6A /* DKLSHelper.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A6BFE1B32D93ABC0000B73C0 /* SwapPercentageButtons+macOS.swift in Sources */,
-				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,
 				A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */,
 				A6ECA1AC2C9410EA00456110 /* ShareSheetViewModel+macOS.swift in Sources */,
 				A6182F2D2C9226310059BFDD /* UpdateVersion.swift in Sources */,

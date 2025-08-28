@@ -9,8 +9,27 @@ import SwiftData
 import SwiftUI
 
 enum VaultBackupType {
-    case single(Vault)
-    case multiple([Vault])
+    case single(vault: Vault)
+    case multiple(vaults: [Vault], selectedVault: Vault)
+    
+    var vault: Vault {
+        switch self {
+        case .single(let vault):
+            return vault
+        case .multiple(_, let selectedVault):
+            return selectedVault
+        }
+    }
+    
+    func markBackedUp() {
+        switch self {
+        case .single(vault: var vault):
+            vault.isBackedUp = true
+        case .multiple(let vaults, let selectedVault):
+            selectedVault.isBackedUp = true
+            vaults.forEach { $0.isBackedUp = true }
+        }
+    }
 }
 
 struct VaultBackupSelectionScreen: View {
@@ -37,8 +56,8 @@ struct VaultBackupSelectionScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
                     VStack(spacing: 16) {
-                        backupTypeContainer(type: .single(selectedVault))
-                        backupTypeContainer(type: .multiple(vaults))
+                        backupTypeContainer(type: .single(vault: selectedVault))
+                        backupTypeContainer(type: .multiple(vaults: vaults, selectedVault: selectedVault))
                     }
                 }
             }
@@ -47,7 +66,7 @@ struct VaultBackupSelectionScreen: View {
     
     func backupTypeContainer(type: VaultBackupType) -> some View {
         NavigationLink {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: selectedVault)
+            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: type)
         } label: {
             backupTypeRow(type: type)
         }
@@ -67,7 +86,7 @@ struct VaultBackupSelectionScreen: View {
                 vaultRow(vault: vault)
                     .background(Theme.colors.bgSecondary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-            case .multiple(let vaults):
+            case .multiple(let vaults, _):
                 VStack(alignment: .center, spacing: 12) {
                     VStack(spacing: 0) {
                         ForEach(vaults.prefix(vaultsToShow)) { vault in

@@ -84,7 +84,7 @@ struct VaultSettingsScreen: View {
             if vaults.count > 1 {
                 VaultBackupSelectionScreen(selectedVault: vault)
             } else {
-                VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: vault)
+                VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: vault))
             }
         } label: {
             SettingsOptionView(
