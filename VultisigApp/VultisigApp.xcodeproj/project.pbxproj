@@ -63,6 +63,9 @@
 		137B2C7D2E3A4B2D0074F648 /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */; };
 		137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */; };
 		137B2C892E3A84460074F648 /* Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137B2C882E3A84440074F648 /* Screen.swift */; };
+		138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */; };
+		138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */; };
+		138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138538E12E61F67C006DF7C7 /* VultiServerService.swift */; };
 		138574142E2DA932002532BF /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574132E2DA92F002532BF /* PrimaryButton.swift */; };
 		138574162E2DA9B0002532BF /* ButtonSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574152E2DA9AB002532BF /* ButtonSize.swift */; };
 		138574182E2DA9D5002532BF /* ButtonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138574172E2DA9CD002532BF /* ButtonType.swift */; };
@@ -1072,6 +1075,9 @@
 		137B2C7C2E3A4B2C0074F648 /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
 		137B2C862E3A840F0074F648 /* OnChainSecurityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnChainSecurityScreen.swift; sourceTree = "<group>"; };
 		137B2C882E3A84440074F648 /* Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screen.swift; sourceTree = "<group>"; };
+		138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerAPI.swift; sourceTree = "<group>"; };
+		138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResendVaultShareRequest.swift; sourceTree = "<group>"; };
+		138538E12E61F67C006DF7C7 /* VultiServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiServerService.swift; sourceTree = "<group>"; };
 		138574132E2DA92F002532BF /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		138574152E2DA9AB002532BF /* ButtonSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonSize.swift; sourceTree = "<group>"; };
 		138574172E2DA9CD002532BF /* ButtonType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonType.swift; sourceTree = "<group>"; };
@@ -2334,6 +2340,24 @@
 			path = OnChainSecurity;
 			sourceTree = "<group>";
 		};
+		138538DB2E61F576006DF7C7 /* VultiServer */ = {
+			isa = PBXGroup;
+			children = (
+				138538E12E61F67C006DF7C7 /* VultiServerService.swift */,
+				138538DE2E61F5C9006DF7C7 /* Model */,
+				138538DC2E61F581006DF7C7 /* VultiServerAPI.swift */,
+			);
+			path = VultiServer;
+			sourceTree = "<group>";
+		};
+		138538DE2E61F5C9006DF7C7 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				138538DF2E61F5CF006DF7C7 /* ResendVaultShareRequest.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		138574122E2DA91E002532BF /* PrimaryButton */ = {
 			isa = PBXGroup;
 			children = (
@@ -2601,6 +2625,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				138538DB2E61F576006DF7C7 /* VultiServer */,
 				132666CA2E429F45007FDAC5 /* THORChainReferralService */,
 				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
 				135677B32E39369A002C10A2 /* Network */,
@@ -4768,6 +4793,7 @@
 				A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A6E0C91D2DE7B22F00A01543 /* ReferralSendOverviewView.swift in Sources */,
+				138538E02E61F5D5006DF7C7 /* ResendVaultShareRequest.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				B51819882DCC1D920013C435 /* FunctionCallUnstakeTCY.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
@@ -4791,6 +4817,7 @@
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */,
 				A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */,
+				138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */,
 				13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */,
 				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
@@ -4804,6 +4831,7 @@
 				A6833D7E2C659283002029E1 /* TokenSelectionHeader.swift in Sources */,
 				A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */,
 				A5340A672CEC9503002ADD35 /* DateExtension.swift in Sources */,
+				138538DD2E61F581006DF7C7 /* VultiServerAPI.swift in Sources */,
 				A6505AE92CA6710A0002FBF4 /* StringExtension+macOS.swift in Sources */,
 				A6182F5B2C9299DC0059BFDD /* MemoTextField+iOS.swift in Sources */,
 				A6505AD22CA668C20002FBF4 /* InformationNote+macOS.swift in Sources */,
