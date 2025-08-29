@@ -603,6 +603,25 @@ class Endpoint {
     static func fetchCardanoBalance(address: String) -> String {
         return "\(cardanoServiceRpc)/address_info"
     }
+
+    // MARK: - TON API helpers
+    static func tonApiJettonWallets(owner: String, jetton: String) -> String {
+        let ownerEncoded = owner.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? owner
+        let jettonEncoded = jetton.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? jetton
+        return "https://tonapi.io/v2/jettons/wallets?owner=\(ownerEncoded)&jetton=\(jettonEncoded)"
+    }
+    static func tonApiJettonWalletsAccount(account: String, jetton: String) -> String {
+        let accountEncoded = account.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? account
+        let jettonEncoded = jetton.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? jetton
+        return "https://tonapi.io/v2/jettons/wallets?account=\(accountEncoded)&jetton=\(jettonEncoded)"
+    }
+    static func tonApiAccountJettons(owner: String) -> String {
+        let ownerPath = owner.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? owner
+        return "https://tonapi.io/v2/accounts/\(ownerPath)/jettons"
+    }
+    static func tonCenterRunGetMethod() -> String {
+        return "https://toncenter.com/api/v2/runGetMethod"
+    }
     
     static func fetchCardanoUTXOs(address: String) -> String {
         return "\(cardanoServiceRpc)/address_utxos"

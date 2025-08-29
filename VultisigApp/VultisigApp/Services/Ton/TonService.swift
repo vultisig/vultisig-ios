@@ -231,7 +231,7 @@ class TonService {
         var resolved: String? = nil
 
         // 1) Dedicated wallets endpoint (owner)
-        if let url = URL(string: "https://tonapi.io/v2/jettons/wallets?owner=\(ownerAddress)&jetton=\(masterAddress)") {
+        if let url = URL(string: Endpoint.tonApiJettonWallets(owner: ownerAddress, jetton: masterAddress)) {
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
             req.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -259,7 +259,7 @@ class TonService {
 
         // 1b) Dedicated wallets endpoint (account param variant)
         resolved = nil
-        if let url = URL(string: "https://tonapi.io/v2/jettons/wallets?account=\(ownerAddress)&jetton=\(masterAddress)") {
+        if let url = URL(string: Endpoint.tonApiJettonWalletsAccount(account: ownerAddress, jetton: masterAddress)) {
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
             req.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -286,7 +286,7 @@ class TonService {
 
         // 2) Fallback: accounts/{owner}/jettons
         resolved = nil
-        if let url = URL(string: "https://tonapi.io/v2/accounts/\(ownerAddress)/jettons") {
+        if let url = URL(string: Endpoint.tonApiAccountJettons(owner: ownerAddress)) {
             var req = URLRequest(url: url)
             req.httpMethod = "GET"
             req.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -336,7 +336,7 @@ class TonService {
             "method": "get_wallet_address",
             "stack": [["tvm.Slice", ownerBoc]]
         ]
-        guard let url = URL(string: "https://toncenter.com/api/v2/runGetMethod") else { return nil }
+        guard let url = URL(string: Endpoint.tonCenterRunGetMethod()) else { return nil }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
