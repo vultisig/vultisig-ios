@@ -41,9 +41,7 @@ class ReferralViewModel: ObservableObject {
     private(set) var thornameDetails: THORName?
     private(set) var currentBlockheight: UInt64 = 0
     
-    var currentVault: Vault? {
-        ApplicationState.shared.currentVault
-    }
+    @Published var currentVault: Vault?
     
     var yourVaultName: String? {
         currentVault?.name
@@ -148,7 +146,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     func getNativeCoin(tx: SendTransaction) {
-        nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
+        nativeCoin = tx.vault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken })
         
         if let nativeCoin {
             tx.coin = nativeCoin
@@ -299,8 +297,12 @@ class ReferralViewModel: ObservableObject {
         return vaultAmount >= amount
     }
     
-    func fetchReferralCodeDetails(vaults: [Vault]) async {
+    func fetchReferralCodeDetails() async {
         await MainActor.run { isLoading = true }
+        guard savedReferralCode.isNotEmpty else {
+            await MainActor.run { isLoading = false }
+            return
+        }
         do {
             let details = try await thorchainReferralService.getThornameDetails(name: savedReferralCode)
             let lastBlock = try await thorchainReferralService.getLastBlock()
@@ -352,6 +354,8 @@ class ReferralViewModel: ObservableObject {
         let newValueFiat = tx.amountDecimal * Decimal(tx.coin.price)
         let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
         tx.amountInFiat = truncatedValueFiat.formatToDecimal(digits: tx.coin.decimals)
+        tx.vault = currentVault
+        getNativeCoin(tx: tx)
     }
     
     func updateReferralCode(code: String) {

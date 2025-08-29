@@ -12,8 +12,6 @@ struct ReferralSendOverviewView: View {
     @ObservedObject var functionCallViewModel: FunctionCallViewModel
     @ObservedObject var functionCallVerifyViewModel: FunctionCallVerifyViewModel
     
-    @EnvironmentObject var homeViewModel: HomeViewModel
-    
     var body: some View {
         ZStack {
             Background()
@@ -108,7 +106,7 @@ struct ReferralSendOverviewView: View {
             
             getCell(
                 title: "from",
-                description: homeViewModel.selectedVault?.name ?? "",
+                description: sendTx.vault?.name ?? "",
                 bracketValue: getVaultAddress()
             )
             
@@ -169,7 +167,7 @@ struct ReferralSendOverviewView: View {
     }
     
     private func getVaultAddress() -> String? {
-        guard let nativeCoin = ApplicationState.shared.currentVault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
+        guard let nativeCoin = sendTx.vault?.coins.first(where: { $0.chain == .thorChain && $0.isNativeToken }) else {
             return nil
         }
         

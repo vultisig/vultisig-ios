@@ -24,9 +24,7 @@ class ReferredViewModel: ObservableObject {
     @Published var referredLaunchViewSuccessMessage: String = ""
     
     private let thorchainReferralService = THORChainAPIService()
-    var currentVault: Vault? {
-        ApplicationState.shared.currentVault
-    }
+    @Published var currentVault: Vault?
     
     var title: String {
         hasReferredCode ? "editFriendsReferral" : "addFriendsReferral"
@@ -52,7 +50,7 @@ class ReferredViewModel: ObservableObject {
     }
     
     func verifyReferredCode() async -> Bool {
-        resetReferredData()
+        clearFormMessages()
         
         isLoading = true
         
@@ -65,11 +63,16 @@ class ReferredViewModel: ObservableObject {
         return await checkNameAvailability(code: referredCode)
     }
     
-    func resetReferredData() {
+    func clearFormMessages() {
         showReferredLaunchViewError = false
         showReferredLaunchViewSuccess = false
         referredLaunchViewErrorMessage = ""
         referredLaunchViewSuccessMessage = ""
+    }
+    
+    func resetData() {
+        referredCode = ""
+        clearFormMessages()
     }
     
     private func saveReferredCode() {

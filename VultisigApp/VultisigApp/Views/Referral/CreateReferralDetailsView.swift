@@ -184,7 +184,6 @@ struct CreateReferralDetailsView: View {
     }
     
     private func setData() {
-        referralViewModel.getNativeCoin(tx: sendTx)
         loadGas()
         calculateFees()
     }
