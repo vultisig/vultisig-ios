@@ -14,6 +14,7 @@ enum TonHelper {
     
     // The official Telegram Wallet chages a transaction fee of 0.05 TON. So we do it as well.
     static let defaultFee: BigInt = BigInt(0.05 * pow(10, 9))
+    static let defaultJettonFee: BigInt = BigInt(0.08 * pow(10, 9))
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
@@ -105,7 +106,7 @@ enum TonHelper {
         let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
         
         // Attach 0.08 TON for fees (matches Android/tests)
-        let recommendedJettonsAmount: UInt64 = 80_000_000 // 0.08 * 10^9
+        let recommendedJettonsAmount: UInt64 = UInt64(TonHelper.defaultJettonFee.description)! // 0.08 * 10^9
         
         let transfer = TheOpenNetworkTransfer.with {
             

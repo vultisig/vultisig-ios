@@ -351,7 +351,7 @@ class TonService {
         } else {
             // Fallback to default values if estimation fails
             return TonGasEstimateResponse(
-                gas_used: 50_000_000, // 0.05 TON default
+                gas_used: Int64(TonHelper.defaultFee.description)!, // 0.05 TON default
                 gas_fee: TonHelper.defaultFee.description
             )
         }
@@ -383,10 +383,10 @@ class TonService {
         if let result = response.result {
             return result
         } else {
-            // Fallback to default jetton transfer gas (typically 0.08 TON)
+            
             return TonGasEstimateResponse(
-                gas_used: 80_000_000, // 0.08 TON for jetton transfers
-                gas_fee: "80000000"
+                gas_used: Int64(TonHelper.defaultJettonFee.description)!, // 0.08 TON default
+                gas_fee: TonHelper.defaultJettonFee.description
             )
         }
     }

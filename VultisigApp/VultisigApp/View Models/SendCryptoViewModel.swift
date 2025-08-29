@@ -251,7 +251,7 @@ class SendCryptoViewModel: ObservableObject {
                     if tx.coin.isNativeToken {
                         gas = TonHelper.defaultFee // 0.05 TON for native transfers
                     } else {
-                        gas = BigInt(80_000_000) // 0.08 TON for jetton transfers
+                        gas = TonHelper.defaultJettonFee // 0.08 TON for jetton transfers
                     }
                     
                     // Set both gas and fee for display in UI
