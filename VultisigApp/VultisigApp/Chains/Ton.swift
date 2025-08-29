@@ -88,11 +88,8 @@ enum TonHelper {
             throw HelperError.runtimeError("Jetton address cannot be empty")
         }
         
-        // Calculate the sender's jetton wallet address (we send to our own jetton wallet)
-        let senderJettonWalletAddress = try calculateJettonWalletAddress(
-            masterAddress: jettonAddress,
-            ownerAddress: keysignPayload.coin.address
-        )
+        // sender jetton wallet is passed via BlockChainSpecific.Ton.jettonAddress now
+        let senderJettonWalletAddress = jettonAddress
         
         // Always attach 1 nanoton to trigger Jetton Notify
         let forwardAmountMsg: UInt64 = 1

@@ -89,7 +89,7 @@
                     "sequence_number": 0,
                     "expire_at": 1753579977,
                     "bounceable": false,
-                    "jetton_address": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+                    "jetton_address": "EQBN8Ny4CLKHqQLPuFxvmJhl22zcQu3sSgVTQ2BX6NfMNVsp",
                     "is_active_destination": true
                 }
             },
@@ -100,7 +100,7 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": [
-            "decb6f1f12c2bc86e3e173781e0288ce874627472ad47552ce88063f0124021e"
+            "78a70a0b9a61d1aa6aca3a0a06e1dd6b05beaca3cc35d43816ca97bf1b188d97"
         ]
     }
 ]
