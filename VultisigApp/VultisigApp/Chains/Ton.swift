@@ -156,19 +156,13 @@ enum TonHelper {
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
-        
         let hashes = TransactionCompiler.preImageHashes(coinType: .ton, txInputData: inputData)
-        
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
-        
         if !preSigningOutput.errorMessage.isEmpty {
-            
+            print(preSigningOutput.errorMessage)
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
-        
-        let result = [preSigningOutput.data.hexString]
-        
-        return result
+        return [preSigningOutput.data.hexString]
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,

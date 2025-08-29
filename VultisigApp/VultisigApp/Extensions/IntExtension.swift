@@ -19,11 +19,3 @@ extension Numeric {
         self = if pred { 1 } else { 0 }
     }
 }
-
-extension UInt64 {
-    /// Converts UInt64 to big-endian bytes representation
-    var bigEndianBytes: [UInt8] {
-        let bigEndianValue = self.bigEndian
-        return withUnsafeBytes(of: bigEndianValue) { Array($0) }
-    }
-}
