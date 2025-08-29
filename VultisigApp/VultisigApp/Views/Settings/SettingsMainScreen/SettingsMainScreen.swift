@@ -66,13 +66,14 @@ struct SettingsMainScreen: View {
     ]
     
     var body: some View {
-        Screen(title: "settings".localized) {
+        Screen(title: "settings".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 14) {
                     ForEach(groups) { group in
                         groupView(for: group)
                     }
                     appVersion
+                        .padding(.bottom, 12)
                 }
             }
         }

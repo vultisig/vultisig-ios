@@ -9,13 +9,20 @@ import SwiftUI
 
 struct Screen<Content: View>: View {
     let title: String
+    let edgeInsets: ScreenEdgeInsets
     let showNavigationBar: Bool
     
     let content: () -> Content
     
-    init(title: String = "", showNavigationBar: Bool = true, @ViewBuilder content: @escaping () -> Content) {
+    init(
+        title: String = "",
+        showNavigationBar: Bool = true,
+        edgeInsets: ScreenEdgeInsets = .noInsets,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
         self.title = title
         self.showNavigationBar = showNavigationBar
+        self.edgeInsets = edgeInsets
         self.content = content
     }
     
@@ -43,8 +50,10 @@ struct Screen<Content: View>: View {
     
     var contentContainer: some View {
         content()
-            .padding(.vertical, 12)
-            .padding(.horizontal, horizontalPadding)
+            .padding(.top, edgeInsets.top ?? verticalPadding)
+            .padding(.bottom, edgeInsets.bottom ?? verticalPadding)
+            .padding(.leading, edgeInsets.leading ?? horizontalPadding)
+            .padding(.trailing, edgeInsets.trailing ?? horizontalPadding)
     }
     
     var horizontalPadding: CGFloat {
@@ -54,6 +63,8 @@ struct Screen<Content: View>: View {
             return 40
         #endif
     }
+    
+    var verticalPadding: CGFloat { 12 }
 }
 
 #Preview {

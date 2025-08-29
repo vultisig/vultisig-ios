@@ -48,7 +48,12 @@ struct VaultAdvancedSettingsScreen: View {
         NavigationLink {
             OnChainSecurityScreen()
         } label: {
-            SettingsOptionView(icon: "folder-lock", title: "vaultSettingsSecurityTitle".localized, subtitle: "vaultSettingsSecuritySubtitle".localized)
+            SettingsOptionView(
+                icon: "folder-lock",
+                title: "vaultSettingsSecurityTitle".localized,
+                subtitle: "vaultSettingsSecuritySubtitle".localized,
+                showSeparator: false
+            )
         }
     }
 }
