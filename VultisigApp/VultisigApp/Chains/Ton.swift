@@ -16,7 +16,7 @@ enum TonHelper {
     static let defaultFee: BigInt = BigInt(0.05 * pow(10, 9))
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-
+        
         guard keysignPayload.coin.chain.ticker == "TON" else {
             throw HelperError.runtimeError("coin is not TON")
         }
@@ -25,20 +25,20 @@ enum TonHelper {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
-
+        
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
-
+        
         let transfer: TheOpenNetworkTransfer
         
         // Check if this is a jetton transfer
         if !jettonAddress.isEmpty {
-
+            
             // Build jetton transfer
             transfer = try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress, isActiveDestination: isActiveDestination)
         } else {
-
+            
             // Build native TON transfer
             guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
                 throw HelperError.runtimeError("fail to get to address")
@@ -65,7 +65,7 @@ enum TonHelper {
         let sequenceNumberUInt32 = UInt32(sequenceNumber.description) ?? 0
         let expireAtUInt32 = UInt32(expireAt.description) ?? 0
         
-
+        
         let input = TheOpenNetworkSigningInput.with {
             $0.messages = [transfer]
             $0.sequenceNumber = sequenceNumberUInt32
@@ -75,15 +75,15 @@ enum TonHelper {
         }
         
         let serializedData = try input.serializedData()
-
+        
         return serializedData
     }
     
     static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String, isActiveDestination: Bool) throws -> TheOpenNetworkTransfer {
-
+        
         // Convert destination to bounceable, as jettons addresses are always EQ
         let destinationAddress = try convertToUserFriendly(address: keysignPayload.toAddress, bounceable: true, testOnly: false)
-
+        
         guard !jettonAddress.isEmpty else {
             throw HelperError.runtimeError("Jetton address cannot be empty")
         }
@@ -96,12 +96,12 @@ enum TonHelper {
         
         // Always attach 1 nanoton to trigger Jetton Notify
         let forwardAmountMsg: UInt64 = 1
-
+        
         
         let amount = UInt64(keysignPayload.toAmount.description) ?? 0
-
+        
         let jettonTransfer = TheOpenNetworkJettonTransfer.with {
-
+            
             $0.jettonAmount = amount
             $0.responseAddress = keysignPayload.coin.address
             $0.toOwner = destinationAddress
@@ -109,12 +109,12 @@ enum TonHelper {
         }
         
         let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
-
+        
         // Attach at least 0.1 TON for fees, consistent with WalletCore example
         let recommendedJettonsAmount: UInt64 = 100_000_000 // 0.1 * 10^9
-
+        
         let transfer = TheOpenNetworkTransfer.with {
-
+            
             $0.amount = recommendedJettonsAmount
             if let memo = keysignPayload.memo {
                 $0.comment = memo
@@ -125,7 +125,7 @@ enum TonHelper {
             $0.jettonTransfer = jettonTransfer
         }
         
-
+        
         return transfer
     }
     
@@ -162,12 +162,12 @@ enum TonHelper {
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
         
         if !preSigningOutput.errorMessage.isEmpty {
-
+            
             throw HelperError.runtimeError(preSigningOutput.errorMessage)
         }
         
         let result = [preSigningOutput.data.hexString]
-
+        
         return result
     }
     
