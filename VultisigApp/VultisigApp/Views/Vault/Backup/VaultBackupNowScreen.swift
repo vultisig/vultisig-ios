@@ -72,8 +72,7 @@ struct VaultBackupNowScreen: View {
         animation = RiveViewModel(fileName: "backupvault_splash", autoPlay: true)
         
         if backupType.vault.isFastVault, isNewVault {
-            // TODO: - Generate File
-//            fileModel = backupViewModel.exportFileWithVaultPassword(vault)
+            fileModel = backupViewModel.exportFileWithVaultPassword(backupType)
         }
     }
     

@@ -90,8 +90,7 @@ struct VaultBackupPasswordOptionsScreen: View {
         isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
-        // TODO: - Generate file
-//        fileModel = backupViewModel.exportFileWithoutPassword(vault)
+        fileModel = backupViewModel.exportFileWithoutPassword(backupType)
         isLoading = false
     }
 }
