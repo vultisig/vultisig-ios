@@ -244,33 +244,20 @@ class SendCryptoViewModel: ObservableObject {
                     } else {
                         rawBalance = try await ton.getJettonBalance(tx.coin)
                     }
+
                     tx.coin.rawBalance = rawBalance
-                    
-                    // Set gas fee based on token type
-                    let gas: BigInt
-                    if tx.coin.isNativeToken {
-                        gas = TonHelper.defaultFee // 0.05 TON for native transfers
-                    } else {
-                        gas = TonHelper.defaultJettonFee // 0.08 TON for jetton transfers
-                    }
-                    
-                    // Set both gas and fee for display in UI
-                    tx.gas = gas
-                    tx.fee = gas
-                    
-                    if percentage == 100 {
-                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    } else {
-                        // For non-max amounts, still need to account for gas in calculations
-                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    }
+
+                    let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
+
+                    tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
                     
                     setPercentageAmount(tx: tx, for: percentage)
+
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
                     print("fail to load ton balances,error:\(error.localizedDescription)")
                 }
-                
+
                 isLoading = false
             }
         case .ripple:
@@ -464,7 +451,7 @@ class SendCryptoViewModel: ObservableObject {
             
             let validation = CardanoHelper.validateUTXORequirements(
                 sendAmount: amountInLovelaces,
-                totalBalance: totalBalance.toBigInt(), 
+                totalBalance: totalBalance.toBigInt(),
                 estimatedFee: estimatedFee
             )
             
