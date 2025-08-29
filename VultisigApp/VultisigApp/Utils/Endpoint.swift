@@ -346,8 +346,7 @@ class Endpoint {
     }
     
     static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
-        // Vultisig proxy doesn't support jetton endpoints, use TonAPI directly
-        return "https://tonapi.io/v2/accounts/\(address)/jettons";
+        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)";
     }
     
     static func fetchMemoInfo(hash: String) -> URL {
@@ -364,6 +363,14 @@ class Endpoint {
     
     static func broadcastTonTransaction() -> String {
         return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
+    }
+    
+    static func estimateTonGas() -> String {
+        return "https://api.vultisig.com/ton/v2/estimateGas";
+    }
+    
+    static func estimateTonJettonGas() -> String {
+        return "https://api.vultisig.com/ton/v2/estimateJettonGas";
     }
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
@@ -605,23 +612,12 @@ class Endpoint {
         return "\(cardanoServiceRpc)/address_info"
     }
 
-    // MARK: - TON API helpers (jetton endpoints use TonAPI directly as Vultisig proxy doesn't support them)
-    static func tonApiJettonWallets(owner: String, jetton: String) -> String {
-        let ownerEncoded = owner.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? owner
-        let jettonEncoded = jetton.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? jetton
-        return "https://tonapi.io/v2/jettons/wallets?owner=\(ownerEncoded)&jetton=\(jettonEncoded)"
+    // MARK: - TON API helpers (via Vultisig proxy)
+    static func tonApiRunGetMethod() -> String {
+        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
     }
-    static func tonApiJettonWalletsAccount(account: String, jetton: String) -> String {
-        let accountEncoded = account.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? account
-        let jettonEncoded = jetton.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? jetton
-        return "https://tonapi.io/v2/jettons/wallets?account=\(accountEncoded)&jetton=\(jettonEncoded)"
-    }
-    static func tonApiAccountJettons(owner: String) -> String {
-        let ownerPath = owner.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? owner
-        return "https://tonapi.io/v2/accounts/\(ownerPath)/jettons"
-    }
-    static func tonCenterRunGetMethod() -> String {
-        return "https://toncenter.com/api/v2/runGetMethod"
+    static func tonApiAddressInformation(address: String) -> String {
+        return "\(vultisigApiProxy)/ton/v3/addressInformation?address=\(address)"
     }
     
     static func fetchCardanoUTXOs(address: String) -> String {

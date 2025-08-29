@@ -25,7 +25,6 @@ enum TonHelper {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
-        
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             throw HelperError.runtimeError("invalid hex public key")
         }
@@ -65,7 +64,6 @@ enum TonHelper {
         let sequenceNumberUInt32 = UInt32(sequenceNumber.description) ?? 0
         let expireAtUInt32 = UInt32(expireAt.description) ?? 0
         
-        
         let input = TheOpenNetworkSigningInput.with {
             $0.messages = [transfer]
             $0.sequenceNumber = sequenceNumberUInt32
@@ -93,7 +91,6 @@ enum TonHelper {
         
         // Always attach 1 nanoton to trigger Jetton Notify
         let forwardAmountMsg: UInt64 = 1
-        
         
         let amount = UInt64(keysignPayload.toAmount.description) ?? 0
         
@@ -138,17 +135,6 @@ enum TonHelper {
         }
         
         return convertedAddress
-    }
-    
-    static func calculateJettonWalletAddress(masterAddress: String, ownerAddress: String) throws -> String {
-        // Resolve jetton wallet deterministically (owner + master)
-        if let resolved = TonService.shared.getJettonWalletAddressSync(ownerAddress: ownerAddress, masterAddress: masterAddress) {
-            return resolved
-        }
-        if let resolved = TonService.shared.getJettonWalletAddressViaRunGetMethodSync(ownerAddress: ownerAddress, masterAddress: masterAddress) {
-            return resolved
-        }
-        throw HelperError.runtimeError("Failed to resolve jetton wallet for owner: \(ownerAddress)")
     }
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

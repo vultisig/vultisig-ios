@@ -246,14 +246,26 @@ class SendCryptoViewModel: ObservableObject {
                     }
                     tx.coin.rawBalance = rawBalance
                     
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
+                    // Set gas fee based on token type
+                    let gas: BigInt
+                    if tx.coin.isNativeToken {
+                        gas = TonHelper.defaultFee // 0.05 TON for native transfers
+                    } else {
+                        gas = BigInt(80_000_000) // 0.08 TON for jetton transfers
                     }
                     
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
-                    setPercentageAmount(tx: tx, for: percentage)
+                    // Set both gas and fee for display in UI
+                    tx.gas = gas
+                    tx.fee = gas
                     
+                    if percentage == 100 {
+                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    } else {
+                        // For non-max amounts, still need to account for gas in calculations
+                        tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
+                    }
+                    
+                    setPercentageAmount(tx: tx, for: percentage)
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
                     print("fail to load ton balances,error:\(error.localizedDescription)")
