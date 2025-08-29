@@ -133,6 +133,7 @@ struct ReferralMainScreen: View {
             value: referralViewModel.savedReferralCode,
             icon: "copy"
         ) {
+            ClipboardManager.copyToClipboard(referralViewModel.savedReferralCode)
             showReferralCodeCopied = true
         }
     }
