@@ -13,7 +13,7 @@ struct SettingsLanguageSelectionView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        Screen(title: "language".localized) {
+        Screen(title: "language".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
@@ -24,7 +24,8 @@ struct SettingsLanguageSelectionView: View {
                                 SettingSelectionCell(
                                     title: language.rawValue,
                                     isSelected: language==settingsViewModel.selectedLanguage,
-                                    description: language.description()
+                                    description: language.description(),
+                                    showSeparator: language != SettingsLanguage.allCases.last
                                 )
                             }
                         }
