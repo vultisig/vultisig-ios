@@ -422,7 +422,7 @@ private extension BlockChainService {
                 }
             }
             
-            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount)
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: isBounceable, sendMaxAmount: sendMaxAmount, jettonAddress: coin.isNativeToken ? "" : coin.contractAddress, isActiveDestination: !isBounceable)
         case .ripple:
             
             let account = try await ripple.fetchAccountsInfo(for: coin.address)

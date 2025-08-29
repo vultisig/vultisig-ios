@@ -1,4 +1,5 @@
 import Foundation
+import WalletCore
 
 // Define the structures for responses and interfaces
 struct TonAddressInformation: Codable {
@@ -26,7 +27,7 @@ struct ResultData: Codable {
             case account_address
         }
     }
-
+    
     struct LastTransactionIdInfo: Codable {
         let type = "internal.transactionId"
         let lt: String
@@ -36,7 +37,7 @@ struct ResultData: Codable {
             case hash
         }
     }
-
+    
     struct BlockIdInfo: Codable {
         let type = "ton.blockIdExt"
         let workchain: Int
@@ -52,7 +53,7 @@ struct ResultData: Codable {
             case file_hash
         }
     }
-
+    
     struct AccountStateInfo: Codable {
         let type = "wallet.v4.accountState"
         let wallet_id: String
@@ -62,7 +63,7 @@ struct ResultData: Codable {
             case seqno
         }
     }
-
+    
     var type = "fullAccountState"
     var address: AddressInfo
     var balance: String
@@ -81,9 +82,9 @@ struct TonBroadcastSuccessResponse: Codable {
 class TonService {
     
     static let shared = TonService()
-
+    
     func broadcastTransaction(_ obj: String) async throws -> String {
-                
+        
         let body: [String: Any] = ["boc": obj]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         guard let url = URL(string: Endpoint.broadcastTonTransaction()) else {
@@ -115,7 +116,7 @@ class TonService {
             throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
         }
     }
-
+    
     func getBalance(_ coin: Coin) async throws -> String {
         
         guard let url = URL(string: Endpoint.fetchTonBalance(address: coin.address)) else {
@@ -128,10 +129,54 @@ class TonService {
         if let balance = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
             return balance
         }
-                
+        
         return .zero
     }
-
+    
+    func getJettonBalance(_ coin: Coin) async throws -> String {
+        
+        guard let url = URL(string: Endpoint.fetchTonJettonBalance(address: coin.address, jettonAddress: coin.contractAddress)) else {
+            throw URLError(.badURL)
+        }
+        let request = URLRequest(url: url)
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        // Parse TonAPI response format
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let balances = json["balances"] as? [[String: Any]] {
+            
+            // Find the jetton with matching symbol/name first, then address
+            for balanceItem in balances {
+                if let jetton = balanceItem["jetton"] as? [String: Any],
+                   let jettonAddress = jetton["address"] as? String,
+                   let balance = balanceItem["balance"] as? String {
+                    
+                    // First try to match by symbol for well-known tokens
+                    if let symbol = jetton["symbol"] as? String {
+                        if coin.ticker == "USDT" && (symbol == "USDT" || symbol == "USD₮") {
+                            return balance
+                        }
+                    }
+                    
+                    // Fallback to address matching
+                    // TON addresses can be in different formats: 0:xxx or EQxxx
+                    let normalizedJettonAddress = jettonAddress.replacingOccurrences(of: "0:", with: "EQ")
+                    let normalizedCoinAddress = coin.contractAddress.replacingOccurrences(of: "EQ", with: "0:")
+                    
+                    // Check all combinations
+                    if jettonAddress == coin.contractAddress ||
+                        jettonAddress == normalizedCoinAddress ||
+                        normalizedJettonAddress == coin.contractAddress {
+                        return balance
+                    }
+                }
+            }
+        }
+        
+        return .zero
+    }
+    
     func getSpecificTransactionInfo(_ coin: Coin) async throws -> (UInt64, UInt64) {
         
         let now = Date()
@@ -171,5 +216,177 @@ class TonService {
         
         return "uninit" // Default to uninitialized if status not found
     }
+    
+    // Synchronous resolver for jetton wallet address (owner + master)
+    // Primary: TonAPI v2 /jettons/wallets?owner=&jetton= (deterministic)
+    // Secondary: TonAPI v2 /accounts/{owner}/jettons (fallback by matching master)
+    // Returns bounceable address when possible
+    func getJettonWalletAddressSync(ownerAddress: String, masterAddress: String, timeout: TimeInterval = 8.0) -> String? {
+        func toBounceable(_ addr: String?) -> String? {
+            guard let addr else { return nil }
+            return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
+        }
 
+        let semaphore = DispatchSemaphore(value: 0)
+        var resolved: String? = nil
+
+        // 1) Dedicated wallets endpoint (owner)
+        if let url = URL(string: "https://tonapi.io/v2/jettons/wallets?owner=\(ownerAddress)&jetton=\(masterAddress)") {
+            var req = URLRequest(url: url)
+            req.httpMethod = "GET"
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            let task = URLSession.shared.dataTask(with: req) { data, _, _ in
+                defer { semaphore.signal() }
+                guard let data else { return }
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    // Try common shapes: {"wallets":[{"address":"..."}]} or {"address":"..."}
+                    if let wallets = json["wallets"] as? [[String: Any]] {
+                        if let first = wallets.first, let addr = first["address"] as? String {
+                            resolved = addr
+                            return
+                        }
+                    }
+                    if let addr = json["address"] as? String {
+                        resolved = addr
+                        return
+                    }
+                }
+            }
+            task.resume()
+            _ = semaphore.wait(timeout: .now() + timeout)
+            if let addr = toBounceable(resolved) { return addr }
+        }
+
+        // 1b) Dedicated wallets endpoint (account param variant)
+        resolved = nil
+        if let url = URL(string: "https://tonapi.io/v2/jettons/wallets?account=\(ownerAddress)&jetton=\(masterAddress)") {
+            var req = URLRequest(url: url)
+            req.httpMethod = "GET"
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            let task = URLSession.shared.dataTask(with: req) { data, _, _ in
+                defer { semaphore.signal() }
+                guard let data else { return }
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    if let wallets = json["wallets"] as? [[String: Any]] {
+                        if let first = wallets.first, let addr = first["address"] as? String {
+                            resolved = addr
+                            return
+                        }
+                    }
+                    if let addr = json["address"] as? String {
+                        resolved = addr
+                        return
+                    }
+                }
+            }
+            task.resume()
+            _ = semaphore.wait(timeout: .now() + timeout)
+            if let addr = toBounceable(resolved) { return addr }
+        }
+
+        // 2) Fallback: accounts/{owner}/jettons
+        resolved = nil
+        if let url = URL(string: "https://tonapi.io/v2/accounts/\(ownerAddress)/jettons") {
+            var req = URLRequest(url: url)
+            req.httpMethod = "GET"
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            let task = URLSession.shared.dataTask(with: req) { data, _, _ in
+                defer { semaphore.signal() }
+                guard let data else { return }
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let balances = json["balances"] as? [[String: Any]] {
+                    let normalizedMasterEQ = masterAddress.replacingOccurrences(of: "0:", with: "EQ")
+                    let normalizedMasterRaw = masterAddress.replacingOccurrences(of: "EQ", with: "0:")
+                    for item in balances {
+                        guard let jetton = item["jetton"] as? [String: Any],
+                              let jettonAddr = jetton["address"] as? String else { continue }
+                        if jettonAddr == masterAddress || jettonAddr == normalizedMasterEQ || jettonAddr == normalizedMasterRaw {
+                            if let walletObject = item["wallet_address"] as? [String: Any],
+                               let addr = walletObject["address"] as? String {
+                                resolved = addr
+                                break
+                            } else if let addr = item["wallet_address"] as? String {
+                                resolved = addr
+                                break
+                            } else if let wallet = item["wallet"] as? [String: Any],
+                                      let addr = wallet["address"] as? String {
+                                resolved = addr
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            task.resume()
+            _ = semaphore.wait(timeout: .now() + timeout)
+            if let addr = toBounceable(resolved) { return addr }
+        }
+        return nil
+    }
+
+    // Deterministic fallback using runGetMethod(get_wallet_address)
+    // Expects masterAddress (jetton minter) and ownerAddress (TON wallet)
+    func getJettonWalletAddressViaRunGetMethodSync(ownerAddress: String, masterAddress: String, timeout: TimeInterval = 8.0) -> String? {
+        // Build TON Center-compatible call via Vultisig proxy if available
+        // Use master + slice(owner) encoded as BOC, however we can leverage WalletCore helper to convert owner to BOC
+        // Prepare stack: [ ["tvm.Slice", toBoc(owner)] ]
+        guard let ownerBoc = TONAddressConverter.toBoc(address: ownerAddress) else { return nil }
+        let payload: [String: Any] = [
+            "address": masterAddress,
+            "method": "get_wallet_address",
+            "stack": [["tvm.Slice", ownerBoc]]
+        ]
+        guard let url = URL(string: "https://toncenter.com/api/v2/runGetMethod") else { return nil }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+        let semaphore = DispatchSemaphore(value: 0)
+        var resolved: String? = nil
+        let task = URLSession.shared.dataTask(with: req) { data, _, _ in
+            defer { semaphore.signal() }
+            guard let data else { return }
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let ok = json["ok"] as? Bool, ok,
+               let result = json["result"] as? [String: Any] {
+                let stackAny = result["stack"]
+                // Handle both shapes: [[Any]] or [[String:Any]]
+                if let stack = stackAny as? [[Any]] {
+                    for entry in stack {
+                        if entry.count >= 2 {
+                            let value = entry[1]
+                            var boc: String?
+                            if let s = value as? String { boc = s }
+                            else if let dict = value as? [String: Any] {
+                                boc = (dict["bytes"] as? String) ?? (dict["b64"] as? String) ?? (dict["boc"] as? String)
+                            }
+                            if let boc, let addr = TONAddressConverter.fromBoc(boc: boc) {
+                                resolved = addr
+                                break
+                            }
+                        }
+                    }
+                } else if let stack = stackAny as? [[String: Any]] {
+                    for item in stack {
+                        if let cell = item["value"] as? [String: Any] {
+                            let boc = (cell["bytes"] as? String) ?? (cell["b64"] as? String) ?? (cell["boc"] as? String)
+                            if let boc, let addr = TONAddressConverter.fromBoc(boc: boc) {
+                                resolved = addr
+                                break
+                            }
+                        } else if let boc = item["boc"] as? String, let addr = TONAddressConverter.fromBoc(boc: boc) {
+                            resolved = addr
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+        _ = semaphore.wait(timeout: .now() + timeout)
+        if let addr = resolved, let converted = TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) {
+            return converted
+        }
+        return resolved
+    }
 }

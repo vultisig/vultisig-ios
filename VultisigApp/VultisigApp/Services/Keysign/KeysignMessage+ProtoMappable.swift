@@ -332,7 +332,12 @@ extension BlockChainSpecific {
             )
         case .tonSpecific(let value):
             self = .Ton(
-                sequenceNumber: value.sequenceNumber, expireAt: value.expireAt, bounceable: value.bounceable, sendMaxAmount: value.sendMaxAmount
+                sequenceNumber: value.sequenceNumber,
+                expireAt: value.expireAt,
+                bounceable: value.bounceable,
+                sendMaxAmount: value.sendMaxAmount,
+                jettonAddress: value.jettonAddress,
+                isActiveDestination: value.isActiveDestination
             )
         case .rippleSpecific(let value):
             self = .Ripple(
@@ -427,12 +432,14 @@ extension BlockChainSpecific {
                 $0.coins = suiCoins
             })
             
-        case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount):
+        case .Ton(let sequenceNumber, let expireAt, let bounceable, let sendMaxAmount, let jettonAddress, let isActiveDestination):
             return .tonSpecific(.with {
                 $0.sequenceNumber = sequenceNumber
                 $0.expireAt = expireAt
                 $0.bounceable = bounceable
                 $0.sendMaxAmount = sendMaxAmount
+                $0.jettonAddress = jettonAddress
+                $0.isActiveDestination = isActiveDestination
             })
             
             

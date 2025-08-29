@@ -238,7 +238,12 @@ class SendCryptoViewModel: ObservableObject {
             Task {
                 do {
                     tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-                    let rawBalance = try await ton.getBalance(tx.coin)
+                    let rawBalance: String
+                    if tx.coin.isNativeToken {
+                        rawBalance = try await ton.getBalance(tx.coin)
+                    } else {
+                        rawBalance = try await ton.getJettonBalance(tx.coin)
+                    }
                     tx.coin.rawBalance = rawBalance
                     
                     var gas = BigInt.zero

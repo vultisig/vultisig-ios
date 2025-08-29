@@ -10,7 +10,7 @@
                 "price_provider_id": "the-open-network",
                 "is_native_token": true,
                 "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
-                "contract_address":"",
+                "contract_address": "",
                 "logo": "ton"
             },
             "to_address": "UQDmLe6ticcY_uLZsfurdYONshNuCn8IS81KcJ8p6M6ISMcB",
@@ -29,7 +29,9 @@
             "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8"]
+        "expected_image_hash": [
+            "aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8"
+        ]
     },
     {
         "name": "TON Stake with memo",
@@ -42,7 +44,7 @@
                 "price_provider_id": "the-open-network",
                 "is_native_token": true,
                 "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
-                "contract_address":"",
+                "contract_address": "",
                 "logo": "ton"
             },
             "to_address": "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5",
@@ -61,6 +63,44 @@
             "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
             "lib_type": "DKLS"
         },
-        "expected_image_hash": ["299ecf1da0682c338130b7f3f890484100e41c8f0d2b024b1fd0214df6e310dd"]
+        "expected_image_hash": [
+            "299ecf1da0682c338130b7f3f890484100e41c8f0d2b024b1fd0214df6e310dd"
+        ]
     },
+    {
+        "name": "Send TON USDT Jetton",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Ton",
+                "ticker": "USDT",
+                "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
+                "decimals": 6,
+                "price_provider_id": "tether",
+                "is_native_token": false,
+                "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
+                "contract_address": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+                "logo": "usdt"
+            },
+            "to_address": "UQDmLe6ticcY_uLZsfurdYONshNuCn8IS81KcJ8p6M6ISMcB",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "TonSpecific": {
+                    "send_max_amount": false,
+                    "sequence_number": 0,
+                    "expire_at": 1753579977,
+                    "bounceable": false,
+                    "jetton_address": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+                    "is_active_destination": true
+                }
+            },
+            "memo": "",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": [
+            "decb6f1f12c2bc86e3e173781e0288ce874627472ad47552ce88063f0124021e"
+        ]
+    }
 ]
