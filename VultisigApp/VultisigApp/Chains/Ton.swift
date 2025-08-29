@@ -110,8 +110,8 @@ enum TonHelper {
         
         let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
         
-        // Attach at least 0.1 TON for fees, consistent with WalletCore example
-        let recommendedJettonsAmount: UInt64 = 100_000_000 // 0.1 * 10^9
+        // Attach 0.08 TON for fees (matches Android/tests)
+        let recommendedJettonsAmount: UInt64 = 80_000_000 // 0.08 * 10^9
         
         let transfer = TheOpenNetworkTransfer.with {
             
