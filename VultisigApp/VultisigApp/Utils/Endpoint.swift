@@ -346,6 +346,7 @@ class Endpoint {
     }
     
     static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
+        // Vultisig proxy doesn't support jetton endpoints, use TonAPI directly
         return "https://tonapi.io/v2/accounts/\(address)/jettons";
     }
     
@@ -604,7 +605,7 @@ class Endpoint {
         return "\(cardanoServiceRpc)/address_info"
     }
 
-    // MARK: - TON API helpers
+    // MARK: - TON API helpers (jetton endpoints use TonAPI directly as Vultisig proxy doesn't support them)
     static func tonApiJettonWallets(owner: String, jetton: String) -> String {
         let ownerEncoded = owner.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? owner
         let jettonEncoded = jetton.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? jetton
