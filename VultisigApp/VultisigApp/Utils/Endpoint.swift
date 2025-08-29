@@ -296,7 +296,7 @@ class Endpoint {
     }
     
     static func solanaTokenInfoList() -> String {
-        "https://tokens.jup.ag/tokens?tags=verified"
+        "https://lite-api.jup.ag/tokens/v2/tag?query=verified"
     }
     
     static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
