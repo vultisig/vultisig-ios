@@ -21,11 +21,13 @@ struct AddressBookView: View {
     
     @Environment(\.modelContext) var modelContext
     
+    var savedAddressesEmpty: Bool { savedAddresses.isEmpty }
+    
     var body: some View {
-        Screen(title: "addressBook".localized) {
+        Screen(title: "addressBook".localized, edgeInsets: ScreenEdgeInsets(bottom: savedAddressesEmpty ? nil : 0)) {
             VStack {
                 Group {
-                    if savedAddresses.isEmpty {
+                    if savedAddressesEmpty {
                        emptyView
                             .background(BlurredBackground())
                     } else {
@@ -37,7 +39,7 @@ struct AddressBookView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .screenToolbar {
-            if savedAddresses.count != 0 {
+            if !savedAddressesEmpty {
                 navigationButton
             }
         }

@@ -68,7 +68,7 @@ struct ReferralTransactionDetailsView: View {
             
             getCell(
                 title: "from",
-                description: homeViewModel.selectedVault?.name ?? "",
+                description: sendTx.vault?.name ?? "",
                 bracketValue: referralViewModel.nativeCoin?.address
             )
             

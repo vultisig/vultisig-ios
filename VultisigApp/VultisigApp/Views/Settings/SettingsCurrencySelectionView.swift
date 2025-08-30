@@ -14,7 +14,7 @@ struct SettingsCurrencySelectionView: View {
     @State var isLoading = false
     
     var body: some View {
-        Screen(title: "currency".localized) {
+        Screen(title: "currency".localized, edgeInsets: ScreenEdgeInsets(bottom: 0)) {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
@@ -24,7 +24,8 @@ struct SettingsCurrencySelectionView: View {
                             } label: {
                                 SettingSelectionCell(
                                     title: currency.rawValue,
-                                    isSelected: currency.rawValue == settingsViewModel.selectedCurrency.rawValue
+                                    isSelected: currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
+                                    showSeparator: currency != SettingsCurrency.allCases.last
                                 )
                             }
                         }

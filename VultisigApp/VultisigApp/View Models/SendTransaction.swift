@@ -27,6 +27,9 @@ class SendTransaction: ObservableObject, Hashable {
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
+    @Published var vault: Vault?
+    
+    var txVault: Vault? { vault ?? ApplicationState.shared.currentVault}
     
     var gasLimit: BigInt {
         return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
@@ -76,7 +79,7 @@ class SendTransaction: ObservableObject, Hashable {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
         
-        if let vault = ApplicationState.shared.currentVault {
+        if let vault = txVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 
@@ -100,7 +103,7 @@ class SendTransaction: ObservableObject, Hashable {
     func getNativeTokenBalance() async -> String {
         guard !coin.isNativeToken else { return .zero }
         
-        if let vault = ApplicationState.shared.currentVault {
+        if let vault = txVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
@@ -149,7 +152,7 @@ class SendTransaction: ObservableObject, Hashable {
         
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
-            if let vault = ApplicationState.shared.currentVault {
+            if let vault = txVault {
                 if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                     decimals = nativeToken.decimals
                 }
