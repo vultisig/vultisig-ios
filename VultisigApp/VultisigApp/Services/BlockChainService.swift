@@ -424,7 +424,6 @@ private extension BlockChainService {
             
             var senderJettonWallet: String = coin.contractAddress
             if !coin.isNativeToken {
-                // Resolve sender's jetton wallet upfront; avoid sync/semaphore in Ton.swift
                 if let resolved = await TonService.shared.getJettonWalletAddressAsync(ownerAddress: coin.address, masterAddress: coin.contractAddress) {
                     senderJettonWallet = resolved
                 }
