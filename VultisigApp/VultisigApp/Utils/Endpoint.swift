@@ -349,6 +349,10 @@ class Endpoint {
         return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)";
     }
     
+    static func tonApiRunGetMethod() -> String {
+        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
+    }
+    
     static func fetchMemoInfo(hash: String) -> URL {
         return "https://api.etherface.io/v1/signatures/hash/all/\(hash)/1".asUrl
     }
@@ -602,10 +606,6 @@ class Endpoint {
     
     static func fetchCardanoBalance(address: String) -> String {
         return "\(cardanoServiceRpc)/address_info"
-    }
-
-    static func tonApiRunGetMethod() -> String {
-        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
     }
     
     static func fetchCardanoUTXOs(address: String) -> String {
