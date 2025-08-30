@@ -2,19 +2,6 @@ import Foundation
 import WalletCore
 import BigInt
 
-// MARK: - TON Extended Address Info Response
-struct TonExtendedAddressInfo: Codable {
-    let balance: String
-    let code: String?
-    let data: String?
-    let last_transaction_lt: String?
-    let last_transaction_hash: String?
-    let frozen_hash: String?
-    let status: String
-    let seqno: String?
-}
-
-// MARK: - Jetton Balance Response (Vultisig proxy format)
 struct JettonWalletsResponse: Codable {
     let jetton_wallets: [JettonWalletInfo]
 }
@@ -29,13 +16,6 @@ struct JettonWalletInfo: Codable {
     let data_hash: String?
 }
 
-// MARK: - Gas Estimation Response
-struct TonGasEstimateResponse: Codable {
-    let gas_used: Int64
-    let gas_fee: String
-}
-
-// MARK: - RunGetMethod Response
 struct RunGetMethodResponse: Codable {
     let ok: Bool
     let result: RunGetMethodResult?
@@ -68,8 +48,6 @@ struct StackValue: Codable {
     }
 }
 
-// MAIN
-// Define the structures for responses and interfaces
 struct ApiResponse<T: Codable>: Codable {
     let ok: Bool
     let result: T?
@@ -80,7 +58,6 @@ struct ApiResponse<T: Codable>: Codable {
 struct TonBroadcastSuccessResponse: Codable {
     let hash: String
 }
-// END MAIN
 
 class TonService {
     
@@ -222,7 +199,6 @@ class TonService {
         return (seqno, expireAt)
     }
     
-    // MARK: - Async variants (no semaphores)
     func getJettonWalletAddressAsync(ownerAddress: String, masterAddress: String) async -> String? {
         return await runGetWalletAddress(owner: ownerAddress, master: masterAddress)
     }
