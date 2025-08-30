@@ -604,12 +604,8 @@ class Endpoint {
         return "\(cardanoServiceRpc)/address_info"
     }
 
-    // MARK: - TON API helpers (via Vultisig proxy)
     static func tonApiRunGetMethod() -> String {
         return "\(vultisigApiProxy)/ton/v2/runGetMethod"
-    }
-    static func tonApiAddressInformation(address: String) -> String {
-        return "\(vultisigApiProxy)/ton/v3/addressInformation?address=\(address)"
     }
     
     static func fetchCardanoUTXOs(address: String) -> String {
