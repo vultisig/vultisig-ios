@@ -14,7 +14,7 @@ class VaultDefaultCoinService {
     private let semaphore = DispatchSemaphore(value: 1)
     let baseDefaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana,Chain.bscChain]
     
-    init(context:ModelContext){
+    init(context: ModelContext){
         self.context = context
     }
     
@@ -42,7 +42,9 @@ class VaultDefaultCoinService {
             let coins = chains
                 .compactMap { try? CoinFactory.create(
                     asset: $0,
-                    vault: vault
+                    publicKeyECDSA: vault.pubKeyECDSA,
+                    publicKeyEdDSA: vault.pubKeyEdDSA,
+                    hexChainCode: vault.hexChainCode
                 )}
             
             for coin in coins {

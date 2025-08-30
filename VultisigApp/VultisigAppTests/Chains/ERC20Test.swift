@@ -18,7 +18,7 @@ final class ERC20ChainsHelperTest: XCTestCase {
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
-        let eth = try CoinFactory.create(asset: TokensStore.Token.ethereum, vault: vaultForTest)
+        let eth = try CoinFactory.create(asset: TokensStore.Token.ethereum, publicKeyECDSA: hexPublicKey, publicKeyEdDSA: "",hexChainCode: hexChainCode)
         XCTAssertEqual(eth.hexPublicKey, "03bb1adf8c0098258e4632af6c055c37135477e269b7e7eb4f600fe66d9ca9fd78")
         XCTAssertEqual(eth.address, "0xe5F238C95142be312852e864B830daADB9B7D290")
     }
@@ -27,7 +27,7 @@ final class ERC20ChainsHelperTest: XCTestCase {
         let vaultForTest = Vault(name: "TestVault")
         vaultForTest.pubKeyECDSA = hexPublicKey
         vaultForTest.hexChainCode = hexChainCode
-        let usdc = try CoinFactory.create(asset: TokensStore.Token.ethereumUsdc, vault: vaultForTest)
+        let usdc = try CoinFactory.create(asset: TokensStore.Token.ethereumUsdc, publicKeyECDSA: hexPublicKey, publicKeyEdDSA: "",hexChainCode: hexChainCode)
         let keysignPayload = KeysignPayload(
             coin: usdc,
             toAddress: "0xfA0635a1d083D0bF377EFbD48DA46BB17e0106cA",
