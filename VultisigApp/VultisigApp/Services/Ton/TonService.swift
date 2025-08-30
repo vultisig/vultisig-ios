@@ -2,25 +2,6 @@ import Foundation
 import WalletCore
 import BigInt
 
-// MARK: - Vultisig Proxy Response Models
-struct VultisigTonResponse<T: Codable>: Codable {
-    let ok: Bool
-    let result: T?
-    let error: String?
-    let code: Int?
-}
-
-// MARK: - TON Balance Response
-struct TonBalanceResponse: Codable {
-    let balance: String
-    let status: String
-    let code: String?
-    let data: String?
-    let last_transaction_lt: String?
-    let last_transaction_hash: String?
-    let frozen_hash: String?
-}
-
 // MARK: - TON Extended Address Info Response
 struct TonExtendedAddressInfo: Codable {
     let balance: String
@@ -321,73 +302,4 @@ class TonService {
         return nil
     }
     
-    // MARK: - Gas Estimation
-    func estimateGas(fromAddress: String, toAddress: String, amount: String, memo: String? = nil) async throws -> TonGasEstimateResponse {
-        // For TON, we can estimate gas by simulating the transaction
-        // This would typically call an estimate endpoint on the Vultisig proxy
-        
-        let payload: [String: Any] = [
-            "from": fromAddress,
-            "to": toAddress,
-            "amount": amount,
-            "memo": memo ?? ""
-        ]
-        
-        guard let url = URL(string: Endpoint.estimateTonGas()) else {
-            throw URLError(.badURL)
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        
-        let response = try JSONDecoder().decode(VultisigTonResponse<TonGasEstimateResponse>.self, from: data)
-        
-        if let result = response.result {
-            return result
-        } else {
-            // Fallback to default values if estimation fails
-            return TonGasEstimateResponse(
-                gas_used: Int64(TonHelper.defaultFee.description)!, // 0.05 TON default
-                gas_fee: TonHelper.defaultFee.description
-            )
-        }
-    }
-    
-    func estimateJettonGas(fromAddress: String, toAddress: String, jettonAddress: String, amount: String) async throws -> TonGasEstimateResponse {
-        // Estimate gas for jetton transfer - typically higher than native TON
-        
-        let payload: [String: Any] = [
-            "from": fromAddress,
-            "to": toAddress,
-            "jetton_address": jettonAddress,
-            "amount": amount
-        ]
-        
-        guard let url = URL(string: Endpoint.estimateTonJettonGas()) else {
-            throw URLError(.badURL)
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        
-        let response = try JSONDecoder().decode(VultisigTonResponse<TonGasEstimateResponse>.self, from: data)
-        
-        if let result = response.result {
-            return result
-        } else {
-            
-            return TonGasEstimateResponse(
-                gas_used: Int64(TonHelper.defaultJettonFee.description)!, // 0.08 TON default
-                gas_fee: TonHelper.defaultJettonFee.description
-            )
-        }
-    }
 }

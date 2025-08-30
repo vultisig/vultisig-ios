@@ -365,14 +365,6 @@ class Endpoint {
         return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
     }
     
-    static func estimateTonGas() -> String {
-        return "https://api.vultisig.com/ton/v2/estimateGas";
-    }
-    
-    static func estimateTonJettonGas() -> String {
-        return "https://api.vultisig.com/ton/v2/estimateJettonGas";
-    }
-    
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
