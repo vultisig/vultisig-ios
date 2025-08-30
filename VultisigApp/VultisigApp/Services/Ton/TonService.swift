@@ -195,7 +195,9 @@ class TonService {
                     }
                 }
             }
-        } catch { }
+        } catch {
+            print("Error running Ton API: \(error.localizedDescription)")
+        }
         return nil
     }
     
