@@ -811,3 +811,6 @@
 "editFriendsReferral" = "Edit Friends Referral";
 "vaultSelected" = "Vault selected";
 "useMyVaultPassword" = "Use My Vault Password";
+"partOf" = "part %d of %d";
+"noReferralYetTitle" = "No referral yet.";
+"noReferralYetDescription" = "Turn your vault into a rewards machine. Create your referral now and start earning.";

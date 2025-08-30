@@ -15,6 +15,8 @@ class HiddenToken {
     var contractAddress: String
     var hiddenAt: Date
     
+    @Relationship(inverse: \Vault.hiddenTokens) var vault: Vault?
+    
     init(chain: Chain, ticker: String, contractAddress: String) {
         self.chain = chain.rawValue
         self.ticker = ticker

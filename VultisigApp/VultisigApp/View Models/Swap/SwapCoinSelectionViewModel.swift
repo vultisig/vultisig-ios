@@ -48,11 +48,11 @@ class SwapCoinSelectionViewModel: ObservableObject {
         }
     }
     
-    func onSelect(coin: CoinMeta) async -> Coin? {
+    @MainActor func onSelect(coin: CoinMeta) -> Coin? {
         if let vaultCoin = vault.coin(for: coin) {
             return vaultCoin
         } else {
-            return try? await CoinService.addToChain(asset: coin, to: vault, priceProviderId: coin.priceProviderId)
+            return try? CoinService.addToChain(asset: coin, to: vault, priceProviderId: coin.priceProviderId)
         }
     }
 }

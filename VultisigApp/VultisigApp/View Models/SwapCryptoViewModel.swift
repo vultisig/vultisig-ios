@@ -571,7 +571,10 @@ extension SwapCryptoViewModel {
                 .filter { $0.chain == chain }
                 .sorted { $0.isNativeToken && !$1.isNativeToken }
                 .first
-            guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta, vault: vault) else {
+            guard let coinMeta, let coin = try? CoinFactory.create(asset: coinMeta,
+                                                                   publicKeyECDSA: vault.pubKeyECDSA,
+                                                                   publicKeyEdDSA: vault.pubKeyEdDSA,
+                                                                   hexChainCode: vault.hexChainCode) else {
                 return nil
             }
             return coin
