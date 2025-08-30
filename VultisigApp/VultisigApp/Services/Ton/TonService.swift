@@ -203,6 +203,7 @@ class TonService {
         return await runGetWalletAddress(owner: ownerAddress, master: masterAddress)
     }
     
+    // Too complex to use a struct.
     private func runGetWalletAddress(owner: String, master: String) async -> String? {
         guard let boc = TONAddressConverter.toBoc(address: owner) else { return nil }
         let payload: [String: Any] = [
