@@ -162,38 +162,35 @@ class TonService {
         do {
             let (data, _) = try await URLSession.shared.data(for: req)
             
-            // Try to parse with proper Codable struct first
+            // First attempt: strict model
             if let response = try? JSONDecoder().decode(RunGetMethodResponse.self, from: data),
                response.ok == true,
                let result = response.result {
-                // Handle structured response
-                return parseJettonWalletFromStack(result.stack)
+                if let parsed = parseJettonWalletFromStack(result.stack) { return parsed }
             }
             
-            // Fallback to manual JSON parsing for compatibility
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let ok = json["ok"] as? Bool, ok,
-               let result = json["result"] as? [String: Any],
-               let stackAny = result["stack"] {
-                if let stack = stackAny as? [[Any]] {
-                    for entry in stack where entry.count >= 2 {
-                        let value = entry[1]
-                        var blob: String?
-                        if let s = value as? String { blob = s }
-                        else if let dict = value as? [String: Any] { blob = (dict["bytes"] as? String) ?? (dict["b64"] as? String) ?? (dict["boc"] as? String) }
-                        if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
+            // Fallback: flexible model that matches array- or object-shaped stack entries
+            if let flex = try? JSONDecoder().decode(RunGetMethodFlexibleResponse.self, from: data),
+               (flex.ok == nil || flex.ok == true),
+               let stack = flex.result?.stack {
+                for entry in stack {
+                    switch entry {
+                    case .object(let item):
+                        if let boc = item.boc, let addr = TONAddressConverter.fromBoc(boc: boc) {
                             return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
                         }
-                    }
-                } else if let stack = stackAny as? [[String: Any]] {
-                    for item in stack {
-                        if let cell = item["value"] as? [String: Any] {
-                            let blob = (cell["bytes"] as? String) ?? (cell["b64"] as? String) ?? (cell["boc"] as? String)
+                        if let value = item.value {
+                            let blob = value.bytes ?? value.b64 ?? value.boc
                             if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
                                 return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
                             }
-                        } else if let blob = item["boc"] as? String, let addr = TONAddressConverter.fromBoc(boc: blob) {
-                            return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
+                        }
+                    case .array(let arr):
+                        if let v = arr.value {
+                            let blob = v.bytes ?? v.b64 ?? v.boc
+                            if let blob, let addr = TONAddressConverter.fromBoc(boc: blob) {
+                                return TONAddressConverter.toUserFriendly(address: addr, bounceable: true, testnet: false) ?? addr
+                            }
                         }
                     }
                 }
