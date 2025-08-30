@@ -204,16 +204,11 @@ struct SwapCoinPickerView: View {
     }
     
     private func onSelect(coin: CoinMeta) {
-        Task {
-            guard let newCoin = await viewModel.onSelect(coin: coin) else {
+            guard let newCoin =  viewModel.onSelect(coin: coin) else {
                 return
             }
-            
-            await MainActor.run {
-                selectedCoin = newCoin
-                showSheet = false
-            }
-        }
+            selectedCoin = newCoin
+            showSheet = false
     }
 }
 

@@ -132,7 +132,10 @@ enum TronHelper {
         vault: Vault
     ) throws -> SignedTransactionResult
     {
-        let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(), vault: vault)
+        let publicKey = try CoinFactory.publicKey(asset: keysignPayload.coin.toCoinMeta(),
+                                                  publicKeyECDSA: vault.pubKeyECDSA,
+                                                  publicKeyEdDSA: vault.pubKeyEdDSA,
+                                                  hexChainCode: vault.hexChainCode)
         let inputData = try getPreSignedInputData(
             keysignPayload: keysignPayload
         )
