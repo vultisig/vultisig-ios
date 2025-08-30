@@ -1768,6 +1768,15 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
+            chain: .ton,
+            ticker: "USDT",
+            logo: "usdt",
+            decimals: 6,
+            priceProviderId: "tether",
+            contractAddress: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .tron,
             ticker: "TRX",
             logo: "tron",
