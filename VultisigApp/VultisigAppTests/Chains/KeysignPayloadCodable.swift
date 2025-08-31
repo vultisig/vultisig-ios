@@ -366,6 +366,11 @@ extension VSTonSpecific: Codable {
         case expireAt = "expire_at"
         case bounceable = "bounceable"
         case sendMaxAmount = "send_max_amount"
+        // Support both iOS and Android JSON field names
+        case jettonAddress = "jetton_address"
+        case jettonsAddress = "jettons_address"
+        case isActiveDestination = "is_active_destination"
+        case isActive = "is_active"
     }
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -373,6 +378,9 @@ extension VSTonSpecific: Codable {
         try container.encode(expireAt, forKey: .expireAt)
         try container.encode(bounceable, forKey: .bounceable)
         try container.encode(sendMaxAmount, forKey: .sendMaxAmount)
+        // These fields might not exist in the current protobuf version
+        try container.encodeIfPresent(jettonAddress, forKey: .jettonAddress)
+        try container.encodeIfPresent(isActiveDestination, forKey: .isActiveDestination)
     }
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -381,8 +389,26 @@ extension VSTonSpecific: Codable {
         expireAt = try container.decode(UInt64.self, forKey: .expireAt)
         bounceable = try container.decode(Bool.self, forKey: .bounceable)
         sendMaxAmount = try container.decode(Bool.self, forKey: .sendMaxAmount)
+        // These fields might not exist in the current protobuf version, so use defaults
+        // Accept both "jetton_address" and Android's "jettons_address"
+        if let v = try container.decodeIfPresent(String.self, forKey: .jettonAddress) {
+            jettonAddress = v
+        } else if let v = try container.decodeIfPresent(String.self, forKey: .jettonsAddress) {
+            jettonAddress = v
+        } else {
+            jettonAddress = ""
+        }
+        // Accept both "is_active_destination" and Android's "is_active"
+        if let v = try container.decodeIfPresent(Bool.self, forKey: .isActiveDestination) {
+            isActiveDestination = v
+        } else if let v = try container.decodeIfPresent(Bool.self, forKey: .isActive) {
+            isActiveDestination = v
+        } else {
+            isActiveDestination = false
+        }
     }
 }
+
 extension VSRippleSpecific: Codable {
     enum CodingKeys: String, CodingKey {
         case sequence = "sequence"

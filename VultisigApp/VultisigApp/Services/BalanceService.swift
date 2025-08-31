@@ -174,7 +174,11 @@ private extension BalanceService {
             return try await dot.getBalance(coin: coin)
             
         case .ton:
-            return try await ton.getBalance(coin)
+            if coin.isNativeToken {
+                return try await ton.getBalance(coin)
+            } else {
+                return try await ton.getJettonBalance(coin)
+            }
             
         case .ripple:
             return try await ripple.getBalance(coin)
