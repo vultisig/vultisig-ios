@@ -38,6 +38,7 @@ struct SendVerifyScreen: View {
             }
         }
         .onDisappear {
+            print("SendVerifyScreen onDisappear")
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
@@ -124,11 +125,10 @@ struct SendVerifyScreen: View {
                 if let payload = result {
                     // Navigate; onDisappear will clear loading.
                     self.keysignPayload = payload
-                } else {
-                    // Validation failed — re-enable UI and stop loading.
-                    self.isButtonDisabled = false
-                    self.sendCryptoVerifyViewModel.isLoading = false
                 }
+                // Validation failed — re-enable UI and stop loading.
+                self.isButtonDisabled = false
+                self.sendCryptoVerifyViewModel.isLoading = false
             }
         }
     }
