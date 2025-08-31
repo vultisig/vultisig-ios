@@ -13,8 +13,8 @@ import BigInt
 enum TonHelper {
     
     // The official Telegram Wallet chages a transaction fee of 0.05 TON. So we do it as well.
-    static let defaultFee: BigInt = BigInt(0.05 * pow(10, 9))
-    static let defaultJettonFee: BigInt = BigInt(0.08 * pow(10, 9))
+    static let defaultFee: BigInt = BigInt(50_000_000) // 0.05 TON
+    static let defaultJettonFee: BigInt = BigInt(80_000_000) // 0.08 TON
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         
@@ -80,17 +80,22 @@ enum TonHelper {
     
     static func buildJettonTransfer(keysignPayload: KeysignPayload, jettonAddress: String, isActiveDestination: Bool) throws -> TheOpenNetworkTransfer {
         
-        // Convert destination to bounceable, as jettons addresses are always EQ
-        let destinationAddress = try convertToUserFriendly(address: keysignPayload.toAddress, bounceable: true, testOnly: false)
+        // Use canonical AnyAddress.description for all TON addresses to match WalletCore expectations
+        guard let toAny = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
+            throw HelperError.runtimeError("Invalid TON to address: \(keysignPayload.toAddress)")
+        }
+        let destinationAddress = toAny.description
         
-        guard !jettonAddress.isEmpty else {
-            throw HelperError.runtimeError("Jetton address cannot be empty")
+        guard !jettonAddress.isEmpty, let jettonAny = AnyAddress(string: jettonAddress, coin: .ton) else {
+            throw HelperError.runtimeError("Jetton address cannot be empty or invalid: \(jettonAddress)")
+        }
+        let senderJettonWalletAddress = jettonAny.description
+        
+        guard let ownerAny = AnyAddress(string: keysignPayload.coin.address, coin: .ton) else {
+            throw HelperError.runtimeError("Invalid TON owner address: \(keysignPayload.coin.address)")
         }
         
-        // sender jetton wallet is passed via BlockChainSpecific.Ton.jettonAddress now
-        let senderJettonWalletAddress = jettonAddress
-        
-        // Always attach 1 nanoton to trigger Jetton Notify
+        // Attach 1 nanoton as forward amount (common jetton notify pattern)
         let forwardAmountMsg: UInt64 = 1
         
         let amount = UInt64(keysignPayload.toAmount.description) ?? 0
@@ -98,7 +103,8 @@ enum TonHelper {
         let jettonTransfer = TheOpenNetworkJettonTransfer.with {
             
             $0.jettonAmount = amount
-            $0.responseAddress = keysignPayload.coin.address
+            // Use owner's canonical address as response
+            $0.responseAddress = ownerAny.description
             $0.toOwner = destinationAddress
             $0.forwardAmount = forwardAmountMsg
         }
@@ -111,7 +117,7 @@ enum TonHelper {
         let transfer = TheOpenNetworkTransfer.with {
             
             $0.amount = recommendedJettonsAmount
-            if let memo = keysignPayload.memo {
+            if let memo = keysignPayload.memo, !memo.isEmpty {
                 $0.comment = memo
             }
             $0.bounceable = true // Jettons always bounceable
