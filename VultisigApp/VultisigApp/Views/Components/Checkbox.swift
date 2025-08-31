@@ -15,18 +15,20 @@ struct Checkbox: View {
     var isExtended: Bool = true
     
     var body: some View {
-        HStack(spacing: 10) {
-            check
-            description
-            
-            if isExtended {
-                Spacer()
+        Button {
+            isChecked.toggle()
+        } label: {
+            HStack(spacing: 10) {
+                check
+                description
+                
+                if isExtended {
+                    Spacer()
+                }
             }
+            .contentShape(Rectangle())
         }
         .sensoryFeedback(.selection, trigger: isChecked)
-        .onTapGesture {
-            isChecked.toggle()
-        }
     }
     
     var check: some View {
