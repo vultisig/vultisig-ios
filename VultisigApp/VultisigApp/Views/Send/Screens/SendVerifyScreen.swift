@@ -38,7 +38,6 @@ struct SendVerifyScreen: View {
             }
         }
         .onDisappear {
-            print("SendVerifyScreen onDisappear")
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
