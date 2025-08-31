@@ -449,6 +449,10 @@ private extension BlockChainService {
         case .transfer:
             return BigInt(coin.feeDefault) ?? 0
         case .swap:
+            // For Mantle, use the coin's default gas limit for swaps
+            if coin.chain == .mantle {
+                return BigInt(coin.feeDefault) ?? 0
+            }
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
     }
