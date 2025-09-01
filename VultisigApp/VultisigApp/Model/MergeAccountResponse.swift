@@ -15,7 +15,7 @@ struct MergeAccountResponse: Decodable {
             let merge: AccountMerge?
             
             struct AccountMerge: Decodable {
-                let accounts: [MergeAccount]
+                let accounts: [MergeAccount]?
                 
                 struct MergeAccount: Decodable {
                     let pool: Pool
