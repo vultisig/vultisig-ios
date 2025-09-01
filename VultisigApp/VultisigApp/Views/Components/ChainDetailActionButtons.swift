@@ -67,6 +67,7 @@ struct ChainDetailActionButtons: View {
             BanxaDisclaimer(url: getBuyURL())
             #if os(macOS)
                 .frame(minWidth: 600, minHeight: 400)
+                .background(.white)
             #endif
         }
             

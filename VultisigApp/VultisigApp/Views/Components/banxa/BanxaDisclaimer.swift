@@ -37,11 +37,10 @@ struct BanxaDisclaimer: View {
                     .padding(.vertical, 12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 32)
-                            .stroke(.secondary, lineWidth: 2)
+                            .stroke(Color.gray, lineWidth: 2)
                     )
                 }
                 .buttonStyle(.plain)
-                
                 Spacer()
             }
         } else {
