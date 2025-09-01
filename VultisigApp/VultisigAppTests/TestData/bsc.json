@@ -19,7 +19,7 @@
                     "max_fee_per_gas_wei": "100000001",
                     "priority_fee": "100000000",
                     "nonce": 7,
-                    "gas_limit": "120000",
+                    "gas_limit": "120000"
                 }
             },
             "utxo_info": [],
@@ -50,7 +50,7 @@
                     "max_fee_per_gas_wei": "100000001",
                     "priority_fee": "100000000",
                     "nonce": 7,
-                    "gas_limit": "120000",
+                    "gas_limit": "120000"
                 }
             },
             "utxo_info": [],
