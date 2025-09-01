@@ -50,12 +50,18 @@ class ThorchainService: ThorchainSwapProvider {
                     logo = info.logo
                 }
                 
-                
                 let localAsset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker.uppercased() == ticker.uppercased() })
+                
+                if ticker.range(of: "yrune", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "ytcy", options: [.caseInsensitive, .anchored]) == nil &&
+                    ticker.range(of: "stcy", options: [.caseInsensitive, .anchored]) == nil
+                {
+                    ticker = ticker.uppercased()
+                }
                 
                 let coinMeta = CoinMeta(
                     chain: .thorChain,
-                    ticker: ticker.uppercased().replacingOccurrences(of: "X/", with: ""),
+                    ticker: ticker,
                     logo: logo,
                     decimals: decimals,
                     priceProviderId: localAsset?.priceProviderId ?? "",

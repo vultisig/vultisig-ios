@@ -31,8 +31,8 @@ enum THORChainTokenMetadataFactory {
                 symbol = "yTCY"
                 ticker = "yTCY"
             } else {
-                symbol = asset.uppercased()
-                ticker = asset.lowercased()
+                symbol = asset
+                ticker = asset
             }
         }  else if asset.contains("-") {
             let parts = asset.split(separator: "-")

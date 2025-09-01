@@ -1742,7 +1742,7 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .thorChain,
-            ticker: "YRUNE",
+            ticker: "yRUNE",
             logo: "yRUNE",
             decimals: 8,
             priceProviderId: "thorchain",
@@ -1751,7 +1751,7 @@ class TokensStore {
         ),
         CoinMeta(
             chain: .thorChain,
-            ticker: "YTCY",
+            ticker: "yTCY",
             logo: "yTCY",
             decimals: 8,
             priceProviderId: "tcy",
