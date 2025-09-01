@@ -18,34 +18,8 @@ struct VaultServerBackupScreen: View {
             VStack(spacing: 0) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        CommonTextField(
-                            text: $viewModel.email,
-                            label: "email".localized,
-                            placeholder: "enterYourEmail".localized,
-                            error: $viewModel.emailError
-                        )
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        
-                        CommonTextField(
-                            text: $viewModel.password,
-                            label: "password".localized,
-                            placeholder: "enterYourPassword".localized,
-                            isSecure: $secureTextField,
-                            error: $viewModel.passwordError
-                        ) {
-                            Button(action: {
-                                withAnimation {
-                                    secureTextField.toggle()
-                                }
-                            }) {
-                                Image(systemName: secureTextField ? "eye": "eye.slash")
-                                    .foregroundColor(Theme.colors.textPrimary)
-                            }
-                            .buttonStyle(.plain)
-                            .contentTransition(.symbolEffect(.replace))
-                        }
-                        .textInputAutocapitalization(.never)
+                        emailTextField
+                        passwordTextField
                     }
                 }
                 
@@ -66,6 +40,43 @@ struct VaultServerBackupScreen: View {
                 errorAlert
             }
         }
+    }
+    
+    var emailTextField: some View {
+        CommonTextField(
+            text: $viewModel.email,
+            label: "email".localized,
+            placeholder: "enterYourEmail".localized,
+            error: $viewModel.emailError
+        )
+        #if os(iOS)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.emailAddress)
+        #endif
+    }
+    
+    var passwordTextField: some View {
+        CommonTextField(
+            text: $viewModel.password,
+            label: "password".localized,
+            placeholder: "enterYourPassword".localized,
+            isSecure: $secureTextField,
+            error: $viewModel.passwordError
+        ) {
+            Button(action: {
+                withAnimation {
+                    secureTextField.toggle()
+                }
+            }) {
+                Image(systemName: secureTextField ? "eye": "eye.slash")
+                    .foregroundColor(Theme.colors.textPrimary)
+            }
+            .buttonStyle(.plain)
+            .contentTransition(.symbolEffect(.replace))
+        }
+        #if os(iOS)
+            .textInputAutocapitalization(.never)
+        #endif
     }
     
     var successAlert: Alert {
