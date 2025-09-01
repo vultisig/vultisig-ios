@@ -824,3 +824,17 @@
 "backupOptionsBox2Highlighted" = "encrypt";
 "backupOptionsBox3" = "Remember: if you forget your vault password, it cannot be reset or recovered.";
 "backupOptionsBox3Highlighted" = "cannot";
+"chooseBackupMethod" = "Choose Backup Method";
+"deviceBackupTitle" = "Device Backup";
+"deviceBackupDescription" = "Store the vault share of this device.";
+"serverBackupTitle" = "Server Backup";
+"serverBackupDescription" = "Request Server Vault Share again.";
+"enterYourEmail" = "Enter your email";
+"enterYourPassword" = "Enter your password";
+"requestServerVaultShare" = "Request Server Vault Share";
+"passwordIsRequired" = "Password is required.";
+"emailIsRequired" = "Email is required.";
+"requestServerVaultShareSuccess" = "We’ve sent a copy of your vault share to your email. It should arrive shortly.";
+"requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait a couple a minutes and try again.";
+"requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
+"requestServerVaultShareBadRequestError" = "Password for your vault is incorrect. Please check and try again.";

@@ -14,8 +14,7 @@ class ReferralViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     @Published var referralCode: String = ""
-    @Published var showReferralAvailabilityError: Bool = false
-    @Published var referralAvailabilityErrorMessage: String = ""
+    @Published var referralAvailabilityErrorMessage: String?
     @Published var showReferralAvailabilitySuccess: Bool = false
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 1
@@ -84,7 +83,7 @@ class ReferralViewModel: ObservableObject {
         resetReferralData()
         nameErrorCheck(code: referralCode, forReferralCode: true)
         
-        guard !showReferralAvailabilityError else {
+        guard referralAvailabilityErrorMessage == nil else {
             return
         }
         
@@ -169,8 +168,7 @@ class ReferralViewModel: ObservableObject {
     
     func resetAllData() {
         referralCode = ""
-        showReferralAvailabilityError = false
-        referralAvailabilityErrorMessage = ""
+        referralAvailabilityErrorMessage = nil
         showReferralAvailabilitySuccess = false
         isReferralCodeVerified = false
         expireInCount = 1
@@ -214,7 +212,6 @@ class ReferralViewModel: ObservableObject {
             referralAvailabilityErrorMessage = "invalid"
         }
         
-        showReferralAvailabilityError = true
         isLoading = false
     }
     
@@ -226,8 +223,7 @@ class ReferralViewModel: ObservableObject {
     }
     
     func resetReferralData() {
-        showReferralAvailabilityError = false
-        referralAvailabilityErrorMessage = ""
+        referralAvailabilityErrorMessage = nil
         showReferralAvailabilitySuccess = false
         isReferralCodeVerified = false
     }
