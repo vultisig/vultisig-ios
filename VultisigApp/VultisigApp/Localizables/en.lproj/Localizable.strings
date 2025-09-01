@@ -586,8 +586,6 @@
 "backupPart1" = "Backup Share 1";
 "backupPart2" = "Backup Share 2";
 "vultiserverPassword" = "Vultiserver Password";
-"doYouWantToAddPassword" = "Do you want to add a password to your device vault shares? ";
-"doYouWantToAddPasswordDescription" = "We recommend that you do not set a backup password for device vault shares-your data is safe if the backups are properly stored in different locations, which is already a significant protection. Remember, backup passwords can't be recovered if you forget them. Your choice!";
 "backupWithoutPassword" = "Backup without password";
 "usePassword" = "Use password";
 "migrate" = "Migrate";
@@ -817,3 +815,12 @@
 "thisVaultOnly" = "This Vault Only";
 "partOf" = "part %d of %d";
 "plusMore" = "+%d more";
+"noReferralYetTitle" = "No referral yet.";
+"noReferralYetDescription" = "Turn your vault into a rewards machine. Create your referral now and start earning.";
+"backupOptionsTitle" = "Do you want to encrypt your backup with a password?";
+"backupOptionsBox1" = "By default, your backup is secure without an extra password, since you store Vault shares in different locations.";
+"backupOptionsBox1Highlighted" = "secure without";
+"backupOptionsBox2" = "If you choose to add a password, this  will be used to encrypt the backup file.";
+"backupOptionsBox2Highlighted" = "encrypt";
+"backupOptionsBox3" = "Remember: if you forget your vault password, it cannot be reset or recovered.";
+"backupOptionsBox3Highlighted" = "cannot";

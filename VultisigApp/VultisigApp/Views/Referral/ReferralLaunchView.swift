@@ -30,8 +30,11 @@ struct ReferralLaunchView: View {
             }
         }
         .overlay(referredViewModel.isLoading ? Loader() : nil)
-        .onAppear(perform: referralViewModel.resetAllData)
-        .onLoad {
+        .onAppear {
+            referralViewModel.currentVault = ApplicationState.shared.currentVault
+            referredViewModel.currentVault = ApplicationState.shared.currentVault
+        }
+        .onChange(of: referralViewModel.currentVault) { _, _ in
             // TODO: - Remove after release
             referredViewModel.migrateCodeIfNeeded()
             Task {

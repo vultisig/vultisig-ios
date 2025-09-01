@@ -25,7 +25,7 @@ struct ReferredCodeFormScreen: View {
             setData()
         }
         .onDisappear {
-            resetData()
+            referredViewModel.resetData()
         }
     }
     
@@ -75,14 +75,10 @@ struct ReferredCodeFormScreen: View {
     }
     
     private func setData() {
-        resetData()
+        referredViewModel.resetData()
         if referredViewModel.hasReferredCode {
             referredViewModel.referredCode = referredViewModel.savedReferredCode
         }
-    }
-    
-    private func resetData() {
-        referredViewModel.resetReferredData()
     }
 }
 

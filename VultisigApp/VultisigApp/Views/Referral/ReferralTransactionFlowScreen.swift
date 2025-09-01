@@ -18,39 +18,47 @@ struct ReferralTransactionFlowScreen: View {
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
+    @State var isLoading = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         ZStack {
-            switch functionCallViewModel.currentIndex {
-            case 1:
-                detailsView
-            case 2:
-                verifyView
-            case 3:
-                pairView
-            case 4:
-                keysign
-            case 5:
-                doneView
-            default:
-                errorView
+            Group {
+                switch functionCallViewModel.currentIndex {
+                case 1:
+                    detailsView
+                case 2:
+                    verifyView
+                case 3:
+                    pairView
+                case 4:
+                    keysign
+                case 5:
+                    doneView
+                default:
+                    errorView
+                }
             }
+            .showIf(!isLoading)
         }
+        .overlay(isLoading ? Loader() : nil)
         .frame(maxHeight: .infinity)
         .onLoad {
+            isLoading = true
+            referralViewModel.setup(tx: sendTx)
+            isLoading = false
+            
             Task {
                 if let vault {
                     await functionCallViewModel.loadFastVault(tx: sendTx, vault: vault)
-                    referralViewModel.setup(tx: sendTx)
                 }
             }
         }
     }
     
     var vault: Vault? {
-        isEdit ? ApplicationState.shared.currentVault : homeViewModel.selectedVault
+        referralViewModel.currentVault
     }
     
     @ViewBuilder

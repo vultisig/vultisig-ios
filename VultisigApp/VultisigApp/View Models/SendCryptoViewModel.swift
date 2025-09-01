@@ -238,22 +238,26 @@ class SendCryptoViewModel: ObservableObject {
             Task {
                 do {
                     tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
-                    let rawBalance = try await ton.getBalance(tx.coin)
-                    tx.coin.rawBalance = rawBalance
-                    
-                    var gas = BigInt.zero
-                    if percentage == 100 {
-                        gas = tx.coin.feeDefault.toBigInt()
+                    let rawBalance: String
+                    if tx.coin.isNativeToken {
+                        rawBalance = try await ton.getBalance(tx.coin)
+                    } else {
+                        rawBalance = try await ton.getJettonBalance(tx.coin)
                     }
+
+                    tx.coin.rawBalance = rawBalance
+
+                    let gasForMax: BigInt = tx.coin.isNativeToken && percentage != 100 ? TonHelper.defaultFee : 0
+
+                    tx.amount = "\(tx.coin.getMaxValue(gasForMax).formatToDecimal(digits: tx.coin.decimals))"
                     
-                    tx.amount = "\(tx.coin.getMaxValue(gas).formatToDecimal(digits: tx.coin.decimals))"
                     setPercentageAmount(tx: tx, for: percentage)
-                    
+
                     convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 } catch {
                     print("fail to load ton balances,error:\(error.localizedDescription)")
                 }
-                
+
                 isLoading = false
             }
         case .ripple:
@@ -447,7 +451,7 @@ class SendCryptoViewModel: ObservableObject {
             
             let validation = CardanoHelper.validateUTXORequirements(
                 sendAmount: amountInLovelaces,
-                totalBalance: totalBalance.toBigInt(), 
+                totalBalance: totalBalance.toBigInt(),
                 estimatedFee: estimatedFee
             )
             

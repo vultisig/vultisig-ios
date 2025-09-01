@@ -118,7 +118,10 @@ struct CoinService {
     }
     
     static func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) throws -> Coin? {
-        let newCoin = try CoinFactory.create(asset: asset, vault: vault)
+        let newCoin = try CoinFactory.create(asset: asset,
+                                             publicKeyECDSA: vault.pubKeyECDSA,
+                                             publicKeyEdDSA: vault.pubKeyEdDSA,
+                                             hexChainCode: vault.hexChainCode)
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }

@@ -1,9 +1,28 @@
 #!/bin/bash
+set -ex
+# System-wide LaunchAgent
+SYS_PLIST="/Library/LaunchAgents/com.vultisig.setenv.plist"
+# User-specific LaunchAgent
+CONSOLE_USER="$(/usr/bin/stat -f%Su /dev/console)"
+CONSOLE_UID="$(/usr/bin/id -u "$CONSOLE_USER")"
+USER_PLIST="/Users/$CONSOLE_USER/Library/LaunchAgents/com.vultisig.setenv.plist"
+# Function to load a LaunchAgent plist
+load_plist() {
+    local plist="$1"
+    local domain="gui/$CONSOLE_UID"
+    if [ -f "$plist" ]; then
+        if launchctl help 2>&1 | grep -q bootstrap; then
+            launchctl bootout "$domain" "$plist" 2>/dev/null || true
+            launchctl bootstrap "$domain" "$plist"
+        else
+            echo "Loading LaunchAgent: $plist"
+            launchctl unload "$plist" || true
+            launchctl load -w "$plist"
+        fi
+    fi
+}
 
-# Define the path to the plist file
-SRC_LAUNCHD_PLIST="/Library/Application Support/Vultisig/com.vultisig.setenv.plist"
-# Check if the plist file exists
-if [ -f "$SRC_LAUNCHD_PLIST" ]; then
-    launchctl unload "$SRC_LAUNCHD_PLIST" || true
-    launchctl load -w "$SRC_LAUNCHD_PLIST"
-fi
+# Try system-wide first, then user-specific
+load_plist "$SYS_PLIST"
+load_plist "$USER_PLIST"
+launchctl asuser "$CONSOLE_UID" launchctl setenv GODEBUG asyncpreemptoff=1

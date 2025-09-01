@@ -1,66 +1,100 @@
 [
     {
-        "name": "Send TON",
-        "keysign_payload": {
-            "coin": {
-                "chain": "Ton",
-                "ticker": "TON",
-                "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
-                "decimals": 9,
-                "price_provider_id": "the-open-network",
-                "is_native_token": true,
-                "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
-                "contract_address":"",
-                "logo": "ton"
-            },
-            "to_address": "UQDmLe6ticcY_uLZsfurdYONshNuCn8IS81KcJ8p6M6ISMcB",
-            "to_amount": "50000000",
-            "BlockchainSpecific": {
-                "TonSpecific": {
-                    "send_max_amount": false,
-                    "sequence_number": 0,
-                    "expire_at": 1753579977,
-                    "bounceable": false
-                }
-            },
-            "memo": "",
-            "utxo_info": [],
-            "SwapPayload": null,
-            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
-            "lib_type": "DKLS"
+      "name": "Send TON",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "TON",
+          "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
+          "decimals": 9,
+          "price_provider_id": "the-open-network",
+          "is_native_token": true,
+          "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
+          "contract_address":"",
+          "logo": "ton"
         },
-        "expected_image_hash": ["aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8"]
+        "to_address": "UQDmLe6ticcY_uLZsfurdYONshNuCn8IS81KcJ8p6M6ISMcB",
+        "to_amount": "50000000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 0,
+            "expire_at": 1753579977,
+            "bounceable": false
+          }
+        },
+        "memo": "",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": ["aefa16a3825645bcfcf305be112bc2da400d213cb8c20d87e0e43d4eb214a5f8"]
     },
     {
-        "name": "TON Stake with memo",
-        "keysign_payload": {
-            "coin": {
-                "chain": "Ton",
-                "ticker": "TON",
-                "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
-                "decimals": 9,
-                "price_provider_id": "the-open-network",
-                "is_native_token": true,
-                "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
-                "contract_address":"",
-                "logo": "ton"
-            },
-            "to_address": "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5",
-            "to_amount": "50000000",
-            "BlockchainSpecific": {
-                "TonSpecific": {
-                    "send_max_amount": false,
-                    "sequence_number": 0,
-                    "expire_at": 1753579977,
-                    "bounceable": true
-                }
-            },
-            "memo": "d",
-            "utxo_info": [],
-            "SwapPayload": null,
-            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
-            "lib_type": "DKLS"
+      "name": "Send USDT TON",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "USDT",
+          "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
+          "decimals": 6,
+          "price_provider_id": "usdt",
+          "is_native_token": false,
+          "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
+          "contract_address":"EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs",
+          "logo": "usdt"
         },
-        "expected_image_hash": ["299ecf1da0682c338130b7f3f890484100e41c8f0d2b024b1fd0214df6e310dd"]
+        "to_address": "UQDmLe6ticcY_uLZsfurdYONshNuCn8IS81KcJ8p6M6ISMcB",
+        "to_amount": "1000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 0,
+            "expire_at": 1753579977,
+            "bounceable": true,
+            "jettons_address": "EQCIcjES4cQET0z6nRixZ0MdvTB4u3_8triztLSrIIrDkpgJ",
+            "is_active": true
+          }
+        },
+        "memo": "",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": ["44cbfbae7924a26eec5e6338370ff5d1dbde3fe63f67b1e8937cff1fc28aa2f3"]
     },
-]
+    {
+      "name": "TON Stake with memo",
+      "keysign_payload": {
+        "coin": {
+          "chain": "Ton",
+          "ticker": "TON",
+          "address": "UQCc9iCgP_b5RMJcFE5XD8zStfjtNHLhDWfUqC5m1SjSer95",
+          "decimals": 9,
+          "price_provider_id": "the-open-network",
+          "is_native_token": true,
+          "hex_public_key": "6c756400bac0b153b421df6e199302537d12f7d4a53447004485700a958e7571",
+          "contract_address":"",
+          "logo": "ton"
+        },
+        "to_address": "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5",
+        "to_amount": "50000000",
+        "BlockchainSpecific": {
+          "TonSpecific": {
+            "send_max_amount": false,
+            "sequence_number": 0,
+            "expire_at": 1753579977,
+            "bounceable": true
+          }
+        },
+        "memo": "d",
+        "utxo_info": [],
+        "SwapPayload": null,
+        "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+        "lib_type": "DKLS"
+      },
+      "expected_image_hash": ["299ecf1da0682c338130b7f3f890484100e41c8f0d2b024b1fd0214df6e310dd"]
+    }
+  ]

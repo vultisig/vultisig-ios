@@ -296,7 +296,7 @@ class Endpoint {
     }
     
     static func solanaTokenInfoList() -> String {
-        "https://tokens.jup.ag/tokens?tags=verified"
+        "https://lite-api.jup.ag/tokens/v2/tag?query=verified"
     }
     
     static func solanaTokenQuote(inputMint: String, outputMint: String, amount: String, slippageBps: String) -> String {
@@ -343,6 +343,14 @@ class Endpoint {
     
     static func fetchTonBalance(address: String) -> String {
         return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
+    }
+    
+    static func fetchTonJettonBalance(address: String, jettonAddress: String) -> String {
+        return "\(vultisigApiProxy)/ton/v3/jetton/wallets?owner_address=\(address)&jetton_master_address=\(jettonAddress)";
+    }
+    
+    static func tonApiRunGetMethod() -> String {
+        return "\(vultisigApiProxy)/ton/v2/runGetMethod"
     }
     
     static func fetchMemoInfo(hash: String) -> URL {

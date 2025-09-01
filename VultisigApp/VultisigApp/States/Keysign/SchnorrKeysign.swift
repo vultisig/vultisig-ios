@@ -306,6 +306,7 @@ final class SchnorrKeysign {
     
     func KeysignOneMessageWithRetry(attempt: UInt8, messageToSign: String) async throws {
         setKeysignDone(status: false)
+        self.cache.removeAllObjects()
         defer {
             self.setKeysignDone(status: true)
         }
@@ -383,7 +384,7 @@ final class SchnorrKeysign {
                                                   sessionID: self.sessionID)
                 await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
                 self.signatures[messageToSign] = resp
-                
+                try await Task.sleep(for: .milliseconds(500))
             }
         }
         catch {

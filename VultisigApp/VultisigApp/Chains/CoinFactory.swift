@@ -10,11 +10,9 @@ import WalletCore
 import CryptoKit
 
 struct CoinFactory {
-    
     private init() { }
-    
-    static func create(asset: CoinMeta, vault: Vault) throws -> Coin {
-        let publicKey = try publicKey(asset: asset, vault: vault)
+    static func create(asset: CoinMeta, publicKeyECDSA: String, publicKeyEdDSA: String, hexChainCode: String) throws -> Coin {
+        let publicKey = try publicKey(asset: asset, publicKeyECDSA: publicKeyECDSA, publicKeyEdDSA: publicKeyEdDSA, hexChainCode: hexChainCode)
         
         var address: String
         switch asset.chain {
@@ -24,7 +22,7 @@ struct CoinFactory {
         case .cardano:
             // Always create Enterprise address to avoid "stake address" component
             // Use WalletCore's proper Blake2b hashing for deterministic results across all devices
-            address = try createCardanoEnterpriseAddress(spendingKeyHex: vault.pubKeyEdDSA)
+            address = try createCardanoEnterpriseAddress(spendingKeyHex: publicKeyEdDSA)
             
             // Validate Cardano address using WalletCore's own validation
             guard let _ = AnyAddress(string: address, coin: .cardano) else {
@@ -55,9 +53,9 @@ extension CoinFactory {
         }
     }
     
-
     
-    static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
+    
+    static func publicKey(asset: CoinMeta, publicKeyECDSA: String, publicKeyEdDSA: String, hexChainCode: String) throws -> PublicKey {
         switch asset.chain.signingKeyType {
         case .EdDSA:
             
@@ -65,8 +63,8 @@ extension CoinFactory {
                 // For Cardano, we still need to create a proper PublicKey for transaction signing
                 // even though we're creating the address manually
                 let cardanoExtendedKey = try createCardanoExtendedKey(
-                    spendingKeyHex: vault.pubKeyEdDSA, 
-                    chainCodeHex: vault.hexChainCode
+                    spendingKeyHex: publicKeyEdDSA,
+                    chainCodeHex: hexChainCode
                 )
                 
                 // Create ed25519Cardano public key
@@ -79,23 +77,23 @@ extension CoinFactory {
             }
             
             guard
-                let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
+                let pubKeyData = Data(hexString: publicKeyEdDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
-                throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
+                throw Errors.invalidPublicKey(pubKey: publicKeyEdDSA)
             }
             return publicKey
             
         case .ECDSA:
             let derivedKey = PublicKeyHelper.getDerivedPubKey(
-                hexPubKey: vault.pubKeyECDSA,
-                hexChainCode: vault.hexChainCode,
+                hexPubKey: publicKeyECDSA,
+                hexChainCode: hexChainCode,
                 derivePath: asset.coinType.derivationPath()
             )
             
             guard
                 let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-                throw Errors.invalidPublicKey(pubKey: vault.pubKeyECDSA)
+                throw Errors.invalidPublicKey(pubKey: publicKeyECDSA)
             }
             
             if asset.coinType == .tron {

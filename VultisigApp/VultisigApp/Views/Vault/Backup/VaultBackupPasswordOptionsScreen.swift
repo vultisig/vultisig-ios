@@ -29,11 +29,10 @@ struct VaultBackupPasswordOptionsScreen: View {
         ) {
             Screen {
                 VStack(spacing: 36) {
-                    Spacer()
                     icon
                     textContent
-                    buttons
                     Spacer()
+                    buttons
                 }
             }
         }
@@ -55,15 +54,33 @@ struct VaultBackupPasswordOptionsScreen: View {
     
     var textContent: some View {
         VStack(spacing: 16) {
-            Text(NSLocalizedString("doYouWantToAddPassword", comment: ""))
+            Text("backupOptionsTitle".localized)
                 .font(Theme.fonts.title2)
+                .foregroundColor(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
             
-            Text(NSLocalizedString("doYouWantToAddPasswordDescription", comment: ""))
-                .font(Theme.fonts.bodySMedium)
-                .opacity(0.6)
+            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: "lock-keyhole-open")
+            
+            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: "folder-lock")
+            
+            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: "file-warning")
         }
-        .foregroundColor(Theme.colors.textPrimary)
-        .multilineTextAlignment(.center)
+    }
+    
+    func boxedText(_ text: String, highlighted: String, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
+            HighlightedText(localisedKey: text, highlightedText: highlighted) {
+                $0.foregroundColor = Theme.colors.textExtraLight
+                $0.font = Theme.fonts.footnote
+            } highlightedTextStyle: {
+                $0.foregroundColor = Theme.colors.textPrimary
+                $0.font = Theme.fonts.footnote
+            }
+        }
+        .frame(maxWidth: 325)
+        .containerStyle(padding: 16, bgColor: Theme.colors.bgSecondary)
+        
     }
     
     var buttons: some View {
