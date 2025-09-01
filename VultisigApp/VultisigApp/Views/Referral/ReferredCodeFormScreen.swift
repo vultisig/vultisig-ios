@@ -53,8 +53,7 @@ struct ReferredCodeFormScreen: View {
             text: $referredViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referredViewModel.showReferredLaunchViewError,
-            errorMessage: referredViewModel.referredLaunchViewErrorMessage
+            errorMessage: $referredViewModel.referredLaunchViewErrorMessage
         )
     }
     

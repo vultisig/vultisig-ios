@@ -45,24 +45,64 @@ class EncryptedBackupViewModel: ObservableObject {
         showAlert = false
     }
     
-    func exportFileWithoutPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
-        return try? createBackupFile(vault: vault, encryptionPassword: nil)
+    func exportFileWithoutPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+        return try? await createBackupFile(backupType, encryptionPassword: nil)
     }
     
-    func exportFileWithVaultPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
-        guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+    func exportFileWithVaultPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+        guard let vaultPassword = keychain.getFastPassword(pubKeyECDSA: backupType.vault.pubKeyECDSA) else {
             debugPrint("Couldn't fetch password for vault")
             return nil
         }
         
-        return try? createBackupFile(vault: vault, encryptionPassword: vaultPassword)
+        return try? await createBackupFile(backupType, encryptionPassword: vaultPassword)
     }
     
-    func exportFileWithCustomPassword(_ vault: Vault) -> FileExporterModel<EncryptedDataFile>? {
-        return try? createBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+    func exportFileWithCustomPassword(_ backupType: VaultBackupType) async -> FileExporterModel<EncryptedDataFile>? {
+        return try? await createBackupFile(backupType, encryptionPassword: encryptionPassword)
     }
-
-    func createBackupFile(vault: Vault, encryptionPassword: String?) throws -> FileExporterModel<EncryptedDataFile>? {
+    
+    func createBackupFile(_ backupType: VaultBackupType, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+        switch backupType {
+        case .single(let vault):
+            return try await createSingleBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+        case .multiple(let vaults, let selectedVault):
+            return try await createMultipleBackupFile(vaults: vaults, selectedVault: selectedVault, encryptionPassword: encryptionPassword)
+        }
+    }
+    
+    func createMultipleBackupFile(vaults: [Vault], selectedVault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let backupFolderName = "vultisig_backups_\(timestamp)"
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(backupFolderName)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        
+        defer {
+            try? FileManager.default.removeItem(at: tempDir)
+        }
+        
+        for vault in vaults {
+            _ = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword, targetDirectory: tempDir)
+        }
+        
+        let zipGenerator = ZipFileGenerator()
+        let zipFileName = "\(backupFolderName).zip"
+        let zipUrl = FileManager.default.temporaryDirectory.appendingPathComponent(zipFileName)
+        
+        _ = try zipGenerator.createZip(zipFinalURL: zipUrl, fromDirectory: tempDir)
+        
+        guard let zipFile = EncryptedDataFile(url: zipUrl) else {
+            return nil
+        }
+        
+        return FileExporterModel(
+            url: zipUrl,
+            name: zipFileName,
+            file: zipFile
+        )
+    }
+    
+    func generateBackupFile(vault: Vault, encryptionPassword: String?, targetDirectory: URL? = nil) throws -> URL? {
         var vaultContainer = VSVaultContainer()
         vaultContainer.version = 1 // current version 1
         let vsVault = vault.mapToProtobuff()
@@ -81,13 +121,20 @@ class EncryptedBackupViewModel: ObservableObject {
         
         let fileName = vault.getExportName()
         let dataToSave = try vaultContainer.serializedData().base64EncodedData()
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-        try dataToSave.write(to: tempURL)
+        let directory = targetDirectory ?? FileManager.default.temporaryDirectory
+        let fileURL = directory.appendingPathComponent(fileName)
+        try dataToSave.write(to: fileURL)
         
-        guard let file = EncryptedDataFile(url: tempURL) else {
+        return fileURL
+    }
+
+    func createSingleBackupFile(vault: Vault, encryptionPassword: String?) async throws -> FileExporterModel<EncryptedDataFile>? {
+        let tempURL = try generateBackupFile(vault: vault, encryptionPassword: encryptionPassword)
+        guard let tempURL, let file = EncryptedDataFile(url: tempURL) else {
             return nil
         }
         
+        let fileName = vault.getExportName()
         return FileExporterModel(
             url: tempURL,
             name: fileName,
