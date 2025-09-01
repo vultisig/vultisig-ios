@@ -184,5 +184,154 @@
             }
         },
         "expected_image_hash": ["20f6fb36702198ecf2b5757f391b90ccb8747a6b7e24aa306b40dc6c00ddfdf8"]
+    },
+    {
+        "name": "Stake Ruji",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUJI",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"x/ruji",
+                "logo": "RUJI"
+            },
+            "to_address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 8
+                }
+            },
+            "memo": "bond:x/ruji:1000000",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS",
+            "wasm_execute_contract_payload": {
+                "sender_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "contract_address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+                "execute_msg": "{ \"account\": { \"bond\": {} } }",
+                "coins": [
+                    {
+                        "denom": "x/ruji",
+                        "amount": "1000000"
+                    }
+                ]
+            }
+        },
+        "expected_image_hash": ["8482277a76bb4aa0fc9d49e0862a21ca248b5b84848bfd7c2ffbe9d3686ded05"]
+    },
+    {
+        "name": "Unstake Ruji",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "RUJI",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"x/ruji",
+                "logo": "RUJI"
+            },
+            "to_address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 8
+                }
+            },
+            "memo": "withdraw:x/ruji:1000000",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS",
+            "wasm_execute_contract_payload": {
+                "sender_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "contract_address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+                "execute_msg": "{ \"account\": { \"withdraw\": { \"amount\": \"1000000\" } } }",
+                "coins": []
+            }
+        },
+        "expected_image_hash": ["0e5a0f2d303ace7b1d210b182f231d64b177e48447146a5515f66d82617f247a"]
+    },
+    {
+        "name": "Merge Kuji",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "KUJI",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"thor.kuji",
+                "logo": "KUJI"
+            },
+            "to_address": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 4
+                }
+            },
+            "memo": "merge:thor.kuji",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["1321dca67037384d6dec75351de2c7b9450280eff44e0b9548a198ca528473c3"]
+    },
+    {
+        "name": "UnMerge Kuji",
+        "keysign_payload": {
+            "coin": {
+                "chain": "THORChain",
+                "ticker": "KUJI",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 8,
+                "price_provider_id": "rune",
+                "is_native_token": false,
+                "hex_public_key": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+                "contract_address":"thor.kuji",
+                "logo": "RUJI"
+            },
+            "to_address": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy",
+            "to_amount": "1000000",
+            "BlockchainSpecific": {
+                "ThorchainSpecific": {
+                    "account_number": 123456,
+                    "sequence": 1,
+                    "fee": 200000,
+                    "is_deposit": true,
+                    "transaction_type": 5
+                }
+            },
+            "memo": "unmerge:thor.kuji:1000000",
+            "utxo_info": [],
+            "SwapPayload": null,
+            "vault_public_key_ecdsa": "023e4b76861289ad4528b33c2fd21b3a5160cd37b3294234914e21efb6ed4a452b",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["815f5f2cc595263c742dd3e2d37cb9c90a659e7bae427d31b0fa6fd950c5a8ba"]
     }
 ]
