@@ -52,7 +52,6 @@ struct VaultBackupContainerView<Content: View>: View {
     }
     
     func fileSaved() {
-        // TODO: - Check
         backupType.markBackedUp()
         FileManager.default.clearTmpDirectory()
     }
