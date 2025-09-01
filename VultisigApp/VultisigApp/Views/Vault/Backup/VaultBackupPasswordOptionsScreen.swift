@@ -107,8 +107,13 @@ struct VaultBackupPasswordOptionsScreen: View {
         isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
-        fileModel = backupViewModel.exportFileWithoutPassword(backupType)
-        isLoading = false
+        Task {
+            let fileModel = await backupViewModel.exportFileWithoutPassword(backupType)
+            await MainActor.run {
+                isLoading = false
+                self.fileModel = fileModel
+            }
+        }
     }
 }
 

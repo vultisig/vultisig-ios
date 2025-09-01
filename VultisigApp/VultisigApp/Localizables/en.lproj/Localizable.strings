@@ -829,7 +829,6 @@
 "deviceBackupDescription" = "Store the vault share of this device.";
 "serverBackupTitle" = "Server Backup";
 "serverBackupDescription" = "Request Server Vault Share again.";
-"enterYourEmail" = "Enter your email";
 "enterYourPassword" = "Enter your password";
 "requestServerVaultShare" = "Request Server Vault Share";
 "passwordIsRequired" = "Password is required.";

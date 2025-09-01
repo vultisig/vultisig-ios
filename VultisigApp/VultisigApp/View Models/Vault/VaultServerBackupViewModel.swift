@@ -22,7 +22,7 @@ final class VaultServerBackupViewModel: ObservableObject {
     var cancellables = Set<AnyCancellable>()
     
     var validForm: Bool {
-        email.isNotEmpty && password.isNotEmpty && emailError == nil && passwordError == nil
+        email.isNotEmpty && password.isNotEmpty && emailError == nil && passwordError == nil && !isLoading
     }
     
     let service = VultiServerService()

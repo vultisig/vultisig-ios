@@ -123,12 +123,16 @@ struct VaultBackupPasswordScreen: View {
         passwordErrorMessage = ""
         passwordVerifyErrorMessage = ""
         
-        guard let fileModel = backupViewModel.exportFileWithCustomPassword(backupType) else {
-            return
+        Task {
+            guard let fileModel = await backupViewModel.exportFileWithCustomPassword(backupType) else {
+                return
+            }
+            
+            await MainActor.run {
+                self.fileModel = fileModel
+                presentFileExporter = true
+            }
         }
-        
-        self.fileModel = fileModel
-        presentFileExporter = true
     }
 }
 

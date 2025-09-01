@@ -23,6 +23,14 @@ struct ZipFileGenerator {
         }
         
         var fileManagerError: Swift.Error?
+        let fm = FileManager.default
+        do {
+            try fm.createDirectory(at: zipFinalURL.deletingLastPathComponent(),
+                                   withIntermediateDirectories: true,
+                                   attributes: nil)
+        } catch {
+            throw ZipFileError.failedToCreateZIP(error)
+        }
         var coordinatorError: NSError?
         let coordinator = NSFileCoordinator()
         coordinator.coordinate(
@@ -31,9 +39,10 @@ struct ZipFileGenerator {
             error: &coordinatorError
         ) { zipCreatedURL in
             do {
-                // will fail if file already exists at finalURL
-                // use `replaceItem` instead if you want "overwrite" behavior
-                try FileManager.default.moveItem(at: zipCreatedURL, to: zipFinalURL)
+                if fm.fileExists(atPath: zipFinalURL.path) {
+                    try fm.removeItem(at: zipFinalURL)
+                }
+                try fm.copyItem(at: zipCreatedURL, to: zipFinalURL)
             } catch {
                 fileManagerError = error
             }
