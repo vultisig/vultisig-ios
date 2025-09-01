@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VaultBackupPasswordScreen: View {
     let tssType: TssType
-    let vault: Vault
+    let backupType: VaultBackupType
     var isNewVault = false
     
     @State var verifyPassword: String = ""
@@ -29,7 +29,7 @@ struct VaultBackupPasswordScreen: View {
             fileModel: $fileModel,
             backupViewModel: backupViewModel,
             tssType: tssType,
-            vault: vault,
+            backupType: backupType,
             isNewVault: isNewVault
         ) {
             Screen(title: "backup".localized) {
@@ -123,15 +123,19 @@ struct VaultBackupPasswordScreen: View {
         passwordErrorMessage = ""
         passwordVerifyErrorMessage = ""
         
-        guard let fileModel = backupViewModel.exportFileWithCustomPassword(vault) else {
-            return
+        Task {
+            guard let fileModel = await backupViewModel.exportFileWithCustomPassword(backupType) else {
+                return
+            }
+            
+            await MainActor.run {
+                self.fileModel = fileModel
+                presentFileExporter = true
+            }
         }
-        
-        self.fileModel = fileModel
-        presentFileExporter = true
     }
 }
 
 #Preview {
-    VaultBackupPasswordScreen(tssType: .Keygen, vault: Vault.example)
+    VaultBackupPasswordScreen(tssType: .Keygen, backupType: .single(vault: Vault.example))
 }

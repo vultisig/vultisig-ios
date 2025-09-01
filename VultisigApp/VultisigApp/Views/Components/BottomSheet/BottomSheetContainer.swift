@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BottomSheetContainer<Content: View>: View {
+struct BottomSheetContainer<Content: BottomSheetContentView>: View {
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -22,7 +22,7 @@ struct BottomSheetContainer<Content: View>: View {
                 .cornerRadius(99)
             content
         }
-        .background(Theme.colors.bgSecondary)
+        .background(content.bgColor ?? Theme.colors.bgSecondary)
         .padding(.top, 8)
         .padding(.horizontal, 16)
     }

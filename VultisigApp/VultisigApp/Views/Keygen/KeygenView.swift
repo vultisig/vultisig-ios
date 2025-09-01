@@ -58,7 +58,7 @@ struct KeygenView: View {
                     )
                 } else {
                     if tssType == .Migrate {
-                        VaultBackupNowScreen(tssType: tssType, vault: vault, isNewVault: true)
+                        VaultBackupNowScreen(tssType: tssType, backupType: .single(vault: vault), isNewVault: true)
                     } else {
                         SecureBackupVaultOverview(vault: vault)
                     }

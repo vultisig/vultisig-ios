@@ -11,7 +11,7 @@ struct PickReferralCode: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        let isVisible = referralViewModel.showReferralAvailabilityError || referralViewModel.showReferralAvailabilitySuccess
+        let isVisible = referralViewModel.showReferralAvailabilitySuccess
         
         return VStack(spacing: 8) {
             pickReferralTitle
@@ -40,10 +40,8 @@ struct PickReferralCode: View {
             text: $referralViewModel.referralCode,
             placeholderText: "enter4Characters",
             action: .Clear,
-            showError: referralViewModel.showReferralAvailabilityError,
-            errorMessage: "",
-            showSuccess: referralViewModel.showReferralAvailabilitySuccess,
-            isErrorLabelVisible: false
+            errorMessage: $referralViewModel.referralAvailabilityErrorMessage,
+            showSuccess: referralViewModel.showReferralAvailabilitySuccess
         )
         .onChange(of: referralViewModel.referralCode) { oldValue, newValue in
             referralViewModel.resetReferralData()
@@ -78,9 +76,6 @@ struct PickReferralCode: View {
             if referralViewModel.showReferralAvailabilitySuccess {
                 Text(NSLocalizedString("available", comment: ""))
                     .foregroundColor(Theme.colors.alertInfo)
-            } else {
-                Text(NSLocalizedString(referralViewModel.referralAvailabilityErrorMessage, comment: ""))
-                    .foregroundColor(Theme.colors.alertError)
             }
         }
         .padding(.vertical, 8)

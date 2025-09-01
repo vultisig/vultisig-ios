@@ -11,20 +11,30 @@ struct ReferralTextField: View {
     @Binding var text: String
     let placeholderText: String
     let action: ReferralTextFieldAction
-    var showError: Bool = false
-    var errorMessage: String = .empty
+    @Binding var errorMessage: String?
     
-    var showSuccess: Bool = false
-    var isErrorLabelVisible: Bool = true
+    var showSuccess: Bool
     var isDisabled = false
+    
+    init(
+        text: Binding<String>,
+        placeholderText: String,
+        action: ReferralTextFieldAction,
+        errorMessage: Binding<String?> = .constant(nil),
+        showSuccess: Bool = false,
+        isDisabled: Bool = false
+    ) {
+        self._text = text
+        self.placeholderText = placeholderText
+        self.action = action
+        self._errorMessage = errorMessage
+        self.showSuccess = showSuccess
+        self.isDisabled = isDisabled
+    }
     
     var body: some View {
         VStack(spacing: 8) {
             textField
-            
-            if isErrorLabelVisible && showError {
-                errorText
-            }
         }
         .onChange(of: text) { _, newValue in
             sanitizeText(newValue)
@@ -35,7 +45,7 @@ struct ReferralTextField: View {
         CommonTextField(
             text: $text,
             placeholder: placeholderText,
-            showError: showError
+            error: $errorMessage
         ) {
             HStack {
                 actionButton
@@ -86,25 +96,8 @@ struct ReferralTextField: View {
         .opacity(text.isEmpty ? 0 : 1)
     }
     
-    var errorText: some View {
-        Text(NSLocalizedString(errorMessage, comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.alertError)
-    }
-    
     private func clearCode() {
         text = ""
-    }
-    
-    private func getOutlineColor() -> Color {
-        if showSuccess {
-            Theme.colors.alertInfo
-        } else if showError {
-            Theme.colors.alertError
-        } else {
-            Theme.colors.border
-        }
     }
     
     // Based on thorname docs
@@ -120,7 +113,6 @@ struct ReferralTextField: View {
         text: .constant("ABCD"),
         placeholderText: "enterUpto4Characters",
         action: .Copy,
-        showError: false,
-        errorMessage: ""
+        errorMessage: .constant(nil)
     )
 }
