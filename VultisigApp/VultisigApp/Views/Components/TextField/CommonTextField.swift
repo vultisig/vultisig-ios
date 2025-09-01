@@ -38,7 +38,7 @@ struct CommonTextField<TrailingView: View>: View {
         label: String? = nil,
         placeholder: String,
         isSecure: Binding<Bool> = .constant(false),
-        error: Binding<String?> = .constant(nil),
+        error: Binding<String?> = .constant(nil)
     ) where TrailingView == EmptyView {
         self.init(
             text: text,
