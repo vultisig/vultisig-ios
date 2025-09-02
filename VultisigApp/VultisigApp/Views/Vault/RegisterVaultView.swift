@@ -57,7 +57,7 @@ struct RegisterVaultView: View {
         case 0:
             commonCell(icon: "qr-code", title: attrString)
         case 1:
-            Link(destination: StaticURL.VultisigWeb) {
+            Link(destination: StaticURL.VultisigAirdropWeb) {
                 commonCell(icon: "app-window", title: attrString + websiteText)
             }
         case 2:

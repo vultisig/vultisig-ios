@@ -837,3 +837,4 @@
 "requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait a couple a minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestServerVaultShareBadRequestError" = "Password for your vault is incorrect. Please check and try again.";
+"vult" = "$VULT";

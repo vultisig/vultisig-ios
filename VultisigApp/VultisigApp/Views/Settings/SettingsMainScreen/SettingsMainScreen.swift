@@ -53,6 +53,7 @@ struct SettingsMainScreen: View {
                 .twitter,
                 .discord,
                 .github,
+                .vult,
                 .website
             ]
         ),
