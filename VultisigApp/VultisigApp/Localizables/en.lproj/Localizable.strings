@@ -593,7 +593,7 @@
 "selectChain" = "Select chain";
 "selectToken" = "Select token";
 "network" = "Network";
-"selectAsset" = "Select asset";
+"selectAsset" = "Select Asset";
 "chain" = "Chain";
 "maxTotalFee" = "Max. Total Fee";
 "allowance" = "Allowance";
