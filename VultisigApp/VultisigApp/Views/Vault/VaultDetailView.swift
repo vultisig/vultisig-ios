@@ -17,6 +17,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
 
     @AppStorage("monthlyReminderDate") var monthlyReminderDate: Date = Date()
@@ -65,6 +66,9 @@ struct VaultDetailView: View {
             setData()
         }
         .onChange(of: homeViewModel.selectedVault?.coins) {
+            setData()
+        }
+        .onChange(of: settingsViewModel.selectedCurrency) {
             setData()
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
@@ -274,4 +278,5 @@ struct VaultDetailView: View {
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
         .environmentObject(SettingsDefaultChainViewModel())
+        .environmentObject(SettingsViewModel())
 }
