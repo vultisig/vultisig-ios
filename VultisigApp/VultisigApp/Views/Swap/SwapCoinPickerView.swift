@@ -78,6 +78,9 @@ struct SwapCoinPickerView: View {
             
             VStack(spacing: 12) {
                 GradientListSeparator()
+                Text("selectChain".localized)
+                    .font(Theme.fonts.caption12)
+                    .foregroundStyle(Theme.colors.textExtraLight)
                 chainCarousel
             }
             .padding(.top, 4)
