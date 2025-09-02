@@ -34,8 +34,8 @@ extension ServerBackupVerificationView {
         }
         .padding(.horizontal, 16)
     }
-
-
+    
+    
     var textField: some View {
         HStack(spacing: 8) {
             field
@@ -71,13 +71,18 @@ extension ServerBackupVerificationView {
             }
         }
     }
-
+    
     func pasteCode() {
-        guard let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength else {
+        guard
+            let raw = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+            raw.count == Self.codeLength,
+            raw.unicodeScalars.allSatisfy(CharacterSet.decimalDigits.contains)
+        else {
             return
         }
         
-        otp = clipboardContent.map { String($0) }
+        otp = raw.map(String.init)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             focusedField = Self.codeLength - 1
         }
