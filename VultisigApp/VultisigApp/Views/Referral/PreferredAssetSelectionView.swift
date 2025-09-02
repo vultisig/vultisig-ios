@@ -15,7 +15,7 @@ struct PreferredAssetSelectionView: View {
     var body: some View {
         Screen(title: "selectAsset".localized) {
             VStack(spacing: 12) {
-                SearchTextField(value: $viewModel.searchText, isFocused: .init())
+                SearchTextField(value: $viewModel.searchText)
                 ScrollView {
                     if viewModel.isLoading {
                         loadingView

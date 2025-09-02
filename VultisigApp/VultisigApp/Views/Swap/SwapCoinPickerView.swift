@@ -15,6 +15,14 @@ struct SwapCoinPickerView: View {
     
     @StateObject var viewModel: SwapCoinSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @State var searchBarFocused: Bool = false
+    
+    var showSelectChainHeader: Bool {
+        #if os(macOS)
+        return true
+        #endif
+        return !searchBarFocused
+    }
     
     init(
         vault: Vault,
@@ -81,6 +89,8 @@ struct SwapCoinPickerView: View {
                 Text("selectChain".localized)
                     .font(Theme.fonts.caption12)
                     .foregroundStyle(Theme.colors.textExtraLight)
+                    .showIf(showSelectChainHeader)
+                    .animation(.easeInOut.delay(0.4), value: showSelectChainHeader)
                 chainCarousel
             }
             .padding(.top, 4)
@@ -140,7 +150,7 @@ struct SwapCoinPickerView: View {
     }
     
     var searchBar: some View {
-        SearchTextField(value: $viewModel.searchText)
+        SearchTextField(value: $viewModel.searchText, isFocused: $searchBarFocused)
             .padding(.bottom, 12)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
