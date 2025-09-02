@@ -14,8 +14,7 @@ struct ChainDetailActionButtons: View {
     @Binding var isSendLinkActive: Bool
     @Binding var isSwapLinkActive: Bool
     @Binding var isMemoLinkActive: Bool
-    @State var isBuyLinkActive: Bool = false
-    var coinTicker: String? = nil
+    @Binding var isBuyLinkActive: Bool
     @State var actions: [CoinAction] = []
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
@@ -62,25 +61,10 @@ struct ChainDetailActionButtons: View {
             Task {
                 await setData()
             }
-        }
-        .sheet(isPresented: $isBuyLinkActive) {
-            BanxaDisclaimer(url: getBuyURL())
-            #if os(macOS)
-                .frame(minWidth: 600, minHeight: 400)
-            #endif
-        }
-            
+        }   
     }
     
-    func getBuyURL() -> URL {
-        var components = URLComponents(string: "https://vultisig.banxa.com/")!
-        components.queryItems = [
-            URLQueryItem(name: "walletAddress", value: group.address),
-            URLQueryItem(name: "blockchain", value: group.chain.banxaBlockchainCode),
-            URLQueryItem(name: "coinType", value: coinTicker ?? group.nativeCoin.ticker)
-        ]
-        return components.url!
-    }
+   
     
     var memoButton: some View {
         Button {
@@ -139,7 +123,8 @@ extension ChainDetailActionButtons{
         isLoading: .constant(false),
         isSendLinkActive: .constant(false),
         isSwapLinkActive: .constant(false),
-        isMemoLinkActive: .constant(false)
+        isMemoLinkActive: .constant(false),
+        isBuyLinkActive: .constant(false)
     )
     .environmentObject(CoinSelectionViewModel())
 }

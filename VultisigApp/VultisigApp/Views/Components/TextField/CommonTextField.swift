@@ -12,29 +12,42 @@ struct CommonTextField<TrailingView: View>: View {
     @Binding var text: String
     let label: String?
     let placeholder: String
-    var showError: Bool
+    @Binding var isSecure: Bool
+    @Binding var error: String?
+    
     let trailingView: () -> TrailingView
     
     init(
         text: Binding<String>,
         label: String? = nil,
         placeholder: String,
-        showError: Bool = false,
+        isSecure: Binding<Bool> = .constant(false),
+        error: Binding<String?> = .constant(nil),
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
         self.label = label
         self.placeholder = placeholder
-        self.showError = showError
+        self._isSecure = isSecure
+        self._error = error
         self.trailingView = trailingView
     }
     
     init(
         text: Binding<String>,
         label: String? = nil,
-        placeholder: String
+        placeholder: String,
+        isSecure: Binding<Bool> = .constant(false),
+        error: Binding<String?> = .constant(nil)
     ) where TrailingView == EmptyView {
-        self.init(text: text, label: label, placeholder: placeholder, trailingView: { EmptyView() })
+        self.init(
+            text: text,
+            label: label,
+            placeholder: placeholder,
+            isSecure: isSecure,
+            error: error,
+            trailingView: { EmptyView() }
+        )
     }
     
     var body: some View {
@@ -45,31 +58,44 @@ struct CommonTextField<TrailingView: View>: View {
                     .font(Theme.fonts.bodySMedium)
             }
             
-            HStack {
-                TextField(placeholder.localized, text: $text)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Group {
+                        if isSecure {
+                            SecureField(placeholder.localized, text: $text)
+                        } else {
+                            TextField(placeholder.localized, text: $text)
+                        }
+                    }
                     .font(Theme.fonts.bodyMRegular)
                     .foregroundColor(Theme.colors.textPrimary)
                     .submitLabel(.done)
                     .colorScheme(.dark)
                     .frame(maxWidth: .infinity)
+                    
+                    clearButton
+                        .showIf(isEnabled)
+                    trailingView()
+                }
+                .frame(height: 56)
+                .font(Theme.fonts.bodyMMedium)
+                .padding(.horizontal, 12)
+                .background(Theme.colors.bgSecondary)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(borderColor, lineWidth: 1)
+                )
+                .autocorrectionDisabled()
+                .borderlessTextFieldStyle()
+                .padding(1)
                 
-                clearButton
-                    .showIf(isEnabled)
-                trailingView()
+                Text(error ?? "")
+                    .foregroundColor(Theme.colors.alertError)
+                    .font(Theme.fonts.footnote)
             }
-            .frame(height: 56)
-            .font(Theme.fonts.bodyMMedium)
-            .padding(.horizontal, 12)
-            .background(Theme.colors.bgSecondary)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(borderColor, lineWidth: 1)
-            )
-            .autocorrectionDisabled()
-            .borderlessTextFieldStyle()
-            .padding(1)
         }
+        .animation(.easeInOut, value: error)
     }
     
     var clearButton: some View {
@@ -86,6 +112,6 @@ struct CommonTextField<TrailingView: View>: View {
     }
     
     var borderColor: Color {
-        showError ? Theme.colors.alertError : Theme.colors.border
+        error != nil ? Theme.colors.alertError : Theme.colors.border
     }
 }

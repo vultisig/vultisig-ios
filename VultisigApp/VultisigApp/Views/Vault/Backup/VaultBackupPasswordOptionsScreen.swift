@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VaultBackupPasswordOptionsScreen: View {
     let tssType: TssType
-    let vault: Vault
+    let backupType: VaultBackupType
     var isNewVault = false
     
     @State var isLoading = false
@@ -24,21 +24,20 @@ struct VaultBackupPasswordOptionsScreen: View {
             fileModel: $fileModel,
             backupViewModel: backupViewModel,
             tssType: tssType,
-            vault: vault,
+            backupType: backupType,
             isNewVault: isNewVault
         ) {
             Screen {
                 VStack(spacing: 36) {
-                    Spacer()
                     icon
                     textContent
-                    buttons
                     Spacer()
+                    buttons
                 }
             }
         }
         .navigationDestination(isPresented: $presentPasswordScreen) {
-            VaultBackupPasswordScreen(tssType: tssType, vault: vault, isNewVault: isNewVault)
+            VaultBackupPasswordScreen(tssType: tssType, backupType: backupType, isNewVault: isNewVault)
         }
         .onAppear(perform: onAppear)
         .onDisappear(perform: backupViewModel.resetData)
@@ -55,15 +54,33 @@ struct VaultBackupPasswordOptionsScreen: View {
     
     var textContent: some View {
         VStack(spacing: 16) {
-            Text(NSLocalizedString("doYouWantToAddPassword", comment: ""))
+            Text("backupOptionsTitle".localized)
                 .font(Theme.fonts.title2)
+                .foregroundColor(Theme.colors.textPrimary)
+                .multilineTextAlignment(.center)
             
-            Text(NSLocalizedString("doYouWantToAddPasswordDescription", comment: ""))
-                .font(Theme.fonts.bodySMedium)
-                .opacity(0.6)
+            boxedText("backupOptionsBox1".localized, highlighted: "backupOptionsBox1Highlighted".localized, icon: "lock-keyhole-open")
+            
+            boxedText("backupOptionsBox2".localized, highlighted: "backupOptionsBox2Highlighted".localized, icon: "folder-lock")
+            
+            boxedText("backupOptionsBox3".localized, highlighted: "backupOptionsBox3Highlighted".localized, icon: "file-warning")
         }
-        .foregroundColor(Theme.colors.textPrimary)
-        .multilineTextAlignment(.center)
+    }
+    
+    func boxedText(_ text: String, highlighted: String, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Icon(named: icon, color: Theme.colors.primaryAccent4, size: 24)
+            HighlightedText(localisedKey: text, highlightedText: highlighted) {
+                $0.foregroundColor = Theme.colors.textExtraLight
+                $0.font = Theme.fonts.footnote
+            } highlightedTextStyle: {
+                $0.foregroundColor = Theme.colors.textPrimary
+                $0.font = Theme.fonts.footnote
+            }
+        }
+        .frame(maxWidth: 325)
+        .containerStyle(padding: 16, bgColor: Theme.colors.bgSecondary)
+        
     }
     
     var buttons: some View {
@@ -90,11 +107,16 @@ struct VaultBackupPasswordOptionsScreen: View {
         isLoading = true
         FileManager.default.clearTmpDirectory()
         backupViewModel.resetData()
-        fileModel = backupViewModel.exportFileWithoutPassword(vault)
-        isLoading = false
+        Task {
+            let fileModel = await backupViewModel.exportFileWithoutPassword(backupType)
+            await MainActor.run {
+                isLoading = false
+                self.fileModel = fileModel
+            }
+        }
     }
 }
 
 #Preview {
-    VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: Vault.example)
+    VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: Vault.example))
 }

@@ -19,6 +19,10 @@ struct VaultSettingsScreen: View {
     @State var devicesInfo: [DeviceInfo] = []
     @State var showUpgradeYourVaultSheet = false
     @State var upgradeYourVaultLinkActive = false
+    @State var presentBackupSheet = false
+    @State var presentSingleDeviceBackup = false
+    @State var presentMultipleDeviceBackup = false
+    @State var presentServerBackup = false
     
     var body: some View {
         Screen(title: "vaultSettings".localized) {
@@ -69,6 +73,24 @@ struct VaultSettingsScreen: View {
                 navigationLinkActive: $upgradeYourVaultLinkActive
             )
         }
+        .bottomSheet(isPresented: $presentBackupSheet) {
+            ChooseBackupSheetView(vault: vault) {
+                presentBackupSheet = false
+                onDeviceBackup()
+            } onServerBackup: {
+                presentBackupSheet = false
+                presentServerBackup = true
+            }
+        }
+        .navigationDestination(isPresented: $presentServerBackup) {
+            VaultServerBackupScreen(vault: vault)
+        }
+        .navigationDestination(isPresented: $presentSingleDeviceBackup) {
+            VaultBackupPasswordOptionsScreen(tssType: .Keygen, backupType: .single(vault: vault))
+        }
+        .navigationDestination(isPresented: $presentMultipleDeviceBackup) {
+            VaultBackupSelectionScreen(selectedVault: vault)
+        }
     }
     
     var vaultDetails: some View {
@@ -80,8 +102,12 @@ struct VaultSettingsScreen: View {
     }
     
     var backupVault: some View {
-        NavigationLink {
-            VaultBackupPasswordOptionsScreen(tssType: .Keygen, vault: vault)
+        Button {
+            if vault.isFastVault {
+                presentBackupSheet = true
+            } else {
+                onDeviceBackup()
+            }
         } label: {
             SettingsOptionView(
                 icon: "hard-drive-upload",
@@ -151,6 +177,14 @@ struct VaultSettingsScreen: View {
     private func setData() {
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
+        }
+    }
+    
+    func onDeviceBackup() {
+        if vaults.count > 1 {
+            presentMultipleDeviceBackup = true
+        } else {
+            presentSingleDeviceBackup = true
         }
     }
 }

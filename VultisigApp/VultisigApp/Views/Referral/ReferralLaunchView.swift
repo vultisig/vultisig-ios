@@ -43,14 +43,6 @@ struct ReferralLaunchView: View {
         }
     }
     
-    var errorText: some View {
-        Text(NSLocalizedString(referredViewModel.referredLaunchViewErrorMessage, comment: ""))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .font(Theme.fonts.bodySMedium)
-            .foregroundColor(Theme.colors.alertError)
-            .opacity(referredViewModel.showReferredLaunchViewError ? 1 : 0)
-    }
-    
     var orSeparator: some View {
         HStack(spacing: 16) {
             separator
@@ -128,8 +120,7 @@ private extension ReferralLaunchView {
             text: $referredViewModel.referredCode,
             placeholderText: "enterUpto4Characters",
             action: .Paste,
-            showError: referredViewModel.showReferredLaunchViewError,
-            errorMessage: referredViewModel.referredLaunchViewErrorMessage
+            errorMessage: $referredViewModel.referredLaunchViewErrorMessage
         )
     }
     

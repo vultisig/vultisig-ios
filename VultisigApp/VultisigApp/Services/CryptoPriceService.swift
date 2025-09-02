@@ -106,7 +106,7 @@ private extension CryptoPriceService {
             }
             
             try await RateProvider.shared.save(rates: rates)
-
+            
             
         } else if chain == .sui {
             
@@ -135,10 +135,19 @@ private extension CryptoPriceService {
             
             var rates: [Rate] = []
             for contract in contracts {
-                let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
-                let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: sanitisedContract)
-                let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
-                rates.append(poolRate)
+                
+                let yieldTokens = TokensStore.TokenSelectionAssets.filter({ $0.chain == .thorChain && ( $0.ticker == "yRUNE" || $0.ticker == "yTCY") }).map({$0.contractAddress})
+                
+                if yieldTokens.contains(contract) {
+                    let price = await ThorchainService.shared.fetchYieldTokenPrice(for: contract)
+                    let rate: Rate = .init(fiat: "usd", crypto: contract, value: price ?? 0.0)
+                    rates.append(rate)
+                } else {
+                    let sanitisedContract = contract.uppercased().replacingOccurrences(of: "X/", with: "")
+                    let poolPrice = await ThorchainService.shared.getAssetPriceInUSD(assetName: sanitisedContract)
+                    let poolRate: Rate = .init(fiat: "usd", crypto: contract, value: poolPrice)
+                    rates.append(poolRate)
+                }
             }
             
             try await RateProvider.shared.save(rates: rates)

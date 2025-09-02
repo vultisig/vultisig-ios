@@ -16,7 +16,13 @@ public extension View {
     }
 }
 
-public protocol BottomSheetProperties {}
+public protocol BottomSheetProperties {
+    var bgColor: Color? { get }
+}
+
+extension BottomSheetProperties {
+    var bgColor: Color? { nil }
+}
 public typealias BottomSheetContentView = View & BottomSheetProperties
 
 struct BottomSheetModifier<SheetContent: BottomSheetContentView>: ViewModifier {
@@ -58,7 +64,7 @@ private extension BottomSheetModifier {
                 Spacer()
             }
             .presentationDetents(presentationDetents())
-            .presentationBackground(Theme.colors.bgSecondary)
+            .presentationBackground(sheetContent.bgColor ?? Theme.colors.bgSecondary)
             .if(!dismissable) {
                 $0.interactiveDismissDisabled()
             }

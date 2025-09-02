@@ -1745,7 +1745,7 @@ class TokensStore {
             ticker: "yRUNE",
             logo: "yRUNE",
             decimals: 8,
-            priceProviderId: "thorchain",
+            priceProviderId: "",
             contractAddress: "x/nami-index-nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt",
             isNativeToken: false
         ),
@@ -1754,7 +1754,7 @@ class TokensStore {
             ticker: "yTCY",
             logo: "yTCY",
             decimals: 8,
-            priceProviderId: "tcy",
+            priceProviderId: "",
             contractAddress: "x/nami-index-nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt",
             isNativeToken: false
         ),

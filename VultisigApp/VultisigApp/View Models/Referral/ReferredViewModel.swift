@@ -18,9 +18,8 @@ class ReferredViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     @Published var referredCode: String = ""
-    @Published var showReferredLaunchViewError: Bool = false
     @Published var showReferredLaunchViewSuccess: Bool = false
-    @Published var referredLaunchViewErrorMessage: String = ""
+    @Published var referredLaunchViewErrorMessage: String?
     @Published var referredLaunchViewSuccessMessage: String = ""
     
     private let thorchainReferralService = THORChainAPIService()
@@ -56,7 +55,7 @@ class ReferredViewModel: ObservableObject {
         
         nameErrorCheck(code: referredCode, referralCode: currentVault?.referralCode?.code)
         
-        guard !showReferredLaunchViewError else {
+        guard referredLaunchViewErrorMessage == nil else {
             return false
         }
         
@@ -64,9 +63,8 @@ class ReferredViewModel: ObservableObject {
     }
     
     func clearFormMessages() {
-        showReferredLaunchViewError = false
         showReferredLaunchViewSuccess = false
-        referredLaunchViewErrorMessage = ""
+        referredLaunchViewErrorMessage = nil
         referredLaunchViewSuccessMessage = ""
     }
     
@@ -128,7 +126,6 @@ class ReferredViewModel: ObservableObject {
     
     private func showNameError(with message: String) {
         referredLaunchViewErrorMessage = message
-        showReferredLaunchViewError = true
         isLoading = false
     }
     
