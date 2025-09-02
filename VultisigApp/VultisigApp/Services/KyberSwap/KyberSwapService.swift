@@ -202,7 +202,7 @@ struct KyberSwapService {
             return "ethereum"
         case .bscChain:
             return "bsc"
-        case .polygon:
+        case .polygonV2:
             return "polygon"
         case .arbitrum:
             return "arbitrum"

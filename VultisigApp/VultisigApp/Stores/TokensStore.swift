@@ -1291,7 +1291,7 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "AVAX",
             logo: "avax",
             decimals: 18,
@@ -1300,7 +1300,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "BNB",
             logo: "bsc",
             decimals: 18,
@@ -1309,7 +1309,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "BUSD",
             logo: "busd",
             decimals: 18,
@@ -1318,7 +1318,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "FOX",
             logo: "fox",
             decimals: 18,
@@ -1327,7 +1327,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "LINK",
             logo: "link",
             decimals: 18,
@@ -1336,7 +1336,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "POL",
             logo: "matic",
             decimals: 18,
@@ -1345,7 +1345,7 @@ class TokensStore {
             isNativeToken: true
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "SHIB",
             logo: "shib",
             decimals: 18,
@@ -1354,7 +1354,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "SOL",
             logo: "sol",
             decimals: 9,
@@ -1363,7 +1363,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "USDC",
             logo: "usdc",
             decimals: 6,
@@ -1372,7 +1372,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "USDC.e",
             logo: "USDC.e",
             decimals: 6,
@@ -1381,7 +1381,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "USDT",
             logo: "usdt",
             decimals: 6,
@@ -1390,7 +1390,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "WBTC",
             logo: "wbtc",
             decimals: 8,
@@ -1399,7 +1399,7 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
-            chain: .polygon,
+            chain: .polygonV2,
             ticker: "WETH",
             logo: "weth",
             decimals: 18,

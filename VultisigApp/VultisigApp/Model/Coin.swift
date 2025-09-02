@@ -139,7 +139,7 @@ class Coin: ObservableObject, Codable, Hashable {
             }
         case .arbitrum:
             return "120000"
-        case .base,.blast,.optimism,.cronosChain, .polygon, .polygonV2:
+        case .base,.blast,.optimism,.cronosChain, .polygonV2:
             if self.isNativeToken {
                 return "40000"
             } else {

@@ -324,7 +324,7 @@ private extension BlockChainService {
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
             return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
             
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let baseFee = try await service.getBaseFee()
             let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)

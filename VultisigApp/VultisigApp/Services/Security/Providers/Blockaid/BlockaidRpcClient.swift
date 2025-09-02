@@ -166,7 +166,7 @@ private extension Chain {
             return "ethereum"
         case .optimism:
             return "optimism"
-        case .polygon, .polygonV2:
+        case .polygonV2:
             return "polygon"
         case .sui:
             return "sui"
@@ -177,4 +177,3 @@ private extension Chain {
         }
     }
 }
-

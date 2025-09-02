@@ -14,7 +14,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case base
     case blast
     case arbitrum
-    case polygon
     case polygonV2
     case optimism
     case bscChain
@@ -68,7 +67,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum: return "Arbitrum"
         case .base: return "Base"
         case .optimism: return "Optimism"
-        case .polygon: return "Polygon"
         case .polygonV2: return "Polygon"
         case .blast: return "Blast"
         case .cronosChain: return "CronosChain"
@@ -93,7 +91,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain: return "RUNE"
         case .solana: return "SOL"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle: return "Gwei"
+        case .ethereum,.avalanche,.base,.blast,.arbitrum, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle: return "Gwei"
         case .bitcoin: return "BTC/vbyte"
         case .bitcoinCash: return "BCH/vbyte"
         case .litecoin: return "LTC/vbyte"
@@ -137,7 +135,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum: return "ARB"
         case .base: return "BASE" //Base does not have a coin
         case .optimism: return "OP"
-        case .polygon: return "MATIC"
         case .polygonV2: return "POL"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
@@ -177,7 +174,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum: return "ARB"
         case .base: return "BASE"
         case .optimism: return "OP"
-        case .polygon: return "MATIC"
         case .polygonV2: return "POL"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
@@ -210,7 +206,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle:
             return .EVM
         case .thorChain,.mayaChain:
             return .THORChain
@@ -251,8 +247,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "blast"
         case .arbitrum:
             return "arbitrum"
-        case .polygon:
-            return "matic"
         case .polygonV2:
             return "matic"
         case .optimism:
@@ -322,8 +316,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 81457
         case .arbitrum:
             return 42161
-        case .polygon:
-            return 137
         case .polygonV2:
             return 137 // TODO: find the new id
         case .optimism:
@@ -376,8 +368,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.thorchain
         case .arbitrum:
             return CoinType.arbitrum
-        case .polygon:
-            return CoinType.polygon
         case .polygonV2:
             return CoinType.polygon
         case .base:
@@ -446,7 +436,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .bscChain,
                 .ethereum,
                 .optimism,
-                .polygon,
+                .polygonV2,
                 .arbitrum,
                 .blast,
                 .cronosChain,
@@ -455,7 +445,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
                 .zcash,
                 .mantle:
             return true
-        case .polygonV2,
+        case 
             .cardano,
             .sui,
             .polkadot,
@@ -478,7 +468,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum, .polygonV2,.optimism,.bscChain,.cronosChain, .zksync, .ethereumSepolia, .mantle:
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash, .zcash:
             return .UTXO

@@ -109,7 +109,7 @@ class SendCryptoViewModel: ObservableObject {
                 
                 isLoading = false
             }
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygonV2, .blast, .cronosChain, .zksync,.ethereumSepolia, .mantle:
             Task {
                 do {
                     if tx.coin.isNativeToken {

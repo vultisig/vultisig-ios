@@ -22,7 +22,7 @@ struct OneInchService {
     
     private var supportedChain: [Chain] {
         return [
-            .ethereum,.arbitrum,.avalanche,.bscChain,.solana,.optimism,.polygon,.polygonV2,.zksync,.base
+            .ethereum,.arbitrum,.avalanche,.bscChain,.solana,.optimism,.polygonV2,.zksync,.base
         ]
     }
     func isChainSupported(chain: Chain) -> Bool {

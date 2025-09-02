@@ -23,7 +23,7 @@ class EvmServiceFactory {
             return BaseService.shared
         case .arbitrum:
             return ArbitrumService.shared
-        case .polygon, .polygonV2:
+        case .polygonV2:
             return PolygonService.shared
         case .optimism:
             return OptimismService.shared

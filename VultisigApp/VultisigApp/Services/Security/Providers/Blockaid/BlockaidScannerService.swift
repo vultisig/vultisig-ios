@@ -22,7 +22,7 @@ class BlockaidScannerService: BlockaidScannerServiceProtocol {
         let chain = transaction.chain
         
         switch chain {
-        case .arbitrum, .avalanche, .base, .blast, .bscChain, .ethereum, .optimism, .polygon, .polygonV2:
+        case .arbitrum, .avalanche, .base, .blast, .bscChain, .ethereum, .optimism, .polygonV2:
             return try await scanEvmTransaction(transaction)
         case .bitcoin:
             return try await scanBitcoinTransaction(transaction)
@@ -135,7 +135,6 @@ private extension BlockaidScannerService {
             .bscChain,
             .ethereum,
             .optimism,
-            .polygon,
             .polygonV2,
             .sui,
             .solana,

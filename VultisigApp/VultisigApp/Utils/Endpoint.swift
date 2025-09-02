@@ -658,7 +658,7 @@ class Endpoint {
             return "https://basescan.org/tx/\(txid)"
         case .optimism:
             return "https://optimistic.etherscan.io/tx/\(txid)"
-        case .polygon,.polygonV2:
+        case .polygonV2:
             return "https://polygonscan.com/tx/\(txid)"
         case .blast:
             return "https://blastscan.io/tx/\(txid)"
@@ -735,7 +735,7 @@ class Endpoint {
             return "https://basescan.org/address/\(address)"
         case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon,.polygonV2:
+        case .polygonV2:
             return "https://polygonscan.com/address/\(address)"
         case .blast:
             return "https://blastscan.io/address/\(address)"
@@ -810,7 +810,7 @@ class Endpoint {
             return "https://basescan.org/address/\(address)" // Hypothetical URL
         case .optimism:
             return "https://optimistic.etherscan.io/address/\(address)"
-        case .polygon, .polygonV2:
+        case .polygonV2:
             return "https://polygonscan.com/address/\(address)"
         case .blast:
             return "https://blastscan.io/address/\(address)"
