@@ -9,7 +9,13 @@ import SwiftUI
 
 struct SearchTextField: View {
     @Binding var value: String
-    @FocusState var isFocused: Bool
+    @Binding var isFocused: Bool
+    @FocusState var focusedState: Bool
+    
+    init(value: Binding<String>, isFocused: Binding<Bool> = .constant(false)) {
+        self._value = value
+        self._isFocused = isFocused
+    }
     
     var showClearButton: Bool {
         value.isNotEmpty
@@ -27,7 +33,7 @@ struct SearchTextField: View {
                 .borderlessTextFieldStyle()
                 .colorScheme(.dark)
                 .padding(.horizontal, 8)
-                .focused($isFocused)
+                .focused($focusedState)
             
             clearButton
                 .opacity(showClearButton ? 1 : 0)
@@ -38,6 +44,9 @@ struct SearchTextField: View {
         .padding(.horizontal, 12)
         .background(Theme.colors.bgSecondary)
         .cornerRadius(12)
+        .onChange(of: focusedState) { _, newValue in
+            isFocused = newValue
+        }
     }
     
     var clearButton: some View {
