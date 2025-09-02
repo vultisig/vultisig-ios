@@ -7,10 +7,16 @@
 
 import SwiftUI
 
+private struct SettingsCurrencyViewModel {
+    let currency: SettingsCurrency
+    let description: String
+}
+
 struct SettingsCurrencySelectionView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
+    @State private var currencies: [SettingsCurrencyViewModel] = []
     @State var isLoading = false
     
     var body: some View {
@@ -18,14 +24,14 @@ struct SettingsCurrencySelectionView: View {
             ScrollView(showsIndicators: false) {
                 SettingsSectionContainerView {
                     VStack(spacing: .zero) {
-                        ForEach(SettingsCurrency.allCases, id: \.self) { currency in
+                        ForEach(currencies, id: \.currency) { viewModel in
                             Button {
-                                handleSelection(currency)
+                                handleSelection(viewModel.currency)
                             } label: {
                                 SettingSelectionCell(
-                                    title: currency.rawValue,
-                                    isSelected: currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
-                                    showSeparator: currency != SettingsCurrency.allCases.last
+                                    title: viewModel.description,
+                                    isSelected: viewModel.currency.rawValue == settingsViewModel.selectedCurrency.rawValue,
+                                    showSeparator: viewModel.currency != SettingsCurrency.allCases.last
                                 )
                             }
                         }
@@ -34,6 +40,7 @@ struct SettingsCurrencySelectionView: View {
             }
         }
         .overlay(isLoading ? Loader() : nil)
+        .onLoad(perform: onLoad)
     }
     
     func handleSelection(_ currency: SettingsCurrency) {
@@ -47,7 +54,16 @@ struct SettingsCurrencySelectionView: View {
                 isLoading = false
             }
         }
-        
+    }
+    
+    func onLoad() {
+        currencies = SettingsCurrency.allCases.map { currency in
+            let locale = Locale(identifier: "en_US")
+            return SettingsCurrencyViewModel(
+                currency: currency,
+                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(Currency.shared.findSymbol(currencyCode: currency.rawValue)))"
+            )
+        }
     }
 }
 
