@@ -23,6 +23,7 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isBuyLinkActive = false
     @State var showAlert = false
     @State var resetActive = false
 
@@ -55,6 +56,11 @@ struct ChainDetailView: View {
             }
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendRouteBuilder().buildDetailsScreen(coin: group.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
+            }
+            .navigationDestination(isPresented: $isBuyLinkActive) {
+                SendRouteBuilder().buildBuyScreen(address: group.nativeCoin.address,
+                                                  blockChainCode: group.nativeCoin.chain.banxaBlockchainCode,
+                                                  coinType: group.nativeCoin.ticker)
             }
             .onChange(of: isMemoLinkActive) { oldValue, newValue in
                 if newValue {
@@ -112,7 +118,8 @@ struct ChainDetailView: View {
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
-            isMemoLinkActive: $isMemoLinkActive
+            isMemoLinkActive: $isMemoLinkActive,
+            isBuyLinkActive: $isBuyLinkActive
         )
     }
     
