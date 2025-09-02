@@ -841,6 +841,7 @@
 		B56324982E1E2635008E59A5 /* CetusAggregatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56324972E1E2635008E59A5 /* CetusAggregatorService.swift */; };
 		B571384D2CC560F2000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384C2CC560F0000E925B /* Ton.swift */; };
 		B57138502CC5713E000E925B /* TonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384F2CC5713A000E925B /* TonService.swift */; };
+		B57178B62E66F86900BABE2E /* ThorchainService+Yield+Prices.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */; };
 		B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576BE5C2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
@@ -1862,6 +1863,7 @@
 		B56324972E1E2635008E59A5 /* CetusAggregatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CetusAggregatorService.swift; sourceTree = "<group>"; };
 		B571384C2CC560F0000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
 		B571384F2CC5713A000E925B /* TonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonService.swift; sourceTree = "<group>"; };
+		B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+Yield+Prices.swift"; sourceTree = "<group>"; };
 		B576BE5C2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThorchainService+TCYStake.swift"; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
@@ -2735,6 +2737,7 @@
 		469ED3952B98E782008D4951 /* Thorchain */ = {
 			isa = PBXGroup;
 			children = (
+				B57178B52E66F85B00BABE2E /* ThorchainService+Yield+Prices.swift */,
 				13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */,
 				B5D1D7802DF16D1A007A36D9 /* ThorchainService+RuneBond.swift */,
 				DEA1C7032DB0CDFE00424466 /* NetworkInfo.swift */,
@@ -4949,6 +4952,7 @@
 				A6C670FF2CA2762D00F59B6A /* SettingsDefaultChainView+macOS.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* FunctionCallBond.swift in Sources */,
+				B57178B62E66F86900BABE2E /* ThorchainService+Yield+Prices.swift in Sources */,
 				A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */,
 				A6386DB42C90263E00DDD58E /* ToggleSelectionCell+macOS.swift in Sources */,
 				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,

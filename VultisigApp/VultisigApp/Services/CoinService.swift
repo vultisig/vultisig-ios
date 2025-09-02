@@ -187,7 +187,7 @@ struct CoinService {
                     }
                     
                     // Skip tokens that still don't have priceProviderId after enrichment (likely spam)
-                    if enrichedToken.priceProviderId.isEmpty {
+                    if enrichedToken.priceProviderId.isEmpty && enrichedToken.chain != .thorChain {
                         continue
                     }
                     
