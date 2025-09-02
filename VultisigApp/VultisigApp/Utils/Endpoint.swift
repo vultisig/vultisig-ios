@@ -171,6 +171,14 @@ class Endpoint {
         "https://rpc.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)/by_denom?denom=x%2Fstaking-tcy"
     }
     
+    static func fetchYRunePrice() -> String {
+        "https://thornode-mainnet-api.bryanlabs.net/cosmwasm/wasm/v1/contract/thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt/smart/eyJzdGF0dXMiOiB7fX0="
+    }
+    
+    static func fetchYtcyPrice() -> String {
+        "https://thornode-mainnet-api.bryanlabs.net/cosmwasm/wasm/v1/contract/thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px/smart/eyJzdGF0dXMiOiB7fX0="
+    }
+    
     static func fetchRuneBondedAmount(address: String) -> String {
         return "https://midgard.ninerealms.com/v2/bonds/\(address)"
     }
