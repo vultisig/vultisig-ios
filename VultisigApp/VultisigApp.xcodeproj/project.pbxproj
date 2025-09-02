@@ -426,8 +426,6 @@
 		A6505AE72CA670FE0002FBF4 /* StringExtension+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AE62CA670FE0002FBF4 /* StringExtension+iOS.swift */; };
 		A6505AE92CA6710A0002FBF4 /* StringExtension+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AE82CA6710A0002FBF4 /* StringExtension+macOS.swift */; };
 		A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEA2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift */; };
-		A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */; };
-		A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */; };
 		A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */; };
 		A6505AF32CA677B50002FBF4 /* KeyboardObserver+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AF22CA677B50002FBF4 /* KeyboardObserver+iOS.swift */; };
 		A6505AF52CA678530002FBF4 /* ImageFileDocument+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AF42CA678530002FBF4 /* ImageFileDocument+iOS.swift */; };
@@ -1450,8 +1448,6 @@
 		A6505AE62CA670FE0002FBF4 /* StringExtension+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringExtension+iOS.swift"; sourceTree = "<group>"; };
 		A6505AE82CA6710A0002FBF4 /* StringExtension+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringExtension+macOS.swift"; sourceTree = "<group>"; };
 		A6505AEA2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacCameraServiceViewModel+iOS.swift"; sourceTree = "<group>"; };
-		A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction+iOS.swift"; sourceTree = "<group>"; };
-		A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction+macOS.swift"; sourceTree = "<group>"; };
 		A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardObserver+macOS.swift"; sourceTree = "<group>"; };
 		A6505AF22CA677B50002FBF4 /* KeyboardObserver+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardObserver+iOS.swift"; sourceTree = "<group>"; };
 		A6505AF42CA678530002FBF4 /* ImageFileDocument+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageFileDocument+iOS.swift"; sourceTree = "<group>"; };
@@ -3230,7 +3226,6 @@
 				B5E95E082BED84D9003778F0 /* ImagePicker.swift */,
 				A6505AD82CA66CBA0002FBF4 /* Placement+iOS.swift */,
 				A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */,
-				A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */,
 				A6505AF22CA677B50002FBF4 /* KeyboardObserver+iOS.swift */,
 				A6505AF42CA678530002FBF4 /* ImageFileDocument+iOS.swift */,
 			);
@@ -3242,7 +3237,6 @@
 			children = (
 				A6505AD62CA66C4B0002FBF4 /* ImageFileDocument+macOS.swift */,
 				A6505ADA2CA66CC20002FBF4 /* Placement+macOS.swift */,
-				A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */,
 				A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */,
 				A6505AF62CA678B30002FBF4 /* OnDropQRUtils.swift */,
 			);
@@ -4960,7 +4954,6 @@
 				A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */,
 				A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
-				A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
@@ -5417,7 +5410,6 @@
 				1390D8C02E393FB6003F3E20 /* BlockaidConstants.swift in Sources */,
 				1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */,
 				A6E0C9172DE6B59D00A01543 /* ReferredOnboardingView.swift in Sources */,
-				A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */,
 				A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */,
 				13D93BCF2E58B2F1001E31E8 /* HighlightedText.swift in Sources */,
 				A6C670D52C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift in Sources */,
