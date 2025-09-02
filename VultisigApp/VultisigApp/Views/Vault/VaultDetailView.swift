@@ -220,7 +220,7 @@ struct VaultDetailView: View {
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive,
-            isBuyLinkActive: $isBuyLinkActive,
+            isBuyLinkActive: $isBuyLinkActive
         )
         .padding(16)
         .padding(.horizontal, 12)

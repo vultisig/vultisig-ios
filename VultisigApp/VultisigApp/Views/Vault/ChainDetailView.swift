@@ -119,7 +119,7 @@ struct ChainDetailView: View {
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive,
-            isBuyLinkActive: $isBuyLinkActive,
+            isBuyLinkActive: $isBuyLinkActive
         )
     }
     
