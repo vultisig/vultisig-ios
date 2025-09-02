@@ -27,8 +27,13 @@ struct EditReferralDetailsView: View {
     }
     
     var body: some View {
-        container {
+        Screen(title: "editReferral".localized) {
             content
+        }
+        .platformSheet(isPresented: $showPreferredAssetSelection) {
+            PreferredAssetSelectionView(isPresented: $showPreferredAssetSelection, preferredAsset: $viewModel.preferredAsset) {
+                showPreferredAssetSelection = false
+            }
         }
         .alert(isPresented: $viewModel.hasError) {
             alert
@@ -209,55 +214,6 @@ struct EditReferralDetailsView: View {
         .font(Theme.fonts.bodySMedium)
     }
 }
-
-#if os(iOS)
-extension EditReferralDetailsView {
-    @ViewBuilder
-    func container<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
-        Screen(title: "editReferral".localized) {
-            content()
-        }
-        .sheet(isPresented: $showPreferredAssetSelection) {
-            PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset) {
-                showPreferredAssetSelection = false
-            }
-            .presentationDetents([.large])
-            .presentationDragIndicator(.visible)
-        }
-    }
-}
-#elseif os(macOS)
-extension EditReferralDetailsView {
-    @ViewBuilder
-    func container<Content: View>(@ViewBuilder content: @escaping () -> Content) -> some View {
-        Screen(title: "editReferral".localized) {
-            content()
-        }
-        .overlay(showPreferredAssetSelection ? preferredAssetSheet : nil)
-    }
-    
-    var preferredAssetSheet: some View {
-        ZStack {
-            ZStack(alignment: .top) {
-                Color.black
-                    .frame(height: 200)
-                    .offset(y: -200)
-                
-                Color.black
-            }
-            .opacity(0.8)
-            .onTapGesture {
-                showPreferredAssetSelection = false
-            }
-            
-            PreferredAssetSelectionView(preferredAsset: $viewModel.preferredAsset) {
-                showPreferredAssetSelection = false
-            }
-        }
-    }
-}
-#endif
-
 
 #Preview {
     EditReferralDetailsView(
