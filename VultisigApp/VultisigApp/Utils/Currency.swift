@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: - Remove if we're not gonna use it
 class Currency {
     static let shared: Currency = Currency()
     

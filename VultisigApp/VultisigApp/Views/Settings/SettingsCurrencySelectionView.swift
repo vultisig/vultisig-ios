@@ -57,11 +57,14 @@ struct SettingsCurrencySelectionView: View {
     }
     
     func onLoad() {
+        let formatter = NumberFormatter()
+        let locale = Locale(identifier: "en_US")
+        formatter.numberStyle = .currency
         currencies = SettingsCurrency.allCases.map { currency in
-            let locale = Locale(identifier: "en_US")
+            formatter.currencyCode = currency.rawValue
             return SettingsCurrencyViewModel(
                 currency: currency,
-                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(Currency.shared.findSymbol(currencyCode: currency.rawValue)))"
+                description: "\(locale.localizedString(forCurrencyCode: currency.rawValue) ?? "") (\(formatter.currencySymbol ?? ""))"
             )
         }
     }
