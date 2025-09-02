@@ -58,4 +58,20 @@ struct SendRouteBuilder {
     ) -> some View {
         SendDoneScreen(vault: vault, hash: hash, chain: chain, tx: tx)
     }
+    
+    @ViewBuilder
+    func buildBuyScreen(address: String, blockChainCode: String, coinType: String) -> some View {
+        BanxaDisclaimer(url:getBuyURL(address:address, blockChainCode: blockChainCode, coinType: coinType))
+    }
+    
+    func getBuyURL(address: String, blockChainCode: String, coinType: String) -> URL {
+        var components = URLComponents(string: "https://vultisig.banxa.com/")!
+        components.queryItems = [
+            URLQueryItem(name: "walletAddress", value: address),
+            URLQueryItem(name: "blockchain", value: blockChainCode),
+            URLQueryItem(name: "coinType", value: coinType),
+        ]
+        return components.url!
+    }
+    
 }

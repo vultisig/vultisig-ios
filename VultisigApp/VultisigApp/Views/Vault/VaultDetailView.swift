@@ -32,6 +32,7 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isBuyLinkActive = false
     @State var isMonthlyBackupWarningLinkActive = false
     @State var isBiweeklyPasswordVerifyLinkActive = false
     @State var isBackupLinkActive = false
@@ -113,8 +114,13 @@ struct VaultDetailView: View {
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendRouteBuilder().buildDetailsScreen(coin: viewModel.selectedGroup?.nativeCoin, hasPreselectedCoin: false, tx: sendTx, vault: vault)
         }
+        .navigationDestination(isPresented: $isBuyLinkActive) {
+            SendRouteBuilder().buildBuyScreen(address: viewModel.selectedGroup?.address ?? "",
+                                              blockChainCode: viewModel.selectedGroup?.chain.banxaBlockchainCode ?? "",
+                                              coinType: viewModel.selectedGroup?.nativeCoin.ticker ?? "")
+        }
     }
-
+    
     var shadowView: some View {
         Background()
             .opacity(getBackgroundOpacity())
@@ -213,7 +219,8 @@ struct VaultDetailView: View {
             isLoading: $isLoading,
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
-            isMemoLinkActive: $isMemoLinkActive
+            isMemoLinkActive: $isMemoLinkActive,
+            isBuyLinkActive: $isBuyLinkActive,
         )
         .padding(16)
         .padding(.horizontal, 12)

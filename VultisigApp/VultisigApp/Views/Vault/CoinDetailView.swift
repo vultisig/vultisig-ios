@@ -14,6 +14,7 @@ struct CoinDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isBuyLinkActive = false
     
     @Environment(\.router) var router
     
@@ -32,6 +33,9 @@ struct CoinDetailView: View {
             }
             .navigationDestination(isPresented: $isSendLinkActive) {
                 SendRouteBuilder().buildDetailsScreen(coin: coin, hasPreselectedCoin: true, tx: sendTx, vault: vault)
+            }
+            .navigationDestination(isPresented: $isBuyLinkActive) {
+                SendRouteBuilder().buildBuyScreen(address: coin.address, blockChainCode: coin.chain.banxaBlockchainCode, coinType: coin.ticker)
             }
             .onAppear {
                 sendTx.reset(coin: coin)
@@ -61,9 +65,10 @@ struct CoinDetailView: View {
             isSendLinkActive: $isSendLinkActive,
             isSwapLinkActive: $isSwapLinkActive,
             isMemoLinkActive: $isMemoLinkActive,
-            coinTicker: coin.ticker
+            isBuyLinkActive: $isBuyLinkActive
         )
     }
+    
     
     var cells: some View {
         VStack(spacing: 16) {

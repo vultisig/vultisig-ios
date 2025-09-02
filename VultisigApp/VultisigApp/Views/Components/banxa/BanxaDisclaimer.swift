@@ -8,9 +8,22 @@ import SwiftUI
 
 struct BanxaDisclaimer: View {
     let url: URL
-    @Environment(\.dismiss) var dismiss
+    
     @State var continueToBanxa: Bool = false
     var body: some View {
+        container
+    }
+    
+    var container: some View {
+        ZStack(alignment: .center){
+            Screen(title: "buy".localized) {
+                content
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var content: some View {
         if !continueToBanxa {
             VStack(spacing: 8) {
                 Image("banxa-logo")
@@ -20,7 +33,6 @@ struct BanxaDisclaimer: View {
                 
                 Text("Buy or transfer with Banxa")
                     .font(.headline)
-                    .foregroundStyle(.black)
                     .padding(10)
                 
                 Button {
@@ -29,7 +41,6 @@ struct BanxaDisclaimer: View {
                     HStack(spacing: 8) {
                         Text("Continue to Banxa")
                             .font(.headline)
-                            .foregroundStyle(.black)
                         Image(systemName: "arrow.up.forward.square")
                             .accessibilityHidden(true)
                     }
@@ -45,9 +56,6 @@ struct BanxaDisclaimer: View {
             }
         } else {
             PlatformWebView(url: url)
-            #if os(macOS)
-                .frame(minWidth: 600, minHeight: 800)
-            #endif
         }
     }
 }
