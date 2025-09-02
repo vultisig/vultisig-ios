@@ -18,7 +18,7 @@ struct PreferredAssetSelectionView: View {
             SheetHeaderView(title: "selectAsset".localized, isPresented: $isPresented)
                 .padding(.top, 8)
                 .padding(.bottom, 10)
-            SearchTextField(value: $viewModel.searchText, isFocused: .init())
+            SearchTextField(value: $viewModel.searchText)
             ScrollView {
                 if viewModel.isLoading {
                     loadingView
