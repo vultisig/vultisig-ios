@@ -73,10 +73,11 @@ extension ServerBackupVerificationView {
     }
 
     func pasteCode() {
-        if let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength {
-            otp = clipboardContent.map { String($0) }
+        guard let clipboardContent = UIPasteboard.general.string, clipboardContent.count == Self.codeLength else {
+            return
         }
         
+        otp = clipboardContent.map { String($0) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             focusedField = Self.codeLength - 1
         }
