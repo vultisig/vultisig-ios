@@ -30,7 +30,7 @@ class ReferredViewModel: ObservableObject {
     }
     
     var referredButtonDisabled: Bool {
-        savedReferredCode == referredCode || referredCode.isEmpty
+        savedReferredCode == referredCode.uppercased() || referredCode.isEmpty
     }
     
     var referredButtonTitle: String {
