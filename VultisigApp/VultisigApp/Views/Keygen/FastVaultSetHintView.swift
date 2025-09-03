@@ -46,55 +46,15 @@ struct FastVaultSetHintView: View {
     }
     
     var hintTextfield: some View {
-        ZStack(alignment: .topLeading) {
-            HStack {
-                TextEditor(text: $hint)
-                    .textEditorStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .foregroundColor(Theme.colors.textExtraLight)
-                    .font(Theme.fonts.bodyMMedium)
-                    .submitLabel(.done)
-                    .autocorrectionDisabled()
-                    .focused($isFocused)
-                    .onSubmit {
-                        let hasInput = !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        if hasInput {
-                            isLinkActive = true
-                        }
-                    }
-                
-                if !hint.isEmpty {
-                    VStack {
-                        clearButton
-                        Spacer()
-                    }
-                }
+        CommonTextEditor(
+            value: $hint,
+            placeholder: "enterHint".localized,
+            isFocused: $isFocused
+        ) {
+            let hasInput = !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            if hasInput {
+                isLinkActive = true
             }
-            if hint.isEmpty {
-                Text(NSLocalizedString("enterHint", comment: ""))
-                    .foregroundColor(Theme.colors.textExtraLight)
-                    .font(Theme.fonts.bodyMMedium)
-                    .padding(.leading, 6)
-                    .padding(.top, isMacOS ? 0 : 8)
-            }
-        }
-        .frame(height: 120)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Theme.colors.bgSecondary)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
-    }
-    
-    var clearButton: some View {
-        Button {
-            hint = ""
-        } label: {
-            Image(systemName: "xmark.circle.fill")
-                .foregroundColor(Theme.colors.textExtraLight)
         }
     }
     

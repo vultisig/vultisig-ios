@@ -14,6 +14,8 @@ class StaticURL {
     static let DiscordVultisigURL = URL(string: "https://discord.gg/ngvW8tRRfB")!
     static let PrivacyPolicyURL = URL(string: "https://vultisig.com/privacy")!
     static let TermsOfServiceURL = URL(string: "https://vultisig.com/termofservice")!
-    static let VultisigWeb = URL(string: "https://airdrop.vultisig.com/")!
+    static let VultisigAirdropWeb = URL(string: "https://airdrop.vultisig.com/")!
+    static let VultisigWebsiteURL = URL(string: "https://vultisig.com")!
+    static let VultisigVultURL = URL(string: "https://vultisig.com/vult")!
     static let VultBackupURL = URL(string: "https://docs.vultisig.com/vultisig-vault-user-actions/managing-your-vault/vault-backup")!
 }
