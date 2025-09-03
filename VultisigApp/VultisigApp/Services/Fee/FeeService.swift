@@ -64,14 +64,14 @@ class EthereumFeeService: FeeService {
         let baseFee = try await rpcEvmService.getBaseFee()
         let priorityFee = try await rpcEvmService.fetchMaxPriorityFeePerGas()
         
-        let adjustedBaseFee = isSwap ? baseFee * 2 : baseFee
         let adjustedPriorityFee = isSwap ? priorityFee * 2 : priorityFee
         
-        let maxFeePerGas = adjustedBaseFee + adjustedPriorityFee
+        let maxFeePerGas = baseFee + adjustedPriorityFee
+        let finalMaxFeePerGas = max(maxFeePerGas, baseFee)
         
         return Eip1559(
             limit: limit,
-            maxFeePerGas: maxFeePerGas,
+            maxFeePerGas: finalMaxFeePerGas,
             maxPriorityFeePerGas: adjustedPriorityFee
         )
     }
