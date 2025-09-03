@@ -14,7 +14,6 @@ struct ReferralLaunchView: View {
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     
-    private let scrollReferenceId = "scrollFrom"
     private let scrollToReferenceId = "scrollTo"
     
     var isLoading: Bool {
