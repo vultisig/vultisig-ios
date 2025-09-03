@@ -36,7 +36,7 @@ extension AddressBookTextField {
         }
     }
     var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, address: $text, handleScan: handleScan)
+        AddressQRCodeScannerView(showScanner: $showScanner, address: $text, handleScan: handleScan)
     }
     
     func handleScan(result: Result<ScanResult, ScanError>) {
