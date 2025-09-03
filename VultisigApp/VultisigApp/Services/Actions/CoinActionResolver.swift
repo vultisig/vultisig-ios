@@ -27,6 +27,14 @@ final class CoinActionResolver {
 
         return chain.defaultActions.filter { !disabled.contains($0) }
     }
+    
+    func canSwap() -> Bool {
+        let localeCode = Locale.current.region?.identifier
+        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY"{
+            return false
+        }
+        return true
+    }
 }
 
 private extension CoinActionResolver {
