@@ -44,9 +44,8 @@ struct VaultSettingsScreen: View {
                     }
                     
                     SettingsSectionView(title: "security".localized) {
-                        if vault.isFastVault {
-                            biometrySelectionCell
-                        }
+                        passwordHint
+                            .showIf(vault.isFastVault)
                         backupVault
                     }
                     
@@ -126,6 +125,14 @@ struct VaultSettingsScreen: View {
         }
     }
     
+    var passwordHint: some View {
+        NavigationLink {
+            SettingsPasswordHintScreen(vault: vault, viewModel: viewModel)
+        } label: {
+            SettingsCommonOptionView(icon: "message-square-lock", title: "passwordHint".localized, subtitle: "setOrUpdateHint".localized)
+        }
+    }
+    
     var vaultDetails: some View {
         NavigationLink {
             VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
@@ -178,14 +185,14 @@ struct VaultSettingsScreen: View {
         
     }
     
-    var biometrySelectionCell: some View {
-        NavigationLink {
-            SettingsBiometryView(vault: vault)
-        } label: {
-            SettingsCommonOptionView(icon: "secure", title: "settingsBiometricsTitle".localized, subtitle: "settingsBiometricsSubtitle".localized)
-        }
-    }
-    
+//    var biometrySelectionCell: some View {
+//        NavigationLink {
+//            SettingsBiometryView(vault: vault)
+//        } label: {
+//            SettingsCommonOptionView(icon: "secure", title: "settingsBiometricsTitle".localized, subtitle: "settingsBiometricsSubtitle".localized)
+//        }
+//    }
+//    
     var migrateVault: some View {
         SettingsCommonOptionView(icon: "arrow-up-from-dot", title: "migrate".localized, subtitle: "migrateVault".localized)
             .onTapGesture {

@@ -842,3 +842,7 @@
 "enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
 "wrongVaultPassword" = "Wrong vault password. Please, try again.";
 "enable" = "Enable";
+"passwordHint" = "Password Hint";
+"setOrUpdateHint" = "Set or update a hint for your vault password";
+"editPasswordHintTitle" = "Edit password hint";
+"editPasswordHintSubtitle" = "This will be shown in case you forget your password";
