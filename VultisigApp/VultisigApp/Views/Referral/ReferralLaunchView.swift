@@ -13,6 +13,7 @@ struct ReferralLaunchView: View {
     
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
+    @State var screenHeight: CGFloat = 0
     
     private let scrollToReferenceId = "scrollTo"
     
@@ -22,22 +23,26 @@ struct ReferralLaunchView: View {
     
     var body: some View {
         Screen(title: "vultisig-referrals".localized) {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Spacer()
-                        image
-                        Spacer()
-                        
-                        VStack(spacing: 16) {
-                            referredContent
-                                .id(scrollToReferenceId)
-                            orSeparator
-                            referralContent
+            GeometryReader { geo in
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            image
+                            Spacer()
+                            VStack(spacing: 16) {
+                                referredContent
+                                    .id(scrollToReferenceId)
+                                orSeparator
+                                referralContent
+                            }
                         }
+                        .frame(maxHeight: screenHeight)
+                    }
+                    .onLoad {
+                        screenHeight = geo.size.height
+                        scrollViewProxy = proxy
                     }
                 }
-                .onLoad { scrollViewProxy = proxy }
             }
         }
         .overlay(referredViewModel.isLoading ? Loader() : nil)
@@ -86,6 +91,7 @@ struct ReferralLaunchView: View {
         Image("ReferralLaunchOverview")
             .resizable()
             .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: 365)
     }
     
     var referredContent: some View {
