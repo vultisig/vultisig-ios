@@ -10,7 +10,7 @@ import SwiftUI
 struct CommonTextEditor: View {
     @Binding var value: String
     let placeholder: String
-    @FocusState var isFocused
+    var isFocused: FocusState<Bool>.Binding
     var onSubmit: () -> Void
     
     var body: some View {
@@ -23,7 +23,7 @@ struct CommonTextEditor: View {
                     .font(Theme.fonts.bodyMMedium)
                     .submitLabel(.done)
                     .autocorrectionDisabled()
-                    .focused($isFocused)
+                    .focused(isFocused)
                     .onSubmit {
                         onSubmit()
                     }

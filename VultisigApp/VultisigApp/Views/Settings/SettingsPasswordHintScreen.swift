@@ -31,7 +31,7 @@ struct SettingsPasswordHintScreen: View {
                         CommonTextEditor(
                             value: $viewModel.hint,
                             placeholder: "enterHint".localized,
-                            isFocused: _isFocused
+                            isFocused: $isFocused
                         ) {}
                     }
                 }

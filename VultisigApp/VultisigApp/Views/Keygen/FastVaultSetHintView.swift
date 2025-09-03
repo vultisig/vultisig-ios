@@ -49,7 +49,7 @@ struct FastVaultSetHintView: View {
         CommonTextEditor(
             value: $hint,
             placeholder: "enterHint".localized,
-            isFocused: _isFocused
+            isFocused: $isFocused
         ) {
             let hasInput = !hint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             if hasInput {
