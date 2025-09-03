@@ -56,27 +56,12 @@ struct VaultServerBackupScreen: View {
     }
     
     var passwordTextField: some View {
-        CommonTextField(
-            text: $viewModel.password,
+        SecureTextField(
+            value: $viewModel.password,
             label: "password".localized,
             placeholder: "enterYourPassword".localized,
-            isSecure: $secureTextField,
             error: $viewModel.passwordError
-        ) {
-            Button(action: {
-                withAnimation {
-                    secureTextField.toggle()
-                }
-            }) {
-                Image(systemName: secureTextField ? "eye": "eye.slash")
-                    .foregroundColor(Theme.colors.textPrimary)
-            }
-            .buttonStyle(.plain)
-            .contentTransition(.symbolEffect(.replace))
-        }
-        #if os(iOS)
-            .textInputAutocapitalization(.never)
-        #endif
+        )
     }
     
     var successAlert: Alert {

@@ -96,7 +96,6 @@ struct CommonTextField<TrailingView: View>: View {
                         .font(Theme.fonts.footnote)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
-                        .layoutPriority(1)
                 }
             }
         }
@@ -113,6 +112,7 @@ struct CommonTextField<TrailingView: View>: View {
                 size: 16
             )
         }
+        .buttonStyle(.plain)
         .opacity(text.isEmpty ? 0 : 1)
     }
     

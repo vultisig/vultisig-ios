@@ -31,6 +31,9 @@
 		1334C7412E301B5300CBAA3E /* JoinKeysignGasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */; };
 		1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */; };
 		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
+		133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */; };
+		133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1B2E68859F00E18280 /* SecureTextField.swift */; };
+		133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */; };
 		13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */; };
 		13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */; };
 		13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */; };
@@ -38,6 +41,8 @@
 		1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */; };
 		13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453AC92E4A1D4500D76629 /* ErrorView.swift */; };
 		13453ACC2E4A433100D76629 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453ACB2E4A433000D76629 /* Bundle.swift */; };
+		1348FA622E6894C7001551F6 /* SettingsPasswordHintScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */; };
+		1348FA652E6895B7001551F6 /* CommonTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1348FA642E6895B3001551F6 /* CommonTextEditor.swift */; };
 		134E8D7F2E451F6F0086EBC4 /* PreferredAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */; };
 		134E8D812E451F800086EBC4 /* PreferredAssetFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */; };
 		134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134E8D822E4530060086EBC4 /* THORChainAPIError.swift */; };
@@ -128,6 +133,7 @@
 		13BD8D4F2E3D49AD0013B67E /* ThemeProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */; };
 		13BD8D502E3D49AD0013B67E /* ColorSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D2B2E3D49AD0013B67E /* ColorSystem.swift */; };
 		13BD8D512E3D49AD0013B67E /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13BD8D292E3D49AD0013B67E /* Color.swift */; };
+		13C232692E68A95900DB42D0 /* AddressQRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */; };
 		13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */; };
 		13CCEC0C2E54EE3000F28937 /* SettingsSectionContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */; };
 		13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0E2E55010C00F28937 /* InfoBannerView.swift */; };
@@ -244,7 +250,6 @@
 		A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED412BC350520056FDC0 /* SwapTransaction.swift */; };
 		A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */; };
 		A56644D22D0087C9000F4149 /* SettingsCustomMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */; };
-		A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */; };
 		A56C98D42CC013C500FC1B08 /* SettingsBiometryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */; };
 		A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F4672C7E48A1000F46D3 /* FeeMode.swift */; };
 		A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */; };
@@ -263,8 +268,6 @@
 		A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34A2C32FA760086D16B /* ProtoMappable.swift */; };
 		A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34C2C32FB800086D16B /* KeysignMessage.swift */; };
 		A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */; };
-		A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */; };
-		A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
 		A594EC2B2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */; };
@@ -799,6 +802,7 @@
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
+		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */; };
 		B50F46752DA9A308007B16DE /* Chain+ibc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F46742DA9A308007B16DE /* Chain+ibc.swift */; };
@@ -1049,6 +1053,9 @@
 		1334C7402E301B5200CBAA3E /* JoinKeysignGasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignGasViewModel.swift; sourceTree = "<group>"; };
 		1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContentView.swift; sourceTree = "<group>"; };
 		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
+		133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCommonOptionView.swift; sourceTree = "<group>"; };
+		133EEA1B2E68859F00E18280 /* SecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTextField.swift; sourceTree = "<group>"; };
+		133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSigningPasswordSheetView.swift; sourceTree = "<group>"; };
 		13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeRuji.swift; sourceTree = "<group>"; };
 		13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeRuji.swift; sourceTree = "<group>"; };
 		13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawRujiRewards.swift; sourceTree = "<group>"; };
@@ -1056,6 +1063,8 @@
 		1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformShareButton.swift; sourceTree = "<group>"; };
 		13453AC92E4A1D4500D76629 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		13453ACB2E4A433000D76629 /* Bundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPasswordHintScreen.swift; sourceTree = "<group>"; };
+		1348FA642E6895B3001551F6 /* CommonTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTextEditor.swift; sourceTree = "<group>"; };
 		134E8D7E2E451F6C0086EBC4 /* PreferredAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAsset.swift; sourceTree = "<group>"; };
 		134E8D802E451F7A0086EBC4 /* PreferredAssetFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetFactory.swift; sourceTree = "<group>"; };
 		134E8D822E4530060086EBC4 /* THORChainAPIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainAPIError.swift; sourceTree = "<group>"; };
@@ -1145,6 +1154,7 @@
 		13BD8D3B2E3D49AD0013B67E /* ColorSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3C2E3D49AD0013B67E /* FontSystemProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSystemProtocol.swift; sourceTree = "<group>"; };
 		13BD8D3D2E3D49AD0013B67E /* ThemeProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeProtocol.swift; sourceTree = "<group>"; };
+		13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeScannerView.swift; sourceTree = "<group>"; };
 		13C320022E61F8D500255138 /* ReferralVaultSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralVaultSelectionScreen.swift; sourceTree = "<group>"; };
 		13CCEC062E54D3B100F28937 /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
 		13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionContainerView.swift; sourceTree = "<group>"; };
@@ -1265,7 +1275,6 @@
 		A564ED412BC350520056FDC0 /* SwapTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
 		A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
 		A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCustomMessageView.swift; sourceTree = "<group>"; };
-		A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryView.swift; sourceTree = "<group>"; };
 		A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryViewModel.swift; sourceTree = "<group>"; };
 		A571F4672C7E48A1000F46D3 /* FeeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeMode.swift; sourceTree = "<group>"; };
 		A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsView.swift; sourceTree = "<group>"; };
@@ -1283,8 +1292,6 @@
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
 		A58CC34C2C32FB800086D16B /* KeysignMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessage.swift; sourceTree = "<group>"; };
 		A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainSpecific.swift; sourceTree = "<group>"; };
-		A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+iOS.swift"; sourceTree = "<group>"; };
-		A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
 		A594EC2A2D00BE6C00B74EBC /* SettingsCustomMessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCustomMessageViewModel.swift; sourceTree = "<group>"; };
@@ -1819,6 +1826,7 @@
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
+		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
 		B50F46742DA9A308007B16DE /* Chain+ibc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+ibc.swift"; sourceTree = "<group>"; };
@@ -2111,6 +2119,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				1348FA632E6895AE001551F6 /* TextEditor */,
 				B2ADDDC32E5D638F00DB3B98 /* banxa */,
 				13D93BD32E58C772001E31E8 /* Layout */,
 				1387E24A2E565A4F0033F92C /* BlurredBackground.swift */,
@@ -2287,6 +2296,14 @@
 				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 			);
 			path = Swap;
+			sourceTree = "<group>";
+		};
+		1348FA632E6895AE001551F6 /* TextEditor */ = {
+			isa = PBXGroup;
+			children = (
+				1348FA642E6895B3001551F6 /* CommonTextEditor.swift */,
+			);
+			path = TextEditor;
 			sourceTree = "<group>";
 		};
 		134E8D7D2E451F600086EBC4 /* PreferredAsset */ = {
@@ -2526,6 +2543,7 @@
 		13CC617F2E5614B2003307F9 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */,
 				13B1C2C52E65DB1800050637 /* ChooseBackupSheetView.swift */,
 				13DD547E2E561619007335DA /* VaultAdvancedSettingsScreen.swift */,
 				A66A0BD42BA124D00021A483 /* VaultSettingsScreen.swift */,
@@ -2630,6 +2648,7 @@
 		13DF05732E3CEF580000188C /* TextField */ = {
 			isa = PBXGroup;
 			children = (
+				133EEA1B2E68859F00E18280 /* SecureTextField.swift */,
 				13DD54822E562946007335DA /* CommonTextField.swift */,
 				13DF05742E3CEF710000188C /* SearchTextField.swift */,
 			);
@@ -2976,6 +2995,7 @@
 		A5D49F542BE26BA7001766C8 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
+				B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */,
 				A5D49F552BE26BB9001766C8 /* ChainAction.swift */,
 				A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */,
 				A54676512C179A93004DD782 /* Coin+Swaps.swift */,
@@ -3604,6 +3624,8 @@
 		A6980C222BC0834E00F452AB /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				1348FA612E6894C2001551F6 /* SettingsPasswordHintScreen.swift */,
+				133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */,
 				13DD54802E561A4E007335DA /* SettingsSectionView.swift */,
 				137587022E56151B0048C795 /* SettingsOptionView.swift */,
 				13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */,
@@ -3612,9 +3634,6 @@
 				A56644D12D0087C9000F4149 /* SettingsCustomMessageView.swift */,
 				A594EC2C2D072DAA00B74EBC /* SettingsCustomMessageView+iOS.swift */,
 				A594EC2E2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift */,
-				A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */,
-				A58DFF0A2CD122DB00693DFD /* SettingsBiometryView+iOS.swift */,
-				A58DFF0C2CD1235B00693DFD /* SettingsBiometryView+macOS.swift */,
 				A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
@@ -3730,6 +3749,7 @@
 		A69FBBCB2C8BB85600A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				13C232682E68A95100DB42D0 /* AddressQRCodeScannerView.swift */,
 				A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */,
 				A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */,
 				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
@@ -4738,6 +4758,7 @@
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
 				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A6BFE1C72D95F3C9000B73C0 /* SwapCoinPickerView.swift in Sources */,
+				13C232692E68A95900DB42D0 /* AddressQRCodeScannerView.swift in Sources */,
 				A6BFE1C12D946A63000B73C0 /* SwapChainCell.swift in Sources */,
 				13B6764E2E37D0E7002F016C /* ClipboardManager.swift in Sources */,
 				A594EC2F2D072DDD00B74EBC /* SettingsCustomMessageView+MacOS.swift in Sources */,
@@ -4775,7 +4796,6 @@
 				A6E0C9112DE4F89100A01543 /* ReferralTextField.swift in Sources */,
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
-				A58DFF0B2CD122DB00693DFD /* SettingsBiometryView+iOS.swift in Sources */,
 				A66729CB2D810CD5002308D8 /* KeysignDiscoveryDisclaimer.swift in Sources */,
 				A6505AD02CA668AF0002FBF4 /* InformationNote+iOS.swift in Sources */,
 				132666CC2E429F54007FDAC5 /* THORChainAPI.swift in Sources */,
@@ -4855,6 +4875,7 @@
 				138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */,
 				13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */,
 				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
+				133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
 				46DE08952BD0DCA200AE8BDE /* EvmService.swift in Sources */,
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
@@ -4932,11 +4953,11 @@
 				A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
-				A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */,
 				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
 				A6C6711D2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				A62269042DC000F200F378E0 /* SwapCoinPickerView+iOS.swift in Sources */,
+				1348FA622E6894C7001551F6 /* SettingsPasswordHintScreen.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
 				A622C84A2C9BBE2800908332 /* FunctionCallDetailsView+iOS.swift in Sources */,
@@ -5294,7 +5315,6 @@
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
 				13D764382E41030300F048DE /* SwapCoinSelectionViewModel.swift in Sources */,
-				A58DFF0D2CD1235B00693DFD /* SettingsBiometryView+macOS.swift in Sources */,
 				A6F7B7192D4EC25D00AC8104 /* BackupVaultSuccessView+macOS.swift in Sources */,
 				13A8990B2E44F547006F75F0 /* RedactedText.swift in Sources */,
 				A62766532C852765002C666A /* ImportWalletView+macOS.swift in Sources */,
@@ -5386,6 +5406,7 @@
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
 				A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */,
 				A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */,
+				1348FA652E6895B7001551F6 /* CommonTextEditor.swift in Sources */,
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				13DD547F2E56161F007335DA /* VaultAdvancedSettingsScreen.swift in Sources */,
 				A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */,
@@ -5455,6 +5476,7 @@
 				A6C6712F2CA3C40800F59B6A /* VaultDetailBalanceContent+iOS.swift in Sources */,
 				138574232E2DB765002532BF /* IconButtonStyle.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
+				133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */,
 				A69822302CB3A8D700966D19 /* CreateFolderView+macOS.swift in Sources */,
 				13C320032E61F8DB00255138 /* ReferralVaultSelectionScreen.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
@@ -5531,6 +5553,7 @@
 				138574182E2DA9D5002532BF /* ButtonType.swift in Sources */,
 				A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */,
 				B5C02E542E3AAD050038938D /* FunctionCallCosmosYVault.swift in Sources */,
+				133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */,
 				A6ECA1842C93F36200456110 /* NavigationQRShareButton+iOS.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */,
@@ -5597,6 +5620,7 @@
 				A6ACAD5B2D0A613A00432CC4 /* CoinPickerCell.swift in Sources */,
 				DE5F7E212C816AC70022030F /* KeysignRequest.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
+				B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */,
 				A5125F072BEBBFAB008A79AA /* EVMQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				B55246C92CF5639A00E3532C /* NobleService.swift in Sources */,
