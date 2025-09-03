@@ -838,3 +838,7 @@
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestServerVaultShareBadRequestError" = "Password for your vault is incorrect. Please check and try again.";
 "vult" = "$VULT";
+"biometricsFastSigning" = "Biometrics Fast Signing";
+"enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
+"wrongVaultPassword" = "Wrong vault password. Please, try again.";
+"enable" = "Enable";

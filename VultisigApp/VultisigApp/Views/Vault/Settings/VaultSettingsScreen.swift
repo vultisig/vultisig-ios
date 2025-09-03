@@ -23,6 +23,14 @@ struct VaultSettingsScreen: View {
     @State var presentSingleDeviceBackup = false
     @State var presentMultipleDeviceBackup = false
     @State var presentServerBackup = false
+    @State var presentFastSigningBiometricsSheet = false
+    
+    @State var isFastSigningBiometricsEnabled: Bool = false
+    @StateObject var viewModel = SettingsBiometryViewModel()
+    
+    init(vault: Vault) {
+        self.vault = vault
+    }
     
     var body: some View {
         Screen(title: "vaultSettings".localized) {
@@ -31,6 +39,8 @@ struct VaultSettingsScreen: View {
                     SettingsSectionView(title: "vaultManagement".localized) {
                         vaultDetails
                         editVault
+                        fastSigningBiometrics
+                            .showIf(vault.isFastVault)
                     }
                     
                     SettingsSectionView(title: "security".localized) {
@@ -57,9 +67,7 @@ struct VaultSettingsScreen: View {
                 }
             }
         }
-        .onLoad {
-            setData()
-        }
+        .onLoad(perform: onLoad)
         .navigationDestination(isPresented: $upgradeYourVaultLinkActive) {
             if vault.isFastVault {
                 VaultShareBackupsView(vault: vault)
@@ -91,13 +99,38 @@ struct VaultSettingsScreen: View {
         .navigationDestination(isPresented: $presentMultipleDeviceBackup) {
             VaultBackupSelectionScreen(selectedVault: vault)
         }
+        .onChange(of: presentFastSigningBiometricsSheet) { _, isPresented in
+            if !isPresented {
+                isFastSigningBiometricsEnabled = viewModel.isBiometryEnabled
+            }
+        }
+        .bottomSheet(isPresented: $presentFastSigningBiometricsSheet) {
+            FastSigningPasswordSheetView(viewModel: viewModel, vault: vault)
+        }
+    }
+    
+    var fastSigningBiometrics: some View {
+        SettingsOptionView(
+            icon: "lightning",
+            title: "biometricsFastSigning".localized,
+            showSeparator: false
+        ) {
+            Toggle("", isOn: Binding(
+                get: { viewModel.isBiometryEnabled },
+                set: { onBiometryEnabledChanged($0) }
+            ))
+            .labelsHidden()
+            .scaleEffect(0.8)
+            .tint(Theme.colors.primaryAccent4)
+            .toggleStyle(.switch)
+        }
     }
     
     var vaultDetails: some View {
         NavigationLink {
             VaultPairDetailView(vault: vault, devicesInfo: devicesInfo)
         } label: {
-            SettingsOptionView(icon: "circle-info", title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
+            SettingsCommonOptionView(icon: "circle-info", title: "vaultDetailsTitle".localized, subtitle: "vaultDetailsDescription".localized)
         }
     }
     
@@ -109,7 +142,7 @@ struct VaultSettingsScreen: View {
                 onDeviceBackup()
             }
         } label: {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: "hard-drive-upload",
                 title: "backupVaultShareTitle".localized,
                 subtitle: "backupVaultShareDescription".localized,
@@ -122,11 +155,10 @@ struct VaultSettingsScreen: View {
         NavigationLink {
             RenameVaultView(vaults: vaults, folders: folders, vault: vault)
         } label: {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: "pencil",
                 title: "rename".localized,
-                subtitle: "renameVault".localized,
-                showSeparator: false
+                subtitle: "renameVault".localized
             )
         }
     }
@@ -135,7 +167,7 @@ struct VaultSettingsScreen: View {
         NavigationLink {
             VaultDeletionConfirmView(vault: vault, devicesInfo: devicesInfo)
         } label: {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: "trash",
                 title: "delete".localized,
                 subtitle: "deleteVault".localized,
@@ -150,12 +182,12 @@ struct VaultSettingsScreen: View {
         NavigationLink {
             SettingsBiometryView(vault: vault)
         } label: {
-            SettingsOptionView(icon: "secure", title: "settingsBiometricsTitle".localized, subtitle: "settingsBiometricsSubtitle".localized)
+            SettingsCommonOptionView(icon: "secure", title: "settingsBiometricsTitle".localized, subtitle: "settingsBiometricsSubtitle".localized)
         }
     }
     
     var migrateVault: some View {
-        SettingsOptionView(icon: "arrow-up-from-dot", title: "migrate".localized, subtitle: "migrateVault".localized)
+        SettingsCommonOptionView(icon: "arrow-up-from-dot", title: "migrate".localized, subtitle: "migrateVault".localized)
             .onTapGesture {
                 showUpgradeYourVaultSheet = true
             }
@@ -165,7 +197,7 @@ struct VaultSettingsScreen: View {
         NavigationLink {
             VaultAdvancedSettingsScreen(vault: vault)
         } label: {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: "folder-key",
                 title: "advanced".localized,
                 subtitle: "advancedDescription".localized,
@@ -174,7 +206,8 @@ struct VaultSettingsScreen: View {
         }
     }
     
-    private func setData() {
+    private func onLoad() {
+        self.isFastSigningBiometricsEnabled = viewModel.isBiometryEnabled
         devicesInfo = vault.signers.enumerated().map { index, signer in
             DeviceInfo(Index: index, Signer: signer)
         }
@@ -186,6 +219,17 @@ struct VaultSettingsScreen: View {
         } else {
             presentSingleDeviceBackup = true
         }
+    }
+    
+    func onBiometryEnabledChanged(_ isEnabled: Bool) {
+        isFastSigningBiometricsEnabled = isEnabled
+        
+        guard isEnabled else {
+            viewModel.onBiometryEnabledChanged(isEnabled, vault: vault)
+            return
+        }
+        
+        presentFastSigningBiometricsSheet = true
     }
 }
 

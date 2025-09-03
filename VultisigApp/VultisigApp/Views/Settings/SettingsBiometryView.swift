@@ -40,15 +40,15 @@ struct SettingsBiometryView: View {
             }
             .padding(.horizontal, 16)
         }
-        .task {
-            viewModel.setData(vault: vault)
-        }
+//        .task {
+//            viewModel.setData(vault: vault)
+//        }
         .safeAreaInset(edge: .bottom) {
             button
         }
-        .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $viewModel.isWrongPassword) {
-            Button("OK", role: .cancel) { }
-        }
+//        .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $viewModel.isWrongPassword) {
+//            Button("OK", role: .cancel) { }
+//        }
     }
 
     var enableCell: some View {

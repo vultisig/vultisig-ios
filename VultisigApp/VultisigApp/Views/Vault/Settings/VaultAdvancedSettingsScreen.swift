@@ -31,7 +31,7 @@ struct VaultAdvancedSettingsScreen: View {
             NavigationLink {
                 ReshareView(vault: vault)
             } label: {
-                SettingsOptionView(icon: "share", title: "reshare".localized, subtitle: "reshareVault".localized)
+                SettingsCommonOptionView(icon: "share", title: "reshare".localized, subtitle: "reshareVault".localized)
             }
         }
     }
@@ -40,7 +40,7 @@ struct VaultAdvancedSettingsScreen: View {
         NavigationLink {
             SettingsCustomMessageView(vault: vault)
         } label: {
-            SettingsOptionView(icon: "file-pen-line", title: "Sign", subtitle: "Sign custom message")
+            SettingsCommonOptionView(icon: "file-pen-line", title: "Sign", subtitle: "Sign custom message")
         }
     }
     
@@ -48,7 +48,7 @@ struct VaultAdvancedSettingsScreen: View {
         NavigationLink {
             OnChainSecurityScreen()
         } label: {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: "folder-lock",
                 title: "vaultSettingsSecurityTitle".localized,
                 subtitle: "vaultSettingsSecuritySubtitle".localized,

@@ -147,7 +147,7 @@ struct SettingsMainScreen: View {
     @ViewBuilder
     func optionView(for option: SettingsOption, shouldHighlight: Bool, showSeparator: Bool) -> some View {
         optionContainerView(for: option) {
-            SettingsOptionView(
+            SettingsCommonOptionView(
                 icon: option.icon,
                 title: option.title.localized,
                 description: description(for: option),
