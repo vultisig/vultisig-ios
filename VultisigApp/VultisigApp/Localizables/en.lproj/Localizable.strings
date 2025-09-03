@@ -689,8 +689,8 @@
 "vultisig-referrals" = "Vultisig - Referrals";
 "referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
-"referralCodeNotFound" = "Referral code not found. Check the code and try again";
-"referralCodeWithoutAlias" = "Referral code doesn't have an alias set";
+"referralCodeNotFound" = "This referral code doesn’t exist. Please check and try again.";
+"referralCodeWithoutAlias" = "This referral code doesn't have an alias set. Please check and try again.";
 "referralCodeAdded" = "Referred code successfully linked";
 "editReferral" = "Edit referral";
 "referralCodeMatch" = "Used referral code can not be the same as your referral code";

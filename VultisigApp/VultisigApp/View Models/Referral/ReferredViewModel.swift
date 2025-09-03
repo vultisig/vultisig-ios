@@ -29,6 +29,14 @@ class ReferredViewModel: ObservableObject {
         hasReferredCode ? "editFriendsReferral" : "addFriendsReferral"
     }
     
+    var referredButtonDisabled: Bool {
+        savedReferredCode == referredCode || referredCode.isEmpty
+    }
+    
+    var referredButtonTitle: String {
+        hasReferredCode ? "editReferredCode" : "saveReferredCode"
+    }
+    
     var savedReferredCode: String {
         currentVault?.referredCode?.code ?? .empty
     }
@@ -46,6 +54,11 @@ class ReferredViewModel: ObservableObject {
         navigationToReferralOverview = false
         navigationToReferralsView = true
         showReferralCodeOnboarding = false
+    }
+    
+    func onAppear() {
+        currentVault = ApplicationState.shared.currentVault
+        referredCode = savedReferredCode
     }
     
     func verifyReferredCode() async -> Bool {
@@ -125,7 +138,7 @@ class ReferredViewModel: ObservableObject {
     }
     
     private func showNameError(with message: String) {
-        referredLaunchViewErrorMessage = message
+        referredLaunchViewErrorMessage = message.localized
         isLoading = false
     }
     
