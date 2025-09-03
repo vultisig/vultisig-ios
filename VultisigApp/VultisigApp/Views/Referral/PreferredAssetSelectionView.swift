@@ -8,25 +8,27 @@
 import SwiftUI
 
 struct PreferredAssetSelectionView: View {
+    @Binding var isPresented: Bool
     @Binding var preferredAsset: PreferredAsset?
     var onSelect: () -> Void
     @StateObject var viewModel = PreferredAssetSelectionViewModel()
-
+    
     var body: some View {
-        Screen(title: "selectAsset".localized) {
-            VStack(spacing: 12) {
-                SearchTextField(value: $viewModel.searchText, isFocused: .init())
-                ScrollView {
-                    if viewModel.isLoading {
-                        loadingView
-                    } else if !viewModel.filteredAssets.isEmpty {
-                        list
-                    } else {
-                        emptyMessage
-                    }
+        VStack(spacing: 8) {
+            SheetHeaderView(title: "selectAsset".localized, isPresented: $isPresented)
+                .padding(.top, 8)
+                .padding(.bottom, 10)
+            SearchTextField(value: $viewModel.searchText)
+            ScrollView {
+                if viewModel.isLoading {
+                    loadingView
+                } else if !viewModel.filteredAssets.isEmpty {
+                    list
+                } else {
+                    emptyMessage
                 }
-                .cornerRadius(12)
             }
+            .cornerRadius(12)
         }
         .onLoad {
             Task {
@@ -66,5 +68,5 @@ struct PreferredAssetSelectionView: View {
 }
 
 #Preview {
-    PreferredAssetSelectionView(preferredAsset: .constant(PreferredAsset(thorchainAsset: ".", asset: .example))) {}
+    PreferredAssetSelectionView(isPresented: .constant(true), preferredAsset: .constant(PreferredAsset(thorchainAsset: ".", asset: .example))) {}
 }

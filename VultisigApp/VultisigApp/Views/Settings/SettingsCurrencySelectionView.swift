@@ -47,13 +47,20 @@ struct SettingsCurrencySelectionView: View {
         isLoading = true
         settingsViewModel.selectedCurrency = currency
         
-        Task {
-            if let currentVault = ApplicationState.shared.currentVault {
-                await BalanceService.shared.updateBalances(vault: currentVault)
-                dismiss()
-                isLoading = false
+        // Refresh prices in the background without blocking the UI
+        if let currentVault = ApplicationState.shared.currentVault {
+            Task.detached {
+                do {
+                    //try await CryptoPriceService.shared.fetchPrices(vault: currentVault)
+                    await BalanceService.shared.updateBalances(vault: currentVault)
+
+                } catch {
+                    print("Fetch Rates error: \(error.localizedDescription)")
+                }
             }
         }
+        dismiss()
+        isLoading = false
     }
     
     func onLoad() {

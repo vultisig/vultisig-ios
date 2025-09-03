@@ -23,7 +23,7 @@ struct AddressBookChainSelectionScreen: View {
             SheetHeaderView(title: "selectChain".localized, isPresented: $isPresented)
                 .padding(.top, 12)
             VStack(spacing: 12) {
-                SearchTextField(value: $viewModel.searchText, isFocused: .init())
+                SearchTextField(value: $viewModel.searchText)
                 ScrollView {
                     if !viewModel.filteredChains.isEmpty {
                         list

@@ -27,7 +27,7 @@ extension Chain {
     
     var defaultActions: [CoinAction] {
         var actions: [CoinAction] = [.send] // always include send
-
+        
         let hasBuyEnabledSet = UserDefaults.standard.value(forKey: "BuyEnabled")
         // when hasBuyEnabledSet has not been set , set it to true
         if hasBuyEnabledSet == nil {
@@ -41,7 +41,7 @@ extension Chain {
         if enableSell {
             actions.append(.sell)
         }
-
+        
         if CoinAction.swapChains.contains(self) {
             actions.append(.swap)
         }
@@ -50,5 +50,16 @@ extension Chain {
         }
         
         return actions.filtered
+    }
+}
+
+extension Array where Element == CoinAction {
+    var filtered: [CoinAction] {
+        let localeCode = Locale.current.region?.identifier
+        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY"{
+            return filter { $0 != .swap }
+        } else {
+            return self
+        }
     }
 }
