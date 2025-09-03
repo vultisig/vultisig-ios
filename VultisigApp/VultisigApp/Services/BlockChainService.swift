@@ -326,11 +326,11 @@ private extension BlockChainService {
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
-            let (_, _, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
+            let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             
             let feeService = EthereumFeeService(rpcEvmService: service)
-            let fee = try await feeService.calculateFees(chain: coin.chain, limit: gasLimit, isSwap: action == .swap)
+            let fee = try await feeService.calculateFees(chain: coin.chain, limit: gasLimit, isSwap: action == .swap, gasPrice: gasPrice, priorityFee: priorityFee)
             
             switch fee {
             case let eip1559 as Eip1559:
