@@ -94,6 +94,8 @@ struct CommonTextField<TrailingView: View>: View {
                     Text(error)
                         .foregroundColor(Theme.colors.alertError)
                         .font(Theme.fonts.footnote)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }

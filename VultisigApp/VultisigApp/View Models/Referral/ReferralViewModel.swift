@@ -207,9 +207,9 @@ class ReferralViewModel: ObservableObject {
     
     private func showNameError(with message: String) {
         if message == "alreadyTaken" {
-            referralAvailabilityErrorMessage = message
+            referralAvailabilityErrorMessage = message.localized
         } else {
-            referralAvailabilityErrorMessage = "invalid"
+            referralAvailabilityErrorMessage = "invalid".localized
         }
         
         isLoading = false
