@@ -26,7 +26,9 @@ struct ChainDetailActionButtons: View {
                 if group.chain.canBuy {
                     buyButton
                 }
-                swapButton
+                if SwapFeatureGate.canSwap() {   
+                    swapButton
+                }
             } else {
                 ForEach(actions, id: \.rawValue) { action in
                     switch action {

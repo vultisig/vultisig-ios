@@ -90,9 +90,11 @@ struct CommonTextField<TrailingView: View>: View {
                 .borderlessTextFieldStyle()
                 .padding(1)
                 
-                Text(error ?? "")
-                    .foregroundColor(Theme.colors.alertError)
-                    .font(Theme.fonts.footnote)
+                if let error {
+                    Text(error)
+                        .foregroundColor(Theme.colors.alertError)
+                        .font(Theme.fonts.footnote)
+                }
             }
         }
         .animation(.easeInOut, value: error)
@@ -108,6 +110,7 @@ struct CommonTextField<TrailingView: View>: View {
                 size: 16
             )
         }
+        .buttonStyle(.plain)
         .opacity(text.isEmpty ? 0 : 1)
     }
     

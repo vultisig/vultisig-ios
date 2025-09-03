@@ -36,6 +36,7 @@ enum SettingsOption: String, Identifiable {
     case twitter
     case discord
     case github
+    case vult
     case website
     case privacyPolicy
     case termsOfService
@@ -68,6 +69,8 @@ enum SettingsOption: String, Identifiable {
             return "discord"
         case .github:
             return "github"
+        case .vult:
+            return "vult"
         case .website:
             return "vultisigWebsite"
         case .privacyPolicy:
@@ -105,6 +108,8 @@ enum SettingsOption: String, Identifiable {
             return "discord"
         case .github:
             return "github"
+        case .vult:
+            return "coins"
         case .website:
             return "globe"
         case .privacyPolicy:
@@ -121,7 +126,9 @@ enum SettingsOption: String, Identifiable {
         case .discord:
             return .link(url: StaticURL.DiscordVultisigURL)
         case .website:
-            return .link(url: StaticURL.VultisigWeb)
+            return .link(url: StaticURL.VultisigWebsiteURL)
+        case .vult:
+            return .link(url: StaticURL.VultisigVultURL)
         case .github:
             return .link(url: StaticURL.GithubVultisigURL)
         case .shareApp:
