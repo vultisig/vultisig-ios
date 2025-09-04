@@ -1,5 +1,5 @@
 //
-//  FeeService.swift
+//  BlockChainService.swift
 //  VultisigApp
 //
 //  Created by Artur Guseinov on 08.04.2024.
@@ -69,13 +69,13 @@ final class BlockChainService {
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         let cacheKey =  getCacheKey(for: tx.fromCoin,
-                                          action: .swap,
-                                          sendMaxAmount: false,
-                                          isDeposit: tx.isDeposit,
-                                          transactionType: .unspecified,
-                                          fromAddress: tx.fromCoin.address,
-                                          toAddress: nil,  // Swaps don't have a specific toAddress in the same way
-                                          feeMode: .fast)
+                                    action: .swap,
+                                    sendMaxAmount: false,
+                                    isDeposit: tx.isDeposit,
+                                    transactionType: .unspecified,
+                                    fromAddress: tx.fromCoin.address,
+                                    toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+                                    feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
@@ -137,7 +137,7 @@ private extension BlockChainService {
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
                                    feeMode: tx.feeMode)
-        if let localCacheItem =  self.localCache.get(cacheKey) {            
+        if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
                 return localCacheItem.blockSpecific
@@ -326,16 +326,20 @@ private extension BlockChainService {
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
-            let baseFee = try await service.getBaseFee()
-            let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
-            
+            let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
-            let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
-            let priorityFee = priorityFeesMap[feeMode] ?? 0
-            let normalizedPriorityFee = max(priorityFee, defaultPriorityFee)
-            let normalizedBaseFee = Self.normalizeEVMFee(baseFee)
-            let maxFeePerGasWei = normalizedBaseFee + normalizedPriorityFee
-            return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: normalizedPriorityFee, nonce: nonce, gasLimit: gasLimit)
+            
+            let feeService = EthereumFeeService(rpcEvmService: service)
+            let fee = try await feeService.calculateFees(chain: coin.chain, limit: gasLimit, isSwap: action == .swap, gasPrice: gasPrice, priorityFee: priorityFee)
+            
+            switch fee {
+            case .Eip1559(_, let maxFeePerGas, let maxPriorityFeePerGas, _):
+                return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
+            case .GasFee(let price, _, _):
+                return .Ethereum(maxFeePerGasWei: price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
+            case .BasicFee(let amount):
+                return .Ethereum(maxFeePerGasWei: amount, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
+            }
             
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)

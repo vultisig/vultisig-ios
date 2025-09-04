@@ -800,6 +800,7 @@
 		A6SEC0132E1234567890AB01 /* SecurityScannerBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6SEC0132E1234567890AB02 /* SecurityScannerBottomSheet.swift */; };
 		B2ADDD782E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */; };
 		B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */; };
+		B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B505BF8E2E686D1500A5698B /* FeeService.swift */; };
 		B2C8B53A2E684A4200DFA097 /* SwapFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */; };
 		B50E399B2BF5AB2100B9A269 /* FunctionCallAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */; };
@@ -1822,6 +1823,7 @@
 		ADA7840E8472A961595D3663 /* KyberSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapPayload.swift; sourceTree = "<group>"; };
 		B2ADDD772E5D37AE00DB3B98 /* ChainDetailActionButtons+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainDetailActionButtons+macOS.swift"; sourceTree = "<group>"; };
 		B2ADDDC42E5D639700DB3B98 /* BanxaDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BanxaDisclaimer.swift; sourceTree = "<group>"; };
+		B505BF8E2E686D1500A5698B /* FeeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeService.swift; sourceTree = "<group>"; };
 		B2C8B5392E684A3700DFA097 /* SwapFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeatureGate.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* FunctionCallAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* FunctionCallContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallContractTypeEnum.swift; sourceTree = "<group>"; };
@@ -2974,6 +2976,7 @@
 		A5A6969C2C74D0DB0075AA45 /* Fee */ = {
 			isa = PBXGroup;
 			children = (
+				B505BF8E2E686D1500A5698B /* FeeService.swift */,
 				A571F4672C7E48A1000F46D3 /* FeeMode.swift */,
 			);
 			path = Fee;
@@ -5243,6 +5246,7 @@
 				A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
 				A6404F772E03346600069BD1 /* ThorchainNetworkAllFees.swift in Sources */,
+				B505BF8F2E686D1700A5698B /* FeeService.swift in Sources */,
 				A6BFE1B12D93A55E000B73C0 /* SwapPercentageButtons.swift in Sources */,
 				A6521C5A2C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift in Sources */,
 				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
