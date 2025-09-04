@@ -159,7 +159,7 @@ class TronService: RpcService {
         let body: [String: Any] = [:]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         
-        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getchainparameters") else {
+        guard let url = URL(string: Endpoint.getChainParametersTron()) else {
             throw PayloadServiceError.NetworkError(message: "invalid chain parameters url")
         }
         
@@ -181,7 +181,7 @@ class TronService: RpcService {
         let body = TronAccountRequest(address: address, visible: true)
         let dataPayload = try JSONEncoder().encode(body)
         
-        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getaccountresource") else {
+        guard let url = URL(string: Endpoint.getAccountResourceTron()) else {
             throw PayloadServiceError.NetworkError(message: "invalid account resource url")
         }
         
@@ -203,7 +203,7 @@ class TronService: RpcService {
         let body = TronAccountRequest(address: address, visible: true)
         let dataPayload = try JSONEncoder().encode(body)
         
-        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getaccount") else {
+        guard let url = URL(string: Endpoint.getAccountTron()) else {
             throw PayloadServiceError.NetworkError(message: "invalid get account url")
         }
         

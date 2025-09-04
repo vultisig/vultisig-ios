@@ -609,6 +609,18 @@ class Endpoint {
     
     static let tronEvmServiceRpc = "https://api.trongrid.io/jsonrpc"
     
+    static func getChainParametersTron() -> String {
+        "\(tronServiceRpc)/wallet/getchainparameters"
+    }
+    
+    static func getAccountResourceTron() -> String {
+        "\(tronServiceRpc)/wallet/getaccountresource"
+    }
+    
+    static func getAccountTron() -> String {
+        "\(tronServiceRpc)/wallet/getaccount"
+    }
+    
     // Cardano endpoints - Using Koios API (free, open source, no API key required)
     static let cardanoServiceRpc = "https://api.koios.rest/api/v1"
     

@@ -59,6 +59,11 @@ extension SendCryptoAddressTextField {
                     }
                 }
             ))
+            .onChange(of: tx.toAddress) { oldValue, newValue in
+                Task {
+                    await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+                }
+            }
             .foregroundColor(Theme.colors.textPrimary)
             .font(Theme.fonts.bodySMedium)
             .submitLabel(.next)
