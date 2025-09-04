@@ -9,53 +9,7 @@
 import SwiftUI
 
 extension SwapCryptoDetailsView {
-    var container: some View {
-        ZStack(alignment: .top) {
-            Screen(showNavigationBar: false) {
-                view
-            }.overlay(showSheet() ? overlay : nil)
-            
-            VStack {
-                if swapViewModel.showFromChainSelector {
-                    SwapChainPickerView(
-                        filterType: .swap,
-                        vault: vault,
-                        showSheet: $swapViewModel.showFromChainSelector,
-                        selectedChain: $swapViewModel.fromChain
-                    )
-                }
-                
-                if swapViewModel.showToChainSelector {
-                    SwapChainPickerView(
-                        filterType: .swap,
-                        vault: vault,
-                        showSheet: $swapViewModel.showToChainSelector,
-                        selectedChain: $swapViewModel.toChain
-                    )
-                }
-                
-                if swapViewModel.showFromCoinSelector {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $swapViewModel.showFromCoinSelector,
-                        selectedCoin: $tx.fromCoin,
-                        selectedChain: swapViewModel.fromChain
-                    )
-                }
-                
-                if swapViewModel.showToCoinSelector {
-                    SwapCoinPickerView(
-                        vault: vault,
-                        showSheet: $swapViewModel.showToCoinSelector,
-                        selectedCoin: $tx.toCoin,
-                        selectedChain: swapViewModel.toChain
-                    )
-                }
-            }
-        }
-    }
-    
-    var overlay: some View {
+   var overlay: some View {
         MacOSOverlay()
             .onTapGesture(perform: closeSheets)
     }

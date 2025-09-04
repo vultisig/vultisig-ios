@@ -26,14 +26,6 @@ extension SendDetailsScreen {
                 }
             }
         }
-        .sheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
-            chainPicker
-                .sheetStyle()
-        }
-        .sheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
-            coinPicker
-                .sheetStyle()
-        }
     }
     
     var view: some View {

@@ -38,6 +38,7 @@ struct SendDetailsScreen: View {
     @State var scrollProxy: ScrollViewProxy?
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @State var navigateToVerify: Bool = false
     
     var body: some View {
@@ -75,6 +76,23 @@ struct SendDetailsScreen: View {
         }
         .navigationDestination(isPresented: $navigateToVerify) {
             SendRouteBuilder().buildVerifyScreen(tx: tx, vault: vault)
+        }
+        .platformSheet(isPresented: $sendDetailsViewModel.showChainPickerSheet) {
+            SwapChainPickerView(
+                vault: vault,
+                showSheet: $sendDetailsViewModel.showChainPickerSheet,
+                selectedChain: $sendDetailsViewModel.selectedChain
+            )
+            .environmentObject(coinSelectionViewModel)
+        }
+        .platformSheet(isPresented: $sendDetailsViewModel.showCoinPickerSheet) {
+            SwapCoinPickerView(
+                vault: vault,
+                showSheet: $sendDetailsViewModel.showCoinPickerSheet,
+                selectedCoin: $tx.coin,
+                selectedChain: sendDetailsViewModel.selectedChain
+            )
+            .environmentObject(coinSelectionViewModel)
         }
     }
     
@@ -160,23 +178,6 @@ struct SendDetailsScreen: View {
                 handleScroll(newValue: newValue, oldValue: oldValue)
             }
         }
-    }
-    
-    var chainPicker: some View {
-        SwapChainPickerView(
-            vault: vault,
-            showSheet: $sendDetailsViewModel.showChainPickerSheet,
-            selectedChain: $sendDetailsViewModel.selectedChain
-        )
-    }
-
-    var coinPicker: some View {
-        SwapCoinPickerView(
-            vault: vault,
-            showSheet: $sendDetailsViewModel.showCoinPickerSheet,
-            selectedCoin: $tx.coin,
-            selectedChain: sendDetailsViewModel.selectedChain
-        )
     }
     
     func onChange(focusedField: Field?) {
