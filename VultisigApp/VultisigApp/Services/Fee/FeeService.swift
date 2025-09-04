@@ -41,36 +41,29 @@ class EthereumFeeService: FeeService {
     func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> FeeEnum {
         
         if chain.supportsEip1559 {
-            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee)
+            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee, chain: chain)
         } else {
             return calculateLegacyFees(limit: limit, isSwap: isSwap, gasPrice: gasPrice)
         }
     }
     
-    private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt) async throws -> FeeEnum {
+    private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt, chain: Chain) async throws -> FeeEnum {
         let baseFee = try await rpcEvmService.getBaseFee()
         
-        if isSwap {
-            let adjustedBaseFee = baseFee * 110 / 100
-            let adjustedPriorityFee = priorityFee * 110 / 100
-            let maxFeePerGas = (adjustedBaseFee * 120 / 100) + adjustedPriorityFee
-            
-            return .Eip1559(
-                limit: limit,
-                maxFeePerGas: maxFeePerGas,
-                maxPriorityFeePerGas: adjustedPriorityFee,
-                amount: limit * maxFeePerGas
-            )
-        } else {
-            let maxFeePerGas = baseFee + priorityFee
-            
-            return .Eip1559(
-                limit: limit,
-                maxFeePerGas: maxFeePerGas,
-                maxPriorityFeePerGas: priorityFee,
-                amount: limit * maxFeePerGas
-            )
-        }
+        let calculatedPriorityFee = try await calculateMaxPriorityFeePerGas(
+            originalPriorityFee: priorityFee,
+            chain: chain
+        )
+        
+        let baseNetworkPrice = isSwap ? (baseFee * 110) / 100 : baseFee
+        let maxFeePerGas = baseNetworkPrice + calculatedPriorityFee
+        
+        return .Eip1559(
+            limit: limit,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: calculatedPriorityFee,
+            amount: limit * maxFeePerGas
+        )
     }
     
     private func calculateLegacyFees(limit: BigInt, isSwap: Bool, gasPrice: BigInt) -> FeeEnum {
@@ -82,6 +75,29 @@ class EthereumFeeService: FeeService {
             limit: limit,
             amount: amount
         )
+    }
+    
+    private func calculateMaxPriorityFeePerGas(originalPriorityFee: BigInt, chain: Chain) async throws -> BigInt {
+        let gwei = BigInt(10).power(9)
+        let defaultMaxPriorityFeePerGasL2 = BigInt(20)
+        let defaultMaxPriorityFeePolygon = BigInt(30)
+        
+        switch chain {
+        case .avalanche:
+            return originalPriorityFee
+            
+        case .arbitrum, .mantle:
+            return BigInt.zero
+            
+        case .base, .blast, .optimism:
+            return max(originalPriorityFee, defaultMaxPriorityFeePerGasL2)
+            
+        case .polygon:
+            return max(originalPriorityFee, gwei * defaultMaxPriorityFeePolygon)
+            
+        default:
+            return max(originalPriorityFee, gwei)
+        }
     }
     
     func calculateFeesLegacy(chain: Chain, specific: BlockChainSpecific, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> (gas: String, priorityFee: String) {
