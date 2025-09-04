@@ -102,50 +102,31 @@ class TronService: RpcService {
         )
     }
     
-    /// Builds the 64-byte hex parameter for `transfer(address,uint256)`.
-    /// - Parameters:
-    ///   - recipientBase58: TRON base58-check encoded address (e.g., "TVNtPmF7...")
-    ///   - amount: The amount to transfer (in decimal), e.g. 1000000
-    /// - Returns: A 64-byte hex string suitable for the TRC20 `parameter` field.
     func buildTrc20TransferParameter(recipientBaseHex: String, amount: BigUInt) throws -> String {
 
-        // Remove hex prefix and TRON prefix (41) - Android parity: .drop(2)
         let cleanHex = recipientBaseHex.stripHexPrefix()
         let addressWithoutTronPrefix = cleanHex.count >= 2 ? String(cleanHex.dropFirst(2)) : cleanHex
         let paddedAddressHex = String(repeating: "0", count: max(0, 64 - addressWithoutTronPrefix.count)) + addressWithoutTronPrefix
         
-        // 4) Convert the amount to hex, then left-pad it to 64 hex digits
-        let amountHex = String(amount, radix: 16)  // e.g. "f4240" for 1000000
+        let amountHex = String(amount, radix: 16)
         let paddedAmountHex = String(
             repeating: "0",
             count: max(0, 64 - amountHex.count)
         ) + amountHex
-        
-        // 5) Concatenate the two 32-byte segments (64 hex chars + 64 hex chars = 128 hex chars total)
         return paddedAddressHex + paddedAmountHex
     }
     
-    /// Computes the TRX fee for calling the TRC20 `transfer(address,uint256)` method.
-    ///
-    /// Fee is calculated as: (energy_used + energy_penalty) * 280 SUN.
-    /// 1 TRX = 1,000,000 SUN.
     func getTriggerConstantContractFee(
-        ownerAddressBase58: String,           // e.g. "TVNtPmF7JWw4xoA8GAxEZhCaw2khYn8viH"
-        contractAddressBase58: String,        // e.g. "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-        recipientAddressHex: String,       // e.g. "9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf" in Base58 remove the prefix 41
-        amount: BigUInt                 // e.g. 1_000_000 for 1 token (depends on token decimals)
+        ownerAddressBase58: String,
+        contractAddressBase58: String,
+        recipientAddressHex: String,
+        amount: BigUInt
     ) async throws -> String {
-        
-        // 1. Build the `function_selector`
         let functionSelector = "transfer(address,uint256)"
-        
-        // 2. Build the 64-byte `parameter` from recipient + amount
         let parameter = try buildTrc20TransferParameter(
             recipientBaseHex: recipientAddressHex,
             amount: amount
         )
-        
-        // 3. Create JSON body for the request
         let body: [String: Any] = [
             "owner_address": ownerAddressBase58,
             "contract_address": contractAddressBase58,
@@ -155,8 +136,6 @@ class TronService: RpcService {
         ]
         
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
-        
-        // 4. Make the POST request (using your existing utility)
         let data = try await Utils.asyncPostRequest(
             urlString: Endpoint.triggerSolidityConstantContractTron(),
             headers: [
@@ -166,23 +145,16 @@ class TronService: RpcService {
             body: dataPayload
         )
         
-        // 5. Extract `energy_used` & `energy_penalty`
         guard let energyUsed = Utils.extractResultFromJson(fromData: data, path: "energy_used") as? NSNumber,
               let energyPenalty = Utils.extractResultFromJson(fromData: data, path: "energy_penalty") as? NSNumber
         else {
-            // If these fields are not found, handle error or return 0.
             return "0"
         }
 
-        // 6. Calculate fee in SUN and convert to TRX
         let totalEnergy = energyUsed.intValue + energyPenalty.intValue
         let totalSun = totalEnergy * 280
-        
-        
         return totalSun.description
     }
-    
-    // MARK: - New TRON Discount Methods
     
     func getChainParameters() async throws -> TronChainParametersResponse {
         let body: [String: Any] = [:]
@@ -249,8 +221,6 @@ class TronService: RpcService {
         let decoder = JSONDecoder()
         return try decoder.decode(TronAccountResponse.self, from: data)
     }
-    
-    // MARK: - TRON Fee Calculation Methods (Android Parity)
     
     private func getCachedChainParameters() async throws -> TronChainParametersResponse {
         if let cached = chainParametersCache {
@@ -339,43 +309,26 @@ class TronService: RpcService {
                     )
                 }
             } else {
-                // TRC20: Calculate energy fees (Android parity)
-                let recipientAddressHex: String
-                if let toAddress = to, !toAddress.isEmpty {
-                    // Convert Base58 address to hex (Android parity)
-                    if let addressData = Base58.decode(string: toAddress) {
-                        recipientAddressHex = addressData.hexString
-                    } else {
-                        // Fallback to default simulation address if conversion fails
-                        recipientAddressHex = "9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf"
-                    }
-                } else {
-                    // Fallback: use default simulation address (Android behavior)
-                    recipientAddressHex = "9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf"
-                }
+                let accountResource = try await getAccountResource(address: coin.address)
+                let availableEnergy = accountResource.EnergyLimit - accountResource.EnergyUsed
                 
-                let energyFee = try await getTriggerConstantContractFee(
-                    ownerAddressBase58: coin.address,
-                    contractAddressBase58: coin.contractAddress,
-                    recipientAddressHex: recipientAddressHex,
-                    amount: BigUInt(coin.rawBalance.toBigInt())
-                )
-                transactionFee = BigInt(energyFee) ?? BigInt.zero
+                if availableEnergy >= 130000 {
+                    transactionFee = BigInt(1_000_000)
+                } else {
+                    transactionFee = BigInt(28_000_000)
+                }
             }
             
             let totalFee = transactionFee + memoFee + activationFee
             return totalFee
             
         } catch {
-            print("TRON fee calculation error: \(error)")
-            // Fallback to default fee (Android behavior)
             return BigInt(Self.BYTES_PER_CONTRACT_TX * 1000)
         }
     }
     
     func getBalance(coin: Coin) async throws -> String {
         if coin.isNativeToken {
-            // Native TRX balance
             let body: [String: Any] = ["address": coin.address, "visible": true]
             let dataPayload = try JSONSerialization.data(
                 withJSONObject: body,
@@ -388,12 +341,10 @@ class TronService: RpcService {
                 body: dataPayload
             )
             
-            // Attempt to extract the balance as a number first
             if let balanceNumber = Utils.extractResultFromJson(fromData: data, path: "balance") as? NSNumber {
                 return balanceNumber.stringValue
             }
             
-            // If needed, try extracting as a string fallback (in case API changes)
             if let balanceString = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
                 return balanceString
             }
@@ -404,17 +355,13 @@ class TronService: RpcService {
             guard let hexAddressData = Base58.decode(string: coin.address) else {
                 return "0"
             }
-            
             let hexAddress = hexAddressData.hexString
-            
             
             guard let hexContractAddressData = Base58.decode(string: coin.contractAddress) else {
                 return "0"
             }
             
             let hexContractAddress = hexContractAddressData.hexString
-            
-            // Use EvmServiceFactory instead of direct service access
             let evmService = try EvmServiceFactory.getService(forChain: coin.chain)
             let balance = try await evmService.fetchTRC20TokenBalance(
                 contractAddress: "0x" + hexContractAddress,
@@ -474,7 +421,6 @@ struct TRC20BalanceResponse: Codable {
     }
 }
 
-// MARK: - TRON Chain Parameters Models
 struct TronChainParametersResponse: Codable {
     let chainParameter: [TronChainParameter]
     
@@ -494,7 +440,6 @@ struct TronChainParametersResponse: Codable {
         chainParameterMapped["getCreateNewAccountFeeInSystemContract"] ?? 0
     }
     
-    // According to network: 1 bandwidth -> 1000 SUN
     var bandwidthFeePrice: Int64 {
         chainParameterMapped["getTransactionFee"] ?? 0
     }
@@ -505,7 +450,6 @@ struct TronChainParameter: Codable {
     let value: Int64
 }
 
-// MARK: - TRON Account Resource Models
 struct TronAccountResourceResponse: Codable {
     let freeNetUsed: Int64
     let freeNetLimit: Int64
@@ -536,7 +480,6 @@ struct TronAccountResourceResponse: Codable {
         tronPowerLimit = try container.decodeIfPresent(Int64.self, forKey: .tronPowerLimit) ?? 0
     }
     
-    // https://developers.tron.network/docs/resource-model#account-bandwidth-balance-query
     func calculateAvailableBandwidth() -> Int64 {
         let freeBandwidth = freeNetLimit - freeNetUsed
         let stakingBandwidth = NetLimit - NetUsed
