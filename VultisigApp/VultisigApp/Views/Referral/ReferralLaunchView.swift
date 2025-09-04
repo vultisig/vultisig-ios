@@ -11,28 +11,44 @@ struct ReferralLaunchView: View {
     @ObservedObject var referredViewModel: ReferredViewModel
     @ObservedObject var referralViewModel: ReferralViewModel
     
+    @StateObject var keyboardObserver = KeyboardObserver()
+    @State var scrollViewProxy: ScrollViewProxy?
+    @State var screenHeight: CGFloat = 0
+    
+    private let scrollToReferenceId = "scrollTo"
+    
     var isLoading: Bool {
         referredViewModel.isLoading || referralViewModel.isLoading
     }
     
     var body: some View {
         Screen(title: "vultisig-referrals".localized) {
-            VStack(spacing: 0) {
-                Spacer()
-                image
-                Spacer()
-                
-                VStack(spacing: 16) {
-                    referredContent
-                    orSeparator
-                    referralContent
+            GeometryReader { geo in
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            image
+                            Spacer()
+                            VStack(spacing: 16) {
+                                referredContent
+                                    .id(scrollToReferenceId)
+                                orSeparator
+                                referralContent
+                            }
+                        }
+                        .frame(maxHeight: screenHeight)
+                    }
+                    .onLoad {
+                        screenHeight = geo.size.height
+                        scrollViewProxy = proxy
+                    }
                 }
             }
         }
         .overlay(referredViewModel.isLoading ? Loader() : nil)
         .onAppear {
             referralViewModel.currentVault = ApplicationState.shared.currentVault
-            referredViewModel.currentVault = ApplicationState.shared.currentVault
+            referredViewModel.onAppear()
         }
         .onChange(of: referralViewModel.currentVault) { _, _ in
             // TODO: - Remove after release
@@ -41,6 +57,17 @@ struct ReferralLaunchView: View {
                 await referralViewModel.fetchVaultData()
             }
         }
+        #if os(iOS)
+        .onChange(of: keyboardObserver.keyboardHeight) { _, height in
+            guard height > 250 else {
+                return
+            }
+            
+            withAnimation {
+                scrollViewProxy?.scrollTo(scrollToReferenceId, anchor: .bottom)
+            }
+        }
+        #endif
     }
     
     var orSeparator: some View {
@@ -64,6 +91,7 @@ struct ReferralLaunchView: View {
         Image("ReferralLaunchOverview")
             .resizable()
             .aspectRatio(contentMode: .fit)
+            .frame(maxWidth: 365)
     }
     
     var referredContent: some View {
@@ -80,20 +108,11 @@ struct ReferralLaunchView: View {
                         $0.foregroundColor = Theme.colors.primaryAccent4
                     }
                 }
-        
-
-                if referredViewModel.hasReferredCode {
-                    referredBox
-                } else {
-                    referredTextField
-                }
+                
+                referredTextField
             }
 
-            if referredViewModel.hasReferredCode {
-                editButton
-            } else {
-                saveButton
-            }
+            referredCodeButton
         }
     }
 }
@@ -101,18 +120,13 @@ struct ReferralLaunchView: View {
 // MARK: - Referred
 
 private extension ReferralLaunchView {
-    var saveButton: some View {
-        PrimaryButton(title: "saveReferredCode", type: .secondary) {
+    var referredCodeButton: some View {
+        PrimaryButton(title: referredViewModel.referredButtonTitle, type: .secondary) {
             Task { @MainActor in
                 await referredViewModel.verifyReferredCode()
             }
         }
-    }
-    
-    var editButton: some View {
-        PrimaryNavigationButton(title: "editReferredCode", type: .secondary) {
-            ReferralMainScreen(referredViewModel: referredViewModel, referralViewModel: referralViewModel)
-        }
+        .disabled(referredViewModel.referredButtonDisabled)
     }
     
     var referredTextField: some View {
@@ -123,17 +137,6 @@ private extension ReferralLaunchView {
             errorMessage: $referredViewModel.referredLaunchViewErrorMessage
         )
     }
-    
-    var referredBox: some View {
-        ContainerView {
-            HStack {
-                Text(referredViewModel.savedReferredCode)
-                    .font(Theme.fonts.bodyMMedium)
-                    .foregroundColor(Theme.colors.textPrimary)
-                Spacer()
-            }
-        }
-    }
 }
 
 // MARK: - Referral
@@ -142,7 +145,6 @@ private extension ReferralLaunchView {
     var referralContent: some View {
         VStack(spacing: 16) {
             referralTitle
-            
             if referralViewModel.hasReferralCode {
                 editReferralButton
             } else {
@@ -162,6 +164,7 @@ private extension ReferralLaunchView {
             $0.foregroundColor = Theme.colors.primaryAccent4
         }
         .multilineTextAlignment(.center)
+        .fixedSize(horizontal: false, vertical: true)
     }
     
     var createReferralButton: some View {

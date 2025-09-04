@@ -57,7 +57,7 @@ extension AddressTextField {
     }
     
     var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, address: $contractAddress, handleScan: handleScan)
+        AddressQRCodeScannerView(showScanner: $showScanner, address: $contractAddress, handleScan: handleScan)
     }
     
     private func processImage() {

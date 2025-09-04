@@ -689,8 +689,8 @@
 "vultisig-referrals" = "Vultisig - Referrals";
 "referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
 "systemErrorMessage" = "System error. Please try again.";
-"referralCodeNotFound" = "Referral code not found. Check the code and try again";
-"referralCodeWithoutAlias" = "Referral code doesn't have an alias set";
+"referralCodeNotFound" = "This referral code doesn’t exist. Please check and try again.";
+"referralCodeWithoutAlias" = "This referral code doesn't have an alias set. Please check and try again.";
 "referralCodeAdded" = "Referred code successfully linked";
 "editReferral" = "Edit referral";
 "referralCodeMatch" = "Used referral code can not be the same as your referral code";
@@ -766,7 +766,7 @@
 "vultisigCommunity" = "Vultisig Community";
 "general" = "General";
 "support" = "Support";
-"x" = "X";
+"x" = "X (Twitter)";
 "discord" = "Discord";
 "github" = "GitHub";
 "faqQuestion1" = "What is Vultisig?";
@@ -837,3 +837,12 @@
 "requestServerVaultShareTooManyRequestsError" = "You've requested a vault share too many times in a short period of time. Please wait a couple a minutes and try again.";
 "requestServerVaultShareUnknownError" = "We couldn't send a new copy of your vault share. Please wait a couple of minutes and try again.";
 "requestServerVaultShareBadRequestError" = "Password for your vault is incorrect. Please check and try again.";
+"vult" = "$VULT";
+"biometricsFastSigning" = "Biometrics Fast Signing";
+"enableBiometricsFastSigning" = "Enable Biometrics Fast Signing";
+"wrongVaultPassword" = "Wrong vault password. Please, try again.";
+"enable" = "Enable";
+"passwordHint" = "Password Hint";
+"setOrUpdateHint" = "Set or update a hint for your vault password";
+"editPasswordHintTitle" = "Edit password hint";
+"editPasswordHintSubtitle" = "This will be shown in case you forget your password";

@@ -19,7 +19,6 @@ struct GeneralCodeScannerView: View {
     @Binding var selectedChain: Chain?
     
     let sendTX: SendTransaction
-    var showButtons: Bool = true
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
@@ -37,151 +36,17 @@ struct GeneralCodeScannerView: View {
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var body: some View {
-        ZStack {
-            cameraView
-            content
-        }
-        .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
-        .ignoresSafeArea()
-        .fileImporter(
-            isPresented: $isFilePresented,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
+        QRCodeScannerView(
+            showScanner: $showSheet
         ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                let result = String(data: qrCode, encoding: .utf8)
-                guard let url = URL(string: result ?? .empty) else {
-                    return
-                }
-                
-                deeplinkViewModel.extractParameters(url, vaults: vaults)
-                presetValuesForDeeplink()
-            } catch {
-                print(error)
+            guard let url = URL(string: result) else {
+                return
             }
+            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            presetValuesForDeeplink()
+        } handleScan: { result in
+            handleScan(result: result)
         }
-        .alert(isPresented: $showAlert) {
-            alert
-        }
-    }
-    
-    var content: some View {
-        VStack {
-            header
-            Spacer()
-            if showButtons {
-                menubuttons
-            }
-        }
-        .padding(.vertical, 8)
-    }
-    
-    var header: some View {
-        HStack {
-            backButton
-            Spacer()
-            title
-            Spacer()
-            helpButton
-        }
-        .foregroundColor(Theme.colors.textPrimary)
-        .font(Theme.fonts.bodyLMedium)
-        .offset(y: 8)
-    }
-    
-    var backButton: some View {
-        Button {
-            showSheet = false
-        } label: {
-            getIcon(for: "xmark")
-        }
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("scanQRStartScreen", comment: ""))
-    }
-    
-    var helpButton: some View {
-        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
-            getIcon(for: "questionmark.circle")
-        }
-    }
-    
-    var cameraView: some View {
-        ZStack {
-            CodeScannerView(
-                codeTypes: [.qr],
-                isGalleryPresented: $isGalleryPresented,
-                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
-                completion: handleScan
-            )
-            
-            overlay
-        }
-    }
-    
-    var overlay: some View {
-        Image("QRScannerOutline")
-            .padding(60)
-    }
-    
-    var menubuttons: some View {
-        Menu {
-            Button {
-                isGalleryPresented.toggle()
-            } label: {
-                Label(
-                    NSLocalizedString("photoLibrary", comment: ""),
-                    systemImage: "photo.on.rectangle.angled"
-                )
-            }
-            
-            Button {
-                isFilePresented.toggle()
-            } label: {
-                Label(
-                    NSLocalizedString("chooseFiles", comment: ""),
-                    systemImage: "folder"
-                )
-            }
-        } label: {
-            uploadButton
-        }
-        .buttonStyle(PrimaryButtonStyle(type: .primary, size: .medium))
-        .padding(.horizontal, 16)
-        .padding(.bottom, 30)
-    }
-    
-    var uploadButton: some View {
-        PrimaryButtonView(title: "uploadQR", leadingIcon: "arrow.up.document")
-    }
-    
-    var alert: Alert {
-        let message = NSLocalizedString("addNewChainToVault1", comment: "") + (newCoinMeta?.chain.name ?? "") + NSLocalizedString("addNewChainToVault2", comment: "")
-        
-        return Alert(
-            title: Text(NSLocalizedString("newChainDetected", comment: "")),
-            message: Text(message),
-            primaryButton: Alert.Button.default(
-                Text(NSLocalizedString("addChain", comment: "")),
-                action: {
-                    addNewChain()
-                }
-            ),
-            secondaryButton: Alert.Button.default(
-                Text(NSLocalizedString("cancel", comment: "")),
-                action: {
-                    handleCancel()
-                }
-            )
-        )
-    }
-    
-    private func getIcon(for icon: String) -> some View {
-        Image(systemName: icon)
-            .padding(16)
-            .contentShape(Rectangle())
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {

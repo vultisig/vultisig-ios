@@ -12,17 +12,20 @@ import AVFoundation
 
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
-    @Binding var address: String
-    let handleScan: (Result<ScanResult, ScanError>) -> Void
+    var handleImport: (String) -> Void
+    var handleScan: (Result<ScanResult, ScanError>) -> Void
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
     
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var body: some View {
-        VStack(spacing: 0) {
-            topBar
-            view
+        ZStack {
+            cameraView
+            content
         }
+        .frame(maxWidth: idiom == .pad ? .infinity : nil, maxHeight: idiom == .pad ? .infinity : nil)
         .ignoresSafeArea()
         .fileImporter(
             isPresented: $isFilePresented,
@@ -31,98 +34,107 @@ struct QRCodeScannerView: View {
         ) { result in
             do {
                 let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                let result = String(data: qrCode, encoding: .utf8)
-                
-                address = result ?? ""
-                showScanner = false
+                guard let result = String(data: qrCode, encoding: .utf8) else { return }
+                handleImport(result)
             } catch {
                 print(error)
             }
         }
     }
     
-    var topBar: some View {
+    var content: some View {
+        VStack {
+            header
+            Spacer()
+            menubuttons
+        }
+        .padding(.vertical, 8)
+    }
+    
+    var header: some View {
         HStack {
-            NavigationBackSheetButton(showSheet: $showScanner)
+            backButton
             Spacer()
             title
             Spacer()
-            NavigationBackSheetButton(showSheet: $showScanner)
-                .opacity(0)
-                .disabled(true)
+            helpButton
         }
-        .frame(height: 60)
-        .padding(.horizontal, 16)
-        .background(Theme.colors.bgPrimary)
+        .foregroundColor(Theme.colors.textPrimary)
+        .font(Theme.fonts.bodyLMedium)
+        .offset(y: 8)
+    }
+    
+    var backButton: some View {
+        Button {
+            showScanner = false
+        } label: {
+            getIcon(for: "xmark")
+        }
     }
     
     var title: some View {
-        Text(NSLocalizedString("scan", comment: "Scan QR Code"))
-            .font(.body)
-            .bold()
-            .foregroundColor(Theme.colors.textPrimary)
+        Text(NSLocalizedString("scanQRStartScreen", comment: ""))
     }
     
-    var view: some View {
-        ZStack {
-            codeScanner
-            outline
-                .allowsHitTesting(false)
+    var helpButton: some View {
+        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
+            getIcon(for: "questionmark.circle")
         }
     }
     
-    var outline: some View {
-        Image("QRScannerOutline")
-            .offset(y: -50)
-    }
-    
-    var codeScanner: some View {
-        ZStack(alignment: .bottom) {
+    var cameraView: some View {
+        ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
-            buttonsStack
+            
+            overlay
         }
     }
     
-    var buttonsStack: some View {
-        VStack {
-            Spacer()
-            buttons
-        }
+    var overlay: some View {
+        Image("QRScannerOutline")
+            .padding(60)
     }
     
-    var buttons: some View {
-        HStack(spacing: 0) {
-            galleryButton
-                .frame(maxWidth: .infinity)
+    var menubuttons: some View {
+        Menu {
+            Button {
+                isGalleryPresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("photoLibrary", comment: ""),
+                    systemImage: "photo.on.rectangle.angled"
+                )
+            }
+            
+            Button {
+                isFilePresented.toggle()
+            } label: {
+                Label(
+                    NSLocalizedString("chooseFiles", comment: ""),
+                    systemImage: "folder"
+                )
+            }
+        } label: {
+            uploadButton
+        }
+        .buttonStyle(PrimaryButtonStyle(type: .primary, size: .medium))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 30)
+    }
+    
+    var uploadButton: some View {
+        PrimaryButtonView(title: "uploadQR", leadingIcon: "arrow.up.document")
+    }
 
-            fileButton
-                .frame(maxWidth: .infinity)
-        }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 50)
-    }
-    
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
-        }
-        .padding(.bottom, 20)
-    }
-    
-    var fileButton: some View {
-        Button {
-            isFilePresented.toggle()
-        } label: {
-            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
-        }
-        .padding(.bottom, 20)
+    private func getIcon(for icon: String) -> some View {
+        Image(systemName: icon)
+            .padding(16)
+            .contentShape(Rectangle())
     }
 }
 #endif

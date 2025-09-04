@@ -24,7 +24,6 @@ extension CoinAction {
 }
 
 extension Chain {
-    
     var defaultActions: [CoinAction] {
         var actions: [CoinAction] = [.send] // always include send
         
@@ -55,8 +54,7 @@ extension Chain {
 
 extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
-        let localeCode = Locale.current.region?.identifier
-        if localeCode == "GB" || localeCode == "JP" || localeCode == "MY"{
+        if !SwapFeatureGate.canSwap() {
             return filter { $0 != .swap }
         } else {
             return self

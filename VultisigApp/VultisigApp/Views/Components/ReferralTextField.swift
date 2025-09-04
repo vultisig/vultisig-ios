@@ -33,12 +33,10 @@ struct ReferralTextField: View {
     }
     
     var body: some View {
-        VStack(spacing: 8) {
-            textField
-        }
-        .onChange(of: text) { _, newValue in
-            sanitizeText(newValue)
-        }
+        textField
+            .onChange(of: text) { _, newValue in
+                sanitizeText(newValue)
+            }
     }
     
     var textField: some View {

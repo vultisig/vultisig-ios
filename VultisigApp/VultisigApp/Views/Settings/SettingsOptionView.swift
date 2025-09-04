@@ -1,5 +1,5 @@
 //
-//  SettingsOptionView.swift
+//  SettingsCommonOptionView.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 20/08/2025.
@@ -7,34 +7,35 @@
 
 import SwiftUI
 
-struct SettingsOptionView: View {
-    enum OptionType {
-        case normal
-        case highlighted
-        case alert
-    }
-    
+enum SettingsOptionViewType {
+    case normal
+    case highlighted
+    case alert
+}
+
+struct SettingsOptionView<TrailingView: View>: View {
     let icon: String?
     let title: String
     let subtitle: String?
-    let description: String?
-    let type: OptionType
+    let type: SettingsOptionViewType
     let showSeparator: Bool
+    let trailingView: () -> TrailingView
     
     init(
         icon: String?,
         title: String,
         subtitle: String? = nil,
         description: String? = nil,
-        type: OptionType = .normal,
-        showSeparator: Bool = true
+        type: SettingsOptionViewType = .normal,
+        showSeparator: Bool = true,
+        @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
-        self.description = description
         self.type = type
         self.showSeparator = showSeparator
+        self.trailingView = trailingView
     }
     
     var bgColor: Color? {
@@ -88,17 +89,8 @@ struct SettingsOptionView: View {
                 
                 Spacer()
                 
-                if let description {
-                    Text(description)
-                        .font(Theme.fonts.footnote)
-                        .foregroundStyle(fontColor)
-                }
-                
-                Icon(
-                    named: "chevron-right",
-                    color: Theme.colors.textExtraLight,
-                    size: 16
-                )
+                trailingView()
+                    .foregroundStyle(fontColor)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 16)
