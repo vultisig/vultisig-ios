@@ -336,4 +336,7 @@ extension SendDetailsScreen {
         sendDetailsViewModel: SendDetailsViewModel(),
         vault: Vault.example
     )
+    .environmentObject(DeeplinkViewModel())
+    .environmentObject(CoinSelectionViewModel())
+    .environmentObject(HomeViewModel())
 }
