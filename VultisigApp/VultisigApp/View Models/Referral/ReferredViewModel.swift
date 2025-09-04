@@ -64,6 +64,7 @@ class ReferredViewModel: ObservableObject {
     func verifyReferredCode() async -> Bool {
         clearFormMessages()
         
+        // If code is empty, it acts like removing the referred code
         guard !referredCode.isEmpty else {
             saveReferredCode()
             return true
