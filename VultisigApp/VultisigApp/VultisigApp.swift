@@ -25,6 +25,20 @@ struct VultisigApp: App {
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()
     
+    init() {
+#if os(macOS)
+        // Check for --version flag
+        if CommandLine.arguments.contains("--version") {
+            if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+               let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+                print("VultisigApp version \(version) (build \(build))")
+            } else {
+                print("Version information not available")
+            }
+            exit(0) // Exit after printing version
+        }
+#endif
+    }
     var body: some Scene {
         WindowGroup {
             content
