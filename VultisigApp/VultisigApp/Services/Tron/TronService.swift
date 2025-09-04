@@ -14,6 +14,13 @@ class TronService: RpcService {
     static let rpcEndpoint = Endpoint.tronServiceRpc
     static let shared = TronService(rpcEndpoint)
     
+    // Cache for chain parameters
+    private var chainParametersCache: TronChainParametersResponse?
+    
+    // Constants from Android implementation
+    private static let BYTES_PER_COIN_TX: Int64 = 300
+    private static let BYTES_PER_CONTRACT_TX: Int64 = 345
+    
     func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
         let url = URL(string: Endpoint.broadcastTransactionTron)!
         
@@ -52,7 +59,7 @@ class TronService: RpcService {
         
     }
     
-    func getBlockInfo(coin: Coin) async throws -> BlockChainSpecific {
+    func getBlockInfo(coin: Coin, to: String? = nil, memo: String? = nil) async throws -> BlockChainSpecific {
         let body: [String: Any] = [:]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         
@@ -78,13 +85,9 @@ class TronService: RpcService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
         
-        var estimation = "100000" // 0.1 TRX = 100000 SUN (default fee for native TRX transfers)
-        if !coin.isNativeToken {
-            // 0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf
-            // Tron does not have a 0x... it can be any address
-            // We will only simulate the transaction fee with this address
-            estimation = try await getTriggerConstantContractFee(ownerAddressBase58:coin.address, contractAddressBase58: coin.contractAddress, recipientAddressHex: "0x9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf", amount: BigUInt(coin.rawBalance.toBigInt()))
-        }
+        // Use new sophisticated fee calculation (Android parity)
+        let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo)
+        let estimation = String(calculatedFee)
         
         return BlockChainSpecific.Tron(
             timestamp: currentTimestampMillis,
@@ -106,8 +109,10 @@ class TronService: RpcService {
     /// - Returns: A 64-byte hex string suitable for the TRC20 `parameter` field.
     func buildTrc20TransferParameter(recipientBaseHex: String, amount: BigUInt) throws -> String {
 
-        // "000000000000000000000000" + 20-byte hex = total 64 hex chars
-        let paddedAddressHex = String(repeating: "0", count: 24) + recipientBaseHex.stripHexPrefix()  // 24 + 40 = 64 hex
+        // Remove hex prefix and TRON prefix (41) - Android parity: .drop(2)
+        let cleanHex = recipientBaseHex.stripHexPrefix()
+        let addressWithoutTronPrefix = cleanHex.count >= 2 ? String(cleanHex.dropFirst(2)) : cleanHex
+        let paddedAddressHex = String(repeating: "0", count: max(0, 64 - addressWithoutTronPrefix.count)) + addressWithoutTronPrefix
         
         // 4) Convert the amount to hex, then left-pad it to 64 hex digits
         let amountHex = String(amount, radix: 16)  // e.g. "f4240" for 1000000
@@ -172,9 +177,200 @@ class TronService: RpcService {
         // 6. Calculate fee in SUN and convert to TRX
         let totalEnergy = energyUsed.intValue + energyPenalty.intValue
         let totalSun = totalEnergy * 280
-        //let feeTRX = Double(totalSun) / 1_000_000.0
+        
         
         return totalSun.description
+    }
+    
+    // MARK: - New TRON Discount Methods
+    
+    func getChainParameters() async throws -> TronChainParametersResponse {
+        let body: [String: Any] = [:]
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        
+        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getchainparameters") else {
+            throw PayloadServiceError.NetworkError(message: "invalid chain parameters url")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = dataPayload
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, resp) = try await URLSession.shared.data(for: request)
+        if let httpResponse = resp as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw PayloadServiceError.NetworkError(message: "fail to fetch chain parameters")
+        }
+        
+        let decoder = JSONDecoder()
+        return try decoder.decode(TronChainParametersResponse.self, from: data)
+    }
+    
+    func getAccountResource(address: String) async throws -> TronAccountResourceResponse {
+        let body = TronAccountRequest(address: address, visible: true)
+        let dataPayload = try JSONEncoder().encode(body)
+        
+        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getaccountresource") else {
+            throw PayloadServiceError.NetworkError(message: "invalid account resource url")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = dataPayload
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, resp) = try await URLSession.shared.data(for: request)
+        if let httpResponse = resp as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw PayloadServiceError.NetworkError(message: "fail to fetch account resource")
+        }
+        
+        let decoder = JSONDecoder()
+        return try decoder.decode(TronAccountResourceResponse.self, from: data)
+    }
+    
+    func getAccount(address: String) async throws -> TronAccountResponse {
+        let body = TronAccountRequest(address: address, visible: true)
+        let dataPayload = try JSONEncoder().encode(body)
+        
+        guard let url = URL(string: Endpoint.tronServiceRpc + "/wallet/getaccount") else {
+            throw PayloadServiceError.NetworkError(message: "invalid get account url")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = dataPayload
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, resp) = try await URLSession.shared.data(for: request)
+        if let httpResponse = resp as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw PayloadServiceError.NetworkError(message: "fail to fetch account")
+        }
+        
+        let decoder = JSONDecoder()
+        return try decoder.decode(TronAccountResponse.self, from: data)
+    }
+    
+    // MARK: - TRON Fee Calculation Methods (Android Parity)
+    
+    private func getCachedChainParameters() async throws -> TronChainParametersResponse {
+        if let cached = chainParametersCache {
+            return cached
+        }
+        
+        let parameters = try await getChainParameters()
+        chainParametersCache = parameters
+        return parameters
+    }
+    
+    private func getBandwidthFeeDiscount(isNativeToken: Bool, availableBandwidth: Int64) async throws -> BigInt {
+        let feeBandwidthRequired = isNativeToken ? Self.BYTES_PER_COIN_TX : Self.BYTES_PER_CONTRACT_TX
+        let chainParams = try await getCachedChainParameters()
+        let bandwidthPrice = chainParams.bandwidthFeePrice
+        
+        switch (isNativeToken, availableBandwidth >= feeBandwidthRequired) {
+        case (true, true):
+            // Native transfer with sufficient bandwidth => FREE tx
+            return BigInt.zero
+        case (false, _):
+            // TRC20 always pays fee (no free bandwidth for smart contracts)
+            return BigInt(feeBandwidthRequired * bandwidthPrice)
+        case (true, false):
+            // Native transfer without sufficient bandwidth
+            return BigInt(feeBandwidthRequired * bandwidthPrice)
+        }
+    }
+    
+    private func getTronFeeMemo(memo: String?) async throws -> BigInt {
+        guard let memo = memo, !memo.isEmpty else {
+            return BigInt.zero
+        }
+        
+        let chainParams = try await getCachedChainParameters()
+        return BigInt(chainParams.memoFeeEstimate)
+    }
+    
+    private func getTronInactiveDestinationFee(to: String?) async throws -> BigInt {
+        guard let to = to, !to.isEmpty else {
+            return BigInt.zero
+        }
+        
+        let accountExists: Bool
+        do {
+            let account = try await getAccount(address: to)
+            accountExists = !account.address.isEmpty
+        } catch {
+            accountExists = false
+        }
+        
+        if accountExists {
+            return BigInt.zero
+        }
+        
+        let chainParams = try await getCachedChainParameters()
+        let createAccountFee = BigInt(chainParams.createAccountFeeEstimate)
+        let createAccountContractFee = BigInt(chainParams.createNewAccountFeeEstimateContract)
+        
+        return createAccountFee + createAccountContractFee
+    }
+    
+    func calculateTronFee(coin: Coin, to: String?, memo: String?) async throws -> BigInt {
+        do {
+            // Calculate memo fee
+            let memoFee = try await getTronFeeMemo(memo: memo)
+            
+            // Check if destination needs activation (new account)
+            let activationFee = try await getTronInactiveDestinationFee(to: to)
+            let isNewAccount = activationFee > BigInt.zero
+            
+            // Calculate bandwidth and energy fees based on token type
+            let transactionFee: BigInt
+            if coin.isNativeToken {
+                // Native TRX: Calculate bandwidth fees only
+                let accountResource = try await getAccountResource(address: coin.address)
+                let availableBandwidth = accountResource.calculateAvailableBandwidth()
+                
+                // New accounts don't pay bandwidth fee (included in activation)
+                if isNewAccount {
+                    transactionFee = BigInt.zero
+                } else {
+                    transactionFee = try await getBandwidthFeeDiscount(
+                        isNativeToken: true,
+                        availableBandwidth: availableBandwidth
+                    )
+                }
+            } else {
+                // TRC20: Calculate energy fees (Android parity)
+                let recipientAddressHex: String
+                if let toAddress = to, !toAddress.isEmpty {
+                    // Convert Base58 address to hex (Android parity)
+                    if let addressData = Base58.decode(string: toAddress) {
+                        recipientAddressHex = addressData.hexString
+                    } else {
+                        // Fallback to default simulation address if conversion fails
+                        recipientAddressHex = "9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf"
+                    }
+                } else {
+                    // Fallback: use default simulation address (Android behavior)
+                    recipientAddressHex = "9c9d70d46934c98fd3d7c302c4e0b924da7a4fdf"
+                }
+                
+                let energyFee = try await getTriggerConstantContractFee(
+                    ownerAddressBase58: coin.address,
+                    contractAddressBase58: coin.contractAddress,
+                    recipientAddressHex: recipientAddressHex,
+                    amount: BigUInt(coin.rawBalance.toBigInt())
+                )
+                transactionFee = BigInt(energyFee) ?? BigInt.zero
+            }
+            
+            let totalFee = transactionFee + memoFee + activationFee
+            return totalFee
+            
+        } catch {
+            print("TRON fee calculation error: \(error)")
+            // Fallback to default fee (Android behavior)
+            return BigInt(Self.BYTES_PER_CONTRACT_TX * 1000)
+        }
     }
     
     func getBalance(coin: Coin) async throws -> String {
@@ -275,5 +471,89 @@ struct TRC20BalanceResponse: Codable {
     
     struct ResultStatus: Codable {
         let result: Bool
+    }
+}
+
+// MARK: - TRON Chain Parameters Models
+struct TronChainParametersResponse: Codable {
+    let chainParameter: [TronChainParameter]
+    
+    private var chainParameterMapped: [String: Int64] {
+        Dictionary(uniqueKeysWithValues: chainParameter.map { ($0.key, $0.value) })
+    }
+    
+    var memoFeeEstimate: Int64 {
+        chainParameterMapped["getMemoFee"] ?? 0
+    }
+    
+    var createAccountFeeEstimate: Int64 {
+        chainParameterMapped["getCreateAccountFee"] ?? 0
+    }
+    
+    var createNewAccountFeeEstimateContract: Int64 {
+        chainParameterMapped["getCreateNewAccountFeeInSystemContract"] ?? 0
+    }
+    
+    // According to network: 1 bandwidth -> 1000 SUN
+    var bandwidthFeePrice: Int64 {
+        chainParameterMapped["getTransactionFee"] ?? 0
+    }
+}
+
+struct TronChainParameter: Codable {
+    let key: String
+    let value: Int64
+}
+
+// MARK: - TRON Account Resource Models
+struct TronAccountResourceResponse: Codable {
+    let freeNetUsed: Int64
+    let freeNetLimit: Int64
+    let NetUsed: Int64
+    let NetLimit: Int64
+    let EnergyLimit: Int64
+    let EnergyUsed: Int64
+    let TotalNetLimit: Int64
+    let TotalNetWeight: Int64
+    let TotalEnergyLimit: Int64
+    let TotalEnergyWeight: Int64
+    let tronPowerUsed: Int64
+    let tronPowerLimit: Int64
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        freeNetUsed = try container.decodeIfPresent(Int64.self, forKey: .freeNetUsed) ?? 0
+        freeNetLimit = try container.decodeIfPresent(Int64.self, forKey: .freeNetLimit) ?? 0
+        NetUsed = try container.decodeIfPresent(Int64.self, forKey: .NetUsed) ?? 0
+        NetLimit = try container.decodeIfPresent(Int64.self, forKey: .NetLimit) ?? 0
+        EnergyLimit = try container.decodeIfPresent(Int64.self, forKey: .EnergyLimit) ?? 0
+        EnergyUsed = try container.decodeIfPresent(Int64.self, forKey: .EnergyUsed) ?? 0
+        TotalNetLimit = try container.decodeIfPresent(Int64.self, forKey: .TotalNetLimit) ?? 0
+        TotalNetWeight = try container.decodeIfPresent(Int64.self, forKey: .TotalNetWeight) ?? 0
+        TotalEnergyLimit = try container.decodeIfPresent(Int64.self, forKey: .TotalEnergyLimit) ?? 0
+        TotalEnergyWeight = try container.decodeIfPresent(Int64.self, forKey: .TotalEnergyWeight) ?? 0
+        tronPowerUsed = try container.decodeIfPresent(Int64.self, forKey: .tronPowerUsed) ?? 0
+        tronPowerLimit = try container.decodeIfPresent(Int64.self, forKey: .tronPowerLimit) ?? 0
+    }
+    
+    // https://developers.tron.network/docs/resource-model#account-bandwidth-balance-query
+    func calculateAvailableBandwidth() -> Int64 {
+        let freeBandwidth = freeNetLimit - freeNetUsed
+        let stakingBandwidth = NetLimit - NetUsed
+        return freeBandwidth + stakingBandwidth
+    }
+}
+
+struct TronAccountRequest: Codable {
+    let address: String
+    let visible: Bool
+}
+
+struct TronAccountResponse: Codable {
+    let address: String
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
     }
 }

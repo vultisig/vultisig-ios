@@ -94,6 +94,7 @@ final class BlockChainService {
             byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+            memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
@@ -154,6 +155,7 @@ private extension BlockChainService {
             byteFee: tx.byteFee,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
+            memo: tx.memo,
             feeMode: tx.feeMode
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
@@ -200,6 +202,7 @@ private extension BlockChainService {
             byteFee: tx.gasLimit,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
+            memo: tx.memo,
             feeMode: tx.feeMode
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
@@ -215,6 +218,7 @@ private extension BlockChainService {
                        byteFee: BigInt?,
                        fromAddress: String?,
                        toAddress: String?,
+                       memo: String?,
                        feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .zcash:
@@ -444,7 +448,7 @@ private extension BlockChainService {
             //60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
-            return try await tron.getBlockInfo(coin: coin)
+            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo)
         }
     }
     
