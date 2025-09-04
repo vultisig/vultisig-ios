@@ -59,6 +59,11 @@ struct SendDetailsAdditionalSection: View {
             MemoTextField(memo: $tx.memo)
                 .frame(height: isMemoExpanded ? nil : 0, alignment: .top)
                 .clipped()
+                .onChange(of: tx.memo) { oldValue, newValue in
+                    Task {
+                        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+                    }
+                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

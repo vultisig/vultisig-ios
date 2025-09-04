@@ -75,6 +75,7 @@ final class BlockChainService {
                                     transactionType: .unspecified,
                                     fromAddress: tx.fromCoin.address,
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+                                    memo: nil,  // Swaps don't have memos
                                     feeMode: .fast)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
@@ -115,8 +116,10 @@ final class BlockChainService {
                      transactionType: VSTransactionType,
                      fromAddress: String?,
                      toAddress: String?,
+                     memo: String?,
                      feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+        let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
+        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode)"
     }
 }
 
@@ -137,6 +140,7 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
+                                   memo: tx.memo,
                                    feeMode: tx.feeMode)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
@@ -170,6 +174,7 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
+                                   memo: tx.memo,
                                    feeMode: tx.feeMode)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
