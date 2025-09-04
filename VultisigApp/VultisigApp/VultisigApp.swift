@@ -21,7 +21,6 @@ struct VultisigApp: App {
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
     @StateObject var vultExtensionViewModel = VultExtensionViewModel()
-    @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     @StateObject var globalStateViewModel = GlobalStateViewModel()
     @StateObject var navigationRouter = NavigationRouter()

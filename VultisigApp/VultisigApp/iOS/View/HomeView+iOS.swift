@@ -25,18 +25,6 @@ extension HomeView {
             Background()
             main
         }
-        .alert(
-            NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
-        ) {
-            Link(destination: StaticURL.AppStoreVultisigURL) {
-                Text(NSLocalizedString("updateNow", comment: ""))
-            }
-            
-            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-        } message: {
-            Text(phoneCheckUpdateViewModel.latestVersionString)
-        }
     }
     
     var main: some View {
@@ -129,8 +117,6 @@ extension HomeView {
         presetValuesForDeeplink()
     }
     
-    func checkUpdate() {
-        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
-    }
+    
 }
 #endif
