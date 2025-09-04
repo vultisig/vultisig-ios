@@ -30,7 +30,7 @@ class ReferredViewModel: ObservableObject {
     }
     
     var referredButtonDisabled: Bool {
-        savedReferredCode == referredCode.uppercased() || referredCode.isEmpty
+        savedReferredCode == referredCode.uppercased()
     }
     
     var referredButtonTitle: String {
@@ -63,6 +63,12 @@ class ReferredViewModel: ObservableObject {
     
     func verifyReferredCode() async -> Bool {
         clearFormMessages()
+        
+        // If code is empty, it acts like removing the referred code
+        guard !referredCode.isEmpty else {
+            saveReferredCode()
+            return true
+        }
         
         isLoading = true
         
