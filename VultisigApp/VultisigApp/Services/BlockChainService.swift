@@ -333,19 +333,12 @@ private extension BlockChainService {
             let fee = try await feeService.calculateFees(chain: coin.chain, limit: gasLimit, isSwap: action == .swap, gasPrice: gasPrice, priorityFee: priorityFee)
             
             switch fee {
-            case let eip1559 as Eip1559:
-                return .Ethereum(maxFeePerGasWei: eip1559.maxFeePerGas, priorityFeeWei: eip1559.maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
-            case let gasFees as GasFees:
-                return .Ethereum(maxFeePerGasWei: gasFees.price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
-            default:
-                let baseFee = try await service.getBaseFee()
-                let (_, defaultPriorityFee, _) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
-                let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
-                let priorityFee = priorityFeesMap[feeMode] ?? 0
-                let normalizedPriorityFee = max(priorityFee, defaultPriorityFee)
-                let normalizedBaseFee = Self.normalizeEVMFee(baseFee)
-                let maxFeePerGasWei = normalizedBaseFee + normalizedPriorityFee
-                return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: normalizedPriorityFee, nonce: nonce, gasLimit: gasLimit)
+            case .Eip1559(_, let maxFeePerGas, let maxPriorityFeePerGas, _):
+                return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
+            case .GasFee(let price, _, _):
+                return .Ethereum(maxFeePerGasWei: price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
+            case .BasicFee(let amount):
+                return .Ethereum(maxFeePerGasWei: amount, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
             }
             
         case .zksync:

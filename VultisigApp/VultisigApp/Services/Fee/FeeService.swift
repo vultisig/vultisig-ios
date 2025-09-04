@@ -9,46 +9,25 @@ import Foundation
 import BigInt
 import VultisigCommonData
 
-protocol Fee {
-    var amount: BigInt { get }
-}
-
-struct GasFees: Fee {
-    let price: BigInt
-    let limit: BigInt
-    let amount: BigInt
+enum FeeEnum {
+    case GasFee(price: BigInt, limit: BigInt, amount: BigInt)
+    case Eip1559(limit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, amount: BigInt)
+    case BasicFee(amount: BigInt)
     
-    init(price: BigInt, limit: BigInt) {
-        self.price = price
-        self.limit = limit
-        self.amount = price * limit
-    }
-}
-
-struct Eip1559: Fee {
-    let limit: BigInt
-    let maxFeePerGas: BigInt
-    let maxPriorityFeePerGas: BigInt
-    let amount: BigInt
-    
-    init(limit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt) {
-        self.limit = limit
-        self.maxFeePerGas = maxFeePerGas
-        self.maxPriorityFeePerGas = maxPriorityFeePerGas
-        self.amount = limit * maxFeePerGas
-    }
-}
-
-struct BasicFee: Fee {
-    let amount: BigInt
-    
-    init(amount: BigInt) {
-        self.amount = amount
+    var amount: BigInt {
+        switch self {
+        case .GasFee(_, _, let amount):
+            return amount
+        case .Eip1559(_, _, _, let amount):
+            return amount
+        case .BasicFee(let amount):
+            return amount
+        }
     }
 }
 
 protocol FeeService {
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> Fee
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> FeeEnum
 }
 
 class EthereumFeeService: FeeService {
@@ -59,43 +38,64 @@ class EthereumFeeService: FeeService {
         self.rpcEvmService = rpcEvmService
     }
     
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> Fee {
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> FeeEnum {
         
-        do {
-            let baseFee = try await rpcEvmService.getBaseFee()
-            let adjustedPriorityFee = isSwap ? priorityFee * 2 : priorityFee
-            let maxFeePerGas = baseFee + adjustedPriorityFee
-            let finalMaxFeePerGas = max(maxFeePerGas, baseFee)
+        if chain.supportsEip1559 {
+            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee)
+        } else {
+            return calculateLegacyFees(limit: limit, isSwap: isSwap, gasPrice: gasPrice)
+        }
+    }
+    
+    private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt) async throws -> FeeEnum {
+        let baseFee = try await rpcEvmService.getBaseFee()
+        
+        if isSwap {
+            let adjustedBaseFee = baseFee * 110 / 100
+            let adjustedPriorityFee = priorityFee * 110 / 100
+            let maxFeePerGas = (adjustedBaseFee * 120 / 100) + adjustedPriorityFee
             
-            return Eip1559(
+            return .Eip1559(
                 limit: limit,
-                maxFeePerGas: finalMaxFeePerGas,
-                maxPriorityFeePerGas: adjustedPriorityFee
+                maxFeePerGas: maxFeePerGas,
+                maxPriorityFeePerGas: adjustedPriorityFee,
+                amount: limit * maxFeePerGas
             )
+        } else {
+            let maxFeePerGas = baseFee + priorityFee
             
-        } catch {
-            let adjustedGasPrice = isSwap ? gasPrice * 2 : gasPrice
-            return GasFees(
-                price: adjustedGasPrice,
-                limit: limit
+            return .Eip1559(
+                limit: limit,
+                maxFeePerGas: maxFeePerGas,
+                maxPriorityFeePerGas: priorityFee,
+                amount: limit * maxFeePerGas
             )
         }
     }
-
+    
+    private func calculateLegacyFees(limit: BigInt, isSwap: Bool, gasPrice: BigInt) -> FeeEnum {
+        let adjustedGasPrice = isSwap ? gasPrice * 110 / 100 : gasPrice
+        let amount = adjustedGasPrice * limit
+        
+        return .GasFee(
+            price: adjustedGasPrice,
+            limit: limit,
+            amount: amount
+        )
+    }
+    
     func calculateFeesLegacy(chain: Chain, specific: BlockChainSpecific, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> (gas: String, priorityFee: String) {
         
         let gasLimit = BigInt(specific.gas)
         let fee = try await calculateFees(chain: chain, limit: gasLimit, isSwap: isSwap, gasPrice: gasPrice, priorityFee: priorityFee)
         
         switch fee {
-        case let eip1559 as Eip1559:
-            return (gas: String(eip1559.amount), priorityFee: String(eip1559.maxPriorityFeePerGas))
-        case let gasFees as GasFees:
-            return (gas: String(gasFees.amount), priorityFee: "0")
-        case let basicFee as BasicFee:
-            return (gas: String(basicFee.amount), priorityFee: "0")
-        default:
-            return (gas: String(fee.amount), priorityFee: "0")
+        case .Eip1559(_, _, let maxPriorityFeePerGas, let amount):
+            return (gas: String(amount), priorityFee: String(maxPriorityFeePerGas))
+        case .GasFee(_, _, let amount):
+            return (gas: String(amount), priorityFee: "0")
+        case .BasicFee(let amount):
+            return (gas: String(amount), priorityFee: "0")
         }
     }
 }

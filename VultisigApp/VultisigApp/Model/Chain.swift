@@ -499,3 +499,16 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 }
+
+extension Chain {
+    var supportsEip1559: Bool {
+        switch self {
+        case .bscChain:
+            return false
+        case .ethereum, .avalanche, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain, .ethereumSepolia, .mantle:
+            return true
+        default:
+            return true
+        }
+    }
+}
