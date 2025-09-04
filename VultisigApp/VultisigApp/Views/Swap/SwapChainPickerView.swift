@@ -32,6 +32,13 @@ struct SwapChainPickerView: View {
         self._selectedChain = selectedChain
     }
     
+    var body: some View {
+        VStack {
+            header
+            content
+        }
+    }
+    
     var content: some View {
         views
             .onDisappear { viewModel.searchText = "" }

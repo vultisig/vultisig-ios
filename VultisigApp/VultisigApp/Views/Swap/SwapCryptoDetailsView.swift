@@ -16,12 +16,14 @@ struct SwapCryptoDetailsView: View {
     @StateObject var referredViewModel = ReferredViewModel()
     @StateObject var keyboardObserver = KeyboardObserver()
     
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     let vault: Vault
     
     var body: some View {
-        container
+        screenContainer
             .onAppear {
                 setData()
             }
@@ -40,6 +42,57 @@ struct SwapCryptoDetailsView: View {
             .onChange(of: swapViewModel.toChain) { _, _ in
                 swapViewModel.handleToChainUpdate(tx: tx, vault: vault)
             }
+    }
+    
+    var screenContainer: some View {
+        ZStack(alignment: .bottom) {
+            screenContent
+            #if os(iOS)
+            percentageButtons
+            #endif
+        }
+    }
+    
+    var screenContent: some View {
+        Screen(showNavigationBar: false) {
+            view
+        }
+        .platformSheet(isPresented: $swapViewModel.showFromChainSelector) {
+            SwapChainPickerView(
+                filterType: .swap,
+                vault: vault,
+                showSheet: $swapViewModel.showFromChainSelector,
+                selectedChain: $swapViewModel.fromChain
+            )
+            .environmentObject(coinSelectionViewModel)
+        }
+        .platformSheet(isPresented: $swapViewModel.showToChainSelector) {
+            SwapChainPickerView(
+                filterType: .swap,
+                vault: vault,
+                showSheet: $swapViewModel.showToChainSelector,
+                selectedChain: $swapViewModel.toChain
+            )
+            .environmentObject(coinSelectionViewModel)
+        }
+        .platformSheet(isPresented: $swapViewModel.showFromCoinSelector) {
+            SwapCoinPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showFromCoinSelector,
+                selectedCoin: $tx.fromCoin,
+                selectedChain: swapViewModel.fromChain
+            )
+            .environmentObject(coinSelectionViewModel)
+        }
+        .platformSheet(isPresented: $swapViewModel.showToCoinSelector) {
+            SwapCoinPickerView(
+                vault: vault,
+                showSheet: $swapViewModel.showToCoinSelector,
+                selectedCoin: $tx.toCoin,
+                selectedChain: swapViewModel.toChain
+            )
+            .environmentObject(coinSelectionViewModel)
+        }
     }
     
     var content: some View {
