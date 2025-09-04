@@ -15,7 +15,6 @@ struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
-    @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
     
     @State var vaults: [Vault] = []
     
@@ -36,6 +35,18 @@ struct HomeView: View {
     
     var body: some View {
         container
+            .alert(
+                NSLocalizedString("newUpdateAvailable", comment: ""),
+                isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
+            ) {
+                Link(destination: StaticURL.AppStoreVultisigURL) {
+                    Text(NSLocalizedString("updateNow", comment: ""))
+                }
+                
+                Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+            } message: {
+                Text(phoneCheckUpdateViewModel.latestVersionString)
+            }
     }
     
     var navigationTitle: some View {
@@ -146,11 +157,15 @@ struct HomeView: View {
             print(error)
         }
     }
+    
+    func checkUpdate() {
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
+    }
 }
 
 #Preview {
     HomeView()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
-        .environmentObject(MacCheckUpdateViewModel())
+        .environmentObject(PhoneCheckUpdateViewModel())
 }

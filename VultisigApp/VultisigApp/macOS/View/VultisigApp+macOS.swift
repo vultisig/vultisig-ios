@@ -20,7 +20,7 @@ extension VultisigApp {
             .environmentObject(homeViewModel)
             .environmentObject(settingsDefaultChainViewModel)
             .environmentObject(vultExtensionViewModel)
-            .environmentObject(macCheckUpdateViewModel)
+            .environmentObject(phoneCheckUpdateViewModel)
             .environmentObject(globalStateViewModel)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
