@@ -220,11 +220,7 @@ struct SettingsMainScreen: View {
     }
     
     var checkUpdateView: some View {
-        #if os(macOS)
-            MacCheckUpdateView()
-        #else
             PhoneCheckUpdateView()
-        #endif
     }
     
     func onOption(_ option: SettingsOption) {

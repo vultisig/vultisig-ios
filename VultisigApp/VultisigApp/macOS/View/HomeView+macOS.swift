@@ -24,18 +24,6 @@ extension HomeView {
             Background()
             main
         }
-        .alert(
-            NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $macCheckUpdateViewModel.showUpdateAlert
-        ) {
-            Link(destination: URL(string: Endpoint.githubMacDownloadBase + macCheckUpdateViewModel.latestVersionBase + macCheckUpdateViewModel.latestPackageName)!) {
-                Text(NSLocalizedString("updateNow", comment: ""))
-            }
-            
-            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-        } message: {
-            Text(macCheckUpdateViewModel.latestVersion)
-        }
     }
     
     var main: some View {
@@ -109,8 +97,5 @@ extension HomeView {
         presetValuesForDeeplink()
     }
     
-    func checkUpdate() {
-        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
-    }
 }
 #endif

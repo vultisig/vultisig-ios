@@ -316,8 +316,6 @@
 		A617B67E2CEC6540006E5122 /* SendSummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */; };
 		A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */; };
 		A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */; };
-		A6182F292C9225DA0059BFDD /* MacCheckUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */; };
-		A6182F2B2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */; };
 		A6182F2D2C9226310059BFDD /* UpdateVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2C2C9226310059BFDD /* UpdateVersion.swift */; };
 		A6182F2F2C922B6B0059BFDD /* AsyncImageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */; };
 		A6182F312C922B750059BFDD /* AsyncImageView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */; };
@@ -1341,8 +1339,6 @@
 		A617B67D2CEC6540006E5122 /* SendSummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendSummaryViewModel.swift; sourceTree = "<group>"; };
 		A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpToDateView.swift; sourceTree = "<group>"; };
 		A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpdateNowView.swift; sourceTree = "<group>"; };
-		A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpdateView.swift; sourceTree = "<group>"; };
-		A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpdateViewModel.swift; sourceTree = "<group>"; };
 		A6182F2C2C9226310059BFDD /* UpdateVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateVersion.swift; sourceTree = "<group>"; };
 		A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AsyncImageView+iOS.swift"; sourceTree = "<group>"; };
 		A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AsyncImageView+macOS.swift"; sourceTree = "<group>"; };
@@ -3052,7 +3048,6 @@
 			isa = PBXGroup;
 			children = (
 				A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */,
-				A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */,
 				A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */,
 				A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */,
 			);
@@ -3494,7 +3489,6 @@
 				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
 				A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */,
-				A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */,
 				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
 				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
 				136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */,
@@ -5103,7 +5097,6 @@
 				A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */,
 				A611CCCF2C7816EC00D64C9D /* UINavigationControllerExtension.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupQRCodeView.swift in Sources */,
-				A6182F292C9225DA0059BFDD /* MacCheckUpdateView.swift in Sources */,
 				A6C6712B2CA3C24600F59B6A /* AddressTextField+iOS.swift in Sources */,
 				B541C9262CF04C4700335933 /* FunctionCallUnbondMayaChain.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
@@ -5546,7 +5539,6 @@
 				13AF0D182E4CE655004D4FD2 /* NavigationRouter.swift in Sources */,
 				A6F7B6FC2D4D5BE600AC8104 /* BackupVaultSuccessView.swift in Sources */,
 				A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */,
-				A6182F2B2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
 				A6C670942C9D080600F59B6A /* VaultDetailView+iOS.swift in Sources */,
