@@ -116,7 +116,7 @@ final class BlockChainService {
                      fromAddress: String?,
                      toAddress: String?,
                      feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
     }
 }
 

@@ -85,7 +85,6 @@ class TronService: RpcService {
         let oneHourMillis = Int64(60 * 60 * 1000)
         let expiration = nowMillis + oneHourMillis
         
-        // Use new sophisticated fee calculation (Android parity)
         let calculatedFee = try await calculateTronFee(coin: coin, to: to, memo: memo)
         let estimation = String(calculatedFee)
         
@@ -222,6 +221,19 @@ class TronService: RpcService {
         return try decoder.decode(TronAccountResponse.self, from: data)
     }
     
+    private func checkIfAccountIsActive(address: String?) async throws -> Bool {
+        guard let address = address, !address.isEmpty else {
+            return true
+        }
+        
+        do {
+            let account = try await getAccount(address: address)
+            return !account.address.isEmpty
+        } catch {
+            return false
+        }
+    }
+    
     private func getCachedChainParameters() async throws -> TronChainParametersResponse {
         if let cached = chainParametersCache {
             return cached
@@ -285,10 +297,7 @@ class TronService: RpcService {
     
     func calculateTronFee(coin: Coin, to: String?, memo: String?) async throws -> BigInt {
         do {
-            // Calculate memo fee
             let memoFee = try await getTronFeeMemo(memo: memo)
-            
-            // Check if destination needs activation (new account)
             let activationFee = try await getTronInactiveDestinationFee(to: to)
             let isNewAccount = activationFee > BigInt.zero
             
@@ -312,10 +321,13 @@ class TronService: RpcService {
                 let accountResource = try await getAccountResource(address: coin.address)
                 let availableEnergy = accountResource.EnergyLimit - accountResource.EnergyUsed
                 
-                if availableEnergy >= 130000 {
+                let isDestinationActive = try await checkIfAccountIsActive(address: to)
+                let energyRequired = isDestinationActive ? 65000 : 130000
+                
+                if availableEnergy >= energyRequired {
                     transactionFee = BigInt(1_000_000)
                 } else {
-                    transactionFee = BigInt(28_000_000)
+                    transactionFee = isDestinationActive ? BigInt(18_000_000) : BigInt(36_000_000)
                 }
             }
             
@@ -448,6 +460,12 @@ struct TronChainParametersResponse: Codable {
 struct TronChainParameter: Codable {
     let key: String
     let value: Int64
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        key = try container.decode(String.self, forKey: .key)
+        value = try container.decodeIfPresent(Int64.self, forKey: .value) ?? 0
+    }
 }
 
 struct TronAccountResourceResponse: Codable {
