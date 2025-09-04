@@ -20,8 +20,9 @@ struct SwapCoinPickerView: View {
     var showSelectChainHeader: Bool {
         #if os(macOS)
         return true
-        #endif
+        #else
         return !searchBarFocused
+        #endif
     }
     
     init(
@@ -35,6 +36,13 @@ struct SwapCoinPickerView: View {
         self._selectedCoin = selectedCoin
         self.selectedChain = selectedChain
         self._viewModel = StateObject(wrappedValue: .init(vault: vault, selectedCoin: selectedCoin.wrappedValue))
+    }
+    
+    var body: some View {
+        VStack {
+            header
+            content
+        }
     }
     
     var header: some View {
@@ -74,7 +82,6 @@ struct SwapCoinPickerView: View {
                     if viewModel.isLoading {
                         loadingView
                     } else if !viewModel.filteredTokens.isEmpty {
-                        networkTitle
                         list
                     } else {
                         emptyMessage
@@ -117,13 +124,6 @@ struct SwapCoinPickerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 48)
-    }
-    
-    var networkTitle: some View {
-        Text(NSLocalizedString("network", comment: ""))
-            .font(Theme.fonts.caption12)
-            .foregroundColor(Theme.colors.textExtraLight)
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     @ViewBuilder
