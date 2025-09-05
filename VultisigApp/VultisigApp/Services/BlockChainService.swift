@@ -98,6 +98,7 @@ final class BlockChainService {
             memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
+        print("Fetched specific for swap: \(specific) for \(tx.fromCoin.chain)")
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -183,17 +184,7 @@ private extension BlockChainService {
             }
         }
         
-        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        
-        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(
-            fromAddress: tx.coin.address,
-            mode: tx.feeMode
-        )
-        
-        let estimateGasLimit = tx.coin.isNativeToken ?
-        try await estimateGasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce) :
-        await estimateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
-        
+        let estimateGasLimit = tx.coin.isNativeToken ? try await estimateGasLimit(tx: tx):await estimateERC20GasLimit(tx: tx)
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
@@ -211,6 +202,7 @@ private extension BlockChainService {
             feeMode: tx.feeMode
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+        print("Fetched specific: \(specific) for \(tx.coin.chain)")
         return specific
     }
     
@@ -334,19 +326,20 @@ private extension BlockChainService {
             return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
-            let service = try EvmServiceFactory.getService(forChain: coin.chain)
-            let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
-            
-            let feeService = EthereumFeeService(rpcEvmService: service)
-            let fee = try await feeService.calculateFees(chain: coin.chain, limit: gasLimit, isSwap: action == .swap, gasPrice: gasPrice, priorityFee: priorityFee)
-            
+            // TODO: need to estimate gas limit for swap action
+            let feeService = try EthereumFeeService(chain: coin.chain)
+            let fee = try await feeService.calculateFees(chain: coin.chain,
+                                                         limit: gasLimit,
+                                                         isSwap: action == .swap,
+                                                         fromAddress: coin.address,
+                                                         feeMode: feeMode)
             switch fee {
-            case .Eip1559(_, let maxFeePerGas, let maxPriorityFeePerGas, _):
+            case .Eip1559(_, let maxFeePerGas, let maxPriorityFeePerGas, _,let nonce):
                 return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
-            case .GasFee(let price, _, _):
+            case .GasFee(let price, _, _,let nonce):
                 return .Ethereum(maxFeePerGasWei: price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
-            case .BasicFee(let amount):
+            case .BasicFee(let amount,let nonce):
                 return .Ethereum(maxFeePerGasWei: amount, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
             }
             
@@ -417,7 +410,7 @@ private extension BlockChainService {
             }
             
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: gas, transactionType: transactionType.rawValue, ibcDenomTrace: ibcDenomTrace)
-
+            
             
         case .ton:
             let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
@@ -464,18 +457,13 @@ private extension BlockChainService {
         case .swap:
             // For Mantle, use the coin's default gas limit for swaps
             if coin.chain == .mantle {
-                return BigInt(coin.feeDefault) ?? 0
+                return MantleService.defaultMantleSwapLimit
             }
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
     }
     
-    func estimateERC20GasLimit(
-        tx: SendTransaction,
-        gasPrice: BigInt,
-        priorityFee: BigInt,
-        nonce: Int64
-    ) async  -> BigInt {
+    func estimateERC20GasLimit(tx: SendTransaction) async  -> BigInt {
         do{
             let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
             let gas = try await service.estimateGasForERC20Transfer(
@@ -491,12 +479,7 @@ private extension BlockChainService {
         }
     }
     
-    func estimateGasLimit(
-        tx: SendTransaction,
-        gasPrice: BigInt,
-        priorityFee: BigInt,
-        nonce: Int64
-    ) async throws -> BigInt {
+    func estimateGasLimit(tx: SendTransaction) async throws -> BigInt {
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForEthTransaction(
             senderAddress: tx.coin.address,
@@ -505,5 +488,20 @@ private extension BlockChainService {
             memo: tx.memo
         )
         return gas
+    }
+    
+    func estimateSwapGasLimit(tx: SwapTransaction) async throws -> BigInt? {
+        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin.chain)
+        switch(tx.quote){
+        case .mayachain(_):
+            return nil
+        case .thorchain(_):
+            return nil
+        case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_):
+            return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.fromAmount.toBigInt(), data: quote.tx.data)
+        case .none:
+            return nil
+        }
+        
     }
 }
