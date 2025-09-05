@@ -110,6 +110,7 @@ class BlastService: RpcEvmService, EvmTokenServiceProtocol {
 }
 
 class MantleService: RpcEvmService, EvmTokenServiceProtocol {
+    static let defaultMantleSwapLimit = BigInt("3000000000")
     static let rpcEndpoint = Endpoint.mantleServiceRpcService
     static let shared = MantleService(rpcEndpoint)
     

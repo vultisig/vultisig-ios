@@ -150,7 +150,7 @@ class Coin: ObservableObject, Codable, Hashable {
             if self.isNativeToken {
                 return "250000000"  // 250M gas
             } else {
-                return "500000000"  // 500M gas
+                return "250000000"  // 250M gas
             }
         case .zksync:
             return "200000"

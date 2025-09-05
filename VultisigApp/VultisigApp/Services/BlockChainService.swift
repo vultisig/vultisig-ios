@@ -83,15 +83,14 @@ final class BlockChainService {
                 return localCacheItem.blockSpecific
             }
         }
-        let gasLimit = try await estimateSwapGasLimit(tx: tx)
-        print("Estimated gas limit for swap: \(String(describing: gasLimit))")
+        
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
             sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: .unspecified,
-            gasLimit: gasLimit,
+            gasLimit: nil,
             byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
@@ -449,7 +448,7 @@ private extension BlockChainService {
         case .swap:
             // For Mantle, use the coin's default gas limit for swaps
             if coin.chain == .mantle {
-                return BigInt(coin.feeDefault) ?? 0
+                return MantleService.defaultMantleSwapLimit
             }
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
@@ -490,7 +489,7 @@ private extension BlockChainService {
         case .thorchain(_):
             return nil
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_):
-            return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.fromAmount.toBigInt(), data: Data(hex: quote.tx.data))
+            return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.fromAmount.toBigInt(), data: quote.tx.data)
         case .none:
             return nil
         }

@@ -374,8 +374,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        fetchFees(tx: tx, vault: vault)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
