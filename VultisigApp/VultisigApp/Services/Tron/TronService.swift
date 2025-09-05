@@ -299,24 +299,16 @@ class TronService: RpcService {
         do {
             let memoFee = try await getTronFeeMemo(memo: memo)
             let activationFee = try await getTronInactiveDestinationFee(to: to)
-            let isNewAccount = activationFee > BigInt.zero
             
-            // Calculate bandwidth and energy fees based on token type
             let transactionFee: BigInt
             if coin.isNativeToken {
-                // Native TRX: Calculate bandwidth fees only
                 let accountResource = try await getAccountResource(address: coin.address)
                 let availableBandwidth = accountResource.calculateAvailableBandwidth()
                 
-                // New accounts don't pay bandwidth fee (included in activation)
-                if isNewAccount {
-                    transactionFee = BigInt.zero
-                } else {
-                    transactionFee = try await getBandwidthFeeDiscount(
-                        isNativeToken: true,
-                        availableBandwidth: availableBandwidth
-                    )
-                }
+                transactionFee = try await getBandwidthFeeDiscount(
+                    isNativeToken: true,
+                    availableBandwidth: availableBandwidth
+                )
             } else {
                 let accountResource = try await getAccountResource(address: coin.address)
                 let availableEnergy = accountResource.EnergyLimit - accountResource.EnergyUsed
