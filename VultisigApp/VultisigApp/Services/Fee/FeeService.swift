@@ -10,44 +10,45 @@ import BigInt
 import VultisigCommonData
 
 enum FeeEnum {
-    case GasFee(price: BigInt, limit: BigInt, amount: BigInt)
-    case Eip1559(limit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, amount: BigInt)
-    case BasicFee(amount: BigInt)
+    case GasFee(price: BigInt, limit: BigInt, amount: BigInt,nonce: Int64)
+    case Eip1559(limit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, amount: BigInt,nonce: Int64)
+    case BasicFee(amount: BigInt,nonce: Int64)
     
     var amount: BigInt {
         switch self {
-        case .GasFee(_, _, let amount):
+        case .GasFee(_, _, let amount,_):
             return amount
-        case .Eip1559(_, _, _, let amount):
+        case .Eip1559(_, _, _, let amount,_):
             return amount
-        case .BasicFee(let amount):
+        case .BasicFee(let amount,_):
             return amount
         }
     }
 }
 
 protocol FeeService {
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> FeeEnum
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum
 }
 
 class EthereumFeeService: FeeService {
-    
+    private let chain: Chain
     private let rpcEvmService: RpcEvmService
     
-    init(rpcEvmService: RpcEvmService) {
-        self.rpcEvmService = rpcEvmService
+    init(chain: Chain) {
+        self.chain = chain
+        self.rpcEvmService = try! EvmServiceFactory.getService(forChain: chain)
     }
     
-    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> FeeEnum {
-        
+    func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum {
+        let (gasPrice, priorityFee, nonce) = try await self.rpcEvmService.getGasInfo(fromAddress: fromAddress, mode: feeMode)
         if chain.supportsEip1559 {
-            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee, chain: chain)
+            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee, chain: chain,nonce: nonce)
         } else {
-            return calculateLegacyFees(limit: limit, isSwap: isSwap, gasPrice: gasPrice)
+            return calculateLegacyFees(limit: limit, isSwap: isSwap, gasPrice: gasPrice,nonce: nonce)
         }
     }
     
-    private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt, chain: Chain) async throws -> FeeEnum {
+    private func calculateEip1559Fees(limit: BigInt, isSwap: Bool, priorityFee: BigInt, chain: Chain,nonce: Int64) async throws -> FeeEnum {
         let baseFee = try await rpcEvmService.getBaseFee()
         
         let calculatedPriorityFee = try await calculateMaxPriorityFeePerGas(
@@ -62,18 +63,20 @@ class EthereumFeeService: FeeService {
             limit: limit,
             maxFeePerGas: maxFeePerGas,
             maxPriorityFeePerGas: calculatedPriorityFee,
-            amount: limit * maxFeePerGas
+            amount: limit * maxFeePerGas,
+            nonce: nonce
         )
     }
     
-    private func calculateLegacyFees(limit: BigInt, isSwap: Bool, gasPrice: BigInt) -> FeeEnum {
+    private func calculateLegacyFees(limit: BigInt, isSwap: Bool, gasPrice: BigInt,nonce: Int64) -> FeeEnum {
         let adjustedGasPrice = isSwap ? gasPrice * 110 / 100 : gasPrice
         let amount = adjustedGasPrice * limit
         
         return .GasFee(
             price: adjustedGasPrice,
             limit: limit,
-            amount: amount
+            amount: amount,
+            nonce: nonce
         )
     }
     
@@ -97,21 +100,6 @@ class EthereumFeeService: FeeService {
             
         default:
             return max(originalPriorityFee, gwei)
-        }
-    }
-    
-    func calculateFeesLegacy(chain: Chain, specific: BlockChainSpecific, isSwap: Bool, gasPrice: BigInt, priorityFee: BigInt) async throws -> (gas: String, priorityFee: String) {
-        
-        let gasLimit = BigInt(specific.gas)
-        let fee = try await calculateFees(chain: chain, limit: gasLimit, isSwap: isSwap, gasPrice: gasPrice, priorityFee: priorityFee)
-        
-        switch fee {
-        case .Eip1559(_, _, let maxPriorityFeePerGas, let amount):
-            return (gas: String(amount), priorityFee: String(maxPriorityFeePerGas))
-        case .GasFee(_, _, let amount):
-            return (gas: String(amount), priorityFee: "0")
-        case .BasicFee(let amount):
-            return (gas: String(amount), priorityFee: "0")
         }
     }
 }

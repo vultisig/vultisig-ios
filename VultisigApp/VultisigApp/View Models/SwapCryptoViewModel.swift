@@ -483,6 +483,7 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+            print("Fetched chain specific: \(chainSpecific)")
             tx.gas = chainSpecific.gas
             tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
 
