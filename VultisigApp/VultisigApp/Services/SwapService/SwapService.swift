@@ -143,7 +143,6 @@ private extension SwapService {
             from: fromCoin.address,
             isAffiliate: isAffiliate
         )
-        print("1inch quote: \(response)")
         return .oneinch(response.quote, fee: response.fee)
     }
     
@@ -157,7 +156,6 @@ private extension SwapService {
             from: fromCoin.address,
             isAffiliate: isAffiliate
         )
-        print("KyberSwap quote: \(quote), fee: \(String(describing: fee))")
         return .kyberswap(quote, fee: fee)
     }
     
@@ -168,7 +166,6 @@ private extension SwapService {
             toCoin: toCoin,
             fromAmount: fromAmount
         )
-        print("LiFi quote: \(response)")
         return .lifi(response.quote, fee: response.fee)
     }
 }

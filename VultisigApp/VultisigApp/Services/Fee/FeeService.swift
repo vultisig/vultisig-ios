@@ -34,9 +34,9 @@ class EthereumFeeService: FeeService {
     private let chain: Chain
     private let rpcEvmService: RpcEvmService
     
-    init(chain: Chain) {
+    init(chain: Chain) throws {
         self.chain = chain
-        self.rpcEvmService = try! EvmServiceFactory.getService(forChain: chain)
+        self.rpcEvmService = try EvmServiceFactory.getService(forChain: chain)
     }
     
     func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum {

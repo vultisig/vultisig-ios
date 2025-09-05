@@ -319,7 +319,7 @@ private extension BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             // TODO: need to estimate gas limit for swap action
-            let feeService = EthereumFeeService(chain: coin.chain)
+            let feeService = try EthereumFeeService(chain: coin.chain)
             let fee = try await feeService.calculateFees(chain: coin.chain,
                                                          limit: gasLimit,
                                                          isSwap: action == .swap,
