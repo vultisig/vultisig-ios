@@ -149,7 +149,7 @@ private extension BlockaidScannerService {
 
 // MARK: - BigInt Extension
 
-private extension BigInt {
+extension BigInt {
     func toHexString() -> String {
         return "0x" + String(self, radix: 16)
     }

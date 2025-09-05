@@ -144,6 +144,17 @@ class RpcEvmService: RpcService {
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
+    func estimateGasLimitForSwap(senderAddress: String, toAddress: String, value: BigInt, data: String) async throws -> BigInt {
+        let transactionObject: [String: Any] = [
+            "from": senderAddress,
+            "to": toAddress,
+            "value": value.toHexString(),
+            "data": data
+        ]
+        
+        return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
+    }
+    
     func fetchERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
         // Function signature hash of `balanceOf(address)` is `0x70a08231`
         // The wallet address is stripped of '0x', left-padded with zeros to 64 characters

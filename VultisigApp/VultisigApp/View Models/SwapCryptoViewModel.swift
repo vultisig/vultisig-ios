@@ -374,8 +374,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
-        fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
+        fetchFees(tx: tx, vault: vault)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -461,7 +461,6 @@ private extension SwapCryptoViewModel {
             )
             
             tx.quote = quote
-            
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
             }
@@ -483,6 +482,7 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
+            print("Fetched chain specific: \(chainSpecific)")
             tx.gas = chainSpecific.gas
             tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
 
