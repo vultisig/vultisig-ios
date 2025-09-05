@@ -1,0 +1,24 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ring" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00FFD0" />
+      <stop offset="100%" stop-color="#007CF0" />
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#FFB300" />
+    </linearGradient>
+  </defs>
+  <!-- Outer black shadow -->
+  <circle cx="150" cy="150" r="145" fill="#181C22" stroke="#222" stroke-width="10" />
+  <!-- Gold staking ring -->
+  <circle cx="150" cy="150" r="135" fill="none" stroke="url(#gold)" stroke-width="8" />
+  <!-- Main gradient ring -->
+  <circle cx="150" cy="150" r="120" fill="none" stroke="url(#ring)" stroke-width="5" />
+  <!-- Inner dark circle -->
+  <circle cx="150" cy="150" r="110" fill="#22262C" />
+  <!-- Thunderbolt -->
+  <polygon points="150,80 170,150 140,150 160,220" fill="#1A2A28" opacity="0.35" />
+  <!-- sTCY text -->
+  <text x="150" y="170" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="60" fill="white" font-weight="bold">sTCY</text>
+</svg> 
