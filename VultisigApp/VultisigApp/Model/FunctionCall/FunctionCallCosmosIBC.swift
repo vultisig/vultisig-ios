@@ -35,6 +35,7 @@ class FunctionCallCosmosIBC: FunctionCallAddressable, ObservableObject {
     @Published var fnCallValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     @Published var chains: [IdentifiableString] = []
     @Published var chainValid: Bool = false

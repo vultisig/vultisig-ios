@@ -20,6 +20,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
     @Published var pairedAddressValid: Bool = true
     @Published var poolValid: Bool = false
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     // Pools
     @Published var availablePools: [IdentifiableString] = []

@@ -11,6 +11,7 @@ import Combine
 
 class FunctionCallCustom: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     @Published var amount: Decimal = 0.0
     @Published var custom: String = ""

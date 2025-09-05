@@ -17,6 +17,7 @@ class FunctionCallUnstake: FunctionCallAddressable, ObservableObject {
     @Published var amountValid: Bool = true
     @Published var nodeAddressValid: Bool = true
     @Published var isTheFormValid: Bool = true
+    @Published var customErrorMessage: String? = nil
     
     var addressFields: [String: String] {
         get {

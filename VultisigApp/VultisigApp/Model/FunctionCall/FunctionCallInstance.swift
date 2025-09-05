@@ -383,6 +383,21 @@ enum FunctionCallInstance {
         }
     }
     
+    var customErrorMessage: String? {
+        switch self {
+        case .mintYRune(let memo):
+            return memo.customErrorMessage
+        case .mintYTCY(let memo):
+            return memo.customErrorMessage
+        case .redeemRune(let memo):
+            return memo.customErrorMessage
+        case .redeemTCY(let memo):
+            return memo.customErrorMessage
+        default:
+            return nil
+        }
+    }
+    
     static func getDefault(for coin: Coin, tx: SendTransaction, functionCallViewModel: FunctionCallViewModel, vault: Vault) -> FunctionCallInstance {
         switch coin.chain {
         case .thorChain:
