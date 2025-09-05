@@ -461,7 +461,6 @@ private extension SwapCryptoViewModel {
             )
             
             tx.quote = quote
-            
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
             }

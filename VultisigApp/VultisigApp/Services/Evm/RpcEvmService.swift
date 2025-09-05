@@ -145,16 +145,11 @@ class RpcEvmService: RpcService {
     }
     
     func estimateGasLimitForSwap(senderAddress: String, toAddress: String, value: BigInt, data: String) async throws -> BigInt {
-        let nonce = try await fetchNonce(address: senderAddress)
-        let gasPrice = try await fetchGasPrice()
-        
         let transactionObject: [String: Any] = [
             "from": senderAddress,
             "to": toAddress,
             "value": value.toHexString(),
-            "data": data,
-            "nonce": nonce.toHexString(),
-            "gasPrice": gasPrice.toHexString()
+            "data": data
         ]
         
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
