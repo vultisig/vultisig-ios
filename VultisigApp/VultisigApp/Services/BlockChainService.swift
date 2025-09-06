@@ -68,6 +68,7 @@ final class BlockChainService {
     }
     @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
+        let quote = "\(String(describing: tx.quote?.hashValue))"
         let cacheKey =  getCacheKey(for: tx.fromCoin,
                                     action: .swap,
                                     sendMaxAmount: false,
@@ -75,7 +76,7 @@ final class BlockChainService {
                                     transactionType: .unspecified,
                                     fromAddress: tx.fromCoin.address,
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
-                                    feeMode: .fast)
+                                    feeMode: .fast,quote: quote)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
@@ -84,19 +85,19 @@ final class BlockChainService {
             }
         }
         
+        let gasLimit = try await estimateSwapGasLimit(tx: tx)
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
             sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: .unspecified,
-            gasLimit: nil,
+            gasLimit: gasLimit,
             byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             feeMode: .fast
         )
-        print("Fetched specific for swap: \(specific) for \(tx.fromCoin.chain)")
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -115,8 +116,9 @@ final class BlockChainService {
                      transactionType: VSTransactionType,
                      fromAddress: String?,
                      toAddress: String?,
-                     feeMode: FeeMode) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode)"
+                     feeMode: FeeMode,
+                     quote: String?) -> String {
+        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode) -\(quote ?? "")"
     }
 }
 
@@ -137,7 +139,8 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
-                                   feeMode: tx.feeMode)
+                                   feeMode: tx.feeMode,
+                                   quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
@@ -169,7 +172,8 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
-                                   feeMode: tx.feeMode)
+                                   feeMode: tx.feeMode,
+                                   quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
