@@ -376,7 +376,7 @@ class SendCryptoViewModel: ObservableObject {
             return isValidForm
         }
         
-        if gasFee == 0 {
+        if gasFee == 0 && !tx.coin.allowZeroGas() {
             errorTitle = "error"
             errorMessage = "noGasEstimation"
             showAmountAlert = true
