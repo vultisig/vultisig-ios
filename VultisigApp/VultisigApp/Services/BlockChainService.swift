@@ -66,8 +66,9 @@ final class BlockChainService {
             return try await fetchSpecificForNonEVM(tx: tx)
         }
     }
-    @MainActor
+    
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
+        let quote = "\(String(describing: tx.quote?.hashValue))"
         let cacheKey =  getCacheKey(for: tx.fromCoin,
                                     action: .swap,
                                     sendMaxAmount: false,
@@ -76,7 +77,7 @@ final class BlockChainService {
                                     fromAddress: tx.fromCoin.address,
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
                                     memo: nil,  // Swaps don't have memos
-                                    feeMode: .fast)
+                                    feeMode: .fast,quote: quote)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
             // use the cache item
@@ -85,20 +86,21 @@ final class BlockChainService {
             }
         }
         
+        let gasLimit = try await estimateSwapGasLimit(tx: tx)
+        print("Estimated gas limit for swap: \(String(describing: gasLimit)) for \(tx.fromCoin.chain)")
         let specific = try await fetchSpecific(
             for: tx.fromCoin,
             action: .swap,
             sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: .unspecified,
-            gasLimit: nil,
+            gasLimit: gasLimit,
             byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
             memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
-        print("Fetched specific for swap: \(specific) for \(tx.fromCoin.chain)")
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
         return specific
     }
@@ -118,9 +120,10 @@ final class BlockChainService {
                      fromAddress: String?,
                      toAddress: String?,
                      memo: String?,
-                     feeMode: FeeMode) -> String {
+                     feeMode: FeeMode,
+                     quote: String?) -> String {
         let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
-        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode)"
+        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode) -\(quote ?? "")"
     }
 }
 
@@ -142,7 +145,8 @@ private extension BlockChainService {
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
                                    memo: tx.memo,
-                                   feeMode: tx.feeMode)
+                                   feeMode: tx.feeMode,
+                                   quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
@@ -176,7 +180,8 @@ private extension BlockChainService {
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
                                    memo: tx.memo,
-                                   feeMode: tx.feeMode)
+                                   feeMode: tx.feeMode,
+                                   quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             // use the cache item
             if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
@@ -185,6 +190,7 @@ private extension BlockChainService {
         }
         
         let estimateGasLimit = tx.coin.isNativeToken ? try await estimateGasLimit(tx: tx):await estimateERC20GasLimit(tx: tx)
+        print("Estimated gas limit: \(estimateGasLimit) for \(tx.coin.chain)")
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
         
@@ -327,7 +333,6 @@ private extension BlockChainService {
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .polygonV2, .blast, .cronosChain,.ethereumSepolia, .mantle:
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
-            // TODO: need to estimate gas limit for swap action
             let feeService = try EthereumFeeService(chain: coin.chain)
             let fee = try await feeService.calculateFees(chain: coin.chain,
                                                          limit: gasLimit,
@@ -335,12 +340,12 @@ private extension BlockChainService {
                                                          fromAddress: coin.address,
                                                          feeMode: feeMode)
             switch fee {
-            case .Eip1559(_, let maxFeePerGas, let maxPriorityFeePerGas, _,let nonce):
-                return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
-            case .GasFee(let price, _, _,let nonce):
-                return .Ethereum(maxFeePerGasWei: price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
-            case .BasicFee(let amount,let nonce):
-                return .Ethereum(maxFeePerGasWei: amount, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: gasLimit)
+            case .Eip1559(let newGasLimit, let maxFeePerGas, let maxPriorityFeePerGas, _,let nonce):
+                return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: newGasLimit)
+            case .GasFee(let price, let newGasLimit, _,let nonce):
+                return .Ethereum(maxFeePerGasWei: price, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: newGasLimit)
+            case .BasicFee(let amount,let nonce,let newGasLimit):
+                return .Ethereum(maxFeePerGasWei: amount, priorityFeeWei: BigInt.zero, nonce: nonce, gasLimit: newGasLimit)
             }
             
         case .zksync:
@@ -498,7 +503,10 @@ private extension BlockChainService {
         case .thorchain(_):
             return nil
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_):
-            return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.fromAmount.toBigInt(), data: quote.tx.data)
+            if tx.fromCoin.isNativeToken {
+                return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
+            }
+            return nil
         case .none:
             return nil
         }

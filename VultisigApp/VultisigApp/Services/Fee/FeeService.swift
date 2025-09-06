@@ -12,7 +12,7 @@ import VultisigCommonData
 enum FeeEnum {
     case GasFee(price: BigInt, limit: BigInt, amount: BigInt,nonce: Int64)
     case Eip1559(limit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, amount: BigInt,nonce: Int64)
-    case BasicFee(amount: BigInt,nonce: Int64)
+    case BasicFee(amount: BigInt,nonce: Int64,limit: BigInt)
     
     var amount: BigInt {
         switch self {
@@ -20,7 +20,7 @@ enum FeeEnum {
             return amount
         case .Eip1559(_, _, _, let amount,_):
             return amount
-        case .BasicFee(let amount,_):
+        case .BasicFee(let amount,_,_):
             return amount
         }
     }
@@ -41,10 +41,14 @@ class EthereumFeeService: FeeService {
     
     func calculateFees(chain: Chain, limit: BigInt, isSwap: Bool, fromAddress:String,feeMode: FeeMode) async throws -> FeeEnum {
         let (gasPrice, priorityFee, nonce) = try await self.rpcEvmService.getGasInfo(fromAddress: fromAddress, mode: feeMode)
+        var newLimit = limit
+        if isSwap {
+            newLimit = inflatedGasLimit(limit)
+        }
         if chain.supportsEip1559 {
-            return try await calculateEip1559Fees(limit: limit, isSwap: isSwap, priorityFee: priorityFee, chain: chain,nonce: nonce)
+            return try await calculateEip1559Fees(limit: newLimit, isSwap: isSwap, priorityFee: priorityFee, chain: chain,nonce: nonce)
         } else {
-            return calculateLegacyFees(limit: limit, isSwap: isSwap, gasPrice: gasPrice,nonce: nonce)
+            return calculateLegacyFees(limit: newLimit, isSwap: isSwap, gasPrice: gasPrice,nonce: nonce)
         }
     }
     
@@ -101,6 +105,10 @@ class EthereumFeeService: FeeService {
         default:
             return max(originalPriorityFee, gwei)
         }
+    }
+    
+    func inflatedGasLimit(_ gasLimit: BigInt) -> BigInt {
+        return gasLimit + (gasLimit / 2) // add 50%
     }
 }
 
