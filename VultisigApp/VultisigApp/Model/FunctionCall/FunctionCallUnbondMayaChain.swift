@@ -26,6 +26,7 @@ class FunctionCallUnbondMayaChain: FunctionCallAddressable,
     @Published var assets: [IdentifiableString] = []
     
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     var addressFields: [String: String] {
         get {

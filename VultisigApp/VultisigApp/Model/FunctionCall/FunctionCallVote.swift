@@ -12,6 +12,7 @@ import WalletCore
 
 class FunctionCallVote: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = true
+    @Published var customErrorMessage: String? = nil
     @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
     @Published var proposalID: Int = 0
     

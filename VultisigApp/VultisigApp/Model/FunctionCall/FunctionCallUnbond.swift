@@ -11,7 +11,7 @@ import Combine
 
 class FunctionCallUnbond: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
-    
+    @Published var customErrorMessage: String? = nil
     @Published var nodeAddress: String = ""
     @Published var amount: Decimal = 0.0
     @Published var provider: String = ""

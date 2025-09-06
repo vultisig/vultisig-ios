@@ -259,7 +259,7 @@ struct FunctionCallDetailsView: View {
         Alert(
             title: Text("Form Invalid"),
             message: Text(
-                "The form is not valid. Please fix the fields marked with a red star."
+                fnCallInstance.customErrorMessage ?? "The form is not valid. Please fix the fields marked with a red star."
             ),
             dismissButton: .default(Text("OK"))
         )
