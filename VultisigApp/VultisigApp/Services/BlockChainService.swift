@@ -76,6 +76,7 @@ final class BlockChainService {
                                     transactionType: .unspecified,
                                     fromAddress: tx.fromCoin.address,
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+                                    memo: nil,  // Swaps don't have memos
                                     feeMode: .fast,quote: quote)
         if let localCacheItem =  self.localCache.get(cacheKey) {
             let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
@@ -97,6 +98,7 @@ final class BlockChainService {
             byteFee: nil,
             fromAddress: tx.fromCoin.address,
             toAddress: nil,  // Swaps don't have a specific toAddress in the same way
+            memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
@@ -117,9 +119,11 @@ final class BlockChainService {
                      transactionType: VSTransactionType,
                      fromAddress: String?,
                      toAddress: String?,
+                     memo: String?,
                      feeMode: FeeMode,
                      quote: String?) -> String {
-        return "\(coin.chain)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(feeMode) -\(quote ?? "")"
+        let memoKey = memo?.isEmpty == false ? "memo-\(memo!.count)" : "none"
+        return "\(coin.chain)-\(coin.ticker)-\(action)-\(sendMaxAmount)-\(isDeposit)-\(transactionType)-\(fromAddress ?? "")-\(toAddress ?? "")-\(memoKey)-\(feeMode) -\(quote ?? "")"
     }
 }
 
@@ -140,6 +144,7 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
+                                   memo: tx.memo,
                                    feeMode: tx.feeMode,
                                    quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
@@ -159,6 +164,7 @@ private extension BlockChainService {
             byteFee: tx.byteFee,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
+            memo: tx.memo,
             feeMode: tx.feeMode
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
@@ -173,6 +179,7 @@ private extension BlockChainService {
                                    transactionType: tx.transactionType,
                                    fromAddress: tx.fromAddress,
                                    toAddress: tx.toAddress,
+                                   memo: tx.memo,
                                    feeMode: tx.feeMode,
                                    quote: nil)
         if let localCacheItem =  self.localCache.get(cacheKey) {
@@ -197,6 +204,7 @@ private extension BlockChainService {
             byteFee: tx.gasLimit,
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
+            memo: tx.memo,
             feeMode: tx.feeMode
         )
         self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
@@ -213,6 +221,7 @@ private extension BlockChainService {
                        byteFee: BigInt?,
                        fromAddress: String?,
                        toAddress: String?,
+                       memo: String?,
                        feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .zcash:
@@ -442,7 +451,7 @@ private extension BlockChainService {
             //60 is bc of tss to wait till 5min so all devices can sign.
             return .Ripple(sequence: UInt64(sequence), gas: 180000, lastLedgerSequence: UInt64(lastLedgerSequence) + 60)
         case .tron:
-            return try await tron.getBlockInfo(coin: coin)
+            return try await tron.getBlockInfo(coin: coin, to: toAddress, memo: memo)
         }
     }
     
