@@ -143,7 +143,7 @@ class RpcEvmService: RpcService {
         let transactionObject: [String: Any] = [
             "from": senderAddress,
             "to": toAddress,
-            "value": value.toWei().toHexString(),
+            "value": value.toHexString(),
             "data": data
         ]
         
