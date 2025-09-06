@@ -1671,7 +1671,7 @@ class TokensStore {
         CoinMeta(
             chain: .thorChain,
             ticker: "sTCY",
-            logo: "tcy", // Use same logo as TCY
+            logo: "sTCY", // Use same logo as TCY
             decimals: 8,
             priceProviderId: "tcy",
             contractAddress: "x/staking-tcy",
