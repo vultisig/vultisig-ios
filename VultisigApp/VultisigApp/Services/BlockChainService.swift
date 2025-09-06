@@ -495,7 +495,10 @@ private extension BlockChainService {
         case .thorchain(_):
             return nil
         case .oneinch(let quote,_),.kyberswap(let quote, _),.lifi(let quote,_):
-            return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
+            if tx.fromCoin.isNativeToken {
+                return try await service.estimateGasLimitForSwap(senderAddress: tx.fromCoin.address, toAddress: quote.tx.to, value: tx.amountInCoinDecimal, data: quote.tx.data)
+            }
+            return nil
         case .none:
             return nil
         }
