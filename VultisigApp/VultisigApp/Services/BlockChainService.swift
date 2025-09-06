@@ -67,7 +67,6 @@ final class BlockChainService {
         }
     }
     
-    @MainActor
     func fetchSpecific(tx: SwapTransaction) async throws -> BlockChainSpecific {
         let quote = "\(String(describing: tx.quote?.hashValue))"
         let cacheKey =  getCacheKey(for: tx.fromCoin,
