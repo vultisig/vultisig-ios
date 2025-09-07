@@ -35,13 +35,17 @@ struct InfoBannerView: View {
             Text(description)
                 .font(Theme.fonts.footnote)
                 .foregroundStyle(fontColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.leading)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
+                .inset(by: 1)
                 .fill(bgColor)
                 .stroke(borderColor, lineWidth: 1)
         )
+        .frame(maxWidth: .infinity)
     }
     
     var fontColor: Color {

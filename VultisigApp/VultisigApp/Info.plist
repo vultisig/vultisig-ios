@@ -64,6 +64,16 @@
 		<string>Montserrat-Italic.ttf</string>
 		<string>Montserrat.ttf</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googlegmail</string>
+		<string>message</string>
+		<string>ms-outlook</string>
+		<string>ymail</string>
+		<string>readdle-spark</string>
+		<string>protonmail</string>
+		<string>mailto</string>
+	</array>
 	<key>UIRequiresPersistentWiFi</key>
 	<true/>
 	<key>UTExportedTypeDeclarations</key>

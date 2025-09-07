@@ -9,13 +9,15 @@ import Combine
 import SwiftUI
 
 final class VaultServerBackupViewModel: ObservableObject {
-    @Published var email = ""
-    @Published var password = ""
+    @Published var email = "asdasd@gmail.com"
+    @Published var password = "asd"
     @Published var emailError: String?
     @Published var passwordError: String?
     @Published var requestError: String?
     @Published var isLoading = false
     
+    
+    @Published var showSuccess = false
     @Published var showAlert: Bool = false
     @Published var alertError: ResendVaultShareError?
     
@@ -23,6 +25,10 @@ final class VaultServerBackupViewModel: ObservableObject {
     
     var validForm: Bool {
         email.isNotEmpty && password.isNotEmpty && emailError == nil && passwordError == nil && !isLoading
+    }
+    
+    var validEmail: Bool {
+        emailError == nil && email.isNotEmpty
     }
     
     let service = VultiServerService()
@@ -66,7 +72,11 @@ final class VaultServerBackupViewModel: ObservableObject {
     }
     
     func requestServerVaultShare(vault: Vault) async {
-        await MainActor.run { isLoading = true }
+        await MainActor.run {
+            showAlert = false
+            isLoading = true
+            showSuccess = true
+        }
         
         do {
             try await service.resendVaultShare(request: ResendVaultShareRequest(pubKeyECDSA: vault.pubKeyECDSA, email: email, password: password))
@@ -74,7 +84,7 @@ final class VaultServerBackupViewModel: ObservableObject {
             await MainActor.run {
                 isLoading = false
                 alertError = nil
-                showAlert = true
+                showSuccess = true
             }
         } catch {
             await MainActor.run {

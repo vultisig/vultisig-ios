@@ -14,6 +14,8 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     
     @State var opacity: CGFloat = 0
     @State var height: CGFloat? = 0
+    
+    @State var isExpandedInternal = false
         
     init(
         isExpanded: Bool,
@@ -23,6 +25,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         self.isExpanded = isExpanded
         self.header = header
         self.content = content
+        isExpandedInternal = isExpanded
     }
     
     var body: some View {
@@ -30,9 +33,8 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
             header()
             content()
                 .padding(.top, 16)
-                .clipped()
-                .opacity(opacity)
-                .frame(height: height)
+                .transition(.verticalGrowAndFade)
+                .showIf(isExpandedInternal)
         }
         .padding(16)
         .overlay(
@@ -49,22 +51,8 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
     }
     
     private func animate() {
-        if isExpanded {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                height = nil
-            }
-            
-            withAnimation(.easeInOut(duration: 0.2).delay(0.15)) {
-                opacity = 1
-            }
-        } else {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                opacity = 0
-            }
-            
-            withAnimation {
-                height = 0
-            }
+        withAnimation(.easeInOut) {
+            isExpandedInternal = isExpanded
         }
     }
 }

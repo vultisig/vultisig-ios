@@ -485,9 +485,9 @@
 "generatingECDSAText2" = "giving complete control over your assets";
 "generatingEdDSAText1" = "Cross-chain. ";
 "creatingVault" = "Creating Vault";
-"invalidEmailPleaseCheck" = "Incorrect e-mail, please check.";
-"emptyEmailPleaseCheck" = "Empty e-mail, please check.";
-"enterYourEmail" = "Enter your e-mail";
+"invalidEmailPleaseCheck" = "Incorrect email, please check.";
+"emptyEmailPleaseCheck" = "Empty email, please check.";
+"enterYourEmail" = "Enter your email";
 "enterYourEmailDescription" = "This email is only used to send the server backup.";
 "PasswordCannotBeReset" = "Password cannot be reset or recovered";
 "moreInfo" = "More info";
@@ -830,7 +830,6 @@
 "serverBackupTitle" = "Server Backup";
 "serverBackupDescription" = "Request Server Vault Share again.";
 "enterYourPassword" = "Enter your password";
-"requestServerVaultShare" = "Request Server Vault Share";
 "passwordIsRequired" = "Password is required.";
 "emailIsRequired" = "Email is required.";
 "requestServerVaultShareSuccess" = "We’ve sent a copy of your vault share to your email. It should arrive shortly.";
@@ -846,3 +845,9 @@
 "setOrUpdateHint" = "Set or update a hint for your vault password";
 "editPasswordHintTitle" = "Edit password hint";
 "editPasswordHintSubtitle" = "This will be shown in case you forget your password";
+"serverBackup" = "Server Backup";
+"enterVaultPassword" = "Enter the password you set when creating this Vault.";
+"vaultPassword" = "Vault Password";
+"backupShareSent" = "Backup share sent!";
+"weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
+"checkEmail" = "Check email";
