@@ -14,13 +14,13 @@ struct VaultServerBackupScreen: View {
     
     let vault: Vault
     @StateObject var viewModel = VaultServerBackupViewModel()
-    @Environment(\.dismiss) var dismiss
     
     @StateObject var keyboardObserver = KeyboardObserver()
     @State var scrollViewProxy: ScrollViewProxy?
     @State var showAlert = false
     @State var emailExpanded = true
     @State var passwordExpanded = false
+    @State var moveToHome = false
     @State var focusedFieldBinding: FocusedField? = .none
     @FocusState private var focusedField: FocusedField?
     private let passwordBottomId = "passwordBottomId"
@@ -70,7 +70,12 @@ struct VaultServerBackupScreen: View {
             }
         }
         .platformSheet(isPresented: $viewModel.showSuccess) {
-            ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess)
+            ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess) {
+                moveToHome = true
+            }
+        }
+        .navigationDestination(isPresented: $moveToHome) {
+            HomeView(selectedVault: vault, showVaultsList: false)
         }
     }
     

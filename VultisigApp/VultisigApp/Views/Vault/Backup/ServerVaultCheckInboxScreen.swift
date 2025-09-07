@@ -12,6 +12,7 @@ import AppKit
 
 struct ServerVaultCheckInboxScreen: View {
     @Binding var isPresented: Bool
+    var onClose: () -> Void
     @State var presentEmailDialog = false
 
     var body: some View {
@@ -51,7 +52,10 @@ struct ServerVaultCheckInboxScreen: View {
             PrimaryButton(
                 title: "close".localized,
                 type: .secondary
-            ) { isPresented.toggle() }
+            ) {
+                onClose()
+                isPresented.toggle()
+            }
         }
         .confirmationDialog("Choose email app", isPresented: $presentEmailDialog) {
             ForEach(emailOptions) { option in
