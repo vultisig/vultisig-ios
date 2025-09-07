@@ -58,6 +58,8 @@
 "ECDSA" = "ECDSA";
 "EdDSA" = "EdDSA";
 "backup" = "Respaldar";
+"backupVaultShareTitle" = "Respaldar Vault Share";
+"backupVaultShareDescription" = "Respaldar tu Vault Share en una ubicación preferida";
 "error" = "Error";
 "backupVault" = "Respaldar tu caja fuerte";
 "rename" = "Renombrar";

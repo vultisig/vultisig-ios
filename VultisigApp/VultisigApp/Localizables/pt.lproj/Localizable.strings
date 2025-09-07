@@ -58,6 +58,8 @@
 "ECDSA" = "ECDSA";
 "EdDSA" = "EdDSA";
 "backup" = "Backup";
+"backupVaultShareTitle" = "Backup Vault Share";
+"backupVaultShareDescription" = "Faça backup do seu Vault Share em um local preferido";
 "error" = "Erro";
 "backupVault" = "Fazer backup do seu cofre";
 "rename" = "Renomear";

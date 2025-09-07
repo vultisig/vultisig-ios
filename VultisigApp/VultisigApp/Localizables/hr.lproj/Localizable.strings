@@ -58,6 +58,8 @@
 "ECDSA" = "ECDSA";
 "EdDSA" = "EdDSA";
 "backup" = "Sigurnosna kopija";
+"backupVaultShareTitle" = "Sigurnosna kopija Vault Share";
+"backupVaultShareDescription" = "Napravite sigurnosnu kopiju vašeg Vault Share na željenoj lokaciji";
 "error" = "Greška";
 "backupVault" = "Napravite sigurnosnu kopiju vašeg sefa";
 "rename" = "Preimenuj";
