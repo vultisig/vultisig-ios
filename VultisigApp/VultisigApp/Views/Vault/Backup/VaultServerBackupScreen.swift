@@ -69,15 +69,6 @@ struct VaultServerBackupScreen: View {
                 focusedField = newValue
             }
         }
-//        .onChange(of: focusedField) { oldValue, newValue in
-//            if newValue == .password {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                    withAnimation {
-//                        scrollViewProxy?.scrollTo(passwordBottomId, anchor: .bottom)
-//                    }
-//                }
-//            }
-//        }
         .platformSheet(isPresented: $viewModel.showSuccess) {
             ServerVaultCheckInboxScreen(isPresented: $viewModel.showSuccess)
         }

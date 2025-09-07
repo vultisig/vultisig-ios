@@ -6,20 +6,13 @@
 //
 
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 struct ServerVaultCheckInboxScreen: View {
     @Binding var isPresented: Bool
     @State var presentEmailDialog = false
-
-    private var emailOptions: [EmailOption] {
-        return [
-            EmailOption(url: URL(string: "message://")!, name: "Mail"),
-            EmailOption(url: URL(string: "googlegmail://")!, name: "Gmail"),
-            EmailOption(url: URL(string: "ms-outlook://")!, name: "Outlook"),
-            EmailOption(url: URL(string: "ymail://")!, name: "Yahoo Mail"),
-            EmailOption(url: URL(string: "protonmail://")!, name: "ProtonMail")
-        ].filter { UIApplication.shared.canOpenURL($0.url) }
-    }
 
     var body: some View {
         VStack {
@@ -41,14 +34,14 @@ struct ServerVaultCheckInboxScreen: View {
                         .foregroundStyle(Theme.colors.textExtraLight)
                         .font(Theme.fonts.bodySMedium)
                         .multilineTextAlignment(.center)
-                    Text("checkEmail")
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
-                        .underline()
-                        .onTapGesture {
-                            presentEmailDialog.toggle()
-                        }
-                        .showIf(!emailOptions.isEmpty)
+                    Button {
+                        onCheckEmail()
+                    } label: {
+                        Text("checkEmail")
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .font(Theme.fonts.bodySMedium)
+                            .underline()
+                    }.showIf(showCheckInboxButton)
                 }
                 .padding(.horizontal, 16)
             }
@@ -69,11 +62,49 @@ struct ServerVaultCheckInboxScreen: View {
             Button("Cancel", role: .cancel) { }
         }
     }
+}
+
+#if os(macOS)
+private extension ServerVaultCheckInboxScreen {
+    var emailOptions: [EmailOption] { [] }
     
-    private func openApp(url: URL) {
-        UIApplication.shared.open(url, options: [:])
+    var showCheckInboxButton: Bool { true }
+    
+    func canOpenURL(_ url: URL) -> Bool {
+        return NSWorkspace.shared.urlForApplication(toOpen: url) != nil
+    }
+    
+    func openApp(url: URL) {
+        NSWorkspace.shared.open(url)
+    }
+    
+    func onCheckEmail() {
+        NSWorkspace.shared.open(URL(string: "mailto:")!)
     }
 }
+#else
+private extension ServerVaultCheckInboxScreen {
+    var showCheckInboxButton: Bool { !emailOptions.isEmpty }
+    
+    func openApp(url: URL) {
+        UIApplication.shared.open(url, options: [:])
+    }
+ 
+    var emailOptions: [EmailOption] {
+        [
+            EmailOption(url: URL(string: "message://")!, name: "Mail"),
+            EmailOption(url: URL(string: "googlegmail://")!, name: "Gmail"),
+            EmailOption(url: URL(string: "ms-outlook://")!, name: "Outlook"),
+            EmailOption(url: URL(string: "ymail://")!, name: "Yahoo Mail"),
+            EmailOption(url: URL(string: "protonmail://")!, name: "ProtonMail")
+        ].filter { UIApplication.shared.canOpenURL($0.url) }
+    }
+    
+    func onCheckEmail() {
+        presentEmailDialog.toggle()
+    }
+}
+#endif
 
 private struct EmailOption: Identifiable {
     var id: String { url.absoluteString }

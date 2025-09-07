@@ -9,8 +9,8 @@ import Combine
 import SwiftUI
 
 final class VaultServerBackupViewModel: ObservableObject {
-    @Published var email = "asdasd@gmail.com"
-    @Published var password = "asd"
+    @Published var email = ""
+    @Published var password = ""
     @Published var emailError: String?
     @Published var passwordError: String?
     @Published var requestError: String?
@@ -75,7 +75,6 @@ final class VaultServerBackupViewModel: ObservableObject {
         await MainActor.run {
             showAlert = false
             isLoading = true
-            showSuccess = true
         }
         
         do {
