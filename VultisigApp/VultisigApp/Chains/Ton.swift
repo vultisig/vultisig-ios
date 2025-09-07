@@ -52,7 +52,7 @@ enum TonHelper {
             
             transfer = TheOpenNetworkTransfer.with {
                 $0.dest = toAddress.description
-                $0.amount = sendMaxAmount ? 0 : (UInt64(keysignPayload.toAmount.description) ?? 0)
+                $0.amount = sendMaxAmount ? Data(hexString: "0x0")! : Data(hexString:keysignPayload.toAmount.toHexString())!
                 $0.mode = sendMode
                 
                 if let memo = keysignPayload.memo {
@@ -96,27 +96,27 @@ enum TonHelper {
         }
         
         // Attach 1 nanoton as forward amount (common jetton notify pattern)
-        let forwardAmountMsg: UInt64 = 1
+        let forwardAmountMsg: BigInt = 1
         
-        let amount = UInt64(keysignPayload.toAmount.description) ?? 0
+        let amount = keysignPayload.toAmount.toHexString()
         
         let jettonTransfer = TheOpenNetworkJettonTransfer.with {
             
-            $0.jettonAmount = amount
+            $0.jettonAmount = Data(hex: amount)
             // Use owner's canonical address as response
             $0.responseAddress = ownerAny.description
             $0.toOwner = destinationAddress
-            $0.forwardAmount = forwardAmountMsg
+            $0.forwardAmount = Data(hex: forwardAmountMsg.toHexString())
         }
         
         let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
         
         // Attach 0.08 TON for fees (matches Android/tests)
-        let recommendedJettonsAmount: UInt64 = UInt64(TonHelper.defaultJettonFee.description)! // 0.08 * 10^9
+        let recommendedJettonsAmount = TonHelper.defaultJettonFee.toHexString()
         
         let transfer = TheOpenNetworkTransfer.with {
             
-            $0.amount = recommendedJettonsAmount
+            $0.amount = Data(hex: recommendedJettonsAmount)
             if let memo = keysignPayload.memo, !memo.isEmpty {
                 $0.comment = memo
             }
