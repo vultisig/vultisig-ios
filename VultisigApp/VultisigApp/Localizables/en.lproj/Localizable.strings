@@ -851,3 +851,4 @@
 "backupShareSent" = "Backup share sent!";
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "checkEmail" = "Check email";
+"chooseEmailApp" = "Choose email app";

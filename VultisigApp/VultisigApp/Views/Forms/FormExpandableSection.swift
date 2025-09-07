@@ -42,32 +42,34 @@ struct FormExpandableSection<Content: View, T: Hashable>: View {
     
     var body: some View {
         SendFormExpandableSection(isExpanded: isExpanded) {
-            HStack(spacing: 12) {
-                Text(title)
-                    .font(Theme.fonts.bodySMedium)
-                    .foregroundStyle(Theme.colors.textPrimary)
-                    .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
-                
-                HStack(spacing: 12) {
-                    Text(value)
-                        .font(Theme.fonts.caption12)
-                        .foregroundStyle(Theme.colors.textExtraLight)
-                    Spacer()
-                    HStack {
-                        Image(systemName: "checkmark.circle")
-                            .foregroundColor(Theme.colors.alertSuccess)
-                        Image(systemName: "pencil")
-                            .foregroundColor(Theme.colors.textPrimary)
-                    }
-                }
-                .showIf(showValue && isValid)
-            }
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-            .onTapGesture {
+            Button {
                 isExpanded.toggle()
                 onExpand(isExpanded)
+            } label: {
+                HStack(spacing: 12) {
+                    Text(title)
+                        .font(Theme.fonts.bodySMedium)
+                        .foregroundStyle(Theme.colors.textPrimary)
+                        .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
+                    
+                    HStack(spacing: 12) {
+                        Text(value)
+                            .font(Theme.fonts.caption12)
+                            .foregroundStyle(Theme.colors.textExtraLight)
+                        Spacer()
+                        HStack {
+                            Image(systemName: "checkmark.circle")
+                                .foregroundColor(Theme.colors.alertSuccess)
+                            Image(systemName: "pencil")
+                                .foregroundColor(Theme.colors.textPrimary)
+                        }
+                    }
+                    .showIf(showValue && isValid)
+                }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         } content: {
             GradientListSeparator()
             content()

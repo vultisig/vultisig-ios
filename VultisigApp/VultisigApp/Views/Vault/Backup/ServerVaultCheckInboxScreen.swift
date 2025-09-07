@@ -57,13 +57,13 @@ struct ServerVaultCheckInboxScreen: View {
                 isPresented.toggle()
             }
         }
-        .confirmationDialog("Choose email app", isPresented: $presentEmailDialog) {
+        .confirmationDialog("chooseEmailApp".localized, isPresented: $presentEmailDialog) {
             ForEach(emailOptions) { option in
                 Button(option.name) {
                     openApp(url: option.url)
                 }
             }
-            Button("Cancel", role: .cancel) { }
+            Button("cancel".localized, role: .cancel) { }
         }
     }
 }

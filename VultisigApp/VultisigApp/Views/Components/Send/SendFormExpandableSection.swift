@@ -25,7 +25,7 @@ struct SendFormExpandableSection<Header: View, Content: View>: View {
         self.isExpanded = isExpanded
         self.header = header
         self.content = content
-        isExpandedInternal = isExpanded
+        self._isExpandedInternal = State(initialValue: isExpanded)
     }
     
     var body: some View {
