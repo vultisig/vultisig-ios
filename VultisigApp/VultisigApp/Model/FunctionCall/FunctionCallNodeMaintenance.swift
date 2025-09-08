@@ -4,6 +4,7 @@ import Combine
 
 class FunctionCallNodeMaintenance: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     @Published var isNodeAddressValid: Bool = false
     @Published var isProviderValid: Bool = false
     @Published var isAmountValid: Bool = false

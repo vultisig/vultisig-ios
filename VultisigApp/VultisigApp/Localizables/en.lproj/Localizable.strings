@@ -814,6 +814,7 @@
 "allVaults" = "All Vaults";
 "thisVaultOnly" = "This Vault Only";
 "partOf" = "part %d of %d";
+"shareOf" = "share %d of %d";
 "plusMore" = "+%d more";
 "noReferralYetTitle" = "No referral yet.";
 "noReferralYetDescription" = "Turn your vault into a rewards machine. Create your referral now and start earning.";
@@ -852,3 +853,4 @@
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "checkEmail" = "Check email";
 "chooseEmailApp" = "Choose email app";
+"insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";

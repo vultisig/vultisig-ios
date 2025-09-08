@@ -15,6 +15,7 @@ class FunctionCallStakeRuji: ObservableObject {
     // Internal
     @Published var amountValid: Bool = false
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -40,11 +41,32 @@ class FunctionCallStakeRuji: ObservableObject {
     }
     
     private func setupValidation() {
+        $amount
+            .removeDuplicates()
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] newAmount in
+                self?.validateAmount()
+            }
+            .store(in: &cancellables)
+        
         $amountValid
             .receive(on: DispatchQueue.main)
             .map { $0 && !self.amount.isZero && self.tx.coin.balanceDecimal >= self.amount }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
+    }
+    
+    private func validateAmount() {
+        let balance = tx.coin.balanceDecimal
+        let isValidAmount = amount > 0 && amount <= balance
+        amountValid = isValidAmount
+        
+        if balance < amount {
+            amountValid = false
+            self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+        } else {
+            self.customErrorMessage = nil
+        }
     }
     
     var description: String {
