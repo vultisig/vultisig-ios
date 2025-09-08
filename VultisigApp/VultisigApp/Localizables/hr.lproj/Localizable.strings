@@ -694,3 +694,4 @@
 "automaticallyCompoundTCYRewards" = "Automatski kapitaliziraj TCY nagrade";
 "unstakeAutoCompoundTCY" = "Povuci Auto-Compound TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";
+"insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
