@@ -58,6 +58,8 @@
 "ECDSA" = "ECDSA";
 "EdDSA" = "EdDSA";
 "backup" = "Backup";
+"backupVaultShareTitle" = "Vault Share sichern";
+"backupVaultShareDescription" = "Sichere deinen Vault Share an einem bevorzugten Ort";
 "error" = "Fehler";
 "backupVault" = "Sichere diesen Teil deines Tresores mit einem Backup";
 "rename" = "Umbenennen";

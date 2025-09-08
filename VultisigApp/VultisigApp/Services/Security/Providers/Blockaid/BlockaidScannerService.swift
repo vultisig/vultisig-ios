@@ -153,4 +153,15 @@ extension BigInt {
     func toHexString() -> String {
         return "0x" + String(self, radix: 16)
     }
+    
+    func toEvenLengthHexString() -> String {
+            var hex = self.toHexString()
+            if hex.hasPrefix("0x") {
+                hex = String(hex.dropFirst(2))
+            }
+            if hex.count % 2 != 0 {
+                hex = "0" + hex
+            }
+            return "0x" + hex
+        }
 }

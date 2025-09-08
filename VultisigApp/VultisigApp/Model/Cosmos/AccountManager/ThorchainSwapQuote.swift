@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ThorchainSwapQuote: Codable {
+struct ThorchainSwapQuote: Codable, Hashable {
     let dustThreshold: String?
     let expectedAmountOut: String
     let expiry: Int
@@ -45,7 +45,7 @@ struct ThorchainSwapQuote: Codable {
     }
 }
 
-struct Fees: Codable {
+struct Fees: Codable,Hashable {
     let affiliate: String
     let asset: String
     let outbound: String

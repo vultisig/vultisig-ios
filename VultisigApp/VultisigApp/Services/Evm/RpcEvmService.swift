@@ -119,7 +119,7 @@ class RpcEvmService: RpcService {
         let transactionObject: [String: Any] = [
             "from": senderAddress,
             "to": recipientAddress,
-            "value": "0x" + String(value, radix: 16), // Convert value to hex string
+            "value": value.toHexString(), // Convert value to hex string
             "data": "0x" + memoDataHex // Include the memo in the data field, if present
         ]
         
@@ -129,16 +129,11 @@ class RpcEvmService: RpcService {
     func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
         let data = constructERC20TransferData(recipientAddress: recipientAddress, value: value)
         
-        let nonce = try await fetchNonce(address: senderAddress)
-        let gasPrice = try await fetchGasPrice()
-        
         let transactionObject: [String: Any] = [
             "from": senderAddress,
             "to": contractAddress,
             "value": "0x0",
             "data": data,
-            "nonce": "0x\(String(nonce, radix: 16))",
-            "gasPrice": "0x\(String(gasPrice, radix: 16))"
         ]
         
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
@@ -405,6 +400,4 @@ class RpcEvmService: RpcService {
             return []
         }
     }
-
-    
 }
