@@ -115,21 +115,7 @@ struct VaultBackupSelectionScreen: View {
                 .foregroundStyle(Theme.colors.textPrimary)
             Spacer()
             
-            HStack(alignment: .center, spacing: 4) {
-                image(for: vault)
-                    .frame(width: 16, height: 16)
-                Text(partText(for: vault))
-                    .font(Theme.fonts.caption12)
-                    .foregroundStyle(Theme.colors.textExtraLight)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .cornerRadius(99)
-            .overlay(
-                RoundedRectangle(cornerRadius: 99)
-                    .inset(by: 1)
-                    .stroke(Theme.colors.border, lineWidth: 1)
-            )
+            VaultPartView(vault: vault)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -141,28 +127,6 @@ struct VaultBackupSelectionScreen: View {
             return "thisVaultOnly".localized
         case .multiple:
             return "allVaults".localized
-        }
-    }
-    
-    func partText(for vault: Vault) -> String {
-        guard let index = vault.signers.firstIndex(of: vault.localPartyID) else {
-            return "-"
-        }
-        return String(format: "partOf".localized, index + 1, vault.signers.count)
-    }
-    
-    @ViewBuilder
-    func image(for vault: Vault) -> some View {
-        if vault.isFastVault {
-            Image("lightning")
-                .resizable()
-                .aspectRatio(1, contentMode: .fit)
-                .foregroundStyle(Theme.colors.alertWarning)
-        } else {
-            Image("shield")
-                .resizable()
-                .aspectRatio(1, contentMode: .fit)
-                .foregroundStyle(Theme.colors.bgButtonPrimary)
         }
     }
 }

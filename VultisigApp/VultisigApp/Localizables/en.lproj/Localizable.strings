@@ -814,6 +814,7 @@
 "allVaults" = "All Vaults";
 "thisVaultOnly" = "This Vault Only";
 "partOf" = "part %d of %d";
+"shareOf" = "share %d of %d";
 "plusMore" = "+%d more";
 "noReferralYetTitle" = "No referral yet.";
 "noReferralYetDescription" = "Turn your vault into a rewards machine. Create your referral now and start earning.";
