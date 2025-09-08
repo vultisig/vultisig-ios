@@ -148,7 +148,7 @@ class FunctionCallCosmosYVault: ObservableObject {
         
         if balance < amount {
             amountValid = false
-            self.customErrorMessage = "Insufficient balance. Please enter an amount less than or equal to your available funds."
+            self.customErrorMessage = NSLocalizedString("insufficientBalance", comment: "Error message when user tries to enter amount greater than available balance")
         }
     }
     

@@ -385,6 +385,12 @@ enum FunctionCallInstance {
     
     var customErrorMessage: String? {
         switch self {
+        case .addThorLP(let memo):
+            return memo.customErrorMessage
+        case .stakeTcy(let memo):
+            return memo.customErrorMessage
+        case .stakeRuji(let memo):
+            return memo.customErrorMessage
         case .mintYRune(let memo):
             return memo.customErrorMessage
         case .mintYTCY(let memo):

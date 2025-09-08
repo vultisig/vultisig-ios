@@ -713,3 +713,4 @@
 "automaticallyCompoundTCYRewards" = "TCY-Belohnungen automatisch kapitalisieren";
 "unstakeAutoCompoundTCY" = "Auto-Compound TCY entstaken";
 "unstakeFromAutoCompoundingTCYDeposits" = "Aus auto-compounding TCY-Einlagen entstaken";
+"insufficientBalanceMessage" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";

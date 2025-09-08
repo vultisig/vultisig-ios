@@ -312,6 +312,13 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
                 guard let self = self else { return }
                 let currentBalance = self.tx.coin.balanceDecimal
                 self.amountValid = amount > 0 && amount <= currentBalance
+                
+                if currentBalance < amount {
+                    self.amountValid = false
+                    self.customErrorMessage = NSLocalizedString("insufficientBalance", comment: "Error message when user tries to enter amount greater than available balance")
+                } else {
+                    self.customErrorMessage = nil
+                }
             }
             .store(in: &cancellables)
         
