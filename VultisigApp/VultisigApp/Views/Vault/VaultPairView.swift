@@ -33,7 +33,8 @@ struct VaultPartView: View {
         guard let index = vault.signers.firstIndex(of: vault.localPartyID) else {
             return "-"
         }
-        return String(format: "partOf".localized, index + 1, vault.signers.count)
+        let partText = vault.libType == .DKLS ? "partOf".localized : "shareOf".localized
+        return String(format: partText, index + 1, vault.signers.count)
     }
 
     @ViewBuilder
