@@ -20,9 +20,13 @@ struct SendDetailsAmountTab: View {
         content
             .padding(.bottom, 100)
             .clipped()
-            .onChange(of: isExpanded) { oldValue, newValue in
-                Task {
-                    setData(oldValue, newValue)
+            .onChange(of: isExpanded) { _, newValue in
+                guard newValue else {
+                    return
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    focusedField = .amount
                 }
             }
     }
@@ -157,12 +161,5 @@ struct SendDetailsAmountTab: View {
                 RoundedRectangle(cornerRadius: 32)
                     .stroke(Theme.colors.bgTertiary, lineWidth: 1)
             )
-    }
-    
-    private func setData(_ oldValue: Bool, _ newValue: Bool) {
-        guard oldValue != newValue, !newValue else {
-            focusedField = .amount
-            return
-        }
     }
 }
