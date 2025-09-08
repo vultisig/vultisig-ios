@@ -30,6 +30,9 @@ struct SwapFromToField: View {
         .padding(16)
         .background(unevenRectangle)
         .overlay(unevenRectangleBorder)
+        .onLoad {
+            referredViewModel.setData()
+        }
     }
     
     var header: some View {

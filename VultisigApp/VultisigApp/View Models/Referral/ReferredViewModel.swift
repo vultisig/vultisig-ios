@@ -56,7 +56,7 @@ class ReferredViewModel: ObservableObject {
         showReferralCodeOnboarding = false
     }
     
-    func onAppear() {
+    func setData() {
         currentVault = ApplicationState.shared.currentVault
         referredCode = savedReferredCode
     }
