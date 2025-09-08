@@ -687,7 +687,7 @@
 "referralOnboardingDescription4" = "Use a code from your friend and save on swap fees.";
 "referral" = "Referral";
 "vultisig-referrals" = "Vultisig - Referrals";
-"referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
+"referralLaunchCodeLengthError" = "Referral code can be up to 4 characters";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "This referral code doesn’t exist. Please check and try again.";
 "referralCodeWithoutAlias" = "This referral code doesn't have an alias set. Please check and try again.";
