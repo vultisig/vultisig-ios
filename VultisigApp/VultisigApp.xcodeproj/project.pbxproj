@@ -161,6 +161,9 @@
 		13DD549B2E565582007335DA /* ScreenToolbar+EnvironmentKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD549A2E56557C007335DA /* ScreenToolbar+EnvironmentKey.swift */; };
 		13DD549D2E5655A2007335DA /* ScreenToolbarModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DD549C2E56559D007335DA /* ScreenToolbarModifier.swift */; };
 		13DF05752E3CEF7D0000188C /* SearchTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13DF05742E3CEF710000188C /* SearchTextField.swift */; };
+		13E1E7642E6DD6DB00D68F5D /* VerticalGrowAndFade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */; };
+		13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */; };
+		13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */; };
 		13EFA1CB2E31389D009838EB /* OTPCharTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */; };
 		3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */; };
 		43E0C072714FC369B3B91499 /* HiddenToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCB0CAFF343CC6FF8986E07F /* HiddenToken.swift */; };
@@ -1178,6 +1181,9 @@
 		13DD549A2E56557C007335DA /* ScreenToolbar+EnvironmentKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenToolbar+EnvironmentKey.swift"; sourceTree = "<group>"; };
 		13DD549C2E56559D007335DA /* ScreenToolbarModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenToolbarModifier.swift; sourceTree = "<group>"; };
 		13DF05742E3CEF710000188C /* SearchTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextField.swift; sourceTree = "<group>"; };
+		13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalGrowAndFade.swift; sourceTree = "<group>"; };
+		13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormExpandableSection.swift; sourceTree = "<group>"; };
+		13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerVaultCheckInboxScreen.swift; sourceTree = "<group>"; };
 		13EFA1CA2E31389C009838EB /* OTPCharTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTPCharTextField.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
@@ -2202,6 +2208,7 @@
 		1316034F2E60C438001ED972 /* Backup */ = {
 			isa = PBXGroup;
 			children = (
+				13E1E7682E6DD79A00D68F5D /* ServerVaultCheckInboxScreen.swift */,
 				13B1C2C72E65E3F900050637 /* VaultServerBackupScreen.swift */,
 				131603502E60C453001ED972 /* VaultBackupContainerView.swift */,
 				A6CEFE752D8E32B9005AB80C /* VaultBackupPasswordOptionsScreen.swift */,
@@ -2643,6 +2650,22 @@
 				13DF05742E3CEF710000188C /* SearchTextField.swift */,
 			);
 			path = TextField;
+			sourceTree = "<group>";
+		};
+		13E1E7622E6DD6B900D68F5D /* Transitions */ = {
+			isa = PBXGroup;
+			children = (
+				13E1E7632E6DD6D800D68F5D /* VerticalGrowAndFade.swift */,
+			);
+			path = Transitions;
+			sourceTree = "<group>";
+		};
+		13E1E7652E6DD71000D68F5D /* Forms */ = {
+			isa = PBXGroup;
+			children = (
+				13E1E7662E6DD71D00D68F5D /* FormExpandableSection.swift */,
+			);
+			path = Forms;
 			sourceTree = "<group>";
 		};
 		13EFA1C92E313886009838EB /* Components */ = {
@@ -4108,6 +4131,8 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				13E1E7652E6DD71000D68F5D /* Forms */,
+				13E1E7622E6DD6B900D68F5D /* Transitions */,
 				131603442E609D6B001ED972 /* FileExporterSheet.swift */,
 				13D179032E57804C00007B48 /* Sheets */,
 				137B2C792E3A4A970074F648 /* PreferenceKeys */,
@@ -4735,6 +4760,7 @@
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				A6386D922C8C291B00DDD58E /* SwapVerifyView+macOS.swift in Sources */,
 				A6A8163E2CBCB00D009EE114 /* FileQRCodeImporterMac+iOS.swift in Sources */,
+				13E1E7672E6DD71E00D68F5D /* FormExpandableSection.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A646DFB52E16DE34006E8ECC /* SendDetailsAdditionalSection.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
@@ -4856,6 +4882,7 @@
 				A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */,
 				138538E22E61F681006DF7C7 /* VultiServerService.swift in Sources */,
 				13A899062E44D331006F75F0 /* EditReferralViewModel.swift in Sources */,
+				13E1E7642E6DD6DB00D68F5D /* VerticalGrowAndFade.swift in Sources */,
 				A69C18492CF0629500B846E8 /* ServerBackupVerificationHeader.swift in Sources */,
 				133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */,
 				A6C670822C9CDEE500F59B6A /* VaultCellViewModel.swift in Sources */,
@@ -5585,6 +5612,7 @@
 				B53D8CCC2BF7F22F00B795D3 /* FunctionCallLeave.swift in Sources */,
 				B5D1D7812DF16D1A007A36D9 /* ThorchainService+RuneBond.swift in Sources */,
 				A646DFB72E179B70006E8ECC /* SendCryptoAddressBookView.swift in Sources */,
+				13E1E7692E6DD79B00D68F5D /* ServerVaultCheckInboxScreen.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
 				13B1C2C22E65D21E00050637 /* VaultPairDetailView.swift in Sources */,
 				B524F55B2CF049F600D5B19D /* FunctionCallBondMayaChain.swift in Sources */,
