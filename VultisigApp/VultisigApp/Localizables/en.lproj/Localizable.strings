@@ -57,7 +57,7 @@
 "EdDSA" = "EdDSA";
 "backup" = "Backup";
 "backupVaultShareTitle" = "Backup Vault Share";
-"backupVaultShareDescription" = "Back up your Vault Share to device or server.";
+"backupVaultShareDescription" = "Back up your Vault Share to a preferred location";
 "error" = "Error";
 "backupVault" = "Backup your vault share";
 "rename" = "Rename";
