@@ -35,6 +35,7 @@ class FunctionCallCosmosSwitch: FunctionCallAddressable, ObservableObject {
     @Published var thorchainAddressValid: Bool = false
     
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     
     private var tx: SendTransaction

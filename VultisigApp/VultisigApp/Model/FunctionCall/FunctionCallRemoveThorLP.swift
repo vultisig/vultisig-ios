@@ -17,6 +17,7 @@ class FunctionCallRemoveThorLP: FunctionCallAddressable, ObservableObject {
     @Published var lpPositions: [ThorchainLPPosition] = []
     @Published var isLoading: Bool = true
     @Published var errorMessage: String? = nil
+    @Published var customErrorMessage: String? = nil
     
     var tx: SendTransaction
     private var functionCallViewModel: FunctionCallViewModel

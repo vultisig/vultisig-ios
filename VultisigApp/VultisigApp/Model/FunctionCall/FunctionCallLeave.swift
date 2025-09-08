@@ -15,6 +15,7 @@ class FunctionCallLeave: FunctionCallAddressable, ObservableObject {
     // Internal
     @Published var nodeAddressValid: Bool = false
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     var addressFields: [String: String] {
         get {

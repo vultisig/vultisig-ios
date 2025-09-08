@@ -6,6 +6,7 @@
 import SwiftUI
 import Foundation
 import Combine
+import VultisigCommonData
 
 struct YVaultConstants {
     private static let yRuneContract = "thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt"
@@ -49,6 +50,7 @@ class FunctionCallCosmosYVault: ObservableObject {
     @Published var amount: Decimal = 0.0 { didSet { recalcMicroAmount() } }
     @Published var amountValid = false
     @Published var isTheFormValid = false
+    @Published var customErrorMessage: String? = nil
     @Published var balanceLabel = "( Balance: -- )"
     @Published var selectedSlippage: Decimal = YVaultConstants.slippageOptions.first!
     @Published var destinationAddress: String = ""
@@ -127,11 +129,11 @@ class FunctionCallCosmosYVault: ObservableObject {
             }
             .store(in: &cancellables)
         
-        $amountValid.assign(to: \Self.isTheFormValid, on: self).store(in: &cancellables)
+        $amountValid.assign(to: \.isTheFormValid, on: self).store(in: &cancellables)
         
         // Watch for coin changes and re-initiate when it changes
         tx.objectWillChange
-            .sink { [weak self] _ in
+            .sink { [weak self] (_: Void) in
                 DispatchQueue.main.async {
                     self?.initiate()
                 }
@@ -143,6 +145,11 @@ class FunctionCallCosmosYVault: ObservableObject {
         let balance = tx.coin.balanceDecimal
         let isValidAmount = amount > 0 && amount <= balance
         amountValid = isValidAmount
+        
+        if balance < amount {
+            amountValid = false
+            self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
+        }
     }
     
     private func recalcMicroAmount() {
