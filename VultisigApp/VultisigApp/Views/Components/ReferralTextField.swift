@@ -59,8 +59,6 @@ struct ReferralTextField: View {
                 pasteButton
             case .Copy:
                 copyButton
-            case .Clear:
-                clearButton
             case .None:
                 EmptyView()
             }
@@ -83,15 +81,6 @@ struct ReferralTextField: View {
         } label: {
             Icon(named: "clipboard-paste", color: Theme.colors.textPrimary, size: 20)
         }
-    }
-    
-    var clearButton: some View {
-        Button {
-            clearCode()
-        } label: {
-            Icon(named: "circle-x-fill", color: Theme.colors.textPrimary, size: 20)
-        }
-        .opacity(text.isEmpty ? 0 : 1)
     }
     
     private func clearCode() {

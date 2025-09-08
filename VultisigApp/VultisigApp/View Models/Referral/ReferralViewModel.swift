@@ -11,11 +11,34 @@ import SwiftData
 
 @MainActor
 class ReferralViewModel: ObservableObject {
+    enum ReferralCodeAvailabilityStatus {
+        case available
+        case alreadyTaken
+        
+        var color: Color {
+            switch self {
+            case .available:
+                return Theme.colors.alertSuccess
+            case .alreadyTaken:
+                return Theme.colors.alertError
+            }
+        }
+        
+        var description: String {
+            switch self {
+            case .available:
+                return "available".localized
+            case .alreadyTaken:
+                return "alreadyTaken".localized
+            }
+        }
+    }
+    
     @Published var isLoading: Bool = false
     
     @Published var referralCode: String = ""
     @Published var referralAvailabilityErrorMessage: String?
-    @Published var showReferralAvailabilitySuccess: Bool = false
+    @Published var availabilityStatus: ReferralCodeAvailabilityStatus?
     @Published var isReferralCodeVerified: Bool = false
     @Published var expireInCount: Int = 1
     
@@ -41,6 +64,10 @@ class ReferralViewModel: ObservableObject {
     private(set) var currentBlockheight: UInt64 = 0
     
     @Published var currentVault: Vault?
+    
+    var createReferralButtonEnabled: Bool {
+        availabilityStatus == .available && !isLoading
+    }
     
     var yourVaultName: String? {
         currentVault?.name
@@ -169,7 +196,7 @@ class ReferralViewModel: ObservableObject {
     func resetAllData() {
         referralCode = ""
         referralAvailabilityErrorMessage = nil
-        showReferralAvailabilitySuccess = false
+        availabilityStatus = nil
         isReferralCodeVerified = false
         expireInCount = 1
         
@@ -207,24 +234,24 @@ class ReferralViewModel: ObservableObject {
     
     private func showNameError(with message: String) {
         if message == "alreadyTaken" {
-            referralAvailabilityErrorMessage = message.localized
+            availabilityStatus = .alreadyTaken
         } else {
-            referralAvailabilityErrorMessage = "invalid".localized
+            referralAvailabilityErrorMessage = message.localized
         }
-        
+            
         isLoading = false
     }
     
     private func saveReferralCode() {
         isReferralCodeVerified = true
-        showReferralAvailabilitySuccess = true
+        availabilityStatus = .available
         isLoading = false
         isReferralCodeVerified = true
     }
     
     func resetReferralData() {
         referralAvailabilityErrorMessage = nil
-        showReferralAvailabilitySuccess = false
+        availabilityStatus = nil
         isReferralCodeVerified = false
     }
     
