@@ -852,4 +852,4 @@
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "checkEmail" = "Check email";
 "chooseEmailApp" = "Choose email app";
-"insufficientBalance" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
+"insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";

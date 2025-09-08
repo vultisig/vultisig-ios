@@ -63,7 +63,7 @@ class FunctionCallStakeRuji: ObservableObject {
         
         if balance < amount {
             amountValid = false
-            self.customErrorMessage = NSLocalizedString("insufficientBalance", comment: "Error message when user tries to enter amount greater than available balance")
+            self.customErrorMessage = NSLocalizedString("insufficientBalanceForFunctions", comment: "Error message when user tries to enter amount greater than available balance")
         } else {
             self.customErrorMessage = nil
         }
