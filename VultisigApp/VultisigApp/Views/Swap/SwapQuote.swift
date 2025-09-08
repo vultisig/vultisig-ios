@@ -32,8 +32,8 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.router
-        case .oneinch(let quote, _), 
-                .lifi(let quote, _), 
+        case .oneinch(let quote, _),
+                .lifi(let quote, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
         }
@@ -52,8 +52,8 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote), .mayachain(let quote):
             return quote.inboundAddress
-        case .oneinch(let quote, _), 
-                .lifi(let quote, _), 
+        case .oneinch(let quote, _),
+                .lifi(let quote, _),
                 .kyberswap(let quote, _):
             return quote.tx.to
         }
@@ -95,6 +95,20 @@ enum SwapQuote {
             return quote.memo
         case .oneinch, .kyberswap, .lifi:
             return nil
+        }
+    }
+    var hashValue: Int {
+        switch self {
+        case .thorchain(let quote):
+            return quote.hashValue
+        case .mayachain(let quote):
+            return quote.hashValue
+        case .oneinch(let quote, let fee):
+            return quote.hashValue ^ fee.hashValue
+        case .kyberswap(let quote, let fee):
+            return quote.hashValue ^ fee.hashValue
+        case .lifi(let quote, let fee):
+            return quote.hashValue ^ fee.hashValue
         }
     }
 }

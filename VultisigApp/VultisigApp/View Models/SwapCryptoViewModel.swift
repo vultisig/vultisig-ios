@@ -325,19 +325,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let toCoin = tx.toCoin
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
-        fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
     }
     
     func updateFromAmount(tx: SwapTransaction, vault: Vault, referredCode: String) {
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
-        fetchFees(tx: tx, vault: vault)
     }
     
     func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault, referredCode: String) {
         tx.fromCoin = coin
         fromChain = coin.chain
-        fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
         updateBalance(for: coin)
     }
@@ -375,7 +372,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func refreshData(tx: SwapTransaction, vault: Vault, referredCode: String) {
         fetchQuotes(tx: tx, vault: vault, referredCode: referredCode)
-        fetchFees(tx: tx, vault: vault)
     }
     
     func fetchFees(tx: SwapTransaction, vault: Vault) {
@@ -395,6 +391,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds delay
             guard !Task.isCancelled else { return }
             await self?.updateQuotes(tx: tx, referredCode: referredCode)
+            await self?.updateFees(tx: tx, vault: vault)
         }
     }
     

@@ -34,7 +34,6 @@ enum TonHelper {
         
         // Check if this is a jetton transfer
         if !jettonAddress.isEmpty {
-            
             // Build jetton transfer
             transfer = try buildJettonTransfer(keysignPayload: keysignPayload, jettonAddress: jettonAddress, isActiveDestination: isActiveDestination)
         } else {
@@ -50,9 +49,17 @@ enum TonHelper {
                 sendMode = UInt32(TheOpenNetworkSendMode.attachAllContractBalance.rawValue | baseMode)
             }
             
+            var hexAmount = keysignPayload.toAmount.toEvenLengthHexString()
+            if sendMaxAmount {
+                hexAmount = "0x00"
+            }
+            guard let amountData = Data(hexString: hexAmount) else {
+                throw HelperError.runtimeError("invalid amount data")
+            }
+            
             transfer = TheOpenNetworkTransfer.with {
                 $0.dest = toAddress.description
-                $0.amount = sendMaxAmount ? 0 : (UInt64(keysignPayload.toAmount.description) ?? 0)
+                $0.amount = amountData
                 $0.mode = sendMode
                 
                 if let memo = keysignPayload.memo {
@@ -96,27 +103,34 @@ enum TonHelper {
         }
         
         // Attach 1 nanoton as forward amount (common jetton notify pattern)
-        let forwardAmountMsg: UInt64 = 1
+        let forwardAmountMsg: BigInt = 1
         
-        let amount = UInt64(keysignPayload.toAmount.description) ?? 0
-        
+        let amount = keysignPayload.toAmount.toEvenLengthHexString()
+        print("hex amount: \(amount)")
+        guard let amountData = Data(hexString: amount) else {
+            throw HelperError.runtimeError("Invalid amount data")
+        }
+        guard let forwardAmountMsgData = Data(hexString: forwardAmountMsg.toEvenLengthHexString()) else {
+            throw HelperError.runtimeError("Invalid forward amount data")
+        }
         let jettonTransfer = TheOpenNetworkJettonTransfer.with {
-            
-            $0.jettonAmount = amount
+            $0.jettonAmount = amountData
             // Use owner's canonical address as response
             $0.responseAddress = ownerAny.description
             $0.toOwner = destinationAddress
-            $0.forwardAmount = forwardAmountMsg
+            $0.forwardAmount = forwardAmountMsgData
         }
         
         let mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
         
         // Attach 0.08 TON for fees (matches Android/tests)
-        let recommendedJettonsAmount: UInt64 = UInt64(TonHelper.defaultJettonFee.description)! // 0.08 * 10^9
-        
+        let recommendedJettonsAmount = TonHelper.defaultJettonFee.toEvenLengthHexString()
+        guard let recommendedJettonsAmountData = Data(hexString: recommendedJettonsAmount) else {
+            throw HelperError.runtimeError("Invalid recommended jettons amount data")
+        }
         let transfer = TheOpenNetworkTransfer.with {
             
-            $0.amount = recommendedJettonsAmount
+            $0.amount = recommendedJettonsAmountData
             if let memo = keysignPayload.memo, !memo.isEmpty {
                 $0.comment = memo
             }
