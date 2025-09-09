@@ -234,6 +234,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     private func setData() {
+        referredViewModel.setData()
         swapViewModel.fromChain = tx.fromCoin.chain
         swapViewModel.toChain = tx.toCoin.chain
     }

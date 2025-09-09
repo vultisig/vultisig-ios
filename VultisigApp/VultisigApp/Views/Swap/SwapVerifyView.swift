@@ -33,6 +33,7 @@ struct SwapVerifyView: View {
             swapViewModel.isLoading = false
         }
         .onLoad {
+            referredViewModel.setData()
             verifyViewModel.onLoad()
             Task {
                 await verifyViewModel.scan(transaction: tx, vault: vault)
