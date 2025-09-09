@@ -14,7 +14,8 @@ extension AddressBookTextField {
         CommonTextField(
             text: $text,
             label: title.localized,
-            placeholder: "typeHere".localized
+            placeholder: "typeHere".localized,
+            isScrollable: isScrollable
         ) {
             if showActions {
                 HStack(spacing: 8) {
