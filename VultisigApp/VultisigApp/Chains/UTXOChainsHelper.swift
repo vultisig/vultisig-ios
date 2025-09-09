@@ -190,15 +190,39 @@ class UTXOChainsHelper {
     
     
     func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) throws -> Data {
+        print("🔍 [getBitcoinPreSigningInputData] Iniciando...")
+        print("🔍 [getBitcoinPreSigningInputData] Coin: \(coin)")
+        print("🔍 [getBitcoinPreSigningInputData] UTXOs count: \(keysignPayload.utxos.count)")
+        
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        print("🔍 [getBitcoinPreSigningInputData] BitcoinSigningInput criado com sucesso")
+        
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        print("🔍 [getBitcoinPreSigningInputData] Plano criado:")
+        print("🔍 [getBitcoinPreSigningInputData] - Amount: \(plan.amount)")
+        print("🔍 [getBitcoinPreSigningInputData] - Fee: \(plan.fee)")
+        print("🔍 [getBitcoinPreSigningInputData] - Change: \(plan.change)")
+        print("🔍 [getBitcoinPreSigningInputData] - Error: \(plan.error)")
+        
+        // Verificar se há erro no plano de transação
+        if plan.error != .ok {
+            print("❌ [getBitcoinPreSigningInputData] Erro no plano: \(plan.error)")
+            throw HelperError.runtimeError("Erro no plano de transação: \(plan.error)")
+        }
 
         if coin == .zcash {
+            print("🔍 [getBitcoinPreSigningInputData] Configurando branchID para Zcash")
             plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
 
         input.plan = plan
-        return try input.serializedData()
+        print("🔍 [getBitcoinPreSigningInputData] Plano atribuído ao input")
+        
+        let serializedData = try input.serializedData()
+        print("🔍 [getBitcoinPreSigningInputData] Dados serializados - tamanho: \(serializedData.count) bytes")
+        print("🔍 [getBitcoinPreSigningInputData] Finalizado com sucesso")
+        
+        return serializedData
     }
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
@@ -248,4 +272,103 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)")
         }
     }
+    // Este é o método que estamos depurando
+        func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
+            print("🚀 [getUnsignedTransactionHex] Iniciando geração de transação não assinada...")
+            print("🚀 [getUnsignedTransactionHex] Coin: \(coin)")
+            print("🚀 [getUnsignedTransactionHex] ToAddress: \(keysignPayload.toAddress)")
+            print("🚀 [getUnsignedTransactionHex] Amount: \(keysignPayload.toAmount)")
+            
+            // NOVA ABORDAGEM: Gerar transação bruta sem assinaturas usando apenas o plano
+            print("🚀 [getUnsignedTransactionHex] NOVA ABORDAGEM: Construindo transação bruta manualmente...")
+            
+            let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+            var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+            
+            if coin == .zcash {
+                plan.branchID = Data(hexString: "5510e7c8")!
+            }
+            
+            print("🚀 [getUnsignedTransactionHex] Plano: amount=\(plan.amount), fee=\(plan.fee), change=\(plan.change)")
+            
+            // Construir transação bruta manualmente usando os dados do plano
+            var rawTx = Data()
+            
+            // Version (4 bytes, little endian)
+            rawTx.append(Data([0x02, 0x00, 0x00, 0x00])) // version 2
+            
+            // Input count (1 byte para 1 input, usar VarInt se necessário)
+            rawTx.append(Data([UInt8(keysignPayload.utxos.count)]))
+            
+            // Para cada input
+            for inputUtxo in keysignPayload.utxos {
+                // Previous transaction hash (32 bytes, reversed)
+                let prevHash = Data.reverse(hexString: inputUtxo.hash)
+                rawTx.append(prevHash)
+                
+                // Previous output index (4 bytes, little endian)
+                let indexBytes = withUnsafeBytes(of: inputUtxo.index.littleEndian) { Data($0) }
+                rawTx.append(indexBytes)
+                
+                // Script length (1 byte para script vazio)
+                rawTx.append(Data([0x00]))
+                
+                // Sequence (4 bytes)
+                rawTx.append(Data([0xFF, 0xFF, 0xFF, 0xFF]))
+            }
+            
+            // Output count
+            var outputCount = 1 // output principal
+            if plan.change > 0 {
+                outputCount += 1 // output de troco
+            }
+            rawTx.append(Data([UInt8(outputCount)]))
+            
+            // Output principal
+            let amountBytes = withUnsafeBytes(of: plan.amount.littleEndian) { Data($0) }
+            rawTx.append(amountBytes)
+            
+            // Script do output principal (P2WPKH para bc1q...)
+            if keysignPayload.toAddress.hasPrefix("bc1q") {
+                // P2WPKH script: OP_0 + 20 bytes do hash
+                // Para fins de análise do Blockaid, usar um script padrão P2WPKH
+                rawTx.append(Data([0x16])) // 22 bytes
+                rawTx.append(Data([0x00, 0x14])) // OP_0 + push 20 bytes
+                // Usar um hash derivado do endereço para o placeholder
+                let addressData = keysignPayload.toAddress.data(using: .utf8) ?? Data()
+                let hashData = addressData.prefix(20) + Data(repeating: 0x00, count: max(0, 20 - addressData.count))
+                rawTx.append(hashData)
+            } else {
+                // Para outros tipos de endereço, usar script padrão
+                rawTx.append(Data([0x19])) // 25 bytes para P2PKH
+                rawTx.append(Data([0x76, 0xa9, 0x14])) // OP_DUP OP_HASH160 OP_PUSHDATA(20)
+                rawTx.append(Data(repeating: 0x00, count: 20)) // hash160 placeholder
+                rawTx.append(Data([0x88, 0xac])) // OP_EQUALVERIFY OP_CHECKSIG
+            }
+            
+            // Output de troco se necessário
+            if plan.change > 0 {
+                let changeBytes = withUnsafeBytes(of: plan.change.littleEndian) { Data($0) }
+                rawTx.append(changeBytes)
+                
+                // Script do troco (mesmo formato do endereço de origem)
+                rawTx.append(Data([0x16])) // 22 bytes
+                rawTx.append(Data([0x00, 0x14])) // OP_0 + push 20 bytes
+                rawTx.append(Data(repeating: 0x00, count: 20)) // hash placeholder
+            }
+            
+            // Locktime (4 bytes)
+            rawTx.append(Data([0x00, 0x00, 0x00, 0x00]))
+            
+            let transactionHex = rawTx.hexString
+            print("🚀 [getUnsignedTransactionHex] Transação bruta construída: \(transactionHex)")
+            print("🚀 [getUnsignedTransactionHex] Tamanho: \(rawTx.count) bytes")
+            
+            if transactionHex.isEmpty {
+                throw HelperError.runtimeError("Transação gerada está vazia")
+            }
+            
+            print("✅ [getUnsignedTransactionHex] Transação não assinada gerada com sucesso!")
+            return transactionHex
+        }
 }

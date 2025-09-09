@@ -170,19 +170,22 @@ private extension SecurityScannerTransactionFactory {
             chainSpecific: specific,
             vault: vault
         )
-        let preHash = try UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: "", vaultHexChainCode: "").getPreSignedImageHash(keysignPayload: keySignPayload)
         
-        guard let firstPreHash = preHash.first else {
-            throw HelperError.runtimeError("No valid prehash")
-        }
+        
+        let inputData = try UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA,
+                                             vaultHexChainCode: vault.hexChainCode).getUnsignedTransactionHex(keysignPayload: keySignPayload)
+        
+        print("📦 [SecurityScannerTransactionFactory] BTC inputData resultado: '\(inputData)'")
+        print("📦 [SecurityScannerTransactionFactory] BTC inputData length: \(inputData.count)")
+        print("📦 [SecurityScannerTransactionFactory] BTC inputData isEmpty: \(inputData.isEmpty)")
         
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
             type: SecurityTransactionType.coinTransfer,
             from: transaction.fromAddress,
             to: transaction.toAddress,
-            amount: BigInt.zero,
-            data: firstPreHash
+            amount: transaction.amountInRaw,
+            data: inputData
         )
     }
 }
