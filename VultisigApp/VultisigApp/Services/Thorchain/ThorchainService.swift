@@ -789,7 +789,7 @@ extension ThorchainService {
         }
         
         for unit in denomUnits {
-            if unit.denom == display {
+            if unit.denom == display && unit.exponent > 0 {
                 return unit.exponent
             }
         }
