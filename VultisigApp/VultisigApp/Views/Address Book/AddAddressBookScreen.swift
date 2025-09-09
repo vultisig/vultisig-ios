@@ -70,7 +70,12 @@ struct AddAddressBookScreen: View {
     }
     
     var addressField: some View {
-        AddressBookTextField(title: "address", text: $address, showActions: true)
+        AddressBookTextField(
+            title: "address",
+            text: $address,
+            showActions: true,
+            isScrollable: true
+        )
     }
     
     var button: some View {
