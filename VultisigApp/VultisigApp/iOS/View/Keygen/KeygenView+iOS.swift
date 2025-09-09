@@ -15,12 +15,14 @@ extension KeygenView {
         container
             .navigationTitle(NSLocalizedString(tssType == .Migrate ? "" : "creatingVault", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
-            .task {
-                await setData()
-                await viewModel.startKeygen(
-                    context: context,
-                    defaultChains: settingsDefaultChainViewModel.defaultChains
-                )
+            .onLoad {
+                Task{
+                    await setData()
+                    await viewModel.startKeygen(
+                        context: context,
+                        defaultChains: settingsDefaultChainViewModel.defaultChains
+                    )
+                }
             }
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true

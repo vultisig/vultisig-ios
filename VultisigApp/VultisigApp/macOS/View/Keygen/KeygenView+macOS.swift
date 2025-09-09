@@ -11,12 +11,14 @@ import SwiftUI
 extension KeygenView {
     var content: some View {
         container
-            .task {
-                await setData()
-                await viewModel.startKeygen(
-                    context: context,
-                    defaultChains: settingsDefaultChainViewModel.defaultChains
-                )
+            .onLoad {
+                Task{
+                    await setData()
+                    await viewModel.startKeygen(
+                        context: context,
+                        defaultChains: settingsDefaultChainViewModel.defaultChains
+                    )
+                }
             }
     }
     
