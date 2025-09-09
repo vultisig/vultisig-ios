@@ -34,19 +34,24 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        container
-            .alert(
-                NSLocalizedString("newUpdateAvailable", comment: ""),
-                isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
-            ) {
-                Link(destination: StaticURL.AppStoreVultisigURL) {
-                    Text(NSLocalizedString("updateNow", comment: ""))
-                }
-                
-                Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-            } message: {
-                Text(phoneCheckUpdateViewModel.latestVersionString)
-            }
+        if let selectedVault = viewModel.selectedVault {
+            VaultMainScreen(vault: selectedVault)
+        } else {
+            VStack {}.onAppear { setData() }
+        }
+//        container
+//            .alert(
+//                NSLocalizedString("newUpdateAvailable", comment: ""),
+//                isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
+//            ) {
+//                Link(destination: StaticURL.AppStoreVultisigURL) {
+//                    Text(NSLocalizedString("updateNow", comment: ""))
+//                }
+//                
+//                Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+//            } message: {
+//                Text(phoneCheckUpdateViewModel.latestVersionString)
+//            }
     }
     
     var navigationTitle: some View {
