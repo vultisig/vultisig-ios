@@ -12,6 +12,7 @@ import Combine
 protocol FunctionCallAddressable: ObservableObject {
     var isTheFormValid: Bool { get set }
     var addressFields: [String: String] { get set }
+    var customErrorMessage: String? { get set }
     func getView() -> AnyView
     func toDictionary() -> ThreadSafeDictionary<String, String>
 }

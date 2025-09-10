@@ -43,14 +43,8 @@ struct FastBackupVaultOverview: View {
         .navigationDestination(isPresented: $isBackupLinkActive) {
             VaultBackupNowScreen(tssType: tssType, backupType: .single(vault: vault), isNewVault: true)
         }
-        .navigationDestination(isPresented: $goBackToEmailSetup, destination: { 
-            FastVaultEmailView(
-                tssType: tssType,
-                vault: vault,
-                selectedTab: .fast,
-                backButtonHidden: true,
-                email: email
-            )
+        .navigationDestination(isPresented: $goBackToEmailSetup, destination: {
+            NewWalletNameView(tssType: .Keygen,selectedTab: .fast, name: "")
         })
         .onAppear {
             setData()

@@ -113,6 +113,7 @@ struct CreateReferralDetailsView: View {
             }
         }
         .padding(24)
+        .disabled(!referralViewModel.createReferralButtonEnabled)
     }
     
     var alert: Alert {

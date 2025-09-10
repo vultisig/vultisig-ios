@@ -10,6 +10,5 @@ import SwiftUI
 enum ReferralTextFieldAction {
     case Paste
     case Copy
-    case Clear
     case None
 }

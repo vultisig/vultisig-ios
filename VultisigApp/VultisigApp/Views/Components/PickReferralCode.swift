@@ -11,20 +11,17 @@ struct PickReferralCode: View {
     @ObservedObject var referralViewModel: ReferralViewModel
     
     var body: some View {
-        let isVisible = referralViewModel.showReferralAvailabilitySuccess
-        
         return VStack(spacing: 8) {
             pickReferralTitle
             
-            HStack(spacing: 8) {
+            HStack(alignment: .top, spacing: 8) {
                 pickReferralTextfield
                 searchButton
+                    .padding(.top, 4)
             }
             
-            if isVisible {
-                status
-                    .animation(.easeInOut, value: isVisible)
-            }
+            status
+                .animation(.easeInOut, value: referralViewModel.availabilityStatus != nil)
         }
     }
     
@@ -39,9 +36,9 @@ struct PickReferralCode: View {
         ReferralTextField(
             text: $referralViewModel.referralCode,
             placeholderText: "enter4Characters",
-            action: .Clear,
+            action: .None,
             errorMessage: $referralViewModel.referralAvailabilityErrorMessage,
-            showSuccess: referralViewModel.showReferralAvailabilitySuccess
+            showSuccess: referralViewModel.availabilityStatus == .available
         )
         .onChange(of: referralViewModel.referralCode) { oldValue, newValue in
             referralViewModel.resetReferralData()
@@ -58,33 +55,28 @@ struct PickReferralCode: View {
         .disabled(referralViewModel.isLoading)
     }
     
+    @ViewBuilder
     var status: some View {
-        HStack {
-            Text(NSLocalizedString("status", comment: ""))
-                .foregroundColor(Theme.colors.textExtraLight)
-            
-            Spacer()
-            
-            statusCapsule
-        }
-        .font(Theme.fonts.bodySMedium)
-        .padding(.top, 2)
-    }
-    
-    var statusCapsule: some View {
-        Group {
-            if referralViewModel.showReferralAvailabilitySuccess {
-                Text(NSLocalizedString("available", comment: ""))
-                    .foregroundColor(Theme.colors.alertInfo)
+        if let status = referralViewModel.availabilityStatus {
+            HStack {
+                Text(NSLocalizedString("status", comment: ""))
+                    .foregroundColor(Theme.colors.textExtraLight)
+                
+                Spacer()
+                
+                Text(status.description)
+                    .foregroundColor(status.color)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .cornerRadius(24)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Theme.colors.border, lineWidth: 1)
+                    )
             }
+            .font(Theme.fonts.bodySMedium)
+            .padding(.top, 2)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .cornerRadius(24)
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Theme.colors.border, lineWidth: 1)
-        )
     }
 }
 

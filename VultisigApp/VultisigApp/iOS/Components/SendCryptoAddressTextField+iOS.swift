@@ -32,7 +32,7 @@ extension SendCryptoAddressTextField {
     }
     
     var field: some View {
-        HStack(spacing: 0) {
+        ScrollView(.horizontal, showsIndicators: false) {
             TextField(NSLocalizedString("enterAddressHere", comment: "").capitalized, text: Binding<String>(
                 get: { tx.toAddress },
                 set: { newValue in
@@ -64,9 +64,12 @@ extension SendCryptoAddressTextField {
             .keyboardType(.default)
             .textInputAutocapitalization(.never)
             .textContentType(.oneTimeCode)
+            .frame(minWidth: 200)
+            .frame(height: 48)
         }
         .padding(.horizontal, 12)
     }
+    
     var scanButton: some View {
         Button {
             showScanner.toggle()

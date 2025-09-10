@@ -693,3 +693,4 @@
 "automaticallyCompoundTCYRewards" = "Capitalizza automaticamente le tue ricompense TCY";
 "unstakeAutoCompoundTCY" = "Rimuovi Auto-Compound TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "Rimuovi dai depositi TCY auto-compounding";
+"insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";

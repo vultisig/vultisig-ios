@@ -687,7 +687,7 @@
 "referralOnboardingDescription4" = "Use a code from your friend and save on swap fees.";
 "referral" = "Referral";
 "vultisig-referrals" = "Vultisig - Referrals";
-"referralLaunchCodeLengthError" = "Referral code can be up to 4 digits";
+"referralLaunchCodeLengthError" = "Referral code can be up to 4 characters";
 "systemErrorMessage" = "System error. Please try again.";
 "referralCodeNotFound" = "This referral code doesn’t exist. Please check and try again.";
 "referralCodeWithoutAlias" = "This referral code doesn't have an alias set. Please check and try again.";
@@ -814,6 +814,7 @@
 "allVaults" = "All Vaults";
 "thisVaultOnly" = "This Vault Only";
 "partOf" = "part %d of %d";
+"shareOf" = "share %d of %d";
 "plusMore" = "+%d more";
 "noReferralYetTitle" = "No referral yet.";
 "noReferralYetDescription" = "Turn your vault into a rewards machine. Create your referral now and start earning.";
@@ -852,3 +853,4 @@
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "checkEmail" = "Check email";
 "chooseEmailApp" = "Choose email app";
+"insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";

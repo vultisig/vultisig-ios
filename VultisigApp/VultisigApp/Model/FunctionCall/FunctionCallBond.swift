@@ -22,6 +22,7 @@ class FunctionCallBond: FunctionCallAddressable, ObservableObject {
     @Published var feeValid: Bool = true
     
     @Published var isTheFormValid: Bool = false
+    @Published var customErrorMessage: String? = nil
     
     private var tx: SendTransaction
     private var vault: Vault
