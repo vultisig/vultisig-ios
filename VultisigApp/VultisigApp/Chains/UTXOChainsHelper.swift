@@ -201,15 +201,15 @@ class UTXOChainsHelper {
         if coin == .zcash {
             plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
-        
+
         input.plan = plan
         return try input.serializedData()
     }
-    
+
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
         let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-        
+
         if coin == .zcash {
             plan .branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
