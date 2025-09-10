@@ -37,6 +37,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             VultisigRelay.IsRelayEnabled = NetworkPromptType.Internet == selectedNetwork
         }
     }
+    @Published var isLoading: Bool = false
     
     private var peersFoundCancellable: AnyCancellable?
     private let mediator = Mediator.shared
@@ -65,6 +66,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         participantDiscovery: ParticipantDiscovery,
         fastSignConfig: FastSignConfig?
     ) {
+        self.isLoading = true
+        self.setupPeersFoundCancellable(
+            state: state,
+            participantDiscovery: participantDiscovery
+        )
         self.vault = vault
         self.tssType = tssType
         self.participantDiscovery = participantDiscovery
@@ -129,7 +135,15 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 fastVaultService.migrate(publicKeyECDSA:vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, encryptionPassword: config.password, email: config.email)
             }
         }
-        
+        self.isLoading = false
+    }
+    
+    func setupPeersFoundCancellable(
+        state: SetupVaultState,
+        participantDiscovery: ParticipantDiscovery
+    ) {
+        peersFoundCancellable?.cancel()
+        peersFoundCancellable = nil
         peersFoundCancellable = participantDiscovery.$peersFound
             .sink { [weak self] in
                 $0.forEach { peer in
