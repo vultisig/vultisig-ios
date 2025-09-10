@@ -91,10 +91,6 @@ extension PeerDiscoveryView {
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
-            .onChange(of: viewModel.selectedNetwork) {
-                viewModel.restartParticipantDiscovery()
-                setData()
-            }
             .padding(.top, 10)
     }
     

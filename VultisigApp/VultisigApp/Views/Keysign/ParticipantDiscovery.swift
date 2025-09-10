@@ -21,6 +21,7 @@ class ParticipantDiscovery: ObservableObject {
     func stop() {
         self.task?.cancel()
         self.task = nil
+        self.peersFound = []
     }
 
     func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
