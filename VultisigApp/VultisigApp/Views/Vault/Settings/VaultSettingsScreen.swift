@@ -165,7 +165,8 @@ struct VaultSettingsScreen: View {
             SettingsCommonOptionView(
                 icon: "pencil",
                 title: "rename".localized,
-                subtitle: "renameVault".localized
+                subtitle: "renameVault".localized,
+                showSeparator: vault.isFastVault
             )
         }
     }
@@ -184,20 +185,17 @@ struct VaultSettingsScreen: View {
         }
         
     }
-    
-//    var biometrySelectionCell: some View {
-//        NavigationLink {
-//            SettingsBiometryView(vault: vault)
-//        } label: {
-//            SettingsCommonOptionView(icon: "secure", title: "settingsBiometricsTitle".localized, subtitle: "settingsBiometricsSubtitle".localized)
-//        }
-//    }
-//    
+
     var migrateVault: some View {
-        SettingsCommonOptionView(icon: "arrow-up-from-dot", title: "migrate".localized, subtitle: "migrateVault".localized)
-            .onTapGesture {
-                showUpgradeYourVaultSheet = true
-            }
+        Button {
+            showUpgradeYourVaultSheet = true
+        } label: {
+            SettingsCommonOptionView(
+                icon: "arrow-up-from-dot",
+                title: "migrate".localized,
+                subtitle: "migrateVault".localized
+            )
+        }
     }
     
     var advancedSettings: some View {
