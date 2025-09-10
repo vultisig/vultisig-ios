@@ -496,6 +496,9 @@ private extension BlockChainService {
     }
     
     func estimateSwapGasLimit(tx: SwapTransaction) async throws -> BigInt? {
+        if tx.fromCoin.chainType != .EVM {
+            return nil
+        }
         let service = try EvmServiceFactory.getService(forChain: tx.fromCoin.chain)
         switch(tx.quote){
         case .mayachain(_):
