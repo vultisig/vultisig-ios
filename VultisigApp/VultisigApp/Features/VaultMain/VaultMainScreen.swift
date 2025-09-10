@@ -12,9 +12,12 @@ struct VaultMainScreen: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            VStack {
-                Spacer()
+            ScrollView {
+                VaultMainBalanceView(vault: vault)
+                
             }
+            .padding(.top, 78)
+            
             VaultMainHeaderView(
                 vault: vault,
                 vaultSelectorAction: onVaultSelector,

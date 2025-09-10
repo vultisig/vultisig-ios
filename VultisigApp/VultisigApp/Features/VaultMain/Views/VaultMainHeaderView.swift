@@ -21,16 +21,19 @@ struct VaultMainHeaderView: View {
             )
             Spacer()
             HStack(spacing: 8) {
-                
+                CircularIconButton(icon: "settings", action: settingsAction)
             }
         }
     }
 }
 
 #Preview {
-    VaultMainHeaderView(vault: .example) {
-        print("Vault Selector Action")
-    } settingsAction: {
-        print("Settings action")
+    VStack {
+        VaultMainHeaderView(vault: .example) {
+            print("Vault Selector Action")
+        } settingsAction: {
+            print("Settings action")
+        }
     }
+    .background(Theme.colors.bgPrimary)
 }

@@ -854,3 +854,5 @@
 "checkEmail" = "Check email";
 "chooseEmailApp" = "Choose email app";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
+"hideBalance" = "Hide balance";
+"showBalance" = "Show balance";
