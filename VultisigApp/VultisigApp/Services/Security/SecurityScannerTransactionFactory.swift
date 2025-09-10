@@ -175,10 +175,6 @@ private extension SecurityScannerTransactionFactory {
         let inputData = try UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA,
                                              vaultHexChainCode: vault.hexChainCode).getUnsignedTransactionHex(keysignPayload: keySignPayload)
         
-        print("📦 [SecurityScannerTransactionFactory] BTC inputData resultado: '\(inputData)'")
-        print("📦 [SecurityScannerTransactionFactory] BTC inputData length: \(inputData.count)")
-        print("📦 [SecurityScannerTransactionFactory] BTC inputData isEmpty: \(inputData.isEmpty)")
-        
         return SecurityScannerTransaction(
             chain: transaction.coin.chain,
             type: SecurityTransactionType.coinTransfer,

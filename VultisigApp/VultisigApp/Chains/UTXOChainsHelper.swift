@@ -190,39 +190,20 @@ class UTXOChainsHelper {
     
     
     func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) throws -> Data {
-        print("🔍 [getBitcoinPreSigningInputData] Iniciando...")
-        print("🔍 [getBitcoinPreSigningInputData] Coin: \(coin)")
-        print("🔍 [getBitcoinPreSigningInputData] UTXOs count: \(keysignPayload.utxos.count)")
-        
         var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
-        print("🔍 [getBitcoinPreSigningInputData] BitcoinSigningInput criado com sucesso")
-        
         var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-        print("🔍 [getBitcoinPreSigningInputData] Plano criado:")
-        print("🔍 [getBitcoinPreSigningInputData] - Amount: \(plan.amount)")
-        print("🔍 [getBitcoinPreSigningInputData] - Fee: \(plan.fee)")
-        print("🔍 [getBitcoinPreSigningInputData] - Change: \(plan.change)")
-        print("🔍 [getBitcoinPreSigningInputData] - Error: \(plan.error)")
         
         // Verificar se há erro no plano de transação
         if plan.error != .ok {
-            print("❌ [getBitcoinPreSigningInputData] Erro no plano: \(plan.error)")
             throw HelperError.runtimeError("Erro no plano de transação: \(plan.error)")
         }
 
         if coin == .zcash {
-            print("🔍 [getBitcoinPreSigningInputData] Configurando branchID para Zcash")
             plan.branchID = Data(hexString: "5510e7c8")! // Correct hex string
         }
 
         input.plan = plan
-        print("🔍 [getBitcoinPreSigningInputData] Plano atribuído ao input")
-        
-        let serializedData = try input.serializedData()
-        print("🔍 [getBitcoinPreSigningInputData] Dados serializados - tamanho: \(serializedData.count) bytes")
-        print("🔍 [getBitcoinPreSigningInputData] Finalizado com sucesso")
-        
-        return serializedData
+        return try input.serializedData()
     }
 
     func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
@@ -272,24 +253,13 @@ class UTXOChainsHelper {
             throw HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)")
         }
     }
-    // Este é o método que estamos depurando
-        func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
-            print("🚀 [getUnsignedTransactionHex] Iniciando geração de transação não assinada...")
-            print("🚀 [getUnsignedTransactionHex] Coin: \(coin)")
-            print("🚀 [getUnsignedTransactionHex] ToAddress: \(keysignPayload.toAddress)")
-            print("🚀 [getUnsignedTransactionHex] Amount: \(keysignPayload.toAmount)")
-            
-            // NOVA ABORDAGEM: Gerar transação bruta sem assinaturas usando apenas o plano
-            print("🚀 [getUnsignedTransactionHex] NOVA ABORDAGEM: Construindo transação bruta manualmente...")
-            
+    func getUnsignedTransactionHex(keysignPayload: KeysignPayload) throws -> String {
             let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
             var plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
             
             if coin == .zcash {
                 plan.branchID = Data(hexString: "5510e7c8")!
             }
-            
-            print("🚀 [getUnsignedTransactionHex] Plano: amount=\(plan.amount), fee=\(plan.fee), change=\(plan.change)")
             
             // Construir transação bruta manualmente usando os dados do plano
             var rawTx = Data()
@@ -361,14 +331,11 @@ class UTXOChainsHelper {
             rawTx.append(Data([0x00, 0x00, 0x00, 0x00]))
             
             let transactionHex = rawTx.hexString
-            print("🚀 [getUnsignedTransactionHex] Transação bruta construída: \(transactionHex)")
-            print("🚀 [getUnsignedTransactionHex] Tamanho: \(rawTx.count) bytes")
             
             if transactionHex.isEmpty {
                 throw HelperError.runtimeError("Transação gerada está vazia")
             }
             
-            print("✅ [getUnsignedTransactionHex] Transação não assinada gerada com sucesso!")
             return transactionHex
         }
 }
