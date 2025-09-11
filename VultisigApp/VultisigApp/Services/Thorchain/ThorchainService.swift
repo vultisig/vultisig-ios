@@ -479,7 +479,7 @@ extension ThorchainService {
         let decoded = try JSONDecoder().decode(AccountRootData.self, from: data)
         
         guard let stake =
-                decoded.data.node?.stakingV2.first else {
+                decoded.data.node?.stakingV2?.first else {
             return .empty
         }
         
