@@ -135,7 +135,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
             
             cancellables.forEach { $0.cancel() }
             
-            participantDiscovery.$peersFound.sink { [weak self] in
+            participantDiscovery.$peersFound
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] in
                 guard let self else { return }
                 if $0.count == 0 {
                     return

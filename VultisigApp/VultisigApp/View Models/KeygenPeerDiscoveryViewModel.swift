@@ -145,6 +145,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         peersFoundCancellable?.cancel()
         peersFoundCancellable = nil
         peersFoundCancellable = participantDiscovery.$peersFound
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
                 if $0.count == 0 {
