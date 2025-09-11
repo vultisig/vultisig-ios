@@ -111,17 +111,29 @@ struct AddAddressBookScreen: View {
             return
         }
         
+        // Check for duplicates
+        let fetchDescriptor = FetchDescriptor<AddressBookItem>(
+            predicate: #Predicate { $0.address == address}
+        )
+        let existingItems = try? modelContext.fetch(fetchDescriptor)
+        let filteredItems = existingItems?.filter { item in
+            item.coinMeta.chain == selectedChain.chain
+        }
+        if let items = filteredItems, !items.isEmpty {
+            toggleAlertAddressAlreadyExists()
+            return
+        }
         guard let coin = coinSelectionViewModel.groupedAssets[selectedChain.chain]?.first else {
             return
         }
-                
+        
         let data = AddressBookItem(
             title: title,
             address: address,
             coinMeta: coin,
             order: count
         )
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now()) {
             modelContext.insert(data)
             dismiss()
@@ -131,6 +143,12 @@ struct AddAddressBookScreen: View {
     private func toggleAlert() {
         alertTitle = "emptyField"
         alertMessage = "checkEmptyField"
+        showAlert = true
+    }
+    
+    private func toggleAlertAddressAlreadyExists() {
+        alertTitle = "error"
+        alertMessage = "addressBookDuplicate"
         showAlert = true
     }
     
