@@ -694,3 +694,4 @@
 "unstakeAutoCompoundTCY" = "Rimuovi Auto-Compound TCY";
 "unstakeFromAutoCompoundingTCYDeposits" = "Rimuovi dai depositi TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";
+"addressBookDuplicate" = "L'indirizzo esiste già nella rubrica.";
