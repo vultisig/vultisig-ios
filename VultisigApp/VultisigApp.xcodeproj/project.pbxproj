@@ -2038,6 +2038,7 @@
 		DE2EDA742E324604004713ED /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				arb.json,
 				bsc.json,
 				cosmos.json,
 				dot.json,
