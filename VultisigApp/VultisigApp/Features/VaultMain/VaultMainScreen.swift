@@ -8,31 +8,18 @@
 import SwiftUI
 
 struct VaultMainScreen: View {
-    let vault: Vault
+    @ObservedObject var vault: Vault
     
+    @StateObject var viewModel = VaultMainViewModel()
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         ZStack(alignment: .top) {
             ScrollView {
                 VStack(spacing: 20) {
-                    VStack(spacing: 32) {
-                        VaultMainBalanceView(vault: vault)
-                        CoinActionsView(
-                            actions: homeViewModel.vaultActions,
-                            onAction: onAction
-                        )
-                        VaultBannerView(
-                            title: "signFasterThanEverBefore".localized,
-                            subtitle: "upgradeYourVaultNow".localized,
-                            buttonTitle: "upgradeNow".localized,
-                            bgImage: "referral-banner-2",
-                            action: onBannerAction,
-                            onClose: onBannerClose
-                        )
-                    }
-                    
+                    topContentSection
                     Separator()
+                    bottomContentSection
                 }
                 .padding(.horizontal, 16)
             }
@@ -40,17 +27,51 @@ struct VaultMainScreen: View {
                 Spacer()
                     .frame(height: 78)
             }
-//            .padding(.top, 78)
             
-            VaultMainHeaderView(
-                vault: vault,
-                vaultSelectorAction: onVaultSelector,
-                settingsAction: onSettings
-            )
-            .padding(.horizontal, 16)
+            header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(VaultMainScreenBackground())
+    }
+    
+    var header: some View {
+        VaultMainHeaderView(
+            vault: vault,
+            vaultSelectorAction: onVaultSelector,
+            settingsAction: onSettings
+        )
+        .padding(.horizontal, 16)
+    }
+    
+    var topContentSection: some View {
+        
+        VStack(spacing: 32) {
+            VaultMainBalanceView(vault: vault)
+            CoinActionsView(
+                actions: viewModel.availableActions,
+                onAction: onAction
+            )
+            VaultBannerView(
+                title: "signFasterThanEverBefore".localized,
+                subtitle: "upgradeYourVaultNow".localized,
+                buttonTitle: "upgradeNow".localized,
+                bgImage: "referral-banner-2",
+                action: onBannerAction,
+                onClose: onBannerClose
+            )
+        }
+    }
+    
+    var bottomContentSection: some View {
+        LazyVStack {
+            HStack {
+                SegmentedControl(
+                    selection: $viewModel.selectedTab,
+                    items: viewModel.tabs
+                )
+                Spacer()
+            }
+        }
     }
     
     func onVaultSelector() {

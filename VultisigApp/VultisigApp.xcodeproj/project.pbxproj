@@ -14,6 +14,9 @@
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
 		130C40E22E7303CE00509C61 /* VaultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* VaultBannerView.swift */; };
+		130C40E52E731CD900509C61 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E42E731CD300509C61 /* SegmentedControl.swift */; };
+		130C40E82E73232700509C61 /* VaultMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E72E73232400509C61 /* VaultMainViewModel.swift */; };
+		130C40EB2E73239B00509C61 /* VaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40EA2E73239200509C61 /* VaultTab.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
@@ -1044,6 +1047,9 @@
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
 		130C40E12E7303CB00509C61 /* VaultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerView.swift; sourceTree = "<group>"; };
+		130C40E42E731CD300509C61 /* SegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControl.swift; sourceTree = "<group>"; };
+		130C40E72E73232400509C61 /* VaultMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainViewModel.swift; sourceTree = "<group>"; };
+		130C40EA2E73239200509C61 /* VaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTab.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
@@ -2135,6 +2141,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				130C40E42E731CD300509C61 /* SegmentedControl.swift */,
 				1348FA632E6895AE001551F6 /* TextEditor */,
 				B2ADDDC32E5D638F00DB3B98 /* banxa */,
 				13D93BD32E58C772001E31E8 /* Layout */,
@@ -2231,6 +2238,14 @@
 				130C40E12E7303CB00509C61 /* VaultBannerView.swift */,
 			);
 			path = Banners;
+			sourceTree = "<group>";
+		};
+		130C40E92E73238B00509C61 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				130C40EA2E73239200509C61 /* VaultTab.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		1316034F2E60C438001ED972 /* Backup */ = {
@@ -2577,6 +2592,8 @@
 		13C880562E70A317009C67F1 /* VaultMain */ = {
 			isa = PBXGroup;
 			children = (
+				130C40E92E73238B00509C61 /* Model */,
+				130C40E72E73232400509C61 /* VaultMainViewModel.swift */,
 				13C880592E70A359009C67F1 /* Views */,
 				13C880572E70A327009C67F1 /* VaultMainScreen.swift */,
 			);
@@ -5295,6 +5312,7 @@
 				GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */,
 				F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */,
 				A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */,
+				130C40E82E73232700509C61 /* VaultMainViewModel.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,
@@ -5473,6 +5491,7 @@
 				13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */,
 				A670CEC12DD7CFD400E33B09 /* NavigationBlankBackButton+macOS.swift in Sources */,
 				13AF0D232E4CE7A9004D4FD2 /* VultisigRouter.swift in Sources */,
+				130C40E52E731CD900509C61 /* SegmentedControl.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
@@ -5626,6 +5645,7 @@
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,
 				A6833D842C65BC59002029E1 /* FunctionCallHeader.swift in Sources */,
+				130C40EB2E73239B00509C61 /* VaultTab.swift in Sources */,
 				13D7643C2E41309E00F048DE /* TokenSearchService.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A6ECA1B22C94129300456110 /* VaultDetailQRCodeViewModel+iOS.swift in Sources */,
