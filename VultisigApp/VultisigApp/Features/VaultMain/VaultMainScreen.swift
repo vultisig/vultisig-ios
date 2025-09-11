@@ -15,10 +15,14 @@ struct VaultMainScreen: View {
     
     @State private var showCopyNotification = false
     @State private var copyNotificationText = ""
+    @State private var scrollOffset: CGFloat = 0
+    @State var showBalanceInHeader: Bool = false
+    
+    private let contentInset: CGFloat = 78
     
     var body: some View {
         ZStack(alignment: .top) {
-            ScrollView(showsIndicators: false) {
+            OffsetObservingScrollView(contentInset: contentInset, scrollOffset: $scrollOffset) {
                 VStack(spacing: 20) {
                     topContentSection
                     Separator(color: Theme.colors.borderLight, opacity: 1)
@@ -26,11 +30,6 @@ struct VaultMainScreen: View {
                 }
                 .padding(.horizontal, 16)
             }
-            .safeAreaInset(edge: .top) {
-                Spacer()
-                    .frame(height: 78)
-            }
-            
             header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -42,15 +41,18 @@ struct VaultMainScreen: View {
             ).showIf(showCopyNotification)
             .zIndex(2)
         )
+        .onChange(of: scrollOffset) { _, newValue in
+            onScrollOffsetChange(newValue)
+        }
     }
     
     var header: some View {
         VaultMainHeaderView(
             vault: vault,
+            showBalance: $showBalanceInHeader,
             vaultSelectorAction: onVaultSelector,
             settingsAction: onSettings
         )
-        .padding(.horizontal, 16)
     }
     
     var topContentSection: some View {
@@ -104,19 +106,19 @@ struct VaultMainScreen: View {
     }
     
     func onBannerAction() {
-        
+        // TODO: - Add banner action in upcoming PRs
     }
     
     func onBannerClose() {
-        
+        // TODO: - Add banner close in upcoming PRs
     }
     
     func onSearch() {
-        
+        // TODO: - Add search in upcoming PRs
     }
     
     func onManageChains() {
-        
+        // TODO: - Add manage chains in upcoming PRs
     }
     
     func onCopy(_ group: GroupedChain) {
@@ -127,7 +129,11 @@ struct VaultMainScreen: View {
     }
     
     func onChainAction(_ group: GroupedChain) {
-        
+        // TODO: - Add chain action in upcoming PRs
+    }
+    
+    func onScrollOffsetChange(_ offset: CGFloat) {
+        showBalanceInHeader = offset < contentInset
     }
 }
 

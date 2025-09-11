@@ -11,14 +11,6 @@ struct VaultMainBalanceView: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    var vaultBalanceText: String {
-        guard !homeViewModel.hideVaultBalance else {
-            return Array.init(repeating: "•", count: 8).joined(separator: " ")
-        }
-        
-        return homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? ""
-    }
-    
     var body: some View {
         Button {
             homeViewModel.hideVaultBalance.toggle()
@@ -32,13 +24,12 @@ struct VaultMainBalanceView: View {
     }
     
     var balanceLabel: some View {
-        Text(vaultBalanceText)
+        Text(homeViewModel.vaultBalanceText)
             .font(Theme.fonts.largeTitle)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
     }
 
-    
     var toggleBalanceVisibilityButton: some View {
         HStack(spacing: 4) {
             Icon(

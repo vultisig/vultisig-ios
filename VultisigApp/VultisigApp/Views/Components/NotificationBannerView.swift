@@ -18,7 +18,6 @@ struct NotificationBannerView: View {
     var body: some View {
         VStack {
             Spacer()
-            
             VStack(spacing: 8) {
                 ZStack {
                     Circle()
@@ -31,7 +30,6 @@ struct NotificationBannerView: View {
                         .frame(width: 18, height: 18)
                         .rotationEffect(.degrees(-90))
                         .animation(.linear(duration: duration), value: progress)
-                    
                     Icon(named: "check", color: Theme.colors.alertSuccess, size: 9)
                 }
                 
