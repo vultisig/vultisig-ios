@@ -167,6 +167,6 @@ final class Vault: ObservableObject, Codable {
         return "Main Vault"
     }
 
-    static let example = Vault(name: "Bitcoin super long nameeeeeeeeeee", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: .GG20)
+    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: .GG20)
     static let fastVaultExample = Vault(name: "server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil, libType: nil)
 }

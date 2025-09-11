@@ -865,3 +865,4 @@
 "portfolio" = "Portfolio";
 "nfts" = "NFTs";
 "soon" = "SOON";
+"coinAddressCopied" = "%@ address copied";
