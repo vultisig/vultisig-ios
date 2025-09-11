@@ -855,3 +855,7 @@
 "chooseEmailApp" = "Choose email app";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "addressBookDuplicate" = "Address already exists in your address book.";
+"pendingTransactionTitle" = "Pending Transaction";
+"pendingTransactionMessage" = "Transaction %@... has been pending for %d minutes. Please wait for confirmation before sending another transaction to avoid nonce conflicts.";
+"pendingTransactionTimeoutMessage" = "Transaction %@... is pending. Please wait %d seconds for confirmation or timeout before sending another transaction.";
+"pendingTransactionExpiredMessage" = "Transaction %@... has timed out. You can now send a new transaction.";

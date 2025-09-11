@@ -696,3 +696,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "addressBookDuplicate" = "Adresa već postoji u vašem adresaru.";
+"pendingTransactionTitle" = "Transakcija na čekanju";
+"pendingTransactionMessage" = "Transakcija %@... čeka već %d minuta. Molimo pričekajte potvrdu prije slanja nove transakcije kako biste izbjegli konflikte nonce.";
+"pendingTransactionTimeoutMessage" = "Transakcija %@... je na čekanju. Molimo pričekajte %d sekundi za potvrdu ili timeout prije slanja nove transakcije.";
+"pendingTransactionExpiredMessage" = "Transakcija %@... je istekla. Sada možete poslati novu transakciju.";

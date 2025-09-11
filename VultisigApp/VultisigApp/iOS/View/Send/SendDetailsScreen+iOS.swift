@@ -35,6 +35,7 @@ extension SendDetailsScreen {
         }
     }
     
+    
     var buttonContainer: some View {
         button
             .padding(.vertical, 8)

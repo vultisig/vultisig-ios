@@ -37,6 +37,8 @@ class SendCryptoViewModel: ObservableObject {
     
     @Published var showAddressAlert: Bool = false
     @Published var showAmountAlert: Bool = false
+    @Published var hasPendingTransaction: Bool = false
+    @Published var pendingTransactionCountdown: Int = 0
     
     let blockchainService = BlockChainService.shared
     
@@ -363,6 +365,11 @@ class SendCryptoViewModel: ObservableObject {
         // Reset validation state at the beginning
         resetStates()
         
+        // Check for pending Cosmos transactions that could cause nonce conflicts
+        if await hasPendingCosmosTransactions(tx: tx) {
+            return false
+        }
+        
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         
@@ -559,6 +566,42 @@ class SendCryptoViewModel: ObservableObject {
         showAlert = false
     }
     
+    /// Check if there are pending Cosmos transactions that could cause nonce conflicts
+    private func hasPendingCosmosTransactions(tx: SendTransaction) async -> Bool {
+        // Only check for Cosmos chains that use sequence numbers (nonce)
+        let cosmosChains: [Chain] = [.thorChain, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash]
+        
+        guard cosmosChains.contains(tx.coin.chain) else {
+            return false
+        }
+        
+        let pendingTxManager = PendingTransactionManager.shared
+        
+        // Check for pending transactions (polling takes care of status updates)
+        if pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain) {
+            // Get the oldest pending transaction for user feedback
+            if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
+                let elapsedSeconds = pendingTxManager.getElapsedSeconds(for: oldestPending)
+                
+                await MainActor.run {
+                    hasPendingTransaction = true
+                    pendingTransactionCountdown = elapsedSeconds
+                    isValidForm = false
+                    isLoading = false
+                }
+                return true
+            }
+        }
+        
+        // No pending transactions
+        await MainActor.run {
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+        }
+        
+        return false
+    }
+    
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         let totalAmount = tx.amountInRaw + BigInt(tx.gas * 1480)
         guard let utxoInfo = utxo.blockchairData
@@ -600,5 +643,223 @@ class SendCryptoViewModel: ObservableObject {
         }
         
         return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+    }
+}
+
+// MARK: - Pending Transaction Management
+
+struct PendingTransaction: Codable {
+    let txHash: String
+    let address: String
+    let chain: Chain
+    let sequence: UInt64
+    let timestamp: Date
+    let isConfirmed: Bool
+    
+    init(txHash: String, address: String, chain: Chain, sequence: UInt64) {
+        self.txHash = txHash
+        self.address = address
+        self.chain = chain
+        self.sequence = sequence
+        self.timestamp = Date()
+        self.isConfirmed = false
+    }
+}
+
+@MainActor
+class PendingTransactionManager: ObservableObject {
+    static let shared = PendingTransactionManager()
+    
+    @Published private var pendingTransactions: [String: PendingTransaction] = [:]
+    private var pollingTask: Task<Void, Never>?
+    
+    private init() {
+        startPolling()
+    }
+    
+    deinit {
+        pollingTask?.cancel()
+    }
+    
+    /// Add a pending transaction to tracking (memory only)
+    func addPendingTransaction(txHash: String, address: String, chain: Chain, sequence: UInt64) {
+        let transaction = PendingTransaction(txHash: txHash, address: address, chain: chain, sequence: sequence)
+        pendingTransactions[txHash] = transaction
+        
+        print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
+    }
+    
+    /// Check if there are any unconfirmed transactions for the given address and chain
+    func hasPendingTransactions(for address: String, chain: Chain) -> Bool {
+        return pendingTransactions.values.contains { transaction in
+            transaction.address.lowercased() == address.lowercased() && 
+            transaction.chain == chain && 
+            !transaction.isConfirmed
+        }
+    }
+    
+    /// Get the oldest pending transaction for an address/chain combination
+    func getOldestPendingTransaction(for address: String, chain: Chain) -> PendingTransaction? {
+        return pendingTransactions.values
+            .filter { transaction in
+                transaction.address.lowercased() == address.lowercased() && 
+                transaction.chain == chain && 
+                !transaction.isConfirmed
+            }
+            .min(by: { $0.timestamp < $1.timestamp })
+    }
+    
+    /// Get all pending transactions for an address/chain
+    func getPendingTransactions(for address: String, chain: Chain) -> [PendingTransaction] {
+        return pendingTransactions.values.filter { transaction in
+            transaction.address.lowercased() == address.lowercased() && 
+            transaction.chain == chain && 
+            !transaction.isConfirmed
+        }
+    }
+    
+    /// Get all pending transactions for debugging
+    func getAllPendingTransactions() -> [PendingTransaction] {
+        return Array(pendingTransactions.values.filter { !$0.isConfirmed })
+    }
+    
+    /// Get elapsed seconds for a transaction
+    func getElapsedSeconds(for transaction: PendingTransaction) -> Int {
+        let timeElapsed = Date().timeIntervalSince(transaction.timestamp)
+        return Int(timeElapsed)
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Start polling every 10 seconds to check transaction status
+    private func startPolling() {
+        pollingTask?.cancel() // Cancel any existing task
+        
+        pollingTask = Task {
+            print("PendingTransactionManager: Started polling task")
+            while !Task.isCancelled {
+                do {
+                    await checkAllPendingTransactions()
+                    
+                    // Wait 10 seconds before next check
+                    try await Task.sleep(for: .seconds(30))
+                } catch {
+                    print("PendingTransactionManager: Polling error: \(error)")
+                    // Continue polling even if there's an error
+                    try? await Task.sleep(for: .seconds(30))
+                }
+            }
+            print("PendingTransactionManager: Polling task cancelled")
+        }
+    }
+    
+    /// Restart polling (useful for app lifecycle events)
+    func restartPolling() {
+        print("PendingTransactionManager: Restarting polling")
+        startPolling()
+    }
+    
+    /// Force check pending transactions immediately (useful for UI refresh)
+    func forceCheckPendingTransactions() async {
+        print("PendingTransactionManager: Force checking pending transactions")
+        await checkAllPendingTransactions()
+    }
+    
+    /// Check all pending transactions
+    private func checkAllPendingTransactions() async {
+        let allPending = Array(pendingTransactions.values.filter { !$0.isConfirmed })
+        
+        if !allPending.isEmpty {
+            print("PendingTransactionManager: Checking \(allPending.count) pending transactions")
+        }
+        
+        for transaction in allPending {
+            await checkTransactionConfirmation(transaction: transaction)
+        }
+        
+        // Remove old transactions (older than 1 hour)
+        cleanupOldTransactions()
+    }
+    
+    private func checkTransactionConfirmation(transaction: PendingTransaction) async {
+        do {
+            print("PendingTransactionManager: Checking status for \(transaction.txHash.prefix(8))... on \(transaction.chain)")
+            let isConfirmed = try await checkTransactionStatus(txHash: transaction.txHash, chain: transaction.chain)
+            
+            print("PendingTransactionManager: Transaction \(transaction.txHash.prefix(8))... confirmed: \(isConfirmed)")
+            
+            if isConfirmed {
+                await MainActor.run {
+                    pendingTransactions.removeValue(forKey: transaction.txHash)
+                    print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
+                    
+                    // Invalidate BlockChainService cache to force fresh nonce fetch
+                    BlockChainService.shared.invalidateCacheForAddress(transaction.address, chain: transaction.chain)
+                }
+            }
+        } catch {
+            print("PendingTransactionManager: ❌ Failed to check transaction status for \(transaction.txHash.prefix(8))...: \(error)")
+        }
+    }
+    
+    private func checkTransactionStatus(txHash: String, chain: Chain) async throws -> Bool {
+        switch chain {
+        case .thorChain:
+            // Use nonce-based checking instead of transaction API for better reliability
+            return try await checkThorchainNonceChanged(transaction: pendingTransactions[txHash])
+        case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+            let service = try CosmosServiceFactory.getService(forChain: chain)
+            return try await service.checkTransactionConfirmation(txHash: txHash)
+        case .mayaChain:
+            return try await MayachainService.shared.checkTransactionConfirmation(txHash: txHash)
+        default:
+            return false
+        }
+    }
+    
+    /// Check if THORChain nonce has incremented (indicating transaction confirmation)
+    private func checkThorchainNonceChanged(transaction: PendingTransaction?) async throws -> Bool {
+        guard let transaction = transaction else {
+            return false
+        }
+        
+        print("PendingTransactionManager: Checking nonce for address: \(transaction.address)")
+        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        
+        // Fetch current account info to get latest sequence number
+        let account = try await ThorchainService.shared.fetchAccountNumber(transaction.address)
+        
+        guard let currentSequenceString = account?.sequence,
+              let currentSequence = UInt64(currentSequenceString) else {
+            print("PendingTransactionManager: Failed to get current sequence")
+            return false
+        }
+        
+        print("PendingTransactionManager: Current sequence: \(currentSequence)")
+        
+        // If current sequence is greater than the transaction sequence, it means the transaction was processed
+        let isConfirmed = currentSequence > transaction.sequence
+        print("PendingTransactionManager: Nonce-based confirmation: \(isConfirmed)")
+        
+        return isConfirmed
+    }
+    
+    private func cleanupOldTransactions() {
+        // Only remove transactions older than 10 minutes (safety cleanup)
+        // DO NOT remove by timeout - only by confirmation
+        let tenMinutesAgo = Date().addingTimeInterval(-10 * 60) // 10 minutes safety cleanup
+        
+        let veryOldTransactions = pendingTransactions.filter { _, transaction in
+            transaction.timestamp < tenMinutesAgo
+        }
+        
+        for (txHash, transaction) in veryOldTransactions {
+            pendingTransactions.removeValue(forKey: txHash)
+            print("Very old transaction removed (safety cleanup): \(txHash) for address: \(transaction.address)")
+        }
+        
+        if !veryOldTransactions.isEmpty {
+            print("Safety cleanup: removed \(veryOldTransactions.count) very old transactions (>10 minutes)")
+        }
     }
 }

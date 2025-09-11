@@ -56,6 +56,15 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
+    /// Invalidate cache for a specific address to force fresh nonce fetch
+    func invalidateCacheForAddress(_ address: String, chain: Chain) {
+        // Simple approach: clear entire cache to ensure fresh nonce fetch
+        Task {
+            await localCache.clear()
+            print("Cleared entire cache after transaction confirmation for address: \(address) on chain: \(chain)")
+        }
+    }
+    
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
     
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {

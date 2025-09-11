@@ -34,4 +34,8 @@ class OsmosisService: CosmosService {
     override func latestBlockURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchOsmosisLatestBlock())
     }
+    
+    override func transactionStatusURL(txHash: String) -> URL? {
+        return URL(string: Endpoint.fetchOsmosisTransactionStatus(txHash: txHash))
+    }
 }

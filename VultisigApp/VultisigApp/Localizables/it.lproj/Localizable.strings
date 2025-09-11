@@ -695,3 +695,7 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Rimuovi dai depositi TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";
 "addressBookDuplicate" = "L'indirizzo esiste già nella rubrica.";
+"pendingTransactionTitle" = "Transazione in Sospeso";
+"pendingTransactionMessage" = "La transazione %@... è in sospeso da %d minuti. Attendi la conferma prima di inviare un'altra transazione per evitare conflitti di nonce.";
+"pendingTransactionTimeoutMessage" = "La transazione %@... è in sospeso. Attendi %d secondi per la conferma o il timeout prima di inviare un'altra transazione.";
+"pendingTransactionExpiredMessage" = "La transazione %@... è scaduta. Ora puoi inviare una nuova transazione.";
