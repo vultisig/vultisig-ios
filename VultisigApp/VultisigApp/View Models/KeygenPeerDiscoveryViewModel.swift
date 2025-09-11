@@ -155,7 +155,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 $0.forEach { peer in
                     self.autoSelectPeer(peer)
                 }
-                print("test-1: peers found: \($0)")
                 self.startFastVaultKeygenIfNeeded(state: state)
             }
     }
