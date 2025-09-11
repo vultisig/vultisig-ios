@@ -145,11 +145,19 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         peersFoundCancellable?.cancel()
         peersFoundCancellable = nil
         peersFoundCancellable = participantDiscovery.$peersFound
+            .removeDuplicates()
+            .filter{!$0.isEmpty}
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                $0.forEach { peer in
-                    self?.autoSelectPeer(peer)
+                guard let self else { return }
+                if $0.count == 0 {
+                    return
                 }
-                self?.startFastVaultKeygenIfNeeded(state: state)
+                        
+                $0.forEach { peer in
+                    self.autoSelectPeer(peer)
+                }
+                self.startFastVaultKeygenIfNeeded(state: state)
             }
     }
     

@@ -135,11 +135,19 @@ class KeysignDiscoveryViewModel: ObservableObject {
             
             cancellables.forEach { $0.cancel() }
             
-            participantDiscovery.$peersFound.sink { [weak self] in
-                $0.forEach { peer in
-                    self?.handleSelection(peer)
+            participantDiscovery.$peersFound
+                .removeDuplicates()
+                .filter{!$0.isEmpty}
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] in
+                guard let self else { return }
+                if $0.count == 0 {
+                    return
                 }
-                self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
+                $0.forEach { peer in
+                    self.handleSelection(peer)
+                }
+                self.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
             }
             .store(in: &cancellables)
         }
