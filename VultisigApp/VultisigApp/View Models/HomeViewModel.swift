@@ -48,4 +48,8 @@ class HomeViewModel: ObservableObject {
             !vaultNames.contains(vault.name)
         })
     }
+    
+    var vaultActions: [CoinAction] {
+        [.swap, .buy, .send, .receive]
+    }
 }

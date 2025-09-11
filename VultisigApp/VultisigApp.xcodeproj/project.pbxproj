@@ -12,6 +12,8 @@
 		13095A362E3264E6009F8785 /* HapticFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */; };
 		130C40DB2E71DA4A00509C61 /* CircularIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DA2E71DA3D00509C61 /* CircularIconButton.swift */; };
 		130C40DD2E71E0BE00509C61 /* VaultMainBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */; };
+		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
+		130C40E22E7303CE00509C61 /* VaultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* VaultBannerView.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
@@ -41,7 +43,7 @@
 		13417B8A2E3BB1D000A66EE5 /* FunctionCallStakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */; };
 		13417B8C2E3BB1DB00A66EE5 /* FunctionCallUnstakeRuji.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */; };
 		13417B8E2E3BB1EE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */; };
-		1343C90A2E70AF3900EA5986 /* VaultActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1343C9092E70AF3500EA5986 /* VaultActionButton.swift */; };
+		1343C90A2E70AF3900EA5986 /* CoinActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1343C9092E70AF3500EA5986 /* CoinActionButton.swift */; };
 		1344BD1C2E4B9D8C00CBD493 /* SwapProviderId.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344BD1B2E4B9D8A00CBD493 /* SwapProviderId.swift */; };
 		1344CB212E4A6366006F67B4 /* CrossPlatformShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */; };
 		13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13453AC92E4A1D4500D76629 /* ErrorView.swift */; };
@@ -1040,6 +1042,8 @@
 		13095A352E3264E5009F8785 /* HapticFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticFeedbackManager.swift; sourceTree = "<group>"; };
 		130C40DA2E71DA3D00509C61 /* CircularIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularIconButton.swift; sourceTree = "<group>"; };
 		130C40DC2E71E0B800509C61 /* VaultMainBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainBalanceView.swift; sourceTree = "<group>"; };
+		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
+		130C40E12E7303CB00509C61 /* VaultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerView.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
@@ -1069,7 +1073,7 @@
 		13417B892E3BB1CA00A66EE5 /* FunctionCallStakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallStakeRuji.swift; sourceTree = "<group>"; };
 		13417B8B2E3BB1D200A66EE5 /* FunctionCallUnstakeRuji.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallUnstakeRuji.swift; sourceTree = "<group>"; };
 		13417B8D2E3BB1DE00A66EE5 /* FunctionCallWithdrawRujiRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallWithdrawRujiRewards.swift; sourceTree = "<group>"; };
-		1343C9092E70AF3500EA5986 /* VaultActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultActionButton.swift; sourceTree = "<group>"; };
+		1343C9092E70AF3500EA5986 /* CoinActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionButton.swift; sourceTree = "<group>"; };
 		1344BD1B2E4B9D8A00CBD493 /* SwapProviderId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProviderId.swift; sourceTree = "<group>"; };
 		1344CB202E4A6365006F67B4 /* CrossPlatformShareButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformShareButton.swift; sourceTree = "<group>"; };
 		13453AC92E4A1D4500D76629 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
@@ -2221,6 +2225,14 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		130C40E02E7303C800509C61 /* Banners */ = {
+			isa = PBXGroup;
+			children = (
+				130C40E12E7303CB00509C61 /* VaultBannerView.swift */,
+			);
+			path = Banners;
+			sourceTree = "<group>";
+		};
 		1316034F2E60C438001ED972 /* Backup */ = {
 			isa = PBXGroup;
 			children = (
@@ -2593,8 +2605,10 @@
 		13C8805E2E70A412009C67F1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				130C40E02E7303C800509C61 /* Banners */,
+				130C40DE2E72FD6000509C61 /* CoinActionsView.swift */,
 				130C40DA2E71DA3D00509C61 /* CircularIconButton.swift */,
-				1343C9092E70AF3500EA5986 /* VaultActionButton.swift */,
+				1343C9092E70AF3500EA5986 /* CoinActionButton.swift */,
 				13C8805F2E70A417009C67F1 /* VaultIconTypeView.swift */,
 			);
 			path = Views;
@@ -5034,6 +5048,7 @@
 				1348FA622E6894C7001551F6 /* SettingsPasswordHintScreen.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				A6F7B6E72D4B07B500AC8104 /* KeygenProgressBar.swift in Sources */,
+				130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */,
 				A622C84A2C9BBE2800908332 /* FunctionCallDetailsView+iOS.swift in Sources */,
 				A6A96C942DB0B12D00864353 /* UpgradingVaultView.swift in Sources */,
 				A672643F2D02B9200002E97E /* JoinKeysignSummaryViewModel.swift in Sources */,
@@ -5159,7 +5174,7 @@
 				A60F29AD2DA08C5300C24765 /* SwapCryptoDoneView.swift in Sources */,
 				A6C6708A2C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift in Sources */,
 				A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */,
-				1343C90A2E70AF3900EA5986 /* VaultActionButton.swift in Sources */,
+				1343C90A2E70AF3900EA5986 /* CoinActionButton.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
 				A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */,
@@ -5213,6 +5228,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
+				130C40E22E7303CE00509C61 /* VaultBannerView.swift in Sources */,
 				A6A8163A2CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift in Sources */,
 				13DD547C2E561598007335DA /* SettingsOption.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,

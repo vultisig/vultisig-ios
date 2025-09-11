@@ -1,5 +1,5 @@
 //
-//  VaultActionButton.swift
+//  CoinActionButton.swift
 //  VultisigApp
 //
 //  Created by Gaston Mazzeo on 09/09/2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct VaultActionButton: View {
+struct CoinActionButton: View {
     @Environment(\.isEnabled) var isEnabled
     
     let title: String
@@ -46,8 +46,8 @@ struct VaultActionButton: View {
 }
 
 #Preview {
-    VaultActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}
-    VaultActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}
-    VaultActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}.disabled(true)
-    VaultActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}
+    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}
+    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: true) {}.disabled(true)
+    CoinActionButton(title: "Swap", icon: "swap", isHighlighted: false) {}.disabled(true)
 }

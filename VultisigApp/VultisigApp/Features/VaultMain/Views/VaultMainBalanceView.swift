@@ -59,6 +59,7 @@ struct VaultMainBalanceView: View {
 #Preview {
     VStack {
         VaultMainBalanceView(vault: .example)
+            .environmentObject(HomeViewModel())
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 }
