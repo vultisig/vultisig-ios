@@ -19,6 +19,7 @@ struct VaultSelectorView: View {
                 Text(vaultName)
                     .foregroundStyle(Theme.colors.textPrimary)
                     .font(Theme.fonts.bodySMedium)
+                    .lineLimit(1)
                 Icon(
                     named: "chevron-down-small",
                     color: Theme.colors.textPrimary,

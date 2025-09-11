@@ -64,12 +64,14 @@ struct VaultMainScreen: View {
     
     var bottomContentSection: some View {
         LazyVStack {
-            HStack {
+            HStack(spacing: 8) {
                 SegmentedControl(
                     selection: $viewModel.selectedTab,
                     items: viewModel.tabs
                 )
                 Spacer()
+                CircularAccessoryIconButton(icon: "magnifying-glass", action: onSearch)
+                CircularAccessoryIconButton(icon: "write", action: onManageChains)
             }
         }
     }
@@ -91,6 +93,14 @@ struct VaultMainScreen: View {
     }
     
     func onBannerClose() {
+        
+    }
+    
+    func onSearch() {
+        
+    }
+    
+    func onManageChains() {
         
     }
 }
