@@ -139,8 +139,7 @@ private extension BlockaidScannerService {
             .polygonV2,
             .sui,
             .solana,
-            // TODO: - Enable BTC Sec scanner once it's ready
-//            .bitcoin
+            .bitcoin
         ]
         
         static let providerName = "blockaid"
