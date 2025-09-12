@@ -169,5 +169,4 @@ class CosmosService {
     func latestBlockURL(coin: Coin)-> URL? {
         fatalError("Must override in subclass")
     }
-    
 }

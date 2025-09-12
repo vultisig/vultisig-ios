@@ -122,7 +122,6 @@ class MayachainService: ThorchainSwapProvider {
         }
 
     }
-    
 
     func getDepositAssets(completion: @escaping ([String]) -> Void) {
         let url = URL(string: Endpoint.depositAssetsMaya)!

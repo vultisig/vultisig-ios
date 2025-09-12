@@ -34,7 +34,6 @@ class TerraService: CosmosService {
     override func latestBlockURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchTerraLatestBlock())
     }
-    
 }
 
 class TerraClassicService: CosmosService {
@@ -63,5 +62,4 @@ class TerraClassicService: CosmosService {
     override func latestBlockURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchTerraClassicLatestBlock())
     }
-    
 }

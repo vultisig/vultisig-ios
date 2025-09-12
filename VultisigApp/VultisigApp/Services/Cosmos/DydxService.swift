@@ -21,17 +21,4 @@ class DydxService: CosmosService {
     override func transactionURL() -> URL? {
         return URL(string: Endpoint.broadcastDydxTransaction)
     }
-    
-    override func wasmTokenBalanceURL(contractAddress: String, base64Payload: String) -> URL? {
-        return nil // DydX doesn't support WASM tokens
-    }
-    
-    override func ibcDenomTraceURL(coin: Coin) -> URL? {
-        return nil // DydX doesn't support IBC denom traces
-    }
-    
-    override func latestBlockURL(coin: Coin) -> URL? {
-        return nil // Not needed for DydX
-    }
-    
 }

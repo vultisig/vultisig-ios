@@ -256,7 +256,6 @@ class ThorchainService: ThorchainSwapProvider {
             return chain.swapAsset.uppercased()
         }
     }
-    
 }
 
 // MARK: - THORChain Pool Prices Functionality

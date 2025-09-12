@@ -22,4 +22,3 @@ class CosmosTransactionBroadcastTx: Codable {
         case txhash, code
     }
 }
-

@@ -33,5 +33,4 @@ class GaiaService: CosmosService {
     override func latestBlockURL(coin: Coin)-> URL? {
         return URL(string: Endpoint.fetchCosmosLatestBlock())
     }
-    
 }

@@ -34,7 +34,6 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
-    
     static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
     static let githubMacUpdateBase = "https://github.com/vultisig/vultisig-ios/releases/tag/"
     static let githubMacDownloadBase = "https://github.com/vultisig/vultisig-ios/releases/download/"
@@ -450,7 +449,6 @@ class Endpoint {
     
     static let broadcastOsmosisTransaction = "https://osmosis-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    
     static func fetchOsmosisWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
         "https://osmosis-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
     }
@@ -472,7 +470,6 @@ class Endpoint {
     
     static let broadcastAkashTransaction = "https://akash-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    
     static func fetchNobleAccountBalance(address: String) -> String{
         "https://noble-api.polkachu.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -482,7 +479,6 @@ class Endpoint {
     
     static let broadcastNobleTransaction = "https://noble-api.polkachu.com/cosmos/tx/v1beta1/txs"
     
-    
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -491,7 +487,6 @@ class Endpoint {
     }
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-    
     
     static func fetchCosmosWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
         "https://cosmos-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
@@ -515,7 +510,6 @@ class Endpoint {
     
     static let broadcastTerraTransaction = "https://terra-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    
     static func fetchTerraIbcDenomTraces(hash: String) -> String{
         "https://terra-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
     }
@@ -536,7 +530,6 @@ class Endpoint {
     }
     
     static let broadcastTerraClassicTransaction = "https://terra-classic-lcd.publicnode.com/cosmos/tx/v1beta1/txs"
-    
     
     static func fetchTerraClassicIbcDenomTraces(hash: String) -> String{
         "https://terra-classic-lcd.publicnode.com/ibc/apps/transfer/v1/denom_traces/\(hash)"
@@ -559,7 +552,6 @@ class Endpoint {
     
     static let broadcastDydxTransaction = "https://dydx-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
-    
     static func fetchKujiraAccountBalance(address: String) -> String{
         "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -568,7 +560,6 @@ class Endpoint {
     }
     
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-    
     
     static func fetchKujiraWasmTokenBalance(contractAddress: String, base64Payload: String) -> String {
         "https://kujira-rest.publicnode.com/cosmwasm/wasm/v1/contract/\(contractAddress)/smart/\(base64Payload)"
