@@ -12,6 +12,7 @@ struct AddressBookTextField: View {
     let title: String
     @Binding var text: String
     var showActions = false
+    var isScrollable = false
     
     @State var showScanner = false
     @State var showImagePicker = false

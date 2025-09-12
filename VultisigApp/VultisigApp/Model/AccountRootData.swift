@@ -13,7 +13,7 @@ struct AccountRootData: Decodable {
         
         struct AccountNode: Decodable {
             let merge: AccountMerge?
-            let stakingV2: [StakingV2]
+            let stakingV2: [StakingV2]?
             
             struct AccountMerge: Decodable {
                 let accounts: [MergeAccount]

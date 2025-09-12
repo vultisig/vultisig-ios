@@ -81,6 +81,8 @@ struct KeysignDiscoveryView: View {
         }
         .onDisappear {
             viewModel.stopDiscovery()
+            shareSheetViewModel.clear()
+            self.qrCodeImage = nil
         }
         .onChange(of: selectedNetwork) { _, newValue in
             VultisigRelay.IsRelayEnabled = newValue == .Internet

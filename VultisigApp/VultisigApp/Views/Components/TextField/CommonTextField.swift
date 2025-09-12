@@ -14,6 +14,7 @@ struct CommonTextField<TrailingView: View>: View {
     let placeholder: String
     @Binding var isSecure: Bool
     @Binding var error: String?
+    let isScrollable: Bool
     
     let trailingView: () -> TrailingView
     
@@ -23,6 +24,7 @@ struct CommonTextField<TrailingView: View>: View {
         placeholder: String,
         isSecure: Binding<Bool> = .constant(false),
         error: Binding<String?> = .constant(nil),
+        isScrollable: Bool = false,
         @ViewBuilder trailingView: @escaping () -> TrailingView
     ) {
         self._text = text
@@ -30,6 +32,7 @@ struct CommonTextField<TrailingView: View>: View {
         self.placeholder = placeholder
         self._isSecure = isSecure
         self._error = error
+        self.isScrollable = isScrollable
         self.trailingView = trailingView
     }
     
@@ -60,18 +63,12 @@ struct CommonTextField<TrailingView: View>: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Group {
-                        if isSecure {
-                            SecureField(placeholder.localized, text: $text)
-                        } else {
-                            TextField(placeholder.localized, text: $text)
-                        }
-                    }
-                    .font(Theme.fonts.bodyMRegular)
-                    .foregroundColor(Theme.colors.textPrimary)
-                    .submitLabel(.done)
-                    .colorScheme(.dark)
-                    .frame(maxWidth: .infinity)
+                    textFieldContainer
+                        .font(Theme.fonts.bodyMRegular)
+                        .foregroundColor(Theme.colors.textPrimary)
+                        .submitLabel(.done)
+                        .colorScheme(.dark)
+                        .frame(maxWidth: .infinity)
                     
                     clearButton
                         .showIf(isEnabled)
@@ -118,5 +115,29 @@ struct CommonTextField<TrailingView: View>: View {
     
     var borderColor: Color {
         error != nil ? Theme.colors.alertError : Theme.colors.border
+    }
+    
+    @ViewBuilder
+    var textFieldContainer: some View {
+        if isScrollable {
+            ScrollView(.horizontal, showsIndicators: false) {
+                textField
+                    .frame(minWidth: 200)
+            }
+        } else {
+            textField
+        }
+    }
+    
+    @ViewBuilder
+    var textField: some View {
+        Group {
+            if isSecure {
+                SecureField(placeholder.localized, text: $text)
+            } else {
+                TextField(placeholder.localized, text: $text)
+            }
+        }
+        .frame(height: 56)
     }
 }

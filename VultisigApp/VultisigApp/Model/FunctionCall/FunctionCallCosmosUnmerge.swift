@@ -118,6 +118,9 @@ class FunctionCallCosmosUnmerge: ObservableObject {
     
     @MainActor
     func fetchMergedBalance() async {
+        // Prevent multiple concurrent requests
+        if isLoading { return }
+        
         isLoading = true
         objectWillChange.send() // Force UI update
         defer {
