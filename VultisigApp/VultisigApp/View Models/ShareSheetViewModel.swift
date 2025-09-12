@@ -42,4 +42,9 @@ class ShareSheetViewModel: ObservableObject {
         setImage(renderer)
         self.qrCodeData = qrCodeData
     }
+    func clear() {
+        print("clear image reference")
+        renderedImage = nil
+        qrCodeData = nil
+    }
 }
