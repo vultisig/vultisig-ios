@@ -35,7 +35,4 @@ class AkashService: CosmosService {
         return nil // Not needed for Akash
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchAkashTransactionStatus(txHash: txHash))
-    }
 }

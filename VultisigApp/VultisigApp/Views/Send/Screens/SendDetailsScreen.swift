@@ -52,19 +52,33 @@ struct SendDetailsScreen: View {
                 await setMainData()
                 await loadGasInfo()
                 await checkPendingTransactions()
+                
+                // Start polling for current chain if there are pending transactions
+                PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
             }
             sendDetailsViewModel.onLoad()
             setData()
         }
-        .onChange(of: tx.coin) {
+        .onChange(of: tx.coin) { oldValue, newValue in
             Task {
+                // SEMPRE para o polling da chain anterior
+                PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
+                
                 await loadGasInfo()
                 await checkPendingTransactions()
+                
+                // Só inicia polling se a NOVA chain suportar pending transactions
+                if newValue.chain.supportsPendingTransactions {
+                    PendingTransactionManager.shared.startPollingForChain(newValue.chain)
+                }
             }
         }
         .onDisappear {
             sendCryptoViewModel.stopMediator()
             countdownTimer?.invalidate()
+            
+            // Stop all polling when leaving Send screen
+            PendingTransactionManager.shared.stopAllPolling()
         }
         .sheet(isPresented: $settingsPresented) {
             SendGasSettingsView(
@@ -353,9 +367,7 @@ extension SendDetailsScreen {
     }
     
     private func checkPendingTransactions() async {
-        let cosmosChains: [Chain] = [.thorChain, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash]
-        
-        guard cosmosChains.contains(tx.coin.chain) else {
+        guard tx.coin.chain.supportsPendingTransactions else {
             await MainActor.run {
                 sendCryptoViewModel.hasPendingTransaction = false
                 sendCryptoViewModel.pendingTransactionCountdown = 0
@@ -374,10 +386,18 @@ extension SendDetailsScreen {
             if hasPending {
                 sendCryptoViewModel.hasPendingTransaction = true
                 startCountdownTimer()
+                
+                // Start polling APENAS se for chain que suporta pending transactions
+                if tx.coin.chain.supportsPendingTransactions {
+                    PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
+                }
             } else {
                 sendCryptoViewModel.hasPendingTransaction = false
                 sendCryptoViewModel.pendingTransactionCountdown = 0
                 stopCountdownTimer()
+                
+                // SEMPRE para polling quando não há pendentes (qualquer chain)
+                PendingTransactionManager.shared.stopPollingForChain(tx.coin.chain)
             }
         }
     }
@@ -398,9 +418,7 @@ extension SendDetailsScreen {
     }
     
     private func updateCountdown() async {
-        let cosmosChains: [Chain] = [.thorChain, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash]
-        
-        guard cosmosChains.contains(tx.coin.chain) else {
+        guard tx.coin.chain.supportsPendingTransactions else {
             return
         }
         

@@ -26,8 +26,6 @@ extension VultisigApp {
                 switch scenePhase {
                 case .active:
                     continueLogin()
-                    // Restart pending transaction polling when app becomes active
-                    PendingTransactionManager.shared.restartPolling()
                 case .background:
                     resetLogin()
                 default:

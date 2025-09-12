@@ -35,7 +35,4 @@ class NobleService: CosmosService {
         return nil // Not needed for Noble
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchNobleTransactionStatus(txHash: txHash))
-    }
 }

@@ -34,7 +34,4 @@ class DydxService: CosmosService {
         return nil // Not needed for DydX
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchDydxTransactionStatus(txHash: txHash))
-    }
 }

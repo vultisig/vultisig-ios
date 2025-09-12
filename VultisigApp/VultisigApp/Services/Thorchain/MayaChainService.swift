@@ -123,45 +123,6 @@ class MayachainService: ThorchainSwapProvider {
 
     }
     
-    /// Check if a MayaChain transaction has been confirmed
-    func checkTransactionConfirmation(txHash: String) async throws -> Bool {
-        let urlString = Endpoint.fetchMayachainTransactionStatus(txHash: txHash)
-        
-        guard let url = URL(string: urlString) else {
-            throw HelperError.runtimeError("Invalid transaction status URL")
-        }
-        
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw HelperError.runtimeError("Invalid HTTP response")
-        }
-        
-        // If transaction is not found (404), it's not confirmed yet
-        if httpResponse.statusCode == 404 {
-            return false
-        }
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw HelperError.runtimeError("Status code: \(httpResponse.statusCode)")
-        }
-        
-        // Try to decode the transaction response
-        do {
-            let transactionResponse = try JSONDecoder().decode(CosmosTransactionResponse.self, from: data)
-            
-            // Check if transaction has been included in a block (confirmed)
-            if let txResponse = transactionResponse.txResponse {
-                // Transaction is confirmed if it has a height > 0 and code == 0 (success)
-                return (txResponse.height ?? "0") != "0" && (txResponse.code ?? -1) == 0
-            }
-            
-            return false
-        } catch {
-            // If we can't decode the response, assume not confirmed
-            return false
-        }
-    }
 
     func getDepositAssets(completion: @escaping ([String]) -> Void) {
         let url = URL(string: Endpoint.depositAssetsMaya)!

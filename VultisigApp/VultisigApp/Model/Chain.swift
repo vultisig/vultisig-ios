@@ -511,4 +511,14 @@ extension Chain {
             return true
         }
     }
+    
+    /// Indicates if this chain supports pending transaction tracking via sequence numbers (nonce)
+    var supportsPendingTransactions: Bool {
+        switch self {
+        case .thorChain, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+            return true
+        default:
+            return false
+        }
+    }
 }

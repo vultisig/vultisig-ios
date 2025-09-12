@@ -35,9 +35,6 @@ class TerraService: CosmosService {
         return URL(string: Endpoint.fetchTerraLatestBlock())
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchTerraTransactionStatus(txHash: txHash))
-    }
 }
 
 class TerraClassicService: CosmosService {
@@ -67,7 +64,4 @@ class TerraClassicService: CosmosService {
         return URL(string: Endpoint.fetchTerraClassicLatestBlock())
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchTerraClassicTransactionStatus(txHash: txHash))
-    }
 }

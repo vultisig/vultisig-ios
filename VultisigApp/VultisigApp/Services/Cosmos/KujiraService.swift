@@ -34,7 +34,4 @@ class KujiraService: CosmosService {
         return URL(string: Endpoint.fetchKujiraLatestBlock())
     }
     
-    override func transactionStatusURL(txHash: String) -> URL? {
-        return URL(string: Endpoint.fetchKujiraTransactionStatus(txHash: txHash))
-    }
 }

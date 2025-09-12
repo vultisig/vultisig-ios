@@ -568,10 +568,8 @@ class SendCryptoViewModel: ObservableObject {
     
     /// Check if there are pending Cosmos transactions that could cause nonce conflicts
     private func hasPendingCosmosTransactions(tx: SendTransaction) async -> Bool {
-        // Only check for Cosmos chains that use sequence numbers (nonce)
-        let cosmosChains: [Chain] = [.thorChain, .mayaChain, .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash]
-        
-        guard cosmosChains.contains(tx.coin.chain) else {
+        // Only check for chains that support pending transaction tracking
+        guard tx.coin.chain.supportsPendingTransactions else {
             return false
         }
         
@@ -671,14 +669,16 @@ class PendingTransactionManager: ObservableObject {
     static let shared = PendingTransactionManager()
     
     @Published private var pendingTransactions: [String: PendingTransaction] = [:]
-    private var pollingTask: Task<Void, Never>?
+    private var pollingTasks: [Chain: Task<Void, Never>] = [:]
     
     private init() {
-        startPolling()
+        // Don't start polling automatically - only when needed
     }
     
     deinit {
-        pollingTask?.cancel()
+        for (_, task) in pollingTasks {
+            task.cancel()
+        }
     }
     
     /// Add a pending transaction to tracking (memory only)
@@ -687,6 +687,9 @@ class PendingTransactionManager: ObservableObject {
         pendingTransactions[txHash] = transaction
         
         print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
+        
+        // Start polling only for this specific chain
+        startPollingForChain(chain)
     }
     
     /// Check if there are any unconfirmed transactions for the given address and chain
@@ -731,33 +734,6 @@ class PendingTransactionManager: ObservableObject {
     
     // MARK: - Private Methods
     
-    /// Start polling every 10 seconds to check transaction status
-    private func startPolling() {
-        pollingTask?.cancel() // Cancel any existing task
-        
-        pollingTask = Task {
-            print("PendingTransactionManager: Started polling task")
-            while !Task.isCancelled {
-                do {
-                    await checkAllPendingTransactions()
-                    
-                    // Wait 10 seconds before next check
-                    try await Task.sleep(for: .seconds(30))
-                } catch {
-                    print("PendingTransactionManager: Polling error: \(error)")
-                    // Continue polling even if there's an error
-                    try? await Task.sleep(for: .seconds(30))
-                }
-            }
-            print("PendingTransactionManager: Polling task cancelled")
-        }
-    }
-    
-    /// Restart polling (useful for app lifecycle events)
-    func restartPolling() {
-        print("PendingTransactionManager: Restarting polling")
-        startPolling()
-    }
     
     /// Force check pending transactions immediately (useful for UI refresh)
     func forceCheckPendingTransactions() async {
@@ -765,7 +741,86 @@ class PendingTransactionManager: ObservableObject {
         await checkAllPendingTransactions()
     }
     
-    /// Check all pending transactions
+    /// Start polling for a specific chain
+    func startPollingForChain(_ chain: Chain) {
+        // Only poll for chains that support pending transaction tracking
+        guard chain.supportsPendingTransactions else {
+            return
+        }
+        
+        // Don't start if already polling for this chain
+        guard pollingTasks[chain] == nil else {
+            return
+        }
+        
+        // Only start if there are pending transactions for this chain
+        let hasPendingForChain = pendingTransactions.values.contains { $0.chain == chain && !$0.isConfirmed }
+        guard hasPendingForChain else {
+            return
+        }
+        
+        print("PendingTransactionManager: Starting polling for chain: \(chain)")
+        
+        pollingTasks[chain] = Task {
+            while !Task.isCancelled {
+                do {
+                    await checkPendingTransactionsForChain(chain)
+                    
+                    // Wait 10 seconds before next check
+                    try await Task.sleep(for: .seconds(10))
+                } catch {
+                    print("PendingTransactionManager: Polling error for \(chain): \(error)")
+                    try? await Task.sleep(for: .seconds(10))
+                }
+            }
+            print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
+        }
+    }
+    
+    /// Stop polling for a specific chain
+    func stopPollingForChain(_ chain: Chain) {
+        pollingTasks[chain]?.cancel()
+        pollingTasks[chain] = nil
+        print("PendingTransactionManager: Stopped polling for chain: \(chain)")
+    }
+    
+    /// Stop all polling
+    func stopAllPolling() {
+        for (chain, task) in pollingTasks {
+            task.cancel()
+            print("PendingTransactionManager: Stopped polling for chain: \(chain)")
+        }
+        pollingTasks.removeAll()
+    }
+    
+    /// Check pending transactions for a specific chain
+    private func checkPendingTransactionsForChain(_ chain: Chain) async {
+        let chainPending = pendingTransactions.values.filter { 
+            $0.chain == chain && !$0.isConfirmed 
+        }
+        
+        if !chainPending.isEmpty {
+            print("PendingTransactionManager: Checking \(chainPending.count) pending transactions for \(chain)")
+        }
+        
+        for transaction in chainPending {
+            await checkTransactionConfirmation(transaction: transaction)
+        }
+        
+        // Stop polling for this chain if no more pending transactions
+        let stillHasPending = pendingTransactions.values.contains { 
+            $0.chain == chain && !$0.isConfirmed 
+        }
+        
+        if !stillHasPending {
+            stopPollingForChain(chain)
+        }
+        
+        // Remove old transactions (older than 10 minutes)
+        cleanupOldTransactions()
+    }
+    
+    /// Check all pending transactions (legacy method for force refresh)
     private func checkAllPendingTransactions() async {
         let allPending = Array(pendingTransactions.values.filter { !$0.isConfirmed })
         
@@ -777,7 +832,7 @@ class PendingTransactionManager: ObservableObject {
             await checkTransactionConfirmation(transaction: transaction)
         }
         
-        // Remove old transactions (older than 1 hour)
+        // Remove old transactions (older than 10 minutes)
         cleanupOldTransactions()
     }
     
@@ -795,6 +850,15 @@ class PendingTransactionManager: ObservableObject {
                     
                     // Invalidate BlockChainService cache to force fresh nonce fetch
                     BlockChainService.shared.invalidateCacheForAddress(transaction.address, chain: transaction.chain)
+                    
+                    // Stop polling for this chain if no more pending transactions for it
+                    let stillHasPendingForChain = pendingTransactions.values.contains { 
+                        $0.chain == transaction.chain && !$0.isConfirmed 
+                    }
+                    
+                    if !stillHasPendingForChain {
+                        stopPollingForChain(transaction.chain)
+                    }
                 }
             }
         } catch {
@@ -807,11 +871,12 @@ class PendingTransactionManager: ObservableObject {
         case .thorChain:
             // Use nonce-based checking instead of transaction API for better reliability
             return try await checkThorchainNonceChanged(transaction: pendingTransactions[txHash])
-        case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
-            let service = try CosmosServiceFactory.getService(forChain: chain)
-            return try await service.checkTransactionConfirmation(txHash: txHash)
         case .mayaChain:
-            return try await MayachainService.shared.checkTransactionConfirmation(txHash: txHash)
+            // Use nonce-based checking for MayaChain
+            return try await checkMayaChainNonceChanged(transaction: pendingTransactions[txHash])
+        case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
+            // Use nonce-based checking for other Cosmos chains
+            return try await checkCosmosNonceChanged(transaction: pendingTransactions[txHash], chain: chain)
         default:
             return false
         }
@@ -840,6 +905,61 @@ class PendingTransactionManager: ObservableObject {
         // If current sequence is greater than the transaction sequence, it means the transaction was processed
         let isConfirmed = currentSequence > transaction.sequence
         print("PendingTransactionManager: Nonce-based confirmation: \(isConfirmed)")
+        
+        return isConfirmed
+    }
+    
+    /// Check if MayaChain nonce has incremented (indicating transaction confirmation)
+    private func checkMayaChainNonceChanged(transaction: PendingTransaction?) async throws -> Bool {
+        guard let transaction = transaction else {
+            return false
+        }
+        
+        print("PendingTransactionManager: Checking MayaChain nonce for address: \(transaction.address)")
+        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        
+        // Fetch current account info to get latest sequence number
+        let account = try await MayachainService.shared.fetchAccountNumber(transaction.address)
+        
+        guard let currentSequenceString = account?.sequence,
+              let currentSequence = UInt64(currentSequenceString) else {
+            print("PendingTransactionManager: Failed to get current MayaChain sequence")
+            return false
+        }
+        
+        print("PendingTransactionManager: Current MayaChain sequence: \(currentSequence)")
+        
+        // If current sequence is greater than the transaction sequence, it means the transaction was processed
+        let isConfirmed = currentSequence > transaction.sequence
+        print("PendingTransactionManager: MayaChain nonce-based confirmation: \(isConfirmed)")
+        
+        return isConfirmed
+    }
+    
+    /// Check if Cosmos chain nonce has incremented (indicating transaction confirmation)
+    private func checkCosmosNonceChanged(transaction: PendingTransaction?, chain: Chain) async throws -> Bool {
+        guard let transaction = transaction else {
+            return false
+        }
+        
+        print("PendingTransactionManager: Checking \(chain) nonce for address: \(transaction.address)")
+        print("PendingTransactionManager: Expected sequence > \(transaction.sequence)")
+        
+        // Fetch current account info to get latest sequence number
+        let service = try CosmosServiceFactory.getService(forChain: chain)
+        let account = try await service.fetchAccountNumber(transaction.address)
+        
+        guard let currentSequenceString = account?.sequence,
+              let currentSequence = UInt64(currentSequenceString) else {
+            print("PendingTransactionManager: Failed to get current \(chain) sequence")
+            return false
+        }
+        
+        print("PendingTransactionManager: Current \(chain) sequence: \(currentSequence)")
+        
+        // If current sequence is greater than the transaction sequence, it means the transaction was processed
+        let isConfirmed = currentSequence > transaction.sequence
+        print("PendingTransactionManager: \(chain) nonce-based confirmation: \(isConfirmed)")
         
         return isConfirmed
     }
