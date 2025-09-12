@@ -13,7 +13,7 @@ struct CircularAccessoryIconButton: View {
     
     var body: some View {
         Button(action: action) {
-            Icon(named: icon, color: Theme.colors.primaryAccent4, size: 16)
+            Icon(named: icon, color: Theme.colors.textPrimary, size: 16)
                 .padding(12)
                 .background(Circle().fill(Theme.colors.bgButtonSecondary))
         }

@@ -35,7 +35,7 @@ struct HomeView: View {
     
     var body: some View {
         if let selectedVault = viewModel.selectedVault {
-            VaultMainScreen(vault: selectedVault)
+            HomeScreen(vault: selectedVault)
         } else {
             VStack {}.onAppear { setData() }
         }

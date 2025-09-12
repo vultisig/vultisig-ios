@@ -21,6 +21,9 @@
 		130C40F02E734BB000509C61 /* VaultMainChainListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40EF2E734BAB00509C61 /* VaultMainChainListView.swift */; };
 		130C40F32E7353D500509C61 /* VaultChainCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F22E7353D400509C61 /* VaultChainCellView.swift */; };
 		130C40F52E73583100509C61 /* NotificationBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F42E73583100509C61 /* NotificationBannerView.swift */; };
+		130C40F82E737FD000509C61 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40F72E737FCD00509C61 /* HomeScreen.swift */; };
+		130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FA2E7381E400509C61 /* HomeTab.swift */; };
+		130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40FD2E7389BD00509C61 /* VultiTabBar.swift */; };
 		130C704B2E31791E00EF2248 /* LongPressPrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */; };
 		131603452E609D74001ED972 /* FileExporterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603442E609D6B001ED972 /* FileExporterSheet.swift */; };
 		131603482E60A450001ED972 /* VaultBackupPasswordScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */; };
@@ -154,6 +157,8 @@
 		13C880602E70A41B009C67F1 /* VaultIconTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C8805F2E70A417009C67F1 /* VaultIconTypeView.swift */; };
 		13CCEC0C2E54EE3000F28937 /* SettingsSectionContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */; };
 		13CCEC0F2E55010D00F28937 /* InfoBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CCEC0E2E55010C00F28937 /* InfoBannerView.swift */; };
+		13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D0C84A2E7461F500A1301F /* TabBarItem.swift */; };
+		13D0C84D2E74620800A1301F /* TabBarAccessoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D0C84C2E74620100A1301F /* TabBarAccessoryButton.swift */; };
 		13D178F92E5753E900007B48 /* AddressBookChainSelectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178F82E5753DB00007B48 /* AddressBookChainSelectionScreen.swift */; };
 		13D178FC2E57544A00007B48 /* AddressBookChainSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */; };
 		13D178FE2E57644F00007B48 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */; };
@@ -1058,6 +1063,9 @@
 		130C40EF2E734BAB00509C61 /* VaultMainChainListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainChainListView.swift; sourceTree = "<group>"; };
 		130C40F22E7353D400509C61 /* VaultChainCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultChainCellView.swift; sourceTree = "<group>"; };
 		130C40F42E73583100509C61 /* NotificationBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationBannerView.swift; sourceTree = "<group>"; };
+		130C40F72E737FCD00509C61 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		130C40FA2E7381E400509C61 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
+		130C40FD2E7389BD00509C61 /* VultiTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultiTabBar.swift; sourceTree = "<group>"; };
 		130C704A2E31791700EF2248 /* LongPressPrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongPressPrimaryButton.swift; sourceTree = "<group>"; };
 		131603442E609D6B001ED972 /* FileExporterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExporterSheet.swift; sourceTree = "<group>"; };
 		131603472E60A44F001ED972 /* VaultBackupPasswordScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupPasswordScreen.swift; sourceTree = "<group>"; };
@@ -1191,6 +1199,8 @@
 		13CCEC062E54D3B100F28937 /* SettingsOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOption.swift; sourceTree = "<group>"; };
 		13CCEC0B2E54EE2800F28937 /* SettingsSectionContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionContainerView.swift; sourceTree = "<group>"; };
 		13CCEC0E2E55010C00F28937 /* InfoBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoBannerView.swift; sourceTree = "<group>"; };
+		13D0C84A2E7461F500A1301F /* TabBarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarItem.swift; sourceTree = "<group>"; };
+		13D0C84C2E74620100A1301F /* TabBarAccessoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarAccessoryButton.swift; sourceTree = "<group>"; };
 		13D178F82E5753DB00007B48 /* AddressBookChainSelectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelectionScreen.swift; sourceTree = "<group>"; };
 		13D178FB2E57543E00007B48 /* AddressBookChainSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelectionViewModel.swift; sourceTree = "<group>"; };
 		13D178FD2E57644B00007B48 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
@@ -2149,6 +2159,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				130C40FC2E7389B500509C61 /* TabBar */,
 				130C40F42E73583100509C61 /* NotificationBannerView.swift */,
 				130C40E42E731CD300509C61 /* SegmentedControl.swift */,
 				1348FA632E6895AE001551F6 /* TextEditor */,
@@ -2274,6 +2285,33 @@
 				130C40EF2E734BAB00509C61 /* VaultMainChainListView.swift */,
 			);
 			path = ChainList;
+			sourceTree = "<group>";
+		};
+		130C40F62E737FBC00509C61 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				130C40F92E7381E000509C61 /* Model */,
+				130C40F72E737FCD00509C61 /* HomeScreen.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		130C40F92E7381E000509C61 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				130C40FA2E7381E400509C61 /* HomeTab.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		130C40FC2E7389B500509C61 /* TabBar */ = {
+			isa = PBXGroup;
+			children = (
+				13D0C84C2E74620100A1301F /* TabBarAccessoryButton.swift */,
+				13D0C84A2E7461F500A1301F /* TabBarItem.swift */,
+				130C40FD2E7389BD00509C61 /* VultiTabBar.swift */,
+			);
+			path = TabBar;
 			sourceTree = "<group>";
 		};
 		1316034F2E60C438001ED972 /* Backup */ = {
@@ -2611,6 +2649,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				130C40F62E737FBC00509C61 /* Home */,
 				13C8805C2E70A409009C67F1 /* VaultCommon */,
 				13C880562E70A317009C67F1 /* VaultMain */,
 			);
@@ -5292,6 +5331,7 @@
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */,
 				A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */,
+				130C40FB2E7381E700509C61 /* HomeTab.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
 				A6505ACC2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift in Sources */,
 				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
@@ -5397,6 +5437,7 @@
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				A6B7F4982C49402F006D83D1 /* VaultDetailQRCodeView.swift in Sources */,
 				A6C670C12C9D16BD00F59B6A /* CustomTokenView+iOS.swift in Sources */,
+				130C40FE2E7389C000509C61 /* VultiTabBar.swift in Sources */,
 				A6386DA62C90243C00DDD58E /* TokenSelectionCell+iOS.swift in Sources */,
 				13D178F92E5753E900007B48 /* AddressBookChainSelectionScreen.swift in Sources */,
 				A6C6713B2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift in Sources */,
@@ -5440,6 +5481,7 @@
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
 				1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */,
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
+				130C40F82E737FD000509C61 /* HomeScreen.swift in Sources */,
 				A66E90A12D778B1A00BF7BCB /* IconCapsule.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
 				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
@@ -5528,6 +5570,7 @@
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
 				A6D739E22E0BAA3A0005697D /* SendDetailsTabEditTools.swift in Sources */,
+				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
 				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
@@ -5602,6 +5645,7 @@
 				B547A3FC2DF3EF6A0052164D /* Cardano.swift in Sources */,
 				A6E0C9042DDD271600A01543 /* FileManagerExtension.swift in Sources */,
 				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
+				13D0C84D2E74620800A1301F /* TabBarAccessoryButton.swift in Sources */,
 				B5CDB87B2DDD8714007DF355 /* MergeAccountResponse.swift in Sources */,
 				B5CDB87C2DDD8715007DF355 /* AccountRootData.swift in Sources */,
 				A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */,
