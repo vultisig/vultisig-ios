@@ -20,7 +20,7 @@ struct SendCryptoAddressBookView: View {
     
     var filteredSavedAddresses: [AddressBookItem] {
         savedAddresses
-            .filter { $0.coinMeta.chain == tx.coin.chain  }
+            .filter { (AddressBookChainType(coinMeta: $0.coinMeta) == AddressBookChainType(coinMeta: tx.coin.toCoinMeta()) || $0.coinMeta.chain == tx.coin.chain) }
     }
     
     var body: some View {
