@@ -12,6 +12,7 @@ import SwiftUI
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
+    static let context = CIContext()
     public static func sendRequest<T: Codable>(urlString: String, method: String,headers: [String: String], body: T?, completion: @escaping (Bool) -> Void) {
         logger.debug("url:\(urlString)")
         guard let url = URL(string: urlString) else {
@@ -456,9 +457,11 @@ enum Utils {
     }
     
     public static func generateQRCodeImage(from string: String, tint: Color = .white, background: Color = .clear) -> Image {
-        let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
+        defer {
+            context.clearCaches()
+        }
         
 #if os(iOS)
         let tintColor = UIColor(tint)
@@ -482,7 +485,7 @@ enum Utils {
         let tintColor = NSColor(tint)
         let backgroundColor = NSColor(background)
         
-        let scale: CGFloat = 100
+        let scale = 1024 / filter.outputImage!.extent.size.width
         let transform = CGAffineTransform(scaleX: scale, y: scale)
         
         if let outputImage = filter.outputImage?.samplingNearest()
