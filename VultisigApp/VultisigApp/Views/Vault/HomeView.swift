@@ -37,21 +37,28 @@ struct HomeView: View {
         if let selectedVault = viewModel.selectedVault {
             HomeScreen(vault: selectedVault)
         } else {
+            // TODO: - Remove after design overhaul is finished
             VStack {}.onAppear { setData() }
         }
-//        container
-//            .alert(
-//                NSLocalizedString("newUpdateAvailable", comment: ""),
-//                isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
-//            ) {
-//                Link(destination: StaticURL.AppStoreVultisigURL) {
-//                    Text(NSLocalizedString("updateNow", comment: ""))
-//                }
-//                
-//                Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-//            } message: {
-//                Text(phoneCheckUpdateViewModel.latestVersionString)
-//            }
+        
+        // TODO: - Remove after design overhaul is finished
+//        legacyHomeView
+    }
+    
+    var legacyHomeView: some View {
+        container
+            .alert(
+                NSLocalizedString("newUpdateAvailable", comment: ""),
+                isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
+            ) {
+                Link(destination: StaticURL.AppStoreVultisigURL) {
+                    Text(NSLocalizedString("updateNow", comment: ""))
+                }
+
+                Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+            } message: {
+                Text(phoneCheckUpdateViewModel.latestVersionString)
+            }
     }
     
     var navigationTitle: some View {
