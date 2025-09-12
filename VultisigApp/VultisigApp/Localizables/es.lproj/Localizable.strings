@@ -697,7 +697,3 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
 "addressBookDuplicate" = "La dirección ya existe en tu libreta de direcciones.";
-"pendingTransactionTitle" = "Transacción Pendiente";
-"pendingTransactionMessage" = "La transacción %@... ha estado pendiente por %d minutos. Por favor espera la confirmación antes de enviar otra transacción para evitar conflictos de nonce.";
-"pendingTransactionTimeoutMessage" = "La transacción %@... está pendiente. Por favor espera %d segundos para confirmación o timeout antes de enviar otra transacción.";
-"pendingTransactionExpiredMessage" = "La transacción %@... ha expirado. Ahora puedes enviar una nueva transacción.";

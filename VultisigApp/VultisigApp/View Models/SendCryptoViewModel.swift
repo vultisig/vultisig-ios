@@ -712,19 +712,6 @@ class PendingTransactionManager: ObservableObject {
             .min(by: { $0.timestamp < $1.timestamp })
     }
     
-    /// Get all pending transactions for an address/chain
-    func getPendingTransactions(for address: String, chain: Chain) -> [PendingTransaction] {
-        return pendingTransactions.values.filter { transaction in
-            transaction.address.lowercased() == address.lowercased() && 
-            transaction.chain == chain && 
-            !transaction.isConfirmed
-        }
-    }
-    
-    /// Get all pending transactions for debugging
-    func getAllPendingTransactions() -> [PendingTransaction] {
-        return Array(pendingTransactions.values.filter { !$0.isConfirmed })
-    }
     
     /// Get elapsed seconds for a transaction
     func getElapsedSeconds(for transaction: PendingTransaction) -> Int {
@@ -738,7 +725,12 @@ class PendingTransactionManager: ObservableObject {
     /// Force check pending transactions immediately (useful for UI refresh)
     func forceCheckPendingTransactions() async {
         print("PendingTransactionManager: Force checking pending transactions")
-        await checkAllPendingTransactions()
+        // Check all pending transactions across all chains
+        let allPending = Array(pendingTransactions.values.filter { !$0.isConfirmed })
+        
+        for transaction in allPending {
+            await checkTransactionConfirmation(transaction: transaction)
+        }
     }
     
     /// Start polling for a specific chain
@@ -820,21 +812,6 @@ class PendingTransactionManager: ObservableObject {
         cleanupOldTransactions()
     }
     
-    /// Check all pending transactions (legacy method for force refresh)
-    private func checkAllPendingTransactions() async {
-        let allPending = Array(pendingTransactions.values.filter { !$0.isConfirmed })
-        
-        if !allPending.isEmpty {
-            print("PendingTransactionManager: Checking \(allPending.count) pending transactions")
-        }
-        
-        for transaction in allPending {
-            await checkTransactionConfirmation(transaction: transaction)
-        }
-        
-        // Remove old transactions (older than 10 minutes)
-        cleanupOldTransactions()
-    }
     
     private func checkTransactionConfirmation(transaction: PendingTransaction) async {
         do {
@@ -848,8 +825,8 @@ class PendingTransactionManager: ObservableObject {
                     pendingTransactions.removeValue(forKey: transaction.txHash)
                     print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
                     
-                    // Invalidate BlockChainService cache to force fresh nonce fetch
-                    BlockChainService.shared.invalidateCacheForAddress(transaction.address, chain: transaction.chain)
+                    // Clear cache to force fresh nonce fetch for next transaction
+                    BlockChainService.shared.clearCacheForAddress(transaction.address, chain: transaction.chain)
                     
                     // Stop polling for this chain if no more pending transactions for it
                     let stillHasPendingForChain = pendingTransactions.values.contains { 

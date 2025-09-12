@@ -715,7 +715,3 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Aus auto-compounding TCY-Einlagen entstaken";
 "insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
 "addressBookDuplicate" = "Adresse existiert bereits im Adressbuch.";
-"pendingTransactionTitle" = "Ausstehende Transaktion";
-"pendingTransactionMessage" = "Transaktion %@... ist seit %d Minuten ausstehend. Bitte warten Sie auf die Bestätigung, bevor Sie eine weitere Transaktion senden, um Nonce-Konflikte zu vermeiden.";
-"pendingTransactionTimeoutMessage" = "Transaktion %@... ist ausstehend. Bitte warten Sie %d Sekunden auf Bestätigung oder Timeout, bevor Sie eine weitere Transaktion senden.";
-"pendingTransactionExpiredMessage" = "Transaktion %@... ist abgelaufen. Sie können jetzt eine neue Transaktion senden.";

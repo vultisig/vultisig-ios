@@ -56,12 +56,11 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
-    /// Invalidate cache for a specific address to force fresh nonce fetch
-    func invalidateCacheForAddress(_ address: String, chain: Chain) {
-        // Simple approach: clear entire cache to ensure fresh nonce fetch
+    /// Clear cache for a specific address to force fresh nonce fetch
+    func clearCacheForAddress(_ address: String, chain: Chain) {
         Task {
             await localCache.clear()
-            print("Cleared entire cache after transaction confirmation for address: \(address) on chain: \(chain)")
+            print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
         }
     }
     
@@ -87,11 +86,14 @@ final class BlockChainService {
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
                                     memo: nil,  // Swaps don't have memos
                                     feeMode: .fast,quote: quote)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
-            let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
-            // use the cache item
-            if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
-                return localCacheItem.blockSpecific
+        // Skip cache for chains that support pending transactions to ensure fresh nonce
+        if !tx.fromCoin.chain.supportsPendingTransactions {
+            if let localCacheItem =  self.localCache.get(cacheKey) {
+                let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
+                // use the cache item
+                if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
+                    return localCacheItem.blockSpecific
+                }
             }
         }
         
@@ -110,7 +112,10 @@ final class BlockChainService {
             memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
-        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+        // Only cache for chains that don't support pending transactions
+        if !tx.fromCoin.chain.supportsPendingTransactions {
+            self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+        }
         return specific
     }
     
@@ -156,10 +161,14 @@ private extension BlockChainService {
                                    memo: tx.memo,
                                    feeMode: tx.feeMode,
                                    quote: nil)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
-            // use the cache item
-            if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
-                return localCacheItem.blockSpecific
+        
+        // Skip cache for chains that support pending transactions to ensure fresh nonce
+        if !tx.coin.chain.supportsPendingTransactions {
+            if let localCacheItem =  self.localCache.get(cacheKey) {
+                // use the cache item
+                if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
+                    return localCacheItem.blockSpecific
+                }
             }
         }
         
@@ -176,7 +185,10 @@ private extension BlockChainService {
             memo: tx.memo,
             feeMode: tx.feeMode
         )
-        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
+        // Only cache for chains that don't support pending transactions
+        if !tx.coin.chain.supportsPendingTransactions {
+            self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
+        }
         return blockSpecific
     }
     
