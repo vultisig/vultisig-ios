@@ -854,4 +854,17 @@
 "checkEmail" = "Check email";
 "chooseEmailApp" = "Choose email app";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
+"hideBalance" = "Hide balance";
+"showBalance" = "Show balance";
+"buy" = "Buy";
+"sell" = "Sell";
+"receive" = "Receive";
+"bridge" = "Bridge";
+"function" = "Function";
+"signFasterThanEverBefore" = "Sign faster than ever before";
+"portfolio" = "Portfolio";
+"nfts" = "NFTs";
+"soon" = "SOON";
+"coinAddressCopied" = "%@ address copied";
+"portfolioBalance" = "Portfolio Balance";
 "addressBookDuplicate" = "Address already exists in your address book.";

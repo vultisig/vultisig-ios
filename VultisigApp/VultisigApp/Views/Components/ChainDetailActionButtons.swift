@@ -46,6 +46,8 @@ struct ChainDetailActionButtons: View {
                         }
                     case .sell:
                         sellButton
+                    case .receive:
+                        EmptyView()
                     }
                 }
             }

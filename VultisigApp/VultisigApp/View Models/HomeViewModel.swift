@@ -18,6 +18,14 @@ class HomeViewModel: ObservableObject {
     
     @Published var showAlert: Bool = false
     @Published var alertTitle: String = ""
+    
+    var vaultBalanceText: String {
+        guard !hideVaultBalance else {
+            return Array.init(repeating: "•", count: 8).joined(separator: " ")
+        }
+        
+        return selectedVault?.coins.totalBalanceInFiatString ?? ""
+    }
 
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
