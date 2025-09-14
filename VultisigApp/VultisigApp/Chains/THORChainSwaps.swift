@@ -42,7 +42,7 @@ class THORChainSwaps {
             let helper = UTXOChainsHelper(coin: swapPayload.fromCoin.coinType, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
             let swapInput =  try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload)
             return try helper.getSigningInputData(keysignPayload: keysignPayload, signingInput: swapInput)
-        case .ethereum, .bscChain, .avalanche,.base:
+        case .ethereum, .bscChain, .avalanche,.base,.arbitrum:
             let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
             let signedEvmTx = try helper.getSwapPreSignedInputData(keysignPayload: keysignPayload, incrementNonce: incrementNonce)
             return signedEvmTx
@@ -59,7 +59,7 @@ class THORChainSwaps {
         let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch swapPayload.fromCoin.chain {
-        case .thorChain,.ethereum, .bscChain,.avalanche,.gaiaChain, .base:
+        case .thorChain,.ethereum, .bscChain,.avalanche,.gaiaChain, .base ,.arbitrum:
             let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedBytes: hashes)
             if !preSigningOutput.errorMessage.isEmpty {
@@ -139,7 +139,7 @@ class THORChainSwaps {
         case .dogecoin:
             let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
             return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-        case .ethereum,.bscChain, .avalanche , .base:
+        case .ethereum,.bscChain, .avalanche , .base,.arbitrum:
             let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
             return signedEvmTx
         case .gaiaChain:

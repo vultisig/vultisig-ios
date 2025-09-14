@@ -139,8 +139,14 @@ class EVMHelper {
         guard let swapPayload = keysignPayload.swapPayload else {
             throw HelperError.runtimeError("swap payload is nil")
         }
-        
-        guard case .thorchain(let thorChainSwapPayload) = swapPayload else {
+        var thorChainSwapPayload: THORChainSwapPayload? = nil
+        switch swapPayload {
+        case .thorchain(let payload),.mayachain(let payload):
+            thorChainSwapPayload = payload
+        default:
+            throw HelperError.runtimeError("fail to get swap payload")
+        }
+        guard let thorChainSwapPayload else {
             throw HelperError.runtimeError("fail to get swap payload")
         }
         guard let memo = keysignPayload.memo else {

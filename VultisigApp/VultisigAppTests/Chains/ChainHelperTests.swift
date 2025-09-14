@@ -67,9 +67,13 @@ final class ChainHelperTests: XCTestCase {
                                                             keysignPayload: keysignPayload,
                                                             incrementNonce: incrementNonce)
             result += imageHash
-        case .mayachain(_):
-            // mayachain swap is a regular transaction with memo
-            return
+        case .mayachain(let swapPayload):
+            let swaps = THORChainSwaps(vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+            let imageHash = try swaps.getPreSignedImageHash(swapPayload: swapPayload,
+                                                            keysignPayload: keysignPayload,
+                                                            incrementNonce: incrementNonce)
+            result += imageHash
+            
         case .generic(let oneInchSwapPayload):
             switch keysignPayload.coin.chain {
             case .solana:
@@ -91,6 +95,10 @@ final class ChainHelperTests: XCTestCase {
         if keysignPayload.swapPayload != nil {
             switch keysignPayload.swapPayload {
             case .mayachain(_):
+                if keysignPayload.coin.chainType == .EVM  && !keysignPayload.coin.isNativeToken{
+                    try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
+                    return
+                }
                 break
             default:
                 try runTestCaseWithSwap(testCase, keysignPayload: keysignPayload)
