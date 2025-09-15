@@ -132,7 +132,7 @@ struct PeerDiscoveryView: View {
     
     func disableContinueButton() -> Bool {
         switch viewModel.tssType {
-        case .Keygen,.Reshare:
+        case .Keygen:
             switch selectedTab {
             case .fast:
                 return viewModel.selections.count < 2
@@ -141,6 +141,9 @@ struct PeerDiscoveryView: View {
             case .secure:
                 return viewModel.selections.count < 2
             }
+        case .Reshare:
+            let requiredCount = vault.getThreshold() + 1
+            return viewModel.selections.count < requiredCount
         case .Migrate:
             return Set(viewModel.selections) != Set(viewModel.vault.signers)
         }
