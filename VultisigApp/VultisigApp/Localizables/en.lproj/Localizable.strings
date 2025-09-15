@@ -847,8 +847,8 @@
 "editPasswordHintTitle" = "Edit password hint";
 "editPasswordHintSubtitle" = "This will be shown in case you forget your password";
 "serverBackup" = "Server Backup";
+"enterVaultEmail" = "Enter the email to receive the vault share.";
 "enterVaultPassword" = "Enter the password you set when creating this Vault.";
-"vaultPassword" = "Vault Password";
 "backupShareSent" = "Backup share sent!";
 "weJustSentYourBackupShare" = "We just sent your backup share to your email. If you don’t see it, check your spam folder.";
 "checkEmail" = "Check email";
