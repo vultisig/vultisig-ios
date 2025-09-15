@@ -105,11 +105,11 @@ extension Coin {
 private extension Coin {
     
     var mayaEthTokens: [String] {
-        return ["ETH"]
+        return ["ETH","USDC"]
     }
     
     var mayaArbTokens: [String] {
-        return ["ETH"]
+        return ["ETH","ARB","USDC","YUM","TGT","GLD","USDT","PEPE"]
     }
     
     var thorEthTokens: [String] {
