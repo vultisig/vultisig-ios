@@ -58,6 +58,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Brockmann-SemiBold.otf</string>
+		<string>Satoshi-Medium.otf</string>
 		<string>Brockmann-Regular.otf</string>
 		<string>Brockmann-Medium.otf</string>
 		<string>Brockmann-Bold.otf</string>

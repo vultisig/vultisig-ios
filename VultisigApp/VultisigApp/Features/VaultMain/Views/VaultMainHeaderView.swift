@@ -53,7 +53,7 @@ struct VaultMainHeaderView: View {
                 .font(Theme.fonts.caption12)
                 .foregroundStyle(Theme.colors.textExtraLight)
             Text(homeViewModel.vaultBalanceText)
-                .font(Theme.fonts.bodySMedium)
+                .font(Theme.fonts.priceBodyS)
                 .foregroundStyle(Theme.colors.textPrimary)
         }
     }
