@@ -25,7 +25,7 @@ struct VaultMainBalanceView: View {
     
     var balanceLabel: some View {
         Text(homeViewModel.vaultBalanceText)
-            .font(Theme.fonts.largeTitle)
+            .font(Theme.fonts.priceLargeTitle)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)
     }

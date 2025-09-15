@@ -52,10 +52,10 @@ struct VaultChainCellView: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(homeViewModel.hideVaultBalance ? hideBalanceText : group.totalBalanceInFiatString)
-                            .font(Theme.fonts.bodySMedium)
+                            .font(Theme.fonts.priceBodyS)
                             .foregroundStyle(Theme.colors.textPrimary)
                         Text(homeViewModel.hideVaultBalance ? hideBalanceText : trailingSubtitle)
-                            .font(Theme.fonts.caption12)
+                            .font(Theme.fonts.priceCaption)
                             .foregroundStyle(Theme.colors.textExtraLight)
                     }
                     Icon(named: "chevron-down-small", color: Theme.colors.textPrimary, size: 16)
