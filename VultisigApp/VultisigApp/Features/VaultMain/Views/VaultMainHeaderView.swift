@@ -28,6 +28,7 @@ struct VaultMainHeaderView: View {
             trailingView
                 .transition(.opacity)
         }
+        .padding(.top, 24)
         .padding(.bottom, 16)
         .padding(.horizontal, 16)
         .background(backgroundView)

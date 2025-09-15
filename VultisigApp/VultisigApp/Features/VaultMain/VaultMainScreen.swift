@@ -18,11 +18,12 @@ struct VaultMainScreen: View {
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     
+    
     private let contentInset: CGFloat = 78
     
     var body: some View {
         ZStack(alignment: .top) {
-            OffsetObservingScrollView(contentInset: contentInset, scrollOffset: $scrollOffset) {
+            OffsetObservingScrollView(showsIndicators: false, contentInset: contentInset, scrollOffset: $scrollOffset) {
                 VStack(spacing: 20) {
                     topContentSection
                     Separator(color: Theme.colors.borderLight, opacity: 1)
@@ -44,6 +45,7 @@ struct VaultMainScreen: View {
         .onChange(of: scrollOffset) { _, newValue in
             onScrollOffsetChange(newValue)
         }
+
     }
     
     var header: some View {
