@@ -361,8 +361,13 @@ class KeysignViewModel: ObservableObject {
                     let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                     signedTransactions.append(transaction)
                 }
-            case .mayachain:
-                break // No op - Regular transaction with memo
+            case .mayachain(let payload):
+                if keysignPayload.coin.chainType != .EVM || keysignPayload.coin.isNativeToken{
+                    break
+                }
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
+                signedTransactions.append(transaction)
             }
         }
         

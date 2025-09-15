@@ -22,13 +22,11 @@ struct KeysignMessageFactory {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: payload)
         }
-        
         if let swapPayload = payload.swapPayload {
             let incrementNonce = payload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let swapPayload):
                 _ = ThorchainService.shared.ensureTHORChainChainID()
-                
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .generic(let swapPayload):
@@ -40,8 +38,14 @@ struct KeysignMessageFactory {
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                     messages += try swaps.getPreSignedImageHash(payload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
                 }
-            case .mayachain:
-                break // No op - Regular transaction with memo
+            case .mayachain(let swapPayload):
+                // for MayaChain swaps, when it is a native token , then we just convert it to a normal send transaction
+                // Only when it is an ERC20 token we use the swap logic of thorchain
+                if payload.coin.chain.chainType != .EVM  || payload.coin.isNativeToken {
+                    break
+                }
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             }
         }
 

@@ -91,9 +91,9 @@ struct VaultServerBackupScreen: View {
             focusedFieldBinding = $0 ? .email : .password
         } content: {
             VStack(alignment: .leading, spacing: 20) {
-                Text("enterYourEmail".localized)
-                    .font(Theme.fonts.largeTitle)
-                    .foregroundStyle(Theme.colors.textPrimary)
+                Text("enterVaultEmail".localized)
+                    .font(Theme.fonts.bodySMedium)
+                    .foregroundStyle(Theme.colors.textExtraLight)
                 
                 CommonTextField(
                     text: $viewModel.email,
@@ -112,7 +112,7 @@ struct VaultServerBackupScreen: View {
     var passwordTextField: some View {
         FormExpandableSection(
             title: "password".localized,
-            isValid: viewModel.passwordError == nil,
+            isValid: viewModel.validPassword,
             value: viewModel.password,
             showValue: false,
             focusedField: $focusedFieldBinding,
@@ -121,9 +121,6 @@ struct VaultServerBackupScreen: View {
             focusedFieldBinding = $0 ? .password : .email
         } content: {
             VStack(alignment: .leading, spacing: 20) {
-                Text("vaultPassword".localized)
-                    .font(Theme.fonts.largeTitle)
-                    .foregroundStyle(Theme.colors.textPrimary)
                 Text("enterVaultPassword".localized)
                     .font(Theme.fonts.bodySMedium)
                     .foregroundStyle(Theme.colors.textExtraLight)
