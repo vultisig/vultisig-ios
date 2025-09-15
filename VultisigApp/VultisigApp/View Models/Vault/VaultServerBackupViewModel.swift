@@ -31,6 +31,10 @@ final class VaultServerBackupViewModel: ObservableObject {
         emailError == nil && email.isNotEmpty
     }
     
+    var validPassword: Bool {
+        passwordError == nil && password.isNotEmpty
+    }
+    
     let service = VultiServerService()
     
     func onLoad() {

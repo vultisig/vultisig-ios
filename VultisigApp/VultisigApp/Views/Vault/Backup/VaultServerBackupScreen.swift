@@ -112,7 +112,7 @@ struct VaultServerBackupScreen: View {
     var passwordTextField: some View {
         FormExpandableSection(
             title: "password".localized,
-            isValid: viewModel.passwordError == nil && viewModel.password.isNotEmpty,
+            isValid: viewModel.validPassword,
             value: viewModel.password,
             showValue: false,
             focusedField: $focusedFieldBinding,
