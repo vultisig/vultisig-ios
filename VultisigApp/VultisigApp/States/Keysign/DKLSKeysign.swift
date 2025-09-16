@@ -333,7 +333,7 @@ final class DKLSKeysign {
         self.messenger = localMessenger
         do {
             var keysignSetupMsg:[UInt8]
-            if self.isInitiateDevice {
+            if self.isInitiateDevice && attempt == 0 {
                 keysignSetupMsg = try getDKLSKeysignSetupMessage(message: messageToSign)
                 try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64(),nil)
             } else {

@@ -431,7 +431,7 @@ final class SchnorrKeygen {
             var reshareSetupMsg:[UInt8]
             // currently reshare Schnorr need to have it's own setup message, let's set it up
             //it might not needed
-            if self.isInitiateDevice {
+            if self.isInitiateDevice && attempt == 0 {
                 // DKLS/Schnorr reshare need to upload different setup message , thus here pass in an additional header as "eddsa" to make sure
                 // dkls and schnorr setup message will be saved differently
                 reshareSetupMsg = try getSchnorrReshareSetupMessage(keyshareHandle: keyshareHandle)

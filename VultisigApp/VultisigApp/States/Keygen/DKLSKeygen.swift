@@ -282,7 +282,9 @@ final class DKLSKeygen {
         var task: Task<(), any Error>? = nil
         do {
             var keygenSetupMsg:[UInt8]
-            if self.isInitiateDevice {
+            if self.isInitiateDevice && attempt == 0 {
+                // only for the first time , and on the initiating device , we create the setup message
+                // for retry , let's just use the existing setup message
                 keygenSetupMsg = try getDklsSetupMessage()
                 try await messenger.uploadSetupMessage(message: Data(keygenSetupMsg).base64EncodedString(),nil)
             } else {
@@ -486,7 +488,7 @@ final class DKLSKeygen {
             }
             
             var reshareSetupMsg:[UInt8]
-            if self.isInitiateDevice {
+            if self.isInitiateDevice && attempt == 0 {
                 reshareSetupMsg = try getDklsReshareSetupMessage(keyshareHandle: keyshareHandle)
                 try await messenger.uploadSetupMessage(message: Data(reshareSetupMsg).base64EncodedString(),nil)
             } else {
