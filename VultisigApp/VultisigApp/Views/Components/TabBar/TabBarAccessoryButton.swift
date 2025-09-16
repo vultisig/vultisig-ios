@@ -12,11 +12,17 @@ struct TabBarAccessoryButton: View {
     var action: () -> Void
     
     var body: some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            button
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 99))
+        } else {
+            button
+        }
+    }
+    
+    var button: some View {
         Button(action: action) {
-            Image(icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 24, height: 24)
+            Icon(named: icon, color: Theme.colors.textLight, size: 24)
                 .padding(20)
                 .background(Circle().fill(Theme.colors.primaryAccent3))
         }

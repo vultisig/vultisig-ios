@@ -41,6 +41,8 @@
 		1326EBB92E4637FE008A3F8F /* SendCryptoDoneHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */; };
 		1326EBBB2E463C59008A3F8F /* ReferralCodeMemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */; };
 		132B04372E70C4EB00745651 /* VaultMainScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */; };
+		132FB6582E78706500599464 /* isIPadOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FB6572E78705B00599464 /* isIPadOS.swift */; };
+		132FB65A2E7871AB00599464 /* View+GroupedTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FB6592E7871A100599464 /* View+GroupedTabView.swift */; };
 		1334C73A2E2FE56500CBAA3E /* SendCryptoVerifySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */; };
 		1334C73C2E2FE57600CBAA3E /* SendCryptoVerifySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */; };
 		1334C73F2E3007A000CBAA3E /* OnLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C73E2E30079F00CBAA3E /* OnLoad.swift */; };
@@ -1084,6 +1086,8 @@
 		1326EBB82E4637F5008A3F8F /* SendCryptoDoneHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneHeaderView.swift; sourceTree = "<group>"; };
 		1326EBBA2E463C58008A3F8F /* ReferralCodeMemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferralCodeMemoFactory.swift; sourceTree = "<group>"; };
 		132B04362E70C4E500745651 /* VaultMainScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainScreenBackground.swift; sourceTree = "<group>"; };
+		132FB6572E78705B00599464 /* isIPadOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = isIPadOS.swift; sourceTree = "<group>"; };
+		132FB6592E7871A100599464 /* View+GroupedTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+GroupedTabView.swift"; sourceTree = "<group>"; };
 		1334C7392E2FE56400CBAA3E /* SendCryptoVerifySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummary.swift; sourceTree = "<group>"; };
 		1334C73B2E2FE57200CBAA3E /* SendCryptoVerifySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifySummaryView.swift; sourceTree = "<group>"; };
 		1334C73E2E30079F00CBAA3E /* OnLoad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnLoad.swift; sourceTree = "<group>"; };
@@ -2309,6 +2313,7 @@
 		130C40FC2E7389B500509C61 /* TabBar */ = {
 			isa = PBXGroup;
 			children = (
+				132FB6592E7871A100599464 /* View+GroupedTabView.swift */,
 				13D0C84C2E74620100A1301F /* TabBarAccessoryButton.swift */,
 				13D0C84A2E7461F500A1301F /* TabBarItem.swift */,
 				130C40FD2E7389BD00509C61 /* VultiTabBar.swift */,
@@ -2363,6 +2368,15 @@
 				13175C6E2E4BC01700646CE2 /* THORNameLookup.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		132FB6562E78705400599464 /* Platforms */ = {
+			isa = PBXGroup;
+			children = (
+				132FB6572E78705B00599464 /* isIPadOS.swift */,
+				13792A882E53B2A80063CE99 /* isMacOS.swift */,
+			);
+			path = Platforms;
 			sourceTree = "<group>";
 		};
 		1334C7382E2FE55C00CBAA3E /* SendCryptoVerifySummary */ = {
@@ -4490,8 +4504,8 @@
 		DE1572AA2B7174C5009BC7C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				132FB6562E78705400599464 /* Platforms */,
 				1352EDBC2E61217C00FC0F51 /* ZipFileGenerator.swift */,
-				13792A882E53B2A80063CE99 /* isMacOS.swift */,
 				13AF0D532E4CF5AE004D4FD2 /* Formatters */,
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
 				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
@@ -5355,6 +5369,7 @@
 				A6C670D32C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift in Sources */,
 				A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */,
 				A5340A6B2CECF099002ADD35 /* MonthlyBackupView+macOS.swift in Sources */,
+				132FB65A2E7871AB00599464 /* View+GroupedTabView.swift in Sources */,
 				A617B67E2CEC6540006E5122 /* SendSummaryViewModel.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				8F55CD3B2DC382E500B53E85 /* TokensStore+Token.swift in Sources */,
@@ -5836,6 +5851,7 @@
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* GenericSwapPayload.swift in Sources */,
 				CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */,
+				132FB6582E78706500599464 /* isIPadOS.swift in Sources */,
 				3438005C33774BADE4B163FD /* KyberSwapService.swift in Sources */,
 				6F9D0331A5913F75BDE1B874 /* KyberSwapToken.swift in Sources */,
 				8EE0EF7FEAA0B5C09FF9C79D /* KyberSwapPayload.swift in Sources */,
