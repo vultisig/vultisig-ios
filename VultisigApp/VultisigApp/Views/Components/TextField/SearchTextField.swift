@@ -47,6 +47,9 @@ struct SearchTextField: View {
         .onChange(of: focusedState) { _, newValue in
             isFocused = newValue
         }
+        .onChange(of: isFocused) { _, newValue in
+            focusedState = newValue
+        }
     }
     
     var clearButton: some View {

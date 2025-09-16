@@ -868,3 +868,5 @@
 "coinAddressCopied" = "%@ address copied";
 "portfolioBalance" = "Portfolio Balance";
 "addressBookDuplicate" = "Address already exists in your address book.";
+"selectChains" = "Select chains";
+"noChainsFound" = "No chains found";
