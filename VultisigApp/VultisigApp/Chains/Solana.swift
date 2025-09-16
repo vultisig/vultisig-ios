@@ -28,6 +28,7 @@ enum SolanaHelper {
         
         if keysignPayload.coin.isNativeToken {
             let input = SolanaSigningInput.with {
+                $0.v0Msg = true
                 $0.transferTransaction = SolanaTransfer.with {
                     $0.recipient = toAddress.description
                     $0.value = UInt64(keysignPayload.toAmount)
@@ -61,6 +62,7 @@ enum SolanaHelper {
                 }
                 
                 let input = SolanaSigningInput.with {
+                    $0.v0Msg = true
                     $0.tokenTransferTransaction = tokenTransferMessage
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
@@ -103,6 +105,7 @@ enum SolanaHelper {
                 }
                 
                 let input = SolanaSigningInput.with {
+                    $0.v0Msg = true
                     $0.createAndTransferTokenTransaction = createAndTransferTokenMessage
                     $0.recentBlockhash = recentBlockHash
                     $0.sender = keysignPayload.coin.address
