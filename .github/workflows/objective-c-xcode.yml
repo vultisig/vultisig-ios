@@ -9,16 +9,25 @@ on:
 jobs:
   build:
     name: Build, analyse and test default scheme using xcodebuild command
-    runs-on: macos-14
+    runs-on: macos-26
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            VultisigApp/.build
+            VultisigApp/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('VultisigApp/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-   
       - name: Set Default Scheme
         working-directory: VultisigApp
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app
+          sudo xcode-select -s /Applications/Xcode_26.0.0.app
           mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode'"
           xcrun --find xcodebuild
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
@@ -31,7 +40,6 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
@@ -50,10 +58,9 @@ jobs:
             -destination 'platform=macOS,arch=x86_64' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
+            ONLY_ACTIVE_ARCH=YES \
             DEBUG_INFORMATION_FORMAT=dwarf \
             SWIFT_COMPILATION_MODE=wholemodule \
-            -verbose \
             OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
@@ -62,7 +69,6 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
@@ -72,9 +78,8 @@ jobs:
           xcodebuild build analyze test \
             -scheme "$scheme" \
             -"$filetype_parameter" "$file_to_build" \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.2' \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.6' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            -verbose \
+            ONLY_ACTIVE_ARCH=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
