@@ -39,6 +39,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var showAmountAlert: Bool = false
     @Published var hasPendingTransaction: Bool = false
     @Published var pendingTransactionCountdown: Int = 0
+    @Published var isCheckingPendingTransactions: Bool = false
     
     let blockchainService = BlockChainService.shared
     
@@ -570,7 +571,18 @@ class SendCryptoViewModel: ObservableObject {
     private func hasPendingCosmosTransactions(tx: SendTransaction) async -> Bool {
         // Only check for chains that support pending transaction tracking
         guard tx.coin.chain.supportsPendingTransactions else {
+            // For non-Cosmos chains, immediately enable button
+            await MainActor.run {
+                hasPendingTransaction = false
+                pendingTransactionCountdown = 0
+                isCheckingPendingTransactions = false
+            }
             return false
+        }
+        
+        // Set checking state to prevent button flickering
+        await MainActor.run {
+            isCheckingPendingTransactions = true
         }
         
         let pendingTxManager = PendingTransactionManager.shared
@@ -584,6 +596,7 @@ class SendCryptoViewModel: ObservableObject {
                 await MainActor.run {
                     hasPendingTransaction = true
                     pendingTransactionCountdown = elapsedSeconds
+                    isCheckingPendingTransactions = false
                     isValidForm = false
                     isLoading = false
                 }
@@ -595,6 +608,7 @@ class SendCryptoViewModel: ObservableObject {
         await MainActor.run {
             hasPendingTransaction = false
             pendingTransactionCountdown = 0
+            isCheckingPendingTransactions = false
         }
         
         return false

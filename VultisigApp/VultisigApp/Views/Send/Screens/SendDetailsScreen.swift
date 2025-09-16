@@ -47,6 +47,14 @@ struct SendDetailsScreen: View {
         container
         .disabled(sendCryptoViewModel.showLoader)
         .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
+        .onAppear {
+            // Initialize button state immediately based on chain
+            if tx.coin.chain.supportsPendingTransactions {
+                sendCryptoViewModel.isCheckingPendingTransactions = true
+            } else {
+                sendCryptoViewModel.isCheckingPendingTransactions = false
+            }
+        }
         .onLoad {
             Task {
                 await setMainData()
@@ -60,6 +68,13 @@ struct SendDetailsScreen: View {
             setData()
         }
         .onChange(of: tx.coin) { oldValue, newValue in
+            // Initialize button state immediately for new chain
+            if newValue.chain.supportsPendingTransactions {
+                sendCryptoViewModel.isCheckingPendingTransactions = true
+            } else {
+                sendCryptoViewModel.isCheckingPendingTransactions = false
+            }
+            
             Task {
                 // SEMPRE para o polling da chain anterior
                 PendingTransactionManager.shared.stopPollingForChain(oldValue.chain)
@@ -150,21 +165,52 @@ struct SendDetailsScreen: View {
                 await validateForm()
             }
         }
-        .disabled(sendCryptoViewModel.continueButtonDisabled || sendCryptoViewModel.hasPendingTransaction)
+        .disabled(getButtonDisabled())
+    }
+    
+    private func getButtonDisabled() -> Bool {
+        // Always disabled while loading normal operations
+        if sendCryptoViewModel.continueButtonDisabled {
+            return true
+        }
+        
+        // Only check pending transactions for supported chains
+        if tx.coin.chain.supportsPendingTransactions {
+            // Disabled while checking for pending transactions (prevents flickering)
+            if sendCryptoViewModel.isCheckingPendingTransactions {
+                return true
+            }
+            
+            // Disabled if there are confirmed pending transactions
+            if sendCryptoViewModel.hasPendingTransaction {
+                return true
+            }
+        }
+        
+        // For non-supported chains or no pending transactions, button is enabled
+        return false
     }
     
     private func getButtonTitle() -> String {
-        if sendCryptoViewModel.hasPendingTransaction {
-            let elapsed = sendCryptoViewModel.pendingTransactionCountdown
-            let minutes = elapsed / 60
-            let seconds = elapsed % 60
-            
-            if minutes > 0 {
-                return "Pending transaction (\(minutes)m \(seconds)s)"
-            } else {
-                return "Pending transaction (\(seconds)s)"
+        // Only show pending states for supported chains
+        if tx.coin.chain.supportsPendingTransactions {
+            if sendCryptoViewModel.isCheckingPendingTransactions {
+                return "Checking pending transactions..."
+            } else if sendCryptoViewModel.hasPendingTransaction {
+                let elapsed = sendCryptoViewModel.pendingTransactionCountdown
+                let minutes = elapsed / 60
+                let seconds = elapsed % 60
+                
+                if minutes > 0 {
+                    return "Pending transaction (\(minutes)m \(seconds)s)"
+                } else {
+                    return "Pending transaction (\(seconds)s)"
+                }
             }
-        } else if sendCryptoViewModel.isLoading {
+        }
+        
+        // Default states for all chains
+        if sendCryptoViewModel.isLoading {
             return "loadingDetails"
         } else {
             return "continue"
@@ -368,12 +414,19 @@ extension SendDetailsScreen {
     
     private func checkPendingTransactions() async {
         guard tx.coin.chain.supportsPendingTransactions else {
+            // For non-Cosmos chains, immediately enable button
             await MainActor.run {
                 sendCryptoViewModel.hasPendingTransaction = false
                 sendCryptoViewModel.pendingTransactionCountdown = 0
+                sendCryptoViewModel.isCheckingPendingTransactions = false
                 stopCountdownTimer()
             }
             return
+        }
+        
+        // Set checking state first for Cosmos chains
+        await MainActor.run {
+            sendCryptoViewModel.isCheckingPendingTransactions = true
         }
         
         let pendingTxManager = PendingTransactionManager.shared
@@ -385,6 +438,7 @@ extension SendDetailsScreen {
             // Update SendCryptoViewModel properties and start/stop countdown timer
             if hasPending {
                 sendCryptoViewModel.hasPendingTransaction = true
+                sendCryptoViewModel.isCheckingPendingTransactions = false
                 startCountdownTimer()
                 
                 // Start polling APENAS se for chain que suporta pending transactions
@@ -394,6 +448,7 @@ extension SendDetailsScreen {
             } else {
                 sendCryptoViewModel.hasPendingTransaction = false
                 sendCryptoViewModel.pendingTransactionCountdown = 0
+                sendCryptoViewModel.isCheckingPendingTransactions = false
                 stopCountdownTimer()
                 
                 // SEMPRE para polling quando não há pendentes (qualquer chain)
