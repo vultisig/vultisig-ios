@@ -37,6 +37,7 @@ struct HomeScreen: View {
         } onAccessory: {
             onCamera()
         }
+        .navigationBarHidden(true)
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == .camera {
                 selectedTab = oldValue

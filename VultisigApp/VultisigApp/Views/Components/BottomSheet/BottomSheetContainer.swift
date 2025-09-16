@@ -21,7 +21,7 @@ struct BottomSheetContainer<Content: BottomSheetContentView>: View {
             content
         }
         .background(content.bgColor ?? Theme.colors.bgSecondary)
-        .padding(.top, 8)
+        .padding(.top, 24)
         .padding(.horizontal, 16)
     }
     

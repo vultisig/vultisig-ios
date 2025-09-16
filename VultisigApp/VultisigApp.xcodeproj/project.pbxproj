@@ -102,6 +102,7 @@
 		1387E24B2E565A540033F92C /* BlurredBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1387E24A2E565A4F0033F92C /* BlurredBackground.swift */; };
 		1387FDA82E32C2CC007ECDB4 /* QRScanner.riv in Resources */ = {isa = PBXBuildFile; fileRef = 1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */; };
 		138E370C2E439A7D0032C31C /* EditReferralDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138E370B2E439A780032C31C /* EditReferralDetailsView.swift */; };
+		138FD7FF2E79D381000903B1 /* FolderCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138FD7FE2E79D37A000903B1 /* FolderCellView.swift */; };
 		1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */; };
 		1390D8BA2E393902003F3E20 /* BlockaidModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8B92E3938FF003F3E20 /* BlockaidModels.swift */; };
 		1390D8BC2E39397E003F3E20 /* BlockaidExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8BB2E393979003F3E20 /* BlockaidExtensions.swift */; };
@@ -112,6 +113,9 @@
 		1390D8C62E3943AE003F3E20 /* SecurityScannerServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */; };
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
+		139642382E79951E00CFEFAF /* VaultSelectorBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultSelectorBottomSheet.swift */; };
+		1396423B2E79A64200CFEFAF /* VaultSelectorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */; };
+		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
 		139DE1262E4CF7F200BC2FD3 /* SendPairScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */; };
@@ -1145,6 +1149,7 @@
 		1387E24A2E565A4F0033F92C /* BlurredBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredBackground.swift; sourceTree = "<group>"; };
 		1387FDA72E32C2CC007ECDB4 /* QRScanner.riv */ = {isa = PBXFileReference; lastKnownFileType = file; path = QRScanner.riv; sourceTree = "<group>"; };
 		138E370B2E439A780032C31C /* EditReferralDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditReferralDetailsView.swift; sourceTree = "<group>"; };
+		138FD7FE2E79D37A000903B1 /* FolderCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderCellView.swift; sourceTree = "<group>"; };
 		1390D8B72E3938B9003F3E20 /* BlockaidRpcClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidRpcClientProtocol.swift; sourceTree = "<group>"; };
 		1390D8B92E3938FF003F3E20 /* BlockaidModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidModels.swift; sourceTree = "<group>"; };
 		1390D8BB2E393979003F3E20 /* BlockaidExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockaidExtensions.swift; sourceTree = "<group>"; };
@@ -1155,6 +1160,9 @@
 		1390D8C52E3943A3003F3E20 /* SecurityScannerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceProtocol.swift; sourceTree = "<group>"; };
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
+		139642372E79951900CFEFAF /* VaultSelectorBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectorBottomSheet.swift; sourceTree = "<group>"; };
+		1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectorViewModel.swift; sourceTree = "<group>"; };
+		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
 		139DE1252E4CF7E900BC2FD3 /* SendPairScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairScreen.swift; sourceTree = "<group>"; };
@@ -2536,6 +2544,33 @@
 			path = Blockaid;
 			sourceTree = "<group>";
 		};
+		139642362E79950C00CFEFAF /* VaultSelector */ = {
+			isa = PBXGroup;
+			children = (
+				1396423C2E79A77400CFEFAF /* Views */,
+				139642392E79A63A00CFEFAF /* ViewModels */,
+				139642372E79951900CFEFAF /* VaultSelectorBottomSheet.swift */,
+			);
+			path = VaultSelector;
+			sourceTree = "<group>";
+		};
+		139642392E79A63A00CFEFAF /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		1396423C2E79A77400CFEFAF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				138FD7FE2E79D37A000903B1 /* FolderCellView.swift */,
+				1396423D2E79A78400CFEFAF /* VaultCellView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		139B400A2E42466400238C2C /* Covers */ = {
 			isa = PBXGroup;
 			children = (
@@ -2651,6 +2686,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				139642362E79950C00CFEFAF /* VaultSelector */,
 				130C40F62E737FBC00509C61 /* Home */,
 				13C8805C2E70A409009C67F1 /* VaultCommon */,
 				13C880562E70A317009C67F1 /* VaultMain */,
@@ -5150,6 +5186,7 @@
 				A6386DB42C90263E00DDD58E /* ToggleSelectionCell+macOS.swift in Sources */,
 				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
+				1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */,
 				A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */,
 				A6B84B0E2CE580C4006929A0 /* ServerBackupVerificationView+iOS.swift in Sources */,
 				A6381D802CB71B4E003F628B /* RegisterVaultView+iOS.swift in Sources */,
@@ -5310,6 +5347,7 @@
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
 				1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */,
 				A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */,
+				1396423B2E79A64200CFEFAF /* VaultSelectorViewModel.swift in Sources */,
 				13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
 				A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */,
@@ -5473,6 +5511,7 @@
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A6A6EFC12D703AF60062F6EA /* SwitchToLocalLink.swift in Sources */,
 				A6BFE1C52D9490DF000B73C0 /* SwapFromToChain.swift in Sources */,
+				139642382E79951E00CFEFAF /* VaultSelectorBottomSheet.swift in Sources */,
 				137B2C782E3A4A490074F648 /* BottomSheetModifier.swift in Sources */,
 				A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
@@ -5737,6 +5776,7 @@
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
 				A6C670942C9D080600F59B6A /* VaultDetailView+iOS.swift in Sources */,
+				138FD7FF2E79D381000903B1 /* FolderCellView.swift in Sources */,
 				A6ECA1B42C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift in Sources */,
 				A6C670E32C9E93B500F59B6A /* SendGasSettingsView+macOS.swift in Sources */,
 				DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */,

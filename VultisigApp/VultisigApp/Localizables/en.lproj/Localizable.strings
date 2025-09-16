@@ -868,3 +868,4 @@
 "coinAddressCopied" = "%@ address copied";
 "portfolioBalance" = "Portfolio Balance";
 "addressBookDuplicate" = "Address already exists in your address book.";
+"active" = "Active";

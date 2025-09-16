@@ -5,18 +5,22 @@
 //  Created by Gaston Mazzeo on 09/09/2025.
 //
 
+import SwiftData
 import SwiftUI
 
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     
     @StateObject var viewModel = VaultMainViewModel()
+    @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
+
     @State private var showCopyNotification = false
     @State private var copyNotificationText = ""
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
+    @State var showVaultSelector: Bool = false
+    @State var showCreateVault: Bool = false
     
     private let contentInset: CGFloat = 78
     
@@ -39,10 +43,22 @@ struct VaultMainScreen: View {
                 text: copyNotificationText,
                 isVisible: $showCopyNotification
             ).showIf(showCopyNotification)
-            .zIndex(2)
+                .zIndex(2)
         )
+        .navigationDestination(isPresented: $showCreateVault) {
+            CreateVaultView(selectedVault: nil, showBackButton: true)
+        }
         .onChange(of: scrollOffset) { _, newValue in
             onScrollOffsetChange(newValue)
+        }
+        .sheet(isPresented: $showVaultSelector) {
+            VaultSelectorBottomSheet() {
+                showVaultSelector.toggle()
+                showCreateVault.toggle()
+            } onSelectVault: { vault in
+                showVaultSelector.toggle()
+                homeViewModel.setSelectedVault(vault)
+            }
         }
     }
     
@@ -94,7 +110,7 @@ struct VaultMainScreen: View {
     }
     
     func onVaultSelector() {
-        // TODO: - Add vault selector in upcoming PRs
+        showVaultSelector.toggle()
     }
     
     func onSettings() {

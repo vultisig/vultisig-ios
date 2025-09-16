@@ -170,3 +170,13 @@ final class Vault: ObservableObject, Codable {
     static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil,libType: .GG20)
     static let fastVaultExample = Vault(name: "server-Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil, libType: nil)
 }
+
+extension Vault {
+    var signerPartDescription: String {
+        guard let index = signers.firstIndex(of: localPartyID) else {
+            return "-"
+        }
+        let partText = libType == .DKLS ? "partOf".localized : "shareOf".localized
+        return String(format: partText, index + 1, signers.count)
+    }
+}
