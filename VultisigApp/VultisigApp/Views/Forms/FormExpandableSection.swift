@@ -52,20 +52,23 @@ struct FormExpandableSection<Content: View, T: Hashable>: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                         .frame(maxWidth: showValue && isValid ? nil : .infinity, alignment: .leading)
                     
-                    HStack(spacing: 12) {
-                        Text(value)
-                            .font(Theme.fonts.caption12)
-                            .foregroundStyle(Theme.colors.textExtraLight)
-                            .showIf(showValue)
-                        Spacer()
-                        HStack {
-                            Image(systemName: "checkmark.circle")
-                                .foregroundColor(Theme.colors.alertSuccess)
-                            Image(systemName: "pencil")
-                                .foregroundColor(Theme.colors.textPrimary)
+                    if isValid && !isExpanded {
+                        HStack(spacing: 12) {
+                            Text(value)
+                                .font(Theme.fonts.caption12)
+                                .foregroundStyle(Theme.colors.textExtraLight)
+                                .showIf(showValue)
+                            Spacer()
+                            HStack {
+                                Image(systemName: "checkmark.circle")
+                                    .foregroundColor(Theme.colors.alertSuccess)
+                                Image(systemName: "pencil")
+                                    .foregroundColor(Theme.colors.textPrimary)
+                            }
                         }
+                    } else {
+                        Spacer()
                     }
-                    .showIf(isValid && !isExpanded)
                 }
                 .frame(maxWidth: .infinity)
                 .contentShape(Rectangle())
