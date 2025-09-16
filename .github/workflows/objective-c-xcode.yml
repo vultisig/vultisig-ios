@@ -15,6 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
+      - name: Cache SwiftPM
+        uses: actions/cache@v3
+        with:
+          path: |
+            VultisigApp/.build
+            VultisigApp/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('VultisigApp/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-   
       - name: Set Default Scheme
         working-directory: VultisigApp
         run: |
@@ -31,17 +40,6 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.0.0.app
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
-          # Print environment info
-          echo "Xcode version:"
-          xcodebuild -version
-          echo "Swift version:"
-          swift --version
-          
           # Clean, build and analyze for macOS
           echo "Building and analyzing for macOS - scheme: $scheme"
           xcodebuild clean build analyze \
@@ -50,10 +48,9 @@ jobs:
             -destination 'platform=macOS,arch=x86_64' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
+            ONLY_ACTIVE_ARCH=YES \
             DEBUG_INFORMATION_FORMAT=dwarf \
             SWIFT_COMPILATION_MODE=wholemodule \
-            -verbose \
             OTHER_SWIFT_FLAGS="-Xfrontend -debug-time-function-bodies" \
             | xcpretty -c && exit ${PIPESTATUS[0]}
 
@@ -62,11 +59,6 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.0.0.app
-          if [ $scheme = default ]; then scheme=$(cat default); fi
-          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
-          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
-          
           # Build and test for iOS in one command
           echo "Building and testing for iOS - scheme: $scheme"
           xcodebuild build analyze test \
@@ -75,6 +67,5 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.6' \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            -verbose \
+            ONLY_ACTIVE_ARCH=YES \
             | xcpretty -c && exit ${PIPESTATUS[0]}
