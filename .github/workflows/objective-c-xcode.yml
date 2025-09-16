@@ -40,6 +40,10 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
+          scheme_list=$(xcodebuild -list -json | tr -d "\n")
+          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          echo $default | cat >default
+          echo Using default scheme: $default
           # Clean, build and analyze for macOS
           echo "Building and analyzing for macOS - scheme: $scheme"
           xcodebuild clean build analyze \
@@ -59,6 +63,10 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
+          scheme_list=$(xcodebuild -list -json | tr -d "\n")
+          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          echo $default | cat >default
+          echo Using default scheme: $default
           # Build and test for iOS in one command
           echo "Building and testing for iOS - scheme: $scheme"
           xcodebuild build analyze test \
