@@ -27,29 +27,44 @@ class ParticipantDiscovery: ObservableObject {
     func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
         let headers =  isKeygen ? TssHelper.getKeygenRequestHeader() : TssHelper.getKeysignRequestHeader(pubKey: pubKeyECDSA)
+        guard let url = URL(string: urlString) else {
+            self.logger.error("Invalid URL: \(urlString)")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for item in headers {
+            request.setValue(item.value, forHTTPHeaderField: item.key)
+        }
         
         self.task = Task.detached {
             repeat {
-                if Task.isCancelled {
-                    return
-                }
-                Utils.getRequest(urlString: urlString, headers: headers, completion: { result in
-                    switch result {
-                    case .success(let data):
+                do {
+                    let (data,resp) = try await URLSession.shared.data(for: request)
+                    guard let httpResponse = resp as? HTTPURLResponse else {
+                        self.logger.error("Invalid response from server")
+                        try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+                        continue
+                    }
+                    
+                    switch httpResponse.statusCode {
+                    case 200 ... 299:
                         if data.isEmpty {
                             self.logger.error("No participants available yet")
-                            return
+                            try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+                            continue
                         }
                         do {
+                            print("Response data: \(String(data: data, encoding: .utf8) ?? "")")
                             let decoder = JSONDecoder()
                             let peers = try decoder.decode([String].self, from: data)
-                            DispatchQueue.main.async {
+                            await MainActor.run {
                                 for peer in peers {
                                     if peer == localParty {
                                         continue
                                     }
                                     if !self.peersFound.contains(peer) {
-                                        guard !Task.isCancelled else { return }
                                         self.peersFound.append(peer)
                                     }
                                 }
@@ -57,11 +72,17 @@ class ParticipantDiscovery: ObservableObject {
                         } catch {
                             self.logger.error("Failed to decode response to JSON: \(error)")
                         }
-                    case .failure(let error):
-                        self.logger.error("Failed to start session, error: \(error)")
+                    case 404: // success
+                        self.logger.error("Session not found, maybe it is not started yet")
+                    default:
+                        self.logger.error("Server returned status code \(httpResponse.statusCode)")
                     }
-                })
-                try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+                    
+                    try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+                } catch {
+                    self.logger.error("Error during participant discovery: \(error.localizedDescription)")
+                    return
+                }
             } while !Task.isCancelled
         }
     }
