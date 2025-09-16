@@ -78,7 +78,7 @@ class FunctionCallAddThorLP: FunctionCallAddressable, ObservableObject {
         Task {
             let addresses = await ThorchainService.shared.fetchThorchainInboundAddress()
             
-            DispatchQueue.main.async {
+            await MainActor.run {
                 if self.tx.coin.chain == .thorChain {
                     // For THORChain, we don't need an inbound address initially (it's set when pool is selected)
                     // The toAddress will be set when pool is selected

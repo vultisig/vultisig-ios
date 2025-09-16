@@ -88,7 +88,7 @@ struct VaultPairDetailView: View {
     
     @ViewBuilder
     var vaultSetupSection: some View {
-        let title = "\(vault.getThreshold())-\("of".localized)-\(devicesInfo.count) " + "vaultSetup".localized
+        let title = "\(vault.getThreshold()+1)-\("of".localized)-\(devicesInfo.count) " + "vaultSetup".localized
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(Theme.fonts.caption12)

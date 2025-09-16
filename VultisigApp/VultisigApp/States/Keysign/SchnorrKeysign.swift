@@ -319,7 +319,7 @@ final class SchnorrKeysign {
         self.messenger = localMessenger
         do {
             var keysignSetupMsg:[UInt8]
-            if self.isInitiateDevice {
+            if self.isInitiateDevice && attempt == 0 {
                 keysignSetupMsg = try getKeysignSetupMessage(message: messageToSign)
                 try await localMessenger.uploadSetupMessage(message:keysignSetupMsg.toBase64(),nil)
             } else {

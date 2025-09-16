@@ -50,13 +50,7 @@ struct SettingsCurrencySelectionView: View {
         // Refresh prices in the background without blocking the UI
         if let currentVault = ApplicationState.shared.currentVault {
             Task.detached {
-                do {
-                    //try await CryptoPriceService.shared.fetchPrices(vault: currentVault)
-                    await BalanceService.shared.updateBalances(vault: currentVault)
-
-                } catch {
-                    print("Fetch Rates error: \(error.localizedDescription)")
-                }
+                await BalanceService.shared.updateBalances(vault: currentVault)
             }
         }
         dismiss()

@@ -66,5 +66,77 @@
             "lib_type": "DKLS"
         },
         "expected_image_hash": ["cc35a6f193ee65b3c6fe0d63caee6d4f53a516b750b6366024e2e48cfec16099"]
-    }
+    },
+    {
+        "name": "Swap ARB.USDC to CACAO",
+        "keysign_payload": {
+            "coin": {
+                "chain": "Arbitrum",
+                "ticker": "USDC",
+                "address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                "decimals": 6,
+                "price_provider_id": "usd-coin",
+                "is_native_token": false,
+                "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725",
+                "contract_address":"0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+                "logo": "usdc.png"
+            },
+            "to_address": "0x700E97ef07219440487840Dc472E7120A7FF11F4",
+            "to_amount": "7160000",
+            "BlockchainSpecific": {
+                "EthereumSpecific": {
+                    "max_fee_per_gas_wei": "11000000",
+                    "priority_fee": "0",
+                    "nonce": 28,
+                    "gas_limit": "900000"
+                }
+            },
+            "memo": "=:c:maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c:0\/3\/0:vi:0",
+            "utxo_info": [],
+            "SwapPayload": {
+                "MayachainSwapPayload":{
+                    "from_address": "thor18altpx2gwt4c4ejr5uzda4kyzsudyn9q56fnng",
+                    "from_coin": {
+                        "ticker": "USDC",
+                        "chain": "Arbitrum",
+                        "address": "0x07773707BdA78aC4052f736544928b15dD31c5cc",
+                        "contract_address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+                        "decimals": 6,
+                        "is_native_token": false,
+                        "price_provider_id": "usd-coin",
+                        "logo": "USDC",
+                        "hex_public_key": "03f51669f823379ddc35c5ba13b2e4de13fed11a606d4bf34bd94e8bbd90f83725"
+                    },
+                    "to_coin": {
+                        "ticker": "CACAO",
+                        "chain": "MayaChain",
+                        "address": "maya18altpx2gwt4c4ejr5uzda4kyzsudyn9q5dhl9c",
+                        "contract_address": "",
+                        "decimals": 10,
+                        "is_native_token": true,
+                        "price_provider_id": "cacao",
+                        "logo": "cacao",
+                        "hex_public_key": "03af84e9d32827b9d2806bf64cbff8babc50178b88cabfbc86dba3900d16bae88b"
+                    },
+                    "vault_address": "0x0ac94889c8a176b0561c74b73111a8e872bf86fa",
+                    "router_address": "0x700E97ef07219440487840Dc472E7120A7FF11F4",
+                    "from_amount": "7160000",
+                    "to_amount_decimal": "39.31094658",
+                    "to_amount_limit": "0",
+                    "streaming_interval": "3",
+                    "streaming_quantity": "0",
+                    "is_affiliate": false,
+                    "fee":"",
+                    "expiration_time": 1757828381
+                }
+            },
+            "erc20_approve_payload":{
+                "spender": "0x700E97ef07219440487840Dc472E7120A7FF11F4",
+                "amount": "7160000"
+            },
+            "vault_public_key_ecdsa": "0342d6eb3e536bd1d6f57a8388afb09936aa64160c5e2ebee76d791b4844a06770",
+            "lib_type": "DKLS"
+        },
+        "expected_image_hash": ["8fc58a393062400da51d6f16d97763008ebf807e8a4e03ae530faf94a7d593c7", "5abefbff1d10fc36063e075d2b92e1664129c2c04fc3db7d5bcf1dbcc0737acd"]
+    },
 ]
