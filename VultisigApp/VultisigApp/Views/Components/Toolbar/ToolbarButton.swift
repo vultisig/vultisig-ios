@@ -25,12 +25,20 @@ struct ToolbarButton: View {
     }
     
     var body: some View {
+        #if os(macOS)
+        customButton
+        #else
         if #available(iOS 26.0, *) {
             Button("", systemImage: image, action: action)
                 .labelStyle(.toolbar)
         } else {
-            CustomToolbarButton(icon: Image(systemName: image), type: type, action: action)
+            customButton
         }
+        #endif
+    }
+    
+    var customButton: some View {
+        CustomToolbarButton(icon: Image(systemName: image), type: type, action: action)
     }
 }
 
@@ -73,5 +81,7 @@ private struct CustomToolbarButton: View {
                 .padding(12)
                 .background(Circle().fill(color))
         }
+        .buttonStyle(.plain)
+        .glassy()
     }
 }

@@ -60,5 +60,6 @@ struct SearchTextField: View {
             Image(systemName: "xmark.circle.fill")
                 .foregroundColor(Theme.colors.textLight)
         }
+        .buttonStyle(.plain)
     }
 }

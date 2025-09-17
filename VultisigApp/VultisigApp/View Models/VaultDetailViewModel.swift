@@ -16,6 +16,17 @@ class VaultDetailViewModel: ObservableObject {
     private let balanceService = BalanceService.shared
     private var updateBalanceTask: Task<Void, Never>?
     
+    var availableActions: [CoinAction] {
+        [.swap, .buy, .send, .receive]
+    }
+    
+    @Published var selectedTab: VaultTab = .portfolio
+    
+    var tabs: [SegmentedControlItem<VaultTab>] = [
+        SegmentedControlItem(value: .portfolio, title: "portfolio".localized),
+        SegmentedControlItem(value: .nfts, title: "nfts".localized, tag: "soon".localized, isEnabled: false)
+    ]
+    
     func updateBalance(vault: Vault) {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {

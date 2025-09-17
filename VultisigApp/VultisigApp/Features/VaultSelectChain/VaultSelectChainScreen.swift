@@ -16,48 +16,33 @@ struct VaultSelectChainScreen: View {
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                VStack(spacing: 24) {
-                    textfield
-                    Group {
-                        if !viewModel.filteredChains.isEmpty {
-                            ScrollView(showsIndicators: false) {
-                                chainsGrid
+            container {
+                ZStack(alignment: .bottom) {
+                    VStack(spacing: 24) {
+                        textfield
+                        Group {
+                            if viewModel.searchText.isNotEmpty && viewModel.filteredChains.isEmpty {
+                                emptyChainsView
+                            } else {
+                                ScrollView(showsIndicators: false) {
+                                    chainsGrid
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
                             }
-                        } else {
-                            emptyChainsView
                         }
+                        .transition(.opacity)
+                        .animation(.easeInOut, value: viewModel.searchText)
                     }
-                    .transition(.opacity)
-                    .animation(.easeInOut, value: viewModel.filteredChains)
+                    .padding(.top, 24)
+                    .padding(.horizontal, 16)
+                    
+                    gradientOverlay
                 }
-                .padding(.top, 24)
-                .padding(.horizontal, 16)
-                
-                gradientOverlay
+                .ignoresSafeArea(.container, edges: .bottom)
             }
-            .ignoresSafeArea(.container, edges: .bottom)
             .presentationDetents([.large])
             .presentationBackground(Theme.colors.bgPrimary)
             .presentationDragIndicator(.visible)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    ToolbarButton(image: "xmark", type: .secondary) {
-                        isPresented.toggle()
-                    }
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    ToolbarButton(image: "checkmark") {
-                        Task {
-                            await saveAssets()
-                            await MainActor.run {
-                                isPresented.toggle()
-                            }
-                        }
-                    }
-                }
-            }
             .onLoad {
                 viewModel.setData(for: vault)
             }
@@ -93,6 +78,7 @@ struct VaultSelectChainScreen: View {
                         .foregroundStyle(Theme.colors.textPrimary)
                         .font(Theme.fonts.bodySMedium)
                 }
+                .buttonStyle(.plain)
                 .transition(.opacity)
                 .showIf(searchBarFocused)
             }
@@ -116,6 +102,7 @@ struct VaultSelectChainScreen: View {
             }
         }
         .padding(.bottom, 64)
+        .frame(maxWidth: .infinity)
     }
     
     var emptyChainsView: some View {
@@ -134,6 +121,21 @@ struct VaultSelectChainScreen: View {
         }
     }
     
+    var closeButton: some View {
+        ToolbarButton(image: "xmark", type: .secondary) {
+            isPresented.toggle()
+        }
+    }
+    
+    var saveButton: some View {
+        ToolbarButton(image: "checkmark") {
+            Task {
+                await saveAssets()
+            }
+            isPresented.toggle()
+        }
+    }
+    
     func onSelection(_ chainSelection: ChainSelection) {
         viewModel.handleSelection(isSelected: chainSelection.selected, asset: chainSelection.asset)
     }
@@ -142,6 +144,40 @@ struct VaultSelectChainScreen: View {
         await CoinService.saveAssets(for: vault, selection: viewModel.selection)
     }
 }
+
+#if os(macOS)
+extension VaultSelectChainScreen {
+    func container<Content: View>(content: () -> Content) -> some View {
+        VStack {
+            HStack {
+                closeButton
+                Spacer()
+                saveButton
+            }
+            .padding(.top, 16)
+            .padding(.horizontal, 16)
+            content()
+        }
+        .frame(maxWidth: 700, minHeight: 600)
+    }
+}
+#else
+extension VaultSelectChainScreen {
+    func container<Content: View>(content: () -> Content) -> some View {
+        content()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    closeButton
+                }
+                
+                ToolbarItem(placement: .confirmationAction) {
+                    saveButton
+                }
+            }
+    }
+}
+#endif
+
 
 #Preview {
     VaultSelectChainScreen(

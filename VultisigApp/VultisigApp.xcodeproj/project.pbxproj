@@ -15,7 +15,6 @@
 		130C40DF2E72FD7100509C61 /* CoinActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40DE2E72FD6000509C61 /* CoinActionsView.swift */; };
 		130C40E22E7303CE00509C61 /* VaultBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E12E7303CB00509C61 /* VaultBannerView.swift */; };
 		130C40E52E731CD900509C61 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E42E731CD300509C61 /* SegmentedControl.swift */; };
-		130C40E82E73232700509C61 /* VaultMainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40E72E73232400509C61 /* VaultMainViewModel.swift */; };
 		130C40EB2E73239B00509C61 /* VaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40EA2E73239200509C61 /* VaultTab.swift */; };
 		130C40EE2E73278A00509C61 /* CircularAccessoryIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40ED2E73278200509C61 /* CircularAccessoryIconButton.swift */; };
 		130C40F02E734BB000509C61 /* VaultMainChainListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130C40EF2E734BAB00509C61 /* VaultMainChainListView.swift */; };
@@ -1066,7 +1065,6 @@
 		130C40DE2E72FD6000509C61 /* CoinActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionsView.swift; sourceTree = "<group>"; };
 		130C40E12E7303CB00509C61 /* VaultBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBannerView.swift; sourceTree = "<group>"; };
 		130C40E42E731CD300509C61 /* SegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentedControl.swift; sourceTree = "<group>"; };
-		130C40E72E73232400509C61 /* VaultMainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainViewModel.swift; sourceTree = "<group>"; };
 		130C40EA2E73239200509C61 /* VaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTab.swift; sourceTree = "<group>"; };
 		130C40ED2E73278200509C61 /* CircularAccessoryIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularAccessoryIconButton.swift; sourceTree = "<group>"; };
 		130C40EF2E734BAB00509C61 /* VaultMainChainListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainChainListView.swift; sourceTree = "<group>"; };
@@ -2727,7 +2725,6 @@
 			isa = PBXGroup;
 			children = (
 				130C40E92E73238B00509C61 /* Model */,
-				130C40E72E73232400509C61 /* VaultMainViewModel.swift */,
 				13C880592E70A359009C67F1 /* Views */,
 				13C880572E70A327009C67F1 /* VaultMainScreen.swift */,
 			);
@@ -5454,7 +5451,6 @@
 				GVTXGPZR8J4TTJM9OSTSZLYW /* FunctionCallRemoveThorLP.swift in Sources */,
 				F6MAHZO7QADAUEOCUKP14KWW /* ThorchainLP.swift in Sources */,
 				A6E0C94F2DF49E2700A01543 /* CreateReferralDetailsView+macOS.swift in Sources */,
-				130C40E82E73232700509C61 /* VaultMainViewModel.swift in Sources */,
 				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,

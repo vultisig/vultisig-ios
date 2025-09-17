@@ -10,6 +10,9 @@ import SwiftUI
 struct VaultMainChainListView: View {
     @ObservedObject var vault: Vault
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var onCopy: (GroupedChain) -> Void
     var onAction: (GroupedChain) -> Void
@@ -25,6 +28,11 @@ struct VaultMainChainListView: View {
             }
         }
         .onAppear {
+            viewModel.updateBalance(vault: vault)
+            viewModel.getGroupAsync(tokenSelectionViewModel)
+            
+            tokenSelectionViewModel.setData(for: vault)
+            settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
             viewModel.categorizeCoins(vault: vault)
         }
     }

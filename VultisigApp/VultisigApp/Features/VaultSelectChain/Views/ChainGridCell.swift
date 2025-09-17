@@ -49,6 +49,7 @@ struct ChainGridCell: View {
             .frame(width: 74, height: 100)
             .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .onAppear(perform: onAppear)
     }
     

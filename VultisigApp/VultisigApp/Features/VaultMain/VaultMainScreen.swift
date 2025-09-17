@@ -10,7 +10,7 @@ import SwiftUI
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     
-    @StateObject var viewModel = VaultMainViewModel()
+    @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State private var showCopyNotification = false
@@ -34,6 +34,11 @@ struct VaultMainScreen: View {
             header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .refreshable {
+            if let vault = homeViewModel.selectedVault {
+                viewModel.updateBalance(vault: vault)
+            }
+        }
         .background(VaultMainScreenBackground())
         .overlay(
             NotificationBannerView(
