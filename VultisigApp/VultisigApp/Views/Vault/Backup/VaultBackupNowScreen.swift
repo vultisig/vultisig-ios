@@ -33,7 +33,7 @@ struct VaultBackupNowScreen: View {
                     animation?.view()
                     labels
                     Spacer().frame(height: 100)
-                    PrimaryButton(title: "backupNow", leadingIcon: "square.and.arrow.down") {
+                    PrimaryButton(title: "backupNow", leadingIcon: "download") {
                         onBackupNow()
                     }
                 }

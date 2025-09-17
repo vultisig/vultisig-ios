@@ -870,3 +870,5 @@
 "addressBookDuplicate" = "Address already exists in your address book.";
 "selectChains" = "Select chains";
 "noChainsFound" = "No chains found";
+"noChainsFoundSubtitle" = "Make sure that the chain you’re looking for is enabled.";
+"customizeChains" = "Customize chains";

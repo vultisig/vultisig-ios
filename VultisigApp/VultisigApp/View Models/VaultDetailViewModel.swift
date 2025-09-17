@@ -12,6 +12,16 @@ import SwiftUI
 class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     @Published var groups = [GroupedChain]()
+    @Published var searchText: String = ""
+    
+    var filteredGroups: [GroupedChain] {
+        guard !searchText.isEmpty else {
+            return groups
+        }
+        return groups.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+    }
 
     private let balanceService = BalanceService.shared
     private var updateBalanceTask: Task<Void, Never>?
