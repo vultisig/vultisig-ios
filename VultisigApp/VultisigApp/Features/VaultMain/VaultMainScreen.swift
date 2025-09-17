@@ -125,6 +125,7 @@ struct VaultMainScreen: View {
                 onCustomizeChains: onCustomizeChains
             )
             .background(
+                // Reference to scroll when search gets presented
                 VStack {}
                     .frame(height: 300)
                     .id(scrollReferenceId)
@@ -141,7 +142,7 @@ struct VaultMainScreen: View {
             )
             Spacer()
             CircularAccessoryIconButton(icon: "magnifying-glass") {
-                showSearch()
+                toggleSearch()
             }
             CircularAccessoryIconButton(icon: "write") {
                 showChainSelection.toggle()
@@ -162,7 +163,7 @@ struct VaultMainScreen: View {
         }
     }
     
-    func showSearch() {
+    func toggleSearch() {
         if showSearchHeader {
             focusSearch.toggle()
         }
@@ -211,13 +212,16 @@ struct VaultMainScreen: View {
     }
     
     func clearSearch() {
-        showSearch()
+        toggleSearch()
         viewModel.searchText = ""
     }
     
     func onCustomizeChains() {
         showChainSelection = true
-        clearSearch()
+        // Clear search after sheet gets presented
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            clearSearch()
+        }
     }
 }
 
