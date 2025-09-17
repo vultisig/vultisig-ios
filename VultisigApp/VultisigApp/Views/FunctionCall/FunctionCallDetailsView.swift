@@ -170,7 +170,7 @@ struct FunctionCallDetailsView: View {
                 case .vote:
                     fnCallInstance = .vote(FunctionCallVote())
                 case .stake:
-                    fnCallInstance = .stake(FunctionCallStake())
+                    fnCallInstance = .stake(FunctionCallStake(tx: tx))
                 case .stakeTcy:
                     // Ensure TCY token is selected for TCY staking operations on THORChain
                     if tx.coin.chain == .thorChain && tx.coin.ticker.uppercased() != "TCY" {
