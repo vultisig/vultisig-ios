@@ -10,14 +10,14 @@ import SwiftUI
 struct VaultMainScreen: View {
     @ObservedObject var vault: Vault
     
-    @StateObject var viewModel = VaultMainViewModel()
+    @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State private var showCopyNotification = false
     @State private var copyNotificationText = ""
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
-    
+    @State var showChainSelection: Bool = false
     
     private let contentInset: CGFloat = 78
     
@@ -34,6 +34,11 @@ struct VaultMainScreen: View {
             header
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .refreshable {
+            if let vault = homeViewModel.selectedVault {
+                viewModel.updateBalance(vault: vault)
+            }
+        }
         .background(VaultMainScreenBackground())
         .overlay(
             NotificationBannerView(
@@ -45,7 +50,12 @@ struct VaultMainScreen: View {
         .onChange(of: scrollOffset) { _, newValue in
             onScrollOffsetChange(newValue)
         }
-
+        .sheet(isPresented: $showChainSelection) {
+            VaultSelectChainScreen(
+                vault: homeViewModel.selectedVault ?? .example,
+                isPresented: $showChainSelection
+            )
+        }
     }
     
     var header: some View {
@@ -84,7 +94,9 @@ struct VaultMainScreen: View {
                 )
                 Spacer()
                 CircularAccessoryIconButton(icon: "magnifying-glass", action: onSearch)
-                CircularAccessoryIconButton(icon: "write", action: onManageChains)
+                CircularAccessoryIconButton(icon: "write") {
+                    showChainSelection.toggle()
+                }
             }
             .padding(.bottom, 16)
             VaultMainChainListView(
@@ -117,10 +129,6 @@ struct VaultMainScreen: View {
     
     func onSearch() {
         // TODO: - Add search in upcoming PRs
-    }
-    
-    func onManageChains() {
-        // TODO: - Add manage chains in upcoming PRs
     }
     
     func onCopy(_ group: GroupedChain) {
