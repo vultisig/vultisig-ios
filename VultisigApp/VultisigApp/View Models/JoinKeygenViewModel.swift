@@ -226,7 +226,7 @@ class JoinKeygenViewModel: ObservableObject {
                     
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                        errorMessage = "You choose the wrong vault"
+                        errorMessage = "You chose the wrong vault"
                         logger.error("The vault's public key doesn't match the reshare message's public key")
                         status = .FailToStart
                         return
