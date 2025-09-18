@@ -89,8 +89,7 @@ struct SendDetailsAmountTab: View {
     }
     
     var amountFieldSection: some View {
-        SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel)
-            .focused($focusedField, equals: .amount)
+        SendDetailsAmountTextField(tx: tx, viewModel: viewModel, sendCryptoViewModel: sendCryptoViewModel, focusedField: $focusedField)
             .id(Field.amount)
             .onSubmit {
                 Task{
