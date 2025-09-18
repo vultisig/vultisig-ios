@@ -7,9 +7,9 @@ import Foundation
 import WalletCore
 import BigInt
 
-extension THORChainSwapChain: Codable {}
+extension THORChainSwapChain: @retroactive Codable {}
 
-extension THORChainSwapAsset: Codable {
+extension THORChainSwapAsset: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case chain
         case symbol

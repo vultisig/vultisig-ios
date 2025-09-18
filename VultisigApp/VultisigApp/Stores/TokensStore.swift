@@ -1084,6 +1084,15 @@ class TokensStore {
             isNativeToken: false
         ),
         CoinMeta(
+            chain: .kujira,
+            ticker: "AUTO",
+            logo: "auto-token-kujira",
+            decimals: 6,
+            priceProviderId: "auto-2",
+            contractAddress: "factory/kujira13x2l25mpkhwnwcwdzzd34cr8fyht9jlj7xu9g4uffe36g3fmln8qkvm3qn/uauto",
+            isNativeToken: false
+        ),
+        CoinMeta(
             chain: .litecoin,
             ticker: "LTC",
             logo: "ltc",

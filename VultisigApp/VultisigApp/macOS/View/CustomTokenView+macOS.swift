@@ -26,8 +26,8 @@ extension CustomTokenView {
                 Spacer()
             }
         }
-        .task {
-            await tokenViewModel.loadData(groupedChain: group)
+        .onLoad {
+            tokenViewModel.loadData(groupedChain: group)
         }
         .navigationBarBackButtonHidden(true)
     }
