@@ -71,7 +71,6 @@ class CoinSelectionViewModel: ObservableObject {
         if enableETHSepolia {
             groupedAssets[TokensStore.Token.ethSepolia.chain] = [TokensStore.Token.ethSepolia]
         }
-        
     }
 
     func isSelected(asset: CoinMeta) -> Bool {

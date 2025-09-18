@@ -9,13 +9,17 @@ import Foundation
 import SwiftUI
 import Combine
 
-class GroupedChain: ObservableObject {
+class GroupedChain: ObservableObject, Identifiable {
     let id: String
     let chain: Chain
     let address: String
     var logo: String
     var count: Int
     var coins: [Coin]
+    
+    var truncatedAddress: String {
+        address.prefix(4) + "..." + address.suffix(4)
+    }
 
     var totalBalanceInFiatDecimal: Decimal {
         return coins.totalBalanceInFiatDecimal

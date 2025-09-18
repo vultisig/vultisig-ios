@@ -28,14 +28,14 @@ struct PrimaryButtonView: View {
     var body: some View {
         HStack(spacing: 8) {
             if let leadingIcon {
-                Image(systemName: leadingIcon)
+                Icon(named: leadingIcon, color: Theme.colors.textPrimary, size: 15)
             }
             
             Text(NSLocalizedString(title, comment: "Button Text"))
                 .fixedSize(horizontal: true, vertical: false)
             
             if let trailingIcon {
-                Image(systemName: trailingIcon)
+                Icon(named: trailingIcon, color: Theme.colors.textPrimary, size: 15)
             }
             
             if isLoading {

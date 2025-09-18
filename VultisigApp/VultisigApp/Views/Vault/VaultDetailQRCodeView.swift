@@ -71,7 +71,7 @@ struct VaultDetailQRCodeView: View {
                     item: renderedImage,
                     preview: SharePreview(imageName, image: renderedImage)
                 ) {
-                    PrimaryButtonView(title: "share", leadingIcon: "square.and.arrow.up")
+                    PrimaryButtonView(title: "share", leadingIcon: "share")
                 }
                 .buttonStyle(PrimaryButtonStyle())
             } else {
