@@ -31,11 +31,15 @@ struct VultiTabBar<Item: TabBarItem, Content: View>: View {
     }
     
     var body: some View {
-        if #available(iOS 26.0, macOS 26.0, *) {
+        #if os(macOS)
+        legacyTabBar
+        #else
+        if #available(iOS 26.0, *), !isIPadOS {
             glassTabBar
         } else {
             legacyTabBar
         }
+        #endif
     }
 }
 
@@ -88,7 +92,10 @@ private extension VultiTabBar {
                 .toolbar(.hidden, for: .tabBar)
                 #endif
             }
+            .groupedTabViewStyle()
+
             bottomGradient
+
             HStack {
                 customTabBar
                 Spacer()
@@ -114,7 +121,8 @@ private extension VultiTabBar {
             startPoint: UnitPoint(x: 0.5, y: 1),
             endPoint: UnitPoint(x: 0.5, y: 0)
         )
-        .frame(height: 120)
+        .opacity(0.7)
+        .frame(height: 80)
         .ignoresSafeArea(.all)
     }
     
@@ -145,24 +153,43 @@ private extension VultiTabBar {
             }
         }
         .padding(6)
-        .background(
-            RoundedRectangle(cornerRadius: 99)
-                .fill(Color(hex: "0C2546"))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 99)
-                        .inset(by: 0.5)
-                        .stroke(Color(red: 0.02, green: 0.11, blue: 0.23), lineWidth: 1)
-                )
-        )
+        .background(tabsBackground)
         .frame(height: 64)
     }
     
     var selectedTabPill: some View {
-        RoundedRectangle(cornerRadius: 99)
-            .fill(.white.opacity(0.06))
-            .frame(width: tabWidth)
-            .offset(x: CGFloat(selectedTabIndex) * tabWidth)
-            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedItem)
+        Group {
+            if #available(iOS 26.0, macOS 26.0, *) {
+                Capsule()
+                    .glassEffectTransition(.materialize)
+                    .glassEffect(.regular.interactive())
+                    
+            } else {
+                RoundedRectangle(cornerRadius: 99)
+                    .fill(.white.opacity(0.06))
+            }
+        }
+        .frame(width: tabWidth)
+        .offset(x: CGFloat(selectedTabIndex) * tabWidth)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedItem)
+    }
+    
+    var tabsBackground: some View {
+        Group {
+            if #available(iOS 26.0, macOS 26.0, *) {
+                Capsule()
+                    .fill(.clear)
+                    .glassEffect(.regular)
+            } else {
+                RoundedRectangle(cornerRadius: 99)
+                    .fill(Color(hex: "0C2546"))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 99)
+                            .inset(by: 0.5)
+                            .stroke(Color(red: 0.02, green: 0.11, blue: 0.23), lineWidth: 1)
+                    )
+            }
+        }
     }
     
     func tabBarItem(for tab: Item) -> some View {
