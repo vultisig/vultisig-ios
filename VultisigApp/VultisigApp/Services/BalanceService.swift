@@ -139,18 +139,6 @@ private extension BalanceService {
                 let usableUtxos = utxos.filter { ($0.value ?? 0) >= Int(dustThreshold) }
                 let usableBalance = usableUtxos.reduce(0) { $0 + Int64($1.value ?? 0) }
                 
-                // Log the difference for debugging
-                let totalBalance = blockChairData.address?.balance ?? 0
-                let dustBalance = totalBalance - Int(usableBalance)
-                
-                if dustBalance > 0 {
-                    print("💰 \(coin.ticker) Balance Analysis:")
-                    print("  Total: \(totalBalance) sats (\(Double(totalBalance)/100_000_000) \(coin.ticker))")
-                    print("  Usable: \(usableBalance) sats (\(Double(usableBalance)/100_000_000) \(coin.ticker))")
-                    print("  Dust: \(dustBalance) sats (\(Double(dustBalance)/100_000_000) \(coin.ticker))")
-                    print("  Dust UTXOs: \(utxos.count - usableUtxos.count) of \(utxos.count)")
-                }
-                
                 // Return usable balance instead of total balance
                 return usableBalance.description
             }
