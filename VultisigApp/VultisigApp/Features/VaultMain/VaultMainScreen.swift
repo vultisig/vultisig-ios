@@ -68,7 +68,7 @@ struct VaultMainScreen: View {
             onScrollOffsetChange(newValue)
         }
         .sheet(isPresented: $showVaultSelector) {
-            VaultSelectorBottomSheet() {
+            VaultSelectorBottomSheet {
                 showVaultSelector.toggle()
                 showCreateVault.toggle()
             } onSelectVault: { vault in

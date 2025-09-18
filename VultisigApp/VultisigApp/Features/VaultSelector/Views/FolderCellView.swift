@@ -10,6 +10,7 @@ import SwiftUI
 struct FolderCellView: View {
     let folder: Folder
     let selectedVaultName: String?
+    @Binding var isEditing: Bool
     let action: () -> Void
     
     var isSelected: Bool {
@@ -18,37 +19,40 @@ struct FolderCellView: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                Icon(named: isSelected ? "folder-fill" : "fill", color: Theme.colors.alertInfo, size: 16)
-                    .padding(12)
-                    .background(Circle().fill(Theme.colors.bgTertiary))
-                    .overlay(
-                        Circle()
-                            .inset(by: 0.5)
-                            .stroke(Theme.colors.borderLight, lineWidth: 1)
-                    )
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(folder.folderName)
-                        .foregroundStyle(Theme.colors.textPrimary)
-                        .font(Theme.fonts.bodySMedium)
-                    
-                    if isSelected {
-                        selectedSubtitle
-                    } else {
-                        nonSelectedSubtitle
+            VaultEditingContainer(isEditing: $isEditing) {
+                HStack {
+                    Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
+                        .padding(12)
+                        .background(Circle().fill(Theme.colors.bgTertiary))
+                        .overlay(
+                            Circle()
+                                .inset(by: 0.5)
+                                .stroke(Theme.colors.borderLight, lineWidth: 1)
+                        )
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(folder.folderName)
+                            .foregroundStyle(Theme.colors.textPrimary)
+                            .font(Theme.fonts.bodySMedium)
+                        
+                        if isSelected {
+                            selectedSubtitle
+                        } else {
+                            nonSelectedSubtitle
+                        }
                     }
+                    
+                    Spacer()
+                    
+                    Icon(
+                        named: "chevron-right",
+                        color: Theme.colors.textPrimary,
+                        size: 24
+                    )
+                    .opacity(isEditing ? 0 : 1)
                 }
-                
-                Spacer()
-                
-                Icon(
-                    named: "chevron-right",
-                    color: Theme.colors.textPrimary,
-                    size: 24
-                )
+                .padding(12)
+                .background(isSelected && !isEditing ? selectedBackground : nil)
             }
-            .padding(12)
-            .background(isSelected ? selectedBackground : nil)
             .contentShape(Rectangle())
         }
     }
@@ -84,5 +88,10 @@ struct FolderCellView: View {
 }
 
 #Preview {
-    FolderCellView(folder: .example, selectedVaultName: "", action: {})
+    FolderCellView(
+        folder: .example,
+        selectedVaultName: "",
+        isEditing: .constant(false),
+        action: {}
+    )
 }

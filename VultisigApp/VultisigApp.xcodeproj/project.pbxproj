@@ -74,6 +74,8 @@
 		135677B62E39369A002C10A2 /* HTTPClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AF2E39369A002C10A2 /* HTTPClientProtocol.swift */; };
 		135677B72E39369A002C10A2 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677AE2E39369A002C10A2 /* HTTPClient.swift */; };
 		135677B92E39369A002C10A2 /* HTTPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135677B02E39369A002C10A2 /* HTTPError.swift */; };
+		135B9FD32E7C8D6E0087D85D /* VaultEditingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD22E7C8D6D0087D85D /* VaultEditingContainer.swift */; };
+		135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */; };
 		135C88192E3AADB800FD097D /* GradientListSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135C88182E3AADB000FD097D /* GradientListSeparator.swift */; };
 		1369C2212E34006F0002D815 /* WasmExecuteContractPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */; };
 		136A12DC2E395F080001B1CA /* SecurityScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */; };
@@ -1128,6 +1130,8 @@
 		135677B02E39369A002C10A2 /* HTTPError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPError.swift; sourceTree = "<group>"; };
 		135677B12E39369A002C10A2 /* HTTPMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPMethod.swift; sourceTree = "<group>"; };
 		135677B22E39369A002C10A2 /* TargetType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetType.swift; sourceTree = "<group>"; };
+		135B9FD22E7C8D6D0087D85D /* VaultEditingContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditingContainer.swift; sourceTree = "<group>"; };
+		135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlainListItem.swift"; sourceTree = "<group>"; };
 		135C88182E3AADB000FD097D /* GradientListSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientListSeparator.swift; sourceTree = "<group>"; };
 		1369C2202E34006D0002D815 /* WasmExecuteContractPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExecuteContractPayload.swift; sourceTree = "<group>"; };
 		136A12DB2E395F080001B1CA /* SecurityScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerViewModel.swift; sourceTree = "<group>"; };
@@ -2183,6 +2187,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				135B9FD52E7C8DBC0087D85D /* List */,
 				138C5E682E79EDD300C559C7 /* Toolbar */,
 				1334C73D2E30079000CBAA3E /* ViewModifiers */,
 				130C40FC2E7389B500509C61 /* TabBar */,
@@ -2479,6 +2484,14 @@
 			path = Network;
 			sourceTree = "<group>";
 		};
+		135B9FD52E7C8DBC0087D85D /* List */ = {
+			isa = PBXGroup;
+			children = (
+				135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */,
+			);
+			path = List;
+			sourceTree = "<group>";
+		};
 		1378B0492E462AD2005CC32D /* Loaders */ = {
 			isa = PBXGroup;
 			children = (
@@ -2627,6 +2640,7 @@
 		1396423C2E79A77400CFEFAF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				135B9FD22E7C8D6D0087D85D /* VaultEditingContainer.swift */,
 				138FD7FE2E79D37A000903B1 /* FolderCellView.swift */,
 				1396423D2E79A78400CFEFAF /* VaultCellView.swift */,
 			);
@@ -4417,8 +4431,8 @@
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
 				A6182F232C9224D10059BFDD /* Update Check */,
 				A6BB9BBD2DA9A9870085E117 /* UpgradeFromGG20 */,
-				A6E0C90D2DE4E86900A01543 /* Referral */,
 				049BBB4E2B71E37B004C231F /* Components */,
+				A6E0C90D2DE4E86900A01543 /* Referral */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -5696,6 +5710,7 @@
 				A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
+				135B9FD32E7C8D6E0087D85D /* VaultEditingContainer.swift in Sources */,
 				A6F7B6792D481D5F00AC8104 /* SetupVaultSecureText.swift in Sources */,
 				A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */,
 				1348FA652E6895B7001551F6 /* CommonTextEditor.swift in Sources */,
@@ -5929,6 +5944,7 @@
 				B2ADDDC52E5D63AD00DB3B98 /* BanxaDisclaimer.swift in Sources */,
 				139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
+				135B9FD72E7C8DC60087D85D /* View+PlainListItem.swift in Sources */,
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
 				A6C6709A2C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift in Sources */,
 				A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */,
