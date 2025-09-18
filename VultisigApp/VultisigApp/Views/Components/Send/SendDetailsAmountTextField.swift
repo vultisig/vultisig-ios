@@ -11,6 +11,7 @@ struct SendDetailsAmountTextField: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendDetailsViewModel
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @FocusState.Binding var focusedField: Field?
     
     @State var isCryptoSelected: Bool = true
     
@@ -22,6 +23,14 @@ struct SendDetailsAmountTextField: View {
         }
         .frame(height: 180)
         .animation(.easeInOut, value: isCryptoSelected)
+        .onChange(of: focusedField) { oldValue, newValue in
+            // Sync the visual state with the focus state
+            if newValue == .amount {
+                isCryptoSelected = true
+            } else if newValue == .amountInFiat {
+                isCryptoSelected = false
+            }
+        }
     }
     
     var textFieldSection: some View {
@@ -57,6 +66,10 @@ struct SendDetailsAmountTextField: View {
     var cryptoSelector: some View {
         Button {
             isCryptoSelected = true
+            // Switch focus to crypto field when crypto is selected
+            if focusedField == .amountInFiat {
+                focusedField = .amount
+            }
         } label: {
             getSelector(for: "circle.dotted.and.circle")
         }
@@ -65,6 +78,10 @@ struct SendDetailsAmountTextField: View {
     var fiatSelector: some View {
         Button {
             isCryptoSelected = false
+            // Switch focus to fiat field when fiat is selected
+            if focusedField == .amount {
+                focusedField = .amountInFiat
+            }
         } label: {
             getSelector(for: "dollarsign")
         }
@@ -87,6 +104,7 @@ struct SendDetailsAmountTextField: View {
             },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
+        .focused($focusedField, equals: .amount)
         .onChange(of: tx.coin) { oldValue, newValue in
             sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
         }
@@ -115,6 +133,7 @@ struct SendDetailsAmountTextField: View {
             amount: $tx.amountInFiat,
             onChange: { sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
         )
+        .focused($focusedField, equals: .amountInFiat)
     }
     
     var fiatUnitField: some View {
@@ -148,5 +167,6 @@ struct SendDetailsAmountTextField: View {
 }
 
 #Preview {
-    SendDetailsAmountTextField(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel())
+    @FocusState var focusedField: Field?
+    return SendDetailsAmountTextField(tx: SendTransaction(), viewModel: SendDetailsViewModel(), sendCryptoViewModel: SendCryptoViewModel(), focusedField: $focusedField)
 }
