@@ -17,7 +17,14 @@ struct BlockSpecificCacheItem {
 final class BlockChainService {
     
     static func normalizeUTXOFee(_ value: BigInt) -> BigInt {
-        return value * 2 + value / 2 // x2.5 fee
+        let result = value * 2 + value / 2 // x2.5 fee
+        print("🔧 UTXO Fee Normalization:")
+        print("  Input: \(value) sats/byte")
+        print("  Formula: (value * 2) + (value / 2) = x2.5")
+        print("  Calculation: (\(value) * 2) + (\(value) / 2) = \(value * 2) + \(value / 2)")
+        print("  Output: \(result) sats/byte")
+        print("  Multiplier applied: \(Double(Int64(result))/Double(Int64(value)))")
+        return result
     }
     
     static func normalizeEVMFee(_ value: BigInt) -> BigInt {
@@ -109,7 +116,21 @@ final class BlockChainService {
         let sats = try await utxo.fetchSatsPrice(coin: coin)
         let normalized = Self.normalizeUTXOFee(sats)
         let prioritized = Float(normalized) * feeMode.utxoMultiplier
-        return BigInt(prioritized)
+        let result = BigInt(prioritized)
+        
+        print("\n🔥 UTXO FEE CALCULATION BREAKDOWN:")
+        print("  Coin: \(coin.ticker)")
+        print("  Action: \(action)")
+        print("  Fee Mode: \(feeMode)")
+        print("  Raw sats from API: \(sats) sats/byte")
+        print("  Normalized (x2.5): \(normalized) sats/byte")
+        print("  UTXO Multiplier: \(feeMode.utxoMultiplier)")
+        print("  Prioritized: \(prioritized) sats/byte")
+        print("  Final result: \(result) sats/byte")
+        print("  In DOGE: \(Double(Int64(result))/100_000_000) DOGE/byte")
+        print("🔥 END FEE CALCULATION\n")
+        
+        return result
     }
     
     func getCacheKey(for coin: Coin,

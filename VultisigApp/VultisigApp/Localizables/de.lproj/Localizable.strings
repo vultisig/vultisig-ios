@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Ungültige Transaktionsmenge angegeben.";
 "walletBalanceExceededSolanaError" = "Die Summe aus Menge und Gebühr übersteigt das Guthaben. Versuche es erneut.";
 "notEnoughBalanceError" = "Du hast nicht genug Guthaben, um diese Transaktion zu senden";
+"notEnoughUTXOError" = "Unzureichende UTXOs verfügbar. Deine Brieftasche hat genug Guthaben, aber die UTXOs (Transaktionsausgaben) sind zu klein oder nicht ausreichend, um den Transaktionsbetrag plus Gebühren zu decken. Versuche einen kleineren Betrag zu senden oder warte bis ausstehende Transaktionen bestätigt werden.";
+"utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
+"utxoSelectionFailedError" = "UTXO-Auswahl fehlgeschlagen. Konnte keine geeigneten Transaktionsausgaben finden, um den Betrag plus geschätzte Gebühren zu decken. Versuche den Transaktionsbetrag zu reduzieren.";
 "gasEstimateETHError" = "Fehler bei der Berechnung der Netzgebühren für ETH";
 "gasEstimateTOKENError" = "Fehler bei der Berechnung der Netzgebühren für TOKEN";
 "gasEstimateError:" = "Fehler bei der Berechnung der Netzgebühren: ";
