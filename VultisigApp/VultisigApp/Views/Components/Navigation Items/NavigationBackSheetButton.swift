@@ -19,7 +19,6 @@ struct NavigationBackSheetButton: View {
                 .font(Theme.fonts.bodyLMedium)
                 .foregroundColor(tint)
         }
-        .offset(x: -8)
     }
 }
 
