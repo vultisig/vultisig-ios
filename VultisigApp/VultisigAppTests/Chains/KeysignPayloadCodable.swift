@@ -8,7 +8,7 @@
 import Foundation
 import VultisigCommonData
 
-extension VSCoin: Codable {
+extension VSCoin: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case chain
         case ticker
@@ -49,7 +49,7 @@ extension VSCoin: Codable {
     }
 }
 
-extension VSUTXOSpecific: Codable {
+extension VSUTXOSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case byteFee = "byte_fee"
         case sendMaxAmount = "send_max_amount"
@@ -70,7 +70,7 @@ extension VSUTXOSpecific: Codable {
     }
 }
 
-extension VSCardanoChainSpecific: Codable {
+extension VSCardanoChainSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case byteFee = "byte_fee"
         case sendMaxAmount = "send_max_amount"
@@ -91,7 +91,7 @@ extension VSCardanoChainSpecific: Codable {
     }
 }
 
-extension VSEthereumSpecific: Codable {
+extension VSEthereumSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case maxFeePerGasWei = "max_fee_per_gas_wei"
         case priorityFee = "priority_fee"
@@ -115,7 +115,7 @@ extension VSEthereumSpecific: Codable {
     }
 }
 
-extension VSTHORChainSpecific: Codable {
+extension VSTHORChainSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case accountNumber = "account_number"
         case sequence = "sequence"
@@ -147,7 +147,7 @@ extension VSTHORChainSpecific: Codable {
     }
 }
 
-extension VSMAYAChainSpecific: Codable {
+extension VSMAYAChainSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case accountNumber = "account_number"
         case sequence = "sequence"
@@ -169,7 +169,7 @@ extension VSMAYAChainSpecific: Codable {
         isDeposit = try container.decode(Bool.self, forKey: .isDeposit)
     }
 }
-extension VSCosmosIbcInfo: Codable {
+extension VSCosmosIbcInfo: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case sourcePort = "source_port"
         case sourceChannel = "source_channel"
@@ -193,7 +193,7 @@ extension VSCosmosIbcInfo: Codable {
     }
 }
 
-extension VSCosmosIbcDenomTrace: Codable {
+extension VSCosmosIbcDenomTrace: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case path
         case baseDenom = "base_denom"
@@ -214,7 +214,7 @@ extension VSCosmosIbcDenomTrace: Codable {
     }
 }
 
-extension VSCosmosSpecific: Codable {
+extension VSCosmosSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case accountNumber = "account_number"
         case sequence = "sequence"
@@ -252,7 +252,7 @@ extension VSCosmosSpecific: Codable {
     }
 }
 
-extension VSSolanaSpecific: Codable {
+extension VSSolanaSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case recentBlockHash = "recent_block_hash"
         case priorityFee = "priority_fee"
@@ -279,7 +279,7 @@ extension VSSolanaSpecific: Codable {
     }
 }
 
-extension VSPolkadotSpecific: Codable {
+extension VSPolkadotSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case recentBlockHash = "recent_block_hash"
         case nonce
@@ -309,7 +309,7 @@ extension VSPolkadotSpecific: Codable {
         genesisHash = try container.decode(String.self, forKey: .genesisHash)
     }
 }
-extension VSSuiCoin: Codable {
+extension VSSuiCoin: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case coinType = "coin_type"
         case coinObjectID = "coin_object_id"
@@ -341,7 +341,7 @@ extension VSSuiCoin: Codable {
     }
 }
 
-extension VSSuiSpecific: Codable {
+extension VSSuiSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case referenceGasPrice = "reference_gas_price"
         case coins = "coins"
@@ -360,7 +360,7 @@ extension VSSuiSpecific: Codable {
     }
 }
 
-extension VSTonSpecific: Codable {
+extension VSTonSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case sequenceNumber = "sequence_number"
         case expireAt = "expire_at"
@@ -409,7 +409,7 @@ extension VSTonSpecific: Codable {
     }
 }
 
-extension VSRippleSpecific: Codable {
+extension VSRippleSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case sequence = "sequence"
         case gas
@@ -429,7 +429,7 @@ extension VSRippleSpecific: Codable {
         lastLedgerSequence = try container.decode(UInt64.self, forKey: .lastLedgerSequence)
     }
 }
-extension VSTronSpecific: Codable {
+extension VSTronSpecific: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case timestamp = "timestamp"
         case expiration = "expiration"
@@ -468,7 +468,7 @@ extension VSTronSpecific: Codable {
     }
 }
 
-extension VSUtxoInfo: Codable {
+extension VSUtxoInfo: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case hash
         case amount
@@ -489,7 +489,7 @@ extension VSUtxoInfo: Codable {
     }
 }
 
-extension VSTHORChainSwapPayload: Codable {
+extension VSTHORChainSwapPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case fromAddress = "from_address"
         case fromCoin = "from_coin"
@@ -541,7 +541,7 @@ extension VSTHORChainSwapPayload: Codable {
         expirationTime = try container.decode(UInt64.self, forKey: .expirationTime)
     }
 }
-extension VSErc20ApprovePayload : Codable {
+extension VSErc20ApprovePayload : @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case amount
         case spender
@@ -558,7 +558,7 @@ extension VSErc20ApprovePayload : Codable {
         spender = try container.decode(String.self, forKey: .spender)
     }
 }
-extension VSOneInchTransaction: Codable {
+extension VSOneInchTransaction: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case from
         case to
@@ -591,7 +591,7 @@ extension VSOneInchTransaction: Codable {
     }
 }
 
-extension VSOneInchQuote: Codable {
+extension VSOneInchQuote: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case dstAmount = "dst_amount"
         case tx
@@ -613,7 +613,7 @@ extension VSOneInchQuote: Codable {
     }
 }
 
-extension VSOneInchSwapPayload : Codable {
+extension VSOneInchSwapPayload : @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case fromCoin = "from_coin"
         case toCoin = "to_coin"
@@ -639,7 +639,7 @@ extension VSOneInchSwapPayload : Codable {
         quote = try container.decode(VSOneInchQuote.self, forKey: .quote)
     }
 }
-extension VSKyberSwapTransaction: Codable {
+extension VSKyberSwapTransaction: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case from
         case to
@@ -668,7 +668,7 @@ extension VSKyberSwapTransaction: Codable {
         gas = try container.decode(Int64.self, forKey: .gas)
     }
 }
-extension VSKyberSwapQuote: Codable {
+extension VSKyberSwapQuote: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case dstAmount = "dst_amount"
         case tx
@@ -690,7 +690,7 @@ extension VSKyberSwapQuote: Codable {
     }
 }
 
-extension VSKyberSwapPayload: Codable {
+extension VSKyberSwapPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case fromCoin = "from_coin"
         case toCoin = "to_coin"
@@ -717,7 +717,7 @@ extension VSKyberSwapPayload: Codable {
     }
 }
 
-extension VSCosmosCoin: Codable {
+extension VSCosmosCoin: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case denom
         case amount
@@ -736,7 +736,7 @@ extension VSCosmosCoin: Codable {
     }
    
 }
-extension VSWasmExecuteContractPayload: Codable {
+extension VSWasmExecuteContractPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case senderAddress = "sender_address"
         case contractAddress = "contract_address"
@@ -778,7 +778,7 @@ struct DynamicCodingKey: CodingKey {
     }
 }
 
-extension VSKeysignPayload: Codable {
+extension VSKeysignPayload: @retroactive Codable {
     enum CodingKeys: String, CodingKey {
         case coin
         case toAddress = "to_address"
