@@ -56,9 +56,13 @@ extension HomeView {
             ToolbarItem(placement: Placement.principal.getPlacement()) {
                 navigationTitle
             }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                editButton
+            
+            if showVaultsList {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    editButton
+                }
             }
+            
         }
         .toolbarBackground(Theme.colors.bgPrimary, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
