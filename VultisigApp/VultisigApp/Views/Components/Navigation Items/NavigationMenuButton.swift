@@ -14,7 +14,6 @@ struct NavigationMenuButton: View {
         Image("MenuIcon")
             .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)
-            .offset(x: -8)
     }
 }
 
