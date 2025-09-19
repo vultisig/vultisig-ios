@@ -181,7 +181,7 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
-                    errorMessage = NSLocalizedString("vaultExistsError", comment: "")
+                    errorMessage = "vaultExistsError".localized
                     logger.error("\(self.errorMessage)")
                     status = .FailToStart
                     return
@@ -216,7 +216,7 @@ class JoinKeygenViewModel: ObservableObject {
                             vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = NSLocalizedString("vaultExistsError", comment: "")
+                                errorMessage = "vaultExistsError".localized
                                 logger.error("\(self.errorMessage)")
                                 status = .FailToStart
                                 return
@@ -226,13 +226,13 @@ class JoinKeygenViewModel: ObservableObject {
                     
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                        errorMessage = "You chose the wrong vault"
+                        errorMessage = "wrongVaultSelected".localized
                         logger.error("The vault's public key doesn't match the reshare message's public key")
                         status = .FailToStart
                         return
                     }
                     if vault.libType != reshareMsg.libType {
-                        errorMessage = "Vault type doesn't match, initiate device and pair device's vault type are different"
+                        errorMessage = "vaultTypeMismatch".localized
                         status = .FailToStart
                         return
                     }
@@ -240,7 +240,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
             
         } catch {
-            errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
+            errorMessage = "failedToDecodePeerDiscoveryMessage".localized + ": \(error.localizedDescription)"
             status = .FailToStart
             return
         }

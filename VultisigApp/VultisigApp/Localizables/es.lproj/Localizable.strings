@@ -697,3 +697,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, ingresa una cantidad menor o igual a tus fondos disponibles.";
 "addressBookDuplicate" = "La dirección ya existe en tu libreta de direcciones.";
+"wrongVaultSelected" = "Elegiste la bóveda incorrecta";
+"vaultTypeMismatch" = "El tipo de bóveda no coincide, el dispositivo iniciador y el dispositivo emparejado tienen tipos de bóveda diferentes";
+"failedToDecodePeerDiscoveryMessage" = "Error al decodificar el mensaje de descubrimiento de pares";

@@ -695,3 +695,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Rimuovi dai depositi TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insufficiente. Per favore, inserisci un importo minore o uguale ai tuoi fondi disponibili.";
 "addressBookDuplicate" = "L'indirizzo esiste già nella rubrica.";
+"wrongVaultSelected" = "Hai scelto il vault sbagliato";
+"vaultTypeMismatch" = "Il tipo di vault non corrisponde, il dispositivo di avvio e il dispositivo accoppiato hanno tipi di vault diversi";
+"failedToDecodePeerDiscoveryMessage" = "Impossibile decodificare il messaggio di scoperta dei peer";

@@ -698,3 +698,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Retirar de depósitos TCY auto-compounding";
 "insufficientBalanceForFunctions" = "Saldo insuficiente. Por favor, digite um valor menor ou igual aos seus fundos disponíveis.";
 "addressBookDuplicate" = "O endereço já existe no seu catálogo de endereços.";
+"wrongVaultSelected" = "Você escolheu o cofre errado";
+"vaultTypeMismatch" = "O tipo de cofre não corresponde, o dispositivo iniciador e o dispositivo emparelhado têm tipos de cofre diferentes";
+"failedToDecodePeerDiscoveryMessage" = "Falha ao decodificar a mensagem de descoberta de pares";
