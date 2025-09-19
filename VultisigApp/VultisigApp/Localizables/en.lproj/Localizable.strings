@@ -855,3 +855,6 @@
 "chooseEmailApp" = "Choose email app";
 "insufficientBalanceForFunctions" = "Insufficient balance. Please enter an amount less than or equal to your available funds.";
 "addressBookDuplicate" = "Address already exists in your address book.";
+"wrongVaultSelected" = "You chose the wrong vault";
+"vaultTypeMismatch" = "Vault type doesn't match, initiate device and pair device's vault type are different";
+"failedToDecodePeerDiscoveryMessage" = "Failed to decode peer discovery message";
