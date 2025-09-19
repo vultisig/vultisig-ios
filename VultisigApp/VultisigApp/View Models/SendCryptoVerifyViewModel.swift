@@ -46,8 +46,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
-                let blockchairData = try await utxo.fetchBlockchairData(coin: tx.coin)
-                print("Successfully fetched UTXO data: \(blockchairData.utxo?.count ?? 0) UTXOs available")
+                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             } catch {
                 print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
                 self.errorMessage = "Failed to fetch UTXO data. Please check your internet connection and try again."

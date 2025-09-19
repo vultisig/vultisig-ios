@@ -32,7 +32,6 @@ class BlockchairService {
             throw Errors.fetchBlockchairDataFailed
         }
 
-
         blockchairData.set(coin.blockchairKey, d)
 
         return d

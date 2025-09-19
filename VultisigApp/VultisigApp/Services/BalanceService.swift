@@ -132,18 +132,6 @@ private extension BalanceService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .zcash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
-            
-            // Calculate usable balance (excluding dust UTXOs)
-            if let utxos = blockChairData.utxo {
-                let dustThreshold = coin.coinType.getFixedDustThreshold()
-                let usableUtxos = utxos.filter { ($0.value ?? 0) >= Int(dustThreshold) }
-                let usableBalance = usableUtxos.reduce(0) { $0 + Int64($1.value ?? 0) }
-                
-                // Return usable balance instead of total balance
-                return usableBalance.description
-            }
-            
-            // Fallback to total balance if no UTXO data available
             return blockChairData.address?.balance?.description ?? "0"
             
         case .cardano:
