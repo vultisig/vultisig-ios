@@ -35,7 +35,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
          removeThorLP,
          stakeRuji,
          unstakeRuji,
-         withdrawRujiRewards
+         withdrawRujiRewards,
+         securedAsset
     
     var id: String { self.rawValue }
     
@@ -99,6 +100,8 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
             return "Unstake RUJI"
         case .withdrawRujiRewards:
             return "Withdraw RUJI Rewards"
+        case .securedAsset:
+            return "Secured Assets"
         }
     }
     
@@ -117,10 +120,11 @@ enum FunctionCallType: String, CaseIterable, Identifiable {
                 .stakeRuji,
                 .unstakeRuji,
                 .withdrawRujiRewards,
-                .mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy]
+                .mintYRune, .redeemRune, .mintYTCY, .redeemTCY, .stakeTcy, .unstakeTcy,
+                .securedAsset]
             
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .ethereum, .avalanche, .bscChain, .base, .ripple:
-            return [.addThorLP]
+            return [.addThorLP, .securedAsset]
         case .mayaChain:
             return [.bondMaya,
                     .unbondMaya,
