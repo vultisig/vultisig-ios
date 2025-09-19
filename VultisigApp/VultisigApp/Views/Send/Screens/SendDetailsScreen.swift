@@ -404,58 +404,50 @@ extension SendDetailsScreen {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
     
+    @MainActor
     private func checkPendingTransactions() async {
         guard tx.coin.chain.supportsPendingTransactions else {
             // For non-Cosmos chains, immediately enable button
-            await MainActor.run {
-                sendCryptoViewModel.hasPendingTransaction = false
-                sendCryptoViewModel.pendingTransactionCountdown = 0
-                sendCryptoViewModel.isCheckingPendingTransactions = false
-                stopCountdownTimer()
-            }
+            sendCryptoViewModel.hasPendingTransaction = false
+            sendCryptoViewModel.pendingTransactionCountdown = 0
+            sendCryptoViewModel.isCheckingPendingTransactions = false
+            stopCountdownTimer()
             return
         }
         
         // Set checking state first for Cosmos chains
-        await MainActor.run {
-            sendCryptoViewModel.isCheckingPendingTransactions = true
-        }
-        
+        sendCryptoViewModel.isCheckingPendingTransactions = true
         let pendingTxManager = PendingTransactionManager.shared
         
         // Get current pending transactions (polling automatically updates them)
         let hasPending = pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain)
         
-        await MainActor.run {
-            // Update SendCryptoViewModel properties and start/stop countdown timer
-            if hasPending {
-                sendCryptoViewModel.hasPendingTransaction = true
-                sendCryptoViewModel.isCheckingPendingTransactions = false
-                startCountdownTimer()
-                
-                // Start polling APENAS se for chain que suporta pending transactions
-                if tx.coin.chain.supportsPendingTransactions {
-                    PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
-                }
-            } else {
-                sendCryptoViewModel.hasPendingTransaction = false
-                sendCryptoViewModel.pendingTransactionCountdown = 0
-                sendCryptoViewModel.isCheckingPendingTransactions = false
-                stopCountdownTimer()
-                
-                // SEMPRE para polling quando não há pendentes (qualquer chain)
-                PendingTransactionManager.shared.stopPollingForChain(tx.coin.chain)
+        // Update SendCryptoViewModel properties and start/stop countdown timer
+        if hasPending {
+            sendCryptoViewModel.hasPendingTransaction = true
+            sendCryptoViewModel.isCheckingPendingTransactions = false
+            startCountdownTimer()
+            
+            // Start polling APENAS se for chain que suporta pending transactions
+            if tx.coin.chain.supportsPendingTransactions {
+                PendingTransactionManager.shared.startPollingForChain(tx.coin.chain)
             }
+        } else {
+            sendCryptoViewModel.hasPendingTransaction = false
+            sendCryptoViewModel.pendingTransactionCountdown = 0
+            sendCryptoViewModel.isCheckingPendingTransactions = false
+            stopCountdownTimer()
+            
+            // SEMPRE para polling quando não há pendentes (qualquer chain)
+            PendingTransactionManager.shared.stopPollingForChain(tx.coin.chain)
         }
+        
     }
     
     private func startCountdownTimer() {
         stopCountdownTimer() // Stop any existing timer
-        
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            Task {
-                await updateCountdown()
-            }
+            updateCountdown()
         }
     }
     
@@ -464,7 +456,7 @@ extension SendDetailsScreen {
         countdownTimer = nil
     }
     
-    private func updateCountdown() async {
+    private func updateCountdown()  {
         guard tx.coin.chain.supportsPendingTransactions else {
             return
         }
@@ -473,19 +465,16 @@ extension SendDetailsScreen {
         
         if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
             let elapsedSeconds = Int(Date().timeIntervalSince(oldestPending.timestamp))
+            sendCryptoViewModel.pendingTransactionCountdown = elapsedSeconds
+            // Keep transaction as pending - only confirmation should release it
+            sendCryptoViewModel.hasPendingTransaction = true
             
-            await MainActor.run {
-                sendCryptoViewModel.pendingTransactionCountdown = elapsedSeconds
-                // Keep transaction as pending - only confirmation should release it
-                sendCryptoViewModel.hasPendingTransaction = true
-            }
         } else {
             // No more pending transactions - they were confirmed and removed
-            await MainActor.run {
-                sendCryptoViewModel.hasPendingTransaction = false
-                sendCryptoViewModel.pendingTransactionCountdown = 0
-                stopCountdownTimer()
-            }
+            sendCryptoViewModel.hasPendingTransaction = false
+            sendCryptoViewModel.pendingTransactionCountdown = 0
+            stopCountdownTimer()
+            
         }
     }
 }

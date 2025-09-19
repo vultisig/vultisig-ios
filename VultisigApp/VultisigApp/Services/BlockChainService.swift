@@ -58,10 +58,8 @@ final class BlockChainService {
     
     /// Clear cache for a specific address to force fresh nonce fetch
     func clearCacheForAddress(_ address: String, chain: Chain) {
-        Task {
-            await localCache.clear()
-            print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
-        }
+        localCache.clear()
+        print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
     }
     
     /// Check if we should use cache for the given chain and cache key

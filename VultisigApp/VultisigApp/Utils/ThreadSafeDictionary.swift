@@ -28,9 +28,14 @@ final class ThreadSafeDictionary<Key: Hashable & Sendable, Value: Sendable> : @u
         }
     }
     
-    func clear() async {
+    func clear() {
         queue.async(flags: .barrier) {
             self.dictionary.removeAll()
+        }
+    }
+    func remove(_ key: Key) {
+        queue.async(flags: .barrier) {
+            self.dictionary.removeValue(forKey: key)
         }
     }
 }
