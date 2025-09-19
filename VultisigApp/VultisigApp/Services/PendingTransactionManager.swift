@@ -28,38 +28,34 @@ struct PendingTransaction: Codable {
     }
 }
 
-class PendingTransactionManager: ObservableObject {
+class PendingTransactionManager {
     static let shared = PendingTransactionManager()
-    
-    @Published private var pendingTransactions: [String: PendingTransaction] = [:]
-    private var pollingTasks: [Chain: Task<Void, Never>] = [:]
-    
+    private var pendingTransactions: ThreadSafeDictionary<String,PendingTransaction> = ThreadSafeDictionary()
+    private var pollingTasks: ThreadSafeDictionary<Chain, Task<Void, Never>> = ThreadSafeDictionary()
+
     private init() {
         // Don't start polling automatically - only when needed
     }
     
     deinit {
-        for (_, task) in pollingTasks {
+        for (_, task) in pollingTasks.allItems() {
             task.cancel()
         }
     }
     
     /// Add a pending transaction to tracking (memory only)
     func addPendingTransaction(txHash: String, address: String, chain: Chain, sequence: UInt64) {
-        DispatchQueue.main.async {
-            let transaction = PendingTransaction(txHash: txHash, address: address, chain: chain, sequence: sequence)
-            self.pendingTransactions[txHash] = transaction
+        let transaction = PendingTransaction(txHash: txHash, address: address, chain: chain, sequence: sequence)
+        self.pendingTransactions.set(txHash, transaction)
+        print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
             
-            print("Added pending transaction: \(txHash) for address: \(address) with sequence: \(sequence)")
-            
-            // Start polling only for this specific chain
-            self.startPollingForChain(chain)
-        }
+        // Start polling only for this specific chain
+        self.startPollingForChain(chain)
     }
     
     /// Check if there are any unconfirmed transactions for the given address and chain
     func hasPendingTransactions(for address: String, chain: Chain) -> Bool {
-        return pendingTransactions.values.contains { transaction in
+        return pendingTransactions.allItems().values.contains { transaction in
             transaction.address.lowercased() == address.lowercased() &&
             transaction.chain == chain &&
             !transaction.isConfirmed
@@ -68,7 +64,7 @@ class PendingTransactionManager: ObservableObject {
     
     /// Get the oldest pending transaction for an address/chain combination
     func getOldestPendingTransaction(for address: String, chain: Chain) -> PendingTransaction? {
-        return pendingTransactions.values
+        return pendingTransactions.allItems().values
             .filter { transaction in
                 transaction.address.lowercased() == address.lowercased() &&
                 transaction.chain == chain &&
@@ -86,12 +82,12 @@ class PendingTransactionManager: ObservableObject {
     
     // MARK: - Private Methods
     
-     
+    
     /// Force check pending transactions immediately (useful for UI refresh)
     func forceCheckPendingTransactions() async {
         print("PendingTransactionManager: Force checking pending transactions")
         // Check all pending transactions across all chains
-        let allPending = Array(pendingTransactions.values.filter { !$0.isConfirmed })
+        let allPending = Array(pendingTransactions.allItems().values.filter { !$0.isConfirmed })
         
         for transaction in allPending {
             await checkTransactionConfirmation(transaction: transaction)
@@ -100,65 +96,64 @@ class PendingTransactionManager: ObservableObject {
     
     /// Start polling for a specific chain
     func startPollingForChain(_ chain: Chain) {
-        DispatchQueue.main.async {
-            // Only poll for chains that support pending transaction tracking
-            guard chain.supportsPendingTransactions else {
-                return
-            }
-            
-            // Don't start if already polling for this chain
-            guard self.pollingTasks[chain] == nil else {
-                return
-            }
-            
-            // Only start if there are pending transactions for this chain
-            let hasPendingForChain = self.pendingTransactions.values.contains { $0.chain == chain && !$0.isConfirmed }
-            guard hasPendingForChain else {
-                return
-            }
-            
-            print("PendingTransactionManager: Starting polling for chain: \(chain)")
-            
-            self.pollingTasks[chain] = Task {
-                while !Task.isCancelled {
-                    do {
-                        await self.checkPendingTransactionsForChain(chain)
-                        
-                        // Wait 10 seconds before next check
-                        try await Task.sleep(for: .seconds(10))
-                    } catch {
-                        print("PendingTransactionManager: Polling error for \(chain): \(error)")
-                        try? await Task.sleep(for: .seconds(10))
-                    }
-                }
-                print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
-            }
+        
+        // Only poll for chains that support pending transaction tracking
+        guard chain.supportsPendingTransactions else {
+            return
         }
+        
+        // Don't start if already polling for this chain
+        guard self.pollingTasks.get(chain) == nil else {
+            return
+        }
+        
+        // Only start if there are pending transactions for this chain
+        let hasPendingForChain = self.pendingTransactions.allItems().values.contains { $0.chain == chain && !$0.isConfirmed }
+        guard hasPendingForChain else {
+            return
+        }
+        
+        print("PendingTransactionManager: Starting polling for chain: \(chain)")
+        
+        let t = Task {
+            while !Task.isCancelled {
+                do {
+                    await self.checkPendingTransactionsForChain(chain)
+                    
+                    // Wait 10 seconds before next check
+                    try await Task.sleep(for: .seconds(10))
+                } catch {
+                    print("PendingTransactionManager: Polling error for \(chain): \(error)")
+                    try? await Task.sleep(for: .seconds(10))
+                }
+            }
+            print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
+        }
+        self.pollingTasks.set(chain, t)
+        
     }
     
     /// Stop polling for a specific chain
     func stopPollingForChain(_ chain: Chain) {
-        DispatchQueue.main.async {
-            self.pollingTasks[chain]?.cancel()
-            self.pollingTasks[chain] = nil
-            print("PendingTransactionManager: Stopped polling for chain: \(chain)")
-        }
+        self.pollingTasks.get(chain)?.cancel()
+        self.pollingTasks.remove(chain)
+        print("PendingTransactionManager: Stopped polling for chain: \(chain)")
+        
     }
     
     /// Stop all polling
     func stopAllPolling() {
-        DispatchQueue.main.async {
-            for (chain, task) in self.pollingTasks {
-                task.cancel()
-                print("PendingTransactionManager: Stopped polling for chain: \(chain)")
-            }
-            self.pollingTasks.removeAll()
+        for (chain, task) in self.pollingTasks.allItems() {
+            task.cancel()
+            print("PendingTransactionManager: Stopped polling for chain: \(chain)")
         }
+        self.pollingTasks.clear()
     }
     
     /// Check pending transactions for a specific chain
     private func checkPendingTransactionsForChain(_ chain: Chain) async {
-        let chainPending = pendingTransactions.values.filter {
+        let pendingTxs = pendingTransactions.allItems()
+        let chainPending = pendingTxs.values.filter {
             $0.chain == chain && !$0.isConfirmed
         }
         
@@ -171,7 +166,7 @@ class PendingTransactionManager: ObservableObject {
         }
         
         // Stop polling for this chain if no more pending transactions
-        let stillHasPending = pendingTransactions.values.contains {
+        let stillHasPending = pendingTxs.values.contains {
             $0.chain == chain && !$0.isConfirmed
         }
         
@@ -188,45 +183,43 @@ class PendingTransactionManager: ObservableObject {
         do {
             print("PendingTransactionManager: Checking status for \(transaction.txHash.prefix(8))... on \(transaction.chain)")
             let isConfirmed = try await checkTransactionStatus(txHash: transaction.txHash, chain: transaction.chain)
-            
             print("PendingTransactionManager: Transaction \(transaction.txHash.prefix(8))... confirmed: \(isConfirmed)")
             
             if isConfirmed {
-                await MainActor.run {
-                    pendingTransactions.removeValue(forKey: transaction.txHash)
-                    print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
-                }
+                pendingTransactions.remove(transaction.txHash)
+                print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
+                
                 
                 // Clear cache to force fresh nonce fetch for next transaction (background thread)
                 BlockChainService.shared.clearCacheForAddress(transaction.address, chain: transaction.chain)
                 
                 // Stop polling for this chain if no more pending transactions for it
-                DispatchQueue.main.async {
-                    let stillHasPendingForChain = self.pendingTransactions.values.contains {
-                        $0.chain == transaction.chain && !$0.isConfirmed
-                    }
-                    
-                    if !stillHasPendingForChain {
-                        self.stopPollingForChain(transaction.chain)
-                    }
+                let stillHasPendingForChain = self.pendingTransactions.allItems().values.contains {
+                    $0.chain == transaction.chain && !$0.isConfirmed
+                }
+                
+                if !stillHasPendingForChain {
+                    self.stopPollingForChain(transaction.chain)
                 }
             }
+            
         } catch {
             print("PendingTransactionManager: ❌ Failed to check transaction status for \(transaction.txHash.prefix(8))...: \(error)")
         }
     }
     
     private func checkTransactionStatus(txHash: String, chain: Chain) async throws -> Bool {
+        let tx = pendingTransactions.get(txHash)
         switch chain {
         case .thorChain:
             // Use nonce-based checking instead of transaction API for better reliability
-            return try await checkThorchainNonceChanged(transaction: pendingTransactions[txHash])
+            return try await checkThorchainNonceChanged(transaction: tx)
         case .mayaChain:
             // Use nonce-based checking for MayaChain
-            return try await checkMayaChainNonceChanged(transaction: pendingTransactions[txHash])
+            return try await checkMayaChainNonceChanged(transaction: tx)
         case .gaiaChain, .kujira, .osmosis, .dydx, .terra, .terraClassic, .noble, .akash:
             // Use nonce-based checking for other Cosmos chains
-            return try await checkCosmosNonceChanged(transaction: pendingTransactions[txHash], chain: chain)
+            return try await checkCosmosNonceChanged(transaction: tx, chain: chain)
         default:
             return false
         }
@@ -319,12 +312,12 @@ class PendingTransactionManager: ObservableObject {
         // DO NOT remove by timeout - only by confirmation
         let tenMinutesAgo = Date().addingTimeInterval(-10 * 60) // 10 minutes safety cleanup
         
-        let veryOldTransactions = pendingTransactions.filter { _, transaction in
+        let veryOldTransactions = pendingTransactions.allItems().filter { _, transaction in
             transaction.timestamp < tenMinutesAgo
         }
         
         for (txHash, transaction) in veryOldTransactions {
-            pendingTransactions.removeValue(forKey: txHash)
+            pendingTransactions.remove(txHash)
             print("Very old transaction removed (safety cleanup): \(txHash) for address: \(transaction.address)")
         }
         

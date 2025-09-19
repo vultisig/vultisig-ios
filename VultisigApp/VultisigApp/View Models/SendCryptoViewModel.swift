@@ -583,18 +583,14 @@ class SendCryptoViewModel: ObservableObject {
         // Only check for chains that support pending transaction tracking
         guard tx.coin.chain.supportsPendingTransactions else {
             // For non-Cosmos chains, immediately enable button
-            await MainActor.run {
-                hasPendingTransaction = false
-                pendingTransactionCountdown = 0
-                isCheckingPendingTransactions = false
-            }
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+            isCheckingPendingTransactions = false
             return false
         }
         
         // Set checking state to prevent button flickering
-        await MainActor.run {
-            isCheckingPendingTransactions = true
-        }
+        isCheckingPendingTransactions = true
         
         let pendingTxManager = PendingTransactionManager.shared
         
@@ -603,24 +599,19 @@ class SendCryptoViewModel: ObservableObject {
             // Get the oldest pending transaction for user feedback
             if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
                 let elapsedSeconds = pendingTxManager.getElapsedSeconds(for: oldestPending)
-                
-                await MainActor.run {
-                    hasPendingTransaction = true
-                    pendingTransactionCountdown = elapsedSeconds
-                    isCheckingPendingTransactions = false
-                    isValidForm = false
-                    isLoading = false
-                }
+                hasPendingTransaction = true
+                pendingTransactionCountdown = elapsedSeconds
+                isCheckingPendingTransactions = false
+                isValidForm = false
+                isLoading = false
                 return true
             }
         }
         
         // No pending transactions
-        await MainActor.run {
-            hasPendingTransaction = false
-            pendingTransactionCountdown = 0
-            isCheckingPendingTransactions = false
-        }
+        hasPendingTransaction = false
+        pendingTransactionCountdown = 0
+        isCheckingPendingTransactions = false
         
         return false
     }
