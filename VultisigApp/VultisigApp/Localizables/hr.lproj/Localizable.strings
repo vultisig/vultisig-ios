@@ -699,3 +699,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Povuci iz auto-compounding TCY depozita";
 "insufficientBalanceForFunctions" = "Nedovoljan saldo. Molimo unesite iznos manji ili jednak vašim dostupnim sredstvima.";
 "addressBookDuplicate" = "Adresa već postoji u vašem adresaru.";
+"wrongVaultSelected" = "Odabrali ste pogrešan trezor";
+"vaultTypeMismatch" = "Vrsta trezora se ne podudara, pokretni uređaj i upareni uređaj imaju različite vrste trezora";
+"failedToDecodePeerDiscoveryMessage" = "Neuspjeh u dekodiranju poruke otkrivanja vršnjaka";

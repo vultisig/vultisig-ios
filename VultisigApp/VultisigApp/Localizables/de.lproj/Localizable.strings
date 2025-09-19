@@ -718,3 +718,6 @@
 "unstakeFromAutoCompoundingTCYDeposits" = "Aus auto-compounding TCY-Einlagen entstaken";
 "insufficientBalanceForFunctions" = "Unzureichendes Guthaben. Bitte geben Sie einen Betrag ein, der kleiner oder gleich Ihren verfügbaren Mitteln ist.";
 "addressBookDuplicate" = "Adresse existiert bereits im Adressbuch.";
+"wrongVaultSelected" = "Sie haben den falschen Tresor gewählt";
+"vaultTypeMismatch" = "Tresortyp stimmt nicht überein, initiierende Gerät und gekoppeltes Gerät haben unterschiedliche Tresortypen";
+"failedToDecodePeerDiscoveryMessage" = "Fehler beim Dekodieren der Peer-Discovery-Nachricht";
