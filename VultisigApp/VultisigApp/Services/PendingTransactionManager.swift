@@ -96,41 +96,41 @@ class PendingTransactionManager {
     
     /// Start polling for a specific chain
     func startPollingForChain(_ chain: Chain) {
-        DispatchQueue.main.async {
-            // Only poll for chains that support pending transaction tracking
-            guard chain.supportsPendingTransactions else {
-                return
-            }
-            
-            // Don't start if already polling for this chain
-            guard self.pollingTasks.get(chain) == nil else {
-                return
-            }
-            
-            // Only start if there are pending transactions for this chain
-            let hasPendingForChain = self.pendingTransactions.allItems().values.contains { $0.chain == chain && !$0.isConfirmed }
-            guard hasPendingForChain else {
-                return
-            }
-            
-            print("PendingTransactionManager: Starting polling for chain: \(chain)")
-            
-            let t = Task {
-                while !Task.isCancelled {
-                    do {
-                        await self.checkPendingTransactionsForChain(chain)
-                        
-                        // Wait 10 seconds before next check
-                        try await Task.sleep(for: .seconds(10))
-                    } catch {
-                        print("PendingTransactionManager: Polling error for \(chain): \(error)")
-                        try? await Task.sleep(for: .seconds(10))
-                    }
-                }
-                print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
-            }
-            self.pollingTasks.set(chain, t)
+        
+        // Only poll for chains that support pending transaction tracking
+        guard chain.supportsPendingTransactions else {
+            return
         }
+        
+        // Don't start if already polling for this chain
+        guard self.pollingTasks.get(chain) == nil else {
+            return
+        }
+        
+        // Only start if there are pending transactions for this chain
+        let hasPendingForChain = self.pendingTransactions.allItems().values.contains { $0.chain == chain && !$0.isConfirmed }
+        guard hasPendingForChain else {
+            return
+        }
+        
+        print("PendingTransactionManager: Starting polling for chain: \(chain)")
+        
+        let t = Task {
+            while !Task.isCancelled {
+                do {
+                    await self.checkPendingTransactionsForChain(chain)
+                    
+                    // Wait 10 seconds before next check
+                    try await Task.sleep(for: .seconds(10))
+                } catch {
+                    print("PendingTransactionManager: Polling error for \(chain): \(error)")
+                    try? await Task.sleep(for: .seconds(10))
+                }
+            }
+            print("PendingTransactionManager: Polling task cancelled for chain: \(chain)")
+        }
+        self.pollingTasks.set(chain, t)
+        
     }
     
     /// Stop polling for a specific chain
