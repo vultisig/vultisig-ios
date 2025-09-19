@@ -15,8 +15,6 @@ struct OffsetObservingScrollView<Content: View>: View {
     @Binding var scrollOffset: CGFloat
     @ViewBuilder var content: () -> Content
 
-    private let coordinateSpaceName = UUID()
-
     init(
         axes: Axis.Set = .vertical,
         showsIndicators: Bool = true,
@@ -39,11 +37,10 @@ struct OffsetObservingScrollView<Content: View>: View {
                     .background(GeometryReader { proxy in
                         Color.clear
                             .preference(key: ScrollOffsetPreferenceKey.self, value: preferenceValue(proxy: proxy))
-                    })
+                    }.frame(height: 0))
                 insetView
             }
         }
-        .coordinateSpace(name: coordinateSpaceName)
         .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
             scrollOffset = value
         }
@@ -68,7 +65,7 @@ private extension OffsetObservingScrollView {
     }
     
     func preferenceValue(proxy: GeometryProxy) -> CGFloat {
-        let frame = proxy.frame(in: .named(coordinateSpaceName))
+        let frame = proxy.frame(in: .scrollView)
         return axes == .vertical ? frame.minY : frame.minX
     }
 }
