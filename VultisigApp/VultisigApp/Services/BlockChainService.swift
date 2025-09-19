@@ -56,6 +56,43 @@ final class BlockChainService {
     private let cardano = CardanoService.shared
     private var localCache = ThreadSafeDictionary<String,BlockSpecificCacheItem>()
     
+    /// Clear cache for a specific address to force fresh nonce fetch
+    func clearCacheForAddress(_ address: String, chain: Chain) {
+        Task {
+            await localCache.clear()
+            print("Cleared cache after transaction confirmation for address: \(address) on chain: \(chain)")
+        }
+    }
+    
+    /// Check if we should use cache for the given chain and cache key
+    private func shouldUseCache(for chain: Chain, cacheKey: String) -> BlockChainSpecific? {
+        // Skip cache for chains that support pending transactions to ensure fresh nonce
+        guard !chain.supportsPendingTransactions else {
+            return nil
+        }
+        
+        guard let localCacheItem = localCache.get(cacheKey) else {
+            return nil
+        }
+        
+        let cacheSeconds = getCacheSeconds(chain: chain)
+        guard localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() else {
+            return nil
+        }
+        
+        return localCacheItem.blockSpecific
+    }
+    
+    /// Set cache only for chains that don't support pending transactions
+    private func setCacheIfAllowed(for chain: Chain, cacheKey: String, blockSpecific: BlockChainSpecific) {
+        // Only cache for chains that don't support pending transactions
+        guard !chain.supportsPendingTransactions else {
+            return
+        }
+        
+        localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
+    }
+    
     private let TON_WALLET_STATE_UNINITIALIZED = "uninit"
     
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
@@ -78,12 +115,9 @@ final class BlockChainService {
                                     toAddress: nil,  // Swaps don't have a specific toAddress in the same way
                                     memo: nil,  // Swaps don't have memos
                                     feeMode: .fast,quote: quote)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
-            let cacheSeconds = getCacheSeconds(chain: tx.fromCoin.chain)
-            // use the cache item
-            if localCacheItem.date.addingTimeInterval(cacheSeconds) > Date() {
-                return localCacheItem.blockSpecific
-            }
+        // Use centralized cache checking method
+        if let cachedResult = shouldUseCache(for: tx.fromCoin.chain, cacheKey: cacheKey) {
+            return cachedResult
         }
         
         let gasLimit = try await estimateSwapGasLimit(tx: tx)
@@ -101,7 +135,8 @@ final class BlockChainService {
             memo: nil,  // Swaps don't have memos
             feeMode: .fast
         )
-        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: specific, date: Date()))
+        // Use centralized cache setting method
+        setCacheIfAllowed(for: tx.fromCoin.chain, cacheKey: cacheKey, blockSpecific: specific)
         return specific
     }
     
@@ -147,11 +182,10 @@ private extension BlockChainService {
                                    memo: tx.memo,
                                    feeMode: tx.feeMode,
                                    quote: nil)
-        if let localCacheItem =  self.localCache.get(cacheKey) {
-            // use the cache item
-            if localCacheItem.date.addingTimeInterval(getCacheSeconds(chain: tx.coin.chain)) > Date() {
-                return localCacheItem.blockSpecific
-            }
+        
+        // Use centralized cache checking method
+        if let cachedResult = shouldUseCache(for: tx.coin.chain, cacheKey: cacheKey) {
+            return cachedResult
         }
         
         let blockSpecific = try await fetchSpecific(
@@ -167,7 +201,8 @@ private extension BlockChainService {
             memo: tx.memo,
             feeMode: tx.feeMode
         )
-        self.localCache.set(cacheKey, BlockSpecificCacheItem(blockSpecific: blockSpecific, date: Date()))
+        // Use centralized cache setting method
+        setCacheIfAllowed(for: tx.coin.chain, cacheKey: cacheKey, blockSpecific: blockSpecific)
         return blockSpecific
     }
     
