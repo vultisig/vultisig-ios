@@ -48,7 +48,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             } catch {
-                print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
+                print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
+                self.errorMessage = "Failed to fetch UTXO data. Please check your internet connection and try again."
+                showAlert = true
+                isLoading = false
+                return nil
             }
         }
         
@@ -65,7 +69,19 @@ class SendCryptoVerifyViewModel: ObservableObject {
             )
             
         } catch {
-            self.errorMessage = error.localizedDescription
+            // Handle UTXO-specific errors with more user-friendly messages
+            switch error {
+            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
+                self.errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
+            case KeysignPayloadFactory.Errors.utxoTooSmallError:
+                self.errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
+            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+                self.errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
+            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
+                self.errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
+            default:
+                self.errorMessage = error.localizedDescription
+            }
             showAlert = true
             isLoading = false
             return nil
