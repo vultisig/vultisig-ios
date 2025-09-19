@@ -211,6 +211,7 @@ struct ChainDetailView: View {
     }
 
     private func updateBalances() async {
+        let vault = self.vault // Capture on main actor
         await withTaskGroup(of: Void.self) { taskGroup in
             for coin in group.coins {
                 taskGroup.addTask {
