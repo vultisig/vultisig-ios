@@ -12,13 +12,13 @@ struct SendVerifyScreen: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
-    @State var isButtonDisabled = false
     @State var fastPasswordPresented = false
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
     
     @State private var keysignPayload: KeysignPayload?
+    @State private var error: HelperError?
     
     var body: some View {
         Screen(title: "verify".localized) {
@@ -28,8 +28,12 @@ struct SendVerifyScreen: View {
             }
             .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
         }
-        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
-            alert
+        .alert(item: $error) { error in
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(NSLocalizedString(error.localizedDescription, comment: "")),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
         }
         .onLoad {
             sendCryptoVerifyViewModel.onLoad()
@@ -40,9 +44,6 @@ struct SendVerifyScreen: View {
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
         }
-        .onAppear {
-            setData()
-        }
         .navigationDestination(item: $keysignPayload) { payload in
             SendRouteBuilder().buildPairScreen(
                 vault: vault,
@@ -51,14 +52,6 @@ struct SendVerifyScreen: View {
                 fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
             )
         }
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
     }
     
     var fields: some View {
@@ -96,10 +89,6 @@ struct SendVerifyScreen: View {
         }
     }
     
-    private func setData() {
-        isButtonDisabled = false
-    }
-    
     func onSignPress() {
         let canSign = sendCryptoVerifyViewModel.validateSecurityScanner()
         if canSign {
@@ -108,26 +97,19 @@ struct SendVerifyScreen: View {
     }
     
     func signAndMoveToNextView() {
-        guard !isButtonDisabled else {
-            return
-        }
-        
-        isButtonDisabled = true
-        sendCryptoVerifyViewModel.isLoading = true
-        
         Task {
-            let result = await sendCryptoVerifyViewModel.validateForm(
-                tx: tx,
-                vault: vault
-            )
-            await MainActor.run {
-                if let payload = result {
-                    // Navigate; onDisappear will clear loading.
-                    self.keysignPayload = payload
+            do {
+                let result = try await sendCryptoVerifyViewModel.validateForm(
+                    tx: tx,
+                    vault: vault
+                )
+                await MainActor.run {
+                    self.keysignPayload = result
                 }
-                // Validation failed — re-enable UI and stop loading.
-                self.isButtonDisabled = false
-                self.sendCryptoVerifyViewModel.isLoading = false
+            } catch {
+                await MainActor.run {
+                    self.error = error as? HelperError
+                }
             }
         }
     }
@@ -157,7 +139,7 @@ struct SendVerifyScreen: View {
                 }
             }
         }
-        .disabled(!sendCryptoVerifyViewModel.isValidForm || isButtonDisabled)
+        .disabled(sendCryptoVerifyViewModel.signButtonDisabled)
     }
 }
 
