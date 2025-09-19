@@ -37,6 +37,9 @@ class SendCryptoViewModel: ObservableObject {
     
     @Published var showAddressAlert: Bool = false
     @Published var showAmountAlert: Bool = false
+    @Published var hasPendingTransaction: Bool = false
+    @Published var pendingTransactionCountdown: Int = 0
+    @Published var isCheckingPendingTransactions: Bool = false
     
     let blockchainService = BlockChainService.shared
     
@@ -47,6 +50,17 @@ class SendCryptoViewModel: ObservableObject {
     
     var continueButtonDisabled: Bool {
         isLoading || isValidatingForm
+    }
+    
+    /// Initialize pending transaction state based on chain
+    func initializePendingTransactionState(for chain: Chain) {
+        if chain.supportsPendingTransactions {
+            isCheckingPendingTransactions = true
+        } else {
+            isCheckingPendingTransactions = false
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+        }
     }
     
     var showLoader: Bool {
@@ -363,6 +377,11 @@ class SendCryptoViewModel: ObservableObject {
         // Reset validation state at the beginning
         resetStates()
         
+        // Check for pending Cosmos transactions that could cause nonce conflicts
+        if await hasPendingCosmosTransactions(tx: tx) {
+            return false
+        }
+        
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         
@@ -557,6 +576,53 @@ class SendCryptoViewModel: ObservableObject {
         showAddressAlert = false
         showAmountAlert = false
         showAlert = false
+    }
+    
+    /// Check if there are pending Cosmos transactions that could cause nonce conflicts
+    private func hasPendingCosmosTransactions(tx: SendTransaction) async -> Bool {
+        // Only check for chains that support pending transaction tracking
+        guard tx.coin.chain.supportsPendingTransactions else {
+            // For non-Cosmos chains, immediately enable button
+            await MainActor.run {
+                hasPendingTransaction = false
+                pendingTransactionCountdown = 0
+                isCheckingPendingTransactions = false
+            }
+            return false
+        }
+        
+        // Set checking state to prevent button flickering
+        await MainActor.run {
+            isCheckingPendingTransactions = true
+        }
+        
+        let pendingTxManager = PendingTransactionManager.shared
+        
+        // Check for pending transactions (polling takes care of status updates)
+        if pendingTxManager.hasPendingTransactions(for: tx.coin.address, chain: tx.coin.chain) {
+            // Get the oldest pending transaction for user feedback
+            if let oldestPending = pendingTxManager.getOldestPendingTransaction(for: tx.coin.address, chain: tx.coin.chain) {
+                let elapsedSeconds = pendingTxManager.getElapsedSeconds(for: oldestPending)
+                
+                await MainActor.run {
+                    hasPendingTransaction = true
+                    pendingTransactionCountdown = elapsedSeconds
+                    isCheckingPendingTransactions = false
+                    isValidForm = false
+                    isLoading = false
+                }
+                return true
+            }
+        }
+        
+        // No pending transactions
+        await MainActor.run {
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+            isCheckingPendingTransactions = false
+        }
+        
+        return false
     }
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
