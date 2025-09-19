@@ -492,14 +492,14 @@ class KeysignViewModel: ObservableObject {
                         
                         // Store pending transaction for nonce tracking
                         if case .THORChain(_, let sequence, _, _, _) = keysignPayload.chainSpecific {
-                            await MainActor.run {
-                                PendingTransactionManager.shared.addPendingTransaction(
-                                    txHash: txHash,
-                                    address: keysignPayload.coin.address,
-                                    chain: keysignPayload.coin.chain,
-                                    sequence: sequence
-                                )
-                            }
+                            
+                            PendingTransactionManager.shared.addPendingTransaction(
+                                txHash: txHash,
+                                address: keysignPayload.coin.address,
+                                chain: keysignPayload.coin.chain,
+                                sequence: sequence
+                            )
+                            
                         }
                     case .failure(let error):
                         throw error
@@ -513,14 +513,12 @@ class KeysignViewModel: ObservableObject {
                         
                         // Store pending transaction for nonce tracking
                         if case .MayaChain(_, let sequence, _) = keysignPayload.chainSpecific {
-                            await MainActor.run {
-                                PendingTransactionManager.shared.addPendingTransaction(
-                                    txHash: txHash,
-                                    address: keysignPayload.coin.address,
-                                    chain: keysignPayload.coin.chain,
-                                    sequence: sequence
-                                )
-                            }
+                            PendingTransactionManager.shared.addPendingTransaction(
+                                txHash: txHash,
+                                address: keysignPayload.coin.address,
+                                chain: keysignPayload.coin.chain,
+                                sequence: sequence
+                            )
                         }
                     case .failure(let error):
                         throw error
@@ -569,14 +567,12 @@ class KeysignViewModel: ObservableObject {
                         
                         // Store pending transaction for nonce tracking
                         if case .Cosmos(_, let sequence, _, _, _) = keysignPayload.chainSpecific {
-                            await MainActor.run {
-                                PendingTransactionManager.shared.addPendingTransaction(
-                                    txHash: hash,
-                                    address: keysignPayload.coin.address,
-                                    chain: keysignPayload.coin.chain,
-                                    sequence: sequence
-                                )
-                            }
+                            PendingTransactionManager.shared.addPendingTransaction(
+                                txHash: hash,
+                                address: keysignPayload.coin.address,
+                                chain: keysignPayload.coin.chain,
+                                sequence: sequence
+                            )
                         }
                     case .failure(let err):
                         throw err
