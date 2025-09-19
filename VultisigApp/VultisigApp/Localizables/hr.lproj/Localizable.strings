@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Nevažeći iznos transakcije.";
 "walletBalanceExceededSolanaError" = "Ukupni iznos i naknada premašuju saldo vašeg novčanika. Pokušajte ponovno.";
 "notEnoughBalanceError" = "Nemate dovoljno sredstava za slanje ove transakcije";
+"notEnoughUTXOError" = "Nedovoljno UTXO-a dostupno. Vaš novčanik ima dovoljno sredstava, ali su UTXO-i (izlazi transakcije) premali ili nedovoljni za pokrivanje iznosa transakcije plus naknade. Pokušajte poslati manji iznos ili pričekajte da se transakcije u tijeku potvrde.";
+"utxoTooSmallError" = "Dostupni UTXO-i su premali za ovu transakciju. Pojedinačni izlazi transakcije u vašem novčaniku ne zadovoljavaju minimalne zahtjeve. Razmislite o konsolidaciji manjih iznosa prvo.";
+"utxoSelectionFailedError" = "Odabir UTXO-a neuspješan. Nije moguće pronaći prikladne izlaze transakcije za pokrivanje iznosa plus procijenjene naknade. Pokušajte smanjiti iznos transakcije.";
 "gasEstimateETHError" = "Greška u procjeni plina za ETH";
 "gasEstimateTOKENError" = "Greška u procjeni plina za TOKEN";
 "gasEstimateError:" = "Greška u procjeni plina: ";
