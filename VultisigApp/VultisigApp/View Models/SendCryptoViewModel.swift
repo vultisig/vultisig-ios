@@ -52,6 +52,17 @@ class SendCryptoViewModel: ObservableObject {
         isLoading || isValidatingForm
     }
     
+    /// Initialize pending transaction state based on chain
+    func initializePendingTransactionState(for chain: Chain) {
+        if chain.supportsPendingTransactions {
+            isCheckingPendingTransactions = true
+        } else {
+            isCheckingPendingTransactions = false
+            hasPendingTransaction = false
+            pendingTransactionCountdown = 0
+        }
+    }
+    
     var showLoader: Bool {
         isValidatingForm
     }

@@ -49,11 +49,7 @@ struct SendDetailsScreen: View {
         .overlay(sendCryptoViewModel.showLoader ? Loader() : nil)
         .onAppear {
             // Initialize button state immediately based on chain
-            if tx.coin.chain.supportsPendingTransactions {
-                sendCryptoViewModel.isCheckingPendingTransactions = true
-            } else {
-                sendCryptoViewModel.isCheckingPendingTransactions = false
-            }
+            sendCryptoViewModel.initializePendingTransactionState(for: tx.coin.chain)
         }
         .onLoad {
             Task {
@@ -69,11 +65,7 @@ struct SendDetailsScreen: View {
         }
         .onChange(of: tx.coin) { oldValue, newValue in
             // Initialize button state immediately for new chain
-            if newValue.chain.supportsPendingTransactions {
-                sendCryptoViewModel.isCheckingPendingTransactions = true
-            } else {
-                sendCryptoViewModel.isCheckingPendingTransactions = false
-            }
+            sendCryptoViewModel.initializePendingTransactionState(for: newValue.chain)
             
             Task {
                 // SEMPRE para o polling da chain anterior

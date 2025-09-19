@@ -192,8 +192,8 @@ class PendingTransactionManager: ObservableObject {
             print("PendingTransactionManager: Transaction \(transaction.txHash.prefix(8))... confirmed: \(isConfirmed)")
             
             if isConfirmed {
-                DispatchQueue.main.async {
-                    self.pendingTransactions.removeValue(forKey: transaction.txHash)
+                await MainActor.run {
+                    pendingTransactions.removeValue(forKey: transaction.txHash)
                     print("PendingTransactionManager: ✅ Transaction confirmed and removed: \(transaction.txHash.prefix(8))...")
                 }
                 
