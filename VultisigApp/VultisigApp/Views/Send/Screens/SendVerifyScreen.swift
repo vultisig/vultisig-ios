@@ -17,7 +17,7 @@ struct SendVerifyScreen: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     @Environment(\.router) var router
     
-    @State private var keysignPayload: KeysignPayload?
+    @State private var keysignPayload: VerifyKeysignPayload?
     @State private var error: HelperError?
     
     var body: some View {
@@ -48,7 +48,7 @@ struct SendVerifyScreen: View {
             SendRouteBuilder().buildPairScreen(
                 vault: vault,
                 tx: tx,
-                keysignPayload: payload,
+                keysignPayload: payload.payload,
                 fastVaultPassword: tx.fastVaultPassword.nilIfEmpty
             )
         }
@@ -82,6 +82,7 @@ struct SendVerifyScreen: View {
             }
         }
     }
+    
     var checkboxes: some View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
@@ -104,7 +105,7 @@ struct SendVerifyScreen: View {
                     vault: vault
                 )
                 await MainActor.run {
-                    self.keysignPayload = result
+                    self.keysignPayload = .init(payload: result)
                 }
             } catch {
                 await MainActor.run {
@@ -140,6 +141,16 @@ struct SendVerifyScreen: View {
             }
         }
         .disabled(sendCryptoVerifyViewModel.signButtonDisabled)
+    }
+    
+    private struct VerifyKeysignPayload: Identifiable, Hashable {
+        let id: String
+        let payload: KeysignPayload
+        
+        init(id: String = UUID().uuidString, payload: KeysignPayload) {
+            self.id = id
+            self.payload = payload
+        }
     }
 }
 
