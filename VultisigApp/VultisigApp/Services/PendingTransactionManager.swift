@@ -32,7 +32,6 @@ class PendingTransactionManager {
     static let shared = PendingTransactionManager()
     private var pendingTransactions: ThreadSafeDictionary<String,PendingTransaction> = ThreadSafeDictionary()
     private var pollingTasks: ThreadSafeDictionary<Chain, Task<Void, Never>> = ThreadSafeDictionary()
-    private let lock = NSLock()
 
     private init() {
         // Don't start polling automatically - only when needed
