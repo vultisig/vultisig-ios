@@ -157,6 +157,7 @@ struct SwapCoinPickerView: View {
     }
     
     let itemSize: CGFloat = 120
+    let itemPadding: CGFloat = 8
     var chainCarousel: some View {
         ZStack {
             Capsule()
@@ -165,7 +166,8 @@ struct SwapCoinPickerView: View {
                 .frame(width: itemSize)
                 .shadow(color: Theme.colors.border, radius: 6)
             
-            FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemSize + 8, axis: .horizontal) { chain in
+            let itemContainerSize = itemSize + itemPadding
+            FlatPicker(selectedItem: $selectedChain, items: availableChains, itemSize: itemContainerSize, axis: .horizontal) { chain in
                 let isSelected = selectedChain == chain
                 Button {
                     onSelect(chain: chain)
@@ -178,8 +180,10 @@ struct SwapCoinPickerView: View {
                         Text(chain.name)
                             .font(Theme.fonts.caption12)
                             .foregroundColor(isSelected ? Theme.colors.textPrimary : Theme.colors.textExtraLight)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .minimumScaleFactor(0.5)
                     }
-                    .padding(8)
+                    .padding(itemPadding)
                     .frame(width: itemSize)
                     .background(
                         Capsule()
@@ -190,6 +194,7 @@ struct SwapCoinPickerView: View {
                     .contentShape(Rectangle())
                     .animation(.easeInOut, value: isSelected)
                 }
+                .frame(width: itemContainerSize)
             }
             
             Capsule()
