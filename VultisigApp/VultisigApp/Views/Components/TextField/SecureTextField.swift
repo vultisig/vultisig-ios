@@ -35,7 +35,7 @@ struct SecureTextField: View {
                     isSecure.toggle()
                 }
             }) {
-                Image(systemName: isSecure ? "eye": "eye.slash")
+                Image(systemName: isSecure ? "eye.slash": "eye")
                     .foregroundColor(Theme.colors.textPrimary)
             }
             .buttonStyle(.plain)
