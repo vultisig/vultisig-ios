@@ -9,42 +9,19 @@ import SwiftUI
 import Foundation
 import Combine
 
-// MARK: - Secured Asset Operation Types
-
-enum SecuredAssetOperation: String, CaseIterable, Identifiable {
-    case mint = "mint"
-    case swap = "swap" 
-    case redeem = "redeem"
-    
-    var id: String { rawValue }
-    
-    var displayName: String {
-        switch self {
-        case .mint:
-            return "Mint (SECURE+)"
-        case .swap:
-            return "Swap to Secured Asset"
-        case .redeem:
-            return "Redeem (SECURE-)"
-        }
-    }
-}
-
 // MARK: - Main ViewModel
 
 class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = false
     @Published var customErrorMessage: String? = nil
     
-    @Published var selectedOperation: SecuredAssetOperation = .mint
+    // No operation selection needed - this is only for MINT
     @Published var amount: Decimal = 0.0
     @Published var thorAddress: String = ""
-    @Published var destinationAddress: String = ""
     
     // Validation flags
     @Published var amountValid: Bool = false
     @Published var thorAddressValid: Bool = false
-    @Published var destinationAddressValid: Bool = false
     
     // ERC20 approval (for minting from ERC20 tokens)
     @Published var isApprovalRequired: Bool = false
@@ -59,17 +36,11 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     
     var addressFields: [String: String] {
         get { 
-            [
-                "thorAddress": thorAddress,
-                "destinationAddress": destinationAddress
-            ]
+            ["thorAddress": thorAddress]
         }
         set {
             if let v = newValue["thorAddress"] {
                 thorAddress = v
-            }
-            if let v = newValue["destinationAddress"] {
-                destinationAddress = v
             }
         }
     }
@@ -96,11 +67,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             print("DEBUG: No THORChain coin found in vault")
         }
         
-        // For redeem operation, prefill with current coin's address
-        if selectedOperation == .redeem {
-            destinationAddress = tx.coin.address
-            destinationAddressValid = true
-        }
+        // No additional prefilling needed for mint/swap
     }
     
     // MARK: - Inbound address + approval (same logic as FunctionCallAddThorLP)
@@ -160,39 +127,22 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Destination address validation (only for redeem)
-        $destinationAddress
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] address in
-                self?.destinationAddressValid = !address.isEmpty && address.count > 10
-            }
-            .store(in: &cancellables)
+        // No destination address validation needed for mint/swap
         
-        // Form validity based on operation
-        Publishers.CombineLatest4($selectedOperation, $amountValid, $thorAddressValid, $destinationAddressValid)
-            .map { [weak self] operation, amountValid, thorAddressValid, destinationAddressValid in
+        // Form validity for MINT operation
+        Publishers.CombineLatest($amountValid, $thorAddressValid)
+            .map { [weak self] amountValid, thorAddressValid in
                 guard let self = self else { return false }
-                let isValid: Bool
-                switch operation {
-                case .mint, .swap:
-                    // For mint and swap, need valid amount AND valid THORChain address AND non-zero amount
-                    isValid = amountValid && thorAddressValid && !self.amount.isZero
-                    
-                    // Set specific error message if THORChain address is missing
-                    if !thorAddressValid && self.customErrorMessage == nil {
-                        self.customErrorMessage = "THORChain address not found in vault. Please ensure you have RUNE in your vault."
-                    }
-                    
-                case .redeem:
-                    // For redeem, need valid amount and destination address AND non-zero amount
-                    isValid = amountValid && destinationAddressValid && !self.amount.isZero
-                    
-                    // Set specific error message if destination address is missing
-                    if !destinationAddressValid && !self.destinationAddress.isEmpty && self.customErrorMessage == nil {
-                        self.customErrorMessage = "Please enter a valid destination address."
-                    }
+                
+                // For mint, need valid amount AND valid THORChain address AND non-zero amount
+                let isValid = amountValid && thorAddressValid && !self.amount.isZero
+                
+                // Set specific error message if THORChain address is missing
+                if !thorAddressValid && self.customErrorMessage == nil {
+                    self.customErrorMessage = "THORChain address not found in vault. Please ensure you have RUNE in your vault."
                 }
-                print("DEBUG: Form validation - operation: \(operation), amountValid: \(amountValid), thorAddressValid: \(thorAddressValid), destinationAddressValid: \(destinationAddressValid), amount: \(self.amount), isValid: \(isValid)")
+                
+                print("DEBUG: Form validation - MINT, amountValid: \(amountValid), thorAddressValid: \(thorAddressValid), amount: \(self.amount), isValid: \(isValid)")
                 return isValid
             }
             .receive(on: DispatchQueue.main)
@@ -223,18 +173,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        let chainAsset = tx.coin.chain.swapAsset.uppercased()
-        let ticker = tx.coin.ticker.uppercased()
-        let targetAsset = "\(chainAsset)-\(ticker)"
-        
-        switch selectedOperation {
-        case .mint:
-            return "SECURE+:\(thorAddress)"
-        case .swap:
-            return "=:\(targetAsset):\(thorAddress)"
-        case .redeem:
-            return "SECURE-:\(destinationAddress)"
-        }
+        return "SECURE+:\(thorAddress)"
     }
     
     var balance: String {
@@ -244,18 +183,10 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("operation", selectedOperation.rawValue)
+        dict.set("operation", "mint")
         dict.set("memo", toString())
         dict.set("amount", amount.description)
-        
-        switch selectedOperation {
-        case .mint:
-            dict.set("thorAddress", thorAddress)
-        case .swap:
-            dict.set("thorAddress", thorAddress)
-        case .redeem:
-            dict.set("destinationAddress", destinationAddress)
-        }
+        dict.set("thorAddress", thorAddress)
         
         return dict
     }
@@ -270,7 +201,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
     func getView() -> AnyView {
         AnyView(VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Operation: \(selectedOperation.displayName)")
+                Text("Mint Secured Asset (SECURE+)")
                     .font(.headline)
                 Text("Target Asset: \(tx.coin.chain.swapAsset)-\(tx.coin.ticker)")
                     .font(.subheadline)
@@ -343,21 +274,7 @@ class FunctionCallSecuredAsset: FunctionCallAddressable, ObservableObject {
                 }
             }
             
-            // Only show destination address field for redeem operation
-            if selectedOperation == .redeem {
-                StyledTextField(
-                    placeholder: "Destination Address (e.g., bc1...)",
-                    text: Binding(
-                        get: { self.destinationAddress },
-                        set: { self.destinationAddress = $0 }
-                    ),
-                    maxLengthSize: 100,
-                    isValid: Binding(
-                        get: { self.destinationAddressValid },
-                        set: { self.destinationAddressValid = $0 }
-                    )
-                )
-            }
+            // No additional fields needed for mint/swap operations
             
             VStack(alignment: .leading, spacing: 4) {
                 Text("Generated Memo:")
