@@ -13,7 +13,7 @@ import SwiftUI
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
     static let context = CIContext()
-    public static func sendRequest<T: Codable>(urlString: String, method: String,headers: [String: String], body: T?, completion: @escaping (Bool) -> Void) {
+    public static func sendRequest<T: Codable>(urlString: String, method: String,headers: [String: String]? = nil, body: T?, completion: @escaping (Bool) -> Void) {
         logger.debug("url:\(urlString)")
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
@@ -24,8 +24,10 @@ enum Utils {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        for item in headers {
-            request.setValue(item.value, forHTTPHeaderField: item.key)
+        if let headers = headers {
+            for item in headers {
+                request.setValue(item.value, forHTTPHeaderField: item.key)
+            }
         }
         if let body = body {
             do {
@@ -81,7 +83,7 @@ enum Utils {
         }.resume()
     }
     
-    public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
+    public static func getRequest(urlString: String, headers: [String: String]?, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
@@ -89,8 +91,10 @@ enum Utils {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        for item in headers {
-            request.setValue(item.value, forHTTPHeaderField: item.key)
+        if let headers = headers {   
+            for item in headers {
+                request.setValue(item.value, forHTTPHeaderField: item.key)
+            }
         }
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -144,15 +148,17 @@ enum Utils {
     }
     
     
-    public static func asyncGetRequest(urlString: String, headers: [String: String]) async throws -> Data {
+    public static func asyncGetRequest(urlString: String, headers: [String: String]? = nil) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        for (key, value) in headers {
-            request.addValue(value, forHTTPHeaderField: key)
+        if let headers = headers {
+            for (key, value) in headers {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
         }
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -170,15 +176,17 @@ enum Utils {
         }
     }
     
-    public static func asyncPostRequest(urlString: String, headers: [String: String], body: Data) async throws -> Data {
+    public static func asyncPostRequest(urlString: String, headers: [String: String]?, body: Data) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        for (key, value) in headers {
-            request.addValue(value, forHTTPHeaderField: key)
+        if let headers = headers {
+            for (key, value) in headers {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
         }
         request.httpBody = body
         

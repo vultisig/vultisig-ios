@@ -207,7 +207,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString,
                           method: "POST",
-                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          headers: nil,
                           body: allParticipants) { _ in
             self.logger.info("kicked off keysign successfully")
         }
@@ -236,7 +236,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let body = [self.localPartyID]
         Utils.sendRequest(urlString: urlString,
                           method: "POST",
-                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          headers: nil,
                           body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
