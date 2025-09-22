@@ -21,6 +21,7 @@ public final class Mediator {
         self.setupRoute()
     }
     
+    
     private func setupRoute() {
         // POST with a sessionID
         self.server.POST["/:sessionID"] = self.postSession
@@ -55,6 +56,7 @@ public final class Mediator {
     // start the server
     public func start(name: String) {
         do {
+            self.cache.removeAll() // clean up all
             self.service = NetService(domain: "local.", type: "_http._tcp", name: name, port: Int32(self.port))
             try self.server.start(self.port)
             self.service.publish()
@@ -214,6 +216,7 @@ public final class Mediator {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
                 setObject(session, forKey: key)
             }
+            self.logger.debug("session id is: \(cleanSessionID), participants:\(p) stored with key:\(key)")
             
         } catch {
             self.logger.error("fail to decode json body,error:\(error)")
@@ -252,11 +255,11 @@ public final class Mediator {
         }
         do  {
             if let cachedValue = try self.getObject(forKey: key) as? Session {
-                // self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
                 return HttpResponse.ok(.json(cachedValue.Participants))
             }
         }
         catch Cache.StorageError.notFound {
+            logger.error("session with key:\(key) not found")
             return HttpResponse.notFound
         }
         catch{
