@@ -246,7 +246,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:TssHelper.getKeygenRequestHeader(), body: body) { success in
+        self.logger.info("starting session with url:\(urlString), body:\(body)")
+        Utils.sendRequest(urlString: urlString, method: "POST",headers: nil, body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
             } else {
@@ -258,7 +259,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:TssHelper.getKeygenRequestHeader(), body: allParticipants) { _ in
+        Utils.sendRequest(urlString: urlString, method: "POST",headers:nil, body: allParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }
