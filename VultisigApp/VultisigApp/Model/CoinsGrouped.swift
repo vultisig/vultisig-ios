@@ -9,7 +9,16 @@ import Foundation
 import SwiftUI
 import Combine
 
-class GroupedChain: ObservableObject, Identifiable {
+class GroupedChain: ObservableObject, Identifiable, Hashable {
+    static func == (lhs: GroupedChain, rhs: GroupedChain) -> Bool {
+        lhs.chain == rhs.chain
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(chain)
+    }
+    
     let id: String
     let chain: Chain
     let address: String

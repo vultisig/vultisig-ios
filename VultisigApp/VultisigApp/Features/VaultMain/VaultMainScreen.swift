@@ -21,6 +21,7 @@ struct VaultMainScreen: View {
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
     @State var scrollProxy: ScrollViewProxy?
+    @State private var presentedChainDetail: GroupedChain?
     
     private let scrollReferenceId = "vaultMainScreenBottomContentId"
     
@@ -75,6 +76,9 @@ struct VaultMainScreen: View {
                 vault: homeViewModel.selectedVault ?? .example,
                 isPresented: $showChainSelection
             )
+        }
+        .navigationDestination(item: $presentedChainDetail) {
+            ChainDetailScreen(group: $0, vault: vault)
         }
     }
     
@@ -131,7 +135,6 @@ struct VaultMainScreen: View {
                     .id(scrollReferenceId)
             )
         }
-        
     }
     
     var defaultBottomSectionHeader: some View {
@@ -204,7 +207,7 @@ struct VaultMainScreen: View {
     }
     
     func onChainAction(_ group: GroupedChain) {
-        // TODO: - Add chain action in upcoming PRs
+        presentedChainDetail = group
     }
     
     func onScrollOffsetChange(_ offset: CGFloat) {

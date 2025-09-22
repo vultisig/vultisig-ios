@@ -49,6 +49,12 @@
 		1334C7442E301E4300CBAA3E /* SendCryptoDoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */; };
 		1334C7462E301E8800CBAA3E /* SendCryptoDoneContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */; };
 		133573672E70B18B00C0005F /* VaultMainHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133573662E70B18600C0005F /* VaultMainHeaderView.swift */; };
+		1336BB312E8173A500597070 /* ChainDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB302E8173A100597070 /* ChainDetailScreen.swift */; };
+		1336BB342E81752E00597070 /* ChainDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB332E81752B00597070 /* ChainDetailViewModel.swift */; };
+		1336BB372E81755A00597070 /* ChainDetailTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB362E81755600597070 /* ChainDetailTab.swift */; };
+		1336BB3A2E81767000597070 /* ChainDetailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB392E81766B00597070 /* ChainDetailListView.swift */; };
+		1336BB3C2E81774400597070 /* ChainDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */; };
+		1336BB3E2E817DE300597070 /* TokenCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1336BB3D2E817DDC00597070 /* TokenCellView.swift */; };
 		133EEA192E68787900E18280 /* SettingsCommonOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */; };
 		133EEA1C2E6885A300E18280 /* SecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1B2E68859F00E18280 /* SecureTextField.swift */; };
 		133EEA1E2E68864000E18280 /* FastSigningPasswordSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */; };
@@ -1099,6 +1105,12 @@
 		1334C7432E301E3C00CBAA3E /* SendCryptoDoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContentView.swift; sourceTree = "<group>"; };
 		1334C7452E301E8700CBAA3E /* SendCryptoDoneContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneContent.swift; sourceTree = "<group>"; };
 		133573662E70B18600C0005F /* VaultMainHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultMainHeaderView.swift; sourceTree = "<group>"; };
+		1336BB302E8173A100597070 /* ChainDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailScreen.swift; sourceTree = "<group>"; };
+		1336BB332E81752B00597070 /* ChainDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailViewModel.swift; sourceTree = "<group>"; };
+		1336BB362E81755600597070 /* ChainDetailTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailTab.swift; sourceTree = "<group>"; };
+		1336BB392E81766B00597070 /* ChainDetailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailListView.swift; sourceTree = "<group>"; };
+		1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeaderView.swift; sourceTree = "<group>"; };
+		1336BB3D2E817DDC00597070 /* TokenCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCellView.swift; sourceTree = "<group>"; };
 		133EEA182E68785F00E18280 /* SettingsCommonOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCommonOptionView.swift; sourceTree = "<group>"; };
 		133EEA1B2E68859F00E18280 /* SecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTextField.swift; sourceTree = "<group>"; };
 		133EEA1D2E68863600E18280 /* FastSigningPasswordSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastSigningPasswordSheetView.swift; sourceTree = "<group>"; };
@@ -2421,6 +2433,43 @@
 			path = SendCryptoDone;
 			sourceTree = "<group>";
 		};
+		1336BB2F2E81739C00597070 /* ChainDetail */ = {
+			isa = PBXGroup;
+			children = (
+				1336BB382E8175FC00597070 /* View */,
+				1336BB352E81755300597070 /* Model */,
+				1336BB322E81752700597070 /* ViewModel */,
+				1336BB302E8173A100597070 /* ChainDetailScreen.swift */,
+			);
+			path = ChainDetail;
+			sourceTree = "<group>";
+		};
+		1336BB322E81752700597070 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1336BB332E81752B00597070 /* ChainDetailViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1336BB352E81755300597070 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1336BB362E81755600597070 /* ChainDetailTab.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1336BB382E8175FC00597070 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1336BB3D2E817DDC00597070 /* TokenCellView.swift */,
+				1336BB3B2E81774000597070 /* ChainDetailHeaderView.swift */,
+				1336BB392E81766B00597070 /* ChainDetailListView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		1344BD1A2E4B9D7900CBD493 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
@@ -2713,6 +2762,7 @@
 		13C880552E70A312009C67F1 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				1336BB2F2E81739C00597070 /* ChainDetail */,
 				138C5E622E79DE2300C559C7 /* VaultSelectChain */,
 				130C40F62E737FBC00509C61 /* Home */,
 				13C8805C2E70A409009C67F1 /* VaultCommon */,
@@ -4972,6 +5022,7 @@
 				DEA1C7042DB0CE0100424466 /* NetworkInfo.swift in Sources */,
 				A51AE8C42C9589E000EF9A7A /* FastVaultEnterPasswordView+iOS.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
+				1336BB3E2E817DE300597070 /* TokenCellView.swift in Sources */,
 				A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */,
 				13D179082E5787D100007B48 /* AddressBookChainType.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
@@ -5247,6 +5298,7 @@
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				B5E654ED2D2788CC003A037C /* Tron.swift in Sources */,
 				A61173592BC8A10D00D616F9 /* ChainCellViewModel.swift in Sources */,
+				1336BB372E81755A00597070 /* ChainDetailTab.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
@@ -5381,6 +5433,7 @@
 				A575F2CA2D50CF94000C4F14 /* FastVaultSetHintView.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */,
+				1336BB3A2E81767000597070 /* ChainDetailListView.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
 				130C40E22E7303CE00509C61 /* VaultBannerView.swift in Sources */,
 				A6A8163A2CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift in Sources */,
@@ -5393,6 +5446,7 @@
 				A6C671312CA3C41000F59B6A /* VaultDetailBalanceContent+macOS.swift in Sources */,
 				137B2C872E3A84130074F648 /* OnChainSecurityScreen.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
+				1336BB3C2E81774400597070 /* ChainDetailHeaderView.swift in Sources */,
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
@@ -5638,6 +5692,7 @@
 				138C5E722E7A01C600C559C7 /* ToolbarButton.swift in Sources */,
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
 				A6D739E22E0BAA3A0005697D /* SendDetailsTabEditTools.swift in Sources */,
+				1336BB342E81752E00597070 /* ChainDetailViewModel.swift in Sources */,
 				13D0C84B2E7461F600A1301F /* TabBarItem.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				A6E0C9212DE9013A00A01543 /* ReferralLaunchView.swift in Sources */,
@@ -5787,6 +5842,7 @@
 				A6C670902C9CFE0B00F59B6A /* HomeView+iOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,
 				B576BE5D2DCC2CA1005D33D4 /* ThorchainService+TCYStake.swift in Sources */,
+				1336BB312E8173A500597070 /* ChainDetailScreen.swift in Sources */,
 				13DD549B2E565582007335DA /* ScreenToolbar+EnvironmentKey.swift in Sources */,
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				B5C5B4AC2DACF597005D8E6F /* FunctionCallCosmosSwitch.swift in Sources */,

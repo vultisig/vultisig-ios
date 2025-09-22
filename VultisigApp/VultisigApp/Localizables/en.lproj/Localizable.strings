@@ -872,3 +872,6 @@
 "noChainsFound" = "No chains found";
 "noChainsFoundSubtitle" = "Make sure that the chain you’re looking for is enabled.";
 "customizeChains" = "Customize chains";
+"noTokensFound" = "No tokens found";
+"noTokensFoundSubtitle" = "Make sure that the token you’re looking for is enabled.";
+"customizeTokens" = "Customize tokens";
