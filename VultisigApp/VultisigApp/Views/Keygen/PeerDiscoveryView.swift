@@ -13,7 +13,7 @@ struct PeerDiscoveryView: View {
     let fastSignConfig: FastSignConfig?
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
-    @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
+    @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
