@@ -161,7 +161,7 @@ class JoinKeygenViewModel: ObservableObject {
                     if peers.contains(self.localPartyID) {
                         for peer in peers {
                             if !self.keygenCommittee.contains(peer) {
-                                self.keygenCommittee.append(contentsOf: peers)
+                                self.keygenCommittee.append(peer)
                             }
                         }
                         self.status = .KeygenStarted
