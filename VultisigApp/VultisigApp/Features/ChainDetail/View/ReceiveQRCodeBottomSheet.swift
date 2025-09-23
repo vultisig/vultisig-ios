@@ -12,8 +12,9 @@ struct ReceiveQRCodeBottomSheet: View {
     @Binding var isPresented: Bool
     
     @State var qrCodeImage: Image?
+    @State var addressToCopy: GroupedChain?
     @Environment(\.displayScale) var displayScale
-    
+    @Environment(\.dismiss) var dismiss
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     var body: some View {
@@ -27,18 +28,21 @@ struct ReceiveQRCodeBottomSheet: View {
                     .multilineTextAlignment(.center)
                 bottomSection
             }
-            .padding(.top, 24)
+            .padding(.top, 40)
             .padding(.horizontal, 16)
             .background(backgroundView(width: proxy.size.width))
-            .presentationDetents([.medium])
+            .overlay(macOSOverlay)
+            .withAddressCopy(group: $addressToCopy)
+            .presentationDetents([.height(465)])
             .presentationBackground(Theme.colors.bgSecondary)
             .presentationDragIndicator(.visible)
         }
+        .frame(height: 465)
         .onLoad {
             let qrCodeImage = QRCodeGenerator().generateImage(
-                utf8String: groupedChain.address,
+                qrStringData: groupedChain.address,
                 size: CGSize(width: 200, height: 200),
-                logoImage: UIImage(named: groupedChain.logo),
+                logoImage: PlatformImage(named: groupedChain.logo),
                 scale: displayScale
             )
             
@@ -61,13 +65,9 @@ struct ReceiveQRCodeBottomSheet: View {
     func backgroundView(width: CGFloat) -> some View {
         let cornerRadius: CGFloat = 34
         ZStack(alignment: .bottom) {
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(Theme.colors.bgSecondary)
             magicPattern
                 .frame(maxWidth: width)
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .strokeBorder(Theme.colors.border, lineWidth: 1)
             LinearGradient(
                 stops: [
                     Gradient.Stop(color: Theme.colors.bgSecondary, location: 0.50),
@@ -121,16 +121,31 @@ struct ReceiveQRCodeBottomSheet: View {
                 .buttonStyle(PrimaryButtonStyle(type: .secondary))
             }
             PrimaryButton(title: "copyAddress".localized) {
-                
+                addressToCopy = groupedChain
             }
         }
+    }
+    
+    @ViewBuilder
+    var macOSOverlay: some View {
+        #if os(macOS)
+        VStack(alignment: .trailing) {
+            CircularIconButton(icon: "x") {
+                dismiss()
+            }
+            .padding(16)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        #else
+        EmptyView()
+        #endif
     }
 }
 
 #Preview {
     @Previewable @State var show = true
     return VStack {
-        
         Button("Show QR Code") {
             show = true
         }

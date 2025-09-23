@@ -13,8 +13,7 @@ struct ChainDetailScreen: View {
     
     @StateObject var viewModel: ChainDetailViewModel
     
-    @State private var showCopyNotification = false
-    @State private var copyNotificationText = ""
+    @State private var addressToCopy: GroupedChain?
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
@@ -51,13 +50,7 @@ struct ChainDetailScreen: View {
             }
             .background(VaultMainScreenBackground())
         }
-        .overlay(
-            NotificationBannerView(
-                text: copyNotificationText,
-                isVisible: $showCopyNotification
-            ).showIf(showCopyNotification)
-            .zIndex(2)
-        )
+        .withAddressCopy(group: $addressToCopy)
         .sheet(isPresented: $showReceiveSheet) {
             ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
         }
@@ -171,10 +164,7 @@ private extension ChainDetailScreen {
     }
     
     func onCopy() {
-        ClipboardManager.copyToClipboard(group.address)
-        
-        copyNotificationText = String(format: "coinAddressCopied".localized, group.name)
-        showCopyNotification = true
+        addressToCopy = group
     }
 }
 

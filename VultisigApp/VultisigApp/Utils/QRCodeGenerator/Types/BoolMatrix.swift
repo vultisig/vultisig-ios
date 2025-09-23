@@ -1,15 +1,21 @@
+//
+//  BoolMatrix.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 22/09/2025.
+//
+
 import Foundation
 
 class BoolMatrix {
-
-    private var content: Array2D<Bool>
+    private var content: Matrix<Bool>
 
     convenience init() {
         self.init(dimension: 0, flattened: [])
     }
 
     init(dimension: Int, flattened: [Bool]) {
-        self.content = Array2D(
+        self.content = Matrix(
             rows: dimension,
             columns: dimension,
             flattened: flattened)

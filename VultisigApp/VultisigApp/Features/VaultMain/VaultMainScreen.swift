@@ -13,8 +13,7 @@ struct VaultMainScreen: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @State private var showCopyNotification = false
-    @State private var copyNotificationText = ""
+    @State private var addressToCopy: GroupedChain?
     @State private var scrollOffset: CGFloat = 0
     @State var showBalanceInHeader: Bool = false
     @State var showChainSelection: Bool = false
@@ -51,13 +50,7 @@ struct VaultMainScreen: View {
             }
         }
         .background(VaultMainScreenBackground())
-        .overlay(
-            NotificationBannerView(
-                text: copyNotificationText,
-                isVisible: $showCopyNotification
-            ).showIf(showCopyNotification)
-            .zIndex(2)
-        )
+        .withAddressCopy(group: $addressToCopy)
         .onChange(of: scrollOffset) { _, newValue in
             onScrollOffsetChange(newValue)
         }
@@ -200,10 +193,7 @@ struct VaultMainScreen: View {
     }
     
     func onCopy(_ group: GroupedChain) {
-        ClipboardManager.copyToClipboard(group.address)
-        
-        copyNotificationText = String(format: "coinAddressCopied".localized, group.name)
-        showCopyNotification = true
+        addressToCopy = group
     }
     
     func onChainAction(_ group: GroupedChain) {

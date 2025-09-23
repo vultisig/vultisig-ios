@@ -1,3 +1,10 @@
+//
+//  CGMutablePath+LineHelpers.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 22/09/2025.
+//
+
 import CoreGraphics
 
 extension CGMutablePath {

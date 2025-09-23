@@ -1,3 +1,10 @@
+//
+//  QRCodeGenerator.swift
+//  VultisigApp
+//
+//  Created by Gaston Mazzeo on 22/09/2025.
+//
+
 import CoreGraphics
 import CoreImage
 import Foundation
@@ -7,40 +14,67 @@ struct QRCodeGenerator {
     private let context = CIContext()
     
     func generateImage(
-        utf8String: String,
+        qrStringData: String,
         size: CGSize,
-        logoImage: UIImage?,
+        logoImage: PlatformImage?,
         scale: CGFloat
     ) -> Image? {
-        let design = QRCodeDesign()
-        let data = utf8String.data(using: .utf8) ?? Data()
+        let data = qrStringData.data(using: .utf8) ?? Data()
         let qrcode = QRCode(data)
         let coreSize = CGSize(width: size.width * scale, height: size.height * scale)
-        guard let qrImage = qrcode.cgImage(coreSize, design: design) else { return nil }
+        guard let qrImage = qrcode.cgImage(coreSize, shape: QRCodeShape(), style: QRCodeStyle()) else { return nil }
+        
+        #if os(iOS)
         let qrcodeImage = UIImage(cgImage: qrImage, scale: scale, orientation: .up)
+        #elseif os(macOS)
+        let qrcodeImage = NSImage(cgImage: qrImage, size: size)
+        #endif
 
         guard let logoImage = logoImage else {
+            #if os(iOS)
             return Image(uiImage: qrcodeImage)
+            #elseif os(macOS)
+            return Image(nsImage: qrcodeImage)
+            #endif
         }
         
-        let logoTargetSize = CGSize(width: size.width / 4, height: size.height / 4)
+        // Use the actual QR code image size for proper positioning and scaling
+        #if os(iOS)
+        let qrActualSize = qrcodeImage.size
+        #elseif os(macOS)
+        let qrActualSize = qrcodeImage.size
+        #endif
         
-        // Create a resized logo using UIGraphicsImageRenderer for guaranteed scaling
-        let resizedLogo: UIImage
-        let renderer = UIGraphicsImageRenderer(size: logoTargetSize)
+        // Calculate target logo size - use 1/4 for good visibility
+        let targetLogoSize = min(qrActualSize.width, qrActualSize.height) / 4.0
+        
+        // Create a resized logo using platform-specific graphics context
+        let resizedLogo: PlatformImage
+        
+        #if os(iOS)
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: targetLogoSize, height: targetLogoSize))
         resizedLogo = renderer.image { context in
-            logoImage.draw(in: CGRect(origin: .zero, size: logoTargetSize))
+            logoImage.draw(in: CGRect(origin: .zero, size: CGSize(width: targetLogoSize, height: targetLogoSize)))
         }
+        #elseif os(macOS)
+        let macOSLogoSize = CGSize(width: targetLogoSize / 2, height: targetLogoSize / 2)
+        resizedLogo = logoImage.resized(to: macOSLogoSize)
+        #endif
         
         // Position the resized logo in the center of the QR code
         let logoRect = CGRect(
-            x: (size.width - logoTargetSize.width) / 2.0,
-            y: (size.height - logoTargetSize.height) / 2.0,
-            width: logoTargetSize.width,
-            height: logoTargetSize.height
+            x: (qrActualSize.width - targetLogoSize) / 2.0,
+            y: (qrActualSize.height - targetLogoSize) / 2.0,
+            width: targetLogoSize,
+            height: targetLogoSize
         )
 
-        return Image(uiImage: qrcodeImage.compose(with: resizedLogo, rect: logoRect))
+        let finalImage = qrcodeImage.compose(with: resizedLogo, rect: logoRect)
+        #if os(iOS)
+        return Image(uiImage: finalImage)
+        #elseif os(macOS)
+        return Image(nsImage: finalImage)
+        #endif
     }
 
     func generate(_ data: Data, errorCorrection: String) -> BoolMatrix? {
