@@ -12,7 +12,10 @@ struct ReceiveQRCodeBottomSheet: View {
     @Binding var isPresented: Bool
     
     @State var qrCodeImage: Image?
-        
+    @Environment(\.displayScale) var displayScale
+    
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
+    
     var body: some View {
         GeometryReader { proxy in
             VStack(spacing: 24) {
@@ -32,11 +35,24 @@ struct ReceiveQRCodeBottomSheet: View {
             .presentationDragIndicator(.visible)
         }
         .onLoad {
-            self.qrCodeImage = QRCodeGenerator().generateImage(
+            let qrCodeImage = QRCodeGenerator().generateImage(
                 utf8String: groupedChain.address,
                 size: CGSize(width: 200, height: 200),
                 logoImage: UIImage(named: groupedChain.logo),
-                scale: 1
+                scale: displayScale
+            )
+            
+            guard let qrCodeImage else {
+                return
+            }
+            
+            self.qrCodeImage = qrCodeImage
+            shareSheetViewModel.render(
+                qrCodeImage: qrCodeImage,
+                qrCodeData: nil,
+                displayScale: displayScale,
+                type: .Address,
+                addressData: groupedChain.address
             )
         }
     }
@@ -98,8 +114,11 @@ struct ReceiveQRCodeBottomSheet: View {
     
     var bottomSection: some View {
         HStack(spacing: 8) {
-            PrimaryButton(title: "share".localized, type: .secondary) {
-                
+            if let image = shareSheetViewModel.renderedImage {
+                CrossPlatformShareButton(image: image, caption: shareSheetViewModel.qrCodeData ?? .empty) {
+                    PrimaryButtonView(title: "share".localized)
+                }
+                .buttonStyle(PrimaryButtonStyle(type: .secondary))
             }
             PrimaryButton(title: "copyAddress".localized) {
                 

@@ -111,9 +111,14 @@ struct QRCodePixelGenerator {
 
     private func isInsideCutOutFrame(row: Int, col: Int, data: QRCode) -> Bool {
         let cutOutFrameRange = data.cutOutFrameRange
-        if row > cutOutFrameRange.start && row < cutOutFrameRange.end && col > cutOutFrameRange.start && col < cutOutFrameRange.end {
-            return true
-        }
-        return false
+        let center = Double(data.pixelSize) / 2.0
+        let radius = Double(cutOutFrameRange.end - cutOutFrameRange.start) / 2.0
+        
+        // Calculate distance from center
+        let deltaX = Double(col) - center + 0.5 // +0.5 to center the pixel
+        let deltaY = Double(row) - center + 0.5
+        let distanceFromCenter = sqrt(deltaX * deltaX + deltaY * deltaY)
+        
+        return distanceFromCenter <= radius
     }
 }

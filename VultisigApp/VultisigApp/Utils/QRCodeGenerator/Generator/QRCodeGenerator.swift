@@ -19,28 +19,28 @@ struct QRCodeGenerator {
         guard let qrImage = qrcode.cgImage(coreSize, design: design) else { return nil }
         let qrcodeImage = UIImage(cgImage: qrImage, scale: scale, orientation: .up)
 
-        guard let logoImage = logoImage, logoImage.size.width != 0, logoImage.size.height != 0 else {
+        guard let logoImage = logoImage else {
             return Image(uiImage: qrcodeImage)
         }
         
-        let dataPixels = qrcode.pixelSize
+        let logoTargetSize = CGSize(width: size.width / 4, height: size.height / 4)
+        
+        // Create a resized logo using UIGraphicsImageRenderer for guaranteed scaling
+        let resizedLogo: UIImage
+        let renderer = UIGraphicsImageRenderer(size: logoTargetSize)
+        resizedLogo = renderer.image { context in
+            logoImage.draw(in: CGRect(origin: .zero, size: logoTargetSize))
+        }
+        
+        // Position the resized logo in the center of the QR code
+        let logoRect = CGRect(
+            x: (size.width - logoTargetSize.width) / 2.0,
+            y: (size.height - logoTargetSize.height) / 2.0,
+            width: logoTargetSize.width,
+            height: logoTargetSize.height
+        )
 
-        let pointsPerDataPixel: Int = Int(size.width) / dataPixels
-        let totalLogoDimension = pointsPerDataPixel * (qrcode.paddedCutOutFrame.end - qrcode.paddedCutOutFrame.start)
-
-        let logoAspectRatio: Double = logoImage.size.height / logoImage.size.width
-        let width = logoAspectRatio > 1 ? CGFloat(Double(totalLogoDimension) / logoAspectRatio) : CGFloat(totalLogoDimension)
-        let heigth = logoAspectRatio > 1 ? CGFloat(totalLogoDimension) : CGFloat(Double(totalLogoDimension) * logoAspectRatio)
-        let x = (size.width - width) / 2.0
-        let y = (size.height - heigth) / 2.0
-
-        let logoSize = CGRect(
-            x: x,
-            y: y,
-            width: width,
-            height: heigth)
-
-        return Image(uiImage: qrcodeImage.compose(with: logoImage, rect: logoSize))
+        return Image(uiImage: qrcodeImage.compose(with: resizedLogo, rect: logoRect))
     }
 
     func generate(_ data: Data, errorCorrection: String) -> BoolMatrix? {
