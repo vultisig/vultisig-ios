@@ -6137,13 +6137,9 @@
 				minimumVersion = 6.5.11;
 			};
 		};
-		B2347F722E6E4AA300AA655D /* XCRemoteSwiftPackageReference "walletcore-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/vultisig/walletcore-spm";
-			requirement = {
-				kind = exactVersion;
-				version = 4.3.6;
-			};
+		B2347F722E6E4AA300AA655D /* XCLocalSwiftPackageReference "wallet-core" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../enriquesouza/wallet-core";
 		};
 		DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -6184,10 +6180,12 @@
 		};
 		B2482ADF2E6E47D900B29B6F /* WalletCore */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = B2347F722E6E4AA300AA655D /* XCLocalSwiftPackageReference "wallet-core" */;
 			productName = WalletCore;
 		};
 		B2482AE12E6E47D900B29B6F /* WalletCoreSwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = B2347F722E6E4AA300AA655D /* XCLocalSwiftPackageReference "wallet-core" */;
 			productName = WalletCoreSwiftProtobuf;
 		};
 		D9A22EB62B667C41007281BF /* Mediator */ = {

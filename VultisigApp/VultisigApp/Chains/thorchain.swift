@@ -46,6 +46,9 @@ enum THORChainHelper {
                             $0.symbol = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.ticker = swapPayload.fromCoin.ticker.uppercased().replacingOccurrences(of: "X/", with: "")
                             $0.synth = false
+                            let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+                            let isSecured = securedAssetsTickers.contains(swapPayload.fromCoin.ticker.uppercased())
+                            $0.secured = isSecured
                         }
                         $0.amount = String(swapPayload.fromAmount)
                         $0.decimals = Int64(swapPayload.fromCoin.decimals)
@@ -249,10 +252,13 @@ enum THORChainHelper {
         
         let coin = CosmosTHORChainCoin.with {
             $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
-                $0.chain = "THOR"
-                $0.symbol = symbol
-                $0.ticker = assetTicker
+                $0.chain = "DOGE"
+                $0.symbol = "DOGE"
+                $0.ticker = "DOGE"
                 $0.synth = false
+                let securedAssetsTickers = ["BTC", "ETH", "BCH", "LTC", "DOGE", "AVAX", "BNB"]
+                let isSecured = securedAssetsTickers.contains(keysignPayload.coin.ticker.uppercased()) && !keysignPayload.coin.isNativeToken
+                $0.secured = isSecured
             }
             if keysignPayload.toAmount > 0 {
                 $0.amount = String(keysignPayload.toAmount)
