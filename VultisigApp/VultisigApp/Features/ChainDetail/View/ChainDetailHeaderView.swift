@@ -12,6 +12,7 @@ struct ChainDetailHeaderView: View {
     @ObservedObject var group: GroupedChain
     var onCopy: () -> Void
     
+    let hideBalanceText = Array.init(repeating: "•", count: 8).joined(separator: " ")
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
@@ -39,7 +40,7 @@ struct ChainDetailHeaderView: View {
     }
     
     var chainBalanceView: some View {
-        Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
+        Text(homeViewModel.hideVaultBalance ? hideBalanceText : group.totalBalanceInFiatString)
             .font(Theme.fonts.priceTitle1)
             .foregroundStyle(Theme.colors.textPrimary)
             .frame(height: 47)

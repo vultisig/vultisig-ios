@@ -27,48 +27,50 @@ struct VaultMainScreen: View {
     private let contentInset: CGFloat = 78
     
     var body: some View {
-        ZStack(alignment: .top) {
-            ScrollViewReader { proxy in
-                OffsetObservingScrollView(showsIndicators: false, contentInset: contentInset, scrollOffset: $scrollOffset) {
-                    VStack(spacing: 20) {
-                        topContentSection
-                        Separator(color: Theme.colors.borderLight, opacity: 1)
-                        bottomContentSection
+        VStack {
+            ZStack(alignment: .top) {
+                ScrollViewReader { proxy in
+                    OffsetObservingScrollView(showsIndicators: false, contentInset: contentInset, scrollOffset: $scrollOffset) {
+                        VStack(spacing: 20) {
+                            topContentSection
+                            Separator(color: Theme.colors.borderLight, opacity: 1)
+                            bottomContentSection
+                        }
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.horizontal, 16)
-                }
-                .onLoad {
-                    scrollProxy = proxy
-                }
-            }
-            header
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .refreshable {
-            if let vault = homeViewModel.selectedVault {
-                viewModel.updateBalance(vault: vault)
-            }
-        }
-        .background(VaultMainScreenBackground())
-        .withAddressCopy(group: $addressToCopy)
-        .onChange(of: scrollOffset) { _, newValue in
-            onScrollOffsetChange(newValue)
-        }
-        .onChange(of: showSearchHeader) { _, showSearchHeader in
-            if showSearchHeader {
-                focusSearch = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-                    withAnimation {
-                        scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                    .onLoad {
+                        scrollProxy = proxy
                     }
                 }
+                header
             }
-        }
-        .sheet(isPresented: $showChainSelection) {
-            VaultSelectChainScreen(
-                vault: homeViewModel.selectedVault ?? .example,
-                isPresented: $showChainSelection
-            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .refreshable {
+                if let vault = homeViewModel.selectedVault {
+                    viewModel.updateBalance(vault: vault)
+                }
+            }
+            .background(VaultMainScreenBackground())
+            .withAddressCopy(group: $addressToCopy)
+            .onChange(of: scrollOffset) { _, newValue in
+                onScrollOffsetChange(newValue)
+            }
+            .onChange(of: showSearchHeader) { _, showSearchHeader in
+                if showSearchHeader {
+                    focusSearch = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                        withAnimation {
+                            scrollProxy?.scrollTo(scrollReferenceId, anchor: .center)
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showChainSelection) {
+                VaultSelectChainScreen(
+                    vault: homeViewModel.selectedVault ?? .example,
+                    isPresented: $showChainSelection
+                )
+            }
         }
         .navigationDestination(item: $presentedChainDetail) {
             ChainDetailScreen(group: $0, vault: vault)

@@ -83,9 +83,9 @@ struct ChainDetailScreen: View {
             .padding(.bottom, 16)
             
             ChainDetailListView(viewModel: viewModel) {
-                // TODO: - On Press
+                // TODO: - On Press - will add in upcoming PRs
             } onManageTokens: {
-                // TODO: - On Manage
+                // TODO: - On Manage - will add in upcoming PRs
             }
             .background(
                 // Reference to scroll when search gets presented
@@ -125,14 +125,12 @@ struct ChainDetailScreen: View {
         }
     }
     
-    var explorerButton: some View {
-        CircularIconButton(icon: "square-3d") {
-            if
-                let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
-                let linkURL = URL(string: url)
-            {
-                openURL(linkURL)
-            }
+    func onExplorer() {
+        if
+            let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
+            let linkURL = URL(string: url)
+        {
+            openURL(linkURL)
         }
     }
 }
@@ -175,7 +173,7 @@ extension ChainDetailScreen {
             content()
             HStack {
                 Spacer()
-                explorerButton
+                CircularIconButton(icon: "square-3d", action: onExplorer())
             }
             .padding(.horizontal, 24)
             .frame(height: 40)
@@ -188,7 +186,7 @@ extension ChainDetailScreen {
         content()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    explorerButton
+                    ToolbarButton(image: "cube", action: onExplorer)
                 }
             }
     }
