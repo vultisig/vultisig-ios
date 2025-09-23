@@ -19,7 +19,7 @@ struct FolderCellView: View {
     
     var body: some View {
         Button(action: action) {
-            VaultEditingContainer(isEditing: $isEditing) {
+            VaultEditCellContainer(isEditing: $isEditing) {
                 HStack {
                     Icon(named: isSelected ? "folder-fill" : "folder", color: Theme.colors.alertInfo, size: 16)
                         .padding(12)

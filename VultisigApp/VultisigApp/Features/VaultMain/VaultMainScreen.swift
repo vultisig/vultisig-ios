@@ -73,7 +73,7 @@ struct VaultMainScreen: View {
                 CreateVaultView(selectedVault: nil, showBackButton: true)
             }
             .sheet(isPresented: $showVaultSelector) {
-                VaultSelectorBottomSheet {
+                VaultManagementSheet {
                     showVaultSelector.toggle()
                     showCreateVault.toggle()
                 } onSelectVault: { vault in

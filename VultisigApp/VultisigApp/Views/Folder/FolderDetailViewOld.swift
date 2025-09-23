@@ -1,5 +1,5 @@
 //
-//  FolderDetailView.swift
+//  FolderDetailViewOld.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-10-04.
@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct FolderDetailView: View {
+struct FolderDetailViewOld: View {
     let selectedFolder: Folder
     @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
@@ -272,7 +272,7 @@ struct FolderDetailView: View {
 }
 
 #Preview {
-    FolderDetailView(
+    FolderDetailViewOld(
         selectedFolder: Folder.example, 
         vaultFolder: .constant(Folder.example),
         showVaultsList: .constant(false),

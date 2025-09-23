@@ -1,17 +1,22 @@
 //
-//  VaultSelectorBottomSheet.swift
+//  VaultListView.swift
 //  VultisigApp
 //
-//  Created by Gaston Mazzeo on 16/09/2025.
+//  Created by Gaston Mazzeo on 23/09/2025.
 //
 
-import SwiftData
 import SwiftUI
+import SwiftData
 
-struct VaultSelectorBottomSheet: View {
+struct VaultListView: View {
+    @Binding var isEditing: Bool
+    var onAddVault: () -> Void
+    var onSelectVault: (Vault) -> Void
+    var onSelectFolder: (Folder) -> Void
+    
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
-        
+    
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     @StateObject var viewModel = VaultSelectorViewModel()
@@ -20,13 +25,7 @@ struct VaultSelectorBottomSheet: View {
         let vaultNames = Set(folders.flatMap { $0.containedVaultNames })
         return vaults.filter { !vaultNames.contains($0.name) }
     }
-        
-    @State var isEditing: Bool = false
-    @State var detentSelection = PresentationDetent.medium
     
-    var onAddVault: () -> Void
-    var onSelectVault: (Vault) -> Void
-
     var headerSubtitle: String {
         let vaultsText: String = vaults.count > 1 ? "vaults".localized : "vault".localized
         var subtitle = "\(vaults.count) \(vaultsText)"
@@ -43,7 +42,7 @@ struct VaultSelectorBottomSheet: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
             header
             List {
                 foldersList
@@ -54,16 +53,6 @@ struct VaultSelectorBottomSheet: View {
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
             .background(Theme.colors.bgPrimary)
-        }
-        .padding(.top, 24)
-        .padding(.horizontal, 16)
-        .presentationDragIndicator(.visible)
-        .presentationDetents(detents, selection: $detentSelection)
-        .presentationBackground(Theme.colors.bgPrimary)
-        .onChange(of: isEditing) { _, newValue in
-            if newValue {
-                detentSelection = .large
-            }
         }
     }
     
@@ -80,6 +69,10 @@ struct VaultSelectorBottomSheet: View {
     
     var editingHeader: some View {
         HStack {
+            Spacer()
+            Text("editVaults".localized)
+                .foregroundStyle(Theme.colors.textPrimary)
+                .font(Theme.fonts.title3)
             Spacer()
             BottomSheetButton(icon: "check") {
                 withAnimation {
@@ -118,7 +111,7 @@ struct VaultSelectorBottomSheet: View {
                 selectedVaultName: homeViewModel.selectedVault?.name,
                 isEditing: $isEditing
             ) {
-                // TODO: - Present Folder
+                onSelectFolder(folder)
             }
             .disabled(isEditing)
             .plainListItem()
@@ -171,97 +164,15 @@ struct VaultSelectorBottomSheet: View {
     }
 }
 
-extension VaultSelectorBottomSheet {
-    var detents: Set<PresentationDetent> {
-        if isEditing {
-            return [.medium, .large]
-        }
-        
-        if vaults.count >= 8 || folders.count >= 4 {
-            return [.medium, .large]
-        }
-        
-        switch vaults.count {
-        case 1:
-            return [.height(214)]
-        case 2:
-            return [.height(278)]
-        default:
-            return [.medium]
-        }
-    }
-}
-
 #Preview {
-    struct PreviewContainer: View {
-        @State var isPresented: Bool = false
-        
-       var body: some View {
-           VStack {
-               Button("Open Sheet") {
-                   isPresented.toggle()
-               }
-           }
-           .sheet(isPresented: $isPresented) {
-               VaultSelectorBottomSheet(
-                onAddVault: {},
-                onSelectVault: { _ in }
-               )
-           }
-           .background(Theme.colors.bgPrimary)
+    VaultListView(
+        isEditing: .constant(false),
+        onAddVault: {
+        },
+        onSelectVault: {_ in
+        },
+        onSelectFolder: { _ in
         }
-    }
-
-    return PreviewContainer()
-        .environmentObject(HomeViewModel())
+    )
+    .environmentObject(HomeViewModel())
 }
-
-struct BottomSheetButton: View {
-    let icon: String
-    let type: ButtonType
-    var action: () -> Void
-    
-    init(icon: String, type: ButtonType = .primary, action: @escaping () -> Void) {
-        self.icon = icon
-        self.type = type
-        self.action = action
-    }
-    
-    var backgroundColor: Color {
-        switch type {
-        case .primary:
-            Theme.colors.primaryAccent4
-        case .secondary:
-            Theme.colors.bgSecondary
-        case .alert:
-            Theme.colors.alertError
-        }
-    }
-    
-    var is26: Bool {
-        if #available(iOS 26.0, macOS 26.0, *) {
-            return true
-        } else {
-            return false
-        }
-    }
-    
-    var body: some View {
-        if #available(iOS 26.0, macOS 26.0, *) {
-            button
-                .glassEffect(.regular.tint(backgroundColor).interactive())
-        } else {
-            button
-        }
-    }
-    
-    var button: some View {
-        Button(action: action) {
-            Icon(named: icon, color: Theme.colors.textPrimary, size: 20)
-                .padding(12)
-                .background(is26 ? nil : Circle().fill(backgroundColor))
-                .overlay(Circle().inset(by: 0.5).strokeBorder(.white.opacity(0.1), lineWidth: 1))
-        }
-    }
-}
-

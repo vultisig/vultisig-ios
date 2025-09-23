@@ -7,17 +7,45 @@
 
 import SwiftUI
 
-struct VaultCellView: View {
+struct VaultCellView<TrailingView: View>: View {
     let vault: Vault
     let isSelected: Bool
     @Binding var isEditing: Bool
+    var trailingView: () -> TrailingView
     var action: () -> Void
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+    init(
+        vault: Vault,
+        isSelected: Bool,
+        isEditing: Binding<Bool>,
+        trailingView: @escaping () -> TrailingView,
+        action: @escaping () -> Void
+    ) {
+        self.vault = vault
+        self.isSelected = isSelected
+        self._isEditing = isEditing
+        self.trailingView = trailingView
+        self.action = action
+    }
+    
+    init(
+        vault: Vault,
+        isSelected: Bool,
+        isEditing: Binding<Bool>,
+        action: @escaping () -> Void
+    ) where TrailingView == EmptyView {
+        self.vault = vault
+        self.isSelected = isSelected
+        self._isEditing = isEditing
+        self.trailingView = { EmptyView() }
+        self.action = action
+    }
+    
     var body: some View {
         Button(action: action) {
-            VaultEditingContainer(isEditing: $isEditing) {
+            VaultEditCellContainer(isEditing: $isEditing) {
                 HStack {
                     VaultIconTypeView(isFastVault: vault.isFastVault)
                         .padding(12)
@@ -47,6 +75,7 @@ struct VaultCellView: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(isEditing ? Theme.colors.textExtraLight : Theme.colors.borderLight))
+                    trailingView()
                 }
                 .padding(12)
                 .background(isSelected && !isEditing ? selectedBackground : nil)
