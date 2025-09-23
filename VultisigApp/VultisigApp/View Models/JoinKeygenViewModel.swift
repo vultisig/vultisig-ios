@@ -95,7 +95,7 @@ class JoinKeygenViewModel: ObservableObject {
         let body = [localPartyID]
         Utils.sendRequest(urlString: urlString, 
                           method: "POST",
-                          headers: TssHelper.getKeygenRequestHeader(),
+                          headers: nil,
                           body: body) { success in
             if success {
                 self.logger.info("Successfully joined the key generation committee.")
@@ -114,44 +114,68 @@ class JoinKeygenViewModel: ObservableObject {
         do{
             let t = Task {
                 repeat {
-                    checkKeygenStarted()
+                    try await checkKeygenStarted()
                     try await Task.sleep(for: .seconds(1))
                 } while self.status == .WaitingForKeygenToStart
             }
             try await t.value
         }
-        catch{
-            logger.error("Failed to wait for keygen to start.")
+        catch {
+            logger.error("Failed to wait for keygen to start. Error: \(error.localizedDescription)")
         }
     }
-    private func checkKeygenStarted() {
+    /// Checks if the key generation process has started by querying the server.
+    /// - Throws: `HelperError.runtimeError` if required information is missing or the URL is invalid.
+    ///           Any error thrown by `URLSession` or JSON decoding.
+    /// - Note: Updates the `keygenCommittee` and `status` on the main thread if the process has started.
+    /// - Returns: Nothing. Updates state via side effects.
+    private func checkKeygenStarted() async throws {
         guard let serverURL = serverAddress, let sessionID = sessionID else {
-            logger.error("Required information for checking key generation start is missing.")
-            return
+            throw HelperError.runtimeError("Required information for checking key generation status is missing.")
         }
         
         let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString,
-                         headers: TssHelper.getKeygenRequestHeader(),
-                         completion: { result in
-            switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let peers = try decoder.decode([String].self, from: data)
-                    DispatchQueue.main.async {
-                        if peers.contains(self.localPartyID) {
-                            self.keygenCommittee.append(contentsOf: peers)
-                            self.status = .KeygenStarted
-                        }
-                    }
-                } catch {
-                    self.logger.error("Failed to decode response to JSON: \(data)")
-                }
-            case .failure(let error):
-                self.logger.error("Failed to check if key generation has started, error: \(error)")
+        guard let url = URL(string: urlString) else {
+            throw HelperError.runtimeError("Invalid URL: \(urlString)")
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data,resp) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = resp as? HTTPURLResponse else {
+            self.logger.error("Invalid response from server")
+            return
+        }
+        switch httpResponse.statusCode {
+        case 200 ... 299:
+            if data.isEmpty {
+                self.logger.debug("Key generation not started yet (empty body)")
+                return
             }
-        })
+            do {
+                let decoder = JSONDecoder()
+                let peers = try decoder.decode([String].self, from: data)
+                DispatchQueue.main.async {
+                    if peers.contains(self.localPartyID) {
+                        for peer in peers {
+                            if !self.keygenCommittee.contains(peer) {
+                                self.keygenCommittee.append(peer)
+                            }
+                        }
+                        self.status = .KeygenStarted
+                    }
+                }
+            } catch {
+                self.logger.error("Failed to decode response to JSON: \(String(data: data, encoding: .utf8) ?? "N/A") , error: \(error.localizedDescription)")
+            }
+        case 404:
+            // keygen not started yet
+            self.logger.debug("Key generation not started yet (404)")
+        default:
+            self.logger.error("Server returned status code \(httpResponse.statusCode)")
+        }
     }
     
     func isVaultNameAlreadyExist(name: String) -> Bool  {
@@ -181,7 +205,7 @@ class JoinKeygenViewModel: ObservableObject {
                 vault.name = keygenMsg.vaultName
                 vault.libType = keygenMsg.libType
                 if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
-                    errorMessage = NSLocalizedString("vaultExistsError", comment: "")
+                    errorMessage = "vaultExistsError".localized
                     logger.error("\(self.errorMessage)")
                     status = .FailToStart
                     return
@@ -216,7 +240,7 @@ class JoinKeygenViewModel: ObservableObject {
                             vault.libType = reshareMsg.libType
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = NSLocalizedString("vaultExistsError", comment: "")
+                                errorMessage = "vaultExistsError".localized
                                 logger.error("\(self.errorMessage)")
                                 status = .FailToStart
                                 return
@@ -226,13 +250,13 @@ class JoinKeygenViewModel: ObservableObject {
                     
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                        errorMessage = "You choose the wrong vault"
+                        errorMessage = "wrongVaultSelected".localized
                         logger.error("The vault's public key doesn't match the reshare message's public key")
                         status = .FailToStart
                         return
                     }
                     if vault.libType != reshareMsg.libType {
-                        errorMessage = "Vault type doesn't match, initiate device and pair device's vault type are different"
+                        errorMessage = "vaultTypeMismatch".localized
                         status = .FailToStart
                         return
                     }
@@ -240,7 +264,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
             
         } catch {
-            errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
+            errorMessage = "failedToDecodePeerDiscoveryMessage".localized + ": \(error.localizedDescription)"
             status = .FailToStart
             return
         }

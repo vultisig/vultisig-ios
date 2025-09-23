@@ -124,6 +124,12 @@ class FunctionCallVerifyViewModel: ObservableObject {
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:
                 self.errorMessage = "notEnoughBalanceError"
+            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
+                self.errorMessage = "notEnoughUTXOError"
+            case KeysignPayloadFactory.Errors.utxoTooSmallError:
+                self.errorMessage = "utxoTooSmallError"
+            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+                self.errorMessage = "utxoSelectionFailedError"
             case KeysignPayloadFactory.Errors.failToGetSequenceNo:
                 self.errorMessage = "failToGetSequenceNo"
             case KeysignPayloadFactory.Errors.failToGetAccountNumber:

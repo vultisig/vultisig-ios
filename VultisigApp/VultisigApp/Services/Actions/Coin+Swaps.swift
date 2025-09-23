@@ -28,9 +28,9 @@ extension Coin {
             return [.mayachain]
         case .ethereum:
             let defaultProviders: [SwapProvider] = [
-                .kyberswap(chain),
                 .oneinch(chain),
-                .lifi
+                .lifi,
+                .kyberswap(chain),
             ]
             
             var providers: [SwapProvider] = []
@@ -46,15 +46,15 @@ extension Coin {
             return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .kyberswap(chain), .oneinch(chain), .lifi]
+                return [.thorchain, .oneinch(chain), .lifi,  .kyberswap(chain)]
             } else {
-                return [.kyberswap(chain), .oneinch(chain), .lifi]
+                return [.oneinch(chain), .lifi,.kyberswap(chain) ]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .kyberswap(chain), .oneinch(chain), .lifi]
+                return [.thorchain,  .oneinch(chain), .lifi, .kyberswap(chain)]
             } else {
-                return [.kyberswap(chain), .oneinch(chain), .lifi]
+                return [.oneinch(chain), .lifi,.kyberswap(chain)]
             }
         case .arbitrum:
             if mayaArbTokens.contains(ticker) {

@@ -27,7 +27,7 @@ class KeygenVerify: ObservableObject {
         let body = [self.localPartyID]
         do {
             let jsonData = try JSONEncoder().encode(body)
-            _ = try await Utils.asyncPostRequest(urlString: urlString, headers: TssHelper.getKeygenRequestHeader(), body: jsonData)
+            _ = try await Utils.asyncPostRequest(urlString: urlString, headers: nil, body: jsonData)
         } catch {
             self.logger.error("Failed to send request to mediator, error:\(error)")
         }
@@ -38,7 +38,7 @@ class KeygenVerify: ObservableObject {
         let start = Date()
         repeat{
             do {
-                let result = try await Utils.asyncGetRequest(urlString: urlString, headers: TssHelper.getKeygenRequestHeader())
+                let result = try await Utils.asyncGetRequest(urlString: urlString, headers: nil)
                 if !result.isEmpty {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: result)

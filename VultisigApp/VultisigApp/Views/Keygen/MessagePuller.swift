@@ -59,10 +59,7 @@ class MessagePuller: ObservableObject {
         // for keygen message id will be nil
         // only keysign will pass message id
         if let messageID {
-            header = TssHelper.getKeysignRequestHeader(pubKey: vaultPubKey)
             header["message_id"] = messageID
-        } else {
-            header = TssHelper.getKeygenRequestHeader()
         }
         return header
     }

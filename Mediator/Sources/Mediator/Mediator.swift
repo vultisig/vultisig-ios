@@ -21,6 +21,7 @@ public final class Mediator {
         self.setupRoute()
     }
     
+    
     private func setupRoute() {
         // POST with a sessionID
         self.server.POST["/:sessionID"] = self.postSession
@@ -55,6 +56,7 @@ public final class Mediator {
     // start the server
     public func start(name: String) {
         do {
+            self.cache.removeAll() // clean up all
             self.service = NetService(domain: "local.", type: "_http._tcp", name: name, port: Int32(self.port))
             try self.server.start(self.port)
             self.service.publish()
@@ -93,11 +95,11 @@ public final class Mediator {
                 
                 return HttpResponse.ok(.text(""))
             case "GET":
-                if !self.cache.objectExists(forKey: key) {
+                if !self.objectExists(forKey: key) {
                     // self.logger.debug("session didn't start, can't find key:\(key)")
                     return HttpResponse.notFound
                 }
-                let cachedSession = try self.cache.object(forKey: key) as? Session
+                let cachedSession = try self.getObject(forKey: key) as? Session
                 if let cachedSession {
                     return HttpResponse.ok(.json(cachedSession.Participants))
                 }
@@ -160,7 +162,7 @@ public final class Mediator {
             let messages = try allKeys.filter{
                 $0.hasPrefix(keyPrefix)
             }.compactMap { cacheKey in
-                try self.cache.object(forKey: cacheKey) as? Message
+                try self.getObject(forKey: cacheKey) as? Message
             }
             let result = try encoder.encode(messages)
             return HttpResponse.ok(.data(result, contentType: "application/json"))
@@ -200,8 +202,8 @@ public final class Mediator {
         do {
             let decoder = JSONDecoder()
             let p = try decoder.decode([String].self, from: Data(req.body))
-            if self.cache.objectExists(forKey: key) {
-                if let cachedValue = try self.cache.object(forKey: key) as? Session {
+            if self.objectExists(forKey: key) {
+                if let cachedValue = try self.getObject(forKey: key) as? Session {
                     for newParticipant in p {
                         if !cachedValue.Participants.contains(where: { $0 == newParticipant }) {
                             cachedValue.Participants.append(newParticipant)
@@ -214,6 +216,7 @@ public final class Mediator {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
                 setObject(session, forKey: key)
             }
+            self.logger.debug("session id is: \(cleanSessionID), participants:\(p) stored with key:\(key)")
             
         } catch {
             self.logger.error("fail to decode json body,error:\(error)")
@@ -251,12 +254,12 @@ public final class Mediator {
             key = "session-\(cleanSessionID)"
         }
         do  {
-            if let cachedValue = try self.cache.object(forKey: key) as? Session {
-                // self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
+            if let cachedValue = try self.getObject(forKey: key) as? Session {
                 return HttpResponse.ok(.json(cachedValue.Participants))
             }
         }
         catch Cache.StorageError.notFound {
+            logger.error("session with key:\(key) not found")
             return HttpResponse.notFound
         }
         catch{
@@ -305,10 +308,10 @@ public final class Mediator {
                 setObject(body, forKey: key)
                 return HttpResponse.ok(.text(""))
             case "GET":
-                if !self.cache.objectExists(forKey: key) {
+                if !self.objectExists(forKey: key) {
                     return HttpResponse.notFound
                 }
-                let sig = try self.cache.object(forKey: key) as? String
+                let sig = try self.getObject(forKey: key) as? String
                 if let sig {
                     return HttpResponse.ok(.text(sig))
                 }
@@ -338,10 +341,10 @@ public final class Mediator {
                 setObject(body, forKey: hash)
                 return HttpResponse.created
             case "GET":
-                if !self.cache.objectExists(forKey: hash) {
+                if !self.objectExists(forKey: hash) {
                     return HttpResponse.notFound
                 }
-                let body = try self.cache.object(forKey: hash) as? String
+                let body = try self.getObject(forKey: hash) as? String
                 if let body {
                     let bodyHash = body.sha256()
                     if bodyHash != hash {
@@ -376,10 +379,10 @@ public final class Mediator {
                 setObject(body, forKey: key)
                 return HttpResponse.created
             case "GET":
-                if !self.cache.objectExists(forKey: key) {
+                if !self.objectExists(forKey: key) {
                     return HttpResponse.notFound
                 }
-                let body = try self.cache.object(forKey: key) as? String
+                let body = try self.getObject(forKey: key) as? String
                 if let body {
                     return HttpResponse.ok(.text(body))
                 }
@@ -400,6 +403,24 @@ public final class Mediator {
         }
         return self.cache.allKeys
     }
+    
+    func getObject(forKey key: String) throws -> Any?{
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        
+        return try self.cache.object(forKey: key)
+    }
+    
+    func objectExists(forKey key: String) -> Bool {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        return self.cache.objectExists(forKey: key)
+    }
+    
     func setObject(_ obj: Any, forKey key: String){
         self.lock.lock()
         defer {

@@ -29,7 +29,7 @@ struct KeysignDiscoveryView: View {
     var contentPadding: CGFloat?
     var onKeysignInput: (KeysignInput) -> Void
     
-    @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
+    @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isPhoneSE = false

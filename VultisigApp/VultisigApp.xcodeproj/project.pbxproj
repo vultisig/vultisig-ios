@@ -942,6 +942,7 @@
 		B5F758192BD8E65D0097B5BB /* SuiConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758182BD8E65D0097B5BA /* SuiConstants.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
+		B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */; };
 		BU61YTK5IM2CA6CN47V4L8BG /* FunctionCallAddThorLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */; };
 		CF711D753DDB0FC62425A9DA /* KyberSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7878748BB9E16298184860 /* KyberSwapQuote.swift */; };
 		D70D65FC2DF48824001C4492 /* RuneBondCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70D65FB2DF48824001C4492 /* RuneBondCell.swift */; };
@@ -1050,7 +1051,6 @@
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 		DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */; };
-		DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */; };
 		DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */; };
 		DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F92BCF85FA005DFDF9 /* maya.swift */; };
 		DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */; };
@@ -2012,6 +2012,7 @@
 		B5F758182BD8E65D0097B5BA /* SuiConstants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiConstants.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
+		B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingTransactionManager.swift; sourceTree = "<group>"; };
 		BWXBB99J8F32LB10N1PT9BIH /* FunctionCallAddThorLP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionCallAddThorLP.swift; sourceTree = "<group>"; };
 		CD36D5BDFA9CBF0B16709643 /* KyberSwapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyberSwapService.swift; sourceTree = "<group>"; };
 		D70D65FB2DF48824001C4492 /* RuneBondCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuneBondCell.swift; sourceTree = "<group>"; };
@@ -2122,7 +2123,6 @@
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 		DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigRelay.swift; sourceTree = "<group>"; };
-		DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssHelper.swift; sourceTree = "<group>"; };
 		DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
 		DEFF58F92BCF85FA005DFDF9 /* maya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maya.swift; sourceTree = "<group>"; };
 		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
@@ -3050,6 +3050,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B5FFB0F32E7858E90062F63C /* PendingTransactionManager.swift */,
 				138538DB2E61F576006DF7C7 /* VultiServer */,
 				132666CA2E429F45007FDAC5 /* THORChainReferralService */,
 				13D7643B2E41309D00F048DE /* TokenSearchService.swift */,
@@ -4661,7 +4662,6 @@
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
 				DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */,
 				DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */,
-				DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */,
 			);
 			path = Tss;
 			sourceTree = "<group>";
@@ -5163,7 +5163,6 @@
 				137B2C7B2E3A4AA50074F648 /* InnerHeightPreferenceKey.swift in Sources */,
 				A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
-				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
 				A5D8A3442CF8D5B0005A20A8 /* CustomMessagePayload.swift in Sources */,
 				134E8D832E45300C0086EBC4 /* THORChainAPIError.swift in Sources */,
 				B52FD1D02CDDAFE50031FB71 /* terra.swift in Sources */,
@@ -5379,6 +5378,7 @@
 				A506B59F2D3AD1DB00490BEB /* SolanaSwaps.swift in Sources */,
 				A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
+				B5FFB0F42E7858EB0062F63C /* PendingTransactionManager.swift in Sources */,
 				1390D8C42E394271003F3E20 /* BlockaidScannerServiceProtocol.swift in Sources */,
 				1390D8BC2E39397E003F3E20 /* BlockaidExtensions.swift in Sources */,
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
@@ -6277,13 +6277,17 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VultisigApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Vultisig;
@@ -6309,7 +6313,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.25;
+				MARKETING_VERSION = 1.26;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -6336,7 +6340,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -6369,7 +6373,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.25;
+				MARKETING_VERSION = 1.26;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -6390,7 +6394,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -6416,7 +6420,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_TESTABILITY = NO;
@@ -6442,7 +6446,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -6463,7 +6467,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

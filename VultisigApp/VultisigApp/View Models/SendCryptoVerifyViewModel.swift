@@ -34,28 +34,43 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return isAddressCorrect && isAmountCorrect
     }
     
-    func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
-        if !isValidForm {
-            self.errorMessage = "mustAgreeTermsError"
-            showAlert = true
-            isLoading = false
-            return nil
+    var signButtonDisabled: Bool {
+        !isValidForm || isLoading
+    }
+    
+    func validateForm(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
+        await MainActor.run { isLoading = true }
+        do {
+            if !isValidForm {
+                throw HelperError.runtimeError("mustAgreeTermsError")
+            }
+            
+            try await validateUtxosIfNeeded(tx: tx)
+            let keysignPayload = try await buildKeysignPayload(tx: tx, vault: vault)
+            await MainActor.run { isLoading = false }
+            return keysignPayload
+        } catch {
+            await MainActor.run { isLoading = false }
+            throw error
         }
-        
-        var keysignPayload: KeysignPayload?
-        
+    }
+    
+    func validateUtxosIfNeeded(tx: SendTransaction) async throws {
         if tx.coin.chain.chainType == ChainType.UTXO {
             do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             } catch {
-                print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
+                print("Failed to fetch UTXO data from Blockchair, error: \(error.localizedDescription)")
+                throw HelperError.runtimeError("Failed to fetch UTXO data. Please check your internet connection and try again.")
             }
         }
-        
+    }
+    
+    func buildKeysignPayload(tx: SendTransaction, vault: Vault) async throws -> KeysignPayload {
         do {
             let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
             
-            keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+            return try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 amount: tx.amountInRaw,
@@ -65,12 +80,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
             )
             
         } catch {
-            self.errorMessage = error.localizedDescription
-            showAlert = true
-            isLoading = false
-            return nil
+            // Handle UTXO-specific errors with more user-friendly messages
+            let errorMessage: String
+            switch error {
+            case KeysignPayloadFactory.Errors.notEnoughUTXOError:
+                errorMessage = NSLocalizedString("notEnoughUTXOError", comment: "")
+            case KeysignPayloadFactory.Errors.utxoTooSmallError:
+                errorMessage = NSLocalizedString("utxoTooSmallError", comment: "")
+            case KeysignPayloadFactory.Errors.utxoSelectionFailedError:
+                errorMessage = NSLocalizedString("utxoSelectionFailedError", comment: "")
+            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
+                errorMessage = NSLocalizedString("notEnoughBalanceError", comment: "")
+            default:
+                errorMessage = error.localizedDescription
+            }
+            throw HelperError.runtimeError(errorMessage)
         }
-        return keysignPayload
     }
     
     func scan(transaction: SendTransaction, vault: Vault) async {

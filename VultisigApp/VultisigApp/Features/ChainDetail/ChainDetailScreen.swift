@@ -173,7 +173,7 @@ extension ChainDetailScreen {
             content()
             HStack {
                 Spacer()
-                CircularIconButton(icon: "square-3d", action: onExplorer())
+                CircularIconButton(icon: "square-3d", action: onExplorer)
             }
             .padding(.horizontal, 24)
             .frame(height: 40)

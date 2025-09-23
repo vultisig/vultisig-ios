@@ -8,7 +8,8 @@ import OSLog
 import Tss
 import CommonCrypto
 
-enum HelperError: Error, LocalizedError {
+enum HelperError: Error, LocalizedError, Identifiable {
+    var id: String { errorDescription ?? "" }
     case runtimeError(String)
 
     var errorDescription: String? {
