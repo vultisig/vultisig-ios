@@ -13,7 +13,7 @@ struct NotificationBannerView: View {
     @Binding var isVisible: Bool
     @State var isVisibleInternal: Bool = false
     
-    private let duration: Double = 1.5
+    private let duration: Double = 1
     
     var body: some View {
         VStack {

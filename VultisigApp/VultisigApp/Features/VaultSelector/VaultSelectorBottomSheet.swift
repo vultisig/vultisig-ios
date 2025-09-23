@@ -22,6 +22,7 @@ struct VaultSelectorBottomSheet: View {
     }
         
     @State var isEditing: Bool = false
+    @State var detentSelection = PresentationDetent.medium
     
     var onAddVault: () -> Void
     var onSelectVault: (Vault) -> Void
@@ -57,10 +58,12 @@ struct VaultSelectorBottomSheet: View {
         .padding(.top, 24)
         .padding(.horizontal, 16)
         .presentationDragIndicator(.visible)
-        .presentationDetents(detents)
+        .presentationDetents(detents, selection: $detentSelection)
         .presentationBackground(Theme.colors.bgPrimary)
-        .onAppear {
-//            viewModel.setup(folders: folders, vaults: vaults)
+        .onChange(of: isEditing) { _, newValue in
+            if newValue {
+                detentSelection = .large
+            }
         }
     }
     

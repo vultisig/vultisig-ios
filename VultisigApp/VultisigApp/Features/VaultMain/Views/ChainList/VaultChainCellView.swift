@@ -47,7 +47,10 @@ struct VaultChainCellView: View {
                     }
                 }
             }
-            Button(action: onAction) {
+            
+            NavigationLink {
+                ChainDetailScreen(group: group, vault: vault)
+            } label: {
                 HStack(spacing: 8) {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
