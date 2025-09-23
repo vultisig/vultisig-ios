@@ -875,3 +875,4 @@
 "noTokensFound" = "No tokens selected";
 "noTokensFoundSubtitle" = "You’ve disabled all tokens. Make sure that the token you’re looking for is enabled.";
 "customizeTokens" = "Manage tokens";
+"copyAddress" = "Copy address";

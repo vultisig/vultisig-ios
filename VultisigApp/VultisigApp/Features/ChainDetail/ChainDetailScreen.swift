@@ -18,6 +18,7 @@ struct ChainDetailScreen: View {
     @State var showManageAssets: Bool = false
     @State var showSearchHeader: Bool = false
     @State var focusSearch: Bool = false
+    @State var showReceiveSheet: Bool = false
     @State var scrollProxy: ScrollViewProxy?
     
     private let scrollReferenceId = "chainDetailScreenBottomContentId"
@@ -57,6 +58,9 @@ struct ChainDetailScreen: View {
             ).showIf(showCopyNotification)
             .zIndex(2)
         )
+        .sheet(isPresented: $showReceiveSheet) {
+            ReceiveQRCodeBottomSheet(groupedChain: group, isPresented: $showReceiveSheet)
+        }
         .onLoad {
             viewModel.refresh(group: group)
         }
@@ -157,7 +161,13 @@ private extension ChainDetailScreen {
     }
     
     func onAction(_ action: CoinAction) {
-        // TODO: - Add action
+        switch action {
+        case .receive:
+            showReceiveSheet = true
+        default:
+            // TODO: - Add action
+            break
+        }
     }
     
     func onCopy() {
