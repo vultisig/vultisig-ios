@@ -48,6 +48,8 @@ extension Chain {
             actions.append(.memo)
         }
         
+        actions.append(.receive)
+        
         return actions.filtered
     }
 }

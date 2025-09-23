@@ -21,31 +21,20 @@ struct NavigationQRShareButton: View {
     var tint: Color = Theme.colors.textPrimary
     
     var title: String = ""
-    
-    @State var imageName: String = ""
-    
+        
     var body: some View {
-        container
-            .offset(x: 8)
+        shareLink
     }
     
     var shareLink: some View {
         ZStack {
             if let image = viewModel.renderedImage {
-                getLink(image: image)
+                CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
+                    content
+                }
             } else {
                 ProgressView()
             }
-        }
-    }
-    
-    @ViewBuilder
-    private func getLink(image: Image) -> some View {
-        CrossPlatformShareButton(image: image, caption: viewModel.qrCodeData ?? .empty) {
-            content
-        }
-        .onLoad {
-            setData()
         }
     }
     
@@ -53,27 +42,6 @@ struct NavigationQRShareButton: View {
         Image(systemName: "arrow.up.doc")
             .font(Theme.fonts.bodyLMedium)
             .foregroundColor(tint)
-    }
-    
-    func setData() {
-        if type == .Address {
-            imageName = "Vultisig-\(vault.name)-\(title).png"
-        } else {
-            let name = vault.name
-            let ecdsaKey = vault.pubKeyECDSA
-            let eddsaKey = vault.pubKeyEdDSA
-            let hexCode = vault.hexChainCode
-            let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
-            
-            let today = Date.now
-            let formatter = DateFormatter()
-            formatter.dateStyle = .short
-            let date = formatter.string(from: today).replacingOccurrences(of: "/", with: "-")
-            
-            let suffix = type == .Keygen ? "VaultKeygen" : "VaultSend"
-            
-            imageName = "\(suffix)-\(vault.name)-\(id.suffix(3))-\(date).png"
-        }
     }
 }
 
