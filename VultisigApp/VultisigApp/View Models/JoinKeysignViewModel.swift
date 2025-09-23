@@ -119,7 +119,7 @@ class JoinKeysignViewModel: ObservableObject {
         Utils.sendRequest(
             urlString: "\(serverURL)/\(sessionID)",
             method: "POST",
-            headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+            headers: nil,
             body: [localPartyID]
         ) { success in
             DispatchQueue.main.async {
@@ -174,7 +174,7 @@ class JoinKeysignViewModel: ObservableObject {
         
         let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString,
-                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                         headers: nil,
                          completion: { result in
             switch result {
             case .success(let data):

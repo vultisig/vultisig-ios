@@ -9,14 +9,9 @@ import Foundation
 import OSLog
 
 class ParticipantDiscovery: ObservableObject {
-    let isKeygen: Bool
     private let logger = Logger(subsystem: "participant-discovery", category: "communication")
     @Published var peersFound = [String]()
     var task: Task<Void,Error>? = nil
-    
-    init(isKeygen: Bool) {
-        self.isKeygen = isKeygen
-    }
     
     func stop() {
         self.task?.cancel()
@@ -26,7 +21,6 @@ class ParticipantDiscovery: ObservableObject {
 
     func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
-        let headers =  isKeygen ? TssHelper.getKeygenRequestHeader() : TssHelper.getKeysignRequestHeader(pubKey: pubKeyECDSA)
         guard let url = URL(string: urlString) else {
             self.logger.error("Invalid URL: \(urlString)")
             return
@@ -34,12 +28,12 @@ class ParticipantDiscovery: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        for item in headers {
-            request.setValue(item.value, forHTTPHeaderField: item.key)
-        }
-        
+        self.task?.cancel() // cancel any existing task
         self.task = Task.detached {
             repeat {
+                if Task.isCancelled {
+                    return
+                }
                 do {
                     let (data,resp) = try await URLSession.shared.data(for: request)
                     guard let httpResponse = resp as? HTTPURLResponse else {
