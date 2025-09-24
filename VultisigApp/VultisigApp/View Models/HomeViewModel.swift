@@ -65,9 +65,13 @@ class HomeViewModel: ObservableObject {
     }
     
     func filterVaults(vaults: [Vault], folders: [Folder]) {
+        filteredVaults = getFilteredVaults(vaults: vaults, folders: folders)
+    }
+    
+    func getFilteredVaults(vaults: [Vault], folders: [Folder]) -> [Vault] {
         let vaultNames = Set(folders.flatMap { $0.containedVaultNames })
         
-        filteredVaults = vaults.filter({ vault in
+        return vaults.filter({ vault in
             !vaultNames.contains(vault.name)
         })
     }

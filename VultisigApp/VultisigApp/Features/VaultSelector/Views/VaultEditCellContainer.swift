@@ -9,16 +9,14 @@ import SwiftUI
 
 struct VaultEditCellContainer<Content: View>: View {
     @Binding var isEditing: Bool
-    let rightDragIndicator: Bool
+    let showDragIndicator: Bool
     var content: () -> Content
     
     var body: some View {
         HStack(spacing: 0) {
             icon
-                .showIf(!rightDragIndicator)
+                .showIf(showDragIndicator)
             content()
-            icon
-                .showIf(rightDragIndicator)
         }
         .background(isEditing ? Capsule().fill(Theme.colors.bgSecondary.opacity(0.75)) : nil)
         .padding(.vertical, 4)
@@ -31,7 +29,7 @@ struct VaultEditCellContainer<Content: View>: View {
             color: Theme.colors.textExtraLight,
             size: 16
         )
-        .padding(rightDragIndicator ? .trailing : .leading, 16)
+        .padding(.leading, 16)
         .frame(maxWidth: isEditing ? nil : 0)
         .clipped()
     }

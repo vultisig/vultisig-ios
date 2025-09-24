@@ -133,7 +133,6 @@
 		1390D8C82E394527003F3E20 /* SecurityScannerSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */; };
 		1390D8CC2E394778003F3E20 /* SecurityScannerServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */; };
 		139642382E79951E00CFEFAF /* VaultManagementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139642372E79951900CFEFAF /* VaultManagementSheet.swift */; };
-		1396423B2E79A64200CFEFAF /* VaultSelectorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */; };
 		1396423E2E79A78A00CFEFAF /* VaultCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1396423D2E79A78400CFEFAF /* VaultCellView.swift */; };
 		139880502E39007C00EC5D3F /* CosmosCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1398804F2E39007900EC5D3F /* CosmosCoin.swift */; };
 		139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139B400B2E42466800238C2C /* MacOSOverlay.swift */; };
@@ -141,6 +140,11 @@
 		139DE1282E4D095000BC2FD3 /* SendKeysignScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */; };
 		139DE12A2E4D0B3A00BC2FD3 /* SendDoneScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */; };
 		13A078622E845AEB0093496F /* CommonListItemContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078612E845AEA0093496F /* CommonListItemContainer.swift */; };
+		13A078662E8464BF0093496F /* View+NavigationBarHidden.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078652E8464BA0093496F /* View+NavigationBarHidden.swift */; };
+		13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078692E846EB50093496F /* CommonListHeaderView.swift */; };
+		13A0786C2E846FBA0093496F /* View+ListSectionSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */; };
+		13A078702E8484280093496F /* ListBottomSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0786F2E8484250093496F /* ListBottomSection.swift */; };
+		13A078722E8488960093496F /* View+PlatformSheetHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */; };
 		13A899002E43C0FE006F75F0 /* PreferredAssetSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */; };
 		13A899022E43CEF3006F75F0 /* THORChainTokenMetadataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */; };
 		13A899042E43FA4D006F75F0 /* PreferredAssetSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */; };
@@ -1220,7 +1224,6 @@
 		1390D8C72E39450D003F3E20 /* SecurityScannerSettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerSettingsService.swift; sourceTree = "<group>"; };
 		1390D8CB2E394770003F3E20 /* SecurityScannerServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScannerServiceFactory.swift; sourceTree = "<group>"; };
 		139642372E79951900CFEFAF /* VaultManagementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManagementSheet.swift; sourceTree = "<group>"; };
-		1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectorViewModel.swift; sourceTree = "<group>"; };
 		1396423D2E79A78400CFEFAF /* VaultCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCellView.swift; sourceTree = "<group>"; };
 		1398804F2E39007900EC5D3F /* CosmosCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoin.swift; sourceTree = "<group>"; };
 		139B400B2E42466800238C2C /* MacOSOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSOverlay.swift; sourceTree = "<group>"; };
@@ -1228,6 +1231,11 @@
 		139DE1272E4D094D00BC2FD3 /* SendKeysignScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendKeysignScreen.swift; sourceTree = "<group>"; };
 		139DE1292E4D0B3200BC2FD3 /* SendDoneScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendDoneScreen.swift; sourceTree = "<group>"; };
 		13A078612E845AEA0093496F /* CommonListItemContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonListItemContainer.swift; sourceTree = "<group>"; };
+		13A078652E8464BA0093496F /* View+NavigationBarHidden.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+NavigationBarHidden.swift"; sourceTree = "<group>"; };
+		13A078692E846EB50093496F /* CommonListHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonListHeaderView.swift; sourceTree = "<group>"; };
+		13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ListSectionSpacing.swift"; sourceTree = "<group>"; };
+		13A0786F2E8484250093496F /* ListBottomSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListBottomSection.swift; sourceTree = "<group>"; };
+		13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+PlatformSheetHeight.swift"; sourceTree = "<group>"; };
 		13A898FF2E43C0EE006F75F0 /* PreferredAssetSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionView.swift; sourceTree = "<group>"; };
 		13A899012E43CEEB006F75F0 /* THORChainTokenMetadataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainTokenMetadataFactory.swift; sourceTree = "<group>"; };
 		13A899032E43FA4B006F75F0 /* PreferredAssetSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferredAssetSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -2589,6 +2597,9 @@
 		135B9FD52E7C8DBC0087D85D /* List */ = {
 			isa = PBXGroup;
 			children = (
+				13A0786F2E8484250093496F /* ListBottomSection.swift */,
+				13A0786B2E846FBA0093496F /* View+ListSectionSpacing.swift */,
+				13A078692E846EB50093496F /* CommonListHeaderView.swift */,
 				13A078612E845AEA0093496F /* CommonListItemContainer.swift */,
 				135B9FD62E7C8DC00087D85D /* View+PlainListItem.swift */,
 			);
@@ -2685,6 +2696,7 @@
 		138C5E682E79EDD300C559C7 /* Toolbar */ = {
 			isa = PBXGroup;
 			children = (
+				13A078652E8464BA0093496F /* View+NavigationBarHidden.swift */,
 				138C5E712E7A01C200C559C7 /* ToolbarButton.swift */,
 				138C5E692E79EDDA00C559C7 /* ToolbarStyle.swift */,
 			);
@@ -2727,17 +2739,8 @@
 			children = (
 				13D9EBF42E8454540089B2A7 /* Screens */,
 				1396423C2E79A77400CFEFAF /* Views */,
-				139642392E79A63A00CFEFAF /* ViewModels */,
 			);
 			path = VaultSelector;
-			sourceTree = "<group>";
-		};
-		139642392E79A63A00CFEFAF /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				1396423A2E79A63E00CFEFAF /* VaultSelectorViewModel.swift */,
-			);
-			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		1396423C2E79A77400CFEFAF /* Views */ = {
@@ -3057,6 +3060,7 @@
 		13D9EBFC2E84579F0089B2A7 /* Sheet */ = {
 			isa = PBXGroup;
 			children = (
+				13A078712E84888E0093496F /* View+PlatformSheetHeight.swift */,
 				13D9EBFF2E8457C20089B2A7 /* DetentsAwareSheet.swift */,
 				13D179012E577ED500007B48 /* PlatformSheet.swift */,
 				13D179042E57805100007B48 /* SheetHeaderView.swift */,
@@ -5290,6 +5294,7 @@
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				B5E654EB2D277CE2003A037C /* TronService.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
+				13A0786A2E846EB50093496F /* CommonListHeaderView.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				139B400C2E42466F00238C2C /* MacOSOverlay.swift in Sources */,
 				B52FD1CE2CDDA7740031FB71 /* TerraService.swift in Sources */,
@@ -5476,6 +5481,7 @@
 				A6505AE02CA6706C0002FBF4 /* ColorStyle+iOS.swift in Sources */,
 				DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */,
 				A6182F492C9292F70059BFDD /* NavigationButton+macOS.swift in Sources */,
+				13A0786C2E846FBA0093496F /* View+ListSectionSpacing.swift in Sources */,
 				DEDB62D72E45B61E00722F74 /* OneInchQuoteError.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
 				A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */,
@@ -5542,6 +5548,7 @@
 				DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */,
 				A53065F62D57CAED000B82E6 /* OnboardingSummaryView.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
+				13A078722E8488960093496F /* View+PlatformSheetHeight.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
 				A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
@@ -5616,7 +5623,6 @@
 				1390D8B82E3938BF003F3E20 /* BlockaidRpcClientProtocol.swift in Sources */,
 				1377C8DE2E5F9855006DC969 /* VaultBackupSelectionScreen.swift in Sources */,
 				A6DFC0592D5FE4F2001C9598 /* SecureBackupGuideAnimation.swift in Sources */,
-				1396423B2E79A64200CFEFAF /* VaultSelectorViewModel.swift in Sources */,
 				13453ACA2E4A1D4800D76629 /* ErrorView.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
 				A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */,
@@ -5673,6 +5679,7 @@
 				130C40DB2E71DA4A00509C61 /* CircularIconButton.swift in Sources */,
 				A6BFE1B52D93AC29000B73C0 /* SwapPercentageButtons+iOS.swift in Sources */,
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
+				13A078662E8464BF0093496F /* View+NavigationBarHidden.swift in Sources */,
 				1368C2792E833DED00BB240D /* VaultFolderCellView.swift in Sources */,
 				A6C670C32C9D16C600F59B6A /* CustomTokenView+macOS.swift in Sources */,
 				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
@@ -5763,6 +5770,7 @@
 				A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */,
 				A6C671252CA3BF4700F59B6A /* SendCryptoAddressTextField+macOS.swift in Sources */,
 				A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */,
+				13A078702E8484280093496F /* ListBottomSection.swift in Sources */,
 				A6505AF72CA678B30002FBF4 /* OnDropQRUtils.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */,

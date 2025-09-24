@@ -26,7 +26,7 @@ struct FolderDetailView: View {
     var headerSubtitle: String {
         let vaultsText: String = filteredVaults.count > 1 ? "vaults".localized : "vault".localized
         var subtitle = "\(filteredVaults.count) \(vaultsText)"
-    
+        
         if filteredVaults.count > 1 {
             subtitle += " · \(homeViewModel.balanceText(for: filteredVaults))"
         }
@@ -38,9 +38,10 @@ struct FolderDetailView: View {
         VStack(spacing: 0) {
             header
             List {
+                CommonListHeaderView(title: "vaults".localized)
                 vaultsList
             }
-            .listSectionSpacing(0)
+            .customSectionSpacing(0)
             .listStyle(.plain)
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
@@ -88,11 +89,6 @@ struct FolderDetailView: View {
     
     @ViewBuilder
     var vaultsList: some View {
-        Text("vaults".localized)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textExtraLight)
-            .padding(.horizontal, 8)
-            .plainListItem()
         ForEach(filteredVaults) { vault in
             VaultCellView(
                 vault: vault,

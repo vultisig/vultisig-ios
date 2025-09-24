@@ -18,13 +18,12 @@ struct VaultListView: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
     @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @StateObject var viewModel = VaultSelectorViewModel()
     
     var filteredVaults: [Vault] {
-        let vaultNames = Set(folders.flatMap { $0.containedVaultNames })
-        return vaults.filter { !vaultNames.contains($0.name) }
+        homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
     }
     
     var headerSubtitle: String {
@@ -47,18 +46,17 @@ struct VaultListView: View {
             VStack(spacing: 0) {
                 header
                 List {
+                    sectionHeader(title: "folders".localized)
                     foldersList
+                    sectionHeader(title: "vaults".localized)
                     vaultsList
                 }
-                .listSectionSpacing(0)
-                .listRowSpacing(0)
-                .listStyle(.grouped)
-                .buttonStyle(.borderless)
+                .customSectionSpacing(0)
+                .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .scrollIndicators(.hidden)
-                .padding(.bottom, isEditing ? 100 : 0)
+                .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: isEditing ? 100 : 0) })
                 .background(Theme.colors.bgPrimary)
-                .padding(.top, 20)
             }
             addFolderButton
         }
@@ -73,17 +71,6 @@ struct VaultListView: View {
             }
         }
         .transition(.opacity.animation(.interpolatingSpring))
-        .background(
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
-                ],
-                startPoint: UnitPoint(x: 0.5, y: 0),
-                endPoint: UnitPoint(x: 0.5, y: 1)
-            )
-        )
     }
     
     var editingHeader: some View {
@@ -107,6 +94,12 @@ struct VaultListView: View {
     
     var defaultHeader: some View {
         HStack(spacing: 8) {
+            #if os(macOS)
+            BottomSheetButton(icon: "chevron-right", type: .secondary) {
+                dismiss()
+            }
+            .rotationEffect(.radians(.pi))
+            #endif
             VStack(alignment: .leading, spacing: 4) {
                 Text("vaults".localized)
                     .foregroundStyle(Theme.colors.textPrimary)
@@ -128,67 +121,52 @@ struct VaultListView: View {
     
     @ViewBuilder
     var foldersList: some View {
-        Section {
-            ForEach(folders) { folder in
-                FolderCellView(
-                    folder: folder,
-                    selectedVaultName: homeViewModel.selectedVault?.name,
-                    isEditing: $isEditing
-                ) {
-                    onSelectFolder(folder)
-                }
-                .disabled(isEditing)
-                .plainListItem()
-                .background(Theme.colors.bgPrimary)
+        ForEach(folders) { folder in
+            FolderCellView(
+                folder: folder,
+                selectedVaultName: homeViewModel.selectedVault?.name,
+                isEditing: $isEditing
+            ) {
+                onSelectFolder(folder)
             }
-            .onMove(perform: isEditing ? moveFolder : nil)
-        } header: {
-            sectionHeader(title: "folders".localized)
-                .plainListItem()
+            .disabled(isEditing)
+            .plainListItem()
+            .background(Theme.colors.bgPrimary)
         }
-        .listSectionSpacing(0)
+        .onMove(perform: isEditing ? moveFolder : nil)
     }
     
     @ViewBuilder
     var vaultsList: some View {
-        Section {
-            ForEach(filteredVaults) { vault in
-                VaultCellView(
-                    vault: vault,
-                    isSelected: homeViewModel.selectedVault == vault,
-                    isEditing: $isEditing) {
-                        onSelectVault(vault)
-                    }
-                    .disabled(isEditing)
-                    .plainListItem()
-                    .background(Theme.colors.bgPrimary)
-            }
-            .onMove(perform: isEditing ? moveVaults : nil)
-        } header: {
-            sectionHeader(title: "vaults".localized)
+        ForEach(filteredVaults) { vault in
+            VaultCellView(
+                vault: vault,
+                isSelected: homeViewModel.selectedVault == vault,
+                isEditing: $isEditing) {
+                    onSelectVault(vault)
+                }
+                .disabled(isEditing)
                 .plainListItem()
+                .background(Theme.colors.bgPrimary)
         }
-        .listSectionSpacing(0)
+        .onMove(perform: isEditing ? moveVaults : nil)
     }
     
     var addFolderButton: some View {
-        PrimaryButton(
-            title: "addFolder",
-            leadingIcon: "folder-add",
-            type: .secondary,
-            action: onAddFolder
-        )
-        .padding(.vertical, 16)
-        .background(Theme.colors.bgPrimary)
-        .transition(.opacity)
-        .showIf(isEditing)
+        ListBottomSection {
+            PrimaryButton(
+                title: "addFolder",
+                leadingIcon: "folder-add",
+                type: .secondary,
+                action: onAddFolder
+            )
+        }
+        .opacity(isEditing ? 1 : 0)
+        .animation(.interpolatingSpring.delay(0.3), value: isEditing)
     }
     
     func sectionHeader(title: String) -> some View {
-        Text(title)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textExtraLight)
-            .padding(.horizontal, 8)
+        CommonListHeaderView(title: title)
             .showIf(showListHeaders)
     }
     

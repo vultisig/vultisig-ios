@@ -20,15 +20,15 @@ struct VaultFolderCellView: View {
             vault: vault,
             isSelected: isSelected,
             isEditing: .constant(true),
-            rightDragIndicator: false,
+            showDragIndicator: isOnFolder,
             showTrailingDetails: false,
             trailingView: {
                 Toggle("", isOn: $isOnFolderInternal)
                     .labelsHidden()
                     .scaleEffect(0.8)
                     .tint(Theme.colors.primaryAccent4)
-            },
-            action: {}
+                    .toggleStyle(.switch)
+            }
         )
         .background(Theme.colors.bgPrimary)
         .onLoad {

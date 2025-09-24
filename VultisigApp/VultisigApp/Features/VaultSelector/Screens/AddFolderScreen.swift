@@ -26,6 +26,7 @@ struct AddFolderScreen: View {
             .padding(.horizontal, 16)
             .presentationDragIndicator(.visible)
             .presentationBackground(Theme.colors.bgPrimary)
+            .applySheetHeight()
             .onLoad(perform: setData)
             .alert(isPresented: $folderViewModel.showAlert) {
                 alert
@@ -42,62 +43,44 @@ struct AddFolderScreen: View {
     var content: some View {
         VStack {
             header
+            CommonTextField(
+                text: $folderViewModel.name,
+                label: "folderName".localized,
+                placeholder: "typeHere".localized,
+            )
             List {
-                CommonTextField(
-                    text: $folderViewModel.name,
-                    label: "folderName".localized,
-                    placeholder: "typeHere".localized,
-                )
-                .plainListItem()
+                CommonListHeaderView(title: "selectVaults".localized)
                 vaultsList
             }
-            .listSectionSpacing(0)
+            .customSectionSpacing(0)
             .listStyle(.plain)
-            .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
+            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 100) })
         }
     }
     
     var vaultsList: some View {
-        Section {
-            ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
-                AddFolderVaultCellView(
-                    vault: vault,
-                    isSelected: folderViewModel.selectedVaults.contains(vault),
-                    onSelection: {
-                        handleSelection(vault: vault, isSelected: $0)
-                    }
-                )
-                .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
-            }
-        } header: {
-            sectionHeader(title: "selectVaults".localized)
-                .padding(.top, 24)
+        ForEach(Array(filteredVaults.enumerated()), id: \.element) { index, vault in
+            AddFolderVaultCellView(
+                vault: vault,
+                isSelected: folderViewModel.selectedVaults.contains(vault),
+                onSelection: {
+                    handleSelection(vault: vault, isSelected: $0)
+                }
+            )
+            .commonListItemContainer(index: index, itemsCount: filteredVaults.count)
         }
-        .listSectionSpacing(0)
     }
     
     var saveButton: some View {
-        PrimaryButton(title: "save") {
-            saveFolder()
+        ListBottomSection {
+            PrimaryButton(title: "save") {
+                saveFolder()
+            }
+            .disabled(folderViewModel.saveButtonDisabled)
         }
-        .edgesIgnoringSafeArea(.bottom)
-        .frame(maxHeight: nil)
-        .clipped()
-        .background(
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
-                ],
-                startPoint: UnitPoint(x: 0.5, y: 1),
-                endPoint: UnitPoint(x: 0.5, y: 0)
-            )
-        )
-        .disabled(folderViewModel.saveButtonDisabled)
     }
     
     var alert: Alert {
@@ -108,19 +91,11 @@ struct AddFolderScreen: View {
         )
     }
     
-    func sectionHeader(title: String) -> some View {
-        Text(title)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textExtraLight)
-            .padding(.horizontal, 8)
-            .plainListItem()
-    }
-    
     var header: some View {
         HStack {
             HStack {}
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text("editFolder".localized)
+            Text("addFolder".localized)
                 .foregroundStyle(Theme.colors.textPrimary)
                 .font(Theme.fonts.title3)
             HStack {

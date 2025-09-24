@@ -33,6 +33,7 @@ struct EditFolderScreen: View {
             .padding(.horizontal, 16)
             .presentationDragIndicator(.visible)
             .presentationBackground(Theme.colors.bgPrimary)
+            .applySheetHeight()
             .alert(isPresented: $folderViewModel.showAlert) {
                 alert
             }
@@ -51,86 +52,63 @@ struct EditFolderScreen: View {
     var content: some View {
         VStack {
             header
+            CommonTextField(
+                text: $folderName,
+                label: "folderName".localized,
+                placeholder: "typeHere".localized,
+            )
             List {
-                CommonTextField(
-                    text: $folderName,
-                    label: "folderName".localized,
-                    placeholder: "typeHere".localized,
-                )
-                .plainListItem()
-                .onLoad(perform: setupFolder)
+                CommonListHeaderView(title: "activeVaults".localized)
                 selectedVaultsList
+                CommonListHeaderView(title: "available".localized)
+                    .showIf(!folderViewModel.remainingVaults.isEmpty)
                 vaultsList
             }
-            .listSectionSpacing(0)
             .listStyle(.plain)
             .buttonStyle(.borderless)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(Theme.colors.bgPrimary)
+            .safeAreaInset(edge: .bottom, content: { Spacer().frame(height: 100) })
             .animation(.interpolatingSpring, value: folder.containedVaultNames)
         }
     }
     
     var selectedVaultsList: some View {
-        Section {
-            ForEach(folderViewModel.selectedVaults.sorted(by: {
-                $0.order < $1.order
-            }), id: \.self) { vault in
-                VaultFolderCellView(
-                    vault: vault,
-                    isOnFolder: true,
-                    isSelected: viewModel.selectedVault == vault,
-                    onSelection: { removeVault(vault) }
-                )
-                .plainListItem()
-                .disabled(disableSelection)
-            }
-            .onMove(perform: move)
-        } header: {
-            sectionHeader(title: "activeVaults".localized)
-                .padding(.top, 24)
+        ForEach(folderViewModel.selectedVaults.sorted(by: {
+            $0.order < $1.order
+        }), id: \.self) { vault in
+            VaultFolderCellView(
+                vault: vault,
+                isOnFolder: true,
+                isSelected: viewModel.selectedVault == vault,
+                onSelection: { removeVault(vault) }
+            )
+            .plainListItem()
+            .disabled(disableSelection)
         }
-        .listSectionSpacing(0)
+        .onMove(perform: move)
     }
     
     var vaultsList: some View {
-        Section {
-            ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
-                VaultFolderCellView(
-                    vault: vault,
-                    isOnFolder: false,
-                    isSelected: viewModel.selectedVault == vault,
-                    onSelection: { addVault(vault) }
-                )
-                .plainListItem()
-            }
-        } header: {
-            sectionHeader(title: "available".localized)
-                .showIf(!folderViewModel.remainingVaults.isEmpty)
+        ForEach(folderViewModel.remainingVaults, id: \.self) { vault in
+            VaultFolderCellView(
+                vault: vault,
+                isOnFolder: false,
+                isSelected: viewModel.selectedVault == vault,
+                onSelection: { addVault(vault) }
+            )
+            .plainListItem()
         }
-        .listSectionSpacing(0)
     }
     
     var saveButton: some View {
-        PrimaryButton(title: "saveChanges") {
-            saveFolder()
+        ListBottomSection {
+            PrimaryButton(title: "saveChanges") {
+                saveFolder()
+            }
+            .disabled(saveButtonDisabled)
         }
-        .edgesIgnoringSafeArea(.bottom)
-        .frame(maxHeight: nil)
-        .clipped()
-        .background(
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Theme.colors.bgPrimary, location: 0.50),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0.5), location: 0.85),
-                    Gradient.Stop(color: Theme.colors.bgPrimary.opacity(0), location: 1.00),
-                ],
-                startPoint: UnitPoint(x: 0.5, y: 1),
-                endPoint: UnitPoint(x: 0.5, y: 0)
-            )
-        )
-        .disabled(saveButtonDisabled)
     }
     
     var alert: Alert {
@@ -139,14 +117,6 @@ struct EditFolderScreen: View {
             message: Text(NSLocalizedString(folderViewModel.alertDescription, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
-    }
-    
-    func sectionHeader(title: String) -> some View {
-        Text(title)
-            .font(Theme.fonts.caption12)
-            .foregroundStyle(Theme.colors.textExtraLight)
-            .padding(.horizontal, 8)
-            .plainListItem()
     }
     
     var header: some View {
@@ -174,6 +144,7 @@ private extension EditFolderScreen {
             vaultFolder: folder,
             filteredVaults: viewModel.filteredVaults
         )
+        setupFolder()
         updateSelection()
     }
     

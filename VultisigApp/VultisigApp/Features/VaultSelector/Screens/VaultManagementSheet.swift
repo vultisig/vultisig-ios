@@ -14,7 +14,6 @@ struct VaultManagementSheet: View {
         
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @StateObject var viewModel = VaultSelectorViewModel()
         
     @State var isEditing: Bool = false
     @State var selectedFolder: Folder?
@@ -58,6 +57,7 @@ struct VaultManagementSheet: View {
         .presentationDetents(Set(detents), selection: $detentSelection)
         .presentationCompactAdaptation(.none)
         .presentationBackground { Theme.colors.bgPrimary.padding(.bottom, -1000) }
+        .applySheetHeight()
         .onChange(of: isEditing) { _, isEditing in
             updateDetents(isEditing: isEditing)
         }
@@ -78,7 +78,7 @@ private extension VaultManagementSheet {
     func updateDetents(isEditing: Bool) {
         updateDetents(whileAnimation: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            detentSelection = detents[0]
+            detentSelection = isEditing ? .large : detents[safe: 0] ?? .medium
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 updateDetents(whileAnimation: false)
             }
@@ -89,11 +89,11 @@ private extension VaultManagementSheet {
         let stateDetents: [PresentationDetent]
         
         if isEditing {
-            stateDetents = whileAnimationDetents
-            self.detents = stateDetents + whileAnimationDetents
+            self.detents = [.large] + whileAnimationDetents
             return
         }
         
+        let vaults = homeViewModel.getFilteredVaults(vaults: vaults, folders: folders)
         let elementsCount = vaults.count + folders.count
         switch elementsCount {
         case 1:
@@ -110,6 +110,7 @@ private extension VaultManagementSheet {
             break
         }
         
+        print("Setting non editing")
         self.detents = stateDetents + whileAnimationDetents
     }
     

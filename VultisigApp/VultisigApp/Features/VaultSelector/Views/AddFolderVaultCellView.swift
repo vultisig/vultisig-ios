@@ -23,6 +23,7 @@ struct AddFolderVaultCellView: View {
                 .labelsHidden()
                 .scaleEffect(0.8)
                 .tint(Theme.colors.primaryAccent4)
+                .toggleStyle(.switch)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
