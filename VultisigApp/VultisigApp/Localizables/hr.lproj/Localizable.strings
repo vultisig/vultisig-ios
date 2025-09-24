@@ -494,7 +494,7 @@
 "pairedSign" = "Upareni znak";
 "pairingDevice" = "Uređaj za uparivanje";
 "part" = "Dio";
-"partOf" = "dio plchldr_d_ od plchldr_d_";
+"partOf" = "dio %d od %d";
 "password" = "Lozinka";
 "passwordHint" = "Nagovještaj lozinke";
 "passwordHintTitle" = "Opcionalno: Savjet za lozinku";
@@ -516,7 +516,7 @@
 "pleaseBackupVault" = "Svaki uređaj ima svoj jedinstveni dio.";
 "pleaseBackupVaultNote" = "Molimo napravite sigurnosnu kopiju svih svojih dijelova Vaulta sada.";
 "pleaseWait" = "Molimo pričekajte...";
-"plusMore" = "+Plchldr_d_ više";
+"plusMore" = "+%d više";
 "polkadotExistentialDepositError" = "Pobrinite se da ostavite dovoljno sredstava za pokrivanje naknada. Ako stanje računa padne ispod 1 DOT (Egzistencijalni Depozit), račun će biti deaktiviran i preostala sredstva će biti izgubljena. Možete ponovno aktivirati adresu s novim depozitom većim od egzistencijalnog depozita u bilo kojem trenutku. Međutim, ovo neće vratiti izgubljena sredstva.";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";
 "preparingVault" = "PRIPREMA SEFA...";
@@ -669,7 +669,7 @@
 "setup" = "Postavljanje";
 "setupVault" = "Postavljanje trezora";
 "share" = "Podijeli";
-"shareOf" = "podijelite plchldr_d_ od plchldr_d_";
+"shareOf" = "podijelite %d od %d";
 "shareTheApp" = "Podijelite aplikaciju";
 "shareVaultQR" = "Dijelite trezor QR";
 "shareVaultQRInformation" = "Ovaj QR kôd omogućuje vam dijeljenje verzije samo za prikaz vašeg trezora";

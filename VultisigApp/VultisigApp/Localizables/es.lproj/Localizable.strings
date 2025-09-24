@@ -494,7 +494,7 @@
 "pairedSign" = "Signo emparejado";
 "pairingDevice" = "Dispositivo de emparejamiento";
 "part" = "Participación";
-"partOf" = "Parte plchldr_d_ de plchdr_d_";
+"partOf" = "Parte %d de %d";
 "password" = "Contraseña";
 "passwordHint" = "Sugerencia de contraseña";
 "passwordHintTitle" = "Opcional: Pista de contraseña";
@@ -516,7 +516,7 @@
 "pleaseBackupVault" = "Cada dispositivo tiene su propia parte única.";
 "pleaseBackupVaultNote" = "Por favor, realiza el respaldo de todas tus partes del Vault ahora.";
 "pleaseWait" = "Por favor espera...";
-"plusMore" = "+Plchdr_d_ más";
+"plusMore" = "+%d más";
 "polkadotExistentialDepositError" = "Asegúrese de dejar suficientes fondos para cubrir las tarifas. Si el saldo de una cuenta cae por debajo de 1 DOT (Depósito Existencial), la cuenta será desactivada (eliminada) y cualquier fondo restante se perderá. Puede reactivar la dirección con un nuevo depósito mayor que el depósito existencial en cualquier momento. Sin embargo, esto no recuperará los fondos perdidos.";
 "positiveAmountError" = "La cantidad debe ser un número positivo. Intenta de nuevo.";
 "preparingVault" = "PREPARANDO CAJA FUERTE...";
@@ -553,7 +553,7 @@
 "referralOverviewCheckbox2" = "Estoy enviando a la dirección correcta";
 "referralProgram" = "Programa de Referidos";
 "referralProgramTooltipDescription" = "El programa de referidos se aplica a los intercambios de THORChain y funciona sobre la base del mejor esfuerzo. Para usar el referido de Vultisig, debes registrar un THORName. La tarifa de registro es de 10 RUNE más 1 RUNE por año, pagada a la red THORChain.";
-"referredSaveOnSwaps" = "Guardar plchldr_at_ en swaps - agregue una referencia";
+"referredSaveOnSwaps" = "Guardar %@ en swaps - agregue una referencia";
 "registerGuide" = "Guía de registro";
 "registerVault" = "Registrar Vault";
 "registerVaultText1" = "1. Guarda tu código QR del Vault";
@@ -592,7 +592,7 @@
 "save" = "Guardar";
 "saveAddress" = "Guardar dirección";
 "saveChanges" = "Guardar cambios";
-"saveOnSwaps" = "Guardar plchldr_at_ en swaps";
+"saveOnSwaps" = "Guardar %@ en swaps";
 "saveOrShare" = "Guardar o compartir";
 "saveQRCode" = "Guardar código QR";
 "saveReferral" = "Guardar referido";
@@ -669,7 +669,7 @@
 "setup" = "Configurar";
 "setupVault" = "Bóveda de configuración";
 "share" = "Compartir";
-"shareOf" = "Compartir plchdr_d_ de plchldr_d_";
+"shareOf" = "Compartir %d de %d";
 "shareTheApp" = "Compartir La App";
 "shareVaultQR" = "Compartir bóveda QR";
 "shareVaultQRInformation" = "Este código QR le permite compartir una versión de solo vista de su bóveda";

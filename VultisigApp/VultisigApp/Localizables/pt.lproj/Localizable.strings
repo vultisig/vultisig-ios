@@ -494,7 +494,7 @@
 "pairedSign" = "Sinal emparelhado";
 "pairingDevice" = "Dispositivo de emparelhamento";
 "part" = "Parte";
-"partOf" = "parte plchldr_d_ de plchldr_d_";
+"partOf" = "parte %d de %d";
 "password" = "Senha";
 "passwordHint" = "Dica de senha";
 "passwordHintTitle" = "Opcional: Dica de senha";
@@ -516,7 +516,7 @@
 "pleaseBackupVault" = "Cada dispositivo tem sua própria participação única.";
 "pleaseBackupVaultNote" = "Por favor, faça backup de todas as suas ações do Vault agora.";
 "pleaseWait" = "Por favor, espere...";
-"plusMore" = "+% MAIS";
+"plusMore" = "+%d mais";
 "polkadotExistentialDepositError" = "Certifique-se de deixar fundos suficientes para cobrir as taxas. Se o saldo de uma conta cair abaixo de 1 DOT (Depósito Existencial), a conta será desativada (removida) e quaisquer fundos restantes serão perdidos. Você pode reativar o endereço com um novo depósito maior que o depósito existencial a qualquer momento. No entanto, isso não recuperará os fundos perdidos.";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";
 "preparingVault" = "PREPARANDO COFRE...";
@@ -669,7 +669,7 @@
 "setup" = "Configurar";
 "setupVault" = "Configurar cofre";
 "share" = "Compartilhar";
-"shareOf" = "compartilhar plchldr_d_ de plchldr_d_";
+"shareOf" = "compartilhar %d de %d";
 "shareTheApp" = "Compartilhar o App";
 "shareVaultQR" = "Compartilhe Vault qr";
 "shareVaultQRInformation" = "Este código QR permite compartilhar uma versão apenas para visualização do seu cofre";
