@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Ungültige Transaktionsmenge angegeben.";
 "walletBalanceExceededSolanaError" = "Die Summe aus Menge und Gebühr übersteigt das Guthaben. Versuche es erneut.";
 "notEnoughBalanceError" = "Du hast nicht genug Guthaben, um diese Transaktion zu senden";
+"insufficientGasTokenError" = "Nicht genug %@ um die Gasgebühren für das Senden von %@ zu decken";
+"noGasTokenFoundError" = "Kein Gas-Token für %@ Chain gefunden. Bitte füge den nativen Token zu deinem Vault hinzu.";
+"unableToVerifyGasTokenError" = "Gas-Token-Guthaben konnte nicht überprüft werden. Bitte versuche es erneut.";
 "notEnoughUTXOError" = "Unzureichende UTXOs verfügbar. Deine Brieftasche hat genug Guthaben, aber die UTXOs (Transaktionsausgaben) sind zu klein oder nicht ausreichend, um den Transaktionsbetrag plus Gebühren zu decken. Versuche einen kleineren Betrag zu senden oder warte bis ausstehende Transaktionen bestätigt werden.";
 "utxoTooSmallError" = "Verfügbare UTXOs sind zu klein für diese Transaktion. Die einzelnen Transaktionsausgaben in deiner Brieftasche erfüllen nicht die Mindestanforderungen. Erwäge zuerst kleinere Beträge zu konsolidieren.";
 "utxoSelectionFailedError" = "UTXO-Auswahl fehlgeschlagen. Konnte keine geeigneten Transaktionsausgaben finden, um den Betrag plus geschätzte Gebühren zu decken. Versuche den Transaktionsbetrag zu reduzieren.";

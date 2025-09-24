@@ -167,6 +167,9 @@
 "invalidTransactionAmountError" = "Quantità di transazione fornita non valida.";
 "walletBalanceExceededSolanaError" = "La quantità combinata e la commissione superano il saldo del tuo portafoglio. Riprova.";
 "notEnoughBalanceError" = "Non hai abbastanza saldo per inviare questa transazione";
+"insufficientGasTokenError" = "Non c'è abbastanza %@ per coprire le commissioni gas per inviare %@";
+"noGasTokenFoundError" = "Token gas non trovato per la catena %@. Aggiungi il token nativo al tuo vault.";
+"unableToVerifyGasTokenError" = "Impossibile verificare il saldo del token gas. Riprova.";
 "notEnoughUTXOError" = "UTXO insufficienti disponibili. Il tuo portafoglio ha saldo sufficiente ma gli UTXO (output di transazione) sono troppo piccoli o non sufficienti per coprire l'importo della transazione più le commissioni. Prova a inviare un importo minore o attendi che le transazioni in sospeso vengano confermate.";
 "utxoTooSmallError" = "Gli UTXO disponibili sono troppo piccoli per questa transazione. Gli output di transazione individuali nel tuo portafoglio non soddisfano i requisiti minimi. Considera di consolidare prima gli importi più piccoli.";
 "utxoSelectionFailedError" = "Selezione UTXO fallita. Impossibile trovare output di transazione adatti per coprire l'importo più le commissioni stimate. Prova a ridurre l'importo della transazione.";
