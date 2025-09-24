@@ -363,7 +363,7 @@
 "invalidBalance" = "Nevažeći saldo";
 "invalidEmailPleaseCheck" = "Netočna e-mail adresa, molimo provjerite.";
 "invalidFileFormat" = "Nevažeći format datoteke";
-"invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat, .bak or .vult.";
+"invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat, .bak ili .vult.";
 "invalidGasFeeError" = "Nevažeća naknada za plin.";
 "invalidTransactionAmountError" = "Nevažeći iznos transakcije.";
 "invalidVaultData" = "Nevažeći podaci spremišta";

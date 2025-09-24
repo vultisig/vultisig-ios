@@ -363,7 +363,7 @@
 "invalidBalance" = "Ungültiges Guthaben";
 "invalidEmailPleaseCheck" = "Falsche E-Mail, bitte überprüfen.";
 "invalidFileFormat" = "Ungültiges Dateiformat";
-"invalidFileFormatMessage" = "Bitte stelle sicher, dass die richtige Sicherungsdatei mit der Erweiterung .dat, .bak or .vult ausgewählt wurde.";
+"invalidFileFormatMessage" = "Bitte stelle sicher, dass die richtige Sicherungsdatei mit der Erweiterung .dat, .bak oder .vult ausgewählt wurde.";
 "invalidGasFeeError" = "Ungültige Gasgebühr angegeben.";
 "invalidTransactionAmountError" = "Ungültige Transaktionsmenge angegeben.";
 "invalidVaultData" = "Ungültige Tresordaten";

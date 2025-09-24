@@ -363,7 +363,7 @@
 "invalidBalance" = "Saldo no válido";
 "invalidEmailPleaseCheck" = "Correo electrónico incorrecto, por favor verifique.";
 "invalidFileFormat" = "Formato de archivo no válido";
-"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat, .bak or .vult.";
+"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat, .bak o .vult.";
 "invalidGasFeeError" = "Tarifa de gas inválida proporcionada.";
 "invalidTransactionAmountError" = "Cantidad de transacción inválida proporcionada.";
 "invalidVaultData" = "Datos del almacén no válidos";

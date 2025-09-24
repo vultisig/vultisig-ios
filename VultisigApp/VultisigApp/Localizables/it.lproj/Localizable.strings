@@ -363,7 +363,7 @@
 "invalidBalance" = "Saldo non valido";
 "invalidEmailPleaseCheck" = "E-mail non corretta, controlla.";
 "invalidFileFormat" = "Formato di file non valido";
-"invalidFileFormatMessage" = "Assicurati di aver selezionato il file di backup corretto con estensione .dat, .bak or .vult.";
+"invalidFileFormatMessage" = "Assicurati di aver selezionato il file di backup corretto con estensione .dat, .bak o .vult.";
 "invalidGasFeeError" = "Commissione del gas fornita non valida.";
 "invalidTransactionAmountError" = "Quantità di transazione fornita non valida.";
 "invalidVaultData" = "Dati del caveau non validi";
